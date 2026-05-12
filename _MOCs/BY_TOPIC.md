@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (138)
+## governance (139)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -54,6 +54,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/governance/test_cognitive_layer_contract.py|test_cognitive_layer_contract]]
 - [code] [[nova_backend/tests/governance/test_cognitive_modules_analysis_only.py|test_cognitive_modules_analysis_only]]
 - [code] [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
+- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
 - [code] [[nova_backend/tests/adversarial/test_governor_bypass.py|test_governor_bypass]]
 - [code] [[nova_backend/tests/test_governor_execution_timeout.py|test_governor_execution_timeout]]
 - [code] [[nova_backend/tests/test_governor_fail_closed.py|test_governor_fail_closed]]
@@ -153,7 +154,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/NOVA CANONICAL SYNTHESIS v5.0.txt|🧬 NOVA CANONICAL SYNTHESIS v5.0 - COMPLETE OPERATIONAL TRUTH]]
 - [doc] [[docs/design/Phase 9/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt|🧬 NOVA CORE INTELLIGENCE ARCHITECTURE]]
 
-## openclaw (103)
+## openclaw (104)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -192,6 +193,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
 - [code] [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
+- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
 - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [code] [[nova_backend/tests/test_openclaw_agent_api.py|test_openclaw_agent_api]]
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
@@ -540,7 +542,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (707)
+## testing (708)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -711,6 +713,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/executors/test_external_reasoning_executor.py|test_external_reasoning_executor]]
 - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
 - [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
+- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
 - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
 - [code] [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
 - [code] [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
