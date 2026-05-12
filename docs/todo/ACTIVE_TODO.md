@@ -7,7 +7,7 @@ Last reviewed: 2026-05-11
 ## Current Active Task
 
 ```text
-Generated runtime-doc regeneration after PR #152-#157.
+Generated runtime-doc regeneration after PR #152-#159.
 ```
 
 Scope:
@@ -23,7 +23,7 @@ no authority expansion
 Reason:
 
 ```text
-PR #155 closed unmerged, so generated runtime docs may still be stale after PR #154 OpenClaw hardening and PR #157 continuity synchronization.
+PR #155 closed unmerged, so generated runtime docs may still be stale after PR #154 OpenClaw hardening, PR #157 continuity synchronization, and PR #159 status synchronization.
 ```
 
 Required commands in a real repo working tree:
@@ -59,6 +59,8 @@ PR #153 — PASS4 OpenClaw freeform-goal inspection merged.
 PR #154 — OpenClaw PATCH A-D hardening merged.
 PR #156 — Search stopword cleanup merged.
 PR #157 — Post-audit continuity/status synchronization merged.
+PR #158 — Runtime-doc regeneration TODO tracking merged.
+PR #159 — Current priority/status synchronization merged.
 ```
 
 ---
