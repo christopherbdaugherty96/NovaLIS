@@ -17,10 +17,26 @@ Read `.agent_context/current_priority.md`.
 Current active task:
 
 ```text
-Status / continuity synchronization after PR #144-#148.
+Generated runtime-doc regeneration after PR #152-#159.
 ```
 
-No runtime implementation priority is selected until the continuity files are synchronized.
+Status:
+
+```text
+TODO tracked by PR #158.
+Generator has not yet been run.
+```
+
+Scope:
+
+```text
+generated runtime docs / fingerprints / MOC artifacts only
+no runtime code
+no capability changes
+no authority expansion
+```
+
+No runtime implementation priority is selected until generated runtime docs are synchronized and runtime-doc drift verification is complete.
 
 Recent repo truth to preserve:
 
@@ -31,6 +47,25 @@ PR #145 — Work Style Enforcement Lock merged.
 PR #146 — Creator-led Shopify/POD future model merged.
 PR #147 — Nova two-domain product direction merged.
 PR #148 — Piper-first voice direction merged.
+PR #149 — Current status / continuity synchronization merged.
+PR #150 — Audit-first safety boundary merged.
+PR #152 — Full repo/doc/code alignment audit artifacts merged.
+PR #153 — PASS4 OpenClaw freeform-goal inspection merged.
+PR #154 — OpenClaw PATCH A-D hardening merged.
+PR #156 — Search stopword cleanup merged.
+PR #157 — Post-audit continuity/status synchronization merged.
+PR #158 — Runtime-doc regeneration TODO tracking merged.
+PR #159 — Current priority/status synchronization merged.
+```
+
+Current grounded truth:
+
+```text
+OpenClaw is implemented runtime code with bounded/manual-first execution surfaces.
+
+The unrestricted freeform-goal registry exposure identified during the audit was narrowed by PR #154 through read-only allowlisting, mutation-tool exclusion, MeteredNetworkProxy enforcement, and governance regression tests.
+
+This does not make OpenClaw broadly autonomous or fully governance-certified.
 ```
 
 Do not start UI simplification, Cap 64 P5, Google connector runtime work, Shopify writes, ElevenLabs implementation, OpenClaw expansion, browser/computer-use expansion, external writes, finance automation, social posting automation, or autonomous workflow execution without a separate reviewed priority lock.
