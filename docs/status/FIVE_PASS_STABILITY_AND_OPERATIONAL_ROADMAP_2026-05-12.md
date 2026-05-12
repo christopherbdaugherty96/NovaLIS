@@ -41,7 +41,7 @@ Visibility is not authority.
 The post-audit direction of Nova is:
 
 ```text
-governed operational intelligence
+governed operational coordination
 ```
 
 not:
@@ -297,7 +297,7 @@ roadmap hierarchy
 Target framing:
 
 ```text
-governed operational intelligence workspace
+governed operational coordination workspace
 ```
 
 instead of:
@@ -394,5 +394,5 @@ A governance-first local AI/runtime platform with bounded execution infrastructu
 The highest-value differentiator is:
 
 ```text
-governed operational intelligence with visible trust boundaries
+governed operational coordination with visible trust boundaries
 ```
