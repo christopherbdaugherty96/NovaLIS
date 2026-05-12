@@ -323,3 +323,80 @@ class TestToolRegistryFiltered:
         view = reg.filtered(allowed=frozenset({"read_tool"}))
         assert view.find_by_category("collection") == ["read_tool"]
         assert view.find_by_category("mutation") == []
+
+
+# ---------------------------------------------------------------------------
+# RunBudgetMeter.record_network_call() — URL-gating behaviour (PATCH C fix)
+#
+# url_allowed() returns False when allowed_hostnames=[] because
+# TaskEnvelope.hostname_allowed() uses `any(...)` over an empty list.
+# RunBudgetMeter must treat an empty hostnames list as "any host allowed"
+# rather than "all hosts blocked", so that the freeform goal path's
+# MeteredNetworkProxy can count calls without blocking legitimate tool
+# network requests that are already SSRF-protected by NetworkMediator.
+# ---------------------------------------------------------------------------
+
+class TestRunBudgetMeterNetworkGating:
+    """RunBudgetMeter.record_network_call() URL-gating corner cases."""
+
+    def _make_budget_meter(self, allowed_hostnames: list[str], max_calls: int = 5):
+        from src.openclaw.agent_runner import RunBudgetMeter
+        from src.openclaw.task_envelope import TaskEnvelope
+
+        env = TaskEnvelope(
+            id="test-budget",
+            title="test",
+            template_id="test",
+            tools_allowed=[],
+            allowed_hostnames=allowed_hostnames,
+            max_steps=10,
+            max_duration_s=120,
+            max_network_calls=max_calls,
+            max_files_touched=0,
+            max_bytes_read=524_288,
+            max_bytes_written=0,
+            triggered_by="test",
+        )
+        return RunBudgetMeter(env)
+
+    def test_empty_hostnames_allows_any_url(self):
+        """PATCH C fix: empty allowed_hostnames must not block network calls.
+
+        url_allowed() returns False when allowed_hostnames=[].  The budget meter
+        must skip URL gating in this case so that freeform goal network tools
+        (weather, news, web_search) can make calls without being blocked.
+        SSRF protection is delegated to NetworkMediator in the goal path.
+        """
+        meter = self._make_budget_meter(allowed_hostnames=[])
+        # Must not raise — any URL is allowed when hostnames list is empty.
+        meter.record_network_call("https://api.weather.example.com/current")
+        meter.record_network_call("https://feeds.news.example.com/rss")
+        meter.record_network_call("https://search.brave.com/api/v1/search")
+        assert meter.network_calls_used == 3
+
+    def test_explicit_hostnames_blocks_unallowed_url(self):
+        """When allowed_hostnames is set, urls outside it must be blocked."""
+        meter = self._make_budget_meter(allowed_hostnames=["api.weather.example.com"])
+        # Allowed host — must pass.
+        meter.record_network_call("https://api.weather.example.com/current")
+        assert meter.network_calls_used == 1
+        # Unallowed host — must raise.
+        with pytest.raises(RuntimeError, match="outside the envelope"):
+            meter.record_network_call("https://malicious.example.com/steal")
+
+    def test_budget_cap_enforced_regardless_of_hostname_policy(self):
+        """Call-count cap must be enforced even when URL gating is skipped."""
+        meter = self._make_budget_meter(allowed_hostnames=[], max_calls=2)
+        meter.record_network_call("https://example.com/a")
+        meter.record_network_call("https://example.com/b")
+        with pytest.raises(RuntimeError, match="budget"):
+            meter.record_network_call("https://example.com/c")  # 3 > max_calls=2
+
+    def test_explicit_hostnames_cap_also_enforced(self):
+        """Call-count cap is still enforced when hostname filtering is active."""
+        meter = self._make_budget_meter(
+            allowed_hostnames=["example.com"], max_calls=1
+        )
+        meter.record_network_call("https://example.com/first")
+        with pytest.raises(RuntimeError, match="budget"):
+            meter.record_network_call("https://example.com/second")

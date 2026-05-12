@@ -107,7 +107,11 @@ class RunBudgetMeter:
         self._raise_if_over_budget("step", self.steps_used, int(self.envelope.max_steps))
 
     def record_network_call(self, url: str) -> None:
-        if not self.envelope.url_allowed(url):
+        # When allowed_hostnames is explicitly set, enforce the URL allowlist.
+        # When empty (freeform goal path envelope), skip URL gating — SSRF
+        # protection is already handled by the delegating NetworkMediator.
+        # The budget meter's responsibility here is call-count enforcement only.
+        if self.envelope.allowed_hostnames and not self.envelope.url_allowed(url):
             raise RuntimeError(f"Run attempted network access outside the envelope: {url}")
         self.network_calls_used += 1
         self._raise_if_over_budget(
