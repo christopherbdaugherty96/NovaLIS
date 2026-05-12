@@ -377,6 +377,7 @@ _Read-only Brain scaffolding._
 
 ### Imported by
 
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
@@ -636,6 +637,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/executors/analysis_document_executor.py|analysis_document_executor]]
 - [[nova_backend/src/executors/multi_source_reporting_executor.py|multi_source_reporting_executor]]
 - [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
+- [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
 - [[nova_backend/src/voice/voice_agent.py|voice_agent]]
@@ -646,8 +648,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
-- [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
-- _…and 25 more_
+- _…and 27 more_
 
 ### Tests
 
@@ -746,6 +747,7 @@ _Debug utilities package._
 - [[nova_backend/src/context/context_snapshot_service.py|context_snapshot_service]]
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/conversation/deepseek_safety_wrapper.py|deepseek_safety_wrapper]]
+- [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
 - [[nova_backend/src/governor/capability_registry.py|capability_registry]]
 - [[nova_backend/src/governor/capability_topology.py|capability_topology]]
 - [[nova_backend/src/ledger/writer.py|writer]]
@@ -915,7 +917,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- _…and 53 more_
+- _…and 56 more_
 
 ### Tests
 
@@ -1189,7 +1191,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
 - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
-- _…and 14 more_
+- _…and 15 more_
 
 ### Tests
 
@@ -1776,6 +1778,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/governor/governor.py|governor]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
+- [[nova_backend/tests/certification/cap_16_governed_web_search/conftest.py|conftest - certification/cap_16_governed_web_search]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
 - [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]
@@ -1933,6 +1936,7 @@ _Websocket session runtime modules._
 - [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
+- [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
 
 ## `working_context` (11 files)
 
