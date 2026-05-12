@@ -931,7 +931,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 90d1e31f4a29cb975df010c6613d104703371e848aff06514d4e8669668b1e67
+  summary: Runtime Fingerprint: 5fdbe34e6109212a60cf2271ab1efdf6aa2716257b945d1b8119df252f8f138d
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +955,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 7a4e45037750ca7fba53ced3f0711223410e37ce66d8c96aed4b2885d8274cc6
+  summary: - runtimesurfacehash: ea96bfaa19d70a07cea9d5ef20330232788bbba635b465f4b05e10e974854af7
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1032,7 +1032,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 356 code)
+## Tests (5 docs, 366 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1085,10 +1085,21 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/__init__.py|tests/certification/cap_16_governed_web_search]]
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/conftest.py|conftest - certification/cap_16_governed_web_search]]
+  summary: Shared fixtures for Cap 16 certification tests.
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p1_unit.py|test_p1_unit - certification/cap_16_governed_web_search]]
+  summary: Phase 1 — Unit certification for capability 16 (governed_web_search).
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p2_routing.py|test_p2_routing - certification/cap_16_governed_web_search]]
+  summary: Phase 2 — Routing certification for capability 16 (governed_web_search).
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p3_integration.py|test_p3_integration - certification/cap_16_governed_web_search]]
+  summary: Phase 3 — Integration certification for capability 16 (governed_web_search).
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
+  summary: Phase 4 — API/WebSocket certification for capability 16 (governed_web_search).
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
-- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit]]
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit - certification/cap_64_send_email_draft]]
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
-- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing]]
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing - certification/cap_64_send_email_draft]]
   summary: Phase 2 — Routing certification for capability 64 (send_email_draft).
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration - certification/cap_64_send_email_draft]]
   summary: Phase 3 — Integration certification for capability 64 (send_email_draft).
@@ -1349,6 +1360,8 @@ concern is reflected across docs, code and tests.
   summary: class _ScriptedWebSocket:
 - [code] [[nova_backend/tests/phase45/conftest.py|conftest - tests/phase45]] - Phase 45
   summary: Resolve the Nova-Project root relative to this file's location.
+- [code] [[nova_backend/tests/phase45/dashboard_event_replay_harness.py|dashboard_event_replay_harness]] - Phase 45
+  summary: MANUAL_TURN_WIDGET_TYPES = {
 - [code] [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]] - Phase 45
   summary: ﻿from __future__ import annotations
 - [code] [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]] - Phase 45
@@ -1378,6 +1391,8 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/phase45/test_dashboard_capability_surface_widget.py|test_dashboard_capability_surface_widget]] - Phase 45
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_context_insight_widget.py|test_dashboard_context_insight_widget]] - Phase 45
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [code] [[nova_backend/tests/phase45/test_dashboard_event_replay_harness.py|test_dashboard_event_replay_harness]] - Phase 45
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_header_and_news_refinement.py|test_dashboard_header_and_news_refinement]] - Phase 45
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -1423,6 +1438,8 @@ concern is reflected across docs, code and tests.
   summary: def test_explain_anything_router_prefers_file_route_when_file_selected():
 - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]] - Phase 45
   summary: def test_failure_ladder_progression_to_offline_safe_mode():
+- [code] [[nova_backend/tests/phase45/test_non_search_widget_fuzzing.py|test_non_search_widget_fuzzing]] - Phase 45
+  summary: ---------------------------------------------------------------------------
 - [code] [[nova_backend/tests/phase45/test_obsidian_overlay_generator.py|test_obsidian_overlay_generator]] - Phase 45
   summary: Contract tests for the Obsidian overlay generator.
 - [code] [[nova_backend/tests/phase45/test_orb_contract.py|test_orb_contract]] - Phase 45
@@ -1731,6 +1748,8 @@ concern is reflected across docs, code and tests.
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
 - [code] [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
   summary: governance_refusal_for,
+- [code] [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
+  summary: Full-pipeline routing tests: InputNormalizer → session-layer patterns → governor.
 - [code] [[verification/check_quarantine_fixed.ps1|check_quarantine_fixed]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check (Fixed) ===" -ForegroundColor Cyan
 - [code] [[verification/governor_proof.py|governor_proof]]
@@ -1828,7 +1847,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (218 docs, 21 code)
+## Proofs (233 docs, 23 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -1856,6 +1875,10 @@ concern is reflected across docs, code and tests.
   summary: date": "2026-05-07",
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_diagnostics.json|browser_use_visual_capture_diagnostics]]
   summary: date": "2026-05-08",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/dashboard_event_replay_harness_results.json|dashboard_event_replay_harness_results]]
+  summary: proof": "dashboard_event_replay_harness",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-09/raw/non_search_widget_fuzzing_results.json|non_search_widget_fuzzing_results]]
+  summary: proof": "non_search_widget_fuzzing",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe.json|websocket_web_news_probe]]
   summary: id": "startup_greeting",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json|websocket_web_news_probe_corrected]]
@@ -1872,6 +1895,26 @@ concern is reflected across docs, code and tests.
   summary: ﻿# Capability Verification Audit
 - [doc] [[docs/PROOFS/COMPLETION/PHASE_3.5_COMPLETION/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - COMPLETION/PHASE_3.5_COMPLETION]]
   summary: complete Phase-3.5 scope, then a gap analysis, and then the Phase-4 Risk Map.
+- [doc] [[docs/PROOFS/Everyday-UX/EVERYDAY_UX_FRICTION_CLOSEOUT_2026-05-11|Everyday UX Friction — Workstream Closeout]]
+  summary: Date: 2026-05-11
+- [doc] [[docs/PROOFS/Everyday-UX/FRICTION_FIX_SLICE1_CHANGELOG_2026-05-10|Everyday UX Friction — Fix Slice 1 Changelog]]
+  summary: Branch: fix/everyday-ux-friction-slice-1
+- [doc] [[docs/PROOFS/Everyday-UX/FRICTION_FIX_SLICE3_CHANGELOG_2026-05-10|Everyday UX Friction — Fix Slice 3 Changelog]]
+  summary: Branch: fix/everyday-ux-friction-slice-1
+- [doc] [[docs/PROOFS/Everyday-UX/FRICTION_FIX_SLICE4_CHANGELOG_2026-05-10|Everyday UX Friction — Fix Slice 4 Changelog]]
+  summary: Branch: fix/everyday-ux-friction-slice-1
+- [doc] [[docs/PROOFS/Everyday-UX/FRICTION_FIX_SLICE8_CHANGELOG_2026-05-10|Everyday UX Friction — Slice 8 Changelog]]
+  summary: Branch: fix/everyday-ux-friction-slice-1
+- [doc] [[docs/PROOFS/Everyday-UX/FRICTION_FIX_SLICES5_7_CHANGELOG_2026-05-10|Everyday UX Friction — Fix Slices 5, 6, 7 Changelog]]
+  summary: Branch: fix/everyday-ux-friction-slice-1
+- [doc] [[docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10|Live Daily Workflow Test Plan — 2026-05-10]]
+  summary: Priority lock: docs/status/ACTIVEPRIORITYLOCK2026-05-10EVERYDAYUXFRICTION.md
+- [doc] [[docs/PROOFS/Everyday-UX/LIVE_WORKFLOW_BASELINE_EVIDENCE_2026-05-10|Live Workflow Baseline Evidence — 2026-05-10]]
+  summary: Branch: proof/everyday-ux-live-workflow-baseline
+- [doc] [[docs/PROOFS/Everyday-UX/README|Everyday UX Proofs]]
+  summary: This folder contains live workflow testing and friction evidence for the Everyday UX
+- [doc] [[docs/PROOFS/Everyday-UX/VERIFICATION_SLICE1_POST_MERGE_2026-05-10|Everyday UX Friction Slice 1 — Post-Merge Verification]]
+  summary: Branch: proof/everyday-ux-friction-slice-1-verification
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
   summary: Governor Bypass Proof Document
 - [doc] [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCK.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]]
@@ -2188,10 +2231,14 @@ concern is reflected across docs, code and tests.
   summary: Status: draft / review required
 - [doc] [[docs/PROOFS/UI-Commands/cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08|Browser Use Visual Capture Recovery - 2026-05-08]]
   summary: Status: blocked / setup-required
+- [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_EVENT_REPLAY_HARNESS_2026-05-08|Dashboard Event Replay Harness Proof - 2026-05-08]]
+  summary: Status: proof added / deterministic replay only
 - [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
   summary: Status: pass / screenshot proof still blocked
 - [doc] [[docs/PROOFS/UI-Commands/cases/MALFORMED_WIDGET_PAYLOAD_PROOF_2026-05-07|Malformed Widget Payload Proof - 2026-05-07]]
   summary: Status: partial pass / screenshot proof blocked
+- [doc] [[docs/PROOFS/UI-Commands/cases/NON_SEARCH_WIDGET_FUZZING_2026-05-09|Non-Search Widget Fuzzing Proof - 2026-05-09]]
+  summary: Status: proof added / deterministic contract verification only
 - [doc] [[docs/PROOFS/UI-Commands/cases/RAPID_CLICK_DOUBLE_SUBMIT_PROOF_2026-05-07|Rapid Click / Double Submit Proof - 2026-05-07]]
   summary: Status: contract pass / screenshot proof blocked
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/browser_use_failure.txt|browser_use_failure]]
@@ -2214,8 +2261,14 @@ concern is reflected across docs, code and tests.
   summary: Command:
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt|browser_use_visual_capture_recovery_attempt]]
   summary: Browser Use visual capture recovery attempt - 2026-05-08
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/dashboard_event_replay_pytest_results.txt|dashboard_event_replay_pytest_results]]
+  summary: Command:
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-09/raw/non_search_widget_fuzzing_pytest_results.txt|non_search_widget_fuzzing_pytest_results]]
+  summary: Command:
 - [doc] [[docs/PROOFS/UI-Commands/FRICTION_LOG|UI / Commands Friction Log - 2026-05-06]]
   summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/LIVE_MANUAL_UI_VERIFICATION_PLAN_2026-05-09|Live Manual UI Verification Plan - 2026-05-09]]
+  summary: Status: pre-simplification baseline / current UI only / results not yet recorded
 - [doc] [[docs/PROOFS/UI-Commands/MASTER_UI_VERIFICATION_MATRIX_2026-05-07|Master UI / Button / Command Verification Matrix - 2026-05-07]]
   summary: Status: active matrix / evidence-backed partial coverage
 - [doc] [[docs/PROOFS/UI-Commands/README|UI / Buttons / Commands Proof Package]]
@@ -2305,7 +2358,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (387 docs, 30 code)
+## Reference (400 docs, 30 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2366,7 +2419,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[.agent_context/brain_loop|Brain Loop Context]]
   summary: Nova's proposed Brain loop is:
 - [doc] [[.agent_context/current_priority|Current Priority]]
-  summary: Current priority:
+  summary: Current active task:
 - [doc] [[.agent_context/environments|Environment Context]]
   summary: Nova's Brain should reason about environments before execution.
 - [doc] [[.agent_context/governance|Governance Context]]
@@ -2449,6 +2502,14 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-25
 - [doc] [[docs/audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26|Nova OpenClaw Docs-To-Code Alignment Audit]]
   summary: Date: 2026-04-26
+- [doc] [[docs/audits/PASS1_RUNTIME_AND_OPENCLAW_AUDIT_2026-05-11|PASS 1 — Runtime / Generated Truth / OpenClaw Audit]]
+  summary: Date: 2026-05-11
+- [doc] [[docs/audits/PASS3_FULL_ALIGNMENT_AUDIT_2026-05-11|Full Repo / Doc / Code Alignment Audit]]
+  summary: Date: 2026-05-11
+- [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
+  summary: Date: 2026-05-11
+- [doc] [[docs/audits/PATCH_ROADMAP_2026-05-11|Audit Patch Roadmap]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
 - [doc] [[docs/brain|Nova Brain]]
@@ -2483,6 +2544,8 @@ concern is reflected across docs, code and tests.
   summary: This is a platform/runtime verification slice, not a numbered governed action capability. It covers:
 - [doc] [[docs/capability_verification/basic_user_command_simulation_2026-04-22|Basic User Command Simulation - 2026-04-22]]
   summary: Live WebSocket simulation of first-user style commands:
+- [doc] [[docs/capability_verification/cap_16_governed_web_search_certification_2026-05-10|Cap 16 Governed Web Search — Certification Proof Packet]]
+  summary: Date: 2026-05-10
 - [doc] [[docs/capability_verification/cap_16_governed_web_search_simulation_2026-04-23|Capability 16 - Governed Web Search Simulation - 2026-04-23]]
   summary: Live WebSocket and automated verification for governedwebsearch.
 - [doc] [[docs/capability_verification/capability_gap_map_2026-04-23|Capability Gap Map - 2026-04-23]]
@@ -2719,6 +2782,8 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-28
 - [doc] [[docs/future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN|Nova Conversation Coherence Layer Plan]]
   summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11|Nova Creator-Led Shopify POD Model]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/future/NOVA_ECOMMERCE_OPERATOR_END_STATE_PLAN_2026-04-30|Nova E-Commerce Operator End-State Plan]]
   summary: Date: 2026-04-30
 - [doc] [[docs/future/NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN|Nova ElevenLabs Voice Integration Plan]]
@@ -2747,6 +2812,8 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_GOOGLE_CONNECTOR_MODEL|Nova Google Connector Model]]
   summary: This document defines the recommended Google integration path for Nova.
+- [doc] [[docs/Future/NOVA_GOVERNED_AUTONOMY_DIRECTION_2026-05-11|Nova Governed Autonomy — Direction Record]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/future/NOVA_GOVERNED_LEARNING_PLAN|Nova Governed Learning Plan]]
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE|Nova Governed Media and E-Commerce Engine]]
@@ -2797,6 +2864,8 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_TRUST_SPANS_TRACE_CARDS_PLAN_2026-04-27|Nova Trust Spans / Trace Cards Plan]]
   summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11|Nova Two-Domain Direction]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/future/NOVA_USER_FACING_LANGUAGE_GUIDE_2026-04-28|Nova User-Facing Language Guide]]
   summary: Date: 2026-04-28
 - [doc] [[docs/future/NOVA_VOICE_FIRST_ASSISTANT_DIRECTION|Nova Voice-First Assistant Direction]]
@@ -2841,6 +2910,8 @@ concern is reflected across docs, code and tests.
   summary: Use this page to find the right document quickly.
 - [doc] [[docs/integrations/youtubelis/README|YouTubeLIS Integration Concept]]
   summary: YouTubeLIS is a proposed governed content-production workflow for NovaLIS.
+- [doc] [[docs/nova-conversation-response-contract|Nova Conversation Response Contract]]
+  summary: Branch: docs/nova-conversation-response-contract
 - [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
   summary: Status: planning document
 - [doc] [[docs/product/AURALIS_INTERFACE_PLAN|Auralis Interface Plan]]
@@ -3007,12 +3078,16 @@ concern is reflected across docs, code and tests.
   summary: Status: active / MVP implementation in progress.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
   summary: Status: qualified closed as of 2026-05-07.
+- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION|Active Priority Lock — 2026-05-10 Everyday UX Friction]]
+  summary: Status: active
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-08 (Browser Use visual capture recovery attempt)
+  summary: Last reviewed: 2026-05-11
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
   summary: Status: complete / awaiting next reviewed priority lock
+- [doc] [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
+  summary: Status: substantially reduced / visual proof blocked / closeout-ready
 - [doc] [[docs/status/README|Status Notes]]
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
@@ -3021,12 +3096,16 @@ concern is reflected across docs, code and tests.
   summary: Status: merged / display-only / non-authorizing / follow-ups tracked
 - [doc] [[docs/status/TRUST_REVIEW_CARD_MVP_STATUS_2026-05-07|Trust Review Card MVP Status - 2026-05-07]]
   summary: Status: implementation proof / review required
+- [doc] [[docs/status/UI_SIMPLIFICATION_INVENTORY_2026-05-09|UI Simplification Inventory - 2026-05-09]]
+  summary: Status: inventory / product-direction corrected 2026-05-09 / no runtime changes in this branch
 - [doc] [[docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07|Web / News / UI Proof Lock Closeout Review - 2026-05-07]]
   summary: Status: qualified closeout / screenshot proof explicitly blocked
+- [doc] [[docs/status/WORK_STYLE_ENFORCEMENT_LOCK_2026-05-11|Work Style Enforcement Lock]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
   summary: Status: operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06TRUSTREVIEWCARDMVP.md
+  summary: Last reviewed: 2026-05-11
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
