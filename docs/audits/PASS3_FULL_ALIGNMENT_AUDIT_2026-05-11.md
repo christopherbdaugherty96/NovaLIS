@@ -92,6 +92,21 @@ confirmed hard-blocked in this audit. The flag-off branch body was not fully rea
 Warrants a targeted inspection: if the deprecated path can still execute when the flag is
 set, that is a governance boundary violation.
 
+**SCOPE LIMIT — this Area 3 pass is import/keyword-level only.** The following were not
+inspected in PASS3 and are carried forward to `PASS1_RUNTIME_AND_OPENCLAW_AUDIT_
+2026-05-11.md` as higher-priority governance concerns:
+
+- `OpenClawAgentRunner.run_goal()` body — whether tool selection is filtered or freeform
+- `ExecutorSkillAdapter.execute()` — whether it traverses GovernorMediator/Governor/
+  CapabilityRegistry/SingleActionQueue/ExecuteBoundary, or calls executor directly
+- `/api/openclaw/approve-action` — whether auto-allow (`approval_state = auto_allowed`)
+  is constrained or can approve mutation-capable actions without review
+- ThinkingLoop tool allowlist — whether mutation-capable registry tools are blocked
+- Scheduler and remote bridge reachability via the freeform goal path
+
+These are the highest-priority governance follow-ups from the combined audit.
+See `PATCH_ROADMAP_2026-05-11.md` item P1-GOV.
+
 ---
 
 ## Area 4 — UI/WebSocket/Routing Audit
@@ -244,17 +259,45 @@ Gmail API, no Calendar API runtime connector exists."
 
 ## Overall Verdict
 
-The repo is in a sound governance state. The Everyday UX Friction implementation is clean.
-Routing fixes are correctly coded and documented. No governance bypasses found. No
-unapproved capability expansion. No false runtime authority claims in future docs (for the
-ones that were verified).
+**Scope of this pass:** Areas 1–2 and 4–8 (routing, registry, future docs, stale docs,
+proof/CI, cross-cutting). Area 3 (governance/bypass) was scoped to import-path and
+keyword analysis only. The deeper OpenClaw freeform goal execution path — `run_goal()`,
+`ExecutorSkillAdapter`, `/api/openclaw/approve-action`, mutation-capable tool registry,
+scheduler reachability, and remote bridge reachability — was not fully inspected in this
+pass. That inspection is documented in `PASS1_RUNTIME_AND_OPENCLAW_AUDIT_2026-05-11.md`.
 
-The gaps found are documentation hygiene and generator lag — not implementation violations
-or authority drift.
+**Routing and UX layer:** Clean. RC-7 fix is correctly coded and documented.
+PHRASE_NORMALIZATION does not conflict with HELP_ORIENT_RE. No routing bypasses found.
 
-**Primary blocker for next push:** Re-run `scripts/generate_runtime_docs.py` and commit
-the 10 stale files. CI will fail without this.
+**Capability registry:** 27 capabilities consistent across registry and runtime docs.
+Cap 16, 64, 65 correctly described. One metadata gap: Cap 16 `authority_scope` absent.
 
-**Secondary items:** Two stale status docs need a "superseded" label or status update.
-One registry field missing. One OpenClaw deprecated path warrants a targeted inspection.
+**Future docs (verified subset):** Three docs carry correct planning-only headers. Six
+Google connector docs unverified — labeling pass required before claiming the full set
+is clean.
+
+**Stale docs:** Two status docs need labels updated. Not blocking but creates split-truth
+risk for future contributors.
+
+**Governance summary (this pass only):**
+No confirmed governance bypass found in the areas this pass inspected (import paths,
+session handler routing, keyword grep). However, `PASS1_RUNTIME_AND_OPENCLAW_AUDIT_
+2026-05-11.md` identifies an unresolved potential bypass surface in the OpenClaw freeform
+goal execution path. That finding cannot be dismissed by this pass. The correct combined
+classification is:
+
+```text
+No confirmed unrestricted autonomous execution exploit found.
+However, PASS1 identifies a potential OpenClaw governance bypass surface in the freeform
+goal lane (run_goal / ExecutorSkillAdapter / approve-action auto-allow) that remains
+unresolved and must be inspected before any strong governance-safety claim is made.
+```
+
+**Primary blocker for next push (CI):** Re-run `scripts/generate_runtime_docs.py` and
+commit the 10 stale files. CI `runtime-docs` workflow will fail without this.
+
+**Primary blocker for next implementation (governance):** OpenClaw freeform goal
+inspection — see `PATCH_ROADMAP_2026-05-11.md` item P1-GOV.
+
+**Secondary items:** Two stale status docs need labels. One registry field missing.
 Google connector future docs need a labeling pass.
