@@ -2,7 +2,7 @@
 
 **Version 0.5 Alpha — Current State**
 
-NovaLIS is a governance-first local AI system designed to separate intelligence from execution.
+NovaLIS is a governance-first local AI platform designed to separate intelligence from execution.
 
 Nova focuses on what the system is allowed to do, how actions are routed, and how real execution stays visible, bounded, reviewable, and auditable.
 
