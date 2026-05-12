@@ -565,6 +565,7 @@ names. Use this to see what shipped (or is planned) for each phase.
 
 - [code] [[nova_backend/tests/phase45/_websocket_test_helpers.py|_websocket_test_helpers]]
 - [code] [[nova_backend/tests/phase45/conftest.py|conftest - tests/phase45]]
+- [code] [[nova_backend/tests/phase45/dashboard_event_replay_harness.py|dashboard_event_replay_harness]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_memory_and_continuity.py|test_brain_server_memory_and_continuity]]
@@ -580,6 +581,7 @@ names. Use this to see what shipped (or is planned) for each phase.
 - [code] [[nova_backend/tests/phase45/test_dashboard_calendar_integration.py|test_dashboard_calendar_integration]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_capability_surface_widget.py|test_dashboard_capability_surface_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_context_insight_widget.py|test_dashboard_context_insight_widget]]
+- [code] [[nova_backend/tests/phase45/test_dashboard_event_replay_harness.py|test_dashboard_event_replay_harness]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_header_and_news_refinement.py|test_dashboard_header_and_news_refinement]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_intelligence_brief_widget.py|test_dashboard_intelligence_brief_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_memory_widget.py|test_dashboard_memory_widget]]
@@ -602,6 +604,7 @@ names. Use this to see what shipped (or is planned) for each phase.
 - [code] [[nova_backend/tests/phase45/test_dashboard_workspace_home_widget.py|test_dashboard_workspace_home_widget]]
 - [code] [[nova_backend/tests/phase45/test_explain_anything_router.py|test_explain_anything_router]]
 - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
+- [code] [[nova_backend/tests/phase45/test_non_search_widget_fuzzing.py|test_non_search_widget_fuzzing]]
 - [code] [[nova_backend/tests/phase45/test_obsidian_overlay_generator.py|test_obsidian_overlay_generator]]
 - [code] [[nova_backend/tests/phase45/test_orb_contract.py|test_orb_contract]]
 - [code] [[nova_backend/tests/phase45/test_personality_interface_contract.py|test_personality_interface_contract]]
