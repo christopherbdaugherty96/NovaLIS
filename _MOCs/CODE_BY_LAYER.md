@@ -570,7 +570,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (367)
+## Tests and verification (366)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -844,8 +844,6 @@ Use this to orient yourself before diving into a specific module.
   summary: Tests for ExecutorSkillAdapter — generic executor-to-skill bridge.
 - [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
   summary: ProjectForemanBriefInput,
-- [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
-  summary: Governance tests for the OpenClaw freeform goal execution path.
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
   summary: def _install_stores(monkeypatch, tmp_path):
 - [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]

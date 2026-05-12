@@ -130,7 +130,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (949)
+## docs (951)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -408,6 +408,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/PASS3_FULL_ALIGNMENT_AUDIT_2026-05-11|Full Repo / Doc / Code Alignment Audit]]
   summary: Date: 2026-05-11
+- [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/audits/PATCH_ROADMAP_2026-05-11|Audit Patch Roadmap]]
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
@@ -535,7 +537,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 3aa5ffca32a9b424fc1d62a234488a3184586c64c8de7823b5462c60354b3221
+  summary: Runtime Fingerprint: 5fdbe34e6109212a60cf2271ab1efdf6aa2716257b945d1b8119df252f8f138d
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -559,7 +561,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 3f1af40ba50450b2e3258de8df47795359065799dfaaf5de6e29a5cf07510e43
+  summary: - runtimesurfacehash: ea96bfaa19d70a07cea9d5ef20330232788bbba635b465f4b05e10e974854af7
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1197,6 +1199,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_GOOGLE_CONNECTOR_MODEL|Nova Google Connector Model]]
   summary: This document defines the recommended Google integration path for Nova.
+- [doc] [[docs/Future/NOVA_GOVERNED_AUTONOMY_DIRECTION_2026-05-11|Nova Governed Autonomy — Direction Record]]
+  summary: Date: 2026-05-11
 - [doc] [[docs/future/NOVA_GOVERNED_LEARNING_PLAN|Nova Governed Learning Plan]]
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE|Nova Governed Media and E-Commerce Engine]]
@@ -2132,7 +2136,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (674)
+## nova_backend (673)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -3009,8 +3013,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Tests for ExecutorSkillAdapter — generic executor-to-skill bridge.
 - [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
   summary: ProjectForemanBriefInput,
-- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
-  summary: Governance tests for the OpenClaw freeform goal execution path.
 - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
   summary: def _install_stores(monkeypatch, tmp_path):
 - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]

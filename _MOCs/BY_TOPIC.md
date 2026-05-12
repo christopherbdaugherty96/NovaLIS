@@ -54,7 +54,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/governance/test_cognitive_layer_contract.py|test_cognitive_layer_contract]]
 - [code] [[nova_backend/tests/governance/test_cognitive_modules_analysis_only.py|test_cognitive_modules_analysis_only]]
 - [code] [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
-- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
 - [code] [[nova_backend/tests/adversarial/test_governor_bypass.py|test_governor_bypass]]
 - [code] [[nova_backend/tests/test_governor_execution_timeout.py|test_governor_execution_timeout]]
 - [code] [[nova_backend/tests/test_governor_fail_closed.py|test_governor_fail_closed]]
@@ -127,6 +126,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/future/openclaw_sovereign_governance|NovaLIS Architectural Hardening Plan - Sovereign Governance Over OpenClaw]]
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
 - [doc] [[NovaLIS-Governance/README|NovaLIS Governance]]
+- [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
 - [doc] [[docs/PROOFS/phase 3.5-4/Phase 3.5 Governance Verification |Phase 3.5 Governance Verification]]
 - [doc] [[docs/PROOFS/Phase-6/PHASE_6_LOCAL_SURFACE_HARDENING_AND_GOVERNANCE_TRUTH_ALIGNMENT_2026-03-28|Phase 6 Local Surface Hardening And Governance Truth Alignment]]
 - [doc] [[docs/PROOFS/Phase-5/PHASE_5_MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-13|Phase-5 Memory Governance Ratification Act]]
@@ -192,7 +192,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
 - [code] [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
-- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
 - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [code] [[nova_backend/tests/test_openclaw_agent_api.py|test_openclaw_agent_api]]
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
@@ -249,6 +248,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/PROOF_INDEX|OpenClawMediator Skeleton Proof - 2026-05-06]]
 - [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/REPORT|OpenClawMediator Skeleton Report - 2026-05-06]]
 - [doc] [[docs/audits/PASS1_RUNTIME_AND_OPENCLAW_AUDIT_2026-05-11|PASS 1 — Runtime / Generated Truth / OpenClaw Audit]]
+- [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
 - [doc] [[docs/PROOFS/Phase-7/PHASE_7_OPENCLAW_HOME_AGENT_FOUNDATION_RUNTIME_SLICE_2026-03-26|Phase 7 - OpenClaw Home Agent Foundation Runtime Slice]]
 - [doc] [[docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25|Phase 8 OpenClaw Canonical Governed Automation Spec]]
 - [doc] [[docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN|Phase 8 OpenClaw Governed Execution Plan]]
@@ -540,7 +540,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (708)
+## testing (707)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -711,7 +711,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/executors/test_external_reasoning_executor.py|test_external_reasoning_executor]]
 - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
 - [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
-- [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
 - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
 - [code] [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
 - [code] [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
