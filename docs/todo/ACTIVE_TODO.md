@@ -7,10 +7,17 @@ Last reviewed: 2026-05-11
 ## Current Active Task
 
 ```text
-Status / continuity synchronization after PR #144-#148.
+Post-audit continuity synchronization after PR #152-#156.
 ```
 
-No runtime implementation priority is selected until this continuity synchronization lands.
+Scope:
+
+```text
+continuity docs only
+no runtime implementation
+no capability expansion
+no authority expansion
+```
 
 ---
 
@@ -23,7 +30,24 @@ PR #145 — Work Style Enforcement Lock merged.
 PR #146 — Creator-led Shopify/POD future direction merged.
 PR #147 — Nova two-domain product direction merged.
 PR #148 — Piper-first voice direction merged.
+PR #149 — Current status / continuity synchronization merged.
+PR #150 — Audit-first safety boundary merged.
+PR #152 — Full repo/doc/code alignment audit artifacts merged.
+PR #153 — PASS4 OpenClaw freeform-goal inspection merged.
+PR #154 — OpenClaw PATCH A-D hardening merged.
+PR #156 — Search stopword cleanup merged.
 ```
+
+---
+
+## Closed / Not Merged
+
+```text
+PR #151 — continuity sync branch closed unmerged.
+PR #155 — runtime docs regeneration closed unmerged.
+```
+
+Generated runtime docs likely still require a dedicated regeneration PR.
 
 ---
 
@@ -37,6 +61,12 @@ Scope:
 WS transport / frontend render investigation only.
 No capability changes.
 No authority changes.
+```
+
+Priority:
+
+```text
+likely first runtime implementation follow-up after continuity/runtime-doc sync
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -69,6 +99,50 @@ test-only change
 
 ---
 
+## Current Governance Truth Notes
+
+```text
+OpenClaw is implemented runtime code, not planning-only.
+```
+
+PR #154 narrowed the freeform-goal execution surface through:
+
+```text
+read-only tool allowlist
+mutation-tool exclusion
+MeteredNetworkProxy enforcement
+conservative network-call budgeting
+governance regression tests
+```
+
+This does not authorize:
+
+```text
+broad autonomy
+browser/computer-use expansion
+external writes
+OpenClaw authority expansion
+```
+
+---
+
+## Active / Certified / Locked Discipline
+
+```text
+active != certified != locked
+```
+
+Current lock truth:
+
+```text
+Cap 16 — locked.
+Cap 64 — P5 pending.
+Cap 65 — P5 pending.
+Most active capabilities — certification phases pending.
+```
+
+---
+
 ## Queued / Not Active Without Separate Reviewed Priority Lock
 
 ```text
@@ -87,61 +161,13 @@ autonomous workflow execution
 
 ---
 
-## Direction Records Now Merged
-
-### Creator-business operational intelligence direction
-
-```text
-merged / planning-only
-```
-
-Nova direction now explicitly includes:
-
-```text
-creator-business operational intelligence
-Shopify/POD future workflow direction
-marketing analytics visibility
-finance visibility
-```
-
-without approving runtime authority expansion.
-
-### Nova two-domain product direction
-
-```text
-merged / planning-only
-```
-
-Nova is now explicitly documented as:
-
-```text
-Governed local-first operational intelligence for:
-1. everyday life/home/voice assistance
-2. creator-business operations
-```
-
-### Piper-first voice direction
-
-```text
-merged / planning-only
-```
-
-Current intended voice direction:
-
-```text
-Piper = current/default local TTS path
-ElevenLabs = future optional cloud voice
-```
-
----
-
 ## Preserved Boundaries
 
 ```text
 Intelligence is not authority.
 ```
 
-The recent direction merges do not approve:
+The recent audit and hardening merges do not approve:
 
 - Shopify writes
 - autonomous execution
@@ -157,4 +183,9 @@ The recent direction merges do not approve:
 
 ## Next Correct Step
 
-Complete review and merge of the continuity synchronization branch before selecting a new runtime implementation priority.
+```text
+1. Merge this continuity synchronization branch.
+2. Create a dedicated runtime-doc regeneration PR.
+3. Run targeted OpenClaw governance regression verification.
+4. Then select one scoped runtime follow-up.
+```
