@@ -13,20 +13,16 @@ Generated runtime docs and actual code win if they conflict with this note.
 ## Current Active Task
 
 ```text
-Status / continuity synchronization after PR #144-#148.
+Post-audit continuity synchronization after PR #152-#156.
 ```
 
-No runtime implementation priority is selected until this continuity synchronization lands.
+This is a docs-only continuity synchronization task.
 
-This sync exists because the repo moved beyond older priority notes:
+No runtime implementation priority is selected until:
 
 ```text
-PR #134 — Cap 16 governed_web_search certification locked.
-PR #144 — Everyday UX Friction workstream closed.
-PR #145 — Work Style Enforcement Lock merged.
-PR #146 — Creator-led Shopify/POD future model merged.
-PR #147 — Nova two-domain product direction merged.
-PR #148 — Piper-first voice direction merged.
+1. continuity docs are synchronized
+2. generated runtime docs are regenerated from current main
 ```
 
 ---
@@ -53,8 +49,6 @@ closed — PR #144
 
 Closeout: `docs/PROOFS/Everyday-UX/EVERYDAY_UX_FRICTION_CLOSEOUT_2026-05-11.md`
 
-The workstream fixed routing and response-shape friction, added full-pipeline session tests, and carried forward three scoped follow-ups as issues.
-
 ### Work Style Enforcement Lock
 
 Status:
@@ -63,45 +57,77 @@ Status:
 merged — PR #145
 ```
 
-Source: `docs/status/WORK_STYLE_ENFORCEMENT_LOCK_2026-05-11.md`
-
 This governs AI-assisted repo work style only. It does not add runtime authority.
 
-### Creator-led Shopify/POD future model
+### Full repo/doc/code alignment audit
 
 Status:
 
 ```text
-merged — PR #146 / future planning only
+merged — PR #152
 ```
 
-Source: `docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md`
+The audit confirmed:
 
-This records Shopify/POD business-intelligence direction only. Cap 65 remains read-only; Shopify writes are not approved.
+```text
+- governance spine remains structurally present
+- OpenClaw is implemented runtime code, not planning-only
+- runtime/generated-truth drift existed
+- active != certified != locked
+- continuity/status docs became stale after later merges
+```
 
-### Nova two-domain product direction
+### PASS4 OpenClaw freeform-goal inspection
 
 Status:
 
 ```text
-merged — PR #147 / future planning only
+merged — PR #153
 ```
 
-Source: `docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md`
+The inspection identified a real freeform-goal governance gap in the unrestricted ToolRegistry exposure path.
 
-This records Nova as a governed local-first operational intelligence platform for everyday life and creator-business operations. It does not add runtime authority.
-
-### Piper-first voice direction
+### OpenClaw PATCH A-D hardening
 
 Status:
 
 ```text
-merged — PR #148 / future planning only
+merged — PR #154
 ```
 
-Source: `docs/future/NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN.md`
+Merged hardening included:
 
-Piper is the current/default local TTS direction. ElevenLabs remains future optional cloud voice only.
+```text
+- read-only freeform-goal tool allowlist
+- mutation-tool exclusion
+- explicit screen_capture exclusion
+- MeteredNetworkProxy enforcement
+- conservative network-call budgeting
+- targeted governance regression tests
+```
+
+This does not authorize broad autonomy, browser/computer-use expansion, or external writes.
+
+### Search stopword cleanup
+
+Status:
+
+```text
+merged — PR #156
+```
+
+Search phrase cleanup landed without runtime authority expansion.
+
+---
+
+## Closed / Unmerged Follow-Through
+
+```text
+PR #151 — continuity sync branch closed unmerged.
+PR #155 — runtime docs regeneration closed unmerged.
+```
+
+Generated runtime docs therefore still likely require a dedicated regeneration/synchronization PR.
 
 ---
 
@@ -113,7 +139,13 @@ Piper is the current/default local TTS direction. ElevenLabs remains future opti
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-These do not authorize capability expansion, authority expansion, browser/computer-use, external writes, or autonomous workflows.
+The likely first runtime implementation follow-up remains:
+
+```text
+#141 — live WebSocket search-widget render investigation.
+```
+
+but only after continuity/runtime-doc synchronization is complete.
 
 ---
 
@@ -138,11 +170,12 @@ autonomous workflow execution
 ## Implemented Runtime / Code Truth Snapshot
 
 - Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
-- Cap 16 governed web search is certified and locked.
+- Cap 16 governed_web_search is certified and locked.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
+- OpenClaw is active runtime code with bounded/manual-first execution surfaces.
+- PR #154 narrowed the OpenClaw freeform-goal path to a read-only allowlisted tool surface.
 - Trust Review Card remains display-only and non-authorizing.
-- OpenClaw proof/mediator work remains bounded, non-authorizing, and not an approval for broad automation.
 - Browser Use visual proof remains blocked/setup-required and is not Nova runtime browser/computer-use authority.
 
 ---
@@ -153,7 +186,7 @@ autonomous workflow execution
 Intelligence is not authority.
 ```
 
-No recent docs merge authorizes:
+No recent merge authorizes:
 
 - autonomous execution
 - hidden background work
@@ -169,4 +202,9 @@ No recent docs merge authorizes:
 
 ## Next Correct Step
 
-Finish and review this continuity sync branch before any new implementation branch.
+```text
+1. Merge this continuity sync.
+2. Regenerate runtime docs from current main in a separate PR.
+3. Run targeted OpenClaw governance regression verification.
+4. Then select one scoped runtime follow-up.
+```
