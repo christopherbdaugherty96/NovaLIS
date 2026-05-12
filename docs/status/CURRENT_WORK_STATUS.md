@@ -13,16 +13,23 @@ Generated runtime docs and actual code win if they conflict with this note.
 ## Current Active Task
 
 ```text
-Post-audit continuity synchronization after PR #152-#156.
+Generated runtime-doc regeneration after PR #152-#158.
 ```
 
-This is a docs-only continuity synchronization task.
+Status:
+
+```text
+TODO tracked by PR #158.
+Generator has not yet been run.
+```
+
+This is a generated-output synchronization task only.
 
 No runtime implementation priority is selected until:
 
 ```text
-1. continuity docs are synchronized
-2. generated runtime docs are regenerated from current main
+1. generated runtime docs are regenerated from current main
+2. runtime-doc drift verification is complete
 ```
 
 ---
@@ -118,6 +125,33 @@ merged — PR #156
 
 Search phrase cleanup landed without runtime authority expansion.
 
+### Post-audit continuity synchronization
+
+Status:
+
+```text
+merged — PR #157
+```
+
+Main continuity/status docs synchronized after PR #152-#156.
+
+### Runtime-doc regeneration TODO tracking
+
+Status:
+
+```text
+merged — PR #158
+```
+
+Records:
+
+```text
+- PR #155 closed unmerged
+- runtime docs still require generator run
+- exact regeneration commands
+- generated-files-only scope
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
@@ -127,7 +161,7 @@ PR #151 — continuity sync branch closed unmerged.
 PR #155 — runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs therefore still likely require a dedicated regeneration/synchronization PR.
+Generated runtime docs therefore still require a dedicated regeneration/synchronization PR.
 
 ---
 
@@ -145,7 +179,7 @@ The likely first runtime implementation follow-up remains:
 #141 — live WebSocket search-widget render investigation.
 ```
 
-but only after continuity/runtime-doc synchronization is complete.
+but only after generated runtime-doc synchronization is complete.
 
 ---
 
@@ -203,8 +237,10 @@ No recent merge authorizes:
 ## Next Correct Step
 
 ```text
-1. Merge this continuity sync.
-2. Regenerate runtime docs from current main in a separate PR.
-3. Run targeted OpenClaw governance regression verification.
-4. Then select one scoped runtime follow-up.
+1. Run scripts/generate_runtime_docs.py on current main-derived branch.
+2. Run scripts/check_runtime_doc_drift.py.
+3. Inspect generated diffs.
+4. Open generated-docs-only PR.
+5. Then run targeted OpenClaw governance regression verification.
+6. Then select one scoped runtime follow-up.
 ```

@@ -1,15 +1,32 @@
 # Audit Patch Roadmap
 
+Status update after PR #158:
+
+```text
+P1-GOV was addressed by PR #153 and PR #154.
+P1-CI / runtime-doc regeneration remains open because PR #155 closed unmerged and PR #158 only tracked the TODO.
+This roadmap is historical unless explicitly referenced by current priority docs.
+```
+
 **Date:** 2026-05-11
 **Source:** PASS1_RUNTIME_AND_OPENCLAW_AUDIT_2026-05-11.md + PASS3_FULL_ALIGNMENT_AUDIT_2026-05-11.md
-**Branch this roadmap targets:** audit/full-repo-doc-code-alignment
+**Historical branch targeted by this roadmap:** audit/full-repo-doc-code-alignment
 
-Each item below is a proposed narrow patch. None are authorized to begin without a separate
+Each item below was a proposed narrow patch at the time of the audit. None are authorized to begin without a separate
 reviewed priority lock unless the item is docs-only and explicitly scoped below.
 
 ---
 
-## P1-GOV — OpenClaw freeform goal governance inspection (HIGHEST GOVERNANCE PRIORITY)
+## P1-GOV — OpenClaw freeform goal governance inspection (HIGHEST GOVERNANCE PRIORITY AT TIME OF AUDIT)
+
+Historical outcome:
+
+```text
+PASS4 inspection merged in PR #153.
+PATCH A-D hardening merged in PR #154.
+```
+
+Original audit scope retained below for historical traceability.
 
 **Type:** governance inspection → likely fix
 **Branch:** `audit/openclaw-freeform-goal-inspection`
@@ -37,22 +54,22 @@ reviewed priority lock unless the item is docs-only and explicitly scoped below.
 - Assert each is rejected, or confirm which governance layer mediates it
 - Document the exact traversal path with line references
 
-**Merge gate:** Either (a) inspection confirms path is already hard-blocked with evidence,
+**Merge gate at time of audit:** Either (a) inspection confirms path is already hard-blocked with evidence,
 or (b) a hard-block patch is implemented and tested.
-**Note:** No strong governance-safety claim about OpenClaw can be made until this lands.
 
 ---
 
-## P1-CI — Runtime docs regeneration (BLOCKS CI)
+## P1-CI — Runtime docs regeneration (CURRENTLY STILL OPEN)
 
 **Type:** generator/docs
-**Branch:** `docs/regenerate-runtime-docs`
-**Scope:** Run `scripts/generate_runtime_docs.py`, commit the 10 stale files.
+**Current task branch:** `docs/regenerate-runtime-docs-post-openclaw-hardening`
+**Historical branch in original roadmap:** `docs/regenerate-runtime-docs`
+**Scope:** Run `scripts/generate_runtime_docs.py`, commit the stale generated files.
 **Files:** `docs/current_runtime/CURRENT_RUNTIME_STATE.md`,
-`docs/current_runtime/RUNTIME_FINGERPRINT.md`, all 8 `_MOCs/*.md`
+`docs/current_runtime/RUNTIME_FINGERPRINT.md`, all generated `_MOCs/*.md`
 **Blocked:** No capability changes. No code changes. Generator run only.
 **Merge gate:** `runtime-docs` CI passes.
-**Note:** This must land before any next implementation PR can pass CI cleanly.
+**Current status:** TODO tracked by PR #158. Generator has not yet been run.
 
 ---
 
@@ -137,22 +154,18 @@ audit branch itself.
 
 ---
 
-## Ordering Recommendation
+## Historical ordering recommendation
 
 ```text
-1. P1-GOV (openclaw freeform goal inspection) — highest governance priority; no strong
-   safety claim can be made until this is resolved
-2. P1-CI (docs/regenerate-runtime-docs) — blocks CI on all future pushes; can run in
-   parallel with P1-GOV if it stays docs-only
-3. P3 (docs/stale-status-doc-labels) — small, safe; can be batched with P1-CI
-4. P2a (fix/cap16-authority-scope-registry) — one-line registry addition; low risk
-5. P4 (docs/google-connector-planning-labels) — labeling pass; low priority
-6. P5 (test verification) — run before next implementation PR
+1. P1-GOV (openclaw freeform goal inspection)
+2. P1-CI (docs/regenerate-runtime-docs)
+3. P3 (docs/stale-status-doc-labels)
+4. P2a (fix/cap16-authority-scope-registry)
+5. P4 (docs/google-connector-planning-labels)
+6. P5 (test verification)
 ```
 
-**Note on P1-GOV vs P1-CI ordering:** P1-CI is faster to execute. Run it in parallel or
-immediately after P1-GOV inspection is scoped. Do not let CI cleanup be used to signal
-the repo is governance-clean — CI passing is a necessary but not sufficient condition.
+P1-GOV is now historically complete via PR #153/#154. P1-CI remains the current open item.
 
 ---
 
