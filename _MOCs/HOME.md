@@ -59,7 +59,7 @@ Sources are never edited — this overlay just builds navigation on top.
 | Scripts and tools | 4 | 20 |
 | Design specs | 14 | 0 |
 | Proofs | 233 | 23 |
-| Reference | 400 | 30 |
+| Reference | 401 | 30 |
 | Archive | 139 | 15 |
 
-_Indexed 992 docs and 770 non-doc files._
+_Indexed 993 docs and 770 non-doc files._

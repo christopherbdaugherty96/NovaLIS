@@ -7,38 +7,25 @@ Last reviewed: 2026-05-11
 ## Current Active Task
 
 ```text
-Generated runtime-doc regeneration after PR #152-#159.
+COMPLETE — Runtime-doc regeneration (2026-05-12).
 ```
 
-Scope:
+Result:
 
 ```text
-generated runtime docs / fingerprints / MOC artifacts only
-no runtime implementation
-no manual continuity-doc rewrite beyond this TODO note
-no capability expansion
-no authority expansion
+Generator run on branch claude/review-repo-status-f2E7Q (2026-05-12).
+CURRENT_RUNTIME_STATE.md confirmed current — PR #154 had already regenerated it;
+generator produced identical output confirming zero drift.
+MOC artifacts refreshed: 993 docs / 770 code files indexed.
+Drift check: 3 pre-existing README capability-name warnings (governed_web_search,
+send_email_draft, shopify_intelligence_report in human-readable status notes).
+No runtime regressions introduced.
 ```
 
-Reason:
+Next correct step:
 
 ```text
-PR #155 closed unmerged, so generated runtime docs may still be stale after PR #154 OpenClaw hardening, PR #157 continuity synchronization, and PR #159 status synchronization.
-```
-
-Required commands in a real repo working tree:
-
-```bash
-python scripts/generate_runtime_docs.py
-python scripts/check_runtime_doc_drift.py
-git status
-git diff
-```
-
-Expected branch:
-
-```text
-docs/regenerate-runtime-docs-post-openclaw-hardening
+Select one scoped runtime follow-up — likely #141 (search widget not surfacing in live WS sessions).
 ```
 
 ---
