@@ -460,11 +460,25 @@ def build_openclaw_agent_router(deps) -> APIRouter:
     @router.post("/api/openclaw/approve-action")
     async def approve_openclaw_action(payload: dict[str, Any]):
         """
-        Step 7 — action approval gate (passthrough phase).
+        PATCH B — Approve-action endpoint: non-operational stub (future Tier 3 gate).
 
-        Receives an OpenClawProposedAction, logs it to the ledger, and
-        returns auto-allow for all actions. Future phases will add real
-        human-in-the-loop suspension and decision flow here.
+        CURRENT STATE: This endpoint logs the proposed action to the ledger and
+        returns auto_allowed unconditionally.  It is NOT wired into the
+        ThinkingLoop execution chain.  ThinkingLoop never calls this endpoint
+        before executing a tool — the response has no effect on what runs.
+
+        This is a future integration point for Governed Autonomy Tier 3
+        (confirmed-action missions).  In Tier 3, ThinkingLoop will be modified
+        to pause before each mutation-capable tool call, POST the proposed action
+        here (or to an internal suspension store), wait for a real user decision,
+        and proceed only on explicit allow.  The auto_allowed behaviour must be
+        removed at that point.
+
+        Until Tier 3 is implemented under its own reviewed priority lock:
+          - Do not rely on this endpoint as a governance gate.
+          - The freeform goal path (run_goal → ThinkingLoop) is now governed by
+            PATCH A (tool allowlist) and PATCH C (network budget), which prevent
+            mutation-capable tools from being reachable at all.
         """
         run_id = str(payload.get("run_id") or "").strip()
         step_id = str(payload.get("step_id") or "").strip()
@@ -487,22 +501,36 @@ def build_openclaw_agent_router(deps) -> APIRouter:
                 "source": "approve_action_endpoint",
             },
         )
+        # NOTE: Logging "APPROVED" here is intentionally misleading in the
+        # stub phase.  Renamed to OPENCLAW_ACTION_AUTO_ALLOWED_STUB to make
+        # clear in the ledger that this is not a real human decision.
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
-            "OPENCLAW_ACTION_APPROVED",
+            "OPENCLAW_ACTION_AUTO_ALLOWED_STUB",
             {
                 "run_id": run_id,
                 "step_id": step_id,
                 "tool_name": tool_name,
                 "action_type": action_type,
                 "decision": "auto_allowed",
+                "wired_into_execution": False,
+                "note": "Stub only — ThinkingLoop does not call this endpoint before "
+                        "executing tools.  This log entry does not represent a real "
+                        "human approval.  See Governed Autonomy Tier 3 for the "
+                        "real gate implementation plan.",
                 "source": "approve_action_endpoint",
             },
         )
         return {
             "ok": True,
             "decision": "allow",
-            "approval_state": "auto_allowed",
+            "approval_state": "auto_allowed_stub",
+            "wired_into_execution": False,
+            "warning": (
+                "This endpoint is not wired into the ThinkingLoop execution chain. "
+                "Responses from this endpoint do not gate tool execution in the "
+                "freeform goal path. See Governed Autonomy Tier 3 direction doc."
+            ),
             "run_id": run_id,
             "step_id": step_id,
             "tool_name": tool_name,

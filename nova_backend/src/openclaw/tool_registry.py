@@ -108,6 +108,40 @@ class ToolRegistry:
             raise KeyError(f"Tool '{name}' not registered")
         return self._factories[name](**kwargs)
 
+    # ------------------------------------------------------------------
+    # Allowlist filtering (PATCH A — freeform goal governance)
+    # ------------------------------------------------------------------
+
+    def filtered(self, *, allowed: frozenset[str]) -> "ToolRegistry":
+        """Return a new ToolRegistry containing only the named tools.
+
+        Raises ValueError immediately if *allowed* references a name that is
+        not registered — this catches allowlist typos at construction time
+        rather than at LLM selection time.
+
+        The returned view is a fully independent ToolRegistry instance;
+        mutating the original registry after this call does not affect the
+        view, and vice versa.
+
+        Usage (freeform goal path)::
+
+            filtered = registry.filtered(allowed=_FREEFORM_GOAL_ALLOWED_TOOLS)
+            loop = ThinkingLoop(registry=filtered, ...)
+            # LLM now only sees and can select tools in *allowed*.
+        """
+        unknown = allowed - set(self._factories)
+        if unknown:
+            raise ValueError(
+                "ToolRegistry.filtered(): allowlist references unregistered tool(s): "
+                + ", ".join(sorted(unknown))
+            )
+        view = ToolRegistry()
+        for name in sorted(allowed):  # deterministic ordering
+            view._factories[name] = self._factories[name]
+            view._metadata[name] = self._metadata[name]
+            view._categories.setdefault(self._metadata[name].category, []).append(name)
+        return view
+
 
 # ======================================================================
 # Bootstrap — populate registry with the skills that already exist

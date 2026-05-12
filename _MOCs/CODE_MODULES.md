@@ -1191,7 +1191,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
 - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
-- _…and 14 more_
+- _…and 15 more_
 
 ### Tests
 
