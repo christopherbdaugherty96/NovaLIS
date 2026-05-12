@@ -1,30 +1,31 @@
 # NovaLIS
 
-**Version 0.4 Alpha**
+**Version 0.5 Alpha — Current State**
 
 NovaLIS is a governance-first local AI system designed to separate intelligence from execution.
 
-Nova focuses on what the system is allowed to do, how actions are routed, and how real execution stays visible, bounded, and reviewable.
+Nova focuses on what the system is allowed to do, how actions are routed, and how real execution stays visible, bounded, reviewable, and auditable.
 
 ## Why Nova
-Most AI tools optimize for capability expansion. Nova emphasizes bounded execution, reviewable actions, local ownership, and user-visible control.
+Most AI tools optimize for capability expansion. Nova emphasizes bounded execution, reviewable actions, local ownership, visible trust boundaries, and user-visible control.
 
 Nova is intended to evolve into:
 
 ```text
-A governed personal operational intelligence platform.
+A governed operational coordination platform.
 ```
 
 The long-term direction has two connected domains:
 
 ```text
 1. Everyday home / voice / local assistant platform
-2. Creator-business operational intelligence platform
+2. Creator-business operational coordination platform
 ```
 
 See:
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
+- [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
 
 ## Start Here
 1. [Start Here](START_HERE.md)
@@ -38,6 +39,7 @@ See:
 9. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 11. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
+12. [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
@@ -73,20 +75,44 @@ Recent local-first proof captures:
 
 ![Nova memory authority boundary](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png)
 
-Current proof verdict: the local demo path mostly works. The Brain Task Clarifier now handles tested ambiguity/boundary prompts, while the active sprint remains Cap 16 web-search answer quality and conversation coherence. Remaining friction is concentrated around CPU-budget handling for current searches, follow-up coherence, and clearer uncertainty behavior.
+Current proof verdict: the local demo path mostly works, but Nova is not a finished consumer product. Recent work has shifted the active priority toward runtime-truth synchronization, governance/status alignment, OpenClaw hardening follow-through, and operational coherence before new capability expansion.
 
 ## Current Status
-Alpha build for technical users and early adopters. Real project under active development, not a finished consumer product.
+Version 0.5 Alpha is a technical-user / early-adopter state, not a finished mainstream release.
+
+Current grounded status:
+
+```text
+- governance-first local AI/runtime platform
+- bounded execution infrastructure exists
+- active runtime capabilities exist
+- active != certified != locked
+- Cap 16 governed_web_search is certification-locked
+- Cap 64 send_email_draft remains local mailto draft only, not autonomous email send
+- Cap 65 shopify_intelligence_report remains read-only Shopify intelligence, not Shopify writes
+- OpenClaw exists as runtime code with bounded/manual-first execution surfaces
+- PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
+- generated runtime docs still require regeneration after recent audit/hardening/status work
+```
 
 For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
 
-For current human-readable work continuity, including what is committed versus local/in-progress, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
+For current human-readable work continuity, including the current active task, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
 
-For the 2026-05-01 branch/workstream alignment map, use [Repo Branch and Workstream Status](docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01.md).
+For the post-audit stabilization/productization sequence, use [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md).
+
+Current active task:
+
+```text
+Generated runtime-doc regeneration after PR #152-#159.
+```
+
+The generated runtime-doc generator has not yet been run after the latest audit/hardening/status sequence.
 
 ## Future Directions
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
+- [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 - [Google Connector Model](docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Google Connector Implementation Roadmap](docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
@@ -97,10 +123,14 @@ For the 2026-05-01 branch/workstream alignment map, use [Repo Branch and Workstr
 - [Auralis Website Coworker Workflow](docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
 - [YouTubeLIS Tool Folder](docs/tools/youtubelis.md)
 
-## Core Principle
+## Core Principles
 **Intelligence is not authority.**
 
+**Visibility is not authority.**
+
 Nova may reason, summarize, search, draft, and recommend. Conversation context and memory can improve understanding, but they do not authorize execution. Real actions should remain bounded by capability checks, execution boundaries, confirmation where required, and visible receipts.
+
+Visibility surfaces, dashboards, proofs, and status views do not grant execution authority. They exist to help the operator understand what is active, what is locked, what is pending, and what actually happened.
 
 ## AI Workflow Note
 This project may use AI tools for planning, coding support, audits, review, and prototyping.
