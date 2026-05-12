@@ -19,23 +19,22 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Generated runtime-doc regeneration after PR #152-#159.
+Runtime-doc regeneration — COMPLETE (2026-05-12).
 ```
 
 Status:
 
 ```text
-TODO tracked by PR #158.
-Generator has not yet been run.
+Generator run 2026-05-12 on branch claude/review-repo-status-f2E7Q.
+CURRENT_RUNTIME_STATE.md confirmed current — PR #154 already regenerated it.
+MOC artifacts refreshed (993 docs indexed). Drift check: 3 pre-existing README
+warnings; no regressions.
 ```
 
-This is a generated-output synchronization task only.
-
-No runtime implementation priority is selected until:
+Next runtime implementation priority:
 
 ```text
-1. generated runtime docs are regenerated from current main
-2. runtime-doc drift verification is complete
+#141 — Search widget not surfacing in live WebSocket sessions.
 ```
 
 ---
