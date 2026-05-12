@@ -570,7 +570,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (356)
+## Tests and verification (366)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -623,10 +623,21 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [[nova_backend/tests/certification/__init__.py|tests/certification]]
+- [[nova_backend/tests/certification/cap_16_governed_web_search/__init__.py|tests/certification/cap_16_governed_web_search]]
+- [[nova_backend/tests/certification/cap_16_governed_web_search/conftest.py|conftest - certification/cap_16_governed_web_search]]
+  summary: Shared fixtures for Cap 16 certification tests.
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p1_unit.py|test_p1_unit - certification/cap_16_governed_web_search]]
+  summary: Phase 1 — Unit certification for capability 16 (governed_web_search).
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p2_routing.py|test_p2_routing - certification/cap_16_governed_web_search]]
+  summary: Phase 2 — Routing certification for capability 16 (governed_web_search).
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p3_integration.py|test_p3_integration - certification/cap_16_governed_web_search]]
+  summary: Phase 3 — Integration certification for capability 16 (governed_web_search).
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
+  summary: Phase 4 — API/WebSocket certification for capability 16 (governed_web_search).
 - [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
-- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit - certification/cap_64_send_email_draft]]
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
-- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing - certification/cap_64_send_email_draft]]
   summary: Phase 2 — Routing certification for capability 64 (send_email_draft).
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration - certification/cap_64_send_email_draft]]
   summary: Phase 3 — Integration certification for capability 64 (send_email_draft).
@@ -887,6 +898,8 @@ Use this to orient yourself before diving into a specific module.
   summary: class _ScriptedWebSocket:
 - [[nova_backend/tests/phase45/conftest.py|conftest - tests/phase45]]
   summary: Resolve the Nova-Project root relative to this file's location.
+- [[nova_backend/tests/phase45/dashboard_event_replay_harness.py|dashboard_event_replay_harness]]
+  summary: MANUAL_TURN_WIDGET_TYPES = {
 - [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]]
   summary: ﻿from __future__ import annotations
 - [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
@@ -916,6 +929,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase45/test_dashboard_capability_surface_widget.py|test_dashboard_capability_surface_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_context_insight_widget.py|test_dashboard_context_insight_widget]]
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [[nova_backend/tests/phase45/test_dashboard_event_replay_harness.py|test_dashboard_event_replay_harness]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_header_and_news_refinement.py|test_dashboard_header_and_news_refinement]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -961,6 +976,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_explain_anything_router_prefers_file_route_when_file_selected():
 - [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
   summary: def test_failure_ladder_progression_to_offline_safe_mode():
+- [[nova_backend/tests/phase45/test_non_search_widget_fuzzing.py|test_non_search_widget_fuzzing]]
+  summary: ---------------------------------------------------------------------------
 - [[nova_backend/tests/phase45/test_obsidian_overlay_generator.py|test_obsidian_overlay_generator]]
   summary: Contract tests for the Obsidian overlay generator.
 - [[nova_backend/tests/phase45/test_orb_contract.py|test_orb_contract]]
@@ -1269,6 +1286,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
   summary: governance_refusal_for,
+- [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
+  summary: Full-pipeline routing tests: InputNormalizer → session-layer patterns → governor.
 - [[verification/check_quarantine_fixed.ps1|check_quarantine_fixed]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check (Fixed) ===" -ForegroundColor Cyan
 - [[verification/governor_proof.py|governor_proof]]
