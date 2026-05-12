@@ -31,6 +31,9 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     # task_envelope.py uses urllib.parse only for URL hostname extraction in url_allowed().
     # It does not perform any outbound network activity.
     SRC_ROOT / "openclaw" / "task_envelope.py",
+    # search_synthesis.py uses urllib.parse only for urlparse() to extract the hostname
+    # from source URLs during evidence synthesis. It makes no outbound network calls.
+    SRC_ROOT / "brain" / "search_synthesis.py",
 }
 
 

@@ -32,6 +32,40 @@ from src.skills.calendar import CalendarSkill
 from src.skills.news import NewsSkill
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 
+# ---------------------------------------------------------------------------
+# PATCH A — Freeform goal tool allowlist
+#
+# The freeform goal path (run_goal → ThinkingLoop) was previously given the
+# full ToolRegistry singleton, making mutation-capable tools (volume, brightness,
+# media, open_webpage) directly reachable by the LLM with zero governance
+# mediation.  This frozenset is passed to ToolRegistry.filtered() before
+# ThinkingLoop is constructed, so the LLM prompt and _select_tools() only ever
+# see the approved read-only subset.
+#
+# Explicitly excluded (PATCH D):
+#   screen_capture  — category "collection" but requires a governed
+#                     invocation_source; excluded here rather than relying on
+#                     the accidental param-extractor gap that blocked it before.
+#   volume, brightness, media, open_webpage — category "mutation"; excluded.
+#   calendar        — local read; add after Tier 1 lock review when confirmed safe.
+#   system          — local status read; add after Tier 1 lock review.
+#
+# To add a tool: add its name here AND confirm it is registered in tool_registry.py.
+# ToolRegistry.filtered() will raise ValueError at startup for unknown names.
+# ---------------------------------------------------------------------------
+_FREEFORM_GOAL_ALLOWED_TOOLS: frozenset[str] = frozenset({
+    "weather",     # network read — mediated by NetworkMediator + MeteredNetworkProxy
+    "news",        # network read — mediated by NetworkMediator + MeteredNetworkProxy
+    "web_search",  # network read — mediated by NetworkMediator + MeteredNetworkProxy
+})
+
+# PATCH C — Conservative network call budget for freeform goal path.
+# The template path enforces this via TaskEnvelope + RunBudgetMeter.
+# run_goal() now mirrors that pattern.
+_FREEFORM_GOAL_MAX_NETWORK_CALLS: int = 5
+_FREEFORM_GOAL_MAX_DURATION_S: int = 120
+_FREEFORM_GOAL_MAX_BYTES_READ: int = 524_288  # 512 KiB
+
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -73,7 +107,11 @@ class RunBudgetMeter:
         self._raise_if_over_budget("step", self.steps_used, int(self.envelope.max_steps))
 
     def record_network_call(self, url: str) -> None:
-        if not self.envelope.url_allowed(url):
+        # When allowed_hostnames is explicitly set, enforce the URL allowlist.
+        # When empty (freeform goal path envelope), skip URL gating — SSRF
+        # protection is already handled by the delegating NetworkMediator.
+        # The budget meter's responsibility here is call-count enforcement only.
+        if self.envelope.allowed_hostnames and not self.envelope.url_allowed(url):
             raise RuntimeError(f"Run attempted network access outside the envelope: {url}")
         self.network_calls_used += 1
         self._raise_if_over_budget(
@@ -1151,15 +1189,51 @@ class OpenClawAgentRunner:
         t0 = time.monotonic()
         started_at = _utc_now_iso()
 
+        # Compute goal_id first — used by both the envelope (PATCH C) and the store.
+        goal_id = f"goal_{int(t0 * 1000)}"
+
+        # PATCH A: build a filtered registry exposing only the approved read-only
+        # tool subset to ThinkingLoop.  The LLM prompt and _select_tools() will
+        # only ever see these tools; mutation-capable tools are invisible and
+        # therefore unselectable.  ToolRegistry.filtered() raises ValueError at
+        # construction time if any name in the frozenset is not registered.
+        filtered_registry = self._tool_registry.filtered(
+            allowed=_FREEFORM_GOAL_ALLOWED_TOOLS
+        )
+
+        # PATCH C: wrap self._network in a MeteredNetworkProxy so that network
+        # call count is budget-enforced, matching the governance already applied
+        # in the template path (run_template → MeteredNetworkProxy).
+        # The freeform goal path was the only execution path passing self._network
+        # raw to ThinkingLoop.
+        _goal_envelope = TaskEnvelope(
+            id=goal_id,
+            title=goal[:80],
+            template_id="freeform_goal",
+            tools_allowed=sorted(_FREEFORM_GOAL_ALLOWED_TOOLS),
+            allowed_hostnames=[],
+            max_steps=ThinkingLoop.MAX_STEPS,
+            max_duration_s=_FREEFORM_GOAL_MAX_DURATION_S,
+            max_network_calls=_FREEFORM_GOAL_MAX_NETWORK_CALLS,
+            max_files_touched=0,
+            max_bytes_read=_FREEFORM_GOAL_MAX_BYTES_READ,
+            max_bytes_written=0,
+            triggered_by=triggered_by,
+        )
+        _goal_budget_meter = RunBudgetMeter(_goal_envelope)
+        metered_network = MeteredNetworkProxy(
+            delegate=self._network,
+            meter=_goal_budget_meter,
+        )
+
         loop = ThinkingLoop(
-            registry=self._tool_registry,
+            registry=filtered_registry,   # PATCH A: allowlisted tools only
             executor=self._robust_executor,
-            network=self._network,
+            network=metered_network,       # PATCH C: network budget enforced
             execution_memory=self._execution_memory,
         )
 
         # Track active run for progress/cancellation
-        goal_id = f"goal_{int(t0 * 1000)}"
         self._store.set_active_run({
             "envelope_id": goal_id,
             "template_id": "goal",

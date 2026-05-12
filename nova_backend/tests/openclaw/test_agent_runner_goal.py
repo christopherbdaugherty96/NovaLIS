@@ -1,12 +1,38 @@
 """Tests for OpenClawAgentRunner.run_goal() — the freeform goal execution path."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from src.openclaw.agent_runner import OpenClawAgentRunner, RunCancelledError
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.openclaw.run_state_machine import run_event_hub
+from src.openclaw.thinking_loop import StepPhase, ThoughtStep
+
+
+def _make_weather_thought() -> ThoughtStep:
+    """Return a successful ThoughtStep using the 'weather' tool (in allowlist)."""
+    return ThoughtStep(
+        step=1,
+        phase=StepPhase.EXPLORATION,
+        reasoning="Check weather to satisfy goal",
+        selected_tools=["weather"],
+        parameters={"weather": {"location": "auto"}},
+        results={"weather": {"temperature": "72°F", "condition": "sunny"}},
+        success=True,
+        duration_seconds=0.05,
+    )
+
+
+def _make_thinking_loop_success(thought: ThoughtStep | None = None) -> dict:
+    t = thought or _make_weather_thought()
+    return {
+        "success": True,
+        "steps": 1,
+        "thoughts": [t],
+        "synthesis": "Goal completed.",
+        "total_duration_seconds": 0.1,
+    }
 
 
 def _make_runner():
@@ -85,25 +111,25 @@ async def test_run_goal_records_execution_memory():
 
 @pytest.mark.asyncio
 async def test_run_goal_finishes_active_run_with_terminal_event(tmp_path):
+    """run_goal() must clear active_run, write recent_run, and emit events on success.
+
+    Previously used a 'system' tool mock via LLM patching. Updated after PATCH A
+    (freeform goal allowlist) correctly excluded 'system' from the filtered
+    registry — 'system' is not an allowlisted read-only tool for the goal path.
+    Now patches ThinkingLoop.run directly, which is the right abstraction level
+    for testing run_goal() store and event mechanics.
+    """
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
     runner = OpenClawAgentRunner(store=store, network=None)
     queue = run_event_hub.subscribe()
 
-    def mock_generate_chat(prompt, **kwargs):
-        if "What should be done next" in prompt:
-            return "Get system status"
-        if "Which tools" in prompt:
-            return '["system"]'
-        if "What parameters" in prompt:
-            return '{}'
-        if "Has the goal been achieved" in prompt:
-            return "yes"
-        return ""
-
     try:
-        with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
-            mock_gw.generate_chat = mock_generate_chat
-            result = await runner.run_goal("System health check")
+        with patch(
+            "src.openclaw.agent_runner.ThinkingLoop.run",
+            new_callable=AsyncMock,
+            return_value=_make_thinking_loop_success(),
+        ):
+            result = await runner.run_goal("Get a weather summary")
 
         assert result["success"] is True
         assert store.snapshot()["active_run"] is None
@@ -159,23 +185,23 @@ async def test_run_goal_records_failed_run(tmp_path):
 
 @pytest.mark.asyncio
 async def test_run_goal_per_tool_budget_resets_between_runs():
+    """Per-tool budget must reset between successive run_goal() calls.
+
+    Previously used a 'system' tool mock via LLM patching. Updated after PATCH A
+    (freeform goal allowlist) correctly excluded 'system' from the filtered
+    registry. Now uses a 'weather' thought (an allowlisted tool) returned
+    directly from a ThinkingLoop.run mock, which is the correct approach for
+    testing budget-reset mechanics independently of LLM behaviour.
+    """
     runner = _make_runner()
 
-    def mock_generate_chat(prompt, **kwargs):
-        if "What should be done next" in prompt:
-            return "Get system status"
-        if "Which tools" in prompt:
-            return '["system"]'
-        if "What parameters" in prompt:
-            return '{}'
-        if "Has the goal been achieved" in prompt:
-            return "yes"
-        return ""
+    with patch(
+        "src.openclaw.agent_runner.ThinkingLoop.run",
+        new_callable=AsyncMock,
+        return_value=_make_thinking_loop_success(),
+    ):
+        first = await runner.run_goal("Check the weather")
+        second = await runner.run_goal("Check the weather again")
 
-    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
-        mock_gw.generate_chat = mock_generate_chat
-        first = await runner.run_goal("System health check")
-        second = await runner.run_goal("System health check again")
-
-    assert first["per_tool_budget"]["per_tool"]["system"]["calls"] == 1
-    assert second["per_tool_budget"]["per_tool"]["system"]["calls"] == 1
+    assert first["per_tool_budget"]["per_tool"]["weather"]["calls"] == 1
+    assert second["per_tool_budget"]["per_tool"]["weather"]["calls"] == 1
