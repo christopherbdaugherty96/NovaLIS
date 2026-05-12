@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-11
+Last reviewed: 2026-05-12
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -8,12 +8,18 @@ It is not generated runtime truth. For exact runtime fingerprint, capability cou
 
 Generated runtime docs and actual code win if they conflict with this note.
 
+Additional operational direction:
+
+```text
+See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit stabilization/productization sequencing layer.
+```
+
 ---
 
 ## Current Active Task
 
 ```text
-Generated runtime-doc regeneration after PR #152-#158.
+Generated runtime-doc regeneration after PR #152-#159.
 ```
 
 Status:
@@ -151,6 +157,16 @@ Records:
 - exact regeneration commands
 - generated-files-only scope
 ```
+
+### Current priority/status synchronization
+
+Status:
+
+```text
+merged — PR #159
+```
+
+Main operational continuity layer synchronized to the runtime-doc regeneration task.
 
 ---
 
