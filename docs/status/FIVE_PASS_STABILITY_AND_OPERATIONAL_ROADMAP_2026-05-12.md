@@ -34,6 +34,10 @@ tests
 Intelligence is not authority.
 ```
 
+```text
+Visibility is not authority.
+```
+
 The post-audit direction of Nova is:
 
 ```text
@@ -165,6 +169,8 @@ trust
 operational coherence
 ```
 
+Visibility systems remain non-authorizing.
+
 NOT:
 
 ```text
@@ -241,7 +247,7 @@ workflow state
 review queues
 approval checkpoints
 execution receipts
-governed routines
+user-approved bounded workflows
 ```
 
 Permanent preserved boundary:
@@ -256,6 +262,9 @@ This pass does NOT authorize:
 hidden autonomous execution
 broad autonomy
 unbounded agents
+passive ongoing cognition
+unattended execution loops
+self-directed continuation
 ```
 
 ---
