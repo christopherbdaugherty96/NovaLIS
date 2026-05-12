@@ -7,16 +7,38 @@ Last reviewed: 2026-05-11
 ## Current Active Task
 
 ```text
-Post-audit continuity synchronization after PR #152-#156.
+Generated runtime-doc regeneration after PR #152-#157.
 ```
 
 Scope:
 
 ```text
-continuity docs only
+generated runtime docs / fingerprints / MOC artifacts only
 no runtime implementation
+no manual continuity-doc rewrite beyond this TODO note
 no capability expansion
 no authority expansion
+```
+
+Reason:
+
+```text
+PR #155 closed unmerged, so generated runtime docs may still be stale after PR #154 OpenClaw hardening and PR #157 continuity synchronization.
+```
+
+Required commands in a real repo working tree:
+
+```bash
+python scripts/generate_runtime_docs.py
+python scripts/check_runtime_doc_drift.py
+git status
+git diff
+```
+
+Expected branch:
+
+```text
+docs/regenerate-runtime-docs-post-openclaw-hardening
 ```
 
 ---
@@ -36,6 +58,7 @@ PR #152 — Full repo/doc/code alignment audit artifacts merged.
 PR #153 — PASS4 OpenClaw freeform-goal inspection merged.
 PR #154 — OpenClaw PATCH A-D hardening merged.
 PR #156 — Search stopword cleanup merged.
+PR #157 — Post-audit continuity/status synchronization merged.
 ```
 
 ---
@@ -47,11 +70,36 @@ PR #151 — continuity sync branch closed unmerged.
 PR #155 — runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs likely still require a dedicated regeneration PR.
+Generated runtime docs require a dedicated regeneration PR.
 
 ---
 
 ## Current Open Follow-Ups
+
+### Runtime docs regeneration — current task
+
+Status:
+
+```text
+branch created / generator not yet run
+```
+
+Branch:
+
+```text
+docs/regenerate-runtime-docs-post-openclaw-hardening
+```
+
+Acceptance:
+
+```text
+- generator has been run from current main-derived branch
+- check_runtime_doc_drift.py passes or reports expected generated diffs
+- generated files only, unless a generated-doc script failure requires a separate reviewed fix
+- no runtime code changes
+- no capability changes
+- no authority expansion
+```
 
 ### #141 — Search widget not surfacing in live WebSocket sessions
 
@@ -184,8 +232,10 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Merge this continuity synchronization branch.
-2. Create a dedicated runtime-doc regeneration PR.
-3. Run targeted OpenClaw governance regression verification.
-4. Then select one scoped runtime follow-up.
+1. Run scripts/generate_runtime_docs.py on this branch in a real repo working tree.
+2. Run scripts/check_runtime_doc_drift.py.
+3. Inspect that changed files are generated runtime/MOC/fingerprint artifacts only.
+4. Open a generated-docs-only PR.
+5. Then run targeted OpenClaw governance regression verification.
+6. Then select one scoped runtime follow-up, likely #141.
 ```
