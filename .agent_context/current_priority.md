@@ -3,16 +3,30 @@
 Current active task:
 
 ```text
-Post-audit continuity synchronization after PR #152-#156 — docs-only.
+Generated runtime-doc regeneration after PR #152-#158 — generated-output only.
 ```
 
 Branch:
 
 ```text
-docs/sync-post-openclaw-audit-hardening-status
+docs/regenerate-runtime-docs-post-openclaw-hardening
 ```
 
-This is a continuity/status synchronization task only. It does not authorize runtime implementation changes.
+Status:
+
+```text
+TODO tracked by PR #158. Generator has not yet been run.
+```
+
+Scope:
+
+```text
+generated runtime docs / fingerprints / MOC artifacts only
+no runtime code
+no manual continuity-doc rewrite beyond status synchronization
+no capability expansion
+no authority expansion
+```
 
 ## Recent merged truth
 
@@ -29,6 +43,8 @@ PR #152 — Full repo/doc/code alignment audit artifacts merged.
 PR #153 — PASS4 OpenClaw freeform goal inspection merged.
 PR #154 — OpenClaw PATCH A-D hardening merged.
 PR #156 — Search stopword cleanup merged.
+PR #157 — Post-audit continuity/status synchronization merged.
+PR #158 — Runtime-doc regeneration TODO tracking merged.
 ```
 
 ## Recent closed / not merged truth
@@ -38,7 +54,7 @@ PR #151 — Everyday UX continuity sync closed unmerged.
 PR #155 — Runtime docs regeneration closed unmerged.
 ```
 
-Therefore generated runtime docs may still need a fresh regeneration PR after PR #154/#156.
+Generated runtime docs still need a fresh regeneration PR because PR #155 did not merge and PR #158 only tracked the TODO.
 
 ## Historical branch note
 
@@ -83,15 +99,17 @@ Most other active capabilities — certification lock phases pending.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-#141 is likely the first runtime fix after continuity and generated runtime docs are synchronized, but it is not authorized by this docs-only continuity task.
+#141 is likely the first runtime fix after generated runtime docs are synchronized, but it is not authorized by this generated-doc task.
 
 ## Next correct sequence
 
 ```text
-1. Merge docs/sync-post-openclaw-audit-hardening-status.
-2. Create a separate generated-runtime-docs sync PR from current main.
-3. Run targeted OpenClaw freeform-goal governance regression tests.
-4. Then select one scoped runtime follow-up, likely #141.
+1. Run scripts/generate_runtime_docs.py on the runtime-doc regeneration branch in a real repo working tree.
+2. Run scripts/check_runtime_doc_drift.py.
+3. Inspect that changed files are generated runtime/MOC/fingerprint artifacts only.
+4. Open/merge a generated-docs-only PR.
+5. Run targeted OpenClaw freeform-goal governance regression tests.
+6. Then select one scoped runtime follow-up, likely #141.
 ```
 
 ## Safety boundary
