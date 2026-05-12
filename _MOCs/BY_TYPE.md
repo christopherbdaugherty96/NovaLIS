@@ -2360,7 +2360,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (400 docs, 30 code)
+## Reference (401 docs, 30 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2511,7 +2511,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/PATCH_ROADMAP_2026-05-11|Audit Patch Roadmap]]
-  summary: Date: 2026-05-11
+  summary: Status update after PR #158:
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
 - [doc] [[docs/brain|Nova Brain]]
@@ -3083,7 +3083,9 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION|Active Priority Lock — 2026-05-10 Everyday UX Friction]]
   summary: Status: active
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-11
+  summary: Last reviewed: 2026-05-12
+- [doc] [[docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12|Five-Pass Stability And Operational Roadmap]]
+  summary: Status: active operational direction record.
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
@@ -3105,7 +3107,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/WORK_STYLE_ENFORCEMENT_LOCK_2026-05-11|Work Style Enforcement Lock]]
   summary: Date: 2026-05-11
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
-  summary: Status: operational planning snapshot.
+  summary: Status: historical operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
   summary: Last reviewed: 2026-05-11
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
@@ -3193,7 +3195,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[QUICKSTART|NovaLIS Quickstart]]
   summary: Get Nova running locally and reach a first success quickly.
 - [doc] [[README|NovaLIS - .]]
-  summary: Version 0.4 Alpha
+  summary: Version 0.5 Alpha — Current State
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 - [doc] [[SECURITY|SECURITY]]

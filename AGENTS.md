@@ -17,26 +17,17 @@ Read `.agent_context/current_priority.md`.
 Current active task:
 
 ```text
-Generated runtime-doc regeneration after PR #152-#159.
+Runtime-doc regeneration — COMPLETE (2026-05-12).
+Next: #141 — Search widget not surfacing in live WebSocket sessions.
 ```
 
 Status:
 
 ```text
-TODO tracked by PR #158.
-Generator has not yet been run.
+Generator run 2026-05-12. CURRENT_RUNTIME_STATE.md confirmed current (PR #154
+had already regenerated it). MOC artifacts refreshed. Drift check: 3 pre-existing
+README warnings; no regressions. Runtime-doc synchronization task closed.
 ```
-
-Scope:
-
-```text
-generated runtime docs / fingerprints / MOC artifacts only
-no runtime code
-no capability changes
-no authority expansion
-```
-
-No runtime implementation priority is selected until generated runtime docs are synchronized and runtime-doc drift verification is complete.
 
 Recent repo truth to preserve:
 
