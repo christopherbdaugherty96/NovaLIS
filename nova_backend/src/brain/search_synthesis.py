@@ -90,7 +90,6 @@ _QUERY_STOPWORDS = {
     "latest",
     "look",
     "news",
-    "nonexistent",
     "report",
     "result",
     "results",
