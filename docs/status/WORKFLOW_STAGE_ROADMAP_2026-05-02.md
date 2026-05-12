@@ -1,14 +1,18 @@
 # Workflow Stage Roadmap - 2026-05-02
 
-Status: operational planning snapshot.
+Status: historical operational planning snapshot.
 
-This document summarizes the current stage of the active Nova workflow sequence and the Auralis manual validation track.
+> Historical snapshot. Do not use this file to select current work. Current priority lives in `.agent_context/current_priority.md` and `docs/todo/ACTIVE_TODO.md`.
+>
+> This document reflects the repo/workflow state as of 2026-05-02 through the 2026-05-04 OpenClaw hardening priority lock. Later PRs supersede its active-priority wording.
+
+This document summarizes the 2026-05-02 stage of the Nova workflow sequence and the Auralis manual validation track.
 
 It is not runtime truth. Exact runtime truth still comes from code and generated runtime docs.
 
 ---
 
-## Current overall stage
+## Historical overall stage
 
 ```text
 Stage 6: Routine surfaces — PARTIAL (RoutineGraph v0 + Plan My Week + cost posture step 1 done)
@@ -19,12 +23,12 @@ Stages 1, 2, 3, 4, and 5 completed 2026-05-02.
 Stage 6 partial: RoutineGraph v0 and Plan My Week done 2026-05-03. Cost posture metadata (step 1
 of free-first) done 2026-05-03.
 
-Active priority lock (2026-05-04): all remaining Stage 6 work (business workflow demo, governed
-workspace shell, workflow object model) is paused. Active sequence is OpenClaw hardening —
+Active priority lock as of 2026-05-04: all remaining Stage 6 work (business workflow demo, governed
+workspace shell, workflow object model) was paused. Active sequence was OpenClaw hardening —
 RequestUnderstanding review card → capability signoff matrix → OpenClawMediator skeleton →
 read-only workflow proof. See `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`.
 
-The current repo sequence is:
+The repo sequence at that time was:
 
 ```text
 Proof closeout
@@ -139,7 +143,7 @@ Merged: PRs #85, #87, #88, #89 on 2026-05-02.
 
 ## Stage 6 - Routine surfaces
 
-State: **active** 2026-05-03.
+State as of 2026-05-03: **active**.
 
 ### Completed in Stage 6
 
@@ -153,14 +157,14 @@ State: **active** 2026-05-03.
   caps; validation; governance matrix column; runtime state summary; 24 tests. Metadata + visibility
   only; no enforcement.
 
-### Remaining in Stage 6
+### Remaining in Stage 6 as of this historical snapshot
 
 - Business workflow demo: find 5 local businesses, draft improvement notes, create reviewable
   outreach drafts.
 - Governed workflow workspace shell: WorkflowObject model, workflow template schema.
 - Google read-only connector foundation planning (design-only; no runtime connector).
 
-### Proof criteria (still required before Stage 6 exit)
+### Proof criteria at the time of this snapshot
 
 - Daily Brief remains non-authorizing through RoutineGraph — PASS (60 tests, PR #93)
 - Routines do not execute hidden actions — PASS (approval_required enforced, run/receipt
@@ -190,13 +194,12 @@ Blocked from runtime until:
 
 ---
 
-## Current recommended action
+## Historical recommended action
 
-Stage 6 is active. RoutineGraph v0, Plan My Week, and cost posture metadata (step 1) are done.
+As of this snapshot, Stage 6 was active. RoutineGraph v0, Plan My Week, and cost posture metadata (step 1) were done.
 
 ```text
-Next: business workflow demo → governed workspace shell → Google connector planning (design only).
+Next at the time: business workflow demo → governed workspace shell → Google connector planning (design only).
 ```
 
-Do not start write/action capabilities in this sprint.
-Cost posture enforcement is a future step — metadata exists; no runtime blocking is implemented yet.
+Do not use this historical recommendation as current priority. Cost posture enforcement was a future step at this point — metadata existed; no runtime blocking was implemented yet.
