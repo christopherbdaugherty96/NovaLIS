@@ -26,6 +26,7 @@ See:
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
 - [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
+- [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
 
 ## Start Here
 1. [Start Here](START_HERE.md)
@@ -40,6 +41,7 @@ See:
 10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 11. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
 12. [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
+13. [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
@@ -92,7 +94,7 @@ Current grounded status:
 - Cap 65 shopify_intelligence_report remains read-only Shopify intelligence, not Shopify writes
 - OpenClaw exists as runtime code with bounded/manual-first execution surfaces
 - PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
-- generated runtime docs still require regeneration after recent audit/hardening/status work
+- generated runtime docs are current as of 2026-05-12
 ```
 
 For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
@@ -101,18 +103,21 @@ For current human-readable work continuity, including the current active task, u
 
 For the post-audit stabilization/productization sequence, use [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md).
 
+For the consolidated roadmap and positioning update, use [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
+
 Current active task:
 
 ```text
-Generated runtime-doc regeneration after PR #152-#159.
+Runtime-doc regeneration — COMPLETE (2026-05-12).
+Next: #141 (search widget WebSocket investigation) or Trust Panel / approval gate wiring
+per the 2026-05-12 roadmap priority order.
 ```
-
-The generated runtime-doc generator has not yet been run after the latest audit/hardening/status sequence.
 
 ## Future Directions
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
 - [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
+- [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 - [Google Connector Model](docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Google Connector Implementation Roadmap](docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
