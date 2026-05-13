@@ -12,7 +12,7 @@ Tests:
   2. send_widget_message("search", ...) attaches turn_id when one is active.
   3. A WebSocket session driven by a Cap 16 success emits at least one message
      with type == "search" containing a non-empty data dict.
-  4. After Cap 16 success, session_state["search_widget"] is populated.
+  4. The search widget data contains a results list.
 """
 from __future__ import annotations
 
