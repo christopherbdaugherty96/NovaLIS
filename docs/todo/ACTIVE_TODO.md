@@ -1,31 +1,38 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-11
+Last reviewed: 2026-05-13
 
 ---
 
 ## Current Active Task
 
 ```text
-COMPLETE — Runtime-doc regeneration (2026-05-12).
+#141 — Search widget not surfacing in live WebSocket sessions.
 ```
 
-Result:
+Status:
 
 ```text
-Generator run on branch claude/review-repo-status-f2E7Q (2026-05-12).
-CURRENT_RUNTIME_STATE.md confirmed current — PR #154 had already regenerated it;
-generator produced identical output confirming zero drift.
-MOC artifacts refreshed: 993 docs / 770 code files indexed.
-Drift check: 3 pre-existing README capability-name warnings (governed_web_search,
-send_email_draft, shopify_intelligence_report in human-readable status notes).
-No runtime regressions introduced.
+Runtime-doc regeneration is COMPLETE as of 2026-05-12.
+CURRENT_RUNTIME_STATE.md was confirmed current; generator output produced no runtime-state drift.
+MOC artifacts were refreshed.
+No dedicated runtime-doc regeneration PR is pending.
 ```
 
-Next correct step:
+Current scoped implementation target:
 
 ```text
-Select one scoped runtime follow-up — likely #141 (search widget not surfacing in live WS sessions).
+Fix the live WebSocket/search-widget surfacing path for Cap 16 without changing
+capability authority, search behavior, or runtime governance.
+```
+
+Known mapped fix from `.agent_context/current_priority.md`:
+
+```text
+1. session_handler.py: preserve the search widget in session_state and send it
+   through send_widget_message(ws, "search", action_message, widget) after source extraction.
+2. brain_server.py send_widget_message: add a "search" case that sends
+   {type: "search", data: inner_data} before generic fallthrough.
 ```
 
 ---
@@ -42,12 +49,13 @@ PR #148 — Piper-first voice direction merged.
 PR #149 — Current status / continuity synchronization merged.
 PR #150 — Audit-first safety boundary merged.
 PR #152 — Full repo/doc/code alignment audit artifacts merged.
-PR #153 — PASS4 OpenClaw freeform-goal inspection merged.
+PR #153 — PASS4 OpenClaw freeform goal inspection merged.
 PR #154 — OpenClaw PATCH A-D hardening merged.
 PR #156 — Search stopword cleanup merged.
 PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #159 — Current priority/status synchronization merged.
+PR #164 — Runtime-doc regeneration task closed; current docs confirmed, MOCs refreshed.
 ```
 
 ---
@@ -59,51 +67,27 @@ PR #151 — continuity sync branch closed unmerged.
 PR #155 — runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs require a dedicated regeneration PR.
+These are historical and should not be reused as active merge targets.
 
 ---
 
 ## Current Open Follow-Ups
-
-### Runtime docs regeneration — current task
-
-Status:
-
-```text
-branch created / generator not yet run
-```
-
-Branch:
-
-```text
-docs/regenerate-runtime-docs-post-openclaw-hardening
-```
-
-Acceptance:
-
-```text
-- generator has been run from current main-derived branch
-- check_runtime_doc_drift.py passes or reports expected generated diffs
-- generated files only, unless a generated-doc script failure requires a separate reviewed fix
-- no runtime code changes
-- no capability changes
-- no authority expansion
-```
 
 ### #141 — Search widget not surfacing in live WebSocket sessions
 
 Scope:
 
 ```text
-WS transport / frontend render investigation only.
+WS transport / response serialization / frontend render surfacing only.
 No capability changes.
 No authority changes.
+No search behavior expansion.
 ```
 
 Priority:
 
 ```text
-likely first runtime implementation follow-up after continuity/runtime-doc sync
+current scoped runtime follow-up
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -125,13 +109,84 @@ capture reproducible live-session evidence
 Status:
 
 ```text
-expected behavior correct / missing session-state-aware integration test
+expected behavior likely correct / missing session-state-aware integration test
 ```
 
 Scope:
 
 ```text
-test-only change
+test-only change unless reproduction proves runtime drift
+```
+
+### #165 — Patch Shopify future design doc truth header
+
+Status:
+
+```text
+open docs-truth cleanup
+```
+
+Current truth to preserve:
+
+```text
+Cap 65 shopify_intelligence_report is active and implemented as Tier 1 read-only Shopify intelligence.
+Cap 65 has P1-P4 automated verification passing.
+Cap 65 P5 live signoff is blocked until Shopify development-store credentials are configured and the live checklist passes.
+Cap 65 is not locked.
+Caps 66-76 are future design only and are not implemented runtime authority.
+```
+
+Required boundary:
+
+```text
+Do not describe Cap 65 as complete, live-signed, certified, locked, or operator-ready.
+Do not imply Shopify writes, store mutation, publishing, customer messaging, pricing changes,
+ad spend, refunds, or autonomous store management are current runtime authority.
+```
+
+---
+
+## Shopify / Creator-Business Direction Truth
+
+```text
+Creator-led Shopify/POD business intelligence is a future product direction, not current execution authority.
+```
+
+Current runtime Shopify surface:
+
+```text
+Cap 65 — shopify_intelligence_report
+authority_class: read_only_network
+external_effect: true
+requires_confirmation: false
+status: active
+lock state: P1-P4 pass / P5 pending / not locked
+```
+
+Allowed current/framed responsibilities:
+
+```text
+store intelligence reports
+sales summaries
+product catalog summaries
+inventory visibility
+marketing/finance visibility as reporting or drafting surfaces
+recommendations requiring Christopher approval before action
+```
+
+Not authorized:
+
+```text
+Shopify writes
+product publishing
+price changes
+refunds
+customer messaging
+ad spend
+social posting
+financial transactions
+inventory ordering
+autonomous store operation
 ```
 
 ---
@@ -172,9 +227,9 @@ active != certified != locked
 Current lock truth:
 
 ```text
-Cap 16 — locked.
-Cap 64 — P5 pending.
-Cap 65 — P5 pending.
+Cap 16 — P1-P5 passed / locked.
+Cap 64 — P1-P4 passed / P5 pending / not locked.
+Cap 65 — P1-P4 passed / P5 pending / not locked.
 Most active capabilities — certification phases pending.
 ```
 
@@ -185,6 +240,7 @@ Most active capabilities — certification phases pending.
 ```text
 UI simplification
 Cap 64 P5
+Cap 65 P5
 Google connector runtime implementation
 Shopify writes
 ElevenLabs implementation
@@ -202,9 +258,11 @@ autonomous workflow execution
 
 ```text
 Intelligence is not authority.
+Visibility is not authority.
+Memory is not permission.
 ```
 
-The recent audit and hardening merges do not approve:
+The recent audit, hardening, and Shopify direction merges do not approve:
 
 - Shopify writes
 - autonomous execution
@@ -221,10 +279,7 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Run scripts/generate_runtime_docs.py on this branch in a real repo working tree.
-2. Run scripts/check_runtime_doc_drift.py.
-3. Inspect that changed files are generated runtime/MOC/fingerprint artifacts only.
-4. Open a generated-docs-only PR.
-5. Then run targeted OpenClaw governance regression verification.
-6. Then select one scoped runtime follow-up, likely #141.
+1. Complete the #141 search-widget live WebSocket patch under the current priority lock.
+2. Separately patch #165 as a docs-only truth-header cleanup.
+3. Do not merge stale Shopify/direction branches directly into main.
 ```
