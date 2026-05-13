@@ -1,11 +1,14 @@
 # Audit Patch Roadmap
 
-Status update after PR #158:
+Status update after PR #158 and 2026-05-12 runtime-doc confirmation:
 
 ```text
-P1-GOV was addressed by PR #153 and PR #154.
-P1-CI / runtime-doc regeneration remains open because PR #155 closed unmerged and PR #158 only tracked the TODO.
-This roadmap is historical unless explicitly referenced by current priority docs.
+P1-GOV — COMPLETE. Addressed by PR #153 and PR #154.
+P1-CI  — COMPLETE. Runtime docs confirmed current 2026-05-12 (generator run on
+         branch claude/review-repo-status-f2E7Q; merged into main).
+This roadmap is now fully historical. Active direction: see
+docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md and
+docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md.
 ```
 
 **Date:** 2026-05-11
@@ -59,17 +62,14 @@ or (b) a hard-block patch is implemented and tested.
 
 ---
 
-## P1-CI — Runtime docs regeneration (CURRENTLY STILL OPEN)
+## P1-CI — Runtime docs regeneration (COMPLETE)
 
 **Type:** generator/docs
-**Current task branch:** `docs/regenerate-runtime-docs-post-openclaw-hardening`
 **Historical branch in original roadmap:** `docs/regenerate-runtime-docs`
-**Scope:** Run `scripts/generate_runtime_docs.py`, commit the stale generated files.
-**Files:** `docs/current_runtime/CURRENT_RUNTIME_STATE.md`,
-`docs/current_runtime/RUNTIME_FINGERPRINT.md`, all generated `_MOCs/*.md`
-**Blocked:** No capability changes. No code changes. Generator run only.
-**Merge gate:** `runtime-docs` CI passes.
-**Current status:** TODO tracked by PR #158. Generator has not yet been run.
+**Current status:** COMPLETE — runtime docs confirmed current 2026-05-12. Generator run on
+branch `claude/review-repo-status-f2E7Q`. `CURRENT_RUNTIME_STATE.md` was already current
+from PR #154. MOC artifacts refreshed (993 docs indexed). Drift check: 3 pre-existing
+README warnings; no regressions. No open regeneration PR needed.
 
 ---
 
@@ -165,7 +165,8 @@ audit branch itself.
 6. P5 (test verification)
 ```
 
-P1-GOV is now historically complete via PR #153/#154. P1-CI remains the current open item.
+P1-GOV is historically complete via PR #153/#154. P1-CI is complete as of 2026-05-12. This
+roadmap is now fully historical.
 
 ---
 

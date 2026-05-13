@@ -79,6 +79,22 @@ The PASS4 freeform-goal governance gap appears patched by PR #154 through a read
 This does not make OpenClaw broadly autonomous or fully certified.
 ```
 
+## Phase Status Annotation (human layer)
+
+`CURRENT_RUNTIME_STATE.md` is the authoritative machine-generated source. The following is
+a human-layer interpretation annotation only:
+
+```text
+Phase 8 — PARTIAL. Broader envelope-governed execution remains deferred.
+           CURRENT_RUNTIME_STATE.md lists this under Known Runtime Gaps.
+Phase 9 — ACTIVE surfaces built on a partially incomplete Phase 8 foundation.
+           Treat as IN PROGRESS until envelope execution is converged.
+```
+
+This does not override the generated runtime docs. It records the interpretation gap.
+
+---
+
 ## Active / certified / locked discipline
 
 ```text

@@ -10,26 +10,65 @@ Intelligence is not authority.
 
 Nova's reasoning layers may clarify, plan, search, summarize, and propose. Runtime execution still goes through the Governor, capability registry, execution boundaries, and receipts.
 
-## Current Priority
+## Project Positioning
 
-Read `.agent_context/current_priority.md`.
+Nova is a governance-first local AI system that separates intelligence from execution authority.
 
-Current active task:
+Nova prioritizes visible authority boundaries, inspectable execution, and user-controlled AI operation.
+
+Nova is NOT:
+
+```text
+- "AI employee" / "fully autonomous agent" / "universal orchestrator" / "AGI coworker"
+```
+
+Nova's strongest differentiator is: governed local-first execution with visible authority boundaries.
+
+---
+
+## Active Direction
+
+Read these documents before starting any task:
+
+- `.agent_context/current_priority.md` — active task and safety boundaries
+- `docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md` — post-audit
+  stabilization/productization sequencing
+- `docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md` — consolidated roadmap and
+  positioning update
+
+Current priority order (per 2026-05-12 roadmap):
+
+```text
+1. Approval gate wiring — make approval flow genuinely execution-blocking
+2. Trust Panel MVP — expose governance visibly to users
+3. Installer & bootstrap reliability
+4. Live workflow demonstrations
+5. CI stabilization
+6. Envelope execution completion
+7. Runtime cost enforcement
+```
+
+Not authorized without a separate reviewed priority lock:
+
+```text
+UI simplification, Cap 64 P5, Google connector runtime work, Shopify writes,
+ElevenLabs implementation, OpenClaw expansion, browser/computer-use expansion,
+external writes, finance automation, social posting automation, autonomous workflow
+execution, multi-agent expansion, enterprise orchestration work.
+```
+
+---
+
+## Current Task Status
 
 ```text
 Runtime-doc regeneration — COMPLETE (2026-05-12).
-Next: #141 — Search widget not surfacing in live WebSocket sessions.
+Second-pass review and roadmap sync — COMPLETE (2026-05-12).
+Next: #141 — Search widget not surfacing in live WebSocket sessions,
+      OR begin Pass 2 (Unified Operator Truth Surface / Trust Panel MVP).
 ```
 
-Status:
-
-```text
-Generator run 2026-05-12. CURRENT_RUNTIME_STATE.md confirmed current (PR #154
-had already regenerated it). MOC artifacts refreshed. Drift check: 3 pre-existing
-README warnings; no regressions. Runtime-doc synchronization task closed.
-```
-
-Recent repo truth to preserve:
+Recent repo truth:
 
 ```text
 PR #134 — Cap 16 governed_web_search certification locked.
@@ -54,12 +93,17 @@ Current grounded truth:
 ```text
 OpenClaw is implemented runtime code with bounded/manual-first execution surfaces.
 
-The unrestricted freeform-goal registry exposure identified during the audit was narrowed by PR #154 through read-only allowlisting, mutation-tool exclusion, MeteredNetworkProxy enforcement, and governance regression tests.
+The unrestricted freeform-goal registry exposure identified during the audit was
+narrowed by PR #154 through read-only allowlisting, mutation-tool exclusion,
+MeteredNetworkProxy enforcement, and governance regression tests.
 
 This does not make OpenClaw broadly autonomous or fully governance-certified.
-```
 
-Do not start UI simplification, Cap 64 P5, Google connector runtime work, Shopify writes, ElevenLabs implementation, OpenClaw expansion, browser/computer-use expansion, external writes, finance automation, social posting automation, or autonomous workflow execution without a separate reviewed priority lock.
+Phase 8 envelope execution is PARTIAL — broader envelope-governed execution
+remains deferred. Phase 9 surfaces are ACTIVE but built on an incomplete Phase 8
+foundation. These are human-layer annotations; CURRENT_RUNTIME_STATE.md is the
+authoritative machine-generated runtime truth.
+```
 
 ## Required Context Files
 
