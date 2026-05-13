@@ -57,7 +57,7 @@ PR #151 — Everyday UX continuity sync closed unmerged.
 PR #155 — Runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs still need a fresh regeneration PR because PR #155 did not merge and PR #158 only tracked the TODO.
+Generated runtime docs are current as of 2026-05-12. No pending regeneration PR needed.
 
 ## Historical branch note
 
@@ -107,12 +107,9 @@ Most other active capabilities — certification lock phases pending.
 ## Next correct sequence
 
 ```text
-1. Run scripts/generate_runtime_docs.py on the runtime-doc regeneration branch in a real repo working tree.
-2. Run scripts/check_runtime_doc_drift.py.
-3. Inspect that changed files are generated runtime/MOC/fingerprint artifacts only.
-4. Open/merge a generated-docs-only PR.
-5. Run targeted OpenClaw freeform-goal governance regression tests.
-6. Then select one scoped runtime follow-up, likely #141.
+1. Second-pass review complete — docs/audits/SECOND_PASS_REVIEW_2026-05-12.md committed.
+2. Select one scoped runtime follow-up, likely #141 (search widget WS).
+3. Then: Trust Panel MVP or approval flow wiring per review priority order.
 ```
 
 ## Safety boundary
