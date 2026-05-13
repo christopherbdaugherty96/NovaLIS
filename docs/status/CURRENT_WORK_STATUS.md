@@ -176,7 +176,7 @@ PR #151 — continuity sync branch closed unmerged.
 PR #155 — runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs therefore still require a dedicated regeneration/synchronization PR.
+Generated runtime docs are current as of 2026-05-12. No regeneration PR pending.
 
 ---
 
@@ -251,11 +251,10 @@ No recent merge authorizes:
 
 ## Next Correct Step
 
+Per `FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md`:
+
 ```text
-1. Run scripts/generate_runtime_docs.py on current main-derived branch.
-2. Run scripts/check_runtime_doc_drift.py.
-3. Inspect generated diffs.
-4. Open generated-docs-only PR.
-5. Then run targeted OpenClaw governance regression verification.
-6. Then select one scoped runtime follow-up.
+PASS 1 (Stability/Runtime Truth) — runtime docs current, audit complete.
+Next: begin PASS 2 (Unified Operator Truth Surface) or take one scoped
+runtime follow-up first (#141 — search widget WS).
 ```
