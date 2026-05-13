@@ -3623,6 +3623,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         if isinstance(results, list):
                             session_state["last_sources"] = _extract_sources_from_results(results)
                             session_state["last_source_links"] = _extract_source_links(results)
+                        session_state["search_widget"] = widget
+                        await send_widget_message(ws, "search", action_message, widget)
                     if isinstance(widget, dict) and widget.get("type") == "news":
                         items = list(widget.get("items") or [])
                         session_state["news_cache"] = items
