@@ -3362,6 +3362,13 @@ async def send_widget_message(
             payload["turn_id"] = resolved_turn_id
         await ws_send(ws, payload)
         return
+    if msg_type == "search" and isinstance(data, dict):
+        inner_data = data.get("data") if isinstance(data.get("data"), dict) else data
+        payload = {"type": "search", "data": inner_data}
+        if resolved_turn_id:
+            payload["turn_id"] = resolved_turn_id
+        await ws_send(ws, payload)
+        return
     payload = {"type": msg_type, "message": text}
     if msg_type == "weather" and isinstance(data, dict):
         payload["data"] = data
