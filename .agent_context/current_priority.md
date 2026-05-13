@@ -3,22 +3,25 @@
 Current active task:
 
 ```text
-Runtime-doc regeneration — COMPLETE (2026-05-12).
+#141 — Search widget not surfacing in live WebSocket sessions.
 ```
 
-Branch:
+Priority lock:
 
 ```text
-claude/review-repo-status-f2E7Q
+docs/status/ACTIVE_PRIORITY_LOCK_2026-05-12_SEARCH_WIDGET_WS.md
 ```
 
 Status:
 
 ```text
-Generator run 2026-05-12. CURRENT_RUNTIME_STATE.md confirmed current — PR #154 had
-already regenerated it. MOC artifacts refreshed (993 docs indexed). Drift check shows
-3 pre-existing README capability-name warnings; no runtime regressions.
-Next: select one scoped runtime follow-up, likely #141 (search widget WS).
+Bug fully mapped. Two-part fix identified:
+1. session_handler.py ~line 3619: add session_state["search_widget"] = widget and
+   await send_widget_message(ws, "search", action_message, widget) after source extraction.
+2. brain_server.py send_widget_message: add "search" case to send {type: "search", data: inner_data}
+   before the generic fallthrough.
+Frontend (dashboard-chat-news.js) and executor (web_search_executor.py) are both correct.
+No changes needed there.
 ```
 
 Scope:
