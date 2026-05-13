@@ -165,15 +165,12 @@ Weakest areas:
 
 ---
 
-## 5. Continuity/status drift still exists
+## 5. Continuity/status drift
 
-Recent reviews identified stale references in:
-
-* AGENTS.md
-* current_priority.md
-* PATCH_ROADMAP_2026-05-11.md
-
-Repo continuity synchronization remains an active maintenance task.
+Continuity/status drift was identified during recent reviews and partially closed by the
+2026-05-12 sync plus README correction (commits `0492e71` and `753de0d`). Future handoffs
+should continue checking README, AGENTS.md, current_priority.md, CURRENT_WORK_STATUS.md,
+and roadmap files for stale active-task references.
 
 ---
 
