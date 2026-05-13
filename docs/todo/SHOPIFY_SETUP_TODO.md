@@ -10,6 +10,17 @@ Authority boundary: no write scopes, no mutations, no live-store operator behavi
 
 Nova already has the Shopify read-only reporting surface implemented as capability 65: `shopify_intelligence_report`.
 
+Cap 65 is an active runtime capability, not a future concept. It is implemented as a Tier 1 read-only Shopify intelligence report that fetches governed order metrics, product catalog summary, and inventory status through the Shopify GraphQL Admin API.
+
+Certification truth:
+
+- P1 unit tests: passed.
+- P2 routing tests: passed.
+- P3 integration tests: passed.
+- P4 API tests: passed.
+- P5 live signoff: blocked because Shopify credentials are not present in the local environment.
+- Lock state: not locked until P5 live signoff passes.
+
 Current blocker: the connector is not live-signed because Shopify credentials are not present in the local environment.
 
 Required environment variables:
@@ -22,6 +33,8 @@ NOVA_SHOPIFY_API_VERSION=2026-04
 
 The current implementation reads Shopify through the Shopify Admin GraphQL API. It does not scrape the public storefront and it does not search the domain.
 
+Cap 65 is not a Shopify operator. It does not write products, update inventory, create discounts, message customers, publish content, or run the store.
+
 ---
 
 ## Safety rule
@@ -32,6 +45,8 @@ Do not connect a live production store first.
 Do not request write scopes for Cap 65.
 Do not add write/mutation behavior to Cap 65.
 Do not lock Cap 65 until the live checklist passes end-to-end.
+
+Future Shopify operator language is boundary language only. It is not the next action in this TODO and it is not implemented runtime authority.
 
 ---
 
@@ -159,27 +174,29 @@ Acceptance gate:
 
 ---
 
-## Phase 6 — Future Shopify expansion planning
+## Future Shopify boundary
 
-Do not start write/operator work until Cap 65 is locked.
+This section records boundaries only. It is not a next-action list for this TODO.
 
-Future work should remain separated by authority tier:
+Future Shopify work, if later approved, must remain separated by authority tier:
 
-- [ ] Tier 2: recommendations only, no execution.
-- [ ] Tier 3: scenario simulation only, no execution.
-- [ ] Tier 4: governed write execution, dev-store only first.
-- [ ] Tier 5: marketing/content drafting and explicit publishing approval.
-- [ ] Tier 6: strategic goal refinement.
+- Tier 2: recommendations only, no execution.
+- Tier 3: scenario simulation only, no execution.
+- Tier 4: governed write execution, dev-store only first.
+- Tier 5: marketing/content drafting and explicit publishing approval.
+- Tier 6: strategic goal refinement.
 
-Before any write-capable capability:
+Before any write-capable capability exists:
 
-- [ ] Create a separate capability ID.
-- [ ] Define exact Shopify scopes.
-- [ ] Require explicit user approval.
-- [ ] Validate against development store.
-- [ ] Prove NetworkMediator routing.
-- [ ] Prove ledger/trust receipt coverage.
-- [ ] Prove rollback or safe failure behavior where applicable.
+- A separate capability ID must be created.
+- Exact Shopify scopes must be defined.
+- Explicit user approval must be required.
+- Development-store validation must pass first.
+- NetworkMediator routing must be proven.
+- Ledger and Trust receipt coverage must be proven.
+- Rollback or safe-failure behavior must be defined where applicable.
+
+No future Shopify write/operator capability is created, authorized, or implied by this setup TODO.
 
 ---
 
