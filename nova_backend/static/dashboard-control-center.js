@@ -2596,15 +2596,84 @@ function _receiptDetail(r) {
 function _receiptTime(ts) {
   if (!ts) return "";
   try {
-    return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return new Date(ts).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } catch (_) {
     return String(ts).slice(0, 16);
   }
 }
 
-function _renderReceiptList(receipts, host) {
+function _receiptKey(r, index = 0) {
+  const raw = String(
+    r.request_id
+    || r._ledger_line
+    || r.timestamp_utc
+    || r.event_type
+    || index
+  ).trim();
+  return raw || String(index);
+}
+
+function _receiptCapabilityLabel(r) {
+  return String(r.capability_name || r.action || r.capability_id || "").trim();
+}
+
+function _receiptExecutionStatus(r) {
+  const status = String(r.status || "").trim();
+  if (status) return status;
+  const type = String(r.event_type || "").trim();
+  if (type === "OPENCLAW_ACTION_PENDING") return "pending_confirmation";
+  if (type === "OPENCLAW_ACTION_DENIED" || type === "POLICY_EXECUTION_BLOCKED") return "blocked";
+  if (_RECEIPT_OUTCOME[type] === "failed") return "failed";
+  if (_RECEIPT_OUTCOME[type] === "done") return "completed";
+  return "recorded";
+}
+
+function _receiptApprovalRequired(r) {
+  if (typeof r.requires_confirmation === "boolean") {
+    return r.requires_confirmation ? "yes" : "no";
+  }
+  return String(r.event_type || "").trim() === "OPENCLAW_ACTION_PENDING" ? "yes" : "not recorded";
+}
+
+function _receiptLedgerRef(r) {
+  const line = Number(r._ledger_line || 0);
+  if (Number.isFinite(line) && line > 0) return `L${line}`;
+  return "";
+}
+
+function _receiptOutcomeLabel(r) {
+  const type = String(r.event_type || "").trim();
+  const outcome = _RECEIPT_OUTCOME[type] || "info";
+  return _OUTCOME_LABEL[outcome] || "Recorded";
+}
+
+function _receiptReason(r) {
+  return String(
+    r.failure_reason
+    || r.reason
+    || r.outcome_reason
+    || r.description
+    || r.summary
+    || ""
+  ).trim();
+}
+
+function _receiptSourcePathSummary(r) {
+  const request = String(r.request_id || "").trim() || "User request not recorded";
+  const capability = _receiptCapabilityLabel(r) || "Governed capability not recorded";
+  const execution = _receiptExecutionStatus(r);
+  const receiptRef = _receiptLedgerRef(r) || "Ledger receipt";
+  return `${request} -> ${capability} -> governed ${execution} -> ${receiptRef}`;
+}
+
+function _renderReceiptRows(host) {
   clear(host);
-  if (!receipts.length) {
+  if (!trustReviewState.receipts.length) {
     const empty = document.createElement("div");
     empty.className = "trust-empty";
     empty.textContent = "No governed actions recorded yet. Governed actions appear here after they run.";
@@ -2613,17 +2682,26 @@ function _renderReceiptList(receipts, host) {
   }
   const list = document.createElement("div");
   list.className = "trust-activity-list";
-  receipts.forEach((r) => {
-    const type     = String(r.event_type || "").trim();
-    const label    = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
-    const detail   = _receiptDetail(r);
-    const time     = _receiptTime(r.timestamp_utc);
-    const outcome  = _RECEIPT_OUTCOME[type] || "info";
+  trustReviewState.receipts.slice(0, 12).forEach((r, index) => {
+    const key = _receiptKey(r, index);
+    const type = String(r.event_type || "").trim();
+    const label = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
+    const detail = _receiptDetail(r);
+    const capability = _receiptCapabilityLabel(r);
+    const time = _receiptTime(r.timestamp_utc);
+    const outcome = _RECEIPT_OUTCOME[type] || "info";
     const boundary = _RECEIPT_BOUNDARY[type] || "";
+    const sourcePath = _receiptSourcePathSummary(r);
 
-    const row = document.createElement("div");
+    const row = document.createElement("button");
+    row.type = "button";
     row.className = "trust-activity-item";
+    if (trustReviewState.selectedReceiptKey === key) row.classList.add("active");
     row.dataset.outcome = outcome;
+    row.addEventListener("click", () => {
+      trustReviewState.selectedReceiptKey = key;
+      renderTrustCenterPage();
+    });
 
     const titleRow = document.createElement("div");
     titleRow.className = "trust-activity-title-row";
@@ -2641,12 +2719,26 @@ function _renderReceiptList(receipts, host) {
     titleRow.appendChild(title);
     row.appendChild(titleRow);
 
-    if (detail || time) {
-      const meta = document.createElement("div");
-      meta.className = "trust-activity-meta";
-      meta.textContent = [detail, time].filter(Boolean).join("  ·  ");
-      row.appendChild(meta);
+    const meta = document.createElement("div");
+    meta.className = "trust-activity-meta";
+    meta.textContent = [
+      capability && `Capability: ${capability}`,
+      `Status: ${_receiptExecutionStatus(r)}`,
+      time,
+    ].filter(Boolean).join("  ·  ");
+    row.appendChild(meta);
+
+    if (detail) {
+      const detailRow = document.createElement("div");
+      detailRow.className = "trust-activity-reason";
+      detailRow.textContent = detail;
+      row.appendChild(detailRow);
     }
+
+    const pathRow = document.createElement("div");
+    pathRow.className = "trust-activity-correlation";
+    pathRow.textContent = `Path: ${sourcePath}`;
+    row.appendChild(pathRow);
 
     if (boundary) {
       const note = document.createElement("div");
@@ -2660,16 +2752,75 @@ function _renderReceiptList(receipts, host) {
   host.appendChild(list);
 }
 
+function _renderReceiptDetail(host) {
+  clear(host);
+  const selected = trustReviewState.receipts.find((receipt, index) => {
+    return _receiptKey(receipt, index) === String(trustReviewState.selectedReceiptKey || "").trim();
+  }) || trustReviewState.receipts[0];
+
+  if (!selected) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Select a receipt to see how a governed request moved from user intent to capability execution and into the ledger.";
+    host.appendChild(empty);
+    return;
+  }
+
+  [
+    ["Receipt", _RECEIPT_LABELS[String(selected.event_type || "").trim()] || String(selected.event_type || "Unknown").trim() || "Unknown"],
+    ["Capability", _receiptCapabilityLabel(selected) || "Not recorded"],
+    ["Execution status", _receiptExecutionStatus(selected)],
+    ["Outcome", _receiptOutcomeLabel(selected)],
+    ["Approval required", _receiptApprovalRequired(selected)],
+    ["Timestamp", _receiptTime(selected.timestamp_utc) || "Not recorded"],
+    ["Source path", _receiptSourcePathSummary(selected)],
+    ["Request", String(selected.request_id || "Not recorded").trim() || "Not recorded"],
+    ["Ledger", _receiptLedgerRef(selected) || "Not recorded"],
+    ["Boundary", _RECEIPT_BOUNDARY[String(selected.event_type || "").trim()] || "No extra boundary note recorded"],
+    ["Detail", _receiptDetail(selected) || "No additional detail recorded"],
+    ["Why", _receiptReason(selected) || "No additional reason recorded"],
+  ].forEach(([label, value]) => {
+    const row = document.createElement("div");
+    row.className = "operator-health-row";
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "operator-health-label";
+    labelEl.textContent = label;
+    row.appendChild(labelEl);
+
+    const valueEl = document.createElement("div");
+    valueEl.className = "operator-health-value";
+    valueEl.textContent = value;
+    row.appendChild(valueEl);
+
+    host.appendChild(row);
+  });
+}
+
 function fetchAndRenderReceipts() {
   const host = $("trust-center-receipts");
   if (!host) return;
   fetch("/api/trust/receipts?limit=10")
     .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
     .then((data) => {
-      _renderReceiptList(Array.isArray(data.receipts) ? data.receipts : [], host);
+      trustReviewState.receipts = Array.isArray(data.receipts) ? data.receipts.slice(0, 20) : [];
+      if (!trustReviewState.selectedReceiptKey && trustReviewState.receipts.length) {
+        trustReviewState.selectedReceiptKey = _receiptKey(trustReviewState.receipts[0], 0);
+      }
+      if (
+        trustReviewState.selectedReceiptKey
+        && !trustReviewState.receipts.some((receipt, index) => _receiptKey(receipt, index) === trustReviewState.selectedReceiptKey)
+      ) {
+        trustReviewState.selectedReceiptKey = trustReviewState.receipts.length
+          ? _receiptKey(trustReviewState.receipts[0], 0)
+          : "";
+      }
+      renderTrustCenterPage();
     })
     .catch(() => {
-      _renderReceiptList([], host);
+      trustReviewState.receipts = [];
+      trustReviewState.selectedReceiptKey = "";
+      renderTrustCenterPage();
     });
 }
 
@@ -2690,6 +2841,8 @@ function renderTrustCenterPage() {
   const lastCall = $("trust-center-last-call");
   const egress = $("trust-center-egress");
   const failure = $("trust-center-failure");
+  const receiptHost = $("trust-center-receipts");
+  const receiptDetail = $("trust-center-receipt-detail");
   const activityHost = $("trust-center-activity");
   const activityDetail = $("trust-center-activity-detail");
   const blockedHost = $("trust-center-blocked");
@@ -2708,7 +2861,7 @@ function renderTrustCenterPage() {
   const reasoningGrid = $("trust-center-reasoning-grid");
   const bridgeSummary = $("trust-center-bridge-summary");
   const bridgeGrid = $("trust-center-bridge-grid");
-  if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
+  if (!summary || !mode || !lastCall || !egress || !failure || !receiptHost || !receiptDetail || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
 
   summary.textContent = [
     String(trustReviewState.summary || "").trim(),
@@ -2718,6 +2871,8 @@ function renderTrustCenterPage() {
   lastCall.textContent = trustState.lastExternalCall || "None";
   egress.textContent = trustState.dataEgress || "Read-only requests only";
   failure.textContent = trustState.failureState || "Normal";
+  _renderReceiptRows(receiptHost);
+  _renderReceiptDetail(receiptDetail);
 
   clear(activityHost);
   if (!trustReviewState.activity.length) {

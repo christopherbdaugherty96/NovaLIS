@@ -19,8 +19,14 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert 'safeWSSend({ text: "system status", silent_widget_refresh: true });' in source
     assert 'safeWSSend({ text: "operational context", silent_widget_refresh: true });' in source
     assert "renderTrustCenterPage();" in source
+    assert "function fetchAndRenderReceipts()" in source
+    assert "function _renderReceiptRows(host)" in source
+    assert "function _renderReceiptDetail(host)" in source
+    assert "selectedReceiptKey" in source
     assert "trust-center-voice-grid" in source
     assert "trust-center-operational-grid" in source
+    assert "trust-center-receipts" in source
+    assert "trust-center-receipt-detail" in source
     assert "trust-center-assistive-list" in source
     assert "trust-center-assistive-handled" in source
     assert "renderHandledList" in source
@@ -53,6 +59,8 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-failure"' in source
     assert 'id="trust-center-activity"' in source
     assert 'id="trust-center-activity-detail"' in source
+    assert 'id="trust-center-receipts"' in source
+    assert 'id="trust-center-receipt-detail"' in source
     assert 'id="trust-center-blocked"' in source
     assert 'id="trust-center-blocked-detail"' in source
     assert 'id="trust-center-health-summary"' in source
@@ -78,7 +86,7 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="connection-cards-grid"' in source
     assert 'id="btn-connections-refresh"' in source
     assert 'id="btn-reset-all"' in source
-    assert "Trust Center shows what Nova did, what it refused, what left the device, and what may need your attention." in source
+    assert "Activity Log shows what Nova did, what it declined, what left the device, and what may need your attention." in source
     assert "A quick answer to whether Nova stayed local, called anything external, or hit a problem." in source
     assert "See where Nova stopped instead of guessing or pushing past a boundary." in source
     assert "Home Agent helps Nova run manual tasks you can review and stop. It stays visible, bounded, and permission-first." in source
