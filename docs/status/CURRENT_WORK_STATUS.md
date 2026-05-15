@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-12
+Last reviewed: 2026-05-14
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,22 +19,21 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Runtime-doc regeneration — COMPLETE (2026-05-12).
+Trust Panel MVP — priority lock only (2026-05-14).
 ```
 
 Status:
 
 ```text
-Generator run 2026-05-12 on branch claude/review-repo-status-f2E7Q.
-CURRENT_RUNTIME_STATE.md confirmed current — PR #154 already regenerated it.
-MOC artifacts refreshed (993 docs indexed). Drift check: 3 pre-existing README
-warnings; no regressions.
+Trust Panel MVP is the next scoped strategic lane after #141 live proof completion.
+This task authorizes the priority lock and continuity sync only.
+It does not authorize runtime implementation in the same change.
 ```
 
 Next runtime implementation priority:
 
 ```text
-#141 — Search widget not surfacing in live WebSocket sessions.
+Trust Panel MVP.
 ```
 
 ---
@@ -183,18 +182,15 @@ Generated runtime docs are current as of 2026-05-12. No regeneration PR pending.
 ## Open Carried-Forward Follow-Ups
 
 ```text
-#141 — Search widget not surfacing in live WebSocket sessions.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-The likely first runtime implementation follow-up remains:
+Recently completed proof:
 
 ```text
-#141 — live WebSocket search-widget render investigation.
+#141 — Search widget WebSocket surfacing fix and live proof complete.
 ```
-
-but only after generated runtime-doc synchronization is complete.
 
 ---
 
@@ -251,10 +247,10 @@ No recent merge authorizes:
 
 ## Next Correct Step
 
-Per `FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md`:
+Per the current reviewed sequence:
 
 ```text
-PASS 1 (Stability/Runtime Truth) — runtime docs current, audit complete.
-Next: begin PASS 2 (Unified Operator Truth Surface) or take one scoped
-runtime follow-up first (#141 — search widget WS).
+1. Review the Trust Panel MVP lock.
+2. Implement Trust Panel MVP in a separate scoped branch.
+3. Wire approval-gate behavior after the visibility surface exists.
 ```
