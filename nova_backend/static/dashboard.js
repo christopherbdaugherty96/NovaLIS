@@ -105,8 +105,10 @@ let trustState = {
 };
 let trustReviewState = {
   summary: "Live review of recent actions and network activity will appear here.",
+  receipts: [],
   activity: [],
   blocked: [],
+  selectedReceiptKey: "",
   selectedActivityKey: "",
   selectedBlockedKey: "",
   policyReadiness: {},
