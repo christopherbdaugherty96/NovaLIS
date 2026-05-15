@@ -7,21 +7,20 @@ Last reviewed: 2026-05-14
 ## Current Active Task
 
 ```text
-Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
+Approval gate wiring — priority lock only (2026-05-15).
 ```
 
 Result:
 
 ```text
-PR #167 merged.
-Live visual proof recorded.
-Next reviewed lane: approval gate wiring under a separate scoped priority lock.
+Trust Panel MVP is complete and proof-backed.
+This task covers the approval gate wiring lock and continuity sync only, not implementation.
 ```
 
 Next correct step:
 
 ```text
-Close the Trust Panel MVP continuity/status sync, then create the approval gate wiring lock.
+Review the approval gate wiring lock, then implement it in a separate scoped branch.
 ```
 
 ---
@@ -45,6 +44,7 @@ PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #159 — Current priority/status synchronization merged.
 PR #167 — Trust Panel MVP receipt surface merged.
+PR #169 — Approval gate next-sequence correction merged.
 ```
 
 ---
@@ -67,13 +67,13 @@ Generated runtime docs require a dedicated regeneration PR.
 Status:
 
 ```text
-needs separate scoped priority lock / do not implement in this closeout branch
+priority lock active / implementation not started
 ```
 
 First step:
 
 ```text
-create a reviewed approval gate wiring lock that defines the execution-blocking scope
+review the active approval gate wiring lock and then implement it in a separate scoped branch
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -191,7 +191,7 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Close Trust Panel MVP continuity/status synchronization.
-2. Create an approval gate wiring priority lock.
-3. Implement approval gate wiring after the reviewed lock exists.
+1. Review the approval gate wiring priority lock.
+2. Implement approval gate wiring in a separate scoped branch.
+3. Verify pending / approved / denied paths stay governed and non-bypassing.
 ```
