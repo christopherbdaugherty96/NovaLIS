@@ -66,6 +66,41 @@ def test_trust_center_page_includes_policy_readiness_sections():
     assert "selected.capability_name" in dashboard or "selected.capability_id" in dashboard
 
 
+def test_trust_center_receipts_surface_includes_read_only_detail_fields():
+    source = INDEX_PATH.read_text(encoding="utf-8")
+    dashboard = load_dashboard_runtime_js()
+
+    assert 'id="trust-center-receipts"' in source
+    assert 'id="trust-center-receipt-detail"' in source
+    assert "trustReviewState.receipts" in dashboard
+    assert "selectedReceiptKey" in dashboard
+    assert "Capability" in dashboard
+    assert "Execution status" in dashboard
+    assert "Approval required" in dashboard
+    assert "Source path" in dashboard
+    assert "Select a receipt to see how a governed request moved from user intent to capability execution and into the ledger." in dashboard
+    assert "No governed actions recorded yet. Governed actions appear here after they run." in dashboard
+
+
+def test_trust_center_receipts_renderer_stays_display_only():
+    source = load_dashboard_runtime_js()
+    match = re.search(
+        r"function _renderReceiptRows\(host\) \{(?P<body>.*?)\n\}\n\nfunction _renderReceiptDetail",
+        source,
+        flags=re.DOTALL,
+    )
+    assert match is not None
+    body = match.group("body")
+
+    assert 'textContent = `Path: ${sourcePath}`;' in body
+    assert "safeWSSend" not in body
+    assert "injectUserText" not in body
+    assert "setActivePage" not in body
+    assert "GovernorMediator" not in body
+    assert "OpenClaw" not in body
+    assert "approve" not in body.lower()
+
+
 def test_chat_trust_review_card_renders_deterministic_non_action_fields():
     source = load_dashboard_runtime_js()
     styles = load_dashboard_runtime_css()
