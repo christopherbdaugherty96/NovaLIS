@@ -3,10 +3,10 @@
 Current active task:
 
 ```text
-Trust Panel MVP — priority lock only.
+Trust Panel MVP — COMPLETE.
 ```
 
-Priority lock:
+Most recent completed lock:
 
 ```text
 docs/status/ACTIVE_PRIORITY_LOCK_2026-05-14_TRUST_PANEL_MVP.md
@@ -15,16 +15,16 @@ docs/status/ACTIVE_PRIORITY_LOCK_2026-05-14_TRUST_PANEL_MVP.md
 Status:
 
 ```text
-#141 live proof is complete.
-Trust Panel MVP should now proceed as a separate scoped visibility lane.
-Approval gate wiring follows the Trust Panel MVP rather than being bundled into it.
+PR #167 merged.
+Live visual proof recorded.
+Approval gate wiring follows the Trust Panel MVP under a separate scoped priority lock.
 ```
 
 Scope:
 
 ```text
-priority lock / continuity synchronization only
-no runtime implementation in this task
+closeout / continuity synchronization only
+no approval-gate runtime implementation in this task
 no capability expansion
 no authority expansion
 ```
@@ -46,6 +46,7 @@ PR #154 — OpenClaw PATCH A-D hardening merged.
 PR #156 — Search stopword cleanup merged.
 PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
+PR #167 — Trust Panel MVP receipt surface merged.
 ```
 
 ## Recent closed / not merged truth
@@ -116,14 +117,14 @@ Most other active capabilities — certification lock phases pending.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-#141 is no longer the active follow-up. The next strategic lane is Trust Panel MVP under its own lock.
+#141 is no longer the active follow-up. The next strategic lane is approval gate wiring under its own lock.
 
 ## Next correct sequence
 
 ```text
-1. Trust Panel MVP lock review.
-2. Trust Panel MVP implementation in a separate scoped branch.
-3. Approval gate wiring after visible receipt/governance surfaces exist.
+1. Close Trust Panel MVP continuity/status synchronization.
+2. Create an approval gate wiring priority lock.
+3. Implement approval gate wiring after the reviewed lock exists.
 ```
 
 ## Safety boundary

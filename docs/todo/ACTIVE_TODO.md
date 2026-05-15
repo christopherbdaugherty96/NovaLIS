@@ -7,21 +7,21 @@ Last reviewed: 2026-05-14
 ## Current Active Task
 
 ```text
-Trust Panel MVP — priority lock only (2026-05-14).
+Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
 ```
 
 Result:
 
 ```text
-#141 live proof is complete.
-Trust Panel MVP is the next reviewed lane.
-This task covers the lock and continuity sync only, not implementation.
+PR #167 merged.
+Live visual proof recorded.
+Next reviewed lane: approval gate wiring under a separate scoped priority lock.
 ```
 
 Next correct step:
 
 ```text
-Review the Trust Panel MVP lock, then implement it in a separate scoped branch.
+Close the Trust Panel MVP continuity/status sync, then create the approval gate wiring lock.
 ```
 
 ---
@@ -44,6 +44,7 @@ PR #156 — Search stopword cleanup merged.
 PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #159 — Current priority/status synchronization merged.
+PR #167 — Trust Panel MVP receipt surface merged.
 ```
 
 ---
@@ -61,29 +62,18 @@ Generated runtime docs require a dedicated regeneration PR.
 
 ## Current Open Follow-Ups
 
-### Runtime docs regeneration — current task
+### Approval gate wiring — next lane
 
 Status:
 
 ```text
-branch created / generator not yet run
+needs separate scoped priority lock / do not implement in this closeout branch
 ```
 
-Branch:
+First step:
 
 ```text
-docs/regenerate-runtime-docs-post-openclaw-hardening
-```
-
-Acceptance:
-
-```text
-- generator has been run from current main-derived branch
-- check_runtime_doc_drift.py passes or reports expected generated diffs
-- generated files only, unless a generated-doc script failure requires a separate reviewed fix
-- no runtime code changes
-- no capability changes
-- no authority expansion
+create a reviewed approval gate wiring lock that defines the execution-blocking scope
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -201,7 +191,7 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Trust Panel MVP lock review.
-2. Trust Panel MVP implementation in a separate scoped branch.
-3. Approval gate wiring after the Trust Panel surface exists.
+1. Close Trust Panel MVP continuity/status synchronization.
+2. Create an approval gate wiring priority lock.
+3. Implement approval gate wiring after the reviewed lock exists.
 ```
