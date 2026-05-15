@@ -3,27 +3,27 @@
 Current active task:
 
 ```text
-Trust Panel MVP — COMPLETE.
+Approval gate wiring — priority lock only.
 ```
 
-Most recent completed lock:
+Priority lock:
 
 ```text
-docs/status/ACTIVE_PRIORITY_LOCK_2026-05-14_TRUST_PANEL_MVP.md
+docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING.md
 ```
 
 Status:
 
 ```text
-PR #167 merged.
-Live visual proof recorded.
-Approval gate wiring follows the Trust Panel MVP under a separate scoped priority lock.
+Trust Panel MVP is complete and merged.
+This task creates the approval gate wiring lock and continuity sync only.
+Approval-gate runtime implementation follows after lock review.
 ```
 
 Scope:
 
 ```text
-closeout / continuity synchronization only
+priority lock / continuity synchronization only
 no approval-gate runtime implementation in this task
 no capability expansion
 no authority expansion
@@ -47,6 +47,7 @@ PR #156 — Search stopword cleanup merged.
 PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #167 — Trust Panel MVP receipt surface merged.
+PR #169 — Approval gate next-sequence correction merged.
 ```
 
 ## Recent closed / not merged truth
@@ -117,7 +118,7 @@ Most other active capabilities — certification lock phases pending.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-#141 is no longer the active follow-up. The next strategic lane is approval gate wiring under its own lock.
+#141 is no longer the active follow-up. The active strategic lane is approval gate wiring under its own lock.
 
 ## Next correct sequence
 

@@ -19,21 +19,21 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
+Approval gate wiring — priority lock only (2026-05-15).
 ```
 
 Status:
 
 ```text
-PR #167 merged.
-Live visual proof recorded.
-This closeout sync does not authorize approval-gate runtime implementation in the same change.
+Trust Panel MVP is complete and proof-backed.
+This task authorizes the approval gate wiring lock and continuity sync only.
+It does not authorize approval-gate runtime implementation in the same change.
 ```
 
 Next runtime implementation priority:
 
 ```text
-Approval gate wiring under a separate scoped priority lock.
+Approval gate wiring after the reviewed lock exists.
 ```
 
 ---
@@ -184,6 +184,22 @@ Proof:
 The Trust Panel MVP is now implemented, merged, and proof-backed. It remains read-only and
 does not change approval behavior or execution authority.
 
+### Approval gate wiring priority lock
+
+Status:
+
+```text
+active — 2026-05-15
+```
+
+Lock:
+
+```text
+docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING.md
+```
+
+This task does not authorize approval-gate runtime implementation in the same branch.
+
 ---
 
 ## Closed / Unmerged Follow-Through
@@ -268,7 +284,7 @@ No recent merge authorizes:
 Per the current reviewed sequence:
 
 ```text
-1. Close Trust Panel MVP continuity/status synchronization.
-2. Create an approval gate wiring priority lock.
-3. Wire approval-gate behavior after the reviewed lock exists.
+1. Review the approval gate wiring priority lock.
+2. Implement approval-gate behavior in a separate scoped branch.
+3. Verify pending / approved / denied paths stay governed and non-bypassing.
 ```

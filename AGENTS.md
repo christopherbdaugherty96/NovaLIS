@@ -66,7 +66,8 @@ Runtime-doc regeneration — COMPLETE (2026-05-12).
 Second-pass review and roadmap sync — COMPLETE (2026-05-12).
 #141 live proof — COMPLETE (2026-05-14).
 Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
-Next: approval gate wiring under a separate scoped priority lock.
+Approval gate wiring priority lock — ACTIVE (2026-05-15).
+Next: review the lock, then implement approval gate wiring in a separate scoped branch.
 ```
 
 Recent repo truth:
@@ -88,6 +89,7 @@ PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #159 — Current priority/status synchronization merged.
 PR #167 — Trust Panel MVP receipt surface merged.
+PR #169 — Approval gate next-sequence correction merged.
 ```
 
 Current grounded truth:

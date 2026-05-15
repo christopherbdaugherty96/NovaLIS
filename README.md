@@ -110,7 +110,8 @@ Current active task:
 ```text
 #141 live proof — COMPLETE (2026-05-14).
 Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
-Next: approval gate wiring under a separate scoped priority lock.
+Approval gate wiring priority lock — ACTIVE (2026-05-15).
+Next: review the lock, then implement approval gate wiring in a separate scoped branch.
 ```
 
 ## Future Directions
