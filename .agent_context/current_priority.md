@@ -122,8 +122,8 @@ Most other active capabilities — certification lock phases pending.
 ## Next correct sequence
 
 ```text
-1. Close Trust Panel MVP continuity/status synchronization.
-2. Create an approval gate wiring priority lock.
+1. Create an approval gate wiring priority lock.
+2. Review the approval gate wiring lock.
 3. Implement approval gate wiring after the reviewed lock exists.
 ```
 
