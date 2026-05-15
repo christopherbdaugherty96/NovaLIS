@@ -59,6 +59,49 @@ Covered by tests:
 - Receipt renderer remains display-only and does not dispatch chat commands or navigation actions.
 - Existing Trust activity and policy surfaces remain present.
 
+## Live Visual Proof
+
+Runtime start:
+
+```powershell
+python scripts\start_daemon.py --no-browser
+```
+
+Runtime checks:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8000/phase-status
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8000/api/trust/receipts?limit=10
+```
+
+Browser-level proof:
+
+- Opened the running dashboard at `http://127.0.0.1:8000`.
+- Switched to the Trust page in a live Playwright session.
+- Confirmed the Trust page rendered the receipt feed and selected-receipt detail panel.
+- Confirmed the rendered detail included:
+  - capability
+  - execution status
+  - outcome
+  - approval-required
+  - timestamp
+  - source path
+  - request id
+  - ledger reference / fallback
+- Confirmed the page stayed in local-only mode and reported `No external call in this step`.
+
+Observed live Trust state:
+
+- Summary: `Showing the latest 12 ledger-backed runtime events.`
+- Mode: `Local-only`
+- Data egress: `No external call in this step`
+- Receipts rendered from live runtime activity at approximately `2026-05-14 10:05 PM` to `10:06 PM`
+- Selected receipt detail rendered for an `Action completed` entry
+
+Screenshot:
+
+- `docs/PROOFS/Trust-Panel/trust_panel_mvp_live_2026-05-14.png`
+
 ## Boundaries Preserved
 
 - No new capability was added.
@@ -70,5 +113,4 @@ Covered by tests:
 
 ## Remaining Follow-Up
 
-- Live visual/manual verification of the Trust Panel MVP in the running dashboard was not performed in this proof.
 - Approval gate wiring remains a separate follow-on lane after this visibility MVP.
