@@ -108,9 +108,8 @@ For the consolidated roadmap and positioning update, use [Repo Sync And Roadmap 
 Current active task:
 
 ```text
-Runtime-doc regeneration — COMPLETE (2026-05-12).
-Next: #141 (search widget WebSocket investigation) or Trust Panel / approval gate wiring
-per the 2026-05-12 roadmap priority order.
+#141 live proof — COMPLETE (2026-05-14).
+Next: Trust Panel MVP under a separate scoped priority lock, then approval gate wiring.
 ```
 
 ## Future Directions

@@ -3,33 +3,28 @@
 Current active task:
 
 ```text
-#141 — Search widget not surfacing in live WebSocket sessions.
+Trust Panel MVP — priority lock only.
 ```
 
 Priority lock:
 
 ```text
-docs/status/ACTIVE_PRIORITY_LOCK_2026-05-12_SEARCH_WIDGET_WS.md
+docs/status/ACTIVE_PRIORITY_LOCK_2026-05-14_TRUST_PANEL_MVP.md
 ```
 
 Status:
 
 ```text
-Bug fully mapped. Two-part fix identified:
-1. session_handler.py ~line 3619: add session_state["search_widget"] = widget and
-   await send_widget_message(ws, "search", action_message, widget) after source extraction.
-2. brain_server.py send_widget_message: add "search" case to send {type: "search", data: inner_data}
-   before the generic fallthrough.
-Frontend (dashboard-chat-news.js) and executor (web_search_executor.py) are both correct.
-No changes needed there.
+#141 live proof is complete.
+Trust Panel MVP should now proceed as a separate scoped visibility lane.
+Approval gate wiring follows the Trust Panel MVP rather than being bundled into it.
 ```
 
 Scope:
 
 ```text
-generated runtime docs / fingerprints / MOC artifacts only
-no runtime code
-no manual continuity-doc rewrite beyond status synchronization
+priority lock / continuity synchronization only
+no runtime implementation in this task
 no capability expansion
 no authority expansion
 ```
@@ -116,19 +111,19 @@ Most other active capabilities — certification lock phases pending.
 ## Open carried-forward follow-ups
 
 ```text
-#141 — Search widget not surfacing in live WebSocket sessions.
+#141 — Search widget WebSocket surfacing fix and live proof complete.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-#141 is likely the first runtime fix after generated runtime docs are synchronized, but it is not authorized by this generated-doc task.
+#141 is no longer the active follow-up. The next strategic lane is Trust Panel MVP under its own lock.
 
 ## Next correct sequence
 
 ```text
-1. Second-pass review complete — docs/audits/SECOND_PASS_REVIEW_2026-05-12.md committed.
-2. Select one scoped runtime follow-up, likely #141 (search widget WS).
-3. Then: Trust Panel MVP or approval flow wiring per review priority order.
+1. Trust Panel MVP lock review.
+2. Trust Panel MVP implementation in a separate scoped branch.
+3. Approval gate wiring after visible receipt/governance surfaces exist.
 ```
 
 ## Safety boundary

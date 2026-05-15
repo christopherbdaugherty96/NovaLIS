@@ -1,31 +1,27 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-11
+Last reviewed: 2026-05-14
 
 ---
 
 ## Current Active Task
 
 ```text
-COMPLETE — Runtime-doc regeneration (2026-05-12).
+Trust Panel MVP — priority lock only (2026-05-14).
 ```
 
 Result:
 
 ```text
-Generator run on branch claude/review-repo-status-f2E7Q (2026-05-12).
-CURRENT_RUNTIME_STATE.md confirmed current — PR #154 had already regenerated it;
-generator produced identical output confirming zero drift.
-MOC artifacts refreshed: 993 docs / 770 code files indexed.
-Drift check: 3 pre-existing README capability-name warnings (governed_web_search,
-send_email_draft, shopify_intelligence_report in human-readable status notes).
-No runtime regressions introduced.
+#141 live proof is complete.
+Trust Panel MVP is the next reviewed lane.
+This task covers the lock and continuity sync only, not implementation.
 ```
 
 Next correct step:
 
 ```text
-Select one scoped runtime follow-up — likely #141 (search widget not surfacing in live WS sessions).
+Review the Trust Panel MVP lock, then implement it in a separate scoped branch.
 ```
 
 ---
@@ -88,22 +84,6 @@ Acceptance:
 - no runtime code changes
 - no capability changes
 - no authority expansion
-```
-
-### #141 — Search widget not surfacing in live WebSocket sessions
-
-Scope:
-
-```text
-WS transport / frontend render investigation only.
-No capability changes.
-No authority changes.
-```
-
-Priority:
-
-```text
-likely first runtime implementation follow-up after continuity/runtime-doc sync
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -221,10 +201,7 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Run scripts/generate_runtime_docs.py on this branch in a real repo working tree.
-2. Run scripts/check_runtime_doc_drift.py.
-3. Inspect that changed files are generated runtime/MOC/fingerprint artifacts only.
-4. Open a generated-docs-only PR.
-5. Then run targeted OpenClaw governance regression verification.
-6. Then select one scoped runtime follow-up, likely #141.
+1. Trust Panel MVP lock review.
+2. Trust Panel MVP implementation in a separate scoped branch.
+3. Approval gate wiring after the Trust Panel surface exists.
 ```
