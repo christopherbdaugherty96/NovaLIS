@@ -36,11 +36,11 @@ Read these documents before starting any task:
 - `docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md` — consolidated roadmap and
   positioning update
 
-Current priority order (per 2026-05-12 roadmap):
+Current priority order:
 
 ```text
-1. Approval gate wiring — make approval flow genuinely execution-blocking
-2. Trust Panel MVP — expose governance visibly to users
+1. Trust Panel MVP — expose governance visibly to users
+2. Approval gate wiring — make approval flow genuinely execution-blocking
 3. Installer & bootstrap reliability
 4. Live workflow demonstrations
 5. CI stabilization
@@ -64,8 +64,8 @@ execution, multi-agent expansion, enterprise orchestration work.
 ```text
 Runtime-doc regeneration — COMPLETE (2026-05-12).
 Second-pass review and roadmap sync — COMPLETE (2026-05-12).
-Next: #141 — Search widget not surfacing in live WebSocket sessions,
-      OR begin Pass 2 (Unified Operator Truth Surface / Trust Panel MVP).
+#141 live proof — COMPLETE (2026-05-14).
+Next: Trust Panel MVP priority lock and scoped implementation.
 ```
 
 Recent repo truth:
