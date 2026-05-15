@@ -1,8 +1,16 @@
 # Nova Shopify Governed Operator Design
 Date: 2026-04-20
-Status: Cap 65 (Tier 1 read-only) complete and live — executor, routing, topology, registry, HttpShopifyConnector all landed (2026-04-21); caps 66–76 (write) remain future design, gated on NOVA_FEATURE_ENVELOPE_FACTORY going live
-Source: Voice brainstorm session — seven improvement passes
+Status: FUTURE DESIGN / NOT CURRENT RUNTIME AUTHORITY
 
+Current implemented Shopify runtime surface:
+- Cap 65 (shopify_intelligence_report) is active and implemented as Tier 1 read-only Shopify intelligence.
+- Cap 65 has P1-P4 automated verification passing.
+- Cap 65 P5 live signoff is blocked until Shopify development-store credentials are configured and the live checklist passes.
+- Cap 65 is not locked.
+- Caps 66-76 are future design only and are not implemented runtime authority.
+
+This document is a boundary/design document. It does not authorize Shopify write scopes, operator behavior, background execution, store mutation, customer messaging, publishing, or autonomous store management.
+Source: Voice brainstorm session — seven improvement passes
 ## Architecture in Three Layers
 
 Before the details: the full design resolves into three layers. Every section below belongs to one of them.
@@ -19,7 +27,7 @@ Intelligence flows into Decisions. Decisions flow into Operations. Operations fe
 
 ## Purpose
 
-This document defines the full governed integration design for Nova operating as a Shopify storefront operator. It covers read-only intelligence, human-gated action execution, proactive anomaly detection, scenario simulation, social media marketing support, long-term goal refinement, and multi-platform expansion.
+This document defines a future governed integration design for possible Shopify operator-style workflows, subject to separate implementation, capability IDs, live validation, and approval gates. It covers read-only intelligence, human-gated action execution, proactive anomaly detection, scenario simulation, social media marketing support, long-term goal refinement, and multi-platform expansion.
 
 Every layer follows the same governing principle Nova applies everywhere:
 
@@ -769,3 +777,4 @@ When this is built, the right order is:
 18. **KPI Command Center** — composed daily brief surface aggregating signals from capabilities 65, 66, and 72. No new capability required. Implement as a report template within capability 65 once reporting, anomaly, and feedback loop capabilities are all live.
 
 No step in this sequence should be skipped to move faster. Each step builds the trust foundation for the next. Write-capable capabilities (69, 71) must not be registered until the read-only capabilities they depend on have passed P5 live sign-off against a development store.
+
