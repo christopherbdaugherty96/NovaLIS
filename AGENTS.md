@@ -39,8 +39,8 @@ Read these documents before starting any task:
 Current priority order:
 
 ```text
-1. Trust Panel MVP — expose governance visibly to users
-2. Approval gate wiring — make approval flow genuinely execution-blocking
+1. Approval gate wiring priority lock — scope the next execution-blocking lane cleanly
+2. Approval gate wiring — make approval flow genuinely execution-blocking after the reviewed lock exists
 3. Installer & bootstrap reliability
 4. Live workflow demonstrations
 5. CI stabilization
@@ -65,7 +65,8 @@ execution, multi-agent expansion, enterprise orchestration work.
 Runtime-doc regeneration — COMPLETE (2026-05-12).
 Second-pass review and roadmap sync — COMPLETE (2026-05-12).
 #141 live proof — COMPLETE (2026-05-14).
-Next: Trust Panel MVP priority lock and scoped implementation.
+Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
+Next: approval gate wiring under a separate scoped priority lock.
 ```
 
 Recent repo truth:
@@ -86,6 +87,7 @@ PR #156 — Search stopword cleanup merged.
 PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #159 — Current priority/status synchronization merged.
+PR #167 — Trust Panel MVP receipt surface merged.
 ```
 
 Current grounded truth:
