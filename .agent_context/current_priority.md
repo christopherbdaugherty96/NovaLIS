@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Approval gate wiring — priority lock only.
+Approval gate wiring - focused coverage merged / certification pending.
 ```
 
 Priority lock:
@@ -16,15 +16,17 @@ Status:
 
 ```text
 Trust Panel MVP is complete and merged.
-This task creates the approval gate wiring lock and continuity sync only.
-Approval-gate runtime implementation follows after lock review.
+Approval-gate focused regression and behavioral live-session coverage are merged
+for tested Cap 22 / Cap 64 confirmation paths.
+Full approval-gate certification remains pending until broader/full-suite proof exists.
 ```
 
 Scope:
 
 ```text
-priority lock / continuity synchronization only
-no approval-gate runtime implementation in this task
+coverage status synchronization only
+no approval-gate certification claim
+no runtime behavior changes
 no capability expansion
 no authority expansion
 ```
@@ -48,6 +50,8 @@ PR #157 — Post-audit continuity/status synchronization merged.
 PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #167 — Trust Panel MVP receipt surface merged.
 PR #169 — Approval gate next-sequence correction merged.
+PR #171 — Approval gate focused regression coverage merged.
+PR #172 — Approval gate behavioral live-session coverage merged.
 ```
 
 ## Recent closed / not merged truth
@@ -118,14 +122,14 @@ Most other active capabilities — certification lock phases pending.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-#141 is no longer the active follow-up. The active strategic lane is approval gate wiring under its own lock.
+#141 is no longer the active follow-up. The active strategic lane remains approval gate wiring under its own lock.
 
 ## Next correct sequence
 
 ```text
-1. Create an approval gate wiring priority lock.
-2. Review the approval gate wiring lock.
-3. Implement approval gate wiring after the reviewed lock exists.
+1. Keep #171 / #172 as focused coverage, not certification.
+2. Run broader/full-suite approval-gate verification when practical.
+3. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```
 
 ## Safety boundary
