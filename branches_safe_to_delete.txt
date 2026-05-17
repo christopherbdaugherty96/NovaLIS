@@ -1,0 +1,7 @@
+﻿docs/everyday-ux-friction-priority-lock - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
+docs/patch-shopify-operator-truth-header - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
+docs/proof-infrastructure-closeout-review - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
+docs/ui-simplification-inventory - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
+proof/cap-16-certification-lock - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
+test/dashboard-event-replay-harness - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
+test/non-search-widget-fuzzing - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; unique_commits=0; diff=empty
