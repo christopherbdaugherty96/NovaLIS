@@ -1,26 +1,28 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-14
+Last reviewed: 2026-05-17
 
 ---
 
 ## Current Active Task
 
 ```text
-Approval gate wiring — priority lock only (2026-05-15).
+Approval gate wiring - focused coverage merged / certification pending (2026-05-17).
 ```
 
 Result:
 
 ```text
 Trust Panel MVP is complete and proof-backed.
-This task covers the approval gate wiring lock and continuity sync only, not implementation.
+Approval-gate focused regression and behavioral live-session coverage are merged
+for tested Cap 22 / Cap 64 confirmation paths.
+Full approval-gate certification remains pending until broader/full-suite proof exists.
 ```
 
 Next correct step:
 
 ```text
-Review the approval gate wiring lock, then implement it in a separate scoped branch.
+Run broader/full-suite approval-gate verification when practical, then decide whether the lock can move toward certification/closeout.
 ```
 
 ---
@@ -45,6 +47,8 @@ PR #158 — Runtime-doc regeneration TODO tracking merged.
 PR #159 — Current priority/status synchronization merged.
 PR #167 — Trust Panel MVP receipt surface merged.
 PR #169 — Approval gate next-sequence correction merged.
+PR #171 — Approval gate focused regression coverage merged.
+PR #172 — Approval gate behavioral live-session coverage merged.
 ```
 
 ---
@@ -67,13 +71,15 @@ Generated runtime docs require a dedicated regeneration PR.
 Status:
 
 ```text
-priority lock active / implementation not started
+focused coverage merged / full certification pending
 ```
 
 First step:
 
 ```text
-review the active approval gate wiring lock and then implement it in a separate scoped branch
+Focused regression coverage: merged.
+Behavioral live-session coverage: merged.
+Full approval-gate certification: pending.
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -191,7 +197,7 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Review the approval gate wiring priority lock.
-2. Implement approval gate wiring in a separate scoped branch.
-3. Verify pending / approved / denied paths stay governed and non-bypassing.
+1. Keep PR #171 / #172 framed as focused coverage, not certification.
+2. Run broader/full-suite approval-gate verification when practical.
+3. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```

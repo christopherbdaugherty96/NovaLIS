@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-14
+Last reviewed: 2026-05-17
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,21 +19,24 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Approval gate wiring — priority lock only (2026-05-15).
+Approval gate wiring - focused coverage merged / certification pending (2026-05-17).
 ```
 
 Status:
 
 ```text
 Trust Panel MVP is complete and proof-backed.
-This task authorizes the approval gate wiring lock and continuity sync only.
-It does not authorize approval-gate runtime implementation in the same change.
+Approval-gate focused regression and behavioral live-session coverage are merged
+for tested Cap 22 / Cap 64 confirmation paths.
+Full approval-gate certification remains pending until broader/full-suite proof exists.
 ```
 
-Next runtime implementation priority:
+Current approval-gate status:
 
 ```text
-Approval gate wiring after the reviewed lock exists.
+Focused regression coverage: merged.
+Behavioral live-session coverage: merged.
+Full approval-gate certification: pending.
 ```
 
 ---
@@ -189,7 +192,7 @@ does not change approval behavior or execution authority.
 Status:
 
 ```text
-active — 2026-05-15
+active / focused coverage merged / certification pending — 2026-05-17
 ```
 
 Lock:
@@ -198,7 +201,41 @@ Lock:
 docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING.md
 ```
 
-This task does not authorize approval-gate runtime implementation in the same branch.
+Focused regression coverage merged in PR #171. Behavioral live-session coverage merged in PR #172.
+These prove tested Cap 22 / Cap 64 confirmation paths only; full approval-gate certification remains pending.
+
+### Approval gate focused regression coverage
+
+Status:
+
+```text
+merged - PR #171
+```
+
+Coverage:
+
+```text
+tested Cap 22 / Cap 64 pending, approved, and denied confirmation paths
+pending paths do not dispatch executors or log ACTION_ATTEMPTED / ACTION_COMPLETED
+approved paths proceed through the governed ledger sequence
+```
+
+### Approval gate behavioral live-session coverage
+
+Status:
+
+```text
+merged - PR #172
+```
+
+Coverage:
+
+```text
+tested live WebSocket/session confirmation paths for Cap 22 / Cap 64
+pending state blocks execution
+yes resumes with confirmed=True through governed invocation
+no / cancel / unrelated input does not execute the pending action
+```
 
 ---
 
@@ -284,7 +321,7 @@ No recent merge authorizes:
 Per the current reviewed sequence:
 
 ```text
-1. Review the approval gate wiring priority lock.
-2. Implement approval-gate behavior in a separate scoped branch.
-3. Verify pending / approved / denied paths stay governed and non-bypassing.
+1. Keep PR #171 / #172 framed as focused coverage, not certification.
+2. Run broader/full-suite approval-gate verification when practical.
+3. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```
