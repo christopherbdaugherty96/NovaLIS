@@ -580,13 +580,13 @@ def _build_phase42_agents() -> list:
     if not PHASE_4_2_ENABLED:
         return []
 
-    from src.agents.builder import BuilderAgent
-    from src.agents.deep_audit import DeepAuditAgent
-    from src.agents.architect import StructuralArchitectAgent
-    from src.agents.memory import MemoryAgent
-    from src.agents.assumption import AssumptionRiskAgent
-    from src.agents.contradiction import ContradictionAggregatorAgent
     from src.agents.adversarial import AdversarialExternalizerAgent
+    from src.agents.architect import StructuralArchitectAgent
+    from src.agents.assumption import AssumptionRiskAgent
+    from src.agents.builder import BuilderAgent
+    from src.agents.contradiction import ContradictionAggregatorAgent
+    from src.agents.deep_audit import DeepAuditAgent
+    from src.agents.memory import MemoryAgent
 
     return [
         BuilderAgent(),

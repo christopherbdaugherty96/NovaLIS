@@ -14,7 +14,6 @@ from uuid import uuid4
 
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
-
 _MAX_RELATIONSHIP_NOTES = 20
 _MAX_SESSION_SUMMARIES = 10
 _MAX_TOPIC_ENTRIES = 30

@@ -219,6 +219,8 @@ def build_settings_router(deps) -> APIRouter:
         """REST endpoint to confirm a pending model update (alternative to chat command)."""
         from src.llm.llm_gateway import (
             confirm_model_update as confirm_llm,
+        )
+        from src.llm.llm_gateway import (
             is_model_update_pending,
         )
         if not is_model_update_pending():

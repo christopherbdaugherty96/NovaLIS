@@ -26,7 +26,6 @@ from src.base_skill import BaseSkill, SkillResult
 from src.memory.governed_memory_store import GovernedMemoryStore
 from src.memory.user_memory_store import user_memory_store
 
-
 # ---------------------------------------------------------------------------
 # Intent patterns
 # ---------------------------------------------------------------------------

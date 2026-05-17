@@ -4,7 +4,6 @@ from typing import Any
 
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 
-
 DEFAULT_DELIVERY_MODE_BY_TEMPLATE = {
     "morning_brief": "hybrid",
     "evening_digest": "hybrid",

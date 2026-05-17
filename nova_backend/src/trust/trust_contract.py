@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 ALLOWED_MODES = {"Local-only", "Online"}
 ALLOWED_FAILURE_STATES = {
     "Normal",

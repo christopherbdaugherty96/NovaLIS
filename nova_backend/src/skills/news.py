@@ -9,12 +9,12 @@ from __future__ import annotations
 import asyncio
 import re
 from collections import Counter
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from src.base_skill import BaseSkill, SkillResult
-from src.tools.rss_fetch import fetch_rss_headlines
-from src.tools.news_fallback import fallback_headline
 from src.governor.network_mediator import NetworkMediator
+from src.tools.news_fallback import fallback_headline
+from src.tools.rss_fetch import fetch_rss_headlines
 
 
 class NewsSkill(BaseSkill):

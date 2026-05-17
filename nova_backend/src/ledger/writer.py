@@ -4,7 +4,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.event_types import EVENT_TYPES

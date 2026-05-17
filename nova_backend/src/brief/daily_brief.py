@@ -10,7 +10,7 @@ fetched by the caller and injected as parameters.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
@@ -18,12 +18,9 @@ from typing import Any
 from src.actions.action_result import ActionResult
 from src.brief.recommendations import select_next_actions
 from src.cognition.cognitive_layer_contract import (
-    CognitiveMode,
-    CognitiveRequest,
     CognitiveResult,
     validate_cognitive_result,
 )
-
 
 # ---------------------------------------------------------------------------
 # Constants

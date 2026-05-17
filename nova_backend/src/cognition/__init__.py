@@ -1,6 +1,6 @@
 from .cognitive_layer_contract import (
-    CognitiveModule,
     CognitiveMode,
+    CognitiveModule,
     CognitiveRequest,
     CognitiveResult,
     validate_cognitive_result,

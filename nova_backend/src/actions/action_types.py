@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ActionType(str, Enum):
     """
     Phase-2 V1 allowed actions.

@@ -2,8 +2,9 @@
 
 import re
 from datetime import datetime
-from typing import Optional
 from email.utils import parsedate_to_datetime
+from typing import Optional
+
 
 def extract_publish_date(html: str) -> Optional[datetime]:
     """
