@@ -578,12 +578,12 @@ def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch)
     async def _fake_invoke_governed_capability(_governor, capability_id, params):
         assert capability_id == 61
         assert params.get("action") == "save"
-        assert params.get("body") == "It's 10:15 AM."
+        assert params.get("body") == "It's 10:15 AM on Saturday, March 21."
         assert params.get("source") == "explicit_user_save"
         assert params.get("user_visible") is True
         return ActionResult.ok(
-            'Saved. Memory MEM-00001: "It\'s 10:15 AM.".',
-            data={"memory_item": {"id": "MEM-00001", "content_display": "It's 10:15 AM."}},
+            'Saved. Memory MEM-00001: "It\'s 10:15 AM on Saturday, March 21.".',
+            data={"memory_item": {"id": "MEM-00001", "content_display": "It's 10:15 AM on Saturday, March 21."}},
             request_id="memory-save-this-test",
         )
 
@@ -594,7 +594,7 @@ def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch)
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any('Saved. Memory MEM-00001: "It\'s 10:15 AM.".' in msg for msg in chat_messages)
+    assert any('Saved. Memory MEM-00001: "It\'s 10:15 AM on Saturday, March 21.".' in msg for msg in chat_messages)
 
 
 def test_remember_this_with_inline_text_routes_directly_to_memory(monkeypatch):

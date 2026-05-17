@@ -89,9 +89,9 @@ Current grounded status:
 - bounded execution infrastructure exists
 - active runtime capabilities exist
 - active != certified != locked
-- Cap 16 governed_web_search is certification-locked
-- Cap 64 send_email_draft remains local mailto draft only, not autonomous email send
-- Cap 65 shopify_intelligence_report remains read-only Shopify intelligence, not Shopify writes
+- Cap 16 web search is certification-locked
+- Cap 64 email draft remains local mailto draft only, not autonomous email send
+- Cap 65 Shopify intelligence remains read-only, not Shopify writes
 - OpenClaw exists as runtime code with bounded/manual-first execution surfaces
 - PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
 - generated runtime docs are current as of 2026-05-12

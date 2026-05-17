@@ -23,7 +23,20 @@ class BlockingNetworkMediator:
         self.calls += 1
         # hold until test releases
         self.gate.wait(timeout=5)
-        return {"status_code": 200, "data": {"results": [{"title": "ok", "snippet": "ok", "url": "https://example.com"}], "source": "online_search"}}
+        return {
+            "status_code": 200,
+            "data": {
+                "web": {
+                    "results": [
+                        {
+                            "title": "ok",
+                            "description": "ok",
+                            "url": "https://example.com",
+                        },
+                    ],
+                },
+            },
+        }
 
 
 def test_single_action_queue_enforced(monkeypatch):
@@ -35,19 +48,23 @@ def test_single_action_queue_enforced(monkeypatch):
 
     import src.governor.network_mediator as nm_mod
     monkeypatch.setattr(nm_mod, "NetworkMediator", lambda *a, **k: nm, raising=False)
+    monkeypatch.setenv("BRAVE_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "src.executors.web_search_executor.generate_chat",
+        lambda *args, **kwargs: "Mocked search synthesis.",
+    )
 
     out = {"a": None, "b": None}
+    gov = Governor()
 
     def call_a():
         inv = GovernorMediator.parse_governed_invocation("search for A")
         if inv:
-            gov = Governor()
             out["a"] = gov.handle_governed_invocation(inv.capability_id, inv.params)
 
     def call_b():
         inv = GovernorMediator.parse_governed_invocation("search for B")
         if inv:
-            gov = Governor()
             out["b"] = gov.handle_governed_invocation(inv.capability_id, inv.params)
 
     t1 = threading.Thread(target=call_a, daemon=True)

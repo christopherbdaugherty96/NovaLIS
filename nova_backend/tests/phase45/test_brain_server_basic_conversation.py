@@ -171,12 +171,12 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
-    assert any("Local-first everyday help is ready" in msg for msg in chat_messages)
-    assert any("Verification and review" in msg for msg in chat_messages)
+    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
+    assert any("Everyday help" in msg for msg in chat_messages)
+    assert any("Double-check answers" in msg for msg in chat_messages)
     assert any("Story tracking" in msg for msg in chat_messages)
     assert any("Screen help" in msg for msg in chat_messages)
-    assert any("Memory and continuity" in msg for msg in chat_messages)
+    assert any("Memory" in msg for msg in chat_messages)
 
 
 def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
@@ -197,7 +197,7 @@ def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
         if msg.get("turn_id") == "ui-turn-test-1"
     ]
 
-    assert any(msg.get("type") == "chat" and "Nova Capabilities Right Now" in msg.get("message", "") for msg in correlated)
+    assert any(msg.get("type") == "chat" and "Here's what Nova can do right now" in msg.get("message", "") for msg in correlated)
     assert any(msg.get("type") == "chat_done" for msg in correlated)
 
 
@@ -324,7 +324,7 @@ def test_help_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
+    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
 
 
 def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
@@ -340,7 +340,7 @@ def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
+    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
 
 
 def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
@@ -362,8 +362,8 @@ def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("No live sources are connected yet" in msg for msg in chat_messages)
-    assert any("I'll stay local-first" in msg for msg in chat_messages)
+    assert any("Weather, news, and calendar can be connected in Settings" in msg for msg in chat_messages)
+    assert any("Even without extra connections" in msg for msg in chat_messages)
 
 
 def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
@@ -398,8 +398,8 @@ def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Connected live sources: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
-    assert any("proper morning brief" in msg for msg in chat_messages)
+    assert any("Connected right now: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
+    assert any("full morning brief" in msg for msg in chat_messages)
     assert any("Morning Brief is running now from the Run now flow." in msg for msg in chat_messages)
     chat_payloads = [item for item in ws.sent_messages if item.get("type") == "chat"]
     assert any(action.get("command") == "openclaw status" for item in chat_payloads for action in item.get("suggested_actions", []))
@@ -424,7 +424,7 @@ def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("It's 1:48 PM." in msg for msg in chat_messages)
+    assert any("It's 1:48 PM on Friday, March 20." in msg for msg in chat_messages)
 
 
 def test_audit_folder_current_workspace_returns_local_project_overview(monkeypatch):

@@ -21,6 +21,7 @@ import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import anyio
 import pytest
 
 
@@ -142,17 +143,33 @@ _BRAVE_RESPONSE = {
 
 @pytest.fixture(scope="module")
 def search_client():
-    with (
-        patch("src.executors.web_search_executor.generate_chat",
-              return_value="EV sales climbed sharply in 2026."),
-        patch(
-            "src.governor.network_mediator.NetworkMediator.request",
-            return_value=_BRAVE_RESPONSE,
-        ),
-    ):
-        from src.brain_server import app
-        with TestClient(app, raise_server_exceptions=False) as c:
-            yield c
+    with patch.dict("os.environ", {"BRAVE_API_KEY": "test-key"}):
+        with (
+            patch("src.executors.web_search_executor.generate_chat",
+                  return_value="EV sales climbed sharply in 2026."),
+            patch(
+                "src.governor.network_mediator.NetworkMediator.request",
+                return_value=_BRAVE_RESPONSE,
+            ),
+        ):
+            from src.brain_server import app
+            with TestClient(app, raise_server_exceptions=False) as c:
+                yield c
+
+
+def _receive_text_or_none(ws, timeout: float = 3.0) -> str | None:
+    async def _receive() -> str | None:
+        with anyio.move_on_after(timeout) as scope:
+            message = await ws._send_rx.receive()
+        if scope.cancel_called:
+            return None
+        ws._raise_on_close(message)
+        return str(message.get("text") or "")
+
+    try:
+        return ws.portal.call(_receive)
+    except Exception:
+        return None
 
 
 def test_websocket_search_emits_search_widget_type(search_client):
@@ -167,16 +184,15 @@ def test_websocket_search_emits_search_widget_type(search_client):
         }))
         # Drain up to 20 messages looking for the search widget
         for _ in range(20):
-            try:
-                raw = ws.receive_text(timeout=3)
-                msg = json.loads(raw)
-                if isinstance(msg, dict) and msg.get("type") == "search":
-                    data = msg.get("data")
-                    if isinstance(data, dict):
-                        found_search_widget = True
-                        break
-            except Exception:
+            raw = _receive_text_or_none(ws)
+            if raw is None:
                 break
+            msg = json.loads(raw)
+            if isinstance(msg, dict) and msg.get("type") == "search":
+                data = msg.get("data")
+                if isinstance(data, dict):
+                    found_search_widget = True
+                    break
 
     assert found_search_widget, (
         "No WebSocket message with type='search' and a data dict was received. "
@@ -193,13 +209,12 @@ def test_websocket_search_widget_data_has_results(search_client):
             "text": "search for electric vehicle sales trends",
         }))
         for _ in range(20):
-            try:
-                raw = ws.receive_text(timeout=3)
-                msg = json.loads(raw)
-                if isinstance(msg, dict) and msg.get("type") == "search":
-                    widget_data = msg.get("data")
-                    break
-            except Exception:
+            raw = _receive_text_or_none(ws)
+            if raw is None:
+                break
+            msg = json.loads(raw)
+            if isinstance(msg, dict) and msg.get("type") == "search":
+                widget_data = msg.get("data")
                 break
 
     assert widget_data is not None, "No search widget message received"

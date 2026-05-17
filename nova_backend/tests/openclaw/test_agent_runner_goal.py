@@ -87,25 +87,25 @@ async def test_run_goal_returns_structured_result():
 
 @pytest.mark.asyncio
 async def test_run_goal_records_execution_memory():
-    """run_goal should record tool executions to execution memory."""
+    """run_goal should record allowlisted tool executions to execution memory."""
     runner = _make_runner()
 
     def mock_generate_chat(prompt, **kwargs):
         if "What should be done next" in prompt:
-            return "Get system status"
+            return "Check the weather"
         if "Which tools" in prompt:
-            return '["system"]'
+            return '["weather"]'
         if "What parameters" in prompt:
-            return '{}'
+            return '{"location": "auto"}'
         if "Has the goal been achieved" in prompt:
             return "yes"
         return ""
 
     with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
         mock_gw.generate_chat = mock_generate_chat
-        await runner.run_goal("System health check")
+        await runner.run_goal("Weather check")
 
-    stats = runner._execution_memory.stats("system")
+    stats = runner._execution_memory.stats("weather")
     assert stats.get("total_calls", 0) >= 1
 
 
