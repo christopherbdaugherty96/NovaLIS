@@ -22,7 +22,6 @@ from uuid import UUID, uuid4
 from src.openclaw.task_envelope import TaskEnvelope
 from src.openclaw.user_tool_permissions import UserToolPermissions, default_profile
 
-
 _FEATURE_FLAG_ENV = "NOVA_FEATURE_ENVELOPE_FACTORY"
 _DEFAULT_TTL_SECONDS = 300  # 5 minutes
 

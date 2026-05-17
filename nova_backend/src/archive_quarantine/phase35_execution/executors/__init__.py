@@ -1,4 +1,4 @@
-from .executor_registry import executor_registry, ExecutorInfo
+from .executor_registry import ExecutorInfo, executor_registry
 from .executor_types import ExecutorType
 
 __all__ = [

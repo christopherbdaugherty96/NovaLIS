@@ -4,9 +4,9 @@ Provides basic system status, uptime, and local time/date.
 Safe, deterministic, internal-only.
 """
 
-from datetime import datetime
-import time
 import platform
+import time
+from datetime import datetime
 
 from ..base_skill import BaseSkill, SkillResult
 

@@ -4,7 +4,8 @@ import logging
 import os
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 
 from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence

@@ -3,12 +3,13 @@ NovaLIS — Phase-2 Handler: open_view
 """
 
 import webbrowser
-from typing import Dict, Any
+from typing import Any, Dict
 from urllib.parse import urlparse
 
 from ...actions.action_request import ActionRequest
 from ...actions.action_result import ActionResult
 from ...actions.action_types import ActionType
+
 
 def _allowed_views() -> Dict[str, Dict[str, Any]]:
     return {

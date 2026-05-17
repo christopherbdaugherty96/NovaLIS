@@ -1,13 +1,12 @@
 # src/services/weather_service.py
 
-import os
 import asyncio
+import os
 import re
 from typing import Dict, Optional
 
-from src.governor.network_mediator import NetworkMediator
 from src.governor.exceptions import NetworkMediatorError
-
+from src.governor.network_mediator import NetworkMediator
 
 NETWORK_CAPABILITY_ID = 55
 WEATHER_TIMEOUT_SECONDS = 8.0

@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 import re
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
+import time
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from datetime import datetime, timezone
 from itertools import combinations
 from pathlib import Path
 from typing import Any
-import time
 
 from src.actions.action_result import ActionResult
 from src.llm.llm_gateway import generate_chat

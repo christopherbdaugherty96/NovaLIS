@@ -14,7 +14,6 @@ from typing import Any
 from src.brain.run_manager import Run, RunManager
 from src.brain.task_understanding import SimpleTaskPlan
 
-
 _RUN_MANAGER_KEY = "_planning_run_manager"
 
 

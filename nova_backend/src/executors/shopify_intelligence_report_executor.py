@@ -26,7 +26,6 @@ from src.connectors.shopify_connector import (
     is_shopify_connected,
 )
 
-
 _CAPABILITY_ID = 65
 _AUTHORITY_CLASS = "read_only_network"
 

@@ -148,9 +148,6 @@ run(
     )
 )
 
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
 
 
 def run(name, fn):
@@ -229,9 +226,6 @@ run(
     )
 )
 
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
 
 
 def run(name, fn):
@@ -310,9 +304,6 @@ run(
     )
 )
 
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
 
 
 def run(name, fn):
@@ -391,91 +382,6 @@ run(
     )
 )
 
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
-
-
-def run(name, fn):
-    print(f"\n=== {name} ===")
-    try:
-        result = fn()
-        print(result)
-    except Exception as e:
-        print("EXCEPTION:", e)
-
-
-# --------------------------------------------------
-# OPEN_FOLDER — Phase-2 V1 (happy path)
-# --------------------------------------------------
-
-run(
-    "OPEN_FOLDER allowed folder (documents)",
-    lambda: execute_action(
-        ActionRequest(
-            action_type=ActionType.OPEN_FOLDER,
-            title="Open documents",
-            payload={"folder_id": "documents"},
-        )
-    )
-)
-
-# --------------------------------------------------
-# OPEN_VIEW — Phase-2 V1 tests
-# --------------------------------------------------
-
-# 1) Missing payload
-run(
-    "OPEN_VIEW missing view_id",
-    lambda: execute_action(
-        ActionRequest(
-            action_type=ActionType.OPEN_VIEW,
-            title="Open view",
-            payload={},
-        )
-    )
-)
-
-# 2) Disallowed view_id
-run(
-    "OPEN_VIEW disallowed view_id",
-    lambda: execute_action(
-        ActionRequest(
-            action_type=ActionType.OPEN_VIEW,
-            title="Open unknown view",
-            payload={"view_id": "not_allowed"},
-        )
-    )
-)
-
-# 3) Allowed view (happy path)
-run(
-    "OPEN_VIEW allowed view (dashboard)",
-    lambda: execute_action(
-        ActionRequest(
-            action_type=ActionType.OPEN_VIEW,
-            title="Open dashboard",
-            payload={"view_id": "dashboard"},
-        )
-    )
-)
-
-# 4) Payload sent to wrong ActionType (routing guard)
-run(
-    "OPEN_VIEW payload sent to wrong ActionType",
-    lambda: execute_action(
-        ActionRequest(
-            action_type=ActionType.OPEN_FOLDER,
-            title="Wrong type",
-            payload={"view_id": "dashboard"},
-        )
-    )
-)
-
-print("\nDone.")
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
 
 
 def run(name, fn):
@@ -555,9 +461,6 @@ run(
 )
 
 print("\nDone.")
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
 
 
 def run(name, fn):
@@ -636,9 +539,85 @@ run(
     )
 )
 
-from src.actions.action_request import ActionRequest
-from src.actions.action_types import ActionType
-from src.execution.execute_action import execute_action
+print("\nDone.")
+
+
+def run(name, fn):
+    print(f"\n=== {name} ===")
+    try:
+        result = fn()
+        print(result)
+    except Exception as e:
+        print("EXCEPTION:", e)
+
+
+# --------------------------------------------------
+# OPEN_FOLDER — Phase-2 V1 (happy path)
+# --------------------------------------------------
+
+run(
+    "OPEN_FOLDER allowed folder (documents)",
+    lambda: execute_action(
+        ActionRequest(
+            action_type=ActionType.OPEN_FOLDER,
+            title="Open documents",
+            payload={"folder_id": "documents"},
+        )
+    )
+)
+
+# --------------------------------------------------
+# OPEN_VIEW — Phase-2 V1 tests
+# --------------------------------------------------
+
+# 1) Missing payload
+run(
+    "OPEN_VIEW missing view_id",
+    lambda: execute_action(
+        ActionRequest(
+            action_type=ActionType.OPEN_VIEW,
+            title="Open view",
+            payload={},
+        )
+    )
+)
+
+# 2) Disallowed view_id
+run(
+    "OPEN_VIEW disallowed view_id",
+    lambda: execute_action(
+        ActionRequest(
+            action_type=ActionType.OPEN_VIEW,
+            title="Open unknown view",
+            payload={"view_id": "not_allowed"},
+        )
+    )
+)
+
+# 3) Allowed view (happy path)
+run(
+    "OPEN_VIEW allowed view (dashboard)",
+    lambda: execute_action(
+        ActionRequest(
+            action_type=ActionType.OPEN_VIEW,
+            title="Open dashboard",
+            payload={"view_id": "dashboard"},
+        )
+    )
+)
+
+# 4) Payload sent to wrong ActionType (routing guard)
+run(
+    "OPEN_VIEW payload sent to wrong ActionType",
+    lambda: execute_action(
+        ActionRequest(
+            action_type=ActionType.OPEN_FOLDER,
+            title="Wrong type",
+            payload={"view_id": "dashboard"},
+        )
+    )
+)
+
 
 
 def run(name, fn):

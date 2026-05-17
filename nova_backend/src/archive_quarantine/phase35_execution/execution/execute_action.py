@@ -10,8 +10,8 @@ NovaLIS Action Execution Boundary — GOVERNOR PRIVATE
 from typing import Callable, Dict
 
 from ..actions.action_request import ActionRequest
-from ..actions.action_types import ActionType
 from ..actions.action_result import ActionResult
+from ..actions.action_types import ActionType
 
 # Handler Imports (preserved for Phase-4 compatibility)
 from .handlers.open_app import open_app as handle_open_app
@@ -44,7 +44,7 @@ class ExecuteBoundary:
         """
         Execute a confirmed action.
         Returns ActionResult with outcome.
-        
+
         Phase-3.5: Execution disabled, Governor enforcement active.
         Phase-4: Governor will re-enable via structural token.
         """

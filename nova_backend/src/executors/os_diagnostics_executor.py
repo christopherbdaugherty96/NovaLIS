@@ -924,8 +924,8 @@ class OSDiagnosticsExecutor:
             status = "limited"
             status_label = "Budget reached"
             summary = (
-                f"OpenAI is configured, but today's metered budget has been reached. Nova stays local-first until the budget resets "
-                f"or you raise the daily limit."
+                "OpenAI is configured, but today's metered budget has been reached. Nova stays local-first until the budget resets "
+                "or you raise the daily limit."
             )
         elif api_key_configured and permission_enabled:
             status = "available"

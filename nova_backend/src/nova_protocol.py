@@ -13,9 +13,8 @@ This version:
 """
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
 from enum import Enum
-
+from typing import Any, Dict, Optional
 
 # ============================================================
 # ENUM: Message Types (Official NMPv1)

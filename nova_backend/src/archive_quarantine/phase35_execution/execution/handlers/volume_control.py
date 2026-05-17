@@ -21,7 +21,6 @@ from typing import Any, Dict
 from ...actions.action_request import ActionRequest
 from ...actions.action_result import ActionResult
 
-
 # ------------------------------------------------------------
 # Phase-2 constraints
 # ------------------------------------------------------------
@@ -94,6 +93,7 @@ def volume_control(action: ActionRequest) -> ActionResult:
         # For now, we fail closed if volume backend is unavailable.
 
         from ctypes import POINTER, cast
+
         from comtypes import CLSCTX_ALL
         from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 

@@ -25,7 +25,6 @@ from src.actions.action_result import ActionResult
 from src.ledger.writer import LedgerWriter
 from src.skills.general_chat import generate_chat
 
-
 _URI_SAFE = frozenset(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"

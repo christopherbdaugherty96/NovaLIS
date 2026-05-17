@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import ctypes
 import os
 import platform
-import subprocess
-import ctypes
-import shutil
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 

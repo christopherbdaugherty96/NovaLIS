@@ -16,12 +16,12 @@ import logging
 from typing import List, Optional
 
 from src.base_skill import BaseSkill, SkillResult
-from src.skills.system import SystemSkill
-from src.skills.calendar import CalendarSkill
-from src.skills.weather import WeatherSkill
-from src.skills.news import NewsSkill
-from src.skills.general_chat import GeneralChatSkill
 from src.governor.network_mediator import NetworkMediator
+from src.skills.calendar import CalendarSkill
+from src.skills.general_chat import GeneralChatSkill
+from src.skills.news import NewsSkill
+from src.skills.system import SystemSkill
+from src.skills.weather import WeatherSkill
 
 log = logging.getLogger("nova")
 

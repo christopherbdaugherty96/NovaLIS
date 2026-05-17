@@ -8,7 +8,6 @@ from time import time
 from urllib.parse import urlparse
 
 import requests
-
 from src.ledger.writer import LedgerWriter
 
 ALLOWED_SCHEMES = {"http", "https"}

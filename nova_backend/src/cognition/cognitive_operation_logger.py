@@ -6,7 +6,6 @@ from typing import Any
 
 from src.ledger.writer import LedgerWriter
 
-
 logger = logging.getLogger(__name__)
 
 

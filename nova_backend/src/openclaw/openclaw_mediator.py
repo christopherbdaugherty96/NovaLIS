@@ -13,7 +13,6 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any
 
-
 _AUTHORITY_EFFECT_NONE = "none"
 _PREVIEW_ALLOWED = "preview_allowed"
 _BLOCKED = "blocked"

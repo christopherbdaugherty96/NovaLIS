@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 MAX_TURN_HISTORY = 2
 MAX_TEXT_VALUE = 240
 MAX_LONG_TEXT_VALUE = 400

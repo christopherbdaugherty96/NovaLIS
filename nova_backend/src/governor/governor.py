@@ -26,7 +26,6 @@ from src.governor.execute_boundary.execute_boundary import (
 )
 from src.governor.single_action_queue import SingleActionQueue
 
-
 CAPABILITY_TIMEOUT_OVERRIDES = {
     16: 20.0,  # Governed web search may need search, source reads, and bounded synthesis.
     49: 30.0,  # Headline summaries may need source reads plus local-model synthesis.
@@ -639,7 +638,9 @@ class Governor:
             return SendEmailDraftExecutor(ledger=self.ledger).execute(req)
 
         elif req.capability_id == 65:
-            from src.executors.shopify_intelligence_report_executor import ShopifyIntelligenceReportExecutor
+            from src.executors.shopify_intelligence_report_executor import (
+                ShopifyIntelligenceReportExecutor,
+            )
 
             return ShopifyIntelligenceReportExecutor().execute(req)
 

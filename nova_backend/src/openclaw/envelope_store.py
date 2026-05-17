@@ -15,7 +15,6 @@ This module can be imported freely even when the flag is off.
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,7 +22,6 @@ from typing import Any, Optional
 from uuid import UUID
 
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
-
 
 _STORE_FILENAME = "openclaw_envelopes.json"
 _MAX_COMPLETED_RECORDS = 200   # rolling window for terminal records
