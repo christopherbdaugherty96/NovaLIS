@@ -11,6 +11,9 @@ from src.executors.volume_executor import VolumeExecutor
 def test_volume_executor_handles_mute_on_windows(monkeypatch):
     executor = VolumeExecutor()
     monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        executor.system_control, "set_volume", lambda action, level=None: True
+    )
 
     result = executor.execute(ActionRequest(capability_id=19, params={"action": "mute"}))
 
@@ -23,6 +26,9 @@ def test_volume_executor_handles_mute_on_windows(monkeypatch):
 def test_media_executor_handles_pause_on_windows(monkeypatch):
     executor = MediaExecutor()
     monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        executor.system_control, "control_media", lambda action: True
+    )
 
     result = executor.execute(ActionRequest(capability_id=20, params={"action": "pause"}))
 
