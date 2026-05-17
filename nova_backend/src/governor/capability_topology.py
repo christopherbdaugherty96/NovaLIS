@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 AUTHORITY_CLASS_ORDER = {
     "read_only_local": 1,
     "read_only_network": 2,

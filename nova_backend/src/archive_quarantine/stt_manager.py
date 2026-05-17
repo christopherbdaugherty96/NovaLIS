@@ -5,9 +5,10 @@
 
 import os
 import tempfile
+
+import soundfile as sf
 from faster_whisper import WhisperModel
 from openai import OpenAI
-import soundfile as sf
 
 # ----------------------------
 # CONFIG

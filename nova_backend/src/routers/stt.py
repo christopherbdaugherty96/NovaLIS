@@ -3,9 +3,8 @@
 
 import logging
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
-
 from src.services.stt_engine import transcribe_bytes
 
 # IMPORTANT:

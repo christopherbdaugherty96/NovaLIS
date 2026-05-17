@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import logging
 import os
 import shutil
@@ -7,7 +8,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-import importlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional

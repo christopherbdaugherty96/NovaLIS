@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-
 _WEEKDAY_CODES = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"}
 _ALLOWED_STATES = {"draft", "disabled", "suspended", "deleted"}
 _ALLOWED_TRIGGER_TYPES = {"time_once", "time_daily", "time_weekly", "calendar_event", "device_event"}

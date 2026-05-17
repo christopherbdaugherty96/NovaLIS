@@ -19,7 +19,6 @@ from src.openclaw.openclaw_mediator import (
     OpenClawMediatorReceipt,
 )
 
-
 _AUTHORITY_EFFECT_NONE = "none"
 _WORKFLOW_NAME = "Project Foreman Brief"
 

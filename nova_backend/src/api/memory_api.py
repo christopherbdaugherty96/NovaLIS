@@ -5,8 +5,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from src.memory.governed_memory_store import GovernedMemoryStore
-from src.memory.user_memory_store import user_memory_store
 from src.memory.nova_self_memory_store import nova_self_memory_store
+from src.memory.user_memory_store import user_memory_store
 
 
 def build_memory_router(deps) -> APIRouter:

@@ -9,10 +9,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.governor.execute_boundary.execute_boundary import GOVERNED_ACTIONS_ENABLED
 from src.governor.governor_mediator import GovernorMediator, Invocation
-from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RUNTIME_DOC_DIR = PROJECT_ROOT / "docs" / "current_runtime"
@@ -316,7 +315,7 @@ def _derive_status(hard_fail_count: int, warning_count: int) -> str:
 def _governor_enforcement_summary() -> dict[str, bool]:
     governor_src = _safe_read(GOVERNOR_PATH)
     network_src = _safe_read(NETWORK_MEDIATOR_PATH)
-    ledger_src = _safe_read(LEDGER_WRITER_PATH)
+    _safe_read(LEDGER_WRITER_PATH)
     boundary_src = _safe_read(EXECUTE_BOUNDARY_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH)
     websocket_src = _safe_read(SESSION_HANDLER_PATH)
@@ -1486,7 +1485,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     enabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is True)
     disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
     governance_rows = _derive_capability_governance_rows(registry)
-    enforcement = _governor_enforcement_summary()
+    _governor_enforcement_summary()
     bridge_surface_present = _governed_remote_bridge_present()
     openclaw_home_agent_present = _openclaw_home_agent_foundation_present()
     connector_package_summary = _connector_package_foundation_summary()

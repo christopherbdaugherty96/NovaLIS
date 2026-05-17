@@ -6,6 +6,7 @@ from src.actions.action_result import ActionResult
 from src.ledger.writer import LedgerWriter
 from src.utils.web_target_planner import domain_from_url, plan_web_open
 
+
 class WebpageLaunchExecutor:
     """Executes governed webpage launch with normalization, preview, and guarded confirmation."""
 

@@ -4,7 +4,6 @@ from dataclasses import asdict, dataclass
 
 from src.openclaw.task_envelope import TaskEnvelope
 
-
 STRICT_FOUNDATION_LABEL = "Manual preflight active"
 STRICT_FOUNDATION_SUMMARY = (
     "Every manual home-agent envelope is checked against the current strict "

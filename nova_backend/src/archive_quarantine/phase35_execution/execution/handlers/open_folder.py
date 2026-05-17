@@ -17,12 +17,11 @@ PHASE-2 RULES:
 
 import os
 import subprocess
-from typing import Dict, Any
+from typing import Any, Dict
 
 from ...actions.action_request import ActionRequest
 from ...actions.action_result import ActionResult
 from ...actions.action_types import ActionType
-
 
 # ----------------------------------------------------------
 # LOCAL ALLOWLIST (Phase-2 V1)

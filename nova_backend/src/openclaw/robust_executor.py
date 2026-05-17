@@ -8,10 +8,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
-
-from src.openclaw.tool_registry import ToolMetadata, ToolRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,6 @@ class RobustExecutor:
         Returns the result on success, or ``None`` if all attempts fail.
         Each failure is logged to ``self.call_log``.
         """
-        last_error: Exception | None = None
 
         for attempt in range(1 + self._config.max_retries):
             t0 = time.monotonic()
@@ -93,7 +90,6 @@ class RobustExecutor:
                 return result
 
             except Exception as exc:
-                last_error = exc
                 duration = time.monotonic() - t0
                 error_str = str(exc).strip() or type(exc).__name__
                 self.call_log.append(ToolCallRecord(

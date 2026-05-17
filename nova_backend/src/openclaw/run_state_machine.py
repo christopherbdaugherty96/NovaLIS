@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-
 RUN_PENDING = "pending"
 RUN_RUNNING = "running"
 RUN_SUCCEEDED = "succeeded"

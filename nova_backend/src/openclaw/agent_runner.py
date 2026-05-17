@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.llm import llm_gateway
 from src.governor.network_mediator import NetworkMediator
+from src.llm import llm_gateway
 from src.openclaw.agent_personality_bridge import (
     OpenClawAgentPersonalityBridge,
     delivery_channels,

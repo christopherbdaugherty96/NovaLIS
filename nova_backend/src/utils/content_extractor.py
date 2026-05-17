@@ -2,6 +2,7 @@
 
 import re
 
+
 def extract_text_from_html(html: str, max_chars: int = 5000) -> str:
     """
     Very basic HTML-to-text extraction.

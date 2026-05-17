@@ -14,16 +14,13 @@ from typing import Optional
 
 from fastapi import FastAPI, WebSocket
 
-# Phase-2 relative imports (package-safe)
-from .gates.confirmation_gate import confirmation_gate
-from .actions.action_request import ActionRequest
-from .actions.action_types import ActionType
 from .execution.execute_action import execute_action
 
+# Phase-2 relative imports (package-safe)
+from .gates.confirmation_gate import confirmation_gate
+from .llm.llm_manager import LLMManager
 from .skill_registry import skill_registry
 from .speech_state import speech_state
-
-from .llm.llm_manager import LLMManager
 
 # Optional audio (defensive)
 try:

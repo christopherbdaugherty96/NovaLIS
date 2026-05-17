@@ -6,9 +6,9 @@ import os
 import platform
 import re
 import threading
-from time import monotonic
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, Union
+from time import monotonic
+from typing import Any, Dict, Optional, Union
 
 PENDING_CLARIFICATION_TTL_SECONDS = 60.0
 MAX_PENDING_CLARIFICATIONS = 10_000

@@ -6,12 +6,11 @@ import socket
 import threading
 from collections import defaultdict
 from time import time
-from typing import Dict, Any, Optional
-from urllib.parse import urlparse, urljoin
+from typing import Any, Dict, Optional
+from urllib.parse import urljoin, urlparse
 
 import requests
-
-from src.governor.exceptions import NetworkMediatorError, CapabilityRegistryError
+from src.governor.exceptions import CapabilityRegistryError, NetworkMediatorError
 from src.ledger.writer import LedgerWriter
 
 NETWORK_TIMEOUT = 5  # seconds (default)

@@ -5,7 +5,6 @@ from pathlib import Path
 from src.actions.action_result import ActionResult
 from src.system_control.system_control_executor import SystemControlExecutor
 
-
 PRESET_FOLDERS = {
     "documents": Path.home() / "Documents",
     "downloads": Path.home() / "Downloads",
