@@ -109,6 +109,9 @@ def _resolve_ffmpeg() -> str | None:
 
 def _safe_upload_filename(filename: str | None) -> str:
     raw = (filename or "audio.webm").strip()
+    # Normalize Windows-style backslash separators so Path.name works on
+    # any platform (upload filenames may come from Windows clients).
+    raw = raw.replace("\\", "/")
     basename = Path(raw).name.strip() or "audio.webm"
     safe = re.sub(r"[^A-Za-z0-9._-]", "_", basename)
     if not safe:

@@ -2,10 +2,22 @@ from __future__ import annotations
 
 import asyncio
 import json
+import platform
+
+import pytest
 
 from tests.test_brain_server_session_cleanup import _ScriptedWebSocket
 
 
+@pytest.mark.skipif(
+    platform.system() != "Windows",
+    reason=(
+        "Integration test that requires a live search backend (Ollama or API key). "
+        "Linux CI has no inference backend, so the search step returns no results "
+        "and 'preview source 1' has nothing to preview. "
+        "Run on Windows or with a live search backend."
+    ),
+)
 def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(monkeypatch):
     monkeypatch.setattr(
         "src.governor.governor.Governor._check_network_budget",
