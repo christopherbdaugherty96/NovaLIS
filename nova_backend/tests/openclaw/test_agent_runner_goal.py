@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from src.openclaw.agent_runner import OpenClawAgentRunner, RunCancelledError
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.openclaw.run_state_machine import run_event_hub
