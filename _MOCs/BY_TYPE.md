@@ -359,7 +359,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/governor/exceptions.py|exceptions]]
   summary: class CapabilityRegistryError(Exception):
 - [code] [[nova_backend/src/governor/execute_boundary/__init__.py|src/governor/execute_boundary]]
-  summary: ExecuteBoundary,
+  summary: GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,
 - [code] [[nova_backend/src/governor/execute_boundary/execute_boundary.py|execute_boundary]]
   summary: ExecuteBoundary – Governor‑owned execution gate.
 - [code] [[nova_backend/src/governor/governor.py|governor]]
@@ -511,7 +511,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/capabilities/capabilities.py|capabilities]]
   summary: NovaLIS capability declarations.
 - [code] [[nova_backend/src/cognition/__init__.py|src/cognition]]
-  summary: CognitiveModule,
+  summary: CognitiveMode,
 - [code] [[nova_backend/src/cognition/cognitive_layer_contract.py|cognitive_layer_contract]]
   summary: class CognitiveMode(str, Enum):
 - [code] [[nova_backend/src/cognition/cognitive_operation_logger.py|cognitive_operation_logger]]
@@ -931,7 +931,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 3aa5ffca32a9b424fc1d62a234488a3184586c64c8de7823b5462c60354b3221
+  summary: Runtime Fingerprint: c6d0c85dcc4f74c4f5ebe9332d4975c92aa9d8173edf9102d70f8f19a06b86c1
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +955,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 3f1af40ba50450b2e3258de8df47795359065799dfaaf5de6e29a5cf07510e43
+  summary: - runtimesurfacehash: 486da08085d1e8c87f17c200fe182c4997437b55636156b23a1c59beb9808b53
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1032,7 +1032,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 367 code)
+## Tests (5 docs, 370 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1096,6 +1096,8 @@ concern is reflected across docs, code and tests.
   summary: Phase 3 — Integration certification for capability 16 (governed_web_search).
 - [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
   summary: Phase 4 — API/WebSocket certification for capability 16 (governed_web_search).
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p5_ws_widget.py|test_p5_ws_widget]]
+  summary: Phase 5 — WebSocket widget-emission certification for capability 16 (governed_web_search).
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit - certification/cap_64_send_email_draft]]
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
@@ -1230,6 +1232,8 @@ concern is reflected across docs, code and tests.
   summary: @pytest.fixture(autouse=True)
 - [code] [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
   summary: ﻿from __future__ import annotations
+- [code] [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
+  summary: Approval gate wiring - governance regression tests.
 - [code] [[nova_backend/tests/governance/test_brain_server_no_hardcoded_location_suggestions.py|test_brain_server_no_hardcoded_location_suggestions]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/governance/test_cognition_module_scaffolds.py|test_cognition_module_scaffolds]]
@@ -1375,7 +1379,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]] - Phase 45
   summary: class _WebSocket:
 - [code] [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]] - Phase 45
-  summary: def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(monkeypatch):
+  summary: @pytest.mark.skipif(
 - [code] [[nova_backend/tests/phase45/test_capability_discoverability_contract.py|test_capability_discoverability_contract]] - Phase 45
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]] - Phase 45
@@ -1748,6 +1752,8 @@ concern is reflected across docs, code and tests.
   summary: Unit tests for src/trust/receipt_store.py.
 - [code] [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
+- [code] [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
+  summary: class _RecordingLedger:
 - [code] [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
   summary: governance_refusal_for,
 - [code] [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
@@ -1849,12 +1855,13 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (233 docs, 23 code)
+## Proofs (235 docs, 24 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
+- [asset] [[docs/PROOFS/Trust-Panel/trust_panel_mvp_live_2026-05-14.png|trust_panel_mvp_live_2026-05-14.png]]
 - [code] [[docs/PROOFS/governance-tests/governance_baseline.py|governance_baseline - PROOFS/governance-tests]]
   summary: Phase 3.5 Constitutional Baseline Generator
 - [code] [[docs/PROOFS/phase 3.5-4/governance-tests/governance_baseline.py|governance_baseline - phase 3.5-4/governance-tests]]
@@ -1893,6 +1900,8 @@ concern is reflected across docs, code and tests.
   summary: proof_date": "2026-05-07",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/web_news_blocker_fix_probe.json|web_news_blocker_fix_probe]]
   summary: started_at_epoch": 1778127522.1517382,
+- [doc] [[docs/PROOFS/Cap-16/SEARCH_WIDGET_WS_LIVE_PROOF_2026-05-14|Cap 16 Search Widget WebSocket Live Proof]]
+  summary: Date: 2026-05-14
 - [doc] [[docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25|CAPABILITY_VERIFICATION_AUDIT_2026-03-25]]
   summary: ﻿# Capability Verification Audit
 - [doc] [[docs/PROOFS/COMPLETION/PHASE_3.5_COMPLETION/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - COMPLETION/PHASE_3.5_COMPLETION]]
@@ -2229,6 +2238,8 @@ concern is reflected across docs, code and tests.
   summary: Updated: 2026-03-27
 - [doc] [[docs/PROOFS/README|README]]
   summary: ﻿# Proofs Pointer
+- [doc] [[docs/PROOFS/Trust-Panel/TRUST_PANEL_MVP_PROOF_2026-05-14|Trust Panel MVP Proof]]
+  summary: Date: 2026-05-14
 - [doc] [[docs/PROOFS/UI-Commands/BLOCKERS|UI / Commands Blockers - 2026-05-06]]
   summary: Status: draft / review required
 - [doc] [[docs/PROOFS/UI-Commands/cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08|Browser Use Visual Capture Recovery - 2026-05-08]]
@@ -2360,7 +2371,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (401 docs, 30 code)
+## Reference (410 docs, 30 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2474,6 +2485,8 @@ concern is reflected across docs, code and tests.
   summary: Pick the question that sounds like yours. Each section is a hand-picked
 - [doc] [[AGENTS|AGENTS.md]]
   summary: Guidance for AI agents working on NovaLIS.
+- [doc] [[branches_safe_to_delete.txt|branches_safe_to_delete]]
+  summary: ﻿docs/everyday-ux-friction-priority-lock - Tip is contained in origin/main; no unique commits remain. - proof: merged=True; uniquecommits=0;...
 - [doc] [[CHANGELOG|Changelog]]
   summary: - Reworked README for clearer product identity and navigation
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
@@ -2504,6 +2517,10 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-25
 - [doc] [[docs/audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26|Nova OpenClaw Docs-To-Code Alignment Audit]]
   summary: Date: 2026-04-26
+- [doc] [[docs/audits/BRANCH_CONSOLIDATION_AUDIT_2026-05-17|BRANCH_CONSOLIDATION_AUDIT_2026-05-17]]
+  summary: ﻿# Branch Consolidation Audit - 2026-05-17
+- [doc] [[docs/audits/NOVA_BASIC_WORKFLOW_VERIFICATION_2026-05-17|Nova Basic Workflow Verification - 2026-05-17]]
+  summary: Branch: test/nova-basic-workflow-verification
 - [doc] [[docs/audits/PASS1_RUNTIME_AND_OPENCLAW_AUDIT_2026-05-11|PASS 1 — Runtime / Generated Truth / OpenClaw Audit]]
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/PASS3_FULL_ALIGNMENT_AUDIT_2026-05-11|Full Repo / Doc / Code Alignment Audit]]
@@ -2511,7 +2528,9 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/PATCH_ROADMAP_2026-05-11|Audit Patch Roadmap]]
-  summary: Status update after PR #158:
+  summary: Status update after PR #158 and 2026-05-12 runtime-doc confirmation:
+- [doc] [[docs/audits/SECOND_PASS_REVIEW_2026-05-12|Nova — Brutally Grounded Second-Pass Review]]
+  summary: Date: 2026-05-12
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
 - [doc] [[docs/brain|Nova Brain]]
@@ -3082,8 +3101,14 @@ concern is reflected across docs, code and tests.
   summary: Status: qualified closed as of 2026-05-07.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION|Active Priority Lock — 2026-05-10 Everyday UX Friction]]
   summary: Status: active
+- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-12_SEARCH_WIDGET_WS|Active Priority Lock — #141 Search Widget Not Surfacing in Live WebSocket Sessions]]
+  summary: Status: ACTIVE
+- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-14_TRUST_PANEL_MVP|Active Priority Lock - Trust Panel MVP]]
+  summary: Status: ACTIVE
+- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING|Active Priority Lock - Approval Gate Wiring]]
+  summary: Status: ACTIVE
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-12
+  summary: Last reviewed: 2026-05-17
 - [doc] [[docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12|Five-Pass Stability And Operational Roadmap]]
   summary: Status: active operational direction record.
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
@@ -3096,6 +3121,10 @@ concern is reflected across docs, code and tests.
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
+- [doc] [[docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12|NovaLIS Repo Synchronization & Roadmap Update Plan — 2026-05-12]]
+  summary: This document consolidates the newest findings from recent repo audits, runtime reviews, governance
+- [doc] [[docs/status/TRUST_PANEL_MVP_CLOSEOUT_2026-05-14|Trust Panel MVP Closeout]]
+  summary: Date: 2026-05-14
 - [doc] [[docs/status/TRUST_REVIEW_CARD_MVP_CLOSEOUT_REVIEW_2026-05-07|Trust Review Card MVP Closeout Review - 2026-05-07]]
   summary: Status: merged / display-only / non-authorizing / follow-ups tracked
 - [doc] [[docs/status/TRUST_REVIEW_CARD_MVP_STATUS_2026-05-07|Trust Review Card MVP Status - 2026-05-07]]
@@ -3109,7 +3138,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
   summary: Status: historical operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Last reviewed: 2026-05-11
+  summary: Last reviewed: 2026-05-17
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]

@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (139)
+## governance (141)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -49,6 +49,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/src/governor/single_action_queue.py|single_action_queue]]
 - [code] [[nova_backend/src/governor/execute_boundary/__init__.py|src/governor/execute_boundary]]
 - [code] [[docs/archive/phase 3/NovaLIS-Governance(older)/OLD_VISION.md_files/table-components-gjyj5koo.css|table-components-gjyj5koo - NovaLIS-Governance(older)/OLD_VISION.md_files]]
+- [code] [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
 - [code] [[nova_backend/tests/governance/test_brain_server_no_hardcoded_location_suggestions.py|test_brain_server_no_hardcoded_location_suggestions]]
 - [code] [[nova_backend/tests/governance/test_cognition_module_scaffolds.py|test_cognition_module_scaffolds]]
 - [code] [[nova_backend/tests/governance/test_cognitive_layer_contract.py|test_cognitive_layer_contract]]
@@ -127,6 +128,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/future/openclaw_sovereign_governance|NovaLIS Architectural Hardening Plan - Sovereign Governance Over OpenClaw]]
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
 - [doc] [[NovaLIS-Governance/README|NovaLIS Governance]]
+- [doc] [[docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12|NovaLIS Repo Synchronization & Roadmap Update Plan — 2026-05-12]]
 - [doc] [[docs/audits/PASS4_OPENCLAW_FREEFORM_GOAL_INSPECTION_2026-05-11|PASS 4 — OpenClaw Freeform Goal Governance Inspection]]
 - [doc] [[docs/PROOFS/phase 3.5-4/Phase 3.5 Governance Verification |Phase 3.5 Governance Verification]]
 - [doc] [[docs/PROOFS/Phase-6/PHASE_6_LOCAL_SURFACE_HARDENING_AND_GOVERNANCE_TRUTH_ALIGNMENT_2026-03-28|Phase 6 Local Surface Hardening And Governance Truth Alignment]]
@@ -376,7 +378,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/status/README|Status Notes]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (101)
+## ux (102)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
@@ -446,6 +448,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/src/api/workspace_api.py|workspace_api]]
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION|Active Priority Lock — 2026-05-10 Everyday UX Friction]]
 - [doc] [[docs/demo_proof/brain_live_test/FRICTION_LOG|Brain Live Test Friction Log]]
+- [doc] [[branches_safe_to_delete.txt|branches_safe_to_delete]]
 - [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_EVENT_REPLAY_HARNESS_2026-05-08|Dashboard Event Replay Harness Proof - 2026-05-08]]
 - [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/dashboard_event_replay_pytest_results.txt|dashboard_event_replay_pytest_results]]
@@ -542,12 +545,13 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (708)
+## testing (715)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
+- [asset] [[docs/PROOFS/Trust-Panel/trust_panel_mvp_live_2026-05-14.png|trust_panel_mvp_live_2026-05-14.png]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
 - [code] [[nova_backend/tests/adversarial/_helpers.py|_helpers]]
 - [code] [[nova_backend/tests/phase45/_websocket_test_helpers.py|_websocket_test_helpers]]
@@ -629,9 +633,11 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_agent_runtime_store.py|test_agent_runtime_store]]
 - [code] [[nova_backend/tests/openclaw/test_agent_scheduler.py|test_agent_scheduler]]
 - [code] [[nova_backend/tests/executors/test_analysis_document_executor.py|test_analysis_document_executor]]
+- [code] [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
 - [code] [[nova_backend/tests/phase8/test_assistive_noticing.py|test_assistive_noticing]]
 - [code] [[nova_backend/tests/phase6/test_atomic_policy_store.py|test_atomic_policy_store]]
 - [code] [[nova_backend/tests/test_audit_api.py|test_audit_api]]
+- [code] [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
 - [code] [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
@@ -794,6 +800,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
 - [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
+- [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p5_ws_widget.py|test_p5_ws_widget]]
 - [code] [[nova_backend/tests/phase5/test_pattern_review_contract.py|test_pattern_review_contract]]
 - [code] [[nova_backend/tests/phase5/test_pattern_review_store.py|test_pattern_review_store]]
 - [code] [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
@@ -968,6 +975,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt|browser_use_visual_capture_recovery_attempt]]
 - [doc] [[docs/PROOFS/Phase-4.5/CALENDAR_INTEGRATION_PROOF_2026-03-09|CALENDAR_INTEGRATION_PROOF_2026-03-09]]
 - [doc] [[docs/capability_verification/cap_16_governed_web_search_certification_2026-05-10|Cap 16 Governed Web Search — Certification Proof Packet]]
+- [doc] [[docs/PROOFS/Cap-16/SEARCH_WIDGET_WS_LIVE_PROOF_2026-05-14|Cap 16 Search Widget WebSocket Live Proof]]
 - [doc] [[docs/capability_verification/cap_16_governed_web_search_simulation_2026-04-23|Capability 16 - Governed Web Search Simulation - 2026-04-23]]
 - [doc] [[docs/PROOFS/Phase-4/Capability_16_Governed_Web_Search_Proof|Capability 16 — Governed Web Search Proof]]
 - [doc] [[docs/PROOFS/Phase-4/Capability_17_Open_Preset_Website_Proof|Capability 17 — Open Preset Website Proof]]
@@ -1064,6 +1072,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-09/raw/non_search_widget_fuzzing_pytest_results.txt|non_search_widget_fuzzing_pytest_results]]
 - [doc] [[docs/PROOFS/Phase-5/NOTIFICATION_SCHEDULING_BOUNDARY_SPEC_2026-03-09|Notification Scheduling Boundary Spec]]
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
+- [doc] [[docs/audits/NOVA_BASIC_WORKFLOW_VERIFICATION_2026-05-17|Nova Basic Workflow Verification - 2026-05-17]]
 - [doc] [[docs/PROOFS/Phase-5/NOVA_CONSOLIDATED_CANONICAL_STATE_2026-03-09|Nova Consolidated Canonical State]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT|Nova Demo Script - 2026-04-28 User Test]]
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/NOVA PHASE 3.5 SEAL ARTIFACT.txt|NOVA PHASE 3.5 SEAL ARTIFACT - unlock-decisions/phase 3.5]]
@@ -1223,6 +1232,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/IDEAS/TIME_TEST_GOVERNOR_REFERENCE|TIME_TEST_GOVERNOR_REFERENCE]]
 - [doc] [[docs/PROOFS/Phase-5/TONE_CALIBRATION_ARCHITECTURE_SPEC_2026-03-09|Tone Calibration Architecture Spec]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/TOPIC_MAP_STORY_TRACKER_PROOF_2026-05-07|Topic Map + Story Tracker Proof - 2026-05-07]]
+- [doc] [[docs/PROOFS/Trust-Panel/TRUST_PANEL_MVP_PROOF_2026-05-14|Trust Panel MVP Proof]]
 - [doc] [[docs/PROOFS/Phase-4/Trust_Telemetry_Authoritative_Proof|Trust_Telemetry_Authoritative_Proof]]
 - [doc] [[docs/PROOFS/Phase-4/TTS_INVOCATION_BOUND_PROOF|TTS Invocation Bound Proof]]
 - [doc] [[docs/PROOFS/Phase-4/TTS_SPINE_AUTHORITY_PROOF|TTS Spine Authority Proof]]
