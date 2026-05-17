@@ -16,7 +16,6 @@ from src.brain.task_understanding import SimpleTaskPlan
 from src.conversation.planning_run_preview import PlanningRunPreview
 from src.conversation.request_understanding import RequestUnderstanding
 
-
 _AUTHORITY_EFFECT_NONE = "none"
 _HISTORY_NOT_AVAILABLE = "not_available"
 

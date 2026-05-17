@@ -6,7 +6,7 @@ It is kept separate so that changes to surrounding logic (logging, metrics, etc.
 do not affect the model version hash.
 """
 
-from typing import List, Dict, Any
+from typing import Dict, List
 
 
 def run_inference(

@@ -2,10 +2,11 @@ import logging
 import re
 from typing import List
 
-from . import prompts
 from src.cognition.cognitive_operation_logger import CognitiveOperationLogger
 from src.llm import llm_gateway
 from src.usage.provider_usage_store import provider_usage_store
+
+from . import prompts
 
 logger = logging.getLogger(__name__)
 

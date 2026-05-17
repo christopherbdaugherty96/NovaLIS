@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-
 _BROWSER_HINTS = ("chrome", "firefox", "edge", "safari", "brave", "opera")
 
 

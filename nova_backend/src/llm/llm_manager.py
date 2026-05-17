@@ -5,13 +5,14 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
+from src.ledger.writer import LedgerWriter
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
-from src.nova_config import OLLAMA_MODEL, OLLAMA_FALLBACK_MODEL, OLLAMA_TIMEOUT, OLLAMA_URL
+from src.nova_config import OLLAMA_FALLBACK_MODEL, OLLAMA_MODEL, OLLAMA_TIMEOUT, OLLAMA_URL
 from src.utils.persistent_state import runtime_path
+
 from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)

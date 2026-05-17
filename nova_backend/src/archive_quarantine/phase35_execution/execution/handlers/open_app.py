@@ -16,10 +16,10 @@ PHASE-2 RULES:
 - One action per call
 """
 
+import logging
 import os
 import subprocess
-import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict
 
 from ...actions.action_request import ActionRequest
 from ...actions.action_result import ActionResult
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 def _allowed_apps() -> Dict[str, Dict[str, Any]]:
     """
     Return the Phase-2 approved application allowlist.
-    
+
     RULES:
     - Absolute paths only
     - No PATH lookup
@@ -65,13 +65,13 @@ def _allowed_apps() -> Dict[str, Dict[str, Any]]:
 def open_app(action: ActionRequest) -> ActionResult:
     """
     Execute a Phase-2 OPEN_APP action.
-    
+
     This handler:
     - Assumes confirmation has already occurred
     - Executes immediately
     - Returns exactly one ActionResult
     """
-    
+
     # Defensive type check (execution boundary invariant)
     if not isinstance(action, ActionRequest):
         logger.warning("Invalid action request type")
@@ -145,9 +145,9 @@ def open_app(action: ActionRequest) -> ActionResult:
     try:
         # Build command — no user-supplied args allowed
         cmd = [path]
-        
+
         logger.info(f"Launching app: {name} from {path}")
-        
+
         subprocess.Popen(
             cmd,
             shell=False,

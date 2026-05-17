@@ -10,7 +10,6 @@ from src.context.system_context import get_system_context
 from src.ledger.writer import LedgerWriter
 from src.perception.cursor_locator import locate_cursor
 
-
 ActiveWindowProvider = Callable[[], dict[str, Any]]
 BrowserContextProvider = Callable[[dict[str, Any]], dict[str, Any]]
 SystemContextProvider = Callable[[], dict[str, Any]]

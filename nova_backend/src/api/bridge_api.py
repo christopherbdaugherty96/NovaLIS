@@ -8,8 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException, WebSocketDisconnect
 
-from src.governor.governor_mediator import Clarification, Invocation, GovernorMediator
-
+from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 
 # Step 6 note: bridge is a conversational gateway, not a template runner.
 # When bridge-triggered template runs are added, call EnvelopeFactory.issue()

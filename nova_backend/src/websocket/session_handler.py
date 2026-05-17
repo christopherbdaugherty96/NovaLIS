@@ -11,7 +11,6 @@ from fastapi import WebSocket, WebSocketDisconnect
 from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
 
-
 _HEADLINE_SUMMARY_RE = re.compile(
     r"\b(?:summari[sz]e|summary).{0,50}\b(?:all\s+)?(?:headlines?|news)\b"
     r"|\b(?:headlines?|news).{0,50}\b(?:summari[sz]e|summary)\b",
@@ -1524,7 +1523,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if top_name:
                         suggested = [
                             {"label": f"Continue {top_name}", "command": f"continue my {top_name}"},
-                            {"label": f"Project status", "command": f"project status {top_name}"},
+                            {"label": "Project status", "command": f"project status {top_name}"},
                             {"label": "Save thread memory", "command": f"memory save thread {top_name}"},
                             {"label": "Show threads", "command": "show threads"},
                         ]
@@ -1941,6 +1940,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 try:
                     from src.llm.llm_gateway import (
                         confirm_model_update as confirm_llm_model_update,
+                    )
+                    from src.llm.llm_gateway import (
                         is_model_update_pending as llm_model_update_pending,
                     )
 
@@ -3766,7 +3767,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                 await send_trust_status(ws, session_state["trust_status"])
 
-                message_confidence: Optional[str] = None
+                message_confidence: str | None = None
                 message_suggestions: list[dict[str, str]] | None = None
                 if capability_id == 31 and isinstance(action_payload, dict):
                     accuracy_label = str(action_payload.get("verification_accuracy_label") or "").strip()

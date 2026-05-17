@@ -11,15 +11,19 @@ from typing import Any, Dict, Optional, Tuple
 
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.deepseek_bridge import DeepSeekBridge
+from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.conversation.escalation_policy import EscalationPolicy
 from src.conversation.response_formatter import ResponseFormatter
-from src.conversation.response_style_router import InputNormalizer, ResponseStyle, ResponseStyleRouter
+from src.conversation.response_style_router import (
+    InputNormalizer,
+    ResponseStyle,
+    ResponseStyleRouter,
+)
 from src.conversation.safety_filter import SafetyFilter
-from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
 from src.llm.llm_gateway import generate_chat
-from src.memory.user_memory_store import UserMemoryStore, user_memory_store
 from src.memory.nova_self_memory_store import NovaSelfMemoryStore, nova_self_memory_store
+from src.memory.user_memory_store import UserMemoryStore, user_memory_store
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 

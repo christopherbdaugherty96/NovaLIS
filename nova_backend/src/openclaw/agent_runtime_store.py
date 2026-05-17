@@ -10,8 +10,6 @@ from src.openclaw.agent_personality_bridge import (
     DEFAULT_DELIVERY_MODE_BY_TEMPLATE,
     normalize_delivery_mode,
 )
-from src.openclaw.strict_preflight import strict_foundation_snapshot
-from src.openclaw.task_envelope import TaskEnvelope
 from src.openclaw.run_state_machine import (
     RUN_FAILED,
     RUN_RUNNING,
@@ -21,6 +19,8 @@ from src.openclaw.run_state_machine import (
     run_event_hub,
     run_state_machine,
 )
+from src.openclaw.strict_preflight import strict_foundation_snapshot
+from src.openclaw.task_envelope import TaskEnvelope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 

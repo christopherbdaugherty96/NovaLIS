@@ -12,7 +12,6 @@ from typing import Iterable
 
 from src.brain.task_understanding import SimpleTaskPlan, build_simple_task_plan
 
-
 _TASK_LIKE_RE = re.compile(
     r"\b("
     r"task|plan|planning|scene plan|summari[sz]e|summary|clarif(?:y|ication)|"

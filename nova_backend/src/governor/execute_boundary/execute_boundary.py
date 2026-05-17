@@ -8,19 +8,18 @@ Timeouts are delegated to NetworkMediator.
 
 from __future__ import annotations
 
-import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
-from typing import Optional
 import sys
 import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
+from typing import Optional
 
 try:
     import resource
 except ImportError:  # pragma: no cover - Windows
     resource = None
 
-from src.actions.action_request import ActionRequest
-from src.actions.action_result import ActionResult
 
 # Phase‑4 staging flag – True when execution is allowed
 GOVERNED_ACTIONS_ENABLED = True

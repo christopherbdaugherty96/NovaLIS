@@ -545,7 +545,7 @@ def _classify_out_of_scope(text: str) -> str:
             bool(cap.get("enabled")) and cap.get("status") == "active"
         ):
             return (
-                f"That's actually a Nova capability, but it's turned off right now.\n\n"
+                "That's actually a Nova capability, but it's turned off right now.\n\n"
                 "It's available in the code but not currently active. "
                 "A future update may enable it.\n\n"
                 'Say "what can you do" to see everything that\'s on right now.'

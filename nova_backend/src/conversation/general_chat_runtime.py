@@ -19,17 +19,19 @@ from src.brief.daily_brief import (
     compose_daily_brief,
     is_daily_brief_request,
 )
-from src.memory.memory_skill import MemorySkill
-from src.skills.calendar import CalendarSkill
 from src.conversation.planning_run_preview import create_planning_run_preview
 from src.conversation.request_understanding import build_request_understanding
 from src.conversation.request_understanding_formatter import format_request_understanding_block
-from src.conversation.request_understanding_review_card import build_request_understanding_review_card
+from src.conversation.request_understanding_review_card import (
+    build_request_understanding_review_card,
+)
 from src.conversation.session_router import SessionRouter
 from src.conversation.task_understanding_preview import build_task_understanding_preview
 from src.governor.network_mediator import NetworkMediator
-from src.services.weather_service import WeatherService
+from src.memory.memory_skill import MemorySkill
 from src.personality.tone_profile_store import ToneProfileStore
+from src.services.weather_service import WeatherService
+from src.skills.calendar import CalendarSkill
 from src.skills.general_chat import GeneralChatSkill
 from src.trust.receipt_store import get_recent_receipts
 from src.working_context.project_threads import ProjectThreadStore

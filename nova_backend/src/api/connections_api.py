@@ -11,13 +11,12 @@ DELETE /api/settings/connections/{provider}        — clear single provider key
 DELETE /api/settings/connections/all               — clear all provider keys (with confirmed=true guard)
 """
 
-import os
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from src.connections.connections_store import connections_store, PROVIDER_REGISTRY
+from src.connections.connections_store import PROVIDER_REGISTRY, connections_store
 
 
 def build_connections_router() -> APIRouter:

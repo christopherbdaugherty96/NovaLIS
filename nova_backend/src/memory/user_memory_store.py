@@ -17,7 +17,6 @@ from uuid import uuid4
 
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
-
 _MAX_ENTRIES = 200
 
 # Priority order for rendering context blocks (most important first)

@@ -10,7 +10,6 @@ from src.ledger.writer import LedgerWriter
 from src.perception.ocr_pipeline import OCRPipeline
 from src.perception.vision_analyzer import VisionAnalyzer
 
-
 log = logging.getLogger("nova.live_screen")
 LIVE_SCREEN_MAX_UPLOAD_BYTES = 12 * 1024 * 1024
 
