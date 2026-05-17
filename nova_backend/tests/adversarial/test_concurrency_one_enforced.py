@@ -4,8 +4,6 @@ from __future__ import annotations
 import threading
 import time
 
-from tests.adversarial._helpers import try_find_callable
-
 """
 Goal:
 - Concurrency=1 enforced (SingleActionQueue).
@@ -40,8 +38,8 @@ class BlockingNetworkMediator:
 
 
 def test_single_action_queue_enforced(monkeypatch):
-    from src.governor.governor_mediator import GovernorMediator
     from src.governor.governor import Governor
+    from src.governor.governor_mediator import GovernorMediator
 
     gate = threading.Event()
     nm = BlockingNetworkMediator(gate)

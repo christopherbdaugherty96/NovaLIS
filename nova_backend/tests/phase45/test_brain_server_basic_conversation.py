@@ -5,13 +5,12 @@ from datetime import datetime
 from unittest.mock import patch
 
 from fastapi import WebSocketDisconnect
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.base_skill import SkillResult
 from src.conversation.session_router import GateResult
 
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 
 class _DisconnectOnGreetingWebSocket(_ScriptedWebSocket):
@@ -707,7 +706,6 @@ def test_open_folder_named_workspace_resolves_to_repo_confirmation(monkeypatch):
 
 
 def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch):
-    from src.actions.action_result import ActionResult
 
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -739,7 +737,6 @@ def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch):
 
 
 def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkeypatch):
-    from src.actions.action_result import ActionResult
 
     monkeypatch.setattr(
         brain_server.SessionRouter,

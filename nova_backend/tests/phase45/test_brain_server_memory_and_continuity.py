@@ -8,7 +8,8 @@ from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
 
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
+
 
 def test_silent_memory_overview_refresh_updates_widget_without_chat_noise(monkeypatch):
     from src.actions.action_result import ActionResult

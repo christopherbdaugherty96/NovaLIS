@@ -16,14 +16,11 @@ Tests:
 """
 from __future__ import annotations
 
-import asyncio
 import json
-from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import anyio
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Unit tests — send_widget_message search case
@@ -96,7 +93,7 @@ async def test_send_widget_message_search_does_not_send_bare_message():
 @pytest.mark.asyncio
 async def test_send_widget_message_search_attaches_turn_id():
     """turn_id is attached when a WS turn is active."""
-    from src.brain_server import send_widget_message, _current_ws_turn_id
+    from src.brain_server import _current_ws_turn_id, send_widget_message
 
     sent: list[dict] = []
 
