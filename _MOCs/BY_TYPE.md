@@ -1379,7 +1379,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]] - Phase 45
   summary: class _WebSocket:
 - [code] [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]] - Phase 45
-  summary: def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(monkeypatch):
+  summary: @pytest.mark.skipif(
 - [code] [[nova_backend/tests/phase45/test_capability_discoverability_contract.py|test_capability_discoverability_contract]] - Phase 45
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]] - Phase 45
