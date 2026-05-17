@@ -378,6 +378,7 @@ _Read-only Brain scaffolding._
 ### Imported by
 
 - [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p5_ws_widget.py|test_p5_ws_widget]]
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
@@ -436,7 +437,7 @@ _Read-only Brain scaffolding._
 
 ## `cognition` (8 files)
 
-_CognitiveModule,_
+_CognitiveMode,_
 
 ### Files
 
@@ -648,7 +649,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
-- _…and 27 more_
+- _…and 29 more_
 
 ### Tests
 
@@ -830,6 +831,7 @@ _Debug utilities package._
 
 ### Imported by
 
+- [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
 - [[nova_backend/tests/test_confirmation_gate.py|test_confirmation_gate]]
 
 ### Tests
@@ -838,7 +840,7 @@ _Debug utilities package._
 
 ## `governor` (12 files)
 
-_ExecuteBoundary,_
+_GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 
 ### Files
 
@@ -917,7 +919,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- _…and 56 more_
+- _…and 58 more_
 
 ### Tests
 
@@ -1935,6 +1937,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/utils/path_resolver.py|path_resolver]]
 - [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
+- [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
 - [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
 

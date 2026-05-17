@@ -132,7 +132,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/capabilities/capabilities.py|capabilities]]
   summary: NovaLIS capability declarations.
 - [[nova_backend/src/cognition/__init__.py|src/cognition]]
-  summary: CognitiveModule,
+  summary: CognitiveMode,
 - [[nova_backend/src/cognition/cognitive_layer_contract.py|cognitive_layer_contract]]
   summary: class CognitiveMode(str, Enum):
 - [[nova_backend/src/cognition/cognitive_operation_logger.py|cognitive_operation_logger]]
@@ -279,7 +279,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/governor/exceptions.py|exceptions]]
   summary: class CapabilityRegistryError(Exception):
 - [[nova_backend/src/governor/execute_boundary/__init__.py|src/governor/execute_boundary]]
-  summary: ExecuteBoundary,
+  summary: GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,
 - [[nova_backend/src/governor/execute_boundary/execute_boundary.py|execute_boundary]]
   summary: ExecuteBoundary – Governor‑owned execution gate.
 - [[nova_backend/src/governor/governor.py|governor]]
@@ -570,7 +570,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (367)
+## Tests and verification (370)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -634,6 +634,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Phase 3 — Integration certification for capability 16 (governed_web_search).
 - [[nova_backend/tests/certification/cap_16_governed_web_search/test_p4_api.py|test_p4_api - certification/cap_16_governed_web_search]]
   summary: Phase 4 — API/WebSocket certification for capability 16 (governed_web_search).
+- [[nova_backend/tests/certification/cap_16_governed_web_search/test_p5_ws_widget.py|test_p5_ws_widget]]
+  summary: Phase 5 — WebSocket widget-emission certification for capability 16 (governed_web_search).
 - [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit - certification/cap_64_send_email_draft]]
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
@@ -768,6 +770,8 @@ Use this to orient yourself before diving into a specific module.
   summary: @pytest.fixture(autouse=True)
 - [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
   summary: ﻿from __future__ import annotations
+- [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
+  summary: Approval gate wiring - governance regression tests.
 - [[nova_backend/tests/governance/test_brain_server_no_hardcoded_location_suggestions.py|test_brain_server_no_hardcoded_location_suggestions]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/governance/test_cognition_module_scaffolds.py|test_cognition_module_scaffolds]]
@@ -913,7 +917,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]]
   summary: class _WebSocket:
 - [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]]
-  summary: def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(monkeypatch):
+  summary: @pytest.mark.skipif(
 - [[nova_backend/tests/phase45/test_capability_discoverability_contract.py|test_capability_discoverability_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
@@ -1286,6 +1290,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Unit tests for src/trust/receipt_store.py.
 - [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
+- [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
+  summary: class _RecordingLedger:
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
   summary: governance_refusal_for,
 - [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]

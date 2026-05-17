@@ -55,11 +55,11 @@ Sources are never edited — this overlay just builds navigation on top.
 | Governance | 8 | 12 |
 | Runtime and ops | 22 | 274 |
 | Frontend | 0 | 29 |
-| Tests | 5 | 367 |
+| Tests | 5 | 370 |
 | Scripts and tools | 4 | 20 |
 | Design specs | 14 | 0 |
-| Proofs | 233 | 23 |
-| Reference | 401 | 30 |
+| Proofs | 235 | 24 |
+| Reference | 410 | 30 |
 | Archive | 139 | 15 |
 
-_Indexed 993 docs and 770 non-doc files._
+_Indexed 1004 docs and 774 non-doc files._
