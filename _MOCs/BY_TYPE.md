@@ -931,7 +931,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: c6d0c85dcc4f74c4f5ebe9332d4975c92aa9d8173edf9102d70f8f19a06b86c1
+  summary: Runtime Fingerprint: f06d241757c72aad8a341f59e1e8fb2f695b80d411713cd70657df4c050165f9
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +955,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 486da08085d1e8c87f17c200fe182c4997437b55636156b23a1c59beb9808b53
+  summary: - runtimesurfacehash: dc233ae1deaa29a7ec6e6259ccb6a3d5f44bee025f06da9a2c0ef09bda55205a
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1379,7 +1379,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]] - Phase 45
   summary: class _WebSocket:
 - [code] [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]] - Phase 45
-  summary: @pytest.mark.skipif(
+  summary: def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(monkeypatch):
 - [code] [[nova_backend/tests/phase45/test_capability_discoverability_contract.py|test_capability_discoverability_contract]] - Phase 45
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]] - Phase 45
