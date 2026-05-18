@@ -25,7 +25,8 @@ Approval gate wiring - focused coverage merged / certification pending (2026-05-
 Status:
 
 ```text
-Trust Panel MVP is complete and proof-backed.
+Trust Panel MVP receipt surface is complete and proof-backed.
+Broader Trust Panel system status still defers to generated runtime truth.
 Approval-gate focused regression and behavioral live-session coverage are merged
 for tested Cap 22 / Cap 64 confirmation paths.
 PR #175 documented Nova basic workflow verification.
@@ -196,8 +197,9 @@ Proof:
 - docs/status/TRUST_PANEL_MVP_CLOSEOUT_2026-05-14.md
 ```
 
-The Trust Panel MVP is now implemented, merged, and proof-backed. It remains read-only and
-does not change approval behavior or execution authority.
+The Trust Panel MVP receipt surface is now implemented, merged, and proof-backed.
+Broader Trust Panel system status still defers to generated runtime truth.
+The MVP remains read-only and does not change approval behavior or execution authority.
 
 ### Approval gate wiring priority lock
 
@@ -346,6 +348,24 @@ added .codex-worktrees/ to .gitignore
 no runtime behavior changes
 ```
 
+### Four-pass safe cleanup and approval-gate certification scaffold
+
+Status:
+
+```text
+merged — PR #186
+```
+
+Result:
+
+```text
+clarified Trust Panel MVP receipt-surface wording
+synchronized #141 closure language
+added approval-gate certification matrix scaffold
+preserved certification-pending status
+no runtime authority expansion
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
@@ -355,7 +375,7 @@ PR #151 — continuity sync branch closed unmerged.
 PR #155 — runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs are current as of 2026-05-12. No regeneration PR pending.
+Generated runtime docs are current as of the latest recorded drift check on PR #185. No regeneration PR is pending unless `python scripts/check_runtime_doc_drift.py` fails again.
 
 ---
 
@@ -369,7 +389,7 @@ Generated runtime docs are current as of 2026-05-12. No regeneration PR pending.
 Recently completed proof:
 
 ```text
-#141 — Search widget WebSocket surfacing fix and live proof complete.
+#141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
 ```
 
 ---
@@ -427,11 +447,10 @@ No recent merge authorizes:
 
 ## Next Correct Step
 
-Per the current reviewed sequence:
-
 ```text
-1. Keep PR #171 / #172 framed as focused coverage, not certification.
-2. Keep PR #175 / #176 framed as basic workflow verification and fixes, not certification.
-3. Run broader/full-suite approval-gate verification when practical.
-4. Only then decide whether the approval-gate lock can move toward certification/closeout.
+1. Use APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
+2. Complete confirmation-bound capability inventory.
+3. Fill proof status for every confirmation-bound path.
+4. Then run broader/full-suite approval-gate verification.
+5. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```
