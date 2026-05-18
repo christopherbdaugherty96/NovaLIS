@@ -26,9 +26,10 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run backend test suite
+        timeout-minutes: 10
         run: |
           cd nova_backend
-          python -m pytest -q
+          python -m pytest -q --maxfail=5
 
       - name: Enforce generated runtime docs
         run: |
