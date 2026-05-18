@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://novalis.local/schemas/second-brain/knowledge-entry.schema.json",
+  "title": "Nova Second Brain Knowledge Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "schema_version",
+    "title",
+    "entry_type",
+    "status",
+    "authority_label",
+    "created_at",
+    "updated_at",
+    "source_refs",
+    "content_hash",
+    "review_state",
+    "confidence",
+    "project_scope",
+    "tags",
+    "relationships",
+    "supersedes",
+    "superseded_by",
+    "ledger_refs",
+    "non_authorizing"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^kb_[A-Za-z0-9][A-Za-z0-9_-]*$"
+    },
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entry_type": {
+      "type": "string",
+      "enum": [
+        "research",
+        "decision",
+        "pattern",
+        "conversation",
+        "reference",
+        "capability_log",
+        "entity",
+        "concept",
+        "synthesis",
+        "proposal"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "captured",
+        "candidate",
+        "reviewed",
+        "promoted",
+        "rejected",
+        "superseded",
+        "archived"
+      ]
+    },
+    "authority_label": {
+      "type": "string",
+      "enum": [
+        "raw_source",
+        "candidate_knowledge",
+        "reviewed_knowledge",
+        "promoted_knowledge",
+        "runtime_truth_reference",
+        "ledger_receipt_reference"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "review_state": {
+      "type": "string",
+      "enum": [
+        "unreviewed",
+        "needs_changes",
+        "approved",
+        "rejected",
+        "superseded"
+      ]
+    },
+    "reviewed_by": {
+      "type": "string",
+      "default": ""
+    },
+    "reviewed_at": {
+      "oneOf": [
+        {
+          "type": "string",
+          "const": ""
+        },
+        {
+          "type": "string",
+          "format": "date-time"
+        }
+      ],
+      "default": ""
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ]
+    },
+    "project_scope": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_/-]*$"
+      },
+      "uniqueItems": true
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "$ref": "knowledge_relationship.schema.json"
+      }
+    },
+    "supersedes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^kb_[A-Za-z0-9][A-Za-z0-9_-]*$"
+      },
+      "uniqueItems": true
+    },
+    "superseded_by": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^kb_[A-Za-z0-9][A-Za-z0-9_-]*$"
+      },
+      "uniqueItems": true
+    },
+    "ledger_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "non_authorizing": {
+      "type": "boolean",
+      "const": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "promoted"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "review_state": {
+            "const": "approved"
+          },
+          "reviewed_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "reviewed_by",
+          "reviewed_at"
+        ],
+        "anyOf": [
+          {
+            "properties": {
+              "source_refs": {
+                "type": "array",
+                "minItems": 1
+              }
+            },
+            "required": [
+              "source_refs"
+            ]
+          },
+          {
+            "properties": {
+              "ledger_refs": {
+                "type": "array",
+                "minItems": 1
+              }
+            },
+            "required": [
+              "ledger_refs"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "entry_type": {
+            "const": "synthesis"
+          }
+        },
+        "required": [
+          "entry_type"
+        ]
+      },
+      "then": {
+        "not": {
+          "properties": {
+            "authority_label": {
+              "const": "runtime_truth_reference"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

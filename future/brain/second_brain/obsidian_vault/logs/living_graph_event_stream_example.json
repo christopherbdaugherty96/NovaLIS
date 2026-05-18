@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "scaffold_event_stream",
+  "non_authorizing": true,
+  "events": [
+    {
+      "event_id": "kbevt_scaffold_idle_001",
+      "seq": 1,
+      "event_type": "knowledge.graph_snapshot_created",
+      "subject_type": "graph_snapshot",
+      "scope_id": "kgshot_scaffold_living_graph",
+      "authority_label": "candidate_knowledge",
+      "visual_expectation": "ambient_breathing_glow"
+    },
+    {
+      "event_id": "kbevt_scaffold_search_002",
+      "seq": 2,
+      "event_type": "knowledge.search_performed",
+      "subject_type": "search",
+      "scope_id": "search_second_brain_robustness",
+      "entity_ids": [
+        "kb_research_second_brain_robustness_example",
+        "kb_decision_file_first_event_first_foundation"
+      ],
+      "authority_label": "candidate_knowledge",
+      "visual_expectation": "search_pulse"
+    },
+    {
+      "event_id": "kbevt_scaffold_proposed_003",
+      "seq": 3,
+      "event_type": "knowledge.proposed",
+      "subject_type": "entry",
+      "entity_id": "kb_proposal_living_graph_visual_slice",
+      "entity_version": 1,
+      "authority_label": "candidate_knowledge",
+      "visual_expectation": "candidate_node_flash"
+    },
+    {
+      "event_id": "kbevt_scaffold_reasoning_004",
+      "seq": 4,
+      "event_type": "knowledge.search_performed",
+      "subject_type": "search",
+      "scope_id": "reasoning_cascade_scaffold",
+      "entity_ids": [
+        "kb_research_second_brain_robustness_example",
+        "kb_decision_file_first_event_first_foundation",
+        "kb_concept_non_authorizing_memory"
+      ],
+      "authority_label": "candidate_knowledge",
+      "visual_expectation": "reasoning_cascade"
+    }
+  ]
+}

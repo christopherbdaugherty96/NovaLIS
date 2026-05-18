@@ -139,6 +139,8 @@ Keeping them visible under `future/brain/` makes the long-term architecture easi
 
 - future learning architecture
 - future planning architecture
+- future second-brain / knowledge-layer architecture
+- future second-brain schema and health-check contracts
 - future governed execution models
 - future domain workflows that depend on Brain planning
 - design docs that are not runtime truth

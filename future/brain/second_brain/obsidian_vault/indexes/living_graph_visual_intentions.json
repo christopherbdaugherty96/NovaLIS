@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "status": "scaffold_visual_contract",
+  "non_authorizing": true,
+  "intentions": [
+    {
+      "effect_type": "ambient_breathing_glow",
+      "trigger": "idle heartbeat",
+      "priority": 1,
+      "ttl_ms": 2400,
+      "budget_cost": 1,
+      "description": "Low-intensity node breathing and sparse edge pulses while the graph is resting."
+    },
+    {
+      "effect_type": "search_pulse",
+      "trigger": "knowledge.search_performed",
+      "priority": 4,
+      "ttl_ms": 1800,
+      "budget_cost": 3,
+      "description": "Electric pulses radiate from the query focus toward ranked matches."
+    },
+    {
+      "effect_type": "candidate_node_flash",
+      "trigger": "knowledge.proposed",
+      "priority": 5,
+      "ttl_ms": 1600,
+      "budget_cost": 3,
+      "description": "A new candidate node flashes, then settles into candidate glow."
+    },
+    {
+      "effect_type": "promotion_glow",
+      "trigger": "knowledge.promoted",
+      "priority": 6,
+      "ttl_ms": 2600,
+      "budget_cost": 4,
+      "description": "A warm sustained glow marks review promotion, then decays."
+    },
+    {
+      "effect_type": "reasoning_cascade",
+      "trigger": "active reasoning trace",
+      "priority": 3,
+      "ttl_ms": 2200,
+      "budget_cost": 5,
+      "description": "Rapid but bounded pulses traverse an active subgraph."
+    },
+    {
+      "effect_type": "warning_pulse",
+      "trigger": "critical health finding",
+      "priority": 8,
+      "ttl_ms": 2200,
+      "budget_cost": 4,
+      "description": "Contained warning pulse for conflict, stale, or critical health findings."
+    }
+  ],
+  "budget": {
+    "max_high_cost_effects": 8,
+    "per_node_cooldown_ms": 1200,
+    "per_edge_cooldown_ms": 900,
+    "slow_consumer_behavior": "snapshot_required"
+  }
+}
