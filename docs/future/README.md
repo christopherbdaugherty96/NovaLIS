@@ -33,6 +33,8 @@ The implemented system is a **partial realization** of these ideas, not full com
 
 ## Canonical Future Direction
 
+- `NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md` - future Nova/Auralis operating-model and measurement-spine direction.
+
 - `ROADMAP.md` — primary future direction and phased expansion path.
 - `NOVA_AGENT_STACK_RECOMMENDATIONS.md` — future governed agent-stack architecture direction.
 
