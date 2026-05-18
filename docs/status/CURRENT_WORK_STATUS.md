@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-17
+Last reviewed: 2026-05-18
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,7 +19,7 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Approval gate wiring - focused coverage merged / certification pending (2026-05-17).
+Approval gate wiring - focused coverage merged / certification pending (2026-05-18).
 ```
 
 Status:
@@ -28,7 +28,14 @@ Status:
 Trust Panel MVP is complete and proof-backed.
 Approval-gate focused regression and behavioral live-session coverage are merged
 for tested Cap 22 / Cap 64 confirmation paths.
+PR #175 documented Nova basic workflow verification.
+PR #176 fixed and merged the basic workflow regressions found by that pass.
+PR #177, PR #178, PR #179, and PR #180 cleared baseline CI blockers needed
+for clean verification.
+Core CI, Runtime Docs, Governance, Fingerprint Clean, and Phase-3.5 Verification
+passed before PR #176 merged.
 Full approval-gate certification remains pending until broader/full-suite proof exists.
+Website-preview live-backend validation remains follow-up debt.
 ```
 
 Current approval-gate status:
@@ -36,7 +43,11 @@ Current approval-gate status:
 ```text
 Focused regression coverage: merged.
 Behavioral live-session coverage: merged.
+Basic workflow verification report: merged.
+Basic workflow regressions: fixed / merged.
+Baseline CI blockers for clean verification: cleared / merged.
 Full approval-gate certification: pending.
+Website-preview live-backend validation: follow-up debt.
 ```
 
 ---
@@ -237,6 +248,58 @@ yes resumes with confirmed=True through governed invocation
 no / cancel / unrelated input does not execute the pending action
 ```
 
+### Nova basic workflow verification
+
+Status:
+
+```text
+merged - PR #175
+```
+
+Result:
+
+```text
+documented daily-use workflow verification, focused test chunks, latency checks,
+and a broader full-suite attempt without changing runtime behavior or authority
+```
+
+This is verification evidence only. It does not certify the approval gate globally.
+
+### Nova basic workflow regression fixes
+
+Status:
+
+```text
+merged - PR #176
+```
+
+Result:
+
+```text
+fixed the basic workflow regressions found by PR #175
+merged after Core CI, Runtime Docs, Governance, Fingerprint Clean, and
+Phase-3.5 Verification passed on the rebased branch
+```
+
+This does not close approval-gate certification.
+
+### Baseline CI blocker cleanup
+
+Status:
+
+```text
+merged - PR #177, PR #178, PR #179, PR #180
+```
+
+Result:
+
+```text
+cleared baseline CI blockers needed for clean verification
+PR #180 synced the frontend mirror from nova_backend/static
+```
+
+Website-preview live-backend validation remains follow-up debt.
+
 ---
 
 ## Closed / Unmerged Follow-Through
@@ -322,6 +385,7 @@ Per the current reviewed sequence:
 
 ```text
 1. Keep PR #171 / #172 framed as focused coverage, not certification.
-2. Run broader/full-suite approval-gate verification when practical.
-3. Only then decide whether the approval-gate lock can move toward certification/closeout.
+2. Keep PR #175 / #176 framed as basic workflow verification and fixes, not certification.
+3. Run broader/full-suite approval-gate verification when practical.
+4. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```
