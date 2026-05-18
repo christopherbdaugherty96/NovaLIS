@@ -65,7 +65,7 @@ Every approval-gate simulation must preserve:
 
 ```text
 Nova drafts and recommends.
-Christopher approves.
+The current authorized user approves.
 Execution stays manual or governed inside approved bounded paths.
 Trust/receipt visibility is non-authorizing.
 Memory and planning context do not grant permission.
