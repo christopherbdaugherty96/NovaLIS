@@ -36,6 +36,7 @@ Core CI, Runtime Docs, Governance, Fingerprint Clean, and Phase-3.5 Verification
 passed before PR #176 merged.
 Full approval-gate certification remains pending until broader/full-suite proof exists.
 Website-preview live-backend validation remains follow-up debt.
+PR #182, PR #183, and PR #184 merged planning preservation and housekeeping.
 ```
 
 Current approval-gate status:
@@ -299,6 +300,51 @@ PR #180 synced the frontend mirror from nova_backend/static
 ```
 
 Website-preview live-backend validation remains follow-up debt.
+
+### Obsidian / Second Brain future-planning preservation
+
+Status:
+
+```text
+merged — PR #182
+```
+
+Result:
+
+```text
+preserved future/brain/second_brain/ vault template and planning docs
+non-authorizing planning content only — no runtime wiring, no Cap 66
+```
+
+### BigPicture / Auralis operating-model future-planning preservation
+
+Status:
+
+```text
+merged — PR #183
+```
+
+Result:
+
+```text
+preserved future/big_picture/ operating-model and direction docs
+non-authorizing planning content only — no runtime behavior changes
+```
+
+### Housekeeping: .codex-worktrees/ gitignore
+
+Status:
+
+```text
+merged — PR #184
+```
+
+Result:
+
+```text
+added .codex-worktrees/ to .gitignore
+no runtime behavior changes
+```
 
 ---
 
