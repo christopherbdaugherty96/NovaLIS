@@ -46,7 +46,7 @@ def test_open_path_uses_workspace_root_allowlist(monkeypatch, tmp_path: Path):
     def _fake_startfile(value: str) -> None:
         opened.append(value)
 
-    monkeypatch.setattr("os.startfile", _fake_startfile)
+    monkeypatch.setattr("os.startfile", _fake_startfile, raising=False)
 
     executor = SystemControlExecutor()
     assert executor.open_path(target) is True
