@@ -126,7 +126,7 @@ function applyOpenClawAgentPayload(data) {
     ? data.agent
     : (data && typeof data === "object" ? data : {});
   openClawAgentState.loaded = true;
-  openClawAgentState.summary = String(payload.summary || "").trim() || "Nova can run tasks you review and approve before they take effect.";
+  openClawAgentState.summary = String(payload.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
   openClawAgentState.activeRun = (payload.active_run && typeof payload.active_run === "object")
@@ -2519,6 +2519,311 @@ function renderTrustPanel(data = {}) {
   renderSettingsPage();
 }
 
+// ---------------------------------------------------------------------------
+// Action receipt card — fetches /api/trust/receipts and renders to
+// #trust-center-receipts. Called after chat_done, on trust refresh,
+// and when navigating to the Trust Center page.
+// ---------------------------------------------------------------------------
+
+const _RECEIPT_LABELS = {
+  EMAIL_DRAFT_CREATED:          "Email draft opened in mail client",
+  EMAIL_DRAFT_FAILED:           "Email draft failed",
+  ACTION_ATTEMPTED:             "Action attempted",
+  ACTION_COMPLETED:             "Action completed",
+  OPENCLAW_ACTION_APPROVED:     "OpenClaw action approved",
+  OPENCLAW_ACTION_DENIED:       "OpenClaw action denied",
+  OPENCLAW_ACTION_PENDING:      "OpenClaw action awaiting confirmation",
+  OPENCLAW_AGENT_RUN_COMPLETED: "OpenClaw agent run completed",
+  SCREEN_CAPTURE_COMPLETED:     "Screen capture completed",
+  MEMORY_ITEM_SAVED:            "Memory item saved",
+  MEMORY_ITEM_DELETED:          "Memory item deleted",
+  POLICY_EXECUTION_COMPLETED:   "Policy executed",
+  POLICY_EXECUTION_BLOCKED:     "Policy blocked",
+};
+
+// Outcome keys: done / failed / blocked / pending / info (no badge)
+const _RECEIPT_OUTCOME = {
+  EMAIL_DRAFT_CREATED:          "done",
+  ACTION_COMPLETED:             "done",
+  OPENCLAW_ACTION_APPROVED:     "done",
+  OPENCLAW_AGENT_RUN_COMPLETED: "done",
+  SCREEN_CAPTURE_COMPLETED:     "done",
+  MEMORY_ITEM_SAVED:            "done",
+  POLICY_EXECUTION_COMPLETED:   "done",
+  EMAIL_DRAFT_FAILED:           "failed",
+  OPENCLAW_ACTION_DENIED:       "blocked",
+  POLICY_EXECUTION_BLOCKED:     "blocked",
+  OPENCLAW_ACTION_PENDING:      "pending",
+};
+
+// Human-readable badge labels per outcome
+const _OUTCOME_LABEL = {
+  done:    "Done",
+  failed:  "Failed",
+  blocked: "Blocked",
+  pending: "Pending",
+};
+
+// Authority boundary / next-step note shown below the detail line
+const _RECEIPT_BOUNDARY = {
+  EMAIL_DRAFT_CREATED:     "Local draft only — review and send manually in your mail client",
+  EMAIL_DRAFT_FAILED:      "Mail client did not open — check that a default mail app is configured",
+  OPENCLAW_ACTION_PENDING: "Awaiting your confirmation to proceed",
+  OPENCLAW_ACTION_DENIED:  "Blocked by governance — no action taken",
+  POLICY_EXECUTION_BLOCKED: "Policy blocked — no action taken",
+};
+
+function _receiptDetail(r) {
+  const type = String(r.event_type || "").trim();
+  if (type === "EMAIL_DRAFT_CREATED" || type === "EMAIL_DRAFT_FAILED") {
+    const to      = String(r.to || r.recipient || "").trim();
+    const subject = String(r.subject || "").trim();
+    return [to && `To: ${to}`, subject && `Subject: ${subject}`].filter(Boolean).join("  ·  ");
+  }
+  if (type.startsWith("OPENCLAW_")) {
+    return String(r.action_type || r.description || r.action || "").trim();
+  }
+  if (type.startsWith("MEMORY_")) {
+    const key = String(r.key || r.content || "").trim();
+    return key.length > 60 ? key.slice(0, 57) + "…" : key;
+  }
+  if (type === "POLICY_EXECUTION_COMPLETED" || type === "POLICY_EXECUTION_BLOCKED") {
+    return String(r.policy || r.capability_id || "").trim();
+  }
+  return String(r.action || r.capability_id || "").trim();
+}
+
+function _receiptTime(ts) {
+  if (!ts) return "";
+  try {
+    return new Date(ts).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (_) {
+    return String(ts).slice(0, 16);
+  }
+}
+
+function _receiptKey(r, index = 0) {
+  const raw = String(
+    r.request_id
+    || r._ledger_line
+    || r.timestamp_utc
+    || r.event_type
+    || index
+  ).trim();
+  return raw || String(index);
+}
+
+function _receiptCapabilityLabel(r) {
+  return String(r.capability_name || r.action || r.capability_id || "").trim();
+}
+
+function _receiptExecutionStatus(r) {
+  const status = String(r.status || "").trim();
+  if (status) return status;
+  const type = String(r.event_type || "").trim();
+  if (type === "OPENCLAW_ACTION_PENDING") return "pending_confirmation";
+  if (type === "OPENCLAW_ACTION_DENIED" || type === "POLICY_EXECUTION_BLOCKED") return "blocked";
+  if (_RECEIPT_OUTCOME[type] === "failed") return "failed";
+  if (_RECEIPT_OUTCOME[type] === "done") return "completed";
+  return "recorded";
+}
+
+function _receiptApprovalRequired(r) {
+  if (typeof r.requires_confirmation === "boolean") {
+    return r.requires_confirmation ? "yes" : "no";
+  }
+  return String(r.event_type || "").trim() === "OPENCLAW_ACTION_PENDING" ? "yes" : "not recorded";
+}
+
+function _receiptLedgerRef(r) {
+  const line = Number(r._ledger_line || 0);
+  if (Number.isFinite(line) && line > 0) return `L${line}`;
+  return "";
+}
+
+function _receiptOutcomeLabel(r) {
+  const type = String(r.event_type || "").trim();
+  const outcome = _RECEIPT_OUTCOME[type] || "info";
+  return _OUTCOME_LABEL[outcome] || "Recorded";
+}
+
+function _receiptReason(r) {
+  return String(
+    r.failure_reason
+    || r.reason
+    || r.outcome_reason
+    || r.description
+    || r.summary
+    || ""
+  ).trim();
+}
+
+function _receiptSourcePathSummary(r) {
+  const request = String(r.request_id || "").trim() || "User request not recorded";
+  const capability = _receiptCapabilityLabel(r) || "Governed capability not recorded";
+  const execution = _receiptExecutionStatus(r);
+  const receiptRef = _receiptLedgerRef(r) || "Ledger receipt";
+  return `${request} -> ${capability} -> governed ${execution} -> ${receiptRef}`;
+}
+
+function _renderReceiptRows(host) {
+  clear(host);
+  if (!trustReviewState.receipts.length) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "No governed actions recorded yet. Governed actions appear here after they run.";
+    host.appendChild(empty);
+    return;
+  }
+  const list = document.createElement("div");
+  list.className = "trust-activity-list";
+  trustReviewState.receipts.slice(0, 12).forEach((r, index) => {
+    const key = _receiptKey(r, index);
+    const type = String(r.event_type || "").trim();
+    const label = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
+    const detail = _receiptDetail(r);
+    const capability = _receiptCapabilityLabel(r);
+    const time = _receiptTime(r.timestamp_utc);
+    const outcome = _RECEIPT_OUTCOME[type] || "info";
+    const boundary = _RECEIPT_BOUNDARY[type] || "";
+    const sourcePath = _receiptSourcePathSummary(r);
+
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "trust-activity-item";
+    if (trustReviewState.selectedReceiptKey === key) row.classList.add("active");
+    row.dataset.outcome = outcome;
+    row.addEventListener("click", () => {
+      trustReviewState.selectedReceiptKey = key;
+      renderTrustCenterPage();
+    });
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "trust-activity-title-row";
+
+    if (outcome !== "info") {
+      const badge = document.createElement("span");
+      badge.className = `trust-activity-outcome trust-activity-outcome-${outcome}`;
+      badge.textContent = _OUTCOME_LABEL[outcome] || outcome;
+      titleRow.appendChild(badge);
+    }
+
+    const title = document.createElement("div");
+    title.className = "trust-activity-title";
+    title.textContent = label;
+    titleRow.appendChild(title);
+    row.appendChild(titleRow);
+
+    const meta = document.createElement("div");
+    meta.className = "trust-activity-meta";
+    meta.textContent = [
+      capability && `Capability: ${capability}`,
+      `Status: ${_receiptExecutionStatus(r)}`,
+      time,
+    ].filter(Boolean).join("  ·  ");
+    row.appendChild(meta);
+
+    if (detail) {
+      const detailRow = document.createElement("div");
+      detailRow.className = "trust-activity-reason";
+      detailRow.textContent = detail;
+      row.appendChild(detailRow);
+    }
+
+    const pathRow = document.createElement("div");
+    pathRow.className = "trust-activity-correlation";
+    pathRow.textContent = `Path: ${sourcePath}`;
+    row.appendChild(pathRow);
+
+    if (boundary) {
+      const note = document.createElement("div");
+      note.className = "trust-receipt-note";
+      note.textContent = boundary;
+      row.appendChild(note);
+    }
+
+    list.appendChild(row);
+  });
+  host.appendChild(list);
+}
+
+function _renderReceiptDetail(host) {
+  clear(host);
+  const selected = trustReviewState.receipts.find((receipt, index) => {
+    return _receiptKey(receipt, index) === String(trustReviewState.selectedReceiptKey || "").trim();
+  }) || trustReviewState.receipts[0];
+
+  if (!selected) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Select a receipt to see how a governed request moved from user intent to capability execution and into the ledger.";
+    host.appendChild(empty);
+    return;
+  }
+
+  [
+    ["Receipt", _RECEIPT_LABELS[String(selected.event_type || "").trim()] || String(selected.event_type || "Unknown").trim() || "Unknown"],
+    ["Capability", _receiptCapabilityLabel(selected) || "Not recorded"],
+    ["Execution status", _receiptExecutionStatus(selected)],
+    ["Outcome", _receiptOutcomeLabel(selected)],
+    ["Approval required", _receiptApprovalRequired(selected)],
+    ["Timestamp", _receiptTime(selected.timestamp_utc) || "Not recorded"],
+    ["Source path", _receiptSourcePathSummary(selected)],
+    ["Request", String(selected.request_id || "Not recorded").trim() || "Not recorded"],
+    ["Ledger", _receiptLedgerRef(selected) || "Not recorded"],
+    ["Boundary", _RECEIPT_BOUNDARY[String(selected.event_type || "").trim()] || "No extra boundary note recorded"],
+    ["Detail", _receiptDetail(selected) || "No additional detail recorded"],
+    ["Why", _receiptReason(selected) || "No additional reason recorded"],
+  ].forEach(([label, value]) => {
+    const row = document.createElement("div");
+    row.className = "operator-health-row";
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "operator-health-label";
+    labelEl.textContent = label;
+    row.appendChild(labelEl);
+
+    const valueEl = document.createElement("div");
+    valueEl.className = "operator-health-value";
+    valueEl.textContent = value;
+    row.appendChild(valueEl);
+
+    host.appendChild(row);
+  });
+}
+
+function fetchAndRenderReceipts() {
+  const host = $("trust-center-receipts");
+  if (!host) return;
+  fetch("/api/trust/receipts?limit=10")
+    .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+    .then((data) => {
+      trustReviewState.receipts = Array.isArray(data.receipts) ? data.receipts.slice(0, 20) : [];
+      if (!trustReviewState.selectedReceiptKey && trustReviewState.receipts.length) {
+        trustReviewState.selectedReceiptKey = _receiptKey(trustReviewState.receipts[0], 0);
+      }
+      if (
+        trustReviewState.selectedReceiptKey
+        && !trustReviewState.receipts.some((receipt, index) => _receiptKey(receipt, index) === trustReviewState.selectedReceiptKey)
+      ) {
+        trustReviewState.selectedReceiptKey = trustReviewState.receipts.length
+          ? _receiptKey(trustReviewState.receipts[0], 0)
+          : "";
+      }
+      renderTrustCenterPage();
+    })
+    .catch(() => {
+      trustReviewState.receipts = [];
+      trustReviewState.selectedReceiptKey = "";
+      renderTrustCenterPage();
+    });
+}
+
 function getPolicyReadinessBuckets(snapshot = {}) {
   const readiness = (snapshot && typeof snapshot === "object") ? snapshot : {};
   return {
@@ -2536,6 +2841,8 @@ function renderTrustCenterPage() {
   const lastCall = $("trust-center-last-call");
   const egress = $("trust-center-egress");
   const failure = $("trust-center-failure");
+  const receiptHost = $("trust-center-receipts");
+  const receiptDetail = $("trust-center-receipt-detail");
   const activityHost = $("trust-center-activity");
   const activityDetail = $("trust-center-activity-detail");
   const blockedHost = $("trust-center-blocked");
@@ -2554,7 +2861,7 @@ function renderTrustCenterPage() {
   const reasoningGrid = $("trust-center-reasoning-grid");
   const bridgeSummary = $("trust-center-bridge-summary");
   const bridgeGrid = $("trust-center-bridge-grid");
-  if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
+  if (!summary || !mode || !lastCall || !egress || !failure || !receiptHost || !receiptDetail || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
 
   summary.textContent = [
     String(trustReviewState.summary || "").trim(),
@@ -2564,6 +2871,8 @@ function renderTrustCenterPage() {
   lastCall.textContent = trustState.lastExternalCall || "None";
   egress.textContent = trustState.dataEgress || "Read-only requests only";
   failure.textContent = trustState.failureState || "Normal";
+  _renderReceiptRows(receiptHost);
+  _renderReceiptDetail(receiptDetail);
 
   clear(activityHost);
   if (!trustReviewState.activity.length) {
@@ -3200,7 +3509,7 @@ function renderOpenClawAgentPage() {
   if (summary) {
     const runnableCount = Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0;
     const summaryBits = [
-      String(openClawAgentState.summary || "").trim() || "Nova can run tasks you review and approve before they take effect.",
+      String(openClawAgentState.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.",
       permissionEnabled
         ? (runnableCount
           ? `${runnableCount} task${runnableCount === 1 ? "" : "s"} available to run.`
@@ -3349,11 +3658,22 @@ function renderOpenClawAgentPage() {
         card.appendChild(tools);
 
         const envelopePreview = getOpenClawEnvelopePreview(template);
-        const previewCopy = document.createElement("p");
-        previewCopy.className = "first-run-note";
-        previewCopy.textContent = buildOpenClawBudgetLines(envelopePreview).join(" ")
-          || "This task will show its safety limits here when it is ready.";
-        card.appendChild(previewCopy);
+
+        // Run Permit: authority lane, allowed domains, budget caps
+        const permitLabel = document.createElement("p");
+        permitLabel.className = "first-run-note";
+        permitLabel.textContent = "Run permit";
+        card.appendChild(permitLabel);
+
+        const writesAllowed = Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0;
+        const permitLaneChips = document.createElement("div");
+        permitLaneChips.className = "memory-detail-chip-row";
+        permitLaneChips.appendChild(createOverviewChip("Authority", writesAllowed ? "Writes allowed" : "Read-only"));
+        (Array.isArray(template.allowed_hostnames) ? template.allowed_hostnames : []).forEach((host) => {
+          const h = String(host || "").trim();
+          if (h) permitLaneChips.appendChild(createOverviewChip("Domain", h));
+        });
+        card.appendChild(permitLaneChips);
 
         const previewChips = document.createElement("div");
         previewChips.className = "memory-detail-chip-row";
@@ -3361,7 +3681,6 @@ function renderOpenClawAgentPage() {
           ["Steps", String(envelopePreview.max_steps || template.max_steps || 0)],
           ["Web requests", String(envelopePreview.max_network_calls || template.max_network_calls || 0)],
           ["Local files", String(envelopePreview.max_files_touched || template.max_files_touched || 0)],
-          ["Can make changes", Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0 ? "Yes" : "No"],
         ].forEach(([label, value]) => previewChips.appendChild(createOverviewChip(label, value)));
         card.appendChild(previewChips);
 
