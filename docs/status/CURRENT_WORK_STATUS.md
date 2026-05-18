@@ -329,7 +329,7 @@ merged — PR #183
 Result:
 
 ```text
-preserved future/big_picture/ operating-model and direction docs
+preserved docs/future/NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md
 non-authorizing planning content only — no runtime behavior changes
 ```
 
