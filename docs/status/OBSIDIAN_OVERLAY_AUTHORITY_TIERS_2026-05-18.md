@@ -20,8 +20,9 @@ The overlay is useful because it lets docs and code appear in one graph while pr
 
 ```text
 Obsidian overlay = navigation and intelligence surface
-Repo/runtime docs = source of truth
-Generated runtime docs = highest runtime truth
+Repo files = source materials
+Generated runtime docs = highest authority for exact runtime state
+Current continuity docs = highest authority for active work priority
 ```
 
 Source files must not be edited by the overlay generator. Generated MOCs must remain rebuildable from repo files.
@@ -109,6 +110,7 @@ Rules:
 - These docs identify the current priority, current branch/lane, next action, and continuity state.
 - They must avoid copying exact generated runtime counts or hashes unless intentionally linking to generated truth.
 - They are current-work truth, not runtime execution authority.
+- If TIER 1 and TIER 0 appear to disagree about runtime facts, TIER 0 wins for runtime facts and TIER 1 should be patched.
 
 ### TIER 2 — Accepted evidence, locks, and proof records
 
@@ -129,6 +131,7 @@ Rules:
 - Proof records can support claims but do not override generated runtime truth.
 - Audit docs remain evidence records unless explicitly promoted by current continuity docs.
 - Capability status must distinguish active, certified, and locked.
+- Audit findings should not be treated as fixed unless a later implementation, proof, or closeout record confirms the fix.
 
 ### TIER 3 — Future / planning only
 
@@ -219,6 +222,12 @@ reference
 ```
 
 These should supplement, not replace, existing topic/category/code-layer views.
+
+## Merge readiness
+
+This document is mergeable as docs-only guidance if reviewers accept the tier model.
+
+It should not be treated as implementation of authority-tier MOCs. The generator patch remains separate.
 
 ## Boundary
 
