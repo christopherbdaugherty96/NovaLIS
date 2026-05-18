@@ -34,11 +34,12 @@ Allowed first slice:
 KnowledgeEntry schema
 KnowledgeRelationship schema
 KnowledgeEvent schema
+schema loading helpers
+schema validation helpers
 frontmatter validation
-vault health / lint report
-deterministic index rebuild from markdown
-append-only event store boundary
-read-only graph/search query surface
+Markdown frontmatter parser
+wikilink extraction
+no-mutation vault health / lint report
 tests proving non-authorizing invariants
 documentation and proof of boundaries
 ```
@@ -46,6 +47,9 @@ documentation and proof of boundaries
 Later slices, only after first-slice proof:
 
 ```text
+deterministic index rebuild from markdown
+append-only event store boundary
+read-only graph/search query surface
 local embeddings
 graph-boosted ranking
 MCP read tools
@@ -70,6 +74,16 @@ no dashboard visualization before data/events exist
 no approval inferred from memory or notes
 no ledger replacement
 no generated runtime claim before code/tests exist
+no Cap 66
+no Governor wiring
+no CapabilityRegistry changes
+no ContextPack integration
+no SQLite / DuckDB / vector index in Slice 1
+no event feed in Slice 1
+no API / MCP surface in Slice 1
+no proposal writes in Slice 1
+no dashboard runtime in Slice 1
+no repair or mutation mode in Slice 1
 ```
 
 ---
@@ -79,12 +93,11 @@ no generated runtime claim before code/tests exist
 ```text
 knowledge is context, not permission
 markdown is knowledge source, not execution proof
-SQLite / DuckDB / vector indexes are rebuildable projections
-knowledge events are append-only operation history, not disposable projection rows
+Slice 1 health/lint is report-only and must not repair files
 ledger remains proof authority
 generated runtime docs remain runtime truth authority
-dashboard visualization remains visibility-only
-all write paths start as proposal/review gated
+dashboard visualization remains visibility-only future work
+write paths are blocked until a separate reviewed proposal/review-gated slice
 ```
 
 ---
@@ -94,11 +107,10 @@ all write paths start as proposal/review gated
 ```text
 1. Schema files or dataclasses exist for knowledge entries, relationships, and events.
 2. Tests prove every knowledge entry is non-authorizing.
-3. Health/lint command reports missing frontmatter, broken links, duplicate IDs, stale/unreviewed entries, and authority drift.
-4. Index rebuild proves markdown files can regenerate the machine projection.
-5. Index rebuild proves it does not erase, regenerate, or resequence append-only event history.
-6. Read-only graph/search APIs do not mutate files and do not invoke execution capabilities.
-7. Docs distinguish implemented runtime behavior from future dashboard/visualization plans.
+3. Markdown parser extracts frontmatter and wikilinks without mutating files.
+4. Health/lint command reports missing frontmatter, broken links, duplicate IDs, stale/unreviewed entries, and authority drift.
+5. Tests prove health/lint is no-mutation and cannot invoke execution capabilities.
+6. Docs distinguish implemented runtime behavior from future dashboard/visualization plans.
 ```
 
 ---
@@ -109,12 +121,10 @@ Before this lock can close:
 
 ```text
 tests pass
-index rebuild is deterministic
-event history is append-only and separate from disposable projections
 health report catches authority drift
-knowledge retrieval feeds planning/context only
+parsed and validated knowledge outputs feed planning/context only
 no second-brain path reaches Executor / OpenClaw / external writes
-proposal promotion fails closed on stale version/hash
+no second-brain path reaches SQLite / DuckDB / vector index, event feed, ContextPack, API/MCP, proposal writes, or repair mode in Slice 1
 generated runtime docs are updated only after implementation exists
 current docs do not overclaim
 ```
@@ -160,9 +170,10 @@ future/brain/second_brain/templates/
 ## Sequencing Rule
 
 ```text
-Data / schema / lint / index first.
-Event replay second.
-Proposal-only writes third.
+Data / schema / parser / no-mutation lint first.
+Index projection second.
+Event replay third.
+Proposal-only writes fourth.
 Living dashboard graph last.
 ```
 
