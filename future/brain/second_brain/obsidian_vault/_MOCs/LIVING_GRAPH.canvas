@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "id": "node-start",
+      "type": "file",
+      "file": "00_START_HERE.md",
+      "x": -520,
+      "y": -160,
+      "width": 300,
+      "height": 180
+    },
+    {
+      "id": "node-graph",
+      "type": "file",
+      "file": "_MOCs/LIVING_GRAPH.md",
+      "x": -120,
+      "y": -160,
+      "width": 320,
+      "height": 180
+    },
+    {
+      "id": "node-snapshot",
+      "type": "file",
+      "file": "indexes/living_graph_mock_snapshot.json",
+      "x": 300,
+      "y": -220,
+      "width": 360,
+      "height": 220
+    },
+    {
+      "id": "node-events",
+      "type": "file",
+      "file": "logs/living_graph_event_stream_example.json",
+      "x": 300,
+      "y": 60,
+      "width": 360,
+      "height": 220
+    },
+    {
+      "id": "node-intentions",
+      "type": "file",
+      "file": "indexes/living_graph_visual_intentions.json",
+      "x": -120,
+      "y": 120,
+      "width": 320,
+      "height": 220
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-start-graph",
+      "fromNode": "node-start",
+      "fromSide": "right",
+      "toNode": "node-graph",
+      "toSide": "left"
+    },
+    {
+      "id": "edge-graph-snapshot",
+      "fromNode": "node-graph",
+      "fromSide": "right",
+      "toNode": "node-snapshot",
+      "toSide": "left"
+    },
+    {
+      "id": "edge-events-intentions",
+      "fromNode": "node-events",
+      "fromSide": "left",
+      "toNode": "node-intentions",
+      "toSide": "right"
+    },
+    {
+      "id": "edge-intentions-graph",
+      "fromNode": "node-intentions",
+      "fromSide": "top",
+      "toNode": "node-graph",
+      "toSide": "bottom"
+    }
+  ]
+}

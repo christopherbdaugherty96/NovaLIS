@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "query": "second brain robustness",
+  "project_scope": "NovaLIS",
+  "results": [
+    {
+      "id": "kb_research_second_brain_robustness_example",
+      "title": "Second Brain Robustness Requirements",
+      "entry_type": "research",
+      "status": "promoted",
+      "authority_label": "promoted_knowledge",
+      "score": 0.94,
+      "why_selected": "title match + promoted status + supports file-first decision",
+      "warnings": [
+        "fixture_hash_used"
+      ]
+    },
+    {
+      "id": "kb_decision_file_first_event_first_foundation",
+      "title": "Use File-First Knowledge With Append-Only Events",
+      "entry_type": "decision",
+      "status": "promoted",
+      "authority_label": "promoted_knowledge",
+      "score": 0.88,
+      "why_selected": "relationship proximity + decision status",
+      "warnings": [
+        "fixture_hash_used"
+      ]
+    },
+    {
+      "id": "kb_synthesis_second_brain_build_order",
+      "title": "Second Brain Build Order",
+      "entry_type": "synthesis",
+      "status": "candidate",
+      "authority_label": "candidate_knowledge",
+      "score": 0.71,
+      "why_selected": "build-order synthesis mentions append-only events",
+      "warnings": [
+        "candidate_knowledge",
+        "fixture_hash_used"
+      ]
+    }
+  ],
+  "warnings": [
+    "scaffold_mode"
+  ],
+  "non_authorizing": true
+}

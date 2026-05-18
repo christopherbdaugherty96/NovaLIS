@@ -1,0 +1,31 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:knowledge/research",
+      "color": { "a": 1, "rgb": 255 }
+    },
+    {
+      "query": "path:knowledge/decisions",
+      "color": { "a": 1, "rgb": 16763904 }
+    },
+    {
+      "query": "path:knowledge/patterns",
+      "color": { "a": 1, "rgb": 3394611 }
+    },
+    {
+      "query": "path:knowledge/conversations",
+      "color": { "a": 1, "rgb": 10040575 }
+    },
+    {
+      "query": "path:knowledge/capability_logs",
+      "color": { "a": 1, "rgb": 16737792 }
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "kgshot_scaffold_living_graph",
+  "created_at": "2026-05-18T00:00:00Z",
+  "projection_version": "kgproj_scaffold",
+  "max_seq": 7,
+  "truncated": false,
+  "omitted_node_count": 0,
+  "omitted_edge_count": 0,
+  "sampling_strategy": "none",
+  "redaction_applied": false,
+  "health_state": "scaffold",
+  "nodes": [
+    {
+      "id": "kb_research_second_brain_robustness_example",
+      "label": "Second Brain Robustness Requirements",
+      "entry_type": "research",
+      "status": "promoted",
+      "authority_label": "promoted_knowledge",
+      "health": "fixture_hash",
+      "visual_color": "#2F80ED"
+    },
+    {
+      "id": "kb_decision_file_first_event_first_foundation",
+      "label": "Use File-First Knowledge With Append-Only Events",
+      "entry_type": "decision",
+      "status": "promoted",
+      "authority_label": "promoted_knowledge",
+      "health": "fixture_hash",
+      "visual_color": "#F2C94C"
+    },
+    {
+      "id": "kb_concept_non_authorizing_memory",
+      "label": "Non-Authorizing Memory",
+      "entry_type": "concept",
+      "status": "promoted",
+      "authority_label": "promoted_knowledge",
+      "health": "fixture_hash",
+      "visual_color": "#27AE60"
+    },
+    {
+      "id": "kb_capability_log_approval_gate_boundary_example",
+      "label": "Approval Gate Boundary Example",
+      "entry_type": "capability_log",
+      "status": "promoted",
+      "authority_label": "promoted_knowledge",
+      "health": "fixture_hash",
+      "visual_color": "#F2994A"
+    },
+    {
+      "id": "kb_proposal_living_graph_visual_slice",
+      "label": "Living Graph Visual Slice Proposal",
+      "entry_type": "proposal",
+      "status": "candidate",
+      "authority_label": "candidate_knowledge",
+      "health": "fixture_hash",
+      "visual_color": "#9B51E0"
+    },
+    {
+      "id": "kb_synthesis_second_brain_build_order",
+      "label": "Second Brain Build Order",
+      "entry_type": "synthesis",
+      "status": "candidate",
+      "authority_label": "candidate_knowledge",
+      "health": "fixture_hash",
+      "visual_color": "#BB6BD9"
+    }
+  ],
+  "edges": [
+    {
+      "source": "kb_research_second_brain_robustness_example",
+      "target": "kb_decision_file_first_event_first_foundation",
+      "type": "supports",
+      "confidence": "high",
+      "pulse_color": "#2F80ED"
+    },
+    {
+      "source": "kb_decision_file_first_event_first_foundation",
+      "target": "kb_concept_non_authorizing_memory",
+      "type": "supports",
+      "confidence": "high",
+      "pulse_color": "#F2C94C"
+    },
+    {
+      "source": "kb_capability_log_approval_gate_boundary_example",
+      "target": "kb_concept_non_authorizing_memory",
+      "type": "supports",
+      "confidence": "high",
+      "pulse_color": "#F2994A"
+    },
+    {
+      "source": "kb_proposal_living_graph_visual_slice",
+      "target": "kb_research_second_brain_robustness_example",
+      "type": "derived_from",
+      "confidence": "medium",
+      "pulse_color": "#9B51E0"
+    },
+    {
+      "source": "kb_synthesis_second_brain_build_order",
+      "target": "kb_decision_file_first_event_first_foundation",
+      "type": "supports",
+      "confidence": "medium",
+      "pulse_color": "#BB6BD9"
+    }
+  ],
+  "non_authorizing": true
+}
