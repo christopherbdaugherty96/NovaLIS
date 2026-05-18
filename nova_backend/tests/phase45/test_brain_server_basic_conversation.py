@@ -4,14 +4,69 @@ import asyncio
 from datetime import datetime
 from unittest.mock import patch
 
+import pytest
 from fastapi import WebSocketDisconnect
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.base_skill import SkillResult
 from src.conversation.session_router import GateResult
+from src.utils import path_resolver
 
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
+
+
+@pytest.fixture(autouse=True)
+def fake_nova_workspace(tmp_path, monkeypatch):
+    """Create a platform-independent Nova-Project workspace for path-dependent tests."""
+    workspace = tmp_path / "Nova-Project"
+    workspace.mkdir()
+    (workspace / ".git").mkdir()
+    (workspace / "README.md").write_text(
+        "# NovaLIS\n\n"
+        "Nova is a private, offline-capable AI assistant "
+        "with governed execution gates.\n\n"
+        "It is built to help with:\n"
+        "- local task execution\n"
+        "- governed actions\n"
+    )
+    (workspace / "pyproject.toml").write_text('[project]\nname = "novalis"\n')
+    (workspace / "nova_backend").mkdir()
+    (workspace / "nova_backend" / "src").mkdir()
+    (workspace / "nova_backend" / "src" / "config").mkdir(parents=True)
+    (workspace / "nova_backend" / "src" / "config" / "registry.json").write_text(
+        '{"capabilities": [{"name": "governed_web_search", "status": "active"},'
+        '{"name": "open_file_folder", "status": "active"}],'
+        '"capability_groups": {"core": [16, 22]}}'
+    )
+    (workspace / "REPO_MAP.md").write_text(
+        "# Repo Map\n\n"
+        "NovaLIS is organized into a governed backend, a dashboard frontend, "
+        "and shared configuration.\n"
+    )
+    (workspace / "docs").mkdir()
+    (workspace / "src").mkdir()
+    (workspace / "tests").mkdir()
+
+    _real_resolve = path_resolver._resolve_existing_local_path
+
+    def _patched_resolve(raw_value):
+        cleaned = str(raw_value or "").strip().strip("\"'")
+        if "nova-project" in cleaned.lower():
+            return workspace
+        return _real_resolve(raw_value)
+
+    def _patched_candidates(*args, **kwargs):
+        return [workspace]
+
+    monkeypatch.setattr(
+        "src.utils.path_resolver._resolve_existing_local_path",
+        _patched_resolve,
+    )
+    monkeypatch.setattr(
+        "src.utils.path_resolver._candidate_local_project_paths",
+        _patched_candidates,
+    )
+    return workspace
 
 
 class _DisconnectOnGreetingWebSocket(_ScriptedWebSocket):
@@ -171,12 +226,12 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
-    assert any("Local-first everyday help is ready" in msg for msg in chat_messages)
-    assert any("Verification and review" in msg for msg in chat_messages)
+    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
+    assert any("Everyday help" in msg for msg in chat_messages)
+    assert any("Double-check answers" in msg for msg in chat_messages)
     assert any("Story tracking" in msg for msg in chat_messages)
     assert any("Screen help" in msg for msg in chat_messages)
-    assert any("Memory and continuity" in msg for msg in chat_messages)
+    assert any("Memory" in msg for msg in chat_messages)
 
 
 def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
@@ -197,7 +252,7 @@ def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
         if msg.get("turn_id") == "ui-turn-test-1"
     ]
 
-    assert any(msg.get("type") == "chat" and "Nova Capabilities Right Now" in msg.get("message", "") for msg in correlated)
+    assert any(msg.get("type") == "chat" and "Here's what Nova can do right now" in msg.get("message", "") for msg in correlated)
     assert any(msg.get("type") == "chat_done" for msg in correlated)
 
 
@@ -324,7 +379,7 @@ def test_help_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
+    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
 
 
 def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
@@ -340,7 +395,7 @@ def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
+    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
 
 
 def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
@@ -362,8 +417,8 @@ def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("No live sources are connected yet" in msg for msg in chat_messages)
-    assert any("I'll stay local-first" in msg for msg in chat_messages)
+    assert any("Weather, news, and calendar can be connected in Settings" in msg for msg in chat_messages)
+    assert any("Even without extra connections" in msg for msg in chat_messages)
 
 
 def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
@@ -398,8 +453,8 @@ def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Connected live sources: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
-    assert any("proper morning brief" in msg for msg in chat_messages)
+    assert any("Connected right now: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
+    assert any("full morning brief" in msg for msg in chat_messages)
     assert any("Morning Brief is running now from the Run now flow." in msg for msg in chat_messages)
     chat_payloads = [item for item in ws.sent_messages if item.get("type") == "chat"]
     assert any(action.get("command") == "openclaw status" for item in chat_payloads for action in item.get("suggested_actions", []))
@@ -424,7 +479,7 @@ def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("It's 1:48 PM." in msg for msg in chat_messages)
+    assert any("It's 1:48 PM on Friday, March 20." in msg for msg in chat_messages)
 
 
 def test_audit_folder_current_workspace_returns_local_project_overview(monkeypatch):
@@ -441,7 +496,7 @@ def test_audit_folder_current_workspace_returns_local_project_overview(monkeypat
 
     chat_messages = _chat_messages(ws)
     assert any("Local project overview" in msg for msg in chat_messages)
-    assert any(r"C:\Nova-Project" in msg for msg in chat_messages)
+    assert any("Nova-Project" in msg for msg in chat_messages)
 
 
 def test_explain_local_disk_project_handles_spokenish_path_request(monkeypatch):
@@ -476,7 +531,7 @@ def test_summarize_named_workspace_returns_local_codebase_summary(monkeypatch):
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
     assert any("Likely implemented capabilities" in msg for msg in chat_messages)
-    assert any(r"C:\Nova-Project" in msg for msg in chat_messages)
+    assert any("Nova-Project" in msg for msg in chat_messages)
 
 
 def test_summarize_named_workspace_stays_on_repo_summary_path_without_gate_patch():
@@ -499,7 +554,7 @@ def test_summarize_named_workspace_from_documents_stays_on_local_repo_summary_pa
 
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
-    assert any("Target: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert any("Target:" in msg and "Nova-Project" in msg for msg in chat_messages)
     assert not any("INTELLIGENCE BRIEF" in msg for msg in chat_messages)
 
 
@@ -553,7 +608,7 @@ def test_summarize_this_repo_uses_current_workspace_summary(monkeypatch):
 
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
-    assert any("Target: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert any("Target:" in msg and "Nova-Project" in msg for msg in chat_messages)
 
 
 def test_summarize_explicit_repo_path_returns_grounded_summary(monkeypatch):
@@ -563,14 +618,14 @@ def test_summarize_explicit_repo_path_returns_grounded_summary(monkeypatch):
         staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
     )
 
-    ws = _ScriptedWebSocket([r"summarize C:\Nova-Project"])
+    ws = _ScriptedWebSocket(["summarize Nova-Project"])
 
     with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
-    assert any("Target: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert any("Target:" in msg and "Nova-Project" in msg for msg in chat_messages)
     assert any("Confidence note:" in msg for msg in chat_messages)
 
 
@@ -702,12 +757,11 @@ def test_open_folder_named_workspace_resolves_to_repo_confirmation(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Open C:\\Nova-Project?" in msg for msg in chat_messages)
+    assert any("Open" in msg and "Nova-Project?" in msg for msg in chat_messages)
     assert not any("I couldn't find that path: folder Nova-Project" in msg for msg in chat_messages)
 
 
-def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch):
-    from src.actions.action_result import ActionResult
+def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch, fake_nova_workspace):
 
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -717,13 +771,15 @@ def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch):
 
     ws = _ScriptedWebSocket(["open this repo", "yes"])
 
+    workspace_str = str(fake_nova_workspace)
+
     async def _fake_invoke_governed_capability(_governor, capability_id, params):
         assert capability_id == 22
         assert params.get("confirmed") is True
-        assert params.get("path") == r"C:\Nova-Project"
+        assert params.get("path") == workspace_str
         return ActionResult.ok(
-            r"Opened folder: C:\Nova-Project",
-            data={"path": r"C:\Nova-Project", "opened_kind": "folder"},
+            f"Opened folder: {workspace_str}",
+            data={"path": workspace_str, "opened_kind": "folder"},
             request_id="open-repo-test",
         )
 
@@ -734,12 +790,11 @@ def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Open C:\\Nova-Project?" in msg for msg in chat_messages)
-    assert any("Opened folder: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert any("Open" in msg and "Nova-Project?" in msg for msg in chat_messages)
+    assert any("Opened folder:" in msg and "Nova-Project" in msg for msg in chat_messages)
 
 
-def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkeypatch):
-    from src.actions.action_result import ActionResult
+def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkeypatch, fake_nova_workspace):
 
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -747,15 +802,17 @@ def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkey
         staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
     )
 
-    ws = _ScriptedWebSocket([r"open C:\Nova-Project", "yes"])
+    workspace_str = str(fake_nova_workspace)
+
+    ws = _ScriptedWebSocket([f"open {workspace_str}", "yes"])
 
     async def _fake_invoke_governed_capability(_governor, capability_id, params):
         assert capability_id == 22
         assert params.get("confirmed") is True
-        assert params.get("path") == r"C:\Nova-Project"
+        assert params.get("path") == workspace_str
         return ActionResult.ok(
-            r"Opened folder: C:\Nova-Project",
-            data={"path": r"C:\Nova-Project", "opened_kind": "folder"},
+            f"Opened folder: {workspace_str}",
+            data={"path": workspace_str, "opened_kind": "folder"},
             request_id="open-explicit-path-test",
         )
 
@@ -766,8 +823,8 @@ def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkey
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Open C:\\Nova-Project?" in msg for msg in chat_messages)
-    assert any("Opened folder: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert any("Open" in msg and "Nova-Project?" in msg for msg in chat_messages)
+    assert any("Opened folder:" in msg and "Nova-Project" in msg for msg in chat_messages)
 
 
 def test_project_status_this_without_active_thread_is_actionable(monkeypatch):

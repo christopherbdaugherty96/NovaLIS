@@ -23,12 +23,13 @@ jobs:
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r nova_backend/requirements.txt
+          pip install -e ".[dev]"
 
       - name: Run backend test suite
+        timeout-minutes: 25
         run: |
           cd nova_backend
-          python -m pytest -q
+          python -c "import os, sys, pytest; code = pytest.main(['-q', '--maxfail=5']); sys.stdout.flush(); sys.stderr.flush(); os._exit(int(code))"
 
       - name: Enforce generated runtime docs
         run: |
