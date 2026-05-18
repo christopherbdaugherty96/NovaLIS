@@ -4,6 +4,29 @@ Date: 2026-05-18
 Status: proposed docs/tooling guidance / not runtime authority
 Scope: Obsidian overlay navigation only
 
+## Review conclusion from 2026-05-18 conversation
+
+This document records the conclusions from the Obsidian overlay review.
+
+The review did not find a tracked folder named:
+
+```text
+nova-project/obsidian/
+```
+
+The current repo truth is instead:
+
+```text
+Repository root = Obsidian vault
+scripts/generate_obsidian_overlay.py = overlay generator
+_MOCs/ = tracked generated navigation notes
+.obsidian/ = local generated vault config, not source truth
+```
+
+The reviewed Claude/Kodak branch work was not a full Obsidian governance system. It was closer to a generated MOC/status refresh. Some Claude branches were stale or superseded relative to current `main`, so they should not be merged directly without rebase/review.
+
+The current overlay itself is stronger than a loose Obsidian vault because it is generated, source-safe, and covered by tests. The remaining gap is not basic navigation. The remaining gap is truth-rank navigation.
+
 ## Current truth
 
 Nova currently treats the repository root as the Obsidian vault.
@@ -26,6 +49,21 @@ Current continuity docs = highest authority for active work priority
 ```
 
 Source files must not be edited by the overlay generator. Generated MOCs must remain rebuildable from repo files.
+
+## Existing implementation strengths
+
+The existing overlay already has important strengths:
+
+- The repository root opens directly as the Obsidian vault.
+- MOCs are generated rather than hand-maintained.
+- Source docs and code are not modified by the generator.
+- `.obsidian/` is local/generated config, not authoritative repo truth.
+- Docs and code are connected in one graph.
+- Navigation exists for folders, categories, phases, topics, code layers, imports, and tests.
+- Contract tests cover generator behavior.
+- Tests protect generated links and source-note immutability.
+
+These strengths should be preserved. The next patch should add authority-tier navigation, not replace the current overlay model.
 
 ## Problem
 
@@ -222,6 +260,20 @@ reference
 ```
 
 These should supplement, not replace, existing topic/category/code-layer views.
+
+## Branch handling conclusion
+
+Do not merge stale Claude/Kodak Obsidian or status branches directly merely because they refreshed MOCs.
+
+Before merging any Obsidian/status branch:
+
+```text
+1. Compare against current main.
+2. Check whether later PRs already superseded the work.
+3. Keep only non-duplicated guidance or generator changes.
+4. Do not merge stale generated MOCs over newer generated output.
+5. Do not merge old future/planning wording without current-truth review.
+```
 
 ## Merge readiness
 
