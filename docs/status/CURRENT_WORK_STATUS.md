@@ -365,3 +365,92 @@ added approval-gate certification matrix scaffold
 preserved certification-pending status
 no runtime authority expansion
 ```
+
+---
+
+## Closed / Unmerged Follow-Through
+
+```text
+PR #151 — continuity sync branch closed unmerged.
+PR #155 — runtime docs regeneration closed unmerged.
+```
+
+Generated runtime docs are current as of the latest recorded drift check on PR #185. No regeneration PR is pending unless `python scripts/check_runtime_doc_drift.py` fails again.
+
+---
+
+## Open Carried-Forward Follow-Ups
+
+```text
+#142 — RS-2 capability list truncation needs reproduction.
+#143 — "tell me more" with prior context needs session-state-aware test.
+```
+
+Recently completed proof:
+
+```text
+#141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
+```
+
+---
+
+## Queued / Not Active Without Separate Reviewed Priority Lock
+
+```text
+UI simplification
+Cap 64 P5
+Google connector runtime implementation
+Shopify writes
+ElevenLabs implementation
+OpenClaw expansion
+browser/computer-use expansion
+external writes
+finance automation
+social posting automation
+autonomous workflow execution
+```
+
+---
+
+## Implemented Runtime / Code Truth Snapshot
+
+- Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
+- Cap 16 governed_web_search is certified and locked.
+- Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or autonomous send.
+- Cap 65 remains read-only Shopify intelligence. No Shopify writes.
+- OpenClaw is active runtime code with bounded/manual-first execution surfaces.
+- PR #154 narrowed the OpenClaw freeform-goal path to a read-only allowlisted tool surface.
+- Trust Review Card remains display-only and non-authorizing.
+- Browser Use visual proof remains blocked/setup-required and is not Nova runtime browser/computer-use authority.
+
+---
+
+## Preserved Boundaries
+
+```text
+Intelligence is not authority.
+```
+
+No recent merge authorizes:
+
+- autonomous execution
+- hidden background work
+- browser/computer-use expansion
+- external writes
+- direct Shopify writes
+- autonomous finance operations
+- autonomous social posting
+- OpenClaw authority expansion
+- direct Cap 63 shortcut use
+
+---
+
+## Next Correct Step
+
+```text
+1. Use APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
+2. Complete confirmation-bound capability inventory.
+3. Fill proof status for every confirmation-bound path.
+4. Then run broader/full-suite approval-gate verification.
+5. Only then decide whether the approval-gate lock can move toward certification/closeout.
+```
