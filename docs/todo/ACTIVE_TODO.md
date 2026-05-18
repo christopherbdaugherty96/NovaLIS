@@ -13,7 +13,8 @@ Approval gate wiring - focused coverage merged / certification pending (2026-05-
 Result:
 
 ```text
-Trust Panel MVP is complete and proof-backed.
+Trust Panel MVP receipt surface is complete and proof-backed.
+Broader Trust Panel system status still defers to generated runtime truth.
 Approval-gate focused regression and behavioral live-session coverage are merged
 for tested Cap 22 / Cap 64 confirmation paths.
 PR #175 documented Nova basic workflow verification.
@@ -29,7 +30,11 @@ Website-preview live-backend validation remains follow-up debt.
 Next correct step:
 
 ```text
-Run broader/full-suite approval-gate verification when practical, then decide whether the lock can move toward certification/closeout.
+Use docs/capability_verification/APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
+Complete confirmation-bound capability inventory.
+Fill proof status for every confirmation-bound path.
+Then run broader/full-suite approval-gate verification.
+Only then decide whether the lock can move toward certification/closeout.
 Do not treat PR #175 / PR #176 as approval-gate certification closeout.
 ```
 
@@ -66,6 +71,7 @@ PR #180 — Frontend mirror sync baseline fix merged.
 PR #182 — Obsidian / Second Brain future-planning preserved.
 PR #183 — BigPicture / Auralis operating-model future-planning preserved.
 PR #184 — .codex-worktrees/ ignored in .gitignore.
+PR #186 — Four-pass safe cleanup and approval-gate certification scaffold merged.
 ```
 
 ---
@@ -77,7 +83,7 @@ PR #151 — continuity sync branch closed unmerged.
 PR #155 — runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs require a dedicated regeneration PR.
+Generated runtime docs are current as of the latest recorded drift check on PR #185. No regeneration PR is pending unless `python scripts/check_runtime_doc_drift.py` fails again.
 
 ---
 
@@ -94,9 +100,11 @@ focused coverage merged / full certification pending
 First step:
 
 ```text
-Focused regression coverage: merged.
-Behavioral live-session coverage: merged.
-Full approval-gate certification: pending.
+Use APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
+Complete confirmation-bound capability inventory.
+Fill proof status for every confirmation-bound path.
+Then run broader/full-suite approval-gate verification.
+Only then decide whether the lock can move toward certification/closeout.
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -229,8 +237,9 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Keep PR #171 / #172 framed as focused coverage, not certification.
-2. Keep PR #175 / #176 framed as basic workflow verification and fixes, not approval-gate certification.
-3. Run broader/full-suite approval-gate verification when practical.
-4. Only then decide whether the approval-gate lock can move toward certification/closeout.
+1. Use APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
+2. Complete confirmation-bound capability inventory.
+3. Fill proof status for every confirmation-bound path.
+4. Then run broader/full-suite approval-gate verification.
+5. Only then decide whether the lock can move toward certification/closeout.
 ```
