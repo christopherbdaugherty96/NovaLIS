@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "export_scaffold_second_brain",
+  "created_at": "2026-05-18T00:00:00Z",
+  "project_scope": "NovaLIS",
+  "projection_version": "kgproj_scaffold",
+  "generated_from_hash": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+  "max_seq": 7,
+  "truncated": false,
+  "omitted_count": 0,
+  "redaction_applied": false,
+  "blocked_by_health_findings": [],
+  "include_body": false,
+  "entries": [
+    "kb_research_second_brain_robustness_example",
+    "kb_decision_file_first_event_first_foundation",
+    "kb_concept_non_authorizing_memory",
+    "kb_capability_log_approval_gate_boundary_example",
+    "kb_proposal_living_graph_visual_slice",
+    "kb_synthesis_second_brain_build_order"
+  ],
+  "non_authorizing": true
+}

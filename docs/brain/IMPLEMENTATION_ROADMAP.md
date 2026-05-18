@@ -180,6 +180,7 @@ future/brain/TRUST_INTEGRATION.md
 future/brain/RECEIPT_TO_MEMORY.md
 future/brain/DOMAIN_PERMISSION_PROFILES.md
 future/brain/FINAL_POLISH_RULES.md
+future/brain/SECOND_BRAIN_FOUNDATION.md
 ```
 
 Related domain planning remains source-of-truth in:
@@ -203,6 +204,7 @@ Mapping to existing roadmap phases:
 | Receipt-to-memory policy | Phase 13 — Project Contexts and Suggestion Buffer | Defines when receipts may become memory or learning records. |
 | Domain permission profiles | Phase 6 — Intention Parser and Phase 8 — Sandbox Boundary Enforcer | Defines cross-domain risk classification inputs. |
 | Final polish rules | Runtime Constraint section | Captures universal non-overlap rules: no hidden authority, no silent learning, no receipt-free behavior. |
+| Second brain foundation | Phase 13 - Project Contexts and Suggestion Buffer and Phase 15 - Obsidian Presence Mirror | Defines future file-first knowledge layer, review-gated promotion, rebuildable index, and dashboard visualization prerequisites. |
 
 ---
 
