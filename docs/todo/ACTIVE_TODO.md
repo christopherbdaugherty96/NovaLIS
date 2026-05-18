@@ -63,6 +63,9 @@ PR #177 — Baseline CI blocker cleanup merged.
 PR #178 — Baseline CI blocker cleanup merged.
 PR #179 — Baseline CI blocker cleanup merged.
 PR #180 — Frontend mirror sync baseline fix merged.
+PR #182 — Obsidian / Second Brain future-planning preserved.
+PR #183 — BigPicture / Auralis operating-model future-planning preserved.
+PR #184 — .codex-worktrees/ ignored in .gitignore.
 ```
 
 ---
