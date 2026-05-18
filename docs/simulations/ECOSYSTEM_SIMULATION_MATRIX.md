@@ -6,6 +6,9 @@ This matrix defines operator-journey and failure simulations Nova should use to
 prove usability, recovery, and governance behavior before expanding runtime
 authority.
 
+This document is the ecosystem simulation matrix only. The dedicated
+approval-gate workflow simulation document remains a follow-up from Issue #189.
+
 It does not authorize runtime behavior changes, capability expansion, authority
 expansion, OpenClaw expansion, browser/computer-use expansion, external writes,
 Shopify writes, email sending, finance automation, social posting automation, or
