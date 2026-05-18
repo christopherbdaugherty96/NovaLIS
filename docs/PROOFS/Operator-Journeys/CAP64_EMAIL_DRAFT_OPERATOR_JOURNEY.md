@@ -418,8 +418,8 @@ Capture ledger excerpts from the exact proof run.
 Expected evidence source:
 
 ```text
-Trust Panel receipt surface, where available
-http://localhost:8000/api/trust/receipts as direct proof source
+Trust Panel receipt surface, where implemented and available
+http://localhost:8000/api/trust/receipts as direct proof source, if present on the current runtime
 ```
 
 Expected receipt boundary:
