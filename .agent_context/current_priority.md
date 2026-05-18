@@ -15,7 +15,10 @@ docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING.md
 Status:
 
 ```text
-Trust Panel MVP is complete and merged.
+Trust Panel MVP receipt surface is complete and merged.
+Broader Trust Panel system status still defers to generated runtime truth;
+do not describe the full Trust Panel system as complete unless
+CURRENT_RUNTIME_STATE.md reflects that.
 Approval-gate focused regression and behavioral live-session coverage are merged
 for tested Cap 22 / Cap 64 confirmation paths.
 PR #175 documented Nova basic workflow verification.
@@ -77,7 +80,7 @@ PR #151 — Everyday UX continuity sync closed unmerged.
 PR #155 — Runtime docs regeneration closed unmerged.
 ```
 
-Generated runtime docs are current as of 2026-05-12. No pending regeneration PR needed.
+Generated runtime docs are current as of the latest `python scripts/check_runtime_doc_drift.py` pass recorded on PR #185. No pending regeneration PR is needed unless that check fails again.
 
 ## Historical branch note
 
@@ -133,7 +136,7 @@ Most other active capabilities — certification lock phases pending.
 ## Open carried-forward follow-ups
 
 ```text
-#141 — Search widget WebSocket surfacing fix and live proof complete.
+#141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
@@ -145,8 +148,9 @@ Most other active capabilities — certification lock phases pending.
 ```text
 1. Keep #171 / #172 as focused coverage, not certification.
 2. Keep #175 / #176 as basic workflow verification and fixes, not approval-gate certification.
-3. Run broader/full-suite approval-gate verification when practical.
-4. Only then decide whether the approval-gate lock can move toward certification/closeout.
+3. Build an approval-gate certification matrix before claiming full certification.
+4. Run broader/full-suite approval-gate verification when practical.
+5. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```
 
 ## Safety boundary
