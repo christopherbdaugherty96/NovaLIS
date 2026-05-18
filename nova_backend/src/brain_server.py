@@ -1643,7 +1643,7 @@ def _capability_help_message() -> str:
 def _render_local_time_message() -> str:
     now = _local_now()
     time_str = now.strftime("%I:%M %p").lstrip("0")
-    date_str = now.strftime("%A, %B %-d")
+    date_str = f"{now.strftime('%A, %B')} {now.day}"
     return f"It's {time_str} on {date_str}."
 
 
