@@ -63,7 +63,7 @@ Cap 22 — open_file_folder
 Cap 64 — send_email_draft
 ```
 
-No other active capability in `registry.json` currently has `requires_confirmation: true`.
+Based on this registry snapshot, no other active capability has `requires_confirmation: true`.
 
 ---
 
