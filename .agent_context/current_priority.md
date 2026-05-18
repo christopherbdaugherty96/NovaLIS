@@ -18,7 +18,14 @@ Status:
 Trust Panel MVP is complete and merged.
 Approval-gate focused regression and behavioral live-session coverage are merged
 for tested Cap 22 / Cap 64 confirmation paths.
+PR #175 documented Nova basic workflow verification.
+PR #176 fixed and merged the basic workflow regressions found by that pass.
+PR #177, PR #178, PR #179, and PR #180 cleared baseline CI blockers needed
+for clean verification.
+Core CI, Runtime Docs, Governance, Fingerprint Clean, and Phase-3.5 Verification
+passed before PR #176 merged.
 Full approval-gate certification remains pending until broader/full-suite proof exists.
+Website-preview live-backend validation remains follow-up debt.
 ```
 
 Scope:
@@ -52,6 +59,12 @@ PR #167 — Trust Panel MVP receipt surface merged.
 PR #169 — Approval gate next-sequence correction merged.
 PR #171 — Approval gate focused regression coverage merged.
 PR #172 — Approval gate behavioral live-session coverage merged.
+PR #175 — Nova basic workflow verification report merged.
+PR #176 — Nova basic workflow regression fixes merged.
+PR #177 — Baseline CI blocker cleanup merged.
+PR #178 — Baseline CI blocker cleanup merged.
+PR #179 — Baseline CI blocker cleanup merged.
+PR #180 — Frontend mirror sync baseline fix merged.
 ```
 
 ## Recent closed / not merged truth
@@ -128,8 +141,9 @@ Most other active capabilities — certification lock phases pending.
 
 ```text
 1. Keep #171 / #172 as focused coverage, not certification.
-2. Run broader/full-suite approval-gate verification when practical.
-3. Only then decide whether the approval-gate lock can move toward certification/closeout.
+2. Keep #175 / #176 as basic workflow verification and fixes, not approval-gate certification.
+3. Run broader/full-suite approval-gate verification when practical.
+4. Only then decide whether the approval-gate lock can move toward certification/closeout.
 ```
 
 ## Safety boundary
