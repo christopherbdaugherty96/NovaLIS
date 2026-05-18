@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://novalis.local/schemas/second-brain/knowledge-relationship.schema.json",
+  "title": "Nova Second Brain Knowledge Relationship",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "target",
+    "confidence"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "supports",
+        "contradicts",
+        "supersedes",
+        "derived_from",
+        "implements",
+        "blocks",
+        "depends_on",
+        "proves",
+        "cites",
+        "relates_to"
+      ]
+    },
+    "target": {
+      "type": "string",
+      "pattern": "^kb_[A-Za-z0-9][A-Za-z0-9_-]*$"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ]
+    },
+    "source_ref": {
+      "type": "string",
+      "default": ""
+    },
+    "ledger_ref": {
+      "type": "string",
+      "default": ""
+    },
+    "note": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "proves"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "anyOf": [
+          {
+            "required": [
+              "source_ref"
+            ],
+            "properties": {
+              "source_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          {
+            "required": [
+              "ledger_ref"
+            ],
+            "properties": {
+              "ledger_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

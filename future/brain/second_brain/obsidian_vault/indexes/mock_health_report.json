@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-18T00:00:00Z",
+  "vault_root": "future/brain/second_brain/obsidian_vault",
+  "mode": "scaffold",
+  "entry_count": 6,
+  "relationship_count": 6,
+  "event_count": 4,
+  "tombstone_count": 0,
+  "redaction_required": false,
+  "export_allowed": true,
+  "embedding_allowed": false,
+  "findings": [
+    {
+      "severity": "warning",
+      "code": "fixture_hash_used",
+      "path": "obsidian_vault/knowledge/research/kb_research_second_brain_robustness_example.md",
+      "entry_id": "kb_research_second_brain_robustness_example",
+      "message": "Scaffold example uses a schema-valid fixture hash. Strict mode should require a real content hash."
+    },
+    {
+      "severity": "info",
+      "code": "scaffold_mode",
+      "path": "obsidian_vault/VAULT_MANIFEST.md",
+      "entry_id": "",
+      "message": "Vault is a future scaffold and fixture set, not runtime truth."
+    }
+  ],
+  "healthy": true,
+  "non_authorizing": true
+}

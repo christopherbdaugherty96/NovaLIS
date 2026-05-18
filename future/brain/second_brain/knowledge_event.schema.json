@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://novalis.local/schemas/second-brain/knowledge-event.schema.json",
+  "title": "Nova Second Brain Knowledge Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "seq",
+    "schema_version",
+    "occurred_at",
+    "event_type",
+    "subject_type",
+    "idempotency_key",
+    "source",
+    "actor",
+    "authority_label",
+    "payload_hash"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^kbevt_[A-Za-z0-9][A-Za-z0-9_-]*$"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "knowledge.captured",
+        "knowledge.proposed",
+        "knowledge.reviewed",
+        "knowledge.promoted",
+        "knowledge.rejected",
+        "knowledge.superseded",
+        "knowledge.tombstoned",
+        "knowledge.archived",
+        "knowledge.index_rebuilt",
+        "knowledge.search_performed",
+        "knowledge.graph_snapshot_created"
+      ]
+    },
+    "subject_type": {
+      "type": "string",
+      "enum": [
+        "entry",
+        "relationship",
+        "index",
+        "search",
+        "graph_snapshot",
+        "vault"
+      ]
+    },
+    "entity_id": {
+      "type": "string",
+      "pattern": "^kb_[A-Za-z0-9][A-Za-z0-9_-]*$"
+    },
+    "entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^kb_[A-Za-z0-9][A-Za-z0-9_-]*$"
+      },
+      "uniqueItems": true
+    },
+    "entity_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scope_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "vault_sync",
+        "indexer",
+        "proposal_review",
+        "search",
+        "dashboard"
+      ]
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "user",
+        "nova",
+        "system"
+      ]
+    },
+    "authority_label": {
+      "type": "string",
+      "enum": [
+        "raw_source",
+        "candidate_knowledge",
+        "reviewed_knowledge",
+        "promoted_knowledge",
+        "runtime_truth_reference",
+        "ledger_receipt_reference"
+      ]
+    },
+    "receipt_ref": {
+      "type": "string",
+      "default": ""
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "subject_type": {
+            "enum": [
+              "entry",
+              "relationship"
+            ]
+          }
+        },
+        "required": [
+          "subject_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "entity_id",
+          "entity_version"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "subject_type": {
+            "enum": [
+              "index",
+              "search",
+              "graph_snapshot",
+              "vault"
+            ]
+          }
+        },
+        "required": [
+          "subject_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "scope_id"
+        ]
+      }
+    }
+  ]
+}
