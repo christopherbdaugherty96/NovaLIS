@@ -25,7 +25,8 @@ Approval gate wiring - focused coverage merged / certification pending (2026-05-
 Status:
 
 ```text
-Trust Panel MVP is complete and proof-backed.
+Trust Panel MVP receipt surface is complete and proof-backed.
+Broader Trust Panel system status still defers to generated runtime truth.
 Approval-gate focused regression and behavioral live-session coverage are merged
 for tested Cap 22 / Cap 64 confirmation paths.
 PR #175 documented Nova basic workflow verification.
@@ -196,8 +197,9 @@ Proof:
 - docs/status/TRUST_PANEL_MVP_CLOSEOUT_2026-05-14.md
 ```
 
-The Trust Panel MVP is now implemented, merged, and proof-backed. It remains read-only and
-does not change approval behavior or execution authority.
+The Trust Panel MVP receipt surface is now implemented, merged, and proof-backed.
+Broader Trust Panel system status still defers to generated runtime truth.
+The MVP remains read-only and does not change approval behavior or execution authority.
 
 ### Approval gate wiring priority lock
 
@@ -346,92 +348,20 @@ added .codex-worktrees/ to .gitignore
 no runtime behavior changes
 ```
 
----
+### Four-pass safe cleanup and approval-gate certification scaffold
 
-## Closed / Unmerged Follow-Through
+Status:
 
 ```text
-PR #151 — continuity sync branch closed unmerged.
-PR #155 — runtime docs regeneration closed unmerged.
+merged — PR #186
 ```
 
-Generated runtime docs are current as of 2026-05-12. No regeneration PR pending.
-
----
-
-## Open Carried-Forward Follow-Ups
+Result:
 
 ```text
-#142 — RS-2 capability list truncation needs reproduction.
-#143 — "tell me more" with prior context needs session-state-aware test.
-```
-
-Recently completed proof:
-
-```text
-#141 — Search widget WebSocket surfacing fix and live proof complete.
-```
-
----
-
-## Queued / Not Active Without Separate Reviewed Priority Lock
-
-```text
-UI simplification
-Cap 64 P5
-Google connector runtime implementation
-Shopify writes
-ElevenLabs implementation
-OpenClaw expansion
-browser/computer-use expansion
-external writes
-finance automation
-social posting automation
-autonomous workflow execution
-```
-
----
-
-## Implemented Runtime / Code Truth Snapshot
-
-- Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
-- Cap 16 governed_web_search is certified and locked.
-- Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or autonomous send.
-- Cap 65 remains read-only Shopify intelligence. No Shopify writes.
-- OpenClaw is active runtime code with bounded/manual-first execution surfaces.
-- PR #154 narrowed the OpenClaw freeform-goal path to a read-only allowlisted tool surface.
-- Trust Review Card remains display-only and non-authorizing.
-- Browser Use visual proof remains blocked/setup-required and is not Nova runtime browser/computer-use authority.
-
----
-
-## Preserved Boundaries
-
-```text
-Intelligence is not authority.
-```
-
-No recent merge authorizes:
-
-- autonomous execution
-- hidden background work
-- browser/computer-use expansion
-- external writes
-- direct Shopify writes
-- autonomous finance operations
-- autonomous social posting
-- OpenClaw authority expansion
-- direct Cap 63 shortcut use
-
----
-
-## Next Correct Step
-
-Per the current reviewed sequence:
-
-```text
-1. Keep PR #171 / #172 framed as focused coverage, not certification.
-2. Keep PR #175 / #176 framed as basic workflow verification and fixes, not certification.
-3. Run broader/full-suite approval-gate verification when practical.
-4. Only then decide whether the approval-gate lock can move toward certification/closeout.
+clarified Trust Panel MVP receipt-surface wording
+synchronized #141 closure language
+added approval-gate certification matrix scaffold
+preserved certification-pending status
+no runtime authority expansion
 ```
