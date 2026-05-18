@@ -55,6 +55,7 @@ scripts/pids/*.log
 
 # Local workspace artifacts
 .claude/
+.codex-worktrees/
 New-Audit-and-Issues.md
 Untitled.canvas
 Untitled*.canvas
