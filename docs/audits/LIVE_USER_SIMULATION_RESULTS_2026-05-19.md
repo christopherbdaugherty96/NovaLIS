@@ -65,27 +65,28 @@ nova_backend/tests/simulations/live_user_simulation.py
 
 ---
 
-## Combined Results
+## Primary Run Results
+
+Exact metrics from the recorded Codex simulation run:
 
 ```text
 Personas:               20
-Total turns:            32
-Pass rate:              ~24/32 (75%)
-Responses received:     ~28/32
-Errors:                 0 connection failures
-Timeouts:               ~4-8 turns (Ollama saturation under load)
-Confirmation prompts:   observed where expected (Morgan, Casey, Riley,
-                        Taylor, Frankie, Gale)
-Denial/cancel replies:  observed where expected (Casey, Taylor, Kai)
+Turns:                  32
+Passes:                 24/32
+Responses received:     25/32
+Errors:                 1
+Timeouts:               7
+Confirmation prompts:   7
+Denial/cancel replies:  5
+Latency avg:            240ms
+Latency median:         65ms
+Latency p95:            471ms
+Latency max:            3165ms
 ```
 
-Pass rate varied between runs depending on Ollama load:
-
-```text
-Run 1 (Codex rewrite):  24/32 passes, 8 timeouts
-Run 2 (parallel):       similar pattern -- fast-path commands reliable,
-                         Ollama-dependent turns timeout under concurrency
-```
+A parallel manual run reproduced the same qualitative pattern:
+fast deterministic/governed paths were reliable, while Ollama-dependent
+general-chat turns timed out under concurrent load.
 
 ---
 
@@ -147,7 +148,7 @@ Run 2 (parallel):       similar pattern -- fast-path commands reliable,
 
 ```text
 Severity:    high (affects everyday feel)
-Evidence:    4-8 turns timeout per 32-turn simulation run
+Evidence:    7 timeouts in the 32-turn primary run
 Root cause:  Ollama serializes inference; concurrent sessions queue
 Scope:       all Ollama-dependent turns (not deterministic commands)
 ```
