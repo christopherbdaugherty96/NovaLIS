@@ -366,6 +366,101 @@ preserved certification-pending status
 no runtime authority expansion
 ```
 
+### Post-PR186 continuity sync
+
+Status:
+
+```text
+merged — PR #187
+```
+
+### Approval-gate confirmation capability inventory
+
+Status:
+
+```text
+merged — PR #188
+```
+
+Result:
+
+```text
+filled confirmation-bound capability inventory
+Cap 22 (open_file_folder) and Cap 64 (send_email_draft) identified as
+the two confirmation-required capabilities
+inventory complete does not mean proof complete
+```
+
+### Ecosystem simulation matrix
+
+Status:
+
+```text
+merged — PR #190
+```
+
+Result:
+
+```text
+added docs/simulations/ECOSYSTEM_SIMULATION_MATRIX.md
+corrected BigPicture status path
+narrowed Second Brain Slice 1 to schema/parser/no-mutation health-lint
+no runtime changes
+```
+
+### Approval gate workflow simulations
+
+Status:
+
+```text
+merged — PR #191
+```
+
+Result:
+
+```text
+added docs/simulations/APPROVAL_GATE_WORKFLOW_SIMULATIONS.md
+defines Cap 64 and Cap 22 operator-journey simulation targets
+covers pending / yes / no / cancel / unrelated / timeout / disconnect / recovery
+adds evidence packet template
+no runtime changes
+```
+
+### Cap 64 operator journey proof scaffold
+
+Status:
+
+```text
+merged — PR #192
+```
+
+Result:
+
+```text
+added docs/PROOFS/Operator-Journeys/CAP64_EMAIL_DRAFT_OPERATOR_JOURNEY.md
+scaffold only — evidence capture remains pending
+Cap 64 P5 remains pending / not locked
+no runtime changes
+```
+
+### Cap 22 operator journey proof scaffold
+
+Status:
+
+```text
+merged — PR #193
+```
+
+Result:
+
+```text
+added docs/PROOFS/Operator-Journeys/CAP22_OPEN_FILE_FOLDER_OPERATOR_JOURNEY.md
+scaffold only — evidence capture remains pending
+includes Cap 22-specific path-root boundary proof section
+Cap 22 remains not locked / not globally certified
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
