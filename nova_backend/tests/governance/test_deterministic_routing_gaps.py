@@ -191,3 +191,121 @@ class TestWeatherInCityRouting:
         assert pattern.match("weather in san francisco")
         assert not pattern.match("weather")
         assert not pattern.match("weather today")
+
+
+# ---------------------------------------------------------------------------
+# Handler ordering — deterministic commands before ambient clarification
+# ---------------------------------------------------------------------------
+
+class TestHandlerOrdering:
+    """Verify deterministic commands are handled before ambient clarification.
+
+    After PR #213, the session_handler routes time, arithmetic, news, and
+    weather commands BEFORE the ambient clarification block.  This means
+    first-turn inputs like "news" or "weather in Boston" (no prior context)
+    cannot be intercepted by context-free follow-up heuristics.
+    """
+
+    def _handler_line(self, marker: str) -> int:
+        """Return the first line number where *marker* appears in session_handler."""
+        import inspect
+        from src.websocket import session_handler as mod
+
+        source = inspect.getsource(mod)
+        for i, line in enumerate(source.splitlines(), start=1):
+            if marker in line:
+                return i
+        raise AssertionError(f"marker {marker!r} not found in session_handler")
+
+    def test_time_query_before_ambient_clarification(self):
+        time_line = self._handler_line("TIME_QUERY_RE.match(command_text)")
+        ambient_line = self._handler_line("AMBIENT_CLARIFICATION_PATTERNS if pat.match")
+        assert time_line < ambient_line, (
+            f"TIME_QUERY_RE ({time_line}) must fire before "
+            f"AMBIENT_CLARIFICATION_PATTERNS ({ambient_line})"
+        )
+
+    def test_arithmetic_before_ambient_clarification(self):
+        arith_line = self._handler_line("_try_arithmetic(command_text)")
+        ambient_line = self._handler_line("AMBIENT_CLARIFICATION_PATTERNS if pat.match")
+        assert arith_line < ambient_line, (
+            f"_try_arithmetic ({arith_line}) must fire before "
+            f"AMBIENT_CLARIFICATION_PATTERNS ({ambient_line})"
+        )
+
+    def test_news_handler_before_ambient_clarification(self):
+        news_line = self._handler_line(
+            'lowered in {"news", "headlines", "latest news", "top news"}'
+        )
+        ambient_line = self._handler_line("AMBIENT_CLARIFICATION_PATTERNS if pat.match")
+        assert news_line < ambient_line, (
+            f"News handler ({news_line}) must fire before "
+            f"AMBIENT_CLARIFICATION_PATTERNS ({ambient_line})"
+        )
+
+    def test_weather_handler_before_ambient_clarification(self):
+        weather_line = self._handler_line(
+            'lowered in {"weather", "weather update", "current weather"}'
+        )
+        ambient_line = self._handler_line("AMBIENT_CLARIFICATION_PATTERNS if pat.match")
+        assert weather_line < ambient_line, (
+            f"Weather handler ({weather_line}) must fire before "
+            f"AMBIENT_CLARIFICATION_PATTERNS ({ambient_line})"
+        )
+
+    def test_headline_summary_before_ambient_clarification(self):
+        headline_line = self._handler_line("is_headline_summary_request(command_text)")
+        ambient_line = self._handler_line("AMBIENT_CLARIFICATION_PATTERNS if pat.match")
+        assert headline_line < ambient_line, (
+            f"Headline summary ({headline_line}) must fire before "
+            f"AMBIENT_CLARIFICATION_PATTERNS ({ambient_line})"
+        )
+
+    def test_news_not_in_ambient_clarification_patterns(self):
+        """Verify 'news' doesn't match any ambient clarification pattern."""
+        from src.websocket.intent_patterns import AMBIENT_CLARIFICATION_PATTERNS
+
+        for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
+            assert not pat.match("news"), (
+                f"'news' must not match ambient pattern {pat.pattern}"
+            )
+            assert not pat.match("News"), (
+                f"'News' must not match ambient pattern {pat.pattern}"
+            )
+
+    def test_weather_not_in_ambient_clarification_patterns(self):
+        """Verify weather commands don't match any ambient clarification pattern."""
+        from src.websocket.intent_patterns import AMBIENT_CLARIFICATION_PATTERNS
+
+        for phrase in ["weather", "weather in Boston", "current weather"]:
+            for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
+                assert not pat.match(phrase), (
+                    f"{phrase!r} must not match ambient pattern {pat.pattern}"
+                )
+
+    def test_arithmetic_not_in_ambient_clarification_patterns(self):
+        """Verify arithmetic doesn't match any ambient clarification pattern."""
+        from src.websocket.intent_patterns import AMBIENT_CLARIFICATION_PATTERNS
+
+        for phrase in ["247 times 38", "what is 10 plus 5"]:
+            for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
+                assert not pat.match(phrase), (
+                    f"{phrase!r} must not match ambient pattern {pat.pattern}"
+                )
+
+    def test_ambiguous_followup_still_matches_ambient_clarification(self):
+        """Ambient clarification must still fire for genuinely ambiguous phrases."""
+        from src.websocket.intent_patterns import AMBIENT_CLARIFICATION_PATTERNS
+
+        ambiguous_phrases = [
+            "tell me more",
+            "go deeper",
+            "what went wrong",
+            "i'm lost",
+        ]
+        for phrase in ambiguous_phrases:
+            matched = any(pat.match(phrase) for pat, _ in AMBIENT_CLARIFICATION_PATTERNS)
+            assert matched, (
+                f"Ambiguous phrase {phrase!r} should still match "
+                f"ambient clarification"
+            )
