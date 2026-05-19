@@ -162,3 +162,12 @@ This project may use AI tools for planning, coding support, audits, review, and 
 
 - GitHub remains the durable source of truth for code, docs, commits, and project status.
 - Runtime truth should be grounded in implementation, tests, and generated runtime artifacts.
+- Visual builders or prototype tools may help present ideas, but do not replace Nova's governed runtime.
+- AI-generated work should be reviewed before being treated as final.
+
+See:
+- [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
+- [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
+
+## License
+See [LICENSE].
