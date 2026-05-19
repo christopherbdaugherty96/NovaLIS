@@ -78,8 +78,8 @@ Memory and planning context do not grant permission.
 | Field | Value |
 | --- | --- |
 | Simulation document version | `APPROVAL_GATE_WORKFLOW_SIMULATIONS.md` on main after PR #191 |
-| Proof document status | automated + one live proof captured / live checklist + recovery + duplicate-yes pending |
-| Repo commit SHA | `ba7b4a4` (main after PR #195) |
+| Proof document status | automated + full live checklist + duplicate-yes captured / recovery pending |
+| Repo commit SHA | `795b3e7` (main after PR #196) |
 | Capability under test | Cap 64 `send_email_draft` |
 | Authority classification | confirmation-required local draft handoff |
 | Runtime code changes | none in this proof doc |
@@ -350,8 +350,7 @@ Current live evidence:
 Automated boundary evidence captured (no SMTP import, mailto-only external
 call, draft-created-not-sent ledger event, review-not-sent user message).
 
-Live mailto proof captured for one WebSocket draft request (2026-05-19 01:12 UTC).
-Remaining live checklist items must still be completed before Cap 64 P5 signoff.
+Live mailto proof captured for all five checklist tests (2026-05-19 01:12–01:49 UTC).
 ```
 
 Live proof environment:
@@ -366,43 +365,84 @@ Live proof method:
 
 ```text
 WebSocket connection to ws://127.0.0.1:8000/ws
-Step 1: {"type":"chat","text":"Draft an email to test@example.com about the quarterly review"}
-Step 2: {"type":"chat","text":"yes"}
+All tests use {"type":"chat","text":"..."} format.
 Note: correct WebSocket field is "text", not "message".
 ```
 
-Live proof observed behavior:
+Test 1 — Full draft: recipient + subject (01:12 UTC):
 
 ```text
-Step 1 — Nova identified request as Cap 64 / email draft.
-  Nova displayed confirmation prompt:
-    To: test@example.com
-    Subject: the quarterly review
-    Boundary language: "Nova never sends email automatically — you review and send."
-    Prompt: "Reply 'yes' to proceed or 'no' to cancel."
-  Nova did not open a draft while pending.
+Request: "Draft an email to test@example.com about the quarterly review"
+Nova displayed confirmation prompt:
+  To: test@example.com
+  Subject: the quarterly review
+  Boundary: "Nova never sends email automatically — you review and send."
+  Prompt: "Reply 'yes' to proceed or 'no' to cancel."
+Confirmation: "yes"
+Result: draft opened in mail client, mailto_opened: true
+Draft not sent. No SMTP/Gmail/inbox activity.
+PASS
+```
 
-Step 2 — "yes" resumed governed execution.
-  Nova reported: draft opened in mail client.
-  mailto_opened: true
-  Draft was not sent.
-  No SMTP activity observed.
-  No Gmail API activity observed.
-  No inbox access observed.
+Test 2 — Shorthand: recipient only (01:48 UTC):
+
+```text
+Request: "email sarah@company.com"
+Nova displayed confirmation prompt:
+  To: sarah@company.com
+  Subject: (fill in)
+Confirmation: "yes"
+Result: draft opened in mail client
+No crash, no Python traceback in Nova console.
+PASS
+```
+
+Test 3 — Full phrase with body hint (01:48 UTC):
+
+```text
+Request: "compose an email to boss@work.com about scheduling a team meeting next week"
+Nova displayed confirmation prompt:
+  To: boss@work.com
+  Subject: scheduling a team meeting next week
+Confirmation: "yes"
+Result: draft opened in mail client
+Subject captured body hint correctly.
+PASS
+```
+
+Test 4 — Receipt verification (01:12–01:49 UTC):
+
+```text
+Endpoint: curl -s http://127.0.0.1:8000/api/trust/receipts
+Response: JSON object with receipts array
+EMAIL_DRAFT_CREATED entries present for all approved tests
+Entries show recipient addresses matching test requests
+PASS
+```
+
+Test 5 — Confirmation gate denial (01:49 UTC):
+
+```text
+Request: "draft an email to anyone@example.com about anything"
+Nova displayed confirmation prompt:
+  To: anyone@example.com
+  Subject: anything
+Response: "no"
+Result: "Okay. Cancelled pending action."
+Mail client did NOT open.
+PASS
+```
+
+All five live checklist tests passed. See:
+
+```text
+docs/capability_verification/live_checklists/cap_64_send_email_draft.md
 ```
 
 Remaining gap:
 
 ```text
-Live mailto proof captured for one request (Test 1 / Test 4 equivalent from the
-live checklist). The following live checklist items remain unrun:
-
-  Test 2 — recipient-only shorthand ("email sarah@company.com")
-  Test 3 — full phrase with body hint (compose email about scheduling)
-  Test 5 — confirmation gate denial (dismiss without confirming)
-
-See docs/capability_verification/live_checklists/cap_64_send_email_draft.md
-for the full five-test checklist required before P5 signoff.
+All five live checklist tests passed. No remaining live checklist gap.
 Do not run lock commands from this scaffold.
 ```
 
@@ -522,10 +562,9 @@ ACTION_ATTEMPTED → EMAIL_DRAFT_CREATED → ACTION_COMPLETED
 Remaining gap:
 
 ```text
-Live ledger evidence captured for one governed request. Automated assertions
-also prove the ledger contract at the code level (commit a1f8a4d).
-Additional live checklist items (Test 2, Test 3, Test 5) will produce
-additional ledger entries when run.
+Live ledger evidence captured. Automated assertions also prove the ledger
+contract at the code level (commit a1f8a4d). All five live checklist tests
+completed; approved tests produced matching ledger and receipt entries.
 ```
 
 ---
@@ -583,10 +622,9 @@ captured manually from a running Nova instance during the live proof.
 Remaining gap:
 
 ```text
-Receipt endpoint evidence captured for one governed request. No automated
-receipt test exists. The live evidence proves the endpoint is present and
-returns correct receipt data. Additional live checklist items (Test 2,
-Test 3, Test 5) will produce additional receipt entries when run.
+Receipt endpoint evidence captured for all approved live checklist tests.
+No automated receipt test exists. The live evidence proves the endpoint
+is present and returns correct receipt data for governed Cap 64 actions.
 ```
 
 ---
@@ -594,7 +632,7 @@ Test 3, Test 5) will produce additional receipt entries when run.
 ## Manual Steps Performed
 
 ```text
-Live mailto draft observation: captured 2026-05-19 01:12 UTC.
+All five live checklist tests performed: 2026-05-19 01:12–01:49 UTC.
 ```
 
 Steps performed:
@@ -604,24 +642,27 @@ Steps performed:
 2. Confirmed model version lock via REST API:
    curl -s -X POST http://127.0.0.1:8000/api/settings/model/confirm
 3. Connected WebSocket to ws://127.0.0.1:8000/ws.
-4. Sent Cap 64 request:
-   {"type":"chat","text":"Draft an email to test@example.com about the quarterly review"}
-5. Observed confirmation prompt — Nova asked for approval before opening draft.
-6. Sent confirmation:
-   {"type":"chat","text":"yes"}
-7. Observed governed execution — Nova reported draft opened in mail client.
-8. Verified mailto_opened: true in response.
-9. Checked receipt endpoint:
+4. Test 1: full draft — "Draft an email to test@example.com about the quarterly review"
+   → confirmation prompt → "yes" → draft opened → mailto_opened: true
+5. Test 2: recipient-only — "email sarah@company.com"
+   → confirmation prompt → "yes" → draft opened → sarah@company.com in To
+6. Test 3: body hint — "compose an email to boss@work.com about scheduling
+   a team meeting next week"
+   → confirmation prompt → "yes" → draft opened → subject captured hint
+7. Test 4: receipt verification —
    curl -s http://127.0.0.1:8000/api/trust/receipts
-10. Confirmed receipt data matches governed ledger sequence.
-11. Draft was not sent. No SMTP activity. No inbox access.
+   → JSON with EMAIL_DRAFT_CREATED entries for all approved tests
+8. Test 5: confirmation gate denial — "draft an email to anyone@example.com
+   about anything"
+   → confirmation prompt → "no" → "Cancelled pending action." → no draft opened
+9. No drafts were sent. No SMTP activity. No inbox access.
 ```
 
 Required manual note:
 
 ```text
-The draft was opened locally and closed without sending.
-This was observed during the live proof run.
+All drafts were opened locally and closed without sending.
+All five live checklist tests were observed during the proof run.
 ```
 
 ---
@@ -647,8 +688,8 @@ denied action did not execute — PASS (test_session_no_clears_pending_*)
 cancelled action did not execute — PASS (test_session_cancel_clears_pending_*)
 unrelated input did not execute — PASS (test_session_unrelated_input_*)
 ambiguous confirmation did not execute — PASS (test_confirmation_resolver_rejects_*)
-duplicate yes did not double-execute — not tested
-Commit: a1f8a4d
+duplicate yes did not double-execute — PASS (test_session_duplicate_yes_does_not_double_execute_cap64, PR #197)
+Commit: a1f8a4d (automated), PR #197 (duplicate-yes)
 ```
 
 ---
@@ -665,25 +706,21 @@ pending non-execution evidence — captured
 denied/cancelled non-execution evidence — captured
 unrelated-input non-execution evidence — captured
 ledger excerpts (automated assertions) — captured
-live mailto draft observation (one request) — captured 2026-05-19 01:12 UTC
-receipt endpoint evidence (one request) — captured 2026-05-19 01:12 UTC
-live ledger sequence (one request) — captured 2026-05-19 01:12 UTC
+live mailto draft observation (all 5 tests) — captured 2026-05-19 01:12–01:49 UTC
+receipt endpoint evidence (all approved tests) — captured 2026-05-19 01:12–01:49 UTC
+live ledger sequence — captured 2026-05-19 01:12 UTC
+live checklist Test 1 (full draft) — PASS
+live checklist Test 2 (recipient-only shorthand) — PASS
+live checklist Test 3 (body hint draft) — PASS
+live checklist Test 4 (receipt verification) — PASS
+live checklist Test 5 (confirmation gate denial) — PASS
+duplicate-yes non-double-execution — PASS (PR #197)
 ```
 
 Still pending:
 
 ```text
 recovery behavior evidence — no automated test exists
-duplicate-yes non-double-execution — not tested
-live checklist Test 2 — recipient-only shorthand ("email sarah@company.com")
-live checklist Test 3 — full phrase with body hint (scheduling a team meeting)
-live checklist Test 5 — confirmation gate denial (dismiss without confirming)
-```
-
-The full five-test live checklist is at:
-
-```text
-docs/capability_verification/live_checklists/cap_64_send_email_draft.md
 ```
 
 ---
@@ -695,12 +732,11 @@ Current status:
 ```text
 Automated evidence captured for Cap 64 pending/approve/deny/cancel/unrelated/
 ledger/mailto-boundary paths (132 tests, 0 failures, commit a1f8a4d).
-Live mailto proof captured for one WebSocket draft request (2026-05-19 01:12 UTC).
-Receipt endpoint evidence captured for one request (2026-05-19 01:12 UTC).
-Live ledger sequence captured for one request (2026-05-19 01:12 UTC).
-Remaining live checklist items must still be completed before Cap 64 P5 signoff.
+Duplicate-yes non-double-execution test added (134 tests, PR #197).
+All five live checklist tests passed (2026-05-19 01:12–01:49 UTC).
+Receipt endpoint evidence captured for all approved tests.
+Live ledger sequence captured.
 Recovery behavior evidence remains pending.
-Duplicate-yes non-double-execution remains pending.
 Cap 64 P5 remains pending.
 Cap 64 remains not locked.
 Full approval-gate certification remains pending.
@@ -709,9 +745,9 @@ Full approval-gate certification remains pending.
 Safe wording after this evidence update lands:
 
 ```text
-Cap 64 automated evidence captured. Live mailto proof captured for one
-request. Remaining live checklist items, recovery, and duplicate-yes gaps
-remain. Cap 64 P5 remains pending. Cap 64 remains not locked.
+Cap 64 automated and live evidence captured. All five live checklist tests
+passed. Duplicate-yes test added. Recovery evidence remains the only pending
+gap. Cap 64 P5 remains pending. Cap 64 remains not locked.
 ```
 
 Do not say:
@@ -734,23 +770,18 @@ Completed evidence steps:
 ```text
 1. Run focused Cap 64 / approval-gate tests — DONE (132 passed, commit a1f8a4d).
 2. Capture pending, approved, denied/cancelled, and unrelated-input behavior — DONE.
-3. Run one live mailto draft proof without sending email — DONE (2026-05-19 01:12 UTC).
-4. Capture ledger and receipt evidence for one request — DONE.
-5. Update this document with exact outputs and remaining gaps — DONE.
+3. Run all five live checklist tests — DONE (2026-05-19 01:12–01:49 UTC).
+4. Capture ledger and receipt evidence — DONE (all approved tests).
+5. Add duplicate-yes non-double-execution test — DONE (PR #197, 134 tests).
+6. Update this document with exact outputs and remaining gaps — DONE.
 ```
 
 Remaining before Cap 64 P5 decision:
 
 ```text
-1. Complete remaining live checklist items:
-   Test 2 — recipient-only shorthand ("email sarah@company.com")
-   Test 3 — full phrase with body hint (scheduling a team meeting)
-   Test 5 — confirmation gate denial (dismiss without confirming)
-   See docs/capability_verification/live_checklists/cap_64_send_email_draft.md
-2. Add and run duplicate-yes non-double-execution test.
-3. Decide whether recovery evidence is required for P5 or can remain a
+1. Decide whether recovery evidence is required for P5 or can remain a
    documented non-P5 follow-up.
-4. Only then decide whether Cap 64 P5 signoff is supportable.
+2. Only then decide whether Cap 64 P5 signoff is supportable.
 ```
 
 Final boundary:
