@@ -22,6 +22,9 @@ The long-term direction has two connected domains:
 2. Creator-business operational coordination platform
 ```
 
+Canonical future-product summary:
+- [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
+
 See:
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
@@ -130,6 +133,7 @@ Do not expand capabilities or start Shopify/website workflows yet.
 ```
 
 ## Future Directions
+- [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
 - [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
@@ -158,12 +162,3 @@ This project may use AI tools for planning, coding support, audits, review, and 
 
 - GitHub remains the durable source of truth for code, docs, commits, and project status.
 - Runtime truth should be grounded in implementation, tests, and generated runtime artifacts.
-- Visual builders or prototype tools may help present ideas, but do not replace Nova's governed runtime.
-- AI-generated work should be reviewed before being treated as final.
-
-See:
-- [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
-- [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
-
-## License
-See [LICENSE].
