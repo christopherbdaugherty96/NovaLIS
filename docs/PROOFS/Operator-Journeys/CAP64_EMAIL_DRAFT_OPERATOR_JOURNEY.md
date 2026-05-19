@@ -78,7 +78,7 @@ Memory and planning context do not grant permission.
 | Field | Value |
 | --- | --- |
 | Simulation document version | `APPROVAL_GATE_WORKFLOW_SIMULATIONS.md` on main after PR #191 |
-| Proof document status | automated + live evidence captured / recovery + duplicate-yes pending |
+| Proof document status | automated + one live proof captured / live checklist + recovery + duplicate-yes pending |
 | Repo commit SHA | `ba7b4a4` (main after PR #195) |
 | Capability under test | Cap 64 `send_email_draft` |
 | Authority classification | confirmation-required local draft handoff |
@@ -350,7 +350,8 @@ Current live evidence:
 Automated boundary evidence captured (no SMTP import, mailto-only external
 call, draft-created-not-sent ledger event, review-not-sent user message).
 
-Live mailto proof captured 2026-05-19 01:12 UTC.
+Live mailto proof captured for one WebSocket draft request (2026-05-19 01:12 UTC).
+Remaining live checklist items must still be completed before Cap 64 P5 signoff.
 ```
 
 Live proof environment:
@@ -393,7 +394,15 @@ Step 2 — "yes" resumed governed execution.
 Remaining gap:
 
 ```text
-Live mailto proof captured. No remaining gap for this section.
+Live mailto proof captured for one request (Test 1 / Test 4 equivalent from the
+live checklist). The following live checklist items remain unrun:
+
+  Test 2 — recipient-only shorthand ("email sarah@company.com")
+  Test 3 — full phrase with body hint (compose email about scheduling)
+  Test 5 — confirmation gate denial (dismiss without confirming)
+
+See docs/capability_verification/live_checklists/cap_64_send_email_draft.md
+for the full five-test checklist required before P5 signoff.
 Do not run lock commands from this scaffold.
 ```
 
@@ -513,8 +522,10 @@ ACTION_ATTEMPTED → EMAIL_DRAFT_CREATED → ACTION_COMPLETED
 Remaining gap:
 
 ```text
-None. Live ledger evidence captured. Automated assertions also prove the
-ledger contract at the code level (commit a1f8a4d).
+Live ledger evidence captured for one governed request. Automated assertions
+also prove the ledger contract at the code level (commit a1f8a4d).
+Additional live checklist items (Test 2, Test 3, Test 5) will produce
+additional ledger entries when run.
 ```
 
 ---
@@ -572,9 +583,10 @@ captured manually from a running Nova instance during the live proof.
 Remaining gap:
 
 ```text
-None for receipt evidence. Live receipt data captured from running instance.
-No automated receipt test exists, but the live evidence proves the endpoint
-is present and returns correct receipt data for governed Cap 64 actions.
+Receipt endpoint evidence captured for one governed request. No automated
+receipt test exists. The live evidence proves the endpoint is present and
+returns correct receipt data. Additional live checklist items (Test 2,
+Test 3, Test 5) will produce additional receipt entries when run.
 ```
 
 ---
@@ -653,9 +665,9 @@ pending non-execution evidence — captured
 denied/cancelled non-execution evidence — captured
 unrelated-input non-execution evidence — captured
 ledger excerpts (automated assertions) — captured
-live mailto draft observation — captured 2026-05-19 01:12 UTC
-receipt endpoint evidence — captured 2026-05-19 01:12 UTC
-live ledger sequence — captured 2026-05-19 01:12 UTC
+live mailto draft observation (one request) — captured 2026-05-19 01:12 UTC
+receipt endpoint evidence (one request) — captured 2026-05-19 01:12 UTC
+live ledger sequence (one request) — captured 2026-05-19 01:12 UTC
 ```
 
 Still pending:
@@ -663,6 +675,15 @@ Still pending:
 ```text
 recovery behavior evidence — no automated test exists
 duplicate-yes non-double-execution — not tested
+live checklist Test 2 — recipient-only shorthand ("email sarah@company.com")
+live checklist Test 3 — full phrase with body hint (scheduling a team meeting)
+live checklist Test 5 — confirmation gate denial (dismiss without confirming)
+```
+
+The full five-test live checklist is at:
+
+```text
+docs/capability_verification/live_checklists/cap_64_send_email_draft.md
 ```
 
 ---
@@ -674,9 +695,10 @@ Current status:
 ```text
 Automated evidence captured for Cap 64 pending/approve/deny/cancel/unrelated/
 ledger/mailto-boundary paths (132 tests, 0 failures, commit a1f8a4d).
-Live mailto proof captured 2026-05-19 01:12 UTC.
-Receipt endpoint evidence captured 2026-05-19 01:12 UTC.
-Live ledger sequence captured 2026-05-19 01:12 UTC.
+Live mailto proof captured for one WebSocket draft request (2026-05-19 01:12 UTC).
+Receipt endpoint evidence captured for one request (2026-05-19 01:12 UTC).
+Live ledger sequence captured for one request (2026-05-19 01:12 UTC).
+Remaining live checklist items must still be completed before Cap 64 P5 signoff.
 Recovery behavior evidence remains pending.
 Duplicate-yes non-double-execution remains pending.
 Cap 64 P5 remains pending.
@@ -687,8 +709,9 @@ Full approval-gate certification remains pending.
 Safe wording after this evidence update lands:
 
 ```text
-Cap 64 automated and live evidence captured. Recovery and duplicate-yes
-gaps remain. Cap 64 P5 remains pending. Cap 64 remains not locked.
+Cap 64 automated evidence captured. Live mailto proof captured for one
+request. Remaining live checklist items, recovery, and duplicate-yes gaps
+remain. Cap 64 P5 remains pending. Cap 64 remains not locked.
 ```
 
 Do not say:
@@ -711,18 +734,23 @@ Completed evidence steps:
 ```text
 1. Run focused Cap 64 / approval-gate tests — DONE (132 passed, commit a1f8a4d).
 2. Capture pending, approved, denied/cancelled, and unrelated-input behavior — DONE.
-3. Run the live mailto draft proof without sending email — DONE (2026-05-19 01:12 UTC).
-4. Capture ledger and receipt evidence — DONE (live receipt endpoint captured).
+3. Run one live mailto draft proof without sending email — DONE (2026-05-19 01:12 UTC).
+4. Capture ledger and receipt evidence for one request — DONE.
 5. Update this document with exact outputs and remaining gaps — DONE.
 ```
 
 Remaining before Cap 64 P5 decision:
 
 ```text
-1. Add and run duplicate-yes non-double-execution test.
-2. Decide whether recovery evidence is required for P5 or can remain a
+1. Complete remaining live checklist items:
+   Test 2 — recipient-only shorthand ("email sarah@company.com")
+   Test 3 — full phrase with body hint (scheduling a team meeting)
+   Test 5 — confirmation gate denial (dismiss without confirming)
+   See docs/capability_verification/live_checklists/cap_64_send_email_draft.md
+2. Add and run duplicate-yes non-double-execution test.
+3. Decide whether recovery evidence is required for P5 or can remain a
    documented non-P5 follow-up.
-3. Only then decide whether Cap 64 P5 signoff is supportable.
+4. Only then decide whether Cap 64 P5 signoff is supportable.
 ```
 
 Final boundary:
