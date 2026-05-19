@@ -3,7 +3,7 @@
 Status:
 
 ```text
-inventory filled / verification pending
+evidence complete / certification decision pending
 not a certification document
 ```
 
@@ -46,9 +46,10 @@ PR #196 captured Cap 64 live mailto proof and receipt evidence (1 live request).
 PR #197 added duplicate-yes non-double-execution tests for Cap 22 / Cap 64.
 PR #198 recorded the full Cap 64 live checklist evidence.
 PR #200 captured Cap 22 automated evidence (23 tests, 0 failures).
-Full approval-gate certification remains pending.
-Cap 64 remaining gap: recovery evidence only.
-Cap 22 remaining gaps: live proof, receipt evidence, and recovery evidence.
+PR #201 captured Cap 22 live proof and receipt evidence (approval + denial).
+PR #203 captured recovery evidence for Cap 22 and Cap 64 (3 tests).
+All confirmation-bound evidence dimensions now captured for both capabilities.
+Full approval-gate certification: evidence complete / decision pending.
 ```
 
 ---
@@ -82,8 +83,8 @@ Based on this registry snapshot, no other active capability has `requires_confir
 
 | Capability | Registry Confirmation Required | Pending State Tested | Approve Path Tested | Deny Path Tested | Cancel/Unrelated Input Tested | Duplicate-Yes Tested | Ledger Sequence Tested | Live WS Session Tested | Live Proof Captured | Automated Evidence | Runtime Verified | Certification Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #200 automated evidence | yes — PR #172 | pending | yes — PR #200 (23 tests, 0 failures) | partial — live/recovery pending | pending |
-| Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #195 scenarios A-D | yes — PR #172 | yes — PR #196 (1 live request + receipt) | yes — PR #195 (132 tests, 0 failures) | partial — recovery pending | pending |
+| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #200 automated evidence | yes — PR #172 | yes — PR #201 (approval + denial + receipt) | yes — PR #200 (23 tests, 0 failures) | yes — recovery PR #203 (3 tests) | evidence complete / decision pending |
+| Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #195 scenarios A-D | yes — PR #172 | yes — PR #196 (1 live request + receipt) | yes — PR #195 (132 tests, 0 failures) | yes — recovery PR #203 (3 tests) | evidence complete / decision pending |
 
 ---
 
@@ -162,7 +163,9 @@ Cap 64: strong behavioral coverage — PR #171, #172 (focused), PR #195 (132 aut
   tests across scenarios A-D), PR #197 (duplicate-yes non-double-execution).
 Cap 22: focused behavioral coverage — PR #171, #172, PR #197 (duplicate-yes),
   plus PR #200 automated evidence (23 tests, 0 failures).
-Recovery behavior evidence: not yet captured for either capability.
+Recovery behavior evidence: captured for both capabilities — PR #203
+  (3 tests: disconnect clears pending state, new session does not inherit stale state,
+  new session can still create fresh pending and confirm).
 ```
 
 ---
@@ -186,7 +189,8 @@ Current state:
 Cap 64: governed ledger sequence verified in PR #172, PR #195 scenarios A-D,
   and PR #196 live receipt endpoint evidence.
 Cap 22: focused governed ledger sequence verified in PR #172, with broader
-  automated ledger assertions captured in PR #200.
+  automated ledger assertions captured in PR #200. Live receipt endpoint
+  evidence captured in PR #201.
 ```
 
 ---
@@ -207,8 +211,9 @@ Current state:
 Cap 64: focused WS coverage (PR #172) + full live checklist passed (PR #196/PR #198:
   Test 1 full draft, Test 2 recipient-only, Test 3 body-hint, Test 4 receipt,
   Test 5 gate denial — all 5/5 passed).
-Cap 22: focused WS coverage (PR #172).
-  Cap 22 live checklist and receipt evidence: pending.
+Cap 22: focused WS coverage (PR #172) + live proof captured (PR #201:
+  approval test — Documents folder opened after confirmation, receipt verified;
+  denial test — Downloads open denied with "no", no new receipt created).
 ```
 
 ---
@@ -230,7 +235,8 @@ Current state:
 Cap 64: focused regression (PR #171) + automated scenarios A-D (PR #195, 132 tests)
   + duplicate-yes (PR #197). Strong regression coverage.
 Cap 22: focused regression (PR #171) + duplicate-yes (PR #197)
-  + automated evidence suite (PR #200, 23 tests). Live/recovery evidence pending.
+  + automated evidence suite (PR #200, 23 tests) + live proof (PR #201)
+  + recovery evidence (PR #203). Strong regression coverage.
 ```
 
 ---
@@ -253,12 +259,13 @@ autonomous workflows
 # Current Safe Interpretation
 
 ```text
-Cap 64: strong evidence coverage — automated (132+ tests), live checklist (5/5),
-  duplicate-yes protection, receipt verification. Remaining gap: recovery evidence only.
-Cap 22: focused and automated coverage — pending, approved, denied, cancel,
-  unrelated, duplicate-yes, path-root boundary, and governed ledger assertions tested.
-  Remaining gaps: live checklist, live proof/receipt evidence, and recovery evidence.
-Broader approval-gate certification: pending until live/recovery proof supports closeout.
+Cap 64: evidence complete — automated (132+ tests), live checklist (5/5),
+  duplicate-yes protection, receipt verification, recovery (PR #203).
+Cap 22: evidence complete — automated (23 tests), live proof + receipt (PR #201),
+  duplicate-yes protection, path-root boundary (5 tests), recovery (PR #203).
+Both confirmation-bound capabilities have all evidence dimensions captured.
+Approval-gate certification decision is now possible for the tested
+  registry-confirmation-bound scope (Cap 22 + Cap 64 only).
 ```
 
 No document should currently say:
