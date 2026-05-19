@@ -115,7 +115,8 @@ Approval gate workflow simulations: landed (PR #191).
 Cap 64 operator journey proof scaffold: landed (PR #192).
 Cap 22 operator journey proof scaffold: landed (PR #193).
 Cap 64 automated evidence: captured (PR #195, 132 tests).
-Cap 64 live mailto proof: all 5 checklist tests passed (PR #196).
+Cap 64 live mailto proof: initial live/receipt evidence captured (PR #196);
+all 5 checklist tests recorded in this status sync.
 Cap 64 duplicate-yes test: added (PR #197, 134 total tests).
 Cap 64 remaining gap: recovery evidence only.
 Cap 64 P5: pending (recovery decision needed).
