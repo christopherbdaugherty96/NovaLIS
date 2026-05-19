@@ -72,6 +72,12 @@ PR #182 — Obsidian / Second Brain future-planning preserved.
 PR #183 — BigPicture / Auralis operating-model future-planning preserved.
 PR #184 — .codex-worktrees/ ignored in .gitignore.
 PR #186 — Four-pass safe cleanup and approval-gate certification scaffold merged.
+PR #187 — Post-PR186 continuity sync merged.
+PR #188 — Approval-gate confirmation capability inventory filled.
+PR #190 — Ecosystem simulation matrix merged.
+PR #191 — Approval gate workflow simulations merged.
+PR #192 — Cap 64 operator journey proof scaffold merged.
+PR #193 — Cap 22 operator journey proof scaffold merged.
 ```
 
 ---
@@ -97,12 +103,24 @@ Status:
 focused coverage merged / full certification pending
 ```
 
-First step:
+Current proof-scaffold status:
 
 ```text
-Use APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
-Complete confirmation-bound capability inventory.
-Fill proof status for every confirmation-bound path.
+Confirmation-bound capability inventory: filled (PR #188).
+Ecosystem simulation matrix: landed (PR #190).
+Approval gate workflow simulations: landed (PR #191).
+Cap 64 operator journey proof scaffold: landed (PR #192).
+Cap 22 operator journey proof scaffold: landed (PR #193).
+Evidence capture for both: pending.
+Cap 64 P5: pending.
+Cap 22 lock: not locked / not globally certified.
+Full approval-gate certification: pending.
+```
+
+Next step:
+
+```text
+Capture evidence against the proof scaffolds.
 Then run broader/full-suite approval-gate verification.
 Only then decide whether the lock can move toward certification/closeout.
 ```
