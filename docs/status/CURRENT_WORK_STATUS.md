@@ -514,6 +514,97 @@ added test_session_duplicate_yes_does_not_double_execute_cap22
 no runtime changes
 ```
 
+### Cap 64 full live checklist evidence
+
+Status:
+
+```text
+merged — PR #198
+```
+
+Result:
+
+```text
+recorded all 5 Cap 64 live checklist tests with timestamps
+updated status docs to reflect full live checklist coverage
+only recovery evidence remains for Cap 64
+no runtime changes
+```
+
+### Certification matrix evidence sync
+
+Status:
+
+```text
+merged — PR #199
+```
+
+Result:
+
+```text
+synced approval gate certification matrix with Cap 64 evidence from PRs #195-197
+added new matrix columns: duplicate-yes, live proof, automated evidence
+Cap 64 shows strong coverage; Cap 22 automated evidence noted
+no runtime changes
+```
+
+### Cap 22 automated evidence
+
+Status:
+
+```text
+merged — PR #200
+```
+
+Result:
+
+```text
+recorded automated evidence in Cap 22 operator journey proof scaffold
+23 tests, 0 failures across 7 test files at commit 59f232e
+scenarios A-D covered with automated assertions
+path-root boundary proof captured (5 tests)
+duplicate-yes non-double-execution covered
+no runtime changes
+```
+
+### Cap 22 live proof and receipt evidence
+
+Status:
+
+```text
+merged — PR #201
+```
+
+Result:
+
+```text
+recorded live WebSocket proof for Cap 22 open_file_folder
+approval test: Documents folder opened after confirmation, receipt verified
+denial test: Downloads open denied with "no", no new receipt created
+only recovery evidence remains pending for Cap 22
+no runtime changes
+```
+
+### Recovery evidence for Cap 22 and Cap 64
+
+Status:
+
+```text
+merged — PR #203
+```
+
+Result:
+
+```text
+added 3 recovery tests proving pending confirmation does not survive
+WebSocket disconnect:
+  test_cap22_disconnect_clears_pending_state
+  test_cap64_disconnect_clears_pending_state
+  test_new_session_can_still_create_fresh_pending
+closes the last remaining evidence gap for both operator journeys
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
