@@ -7,27 +7,36 @@ Last reviewed: 2026-05-19
 ## Current Active Task
 
 ```text
-Approval gate certification closeout — certified for current scope (2026-05-19).
+Everyday live-session reliability hardening — simulation harness + results (2026-05-19).
 ```
 
 Result:
 
 ```text
-Approval-gate certification is complete for the current
-registry-confirmation-bound capability scope: Cap 22 and Cap 64.
+Live user simulation (20 personas, 32 turns) captured and documented.
+Governance paths confirmed strong. Everyday reliability gaps identified:
+Ollama timeout under concurrent load, news/weather routing phrase
+sensitivity, multi-turn context fragility.
+Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
+Script: nova_backend/tests/simulations/live_user_simulation.py
+```
+
+Previous completed lane:
+
+```text
+Approval-gate certification closeout — certified for current scope (2026-05-19).
 Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 capability_locks.json intentionally not modified (separate P1-P5 process).
-Website-preview live-backend validation remains follow-up debt.
 ```
 
 Next correct step:
 
 ```text
-Approval-gate lane is closed out.
-Per-capability P5/lock decisions remain separate and pending.
-Next lanes: open follow-ups (#142, #143), five-pass roadmap items,
-or new reviewed priority lock for next workstream.
-Do not reopen the approval-gate lane unless registry truth changes.
+1. Simulation harness and results committed (this PR).
+2. Follow-up PRs for reliability gaps (Ollama timeout, news routing,
+   confirmation-edge timeout, regression tests) each require separate review.
+3. Do not expand capabilities or add Shopify/website workflows.
+4. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ---
@@ -80,6 +89,7 @@ PR #201 — Cap 22 live proof and receipt evidence merged.
 PR #203 — Recovery evidence for Cap 22 and Cap 64 merged.
 PR #202 — Continuity docs synced with PRs #198-203.
 PR #204 — Certification matrix synced with PRs #201 and #203.
+PR #205 — Approval-gate certification closeout merged.
 ```
 
 ---
@@ -251,8 +261,10 @@ The recent audit and hardening merges do not approve:
 
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Per-capability P5/lock decisions remain separate and pending.
-3. Next lanes: open follow-ups (#142, #143), five-pass roadmap items,
-   or new reviewed priority lock for next workstream.
-4. Do not reopen the approval-gate lane unless registry truth changes.
+2. Everyday live-session reliability hardening is the active workstream.
+3. Follow-up PRs: Ollama timeout, news routing, confirmation-edge
+   timeout, regression tests -- each requires separate review.
+4. Per-capability P5/lock decisions remain separate and pending.
+5. Do not expand capabilities or add Shopify/website workflows.
+6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
