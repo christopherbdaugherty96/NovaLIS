@@ -172,8 +172,8 @@ Commit: a1f8a4d
 Remaining gap:
 
 ```text
-Manual observation of live mailto draft opening still pending.
-Trust Panel receipt evidence pending — depends on runtime availability.
+None for live mailto / receipt evidence. Captured 2026-05-19 01:12 UTC.
+Recovery and duplicate-yes gaps remain tracked below.
 ```
 
 ---
