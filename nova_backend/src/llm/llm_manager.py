@@ -5,7 +5,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Generator, Optional
 
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.writer import LedgerWriter
@@ -290,10 +290,17 @@ class LLMManager:
         timeout: Optional[float] = None,
         request_id: Optional[str] = None,
         session_id: Optional[str] = None,
+        on_chunk: Optional[Callable[[str], None]] = None,
     ) -> Optional[str]:
         """
         Send prompt to LLM and return plain text.
         Honors circuit breaker and model version lock.
+
+        If *on_chunk* is provided, uses streaming mode and calls
+        on_chunk(text_fragment) for each token as it arrives from
+        Ollama. The complete assembled text is still returned.
+        This is purely a UX callback -- it does not change the
+        return value or any governance behavior.
         """
         if self.inference_blocked:
             logger.error("Generate called while model is blocked.")
@@ -319,6 +326,38 @@ class LLMManager:
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
+
+        # Streaming path: use request_stream and call on_chunk for
+        # each token. Assembles and returns the full text identically
+        # to the non-streaming path.
+        if on_chunk is not None:
+            try:
+                parts: list[str] = []
+                for chunk in self._network.request_stream(
+                    url=f"{self.base_url.rstrip('/')}/api/chat",
+                    json_payload={
+                        "model": self.active_model,
+                        "messages": messages,
+                        "stream": True,
+                        "options": options,
+                    },
+                    timeout=request_timeout,
+                    request_id=request_id,
+                    session_id=session_id,
+                ):
+                    parts.append(chunk)
+                    try:
+                        on_chunk(chunk)
+                    except Exception:
+                        pass  # UX callback must not break inference
+                result = "".join(parts).strip() or None
+                self.failure_count = 0
+                return result
+            except ModelNetworkMediatorError as error:
+                logger.error("Streaming model call failed: %s", error)
+                # Fall through to non-streaming fallback below
+            except Exception as error:
+                logger.error("Streaming LLM error: %s", error)
 
         try:
             response = self._network.request_json(
@@ -381,6 +420,67 @@ class LLMManager:
             self._record_failure()
 
         return None
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        *,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        timeout: Optional[float] = None,
+        request_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+    ) -> Generator[str, None, None]:
+        """Stream text chunks from Ollama for advisory LLM fallback.
+
+        Same circuit-breaker, fallback-model, and failure-recording logic
+        as generate(). Yields text fragments as they arrive. The caller
+        is responsible for assembling the final response.
+        """
+        if self.inference_blocked:
+            logger.error("generate_stream called while model is blocked.")
+            return
+
+        now = time.time()
+        if now < self.circuit_open_until:
+            logger.warning("Circuit breaker open. Skipping stream request.")
+            return
+
+        system = system_prompt or self.system_prompt
+        options = dict(self.default_options)
+        if temperature is not None:
+            options["temperature"] = float(temperature)
+        if max_tokens is not None:
+            options["num_predict"] = int(max_tokens)
+        request_timeout = float(timeout) if timeout is not None else float(self.timeout)
+
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        try:
+            for chunk in self._network.request_stream(
+                url=f"{self.base_url.rstrip('/')}/api/chat",
+                json_payload={
+                    "model": self.active_model,
+                    "messages": messages,
+                    "stream": True,
+                    "options": options,
+                },
+                timeout=request_timeout,
+                request_id=request_id,
+                session_id=session_id,
+            ):
+                yield chunk
+            self.failure_count = 0
+        except ModelNetworkMediatorError as error:
+            logger.error("Streaming model call failed: %s", error)
+            self._record_failure()
+        except Exception as error:
+            logger.error("Streaming LLM error: %s", error)
+            self._record_failure()
 
     def health_check(self) -> bool:
         """Verify Ollama is running and the model is available."""

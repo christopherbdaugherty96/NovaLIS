@@ -173,6 +173,7 @@ async def run_general_chat_fallback(
     session_context: list[dict[str, Any]],
     project_threads: ProjectThreadStore,
     select_relevant_memory_context: Callable[..., list[dict[str, Any]]],
+    on_chunk: Callable[[str], None] | None = None,
 ) -> Optional[SkillResult]:
     normalized_query = str(query or "").strip()
     if not normalized_query or not general_chat_skill.can_handle(normalized_query):
@@ -269,7 +270,7 @@ async def run_general_chat_fallback(
         block for block in (request_block, task_preview.prompt_block) if block
     )
 
-    result = await general_chat_skill.handle(normalized_query, chat_context, skill_state)
+    result = await general_chat_skill.handle(normalized_query, chat_context, skill_state, on_chunk=on_chunk)
     if result is not None and isinstance(result.data, dict):
         review_card_payload = skill_state.get("request_understanding_review_card")
         if isinstance(review_card_payload, dict):
