@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Everyday live-session reliability hardening — streaming design proposed (2026-05-19).
+Everyday live-session reliability hardening — streaming cycle complete (2026-05-19).
 ```
 
 Previous closed lane:
@@ -16,11 +16,19 @@ Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 Status:
 
 ```text
-Baseline simulation: 24/32 passes, 7 timeouts (PR #206).
-Post-PR #207 rerun: 25/32 passes, 5 timeouts, 2 connection errors.
-PR #207 verdict: marginal improvement, not a material fix.
-Confirmed bottleneck: Ollama model-level inference serialization.
-Streaming LLM fallback design proposed, not yet implemented.
+Three-point simulation comparison complete:
+  Baseline (#206):  24/32 passes, 75%, 7 timeouts
+  Wait (#207):      25/32 passes, 76%, 5 timeouts (marginal)
+  Streaming (#210): 27/33 passes, 82%, 6 timeouts, 0 errors (effective)
+
+Key deltas (baseline → streaming):
+  Passes:  75% → 82%  (+6 pts)
+  Avg:     4381ms → 2451ms  (-44%)
+  p95:     45016ms → 7114ms  (-84%)
+  Errors:  1 → 0
+
+Remaining bottleneck: Ollama model-level inference serialization.
+Next highest ROI: deterministic routing for news/weather/math.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
 Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
@@ -31,9 +39,8 @@ Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 Scope:
 
 ```text
-post-PR #207 rerun results recorded
-streaming design proposed (not implemented)
-no runtime changes in this PR
+streaming cycle complete (design → implement → verify)
+three-point simulation comparison proven
 no capability expansion
 no authority expansion
 capability_locks.json not modified
@@ -91,6 +98,8 @@ PR #204 — Certification matrix synced with PRs #201 and #203.
 PR #205 — Approval-gate certification closeout merged.
 PR #206 — Live-user simulation harness and baseline results merged.
 PR #207 — Ollama wait-serialization mitigation merged.
+PR #209 — Post-#207 simulation results and streaming design doc merged.
+PR #210 — Streaming LLM fallback for advisory general-chat path merged.
 ```
 
 ## Recent closed / not merged truth
@@ -169,15 +178,16 @@ Most other active capabilities — certification lock phases pending.
 
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Everyday live-session reliability hardening is the active workstream.
-3. Post-PR #207 rerun complete. PR #207 = marginal improvement.
-4. Confirmed bottleneck: Ollama model-level inference serialization.
-5. Streaming LLM fallback design proposed, not yet implemented.
-6. Next: implement streaming design as a separate reviewed PR.
-7. Then rerun the same simulation to verify improvement.
-8. Per-capability P5/lock decisions remain separate and pending.
-9. Do not expand capabilities or add Shopify/website workflows.
-10. Do not reopen the approval-gate lane unless registry truth changes.
+2. Everyday live-session reliability hardening: streaming cycle complete.
+3. Three-point comparison proves streaming UX mitigation effective.
+4. Remaining bottleneck: Ollama model-level inference serialization.
+5. Next highest ROI: deterministic routing for news/weather/math
+   to reduce Ollama load on queries that don't need LLM fallback.
+6. Fix stalled confirmation-context timeouts if reproducible.
+7. Per-capability P5/lock decisions remain separate and pending.
+8. Do not expand capabilities or add Shopify/website workflows.
+9. Do not reopen the approval-gate lane unless registry truth changes.
+10. No further streaming patches unless a specific regression appears.
 ```
 
 ## Safety boundary

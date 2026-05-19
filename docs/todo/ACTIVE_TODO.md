@@ -7,20 +7,29 @@ Last reviewed: 2026-05-19
 ## Current Active Task
 
 ```text
-Everyday live-session reliability hardening — streaming design proposed (2026-05-19).
+Everyday live-session reliability hardening — streaming cycle complete (2026-05-19).
 ```
 
-Result so far:
+Result:
 
 ```text
 Baseline simulation: 24/32 passes, 7 timeouts (PR #206).
-Post-PR #207 rerun: 25/32 passes, 5 timeouts, 2 connection errors.
-PR #207 verdict: marginal improvement, not a material fix.
-Confirmed bottleneck: Ollama model-level inference serialization.
-Streaming LLM fallback design proposed (not yet implemented).
+Post-PR #207 rerun: 25/32 passes, 5 timeouts (marginal).
+Post-PR #210 rerun: 27/33 passes, 6 timeouts, 0 errors (effective).
+
+Three-point comparison proves streaming UX mitigation works:
+  Passes:  75% → 82%
+  Avg:     4381ms → 2451ms (-44%)
+  p95:     45016ms → 7114ms (-84%)
+  Errors:  1 → 0
+
+Remaining bottleneck: Ollama model-level inference serialization.
+Next highest ROI: deterministic routing for news/weather/math.
 
 PR #206 merged the baseline simulation harness and results.
 PR #207 merged the first Ollama wait-serialization mitigation.
+PR #209 merged the streaming design doc and post-#207 results.
+PR #210 merged the streaming LLM fallback implementation.
 Issue #208 tracks the detailed next-step sequence.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
@@ -40,10 +49,11 @@ capability_locks.json intentionally not modified (separate P1-P5 process).
 Next correct step:
 
 ```text
-1. Post-PR #207 rerun complete. Results recorded.
-2. Streaming LLM fallback design proposed (not yet implemented).
-3. Next: implement streaming design as a separate reviewed PR.
-4. Then rerun the same simulation to verify improvement.
+1. Streaming cycle complete: design → implement → verify (PRs #209, #210).
+2. Three-point simulation comparison recorded and proven.
+3. Next highest ROI: deterministic routing for news/weather/math
+   to reduce Ollama load on queries that don't need LLM fallback.
+4. Fix stalled confirmation-context timeouts if reproducible.
 5. Do not expand capabilities or add Shopify/website workflows.
 6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
@@ -101,6 +111,8 @@ PR #204 — Certification matrix synced with PRs #201 and #203.
 PR #205 — Approval-gate certification closeout merged.
 PR #206 — Live-user simulation harness and baseline results merged.
 PR #207 — Ollama wait-serialization mitigation merged.
+PR #209 — Post-#207 simulation results and streaming design doc merged.
+PR #210 — Streaming LLM fallback for advisory general-chat path merged.
 ```
 
 ---
@@ -118,12 +130,14 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Current Open Follow-Ups
 
-### Everyday live-session reliability — ACTIVE
+### Everyday live-session reliability — STREAMING CYCLE COMPLETE
 
 Status:
 
 ```text
-baseline captured / first mitigation merged / post-mitigation rerun pending
+three-point comparison complete / streaming UX mitigation proven effective
+remaining bottleneck: Ollama model-level inference serialization
+next ROI: deterministic routing for news/weather/math
 ```
 
 Tracker:
@@ -132,10 +146,11 @@ Tracker:
 Issue #208 — Everyday reliability next steps after live-user simulation
 ```
 
-First step:
+Next step:
 
 ```text
-Run the exact same simulation from PR #206 after PR #207 and record exact before/after metrics.
+Improve deterministic routing for news/weather/math queries to
+reduce Ollama load. This is a routing change, not a streaming change.
 ```
 
 ### Approval gate wiring — CLOSED OUT
