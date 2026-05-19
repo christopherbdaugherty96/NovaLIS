@@ -183,10 +183,11 @@ Most other active capabilities — certification lock phases pending.
 #141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
-#208 — Everyday reliability next steps after live-user simulation is active.
+#208 — Everyday reliability hardening complete (2026-05-19).
+#214 — Multi-turn context continuity hardening (evidence captured).
 ```
 
-#141 is no longer the active follow-up. The approval-gate lane is closed out.
+#141 is closed. #208 is complete. #214 is the new usability evidence lane.
 
 ## Next correct sequence
 
@@ -194,10 +195,13 @@ Most other active capabilities — certification lock phases pending.
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
 2. Everyday live-session reliability hardening is complete (2026-05-19).
    75% → 97% passes, 7 → 0 timeouts, avg 4381ms → 587ms.
-3. Remaining lower-priority items:
+3. Multi-turn context continuity simulation captured (Issue #214).
+   22/36 passes, 0 timeouts. Deterministic routing and confirmation
+   safety work. General-chat continuity depends on Ollama throughput.
+4. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
    b. LLM-dependent general-chat reliability (requires Ollama throughput or model swap).
-   c. Multi-turn context persistence regression tests.
+   c. Mixed-request edge case simulation (planned next).
    d. Concurrent WebSocket load regression test suite.
 4. Per-capability P5/lock decisions remain separate and pending.
 5. Do not expand capabilities or add Shopify/website workflows.
