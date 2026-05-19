@@ -448,3 +448,140 @@ rerun    → confirmed UX improvement
 Next highest ROI: route simple queries (math, news, weather) away
 from the local model wherever possible. This reduces pressure on
 Ollama instead of trying to make Ollama faster.
+
+---
+
+## Post-PR #211/#213 Results — Deterministic Routing + Handler Ordering
+
+PR #211 added deterministic routing for arithmetic, news headline
+normalization, and weather-in-city regex. PR #213 moved all
+deterministic command handlers (time, arithmetic, headline summary,
+news, weather) above the ambient clarification block so first-turn
+inputs reach their dedicated handlers immediately.
+
+### Post-PR #213 metrics
+
+```text
+Personas:               20
+Turns:                  33
+Passes:                 32/33
+Responses received:     33/33
+Errors:                 0
+Timeouts:               0
+Confirmation prompts:   7
+Denial/cancel replies:  5
+Latency avg:            587ms
+Latency median:         69ms
+Latency p95:            3147ms
+Latency max:            10089ms
+```
+
+### Five-point comparison
+
+| Metric | Baseline (#206) | Wait (#207) | Streaming (#210) | Routing+Ordering (#213) |
+|---|---|---|---|---|
+| Passes | 24/32 (75.0%) | 25/32 (78.1%) | 27/33 (81.8%) | **32/33 (97.0%)** |
+| Timeouts | 7 | 5 | 6 | **0** |
+| Errors | 1 | 2 | 0 | **0** |
+| Responses received | 25/32 | 26/32 | 28/33 | **33/33** |
+| Avg latency | 4381ms | 4086ms | 2451ms | **587ms** |
+| Median latency | 65ms | 29ms | 35ms | **69ms** |
+| p95 latency | 45016ms | 10053ms | 7114ms | **3147ms** |
+| Max latency | 45017ms | 41209ms | 40748ms | **10089ms** |
+| Confirmations | 7/7 | 7/7 | 7/7 | **7/7** |
+| Boundary enforcement | 5/5 | 5/5 | 5/5 | **5/5** |
+
+### Key deterministic routing wins
+
+| Persona | Query | Before (#210) | After (#213) |
+|---|---|---|---|
+| Quinn | "what is 247 times 38?" | TIMEOUT 45s | **15ms** ✓ |
+| Sam | "give me the latest news headlines" | TIMEOUT/misroute | **65ms** ✓ |
+| Elliot T1 | "weather in Boston" | TIMEOUT/misroute | **77ms** ✓ |
+| Elliot T2 | "news" | TIMEOUT | **3147ms** ✓ |
+| Drew T2 | "tell me more about neural networks" | TIMEOUT 45s | **197ms** (fallback) |
+| Drew T3 | "how does that relate to deep learning?" | TIMEOUT 45s | **112ms** (fallback) |
+| Frankie T2 | "what's for dinner tonight?" | TIMEOUT 45s | **103ms** ✓ |
+
+### Failure classification (1 remaining)
+
+| Category | Count | Query |
+|---|---|---|
+| Confirmation-context edge case | 1 | Gale T2: "yes" after clarification (not confirmation) |
+
+Gale's T1 triggers clarification ("Who should the email be addressed
+to?") not a confirmation prompt. T2 "yes" has no pending confirmation
+to resolve, so it falls through to the general fallback. This is
+correct behavior — the test expectation is too strict, not a runtime
+bug.
+
+### PR #213 verdict
+
+```text
+Impact:     transformative
+Passes:     82% → 97% (+15 points)
+Timeouts:   6 → 0 (eliminated)
+Avg:        2451ms → 587ms (-76%)
+p95:        7114ms → 3147ms (-56%)
+Max:        40748ms → 10089ms (-75%)
+
+Deterministic routing removes Ollama from the critical path for
+everyday utility commands. This eliminates the queue saturation
+that caused cascading timeouts in previous runs.
+
+The single remaining failure is a test-expectation issue (Gale's
+clarification-not-confirmation edge case), not a runtime defect.
+```
+
+### Governance integrity preserved
+
+```text
+Confirmation gates:     7/7 correct (unchanged across all 5 runs)
+Boundary enforcement:   5/5 correct (unchanged across all 5 runs)
+Governed action paths:  not modified by PRs #211 or #213
+Approval-gate behavior: not modified by PRs #211 or #213
+capability_locks.json:  not modified
+```
+
+---
+
+## Updated Workstream Conclusion
+
+The everyday live-session reliability hardening cycle is complete:
+
+```text
+measure  → PR #206 baseline simulation (75% pass rate)
+mitigate → PR #207 wait serialization (marginal, 78%)
+rerun    → confirmed Ollama as bottleneck
+design   → PR #209 streaming design doc
+mitigate → PR #210 streaming LLM fallback (82%)
+rerun    → confirmed UX improvement, Ollama still ceiling
+mitigate → PR #211 deterministic routing gaps (normalization)
+fix      → PR #212 test fakes
+mitigate → PR #213 handler ordering fix (97%)
+rerun    → confirmed: Ollama removed from utility critical path
+```
+
+### What was proven
+
+```text
+1. Deterministic routing is the highest-ROI reliability improvement.
+2. Moving utility handlers before ambient clarification eliminates
+   first-turn interception of known commands.
+3. Streaming reduces perceived latency for LLM-dependent turns.
+4. Governance remained intact across all five simulation runs.
+5. The hard ceiling is now LLM-dependent general-chat turns only,
+   which cannot be made deterministic by definition.
+```
+
+### Remaining work (lower priority)
+
+```text
+1. Fix Gale confirmation-context edge case (test expectation,
+   not runtime defect)
+2. LLM-dependent general-chat turn reliability (Drew's multi-turn,
+   Blake's creative) — requires Ollama throughput improvement or
+   model swap, not Nova code changes
+3. Multi-turn context persistence regression tests
+4. Concurrent WebSocket load regression test suite
+```
