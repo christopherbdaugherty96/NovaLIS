@@ -1,6 +1,6 @@
 # Cap 22 Open File / Folder Operator Journey
 
-Status: automated evidence captured / live proof pending / not locked / not globally certified.
+Status: automated + live proof captured / recovery pending / not locked / not globally certified.
 
 Simulation source:
 
@@ -81,7 +81,7 @@ Memory and planning context do not grant permission.
 | Field | Value |
 | --- | --- |
 | Simulation document version | `APPROVAL_GATE_WORKFLOW_SIMULATIONS.md` on main after PR #191 |
-| Proof document status | automated evidence captured / live proof pending |
+| Proof document status | automated + live proof captured / recovery pending |
 | Repo commit SHA | `59f232e` (main after PR #197 merge) |
 | Capability under test | Cap 22 `open_file_folder` |
 | Authority classification | confirmation-required reversible local open |
@@ -453,14 +453,32 @@ no browser/computer-use expansion
 Current live evidence:
 
 ```text
-pending
+CAPTURED — live WebSocket proof at 2026-05-19T04:49 UTC on localhost:8000.
+
+Live approval test:
+  SENT: {"type":"chat","text":"open my documents folder"}
+  RECV: "Open documents?\nThis action needs confirmation.\nReply 'yes'
+        to proceed or 'no' to cancel."
+  SENT: {"type":"chat","text":"yes"}
+  RECV: chat_done (action executed)
+  Receipt: ACTION_ATTEMPTED at 04:49:19 → ACTION_COMPLETED at 04:49:20
+    capability_id: 22, success: true, authority_class: reversible_local,
+    requires_confirmation: true, external_effect: false
+
+Live denial test:
+  SENT: {"type":"chat","text":"open my downloads folder"}
+  RECV: "Open downloads?\nThis action needs confirmation.\nReply 'yes'
+        to proceed or 'no' to cancel."
+  SENT: {"type":"chat","text":"no"}
+  RECV: chat_done (no action executed)
+  Receipt check: no new Cap 22 receipt after 04:49:43 — denial confirmed
 ```
 
 Remaining gap:
 
 ```text
-Run the live checklist only when explicitly ready for Cap 22 evidence.
-Do not run lock commands from this scaffold.
+No remaining live proof gap for approval and denial paths.
+Recovery evidence remains pending.
 ```
 
 ---
@@ -573,7 +591,7 @@ Remaining gap:
 
 ```text
 No remaining automated ledger gap.
-Live receipt evidence pending.
+Live receipt evidence captured (see Receipt / Trust Panel Evidence below).
 ```
 
 ---
@@ -594,16 +612,34 @@ Receipt visibility is evidence only.
 Trust Panel display does not authorize execution.
 ```
 
-Captured receipt excerpt or screenshot reference:
+Captured receipt excerpt:
+
+```json
+{
+  "timestamp_utc": "2026-05-19T04:49:20.147722+00:00",
+  "event_type": "ACTION_COMPLETED",
+  "capability_id": 22,
+  "request_id": "61454428-5819-4908-ba28-353b4e530ac5",
+  "success": true,
+  "status": "completed",
+  "external_effect": false,
+  "reversible": true,
+  "authority_class": "reversible_local",
+  "requires_confirmation": true
+}
+```
+
+Denial receipt check:
 
 ```text
-pending
+No new Cap 22 receipt generated after denial at 04:49:43 UTC.
+Denial path correctly blocked execution and receipt creation.
 ```
 
 Remaining gap:
 
 ```text
-Capture receipt evidence after an approved live open proof.
+No remaining receipt gap for approval and denial paths.
 ```
 
 ---
@@ -611,13 +647,19 @@ Capture receipt evidence after an approved live open proof.
 ## Manual Steps Performed
 
 ```text
-pending
+1. Ran cap22_live_proof.py against localhost:8000 via WebSocket.
+2. Nova identified "open my documents folder" as Cap 22.
+3. Nova asked for confirmation before opening.
+4. Sent "yes" — Documents folder opened locally.
+5. Verified receipt at /api/trust/receipts showing ACTION_COMPLETED.
+6. Ran cap22_live_denial.py — sent "no" to a Downloads open request.
+7. Verified no new receipt was created for the denied action.
 ```
 
-Required manual note when live proof is run:
+Manual observation:
 
 ```text
-The target opened locally and matched the expected folder or file.
+The target opened locally and matched the expected folder (Documents).
 ```
 
 ---
@@ -665,8 +707,8 @@ denied/cancelled non-execution evidence — CAPTURED (automated)
 unrelated-input non-execution evidence — CAPTURED (automated)
 disallowed-path refusal evidence — CAPTURED (automated)
 ledger excerpts — CAPTURED (automated assertions)
-receipt / Trust Panel evidence — PENDING (live proof)
-manual live open observation — PENDING (live proof)
+receipt / Trust Panel evidence — CAPTURED (live at 2026-05-19T04:49 UTC)
+manual live open observation — CAPTURED (Documents folder opened)
 recovery behavior evidence — PENDING (no automated path)
 ```
 
@@ -681,8 +723,8 @@ Automated evidence captured: 23 tests, 0 failures across 7 test files.
 Scenarios A-D: fully covered by automated evidence.
 Path-root boundary: fully covered by automated evidence.
 Duplicate-yes: covered.
-Live proof: pending.
-Receipt / Trust Panel evidence: pending.
+Live proof: captured (approval + denial).
+Receipt / Trust Panel evidence: captured (ACTION_COMPLETED receipt verified).
 Recovery evidence: pending (no automated path).
 Cap 22 remains not locked.
 Cap 22 remains not globally certified.
@@ -692,8 +734,8 @@ Full approval-gate certification remains pending.
 Safe wording after this evidence lands:
 
 ```text
-Cap 22 automated evidence captured (23 tests, scenarios A-D + path-root
-boundary). Live proof, receipt evidence, and recovery evidence remain pending.
+Cap 22 automated + live proof captured (23 tests + live approval/denial
+with receipt verification). Only recovery evidence remains pending.
 ```
 
 Do not say:
@@ -711,14 +753,12 @@ all approval-gate paths proven
 
 ## Next Action
 
-Automated evidence is captured. Remaining steps:
+Automated and live evidence are captured. Remaining steps:
 
 ```text
-1. Run live open proof on a known safe target (e.g. Downloads folder).
-2. Capture receipt / Trust Panel evidence from the live run.
-3. Decide whether recovery evidence is needed for Cap 22 signoff
+1. Decide whether recovery evidence is needed for Cap 22 signoff
    or can remain a documented follow-up (same decision as Cap 64).
-4. Only then decide whether Cap 22 signoff is supportable.
+2. Only then decide whether Cap 22 signoff is supportable.
 ```
 
 Final boundary:
