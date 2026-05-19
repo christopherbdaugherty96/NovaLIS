@@ -37,8 +37,23 @@ class ModelNetworkMediator:
         self._ledger = LedgerWriter()
         self._request_times: list[float] = []
         self._session = requests.Session()
+        self._default_session = self._session
+        self._thread_local = threading.local()
         self._rate_lock = threading.Lock()
         self._session_lock = threading.Lock()
+
+    def _request_session(self):
+        if self._session is not self._default_session:
+            return self._session
+        session = getattr(self._thread_local, "session", None)
+        if session is not None:
+            return session
+        with self._session_lock:
+            session = getattr(self._thread_local, "session", None)
+            if session is None:
+                session = requests.Session()
+                self._thread_local.session = session
+            return session
 
     def _validate_url(self, url: str) -> None:
         parsed = urlparse(url)
@@ -94,13 +109,12 @@ class ModelNetworkMediator:
             correlation["session_id"] = session_id
 
         try:
-            with self._session_lock:
-                response = self._session.request(
-                    method=method.upper(),
-                    url=url,
-                    json=json_payload,
-                    timeout=timeout,
-                )
+            response = self._request_session().request(
+                method=method.upper(),
+                url=url,
+                json=json_payload,
+                timeout=timeout,
+            )
             response.raise_for_status()
             payload = response.json() if response.content else {}
         except Exception as error:

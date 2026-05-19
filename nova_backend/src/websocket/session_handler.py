@@ -3998,6 +3998,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             # --- Bounded advisory general-chat fallback ---
+            if not silent_widget_refresh:
+                await ws_send(
+                    ws,
+                    {
+                        "type": "status",
+                        "status": "thinking",
+                        "message": "Thinking...",
+                        "phase": "llm_inference",
+                        "turn_id": incoming_turn_id,
+                    },
+                )
             skill_result = await run_general_chat_fallback(
                 mediated_text,
                 general_chat_skill=general_chat_skill,
