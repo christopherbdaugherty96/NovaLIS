@@ -3,8 +3,8 @@
 Status:
 
 ```text
-evidence complete / certification decision pending
-not a certification document
+certified for current registry-confirmation-bound scope (2026-05-19)
+closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 ```
 
 Purpose:
@@ -83,8 +83,8 @@ Based on this registry snapshot, no other active capability has `requires_confir
 
 | Capability | Registry Confirmation Required | Pending State Tested | Approve Path Tested | Deny Path Tested | Cancel/Unrelated Input Tested | Duplicate-Yes Tested | Ledger Sequence Tested | Live WS Session Tested | Live Proof Captured | Automated Evidence | Runtime Verified | Certification Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #200 automated evidence | yes — PR #172 | yes — PR #201 (approval + denial + receipt) | yes — PR #200 (23 tests, 0 failures) | yes — recovery PR #203 (3 tests) | evidence complete / decision pending |
-| Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #195 scenarios A-D | yes — PR #172 | yes — PR #196 (1 live request + receipt) | yes — PR #195 (132 tests, 0 failures) | yes — recovery PR #203 (3 tests) | evidence complete / decision pending |
+| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #200 automated evidence | yes — PR #172 | yes — PR #201 (approval + denial + receipt) | yes — PR #200 (23 tests, 0 failures) | yes — recovery PR #203 (3 tests) | **certified** (2026-05-19) |
+| Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #195 scenarios A-D | yes — PR #172 | yes — PR #196 (1 live request + receipt) | yes — PR #195 (132 tests, 0 failures) | yes — recovery PR #203 (3 tests) | **certified** (2026-05-19) |
 
 ---
 
@@ -264,18 +264,20 @@ Cap 64: evidence complete — automated (132+ tests), live checklist (5/5),
 Cap 22: evidence complete — automated (23 tests), live proof + receipt (PR #201),
   duplicate-yes protection, path-root boundary (5 tests), recovery (PR #203).
 Both confirmation-bound capabilities have all evidence dimensions captured.
-Approval-gate certification decision is now possible for the tested
+Approval-gate certification is complete for the current
   registry-confirmation-bound scope (Cap 22 + Cap 64 only).
+Closeout recorded: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 ```
 
-No document should currently say:
+No document should say:
 
 ```text
-approval gate fully certified
-all confirmation paths proven
-approval-gate closeout complete
-Cap 64 P5 complete
-Cap 64 locked
+all Nova capabilities certified
+all governance behavior proven
+Cap 22 locked (capability_locks.json still pending)
+Cap 64 locked (capability_locks.json P5 still pending)
+broad autonomy certified
 ```
 
-until this matrix is fully resolved and independently verified.
+Approval-gate certification is narrowly scoped to the current
+`requires_confirmation: true` registry snapshot only.
