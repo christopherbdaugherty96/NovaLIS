@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Everyday live-session reliability hardening — streaming cycle complete (2026-05-19).
+Everyday live-session reliability hardening — handler-ordering follow-up required (2026-05-19).
 ```
 
 Previous closed lane:
@@ -16,19 +16,22 @@ Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 Status:
 
 ```text
-Three-point simulation comparison complete:
-  Baseline (#206):  24/32 passes, 75%, 7 timeouts
-  Wait (#207):      25/32 passes, 76%, 5 timeouts (marginal)
-  Streaming (#210): 27/33 passes, 82%, 6 timeouts, 0 errors (effective)
+Four-point reliability sequence complete through PR #212:
+  Baseline (#206):        24/32 passes, 75%, 7 timeouts
+  Wait mitigation (#207): 25/32 passes, 76%, 5 timeouts (marginal)
+  Streaming (#210):       27/33 passes, 82%, 6 timeouts, 0 errors (effective)
+  Routing (#211):         27/33 passes, 82%, 6 timeouts, 0 errors (targeted latency improved, no overall score gain)
 
-Key deltas (baseline → streaming):
+Key deltas from baseline to streaming:
   Passes:  75% → 82%  (+6 pts)
   Avg:     4381ms → 2451ms  (-44%)
   p95:     45016ms → 7114ms  (-84%)
   Errors:  1 → 0
 
-Remaining bottleneck: Ollama model-level inference serialization.
-Next highest ROI: deterministic routing for news/weather/math.
+PR #211 deterministic routing is mechanically correct for exact math/news/weather phrases, but the live rerun found a handler-ordering issue: ambient clarification can fire before dedicated recognized-command handlers on short/no-context turns.
+
+Remaining bottleneck: Ollama model-level inference serialization plus session_handler ordering.
+Current next highest ROI: move recognized deterministic command handlers before ambient clarification.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
 Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
@@ -40,7 +43,9 @@ Scope:
 
 ```text
 streaming cycle complete (design → implement → verify)
-three-point simulation comparison proven
+deterministic routing slice merged
+on_chunk test-fake compatibility cleanup merged
+post-routing simulation recorded
 no capability expansion
 no authority expansion
 capability_locks.json not modified
@@ -100,6 +105,8 @@ PR #206 — Live-user simulation harness and baseline results merged.
 PR #207 — Ollama wait-serialization mitigation merged.
 PR #209 — Post-#207 simulation results and streaming design doc merged.
 PR #210 — Streaming LLM fallback for advisory general-chat path merged.
+PR #211 — Deterministic routing for math/news/weather merged.
+PR #212 — on_chunk test-fake compatibility fix merged.
 ```
 
 ## Recent closed / not merged truth
@@ -178,16 +185,15 @@ Most other active capabilities — certification lock phases pending.
 
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Everyday live-session reliability hardening: streaming cycle complete.
-3. Three-point comparison proves streaming UX mitigation effective.
-4. Remaining bottleneck: Ollama model-level inference serialization.
-5. Next highest ROI: deterministic routing for news/weather/math
-   to reduce Ollama load on queries that don't need LLM fallback.
-6. Fix stalled confirmation-context timeouts if reproducible.
-7. Per-capability P5/lock decisions remain separate and pending.
-8. Do not expand capabilities or add Shopify/website workflows.
-9. Do not reopen the approval-gate lane unless registry truth changes.
-10. No further streaming patches unless a specific regression appears.
+2. Everyday live-session reliability hardening is the active workstream.
+3. Streaming cycle is complete and proven useful.
+4. Deterministic routing slice is merged, but handler ordering still blocks some fast paths.
+5. Next patch: move recognized deterministic handlers before ambient clarification.
+6. Add regression tests proving news/weather/math/time recognized commands do not trigger ambient clarification.
+7. Rerun the same live-user simulation after handler-ordering fix.
+8. Per-capability P5/lock decisions remain separate and pending.
+9. Do not expand capabilities or add Shopify/website workflows.
+10. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary
