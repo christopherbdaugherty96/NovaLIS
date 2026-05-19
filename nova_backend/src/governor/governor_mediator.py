@@ -209,6 +209,7 @@ SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 WEATHER_RE = re.compile(
     r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|check (?:the )?weather|check weather"
+    r"|weather (?:in [a-z0-9 ,.\-]+)"
     r"|weather (?:today|now|tomorrow|tonight)|todays? weather|tonight'?s? weather|tomorrow'?s? weather"
     r"|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
     r"|what'?s? the forecast|whats the forecast|the forecast|forecast (?:for )?today|forecast (?:for )?tomorrow"
