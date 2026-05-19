@@ -7,7 +7,7 @@ Last reviewed: 2026-05-19
 ## Current Active Task
 
 ```text
-Everyday live-session reliability hardening — streaming cycle complete (2026-05-19).
+Everyday live-session reliability hardening — handler-ordering follow-up required (2026-05-19).
 ```
 
 Result:
@@ -16,20 +16,25 @@ Result:
 Baseline simulation: 24/32 passes, 7 timeouts (PR #206).
 Post-PR #207 rerun: 25/32 passes, 5 timeouts (marginal).
 Post-PR #210 rerun: 27/33 passes, 6 timeouts, 0 errors (effective).
+Post-PR #211 rerun: 27/33 passes, 6 timeouts, 0 errors (targeted routing improved some latency, but no overall score gain).
 
-Three-point comparison proves streaming UX mitigation works:
+Streaming cycle proved UX mitigation works:
   Passes:  75% → 82%
   Avg:     4381ms → 2451ms (-44%)
   p95:     45016ms → 7114ms (-84%)
   Errors:  1 → 0
 
+PR #211 deterministic routing is mechanically correct for exact math/news/weather phrases, but the live rerun found a handler-ordering issue: ambient clarification can fire before dedicated recognized-command handlers on short/no-context turns.
+
 Remaining bottleneck: Ollama model-level inference serialization.
-Next highest ROI: deterministic routing for news/weather/math.
+Current next highest ROI: move recognized deterministic command handlers before ambient clarification.
 
 PR #206 merged the baseline simulation harness and results.
 PR #207 merged the first Ollama wait-serialization mitigation.
 PR #209 merged the streaming design doc and post-#207 results.
 PR #210 merged the streaming LLM fallback implementation.
+PR #211 merged deterministic routing for math/news/weather.
+PR #212 merged the on_chunk test-fake compatibility fix.
 Issue #208 tracks the detailed next-step sequence.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
@@ -50,12 +55,13 @@ Next correct step:
 
 ```text
 1. Streaming cycle complete: design → implement → verify (PRs #209, #210).
-2. Three-point simulation comparison recorded and proven.
-3. Next highest ROI: deterministic routing for news/weather/math
-   to reduce Ollama load on queries that don't need LLM fallback.
-4. Fix stalled confirmation-context timeouts if reproducible.
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
+2. Deterministic routing slice merged (PR #211), and test-fake cleanup merged (PR #212).
+3. Post-PR #211 simulation showed targeted news/weather latency improvement, but no overall score gain.
+4. Next highest ROI: fix session_handler ordering so recognized commands reach news/weather/math/time handlers before ambient clarification.
+5. Add regression tests proving recognized commands do not trigger ambient clarification.
+6. Fix stalled confirmation-context timeouts if reproducible after handler-ordering cleanup.
+7. Do not expand capabilities or add Shopify/website workflows.
+8. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ---
@@ -113,6 +119,8 @@ PR #206 — Live-user simulation harness and baseline results merged.
 PR #207 — Ollama wait-serialization mitigation merged.
 PR #209 — Post-#207 simulation results and streaming design doc merged.
 PR #210 — Streaming LLM fallback for advisory general-chat path merged.
+PR #211 — Deterministic routing for math/news/weather merged.
+PR #212 — on_chunk test-fake compatibility fix merged.
 ```
 
 ---
@@ -130,14 +138,17 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Current Open Follow-Ups
 
-### Everyday live-session reliability — STREAMING CYCLE COMPLETE
+### Everyday live-session reliability — ACTIVE
 
 Status:
 
 ```text
-three-point comparison complete / streaming UX mitigation proven effective
-remaining bottleneck: Ollama model-level inference serialization
-next ROI: deterministic routing for news/weather/math
+streaming UX mitigation proven effective
+PR #211 deterministic routing merged
+PR #212 test-fake compatibility fixed
+post-PR #211 simulation showed no overall score gain
+remaining bottleneck: Ollama model-level inference serialization plus session_handler ordering
+next ROI: move recognized deterministic handlers before ambient clarification
 ```
 
 Tracker:
@@ -149,8 +160,7 @@ Issue #208 — Everyday reliability next steps after live-user simulation
 Next step:
 
 ```text
-Improve deterministic routing for news/weather/math queries to
-reduce Ollama load. This is a routing change, not a streaming change.
+Fix session_handler routing order so recognized news/weather/time/math handlers run before ambient clarification. This is a routing-order change, not a capability expansion.
 ```
 
 ### Approval gate wiring — CLOSED OUT
@@ -217,49 +227,3 @@ Scope:
 live-backend validation only
 no runtime authority expansion
 ```
-
----
-
-## Current Governance Truth Notes
-
-```text
-OpenClaw is implemented runtime code, not planning-only.
-```
-
-PR #154 narrowed the freeform-goal execution surface through:
-
-```text
-read-only tool allowlist
-mutation-tool exclusion
-MeteredNetworkProxy enforcement
-governance regression tests
-```
-
-This does not authorize:
-
-```text
-broad autonomy
-browser/computer-use expansion
-external writes
-OpenClaw authority expansion
-```
-
----
-
-## Active / Certified / Locked Discipline
-
-```text
-active != certified != locked
-```
-
-Current lock truth:
-
-```text
-Cap 16 — locked.
-Cap 22 — approval-gate certified / P1-P5 pending in locks file / not locked.
-Cap 64 — approval-gate certified / P1-P4 pass / P5 pending / not locked.
-Cap 65 — P1-P4 pass / P5 pending / not locked.
-Most other active capabilities — certification phases pending.
-```
-
----
