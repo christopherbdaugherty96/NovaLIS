@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Approval gate wiring - focused coverage merged / certification pending.
+Approval gate wiring — certified for current scope (2026-05-19).
 ```
 
 Priority lock:
@@ -12,33 +12,31 @@ Priority lock:
 docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING.md
 ```
 
+Closeout:
+
+```text
+docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
+```
+
 Status:
 
 ```text
+Approval-gate certification is complete for the current
+registry-confirmation-bound capability scope: Cap 22 and Cap 64.
+Closeout recorded in APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md.
+capability_locks.json intentionally not modified (separate P1-P5 process).
 Trust Panel MVP receipt surface is complete and merged.
-Broader Trust Panel system status still defers to generated runtime truth;
-do not describe the full Trust Panel system as complete unless
-CURRENT_RUNTIME_STATE.md reflects that.
-Approval-gate focused regression and behavioral live-session coverage are merged
-for tested Cap 22 / Cap 64 confirmation paths.
-PR #175 documented Nova basic workflow verification.
-PR #176 fixed and merged the basic workflow regressions found by that pass.
-PR #177, PR #178, PR #179, and PR #180 cleared baseline CI blockers needed
-for clean verification.
-Core CI, Runtime Docs, Governance, Fingerprint Clean, and Phase-3.5 Verification
-passed before PR #176 merged.
-Full approval-gate certification remains pending until broader/full-suite proof exists.
 Website-preview live-backend validation remains follow-up debt.
 ```
 
 Scope:
 
 ```text
-coverage status synchronization only
-no approval-gate certification claim
+certification closeout for registry-confirmation-bound scope only
 no runtime behavior changes
 no capability expansion
 no authority expansion
+capability_locks.json not modified
 ```
 
 ## Recent merged truth
@@ -87,6 +85,8 @@ PR #199 — Certification matrix evidence sync merged.
 PR #200 — Cap 22 automated evidence (23 tests) merged.
 PR #201 — Cap 22 live proof and receipt evidence merged.
 PR #203 — Recovery evidence for Cap 22 and Cap 64 merged.
+PR #202 — Continuity docs synced with PRs #198-203.
+PR #204 — Certification matrix synced with PRs #201 and #203.
 ```
 
 ## Recent closed / not merged truth
@@ -144,8 +144,8 @@ Current lock truth:
 
 ```text
 Cap 16 — P1-P5 passed / locked.
-Cap 64 — P1-P4 passed / P5 pending (evidence complete) / not locked.
-Cap 22 — automated + live + recovery evidence captured / not locked.
+Cap 64 — P1-P4 passed / P5 pending / approval-gate certified / not locked.
+Cap 22 — approval-gate certified / P1-P5 pending in locks file / not locked.
 Cap 65 — P1-P4 passed / P5 pending / not locked.
 Most other active capabilities — certification lock phases pending.
 ```
@@ -158,16 +158,16 @@ Most other active capabilities — certification lock phases pending.
 #143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-#141 is no longer the active follow-up. The active strategic lane remains approval gate wiring under its own lock.
+#141 is no longer the active follow-up. The approval-gate lane is closed out.
 
 ## Next correct sequence
 
 ```text
-1. Keep #171 / #172 as focused coverage, not certification.
-2. Keep #175 / #176 as basic workflow verification and fixes, not approval-gate certification.
-3. Build an approval-gate certification matrix before claiming full certification.
-4. Run broader/full-suite approval-gate verification when practical.
-5. Only then decide whether the approval-gate lock can move toward certification/closeout.
+1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
+2. Per-capability P5/lock decisions remain separate and pending.
+3. Next lanes: open follow-ups (#142, #143), five-pass roadmap items,
+   or new reviewed priority lock for next workstream.
+4. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary

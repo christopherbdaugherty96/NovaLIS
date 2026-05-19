@@ -1,41 +1,33 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-18
+Last reviewed: 2026-05-19
 
 ---
 
 ## Current Active Task
 
 ```text
-Approval gate wiring - focused coverage merged / certification pending (2026-05-18).
+Approval gate certification closeout — certified for current scope (2026-05-19).
 ```
 
 Result:
 
 ```text
-Trust Panel MVP receipt surface is complete and proof-backed.
-Broader Trust Panel system status still defers to generated runtime truth.
-Approval-gate focused regression and behavioral live-session coverage are merged
-for tested Cap 22 / Cap 64 confirmation paths.
-PR #175 documented Nova basic workflow verification.
-PR #176 fixed and merged the basic workflow regressions found by that pass.
-PR #177, PR #178, PR #179, and PR #180 cleared baseline CI blockers needed
-for clean verification.
-Core CI, Runtime Docs, Governance, Fingerprint Clean, and Phase-3.5 Verification
-passed before PR #176 merged.
-Full approval-gate certification remains pending until broader/full-suite proof exists.
+Approval-gate certification is complete for the current
+registry-confirmation-bound capability scope: Cap 22 and Cap 64.
+Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
+capability_locks.json intentionally not modified (separate P1-P5 process).
 Website-preview live-backend validation remains follow-up debt.
 ```
 
 Next correct step:
 
 ```text
-Use docs/capability_verification/APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
-Complete confirmation-bound capability inventory.
-Fill proof status for every confirmation-bound path.
-Then run broader/full-suite approval-gate verification.
-Only then decide whether the lock can move toward certification/closeout.
-Do not treat PR #175 / PR #176 as approval-gate certification closeout.
+Approval-gate lane is closed out.
+Per-capability P5/lock decisions remain separate and pending.
+Next lanes: open follow-ups (#142, #143), five-pass roadmap items,
+or new reviewed priority lock for next workstream.
+Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ---
@@ -86,6 +78,8 @@ PR #199 — Certification matrix evidence sync merged.
 PR #200 — Cap 22 automated evidence (23 tests) merged.
 PR #201 — Cap 22 live proof and receipt evidence merged.
 PR #203 — Recovery evidence for Cap 22 and Cap 64 merged.
+PR #202 — Continuity docs synced with PRs #198-203.
+PR #204 — Certification matrix synced with PRs #201 and #203.
 ```
 
 ---
@@ -103,43 +97,26 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Current Open Follow-Ups
 
-### Approval gate wiring — next lane
+### Approval gate wiring — CLOSED OUT
 
 Status:
 
 ```text
-focused coverage merged / full certification pending
+certified for current registry-confirmation-bound scope (2026-05-19)
 ```
 
-Current proof-scaffold status:
+Closeout:
 
 ```text
-Confirmation-bound capability inventory: filled (PR #188).
-Ecosystem simulation matrix: landed (PR #190).
-Approval gate workflow simulations: landed (PR #191).
-Cap 64 operator journey proof scaffold: landed (PR #192).
-Cap 22 operator journey proof scaffold: landed (PR #193).
-Cap 64 automated evidence: captured (PR #195, 132 tests).
-Cap 64 live mailto proof: initial live/receipt evidence captured (PR #196);
-all 5 checklist tests recorded in this status sync.
-Cap 64 duplicate-yes test: added (PR #197, 134 total tests).
-Cap 64 recovery evidence: captured (PR #203, 3 tests).
-Cap 64 evidence: complete (automated + live + receipt + recovery).
-Cap 64 P5: evidence complete / lock decision pending.
-Cap 22 automated evidence: captured (PR #200, 23 tests, 0 failures).
-Cap 22 live proof: captured (PR #201, approval + denial + receipt).
-Cap 22 recovery evidence: captured (PR #203, 3 tests).
-Cap 22 evidence: complete (automated + live + receipt + recovery).
-Cap 22 lock: not locked / not globally certified.
-Full approval-gate certification: evidence complete / decision pending.
+docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 ```
 
-Next step:
+Result:
 
 ```text
-Capture evidence against the proof scaffolds.
-Then run broader/full-suite approval-gate verification.
-Only then decide whether the lock can move toward certification/closeout.
+All evidence dimensions complete for Cap 22 and Cap 64.
+Certification recorded. capability_locks.json not modified.
+Per-capability P5/lock decisions remain separate.
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -224,9 +201,10 @@ Current lock truth:
 
 ```text
 Cap 16 — locked.
-Cap 64 — P5 pending.
-Cap 65 — P5 pending.
-Most active capabilities — certification phases pending.
+Cap 22 — approval-gate certified / P1-P5 pending in locks file / not locked.
+Cap 64 — approval-gate certified / P1-P4 pass / P5 pending / not locked.
+Cap 65 — P1-P4 pass / P5 pending / not locked.
+Most other active capabilities — certification phases pending.
 ```
 
 ---
@@ -272,9 +250,9 @@ The recent audit and hardening merges do not approve:
 ## Next Correct Step
 
 ```text
-1. Use APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18.md.
-2. Complete confirmation-bound capability inventory.
-3. Fill proof status for every confirmation-bound path.
-4. Then run broader/full-suite approval-gate verification.
-5. Only then decide whether the lock can move toward certification/closeout.
+1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
+2. Per-capability P5/lock decisions remain separate and pending.
+3. Next lanes: open follow-ups (#142, #143), five-pass roadmap items,
+   or new reviewed priority lock for next workstream.
+4. Do not reopen the approval-gate lane unless registry truth changes.
 ```
