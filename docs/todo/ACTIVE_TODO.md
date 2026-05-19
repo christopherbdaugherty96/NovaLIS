@@ -61,8 +61,13 @@ Remaining lower-priority items:
    confirmation safety work in multi-turn sessions. General-chat
    continuity depends on Ollama throughput.
    Results: docs/audits/MULTI_TURN_CONTEXT_SIMULATION_RESULTS_2026-05-19.md
-4. Mixed-request edge case simulation (planned next).
-5. Concurrent WebSocket load regression test suite.
+4. Mixed-request edge case simulation complete (Issue #215).
+   Simulation: 16/17 passes, 0 timeouts, 0 errors.
+   0 hidden authority expansions, 0 hidden email sends,
+   0 hidden browser actions. 1 safe-but-unclear boundary-routing
+   issue tracked in Issue #215.
+   Results: docs/audits/MIXED_REQUEST_EDGE_SIMULATION_RESULTS_2026-05-19.md
+5. Concurrent WebSocket load regression test suite (planned next).
 6. Do not expand capabilities or add Shopify/website workflows.
 7. Do not reopen the approval-gate lane unless registry truth changes.
 ```
