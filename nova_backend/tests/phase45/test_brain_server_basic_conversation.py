@@ -182,7 +182,7 @@ def test_pending_escalation_confirmation_returns_deeper_general_chat_answer(monk
     ws = _ScriptedWebSocket(["Why do GPUs matter?", "yes"])
     calls = {"count": 0}
 
-    async def _fake_handle(self, query: str, context=None, session_state=None):
+    async def _fake_handle(self, query: str, context=None, session_state=None, on_chunk=None):
         calls["count"] += 1
         if calls["count"] == 1:
             return SkillResult(
