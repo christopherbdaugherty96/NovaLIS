@@ -71,6 +71,14 @@ PR #180 — Frontend mirror sync baseline fix merged.
 PR #182 — Obsidian / Second Brain future-planning preserved.
 PR #183 — BigPicture / Auralis operating-model future-planning preserved.
 PR #184 — .codex-worktrees/ ignored in .gitignore.
+PR #185 — Post-housekeeping status doc sync merged.
+PR #186 — Four-pass safe cleanup and approval-gate certification scaffold merged.
+PR #187 — Post-PR186 continuity sync merged.
+PR #188 — Approval-gate confirmation capability inventory filled.
+PR #190 — Ecosystem simulation matrix merged.
+PR #191 — Approval gate workflow simulations merged.
+PR #192 — Cap 64 operator journey proof scaffold merged.
+PR #193 — Cap 22 operator journey proof scaffold merged.
 ```
 
 ## Recent closed / not merged truth
