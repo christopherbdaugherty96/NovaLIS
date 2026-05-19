@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Everyday live-session reliability hardening (2026-05-19).
+Everyday live-session reliability hardening — post-mitigation rerun required (2026-05-19).
 ```
 
 Previous closed lane:
@@ -16,18 +16,25 @@ Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 Status:
 
 ```text
-Live user simulation (20 personas, 32 turns) captured and documented.
+Live user simulation baseline (20 personas, 32 turns) captured and documented.
 Governance paths confirmed strong. Everyday reliability gaps identified:
 Ollama timeout, news/weather routing, multi-turn context, confirmation-edge timing.
+
+PR #206 merged the baseline simulation harness and results.
+PR #207 merged the first Ollama wait-serialization mitigation.
+Issue #208 tracks the detailed next-step sequence.
+
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
 Script: nova_backend/tests/simulations/live_user_simulation.py
+Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 ```
 
 Scope:
 
 ```text
-simulation harness and results documentation only
-no runtime behavior changes
+baseline simulation merged
+first narrow runtime mitigation merged
+post-mitigation rerun pending
 no capability expansion
 no authority expansion
 capability_locks.json not modified
@@ -83,6 +90,8 @@ PR #203 — Recovery evidence for Cap 22 and Cap 64 merged.
 PR #202 — Continuity docs synced with PRs #198-203.
 PR #204 — Certification matrix synced with PRs #201 and #203.
 PR #205 — Approval-gate certification closeout merged.
+PR #206 — Live-user simulation harness and baseline results merged.
+PR #207 — Ollama wait-serialization mitigation merged.
 ```
 
 ## Recent closed / not merged truth
@@ -152,6 +161,7 @@ Most other active capabilities — certification lock phases pending.
 #141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
+#208 — Everyday reliability next steps after live-user simulation is active.
 ```
 
 #141 is no longer the active follow-up. The approval-gate lane is closed out.
@@ -161,11 +171,14 @@ Most other active capabilities — certification lock phases pending.
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
 2. Everyday live-session reliability hardening is the active workstream.
-3. Follow-up PRs: Ollama timeout, news routing, confirmation-edge
-   timeout, regression tests -- each requires separate review.
-4. Per-capability P5/lock decisions remain separate and pending.
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
+3. Rerun the exact same live-user simulation after PR #207:
+   python -u -m tests.simulations.live_user_simulation
+4. Do not change personas, prompts, timeout, model, machine, or concurrency.
+5. Compare exact post-mitigation metrics against the PR #206 baseline.
+6. Classify every failed or timed-out turn before proposing another patch.
+7. Per-capability P5/lock decisions remain separate and pending.
+8. Do not expand capabilities or add Shopify/website workflows.
+9. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary
@@ -173,26 +186,12 @@ Most other active capabilities — certification lock phases pending.
 Do not start or include:
 
 ```text
-runtime behavior changes
 capability expansion
 authority expansion
 OpenClaw expansion
 browser/computer-use expansion
+Shopify or website workflows
 external writes
-Shopify writes
-email sending
-finance automation
-social posting automation
-ElevenLabs implementation
-Google connector runtime implementation
-UI simplification implementation
-autonomous workflow execution
+approval-gate recertification unless registry truth changes
+capability_locks.json changes without a separate P1-P5 lock decision
 ```
-
-## Preserved boundary
-
-```text
-Intelligence is not authority.
-```
-
-This file is an agent continuity note. Runtime truth still comes from code and generated runtime docs.
