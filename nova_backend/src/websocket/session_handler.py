@@ -100,6 +100,51 @@ def is_headline_summary_request(text: str) -> bool:
     return bool(_HEADLINE_SUMMARY_RE.search(str(text or "")))
 
 
+# ---------------------------------------------------------------------------
+# Deterministic arithmetic — avoids Ollama for simple math
+# ---------------------------------------------------------------------------
+
+_ARITHMETIC_RE = re.compile(
+    r"^\s*(?:what(?:'s| is)\s+)?(\d[\d,]*(?:\.\d+)?)\s*"
+    r"(plus|\+|minus|\-|times|\*|x|divided by|/|÷)\s*"
+    r"(\d[\d,]*(?:\.\d+)?)\s*[?.]?\s*$",
+    re.IGNORECASE,
+)
+
+
+def _try_arithmetic(text: str) -> str | None:
+    """Evaluate simple two-operand arithmetic. Returns formatted answer or None."""
+    m = _ARITHMETIC_RE.match((text or "").strip())
+    if not m:
+        return None
+    try:
+        a_str = m.group(1).replace(",", "")
+        b_str = m.group(3).replace(",", "")
+        a = float(a_str)
+        b = float(b_str)
+        op = m.group(2).lower().strip()
+        if op in {"plus", "+"}:
+            result = a + b
+        elif op in {"minus", "-"}:
+            result = a - b
+        elif op in {"times", "*", "x"}:
+            result = a * b
+        elif op in {"divided by", "/", "÷"}:
+            if b == 0:
+                return "Can't divide by zero."
+            result = a / b
+        else:
+            return None
+        # Format: use int display when result is a whole number
+        if result == int(result) and abs(result) < 1e15:
+            formatted = f"{int(result):,}"
+        else:
+            formatted = f"{result:,.6g}"
+        return f"{formatted}."
+    except (ValueError, OverflowError, ZeroDivisionError):
+        return None
+
+
 def render_headline_summary_from_cache(news_cache: Any) -> str:
     items = [item for item in list(news_cache or []) if isinstance(item, dict)]
     if not items:
@@ -1048,6 +1093,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"label": "Today's news", "command": "today's news"},
                     ],
                 )
+                continue
+
+            _arithmetic_answer = _try_arithmetic(command_text)
+            if _arithmetic_answer is not None:
+                await _complete_immediate_turn(_arithmetic_answer)
                 continue
 
             if is_headline_summary_request(command_text):
@@ -2034,7 +2084,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["turn_count"] += 1
                 continue
 
-            if lowered in {"weather", "weather update", "current weather"}:
+            if lowered in {"weather", "weather update", "current weather"} or re.match(
+                r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered
+            ):
                 _, weather_result = await invoke_governed_text_command(
                     governor,
                     "weather",
