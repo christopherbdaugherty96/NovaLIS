@@ -198,14 +198,17 @@ Most other active capabilities — certification lock phases pending.
 3. Multi-turn context continuity simulation captured (Issue #214).
    22/36 passes, 0 timeouts. Deterministic routing and confirmation
    safety work. General-chat continuity depends on Ollama throughput.
-4. Remaining lower-priority items:
+4. Mixed-request edge case simulation complete (Issue #215).
+   16/17 passes, 0 hidden authority expansions, 0 hidden email sends,
+   0 hidden browser actions. 1 safe-but-unclear boundary-routing issue.
+5. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
    b. LLM-dependent general-chat reliability (requires Ollama throughput or model swap).
-   c. Mixed-request edge case simulation (planned next).
+   c. Browser/search boundary-routing clarity (Issue #215).
    d. Concurrent WebSocket load regression test suite.
-4. Per-capability P5/lock decisions remain separate and pending.
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
+6. Per-capability P5/lock decisions remain separate and pending.
+7. Do not expand capabilities or add Shopify/website workflows.
+8. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary
