@@ -4009,6 +4009,26 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         "turn_id": incoming_turn_id,
                     },
                 )
+
+            # Streaming UX callback: sends early chat_stream frames
+            # so the client sees tokens arriving before the full
+            # response is assembled and post-processed. This is purely
+            # additive UX -- it does not change governance behavior.
+            _stream_loop = asyncio.get_running_loop()
+
+            def _on_advisory_chunk(text: str) -> None:
+                asyncio.run_coroutine_threadsafe(
+                    ws_send(
+                        ws,
+                        {
+                            "type": "chat_stream",
+                            "text": text,
+                            "turn_id": incoming_turn_id,
+                        },
+                    ),
+                    _stream_loop,
+                )
+
             skill_result = await run_general_chat_fallback(
                 mediated_text,
                 general_chat_skill=general_chat_skill,
@@ -4016,6 +4036,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_context=session_context,
                 project_threads=project_threads,
                 select_relevant_memory_context=_select_relevant_memory_context,
+                on_chunk=_on_advisory_chunk,
             )
 
             if skill_result:
