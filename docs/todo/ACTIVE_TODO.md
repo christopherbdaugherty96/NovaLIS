@@ -78,6 +78,9 @@ PR #190 — Ecosystem simulation matrix merged.
 PR #191 — Approval gate workflow simulations merged.
 PR #192 — Cap 64 operator journey proof scaffold merged.
 PR #193 — Cap 22 operator journey proof scaffold merged.
+PR #195 — Cap 64 automated evidence capture merged.
+PR #196 — Cap 64 live mailto proof and receipt evidence merged.
+PR #197 — Duplicate-yes non-double-execution tests merged.
 ```
 
 ---
@@ -111,8 +114,13 @@ Ecosystem simulation matrix: landed (PR #190).
 Approval gate workflow simulations: landed (PR #191).
 Cap 64 operator journey proof scaffold: landed (PR #192).
 Cap 22 operator journey proof scaffold: landed (PR #193).
-Evidence capture for both: pending.
-Cap 64 P5: pending.
+Cap 64 automated evidence: captured (PR #195, 132 tests).
+Cap 64 live mailto proof: initial live/receipt evidence captured (PR #196);
+all 5 checklist tests recorded in this status sync.
+Cap 64 duplicate-yes test: added (PR #197, 134 total tests).
+Cap 64 remaining gap: recovery evidence only.
+Cap 64 P5: pending (recovery decision needed).
+Cap 22 evidence capture: pending.
 Cap 22 lock: not locked / not globally certified.
 Full approval-gate certification: pending.
 ```
