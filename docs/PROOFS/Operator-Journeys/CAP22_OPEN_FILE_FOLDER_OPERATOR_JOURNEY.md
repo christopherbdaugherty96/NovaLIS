@@ -1,6 +1,6 @@
 # Cap 22 Open File / Folder Operator Journey
 
-Status: proof scaffold / evidence pending / not locked / not globally certified.
+Status: automated evidence captured / live proof pending / not locked / not globally certified.
 
 Simulation source:
 
@@ -81,8 +81,8 @@ Memory and planning context do not grant permission.
 | Field | Value |
 | --- | --- |
 | Simulation document version | `APPROVAL_GATE_WORKFLOW_SIMULATIONS.md` on main after PR #191 |
-| Proof document status | scaffold / evidence pending |
-| Repo commit SHA | pending capture at proof time |
+| Proof document status | automated evidence captured / live proof pending |
+| Repo commit SHA | `59f232e` (main after PR #197 merge) |
 | Capability under test | Cap 22 `open_file_folder` |
 | Authority classification | confirmation-required reversible local open |
 | Runtime code changes | none in this proof doc |
@@ -122,13 +122,28 @@ operator transcript or proof note
 Current evidence:
 
 ```text
-pending
+CAPTURED — 23 tests, 0 failures across 7 test files at commit 59f232e.
+
+Behavioral session tests (11 passed):
+  test_cap22_session_request_creates_pending_state_without_execution — PASSED
+    asserts calls == [] (no executor dispatch)
+    asserts ACTION_ATTEMPTED not in ledger events
+    asserts ACTION_COMPLETED not in ledger events
+    asserts "This action needs confirmation." in chat messages
+
+Governance approval gate wiring tests (24 passed):
+  test_pending_cap22_does_not_dispatch_or_log_action_attempted — PASSED
+  test_session_handler_sets_pending_for_cap22 — PASSED
+
+Brain server session cleanup test:
+  test_open_file_folder_requires_confirmation_before_dispatch — PASSED
 ```
 
 Remaining gap:
 
 ```text
-Capture this path against the current main commit during the proof run.
+No remaining automated gap for this scenario.
+Live operator observation pending.
 ```
 
 ---
@@ -163,13 +178,34 @@ Trust Panel receipt or receipt API evidence
 Current evidence:
 
 ```text
-pending
+CAPTURED — automated evidence at commit 59f232e.
+
+Behavioral session tests:
+  test_session_yes_resumes_pending_cap22_only_through_governed_invocation — PASSED
+    asserts capability_id == 22
+    asserts params["confirmed"] is True
+    asserts session_id is set
+    asserts exactly 1 invocation
+    asserts ledger == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
+    asserts "Opened documents." in chat messages
+
+  test_session_approved_cap22_uses_real_governor_ledger_sequence — PASSED
+    asserts ACTION_ATTEMPTED count == 1
+    asserts ACTION_COMPLETED count == 1
+    uses real governor ledger (not mock)
+    asserts "Opened folder:" or "Opened path:" in chat messages
+
+Governance tests:
+  test_governor_passes_cap22_with_confirmation — PASSED
+  test_approved_cap22_runs_only_after_governor_attempt_ledger — PASSED
+  test_session_handler_pending_confirm_sets_confirmed_true — PASSED
 ```
 
 Remaining gap:
 
 ```text
-Run the approved-path proof and record ledger/receipt/open evidence.
+No remaining automated gap for this scenario.
+Live operator observation and receipt evidence pending.
 ```
 
 ---
@@ -205,13 +241,30 @@ operator transcript or proof note
 Current evidence:
 
 ```text
-pending
+CAPTURED — automated evidence at commit 59f232e.
+
+Behavioral session tests:
+  test_session_no_clears_pending_without_execution — PASSED
+    asserts calls == [] (no executor dispatch)
+    asserts ACTION_ATTEMPTED not in ledger events
+    asserts ACTION_COMPLETED not in ledger events
+    asserts "Cancelled pending action." in chat messages
+
+  test_session_cancel_clears_pending_without_execution — PASSED
+    asserts calls == [] (no executor dispatch)
+    asserts ACTION_ATTEMPTED not in ledger events
+    asserts ACTION_COMPLETED not in ledger events
+    asserts "Cancelled pending action." in chat messages
+
+Governance tests:
+  test_confirmation_resolver_accepts_no — PASSED
+  test_session_handler_clears_pending_on_cancel — PASSED
 ```
 
 Remaining gap:
 
 ```text
-Capture denied and cancelled session paths against the current main commit.
+No remaining automated gap for this scenario.
 ```
 
 ---
@@ -245,13 +298,28 @@ operator transcript or proof note
 Current evidence:
 
 ```text
-pending
+CAPTURED — automated evidence at commit 59f232e.
+
+Behavioral session tests:
+  test_session_unrelated_input_cancels_pending_without_execution — PASSED
+    asserts calls == [] (no executor dispatch)
+    asserts ACTION_ATTEMPTED not in ledger events
+    asserts ACTION_COMPLETED not in ledger events
+    asserts "Cancelled the pending action before handling your new command."
+      in chat messages
+
+Governance tests:
+  test_confirmation_resolver_rejects_ambiguous_input — PASSED
+  test_session_handler_clears_pending_on_unrelated_input — PASSED
+
+Current session contract: unrelated input cancels the pending action and
+then processes the new input. The pending action is not silently kept.
 ```
 
 Remaining gap:
 
 ```text
-Capture unrelated-input behavior and record the current session contract.
+No remaining automated gap for this scenario.
 ```
 
 ---
@@ -287,14 +355,16 @@ ledger assertion showing no hidden execution
 Current evidence:
 
 ```text
-pending
+pending — no automated recovery test path exists for Cap 22.
 ```
 
 Remaining gap:
 
 ```text
-Determine whether an automated recovery test path exists. If not, capture a
-manual transcript and mark the automated gap plainly.
+Recovery evidence remains pending. No automated recovery test path
+exists in the current test suite. Same gap as Cap 64 recovery.
+If needed, a manual recovery transcript can be captured during the
+live proof session.
 ```
 
 ---
@@ -322,13 +392,26 @@ ledger or operator note
 Current evidence:
 
 ```text
-pending
+CAPTURED — automated evidence at commit 59f232e.
+
+Path-root allowlist tests:
+  test_is_allowed_path_accepts_home_subpath — PASSED
+  test_is_allowed_path_rejects_parent_scope — PASSED
+  test_is_allowed_path_accepts_workspace_root_outside_home — PASSED
+  test_open_path_uses_workspace_root_allowlist — PASSED
+
+Executor boundary tests:
+  test_open_folder_rejects_non_preset — PASSED
+  test_open_folder_accepts_explicit_path — PASSED
+  test_open_folder_executor_opens_explicit_existing_path — PASSED
+  test_open_folder_executor_fails_for_missing_explicit_path — PASSED
+  test_open_folder_executor_opens_preset_folder — PASSED
 ```
 
 Remaining gap:
 
 ```text
-Capture path-root boundary behavior against the current main commit.
+No remaining automated gap for path-root boundary proof.
 ```
 
 ---
@@ -384,21 +467,41 @@ Do not run lock commands from this scaffold.
 
 ## Required Test Commands
 
-Record exact commands and results here when the proof run happens.
+Commands run and results recorded at commit `59f232e`:
 
 ```text
-pending
+python -m pytest tests/websocket/test_behavioral_session_approval_gate.py -v
+  → 11 passed in 39.97s
+
+python -m pytest tests/governance/test_approval_gate_wiring.py -v
+  → 24 passed in 16.88s
+
+python -m pytest tests/executors/test_open_folder_executor.py
+    tests/test_open_folder_executor.py -v
+  → 5 passed in 0.46s
+
+python -m pytest tests/ -v -k "cap22 or cap_22 or open_file or
+    open_folder or open_path or allowed_path"
+  → 23 passed, 2557 deselected in 21.02s
+
+python -m pytest tests/executors/test_local_action_executors.py
+    tests/executors/test_system_control_executor.py
+    tests/test_system_control_executor.py -v -k "open"
+  → 4 passed, 9 deselected in 0.38s
 ```
 
-Candidate focused areas:
+Total unique Cap 22-related tests: 23, all passing.
+
+Focused areas covered:
 
 ```text
-Cap 22 executor tests
-Cap 22 routing tests
-behavioral session approval-gate tests
-approval-gate regression tests
-governor / ledger tests relevant to Cap 22
-path-root boundary tests
+Cap 22 executor tests — covered
+Cap 22 routing tests — covered (brain server basic conversation)
+behavioral session approval-gate tests — covered
+approval-gate regression tests — covered
+governor / ledger tests relevant to Cap 22 — covered
+path-root boundary tests — covered
+duplicate-yes non-double-execution — covered
 ```
 
 Do not record:
@@ -437,13 +540,40 @@ receipt evidence when open action succeeds
 Captured ledger excerpt:
 
 ```text
-pending
+Automated ledger verification at commit 59f232e:
+
+Pending path (Scenario A):
+  ACTION_ATTEMPTED not in ledger — ASSERTED
+  ACTION_COMPLETED not in ledger — ASSERTED
+
+Approved path (Scenario B):
+  ledger == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"] — ASSERTED
+  (test_session_yes_resumes_pending_cap22_only_through_governed_invocation)
+
+  Real governor ledger:
+  ACTION_ATTEMPTED count == 1 — ASSERTED
+  ACTION_COMPLETED count == 1 — ASSERTED
+  (test_session_approved_cap22_uses_real_governor_ledger_sequence)
+
+Denied / cancelled path (Scenario C):
+  ACTION_ATTEMPTED not in ledger — ASSERTED
+  ACTION_COMPLETED not in ledger — ASSERTED
+
+Unrelated input path (Scenario D):
+  ACTION_ATTEMPTED not in ledger — ASSERTED
+  ACTION_COMPLETED not in ledger — ASSERTED
+
+Duplicate-yes path:
+  ACTION_ATTEMPTED count == 1 — ASSERTED
+  ACTION_COMPLETED count == 1 — ASSERTED
+  (test_session_duplicate_yes_does_not_double_execute_cap22)
 ```
 
 Remaining gap:
 
 ```text
-Capture ledger excerpts from the exact proof run.
+No remaining automated ledger gap.
+Live receipt evidence pending.
 ```
 
 ---
@@ -509,7 +639,17 @@ duplicate yes did not double-execute, if tested
 Captured blocked-path evidence:
 
 ```text
-pending
+CAPTURED — automated evidence at commit 59f232e.
+
+pending action did not execute — ASSERTED (Scenario A)
+denied action did not execute — ASSERTED (Scenario C, "no" path)
+cancelled action did not execute — ASSERTED (Scenario C, "cancel" path)
+unrelated input did not execute — ASSERTED (Scenario D)
+disallowed path was refused — ASSERTED
+  (test_is_allowed_path_rejects_parent_scope,
+   test_open_folder_rejects_non_preset)
+duplicate yes did not double-execute — ASSERTED
+  (test_session_duplicate_yes_does_not_double_execute_cap22)
 ```
 
 ---
@@ -517,17 +657,17 @@ pending
 ## Remaining Unverified Items
 
 ```text
-repo commit SHA for proof run
-focused test command output
-approved governed invocation evidence
-pending non-execution evidence
-denied/cancelled non-execution evidence
-unrelated-input non-execution evidence
-disallowed-path refusal evidence
-ledger excerpts
-receipt / Trust Panel evidence
-manual live open observation
-recovery behavior evidence
+repo commit SHA for proof run — CAPTURED (59f232e)
+focused test command output — CAPTURED (23 tests, 0 failures)
+approved governed invocation evidence — CAPTURED (automated)
+pending non-execution evidence — CAPTURED (automated)
+denied/cancelled non-execution evidence — CAPTURED (automated)
+unrelated-input non-execution evidence — CAPTURED (automated)
+disallowed-path refusal evidence — CAPTURED (automated)
+ledger excerpts — CAPTURED (automated assertions)
+receipt / Trust Panel evidence — PENDING (live proof)
+manual live open observation — PENDING (live proof)
+recovery behavior evidence — PENDING (no automated path)
 ```
 
 ---
@@ -537,16 +677,23 @@ recovery behavior evidence
 Current status:
 
 ```text
-Evidence packet scaffold created.
+Automated evidence captured: 23 tests, 0 failures across 7 test files.
+Scenarios A-D: fully covered by automated evidence.
+Path-root boundary: fully covered by automated evidence.
+Duplicate-yes: covered.
+Live proof: pending.
+Receipt / Trust Panel evidence: pending.
+Recovery evidence: pending (no automated path).
 Cap 22 remains not locked.
 Cap 22 remains not globally certified.
 Full approval-gate certification remains pending.
 ```
 
-Safe wording after this scaffold lands:
+Safe wording after this evidence lands:
 
 ```text
-Cap 22 operator-journey proof scaffold added. Evidence capture remains pending.
+Cap 22 automated evidence captured (23 tests, scenarios A-D + path-root
+boundary). Live proof, receipt evidence, and recovery evidence remain pending.
 ```
 
 Do not say:
@@ -564,16 +711,14 @@ all approval-gate paths proven
 
 ## Next Action
 
-When ready for evidence capture:
+Automated evidence is captured. Remaining steps:
 
 ```text
-1. Run focused Cap 22 / approval-gate tests.
-2. Capture pending, approved, denied/cancelled, and unrelated-input behavior.
-3. Capture disallowed-path refusal behavior.
-4. Run the live open proof on a known safe target.
-5. Capture ledger and receipt evidence.
-6. Update this document with exact outputs and remaining gaps.
-7. Only then decide whether Cap 22 signoff is supportable.
+1. Run live open proof on a known safe target (e.g. Downloads folder).
+2. Capture receipt / Trust Panel evidence from the live run.
+3. Decide whether recovery evidence is needed for Cap 22 signoff
+   or can remain a documented follow-up (same decision as Cap 64).
+4. Only then decide whether Cap 22 signoff is supportable.
 ```
 
 Final boundary:
