@@ -78,8 +78,8 @@ Memory and planning context do not grant permission.
 | Field | Value |
 | --- | --- |
 | Simulation document version | `APPROVAL_GATE_WORKFLOW_SIMULATIONS.md` on main after PR #191 |
-| Proof document status | scaffold / evidence pending |
-| Repo commit SHA | pending capture at proof time |
+| Proof document status | automated evidence captured / manual gaps pending |
+| Repo commit SHA | `a1f8a4d` (main after PR #194) |
 | Capability under test | Cap 64 `send_email_draft` |
 | Authority classification | confirmation-required local draft handoff |
 | Runtime code changes | none in this proof doc |
@@ -119,13 +119,15 @@ operator transcript or proof note
 Current evidence:
 
 ```text
-pending
+PASS — test_pending_cap64_does_not_dispatch_or_log_action_attempted
+PASS — test_cap64_session_request_creates_pending_state_without_execution
+Commit: a1f8a4d
 ```
 
 Remaining gap:
 
 ```text
-Capture this path against the current main commit during the proof run.
+None for this scenario. Automated evidence captured.
 ```
 
 ---
@@ -160,14 +162,18 @@ Trust Panel receipt or receipt API evidence
 Current evidence:
 
 ```text
-pending
+PASS — test_governor_passes_cap64_with_confirmation
+PASS — test_approved_cap64_runs_only_after_governor_attempt_ledger
+PASS — test_session_yes_resumes_pending_cap64_only_through_governed_invocation
+PASS — test_session_approved_cap64_uses_real_governor_ledger_sequence
+Commit: a1f8a4d
 ```
 
 Remaining gap:
 
 ```text
-Run the approved-path proof and record ledger/receipt/manual-draft evidence.
-Do not send the draft.
+Manual observation of live mailto draft opening still pending.
+Trust Panel receipt evidence pending — depends on runtime availability.
 ```
 
 ---
@@ -203,13 +209,15 @@ operator transcript or proof note
 Current evidence:
 
 ```text
-pending
+PASS — test_session_no_clears_pending_without_execution
+PASS — test_session_cancel_clears_pending_without_execution
+Commit: a1f8a4d
 ```
 
 Remaining gap:
 
 ```text
-Capture denied and cancelled session paths against the current main commit.
+None for this scenario. Automated evidence captured.
 ```
 
 ---
@@ -243,13 +251,15 @@ operator transcript or proof note
 Current evidence:
 
 ```text
-pending
+PASS — test_confirmation_resolver_rejects_ambiguous_input
+PASS — test_session_unrelated_input_cancels_pending_without_execution
+Commit: a1f8a4d
 ```
 
 Remaining gap:
 
 ```text
-Capture unrelated-input behavior and record the current session contract.
+None for this scenario. Automated evidence captured.
 ```
 
 ---
@@ -285,14 +295,15 @@ ledger assertion showing no hidden execution
 Current evidence:
 
 ```text
-pending
+No automated recovery test exists as of a1f8a4d.
 ```
 
 Remaining gap:
 
 ```text
-Determine whether an automated recovery test path exists. If not, capture a
-manual transcript and mark the automated gap plainly.
+No automated test simulates browser refresh, WebSocket disconnect, or server
+restart during a pending Cap 64 confirmation. A manual transcript or future
+automated recovery test is required to close this gap.
 ```
 
 ---
@@ -336,13 +347,16 @@ no sent email
 Current live evidence:
 
 ```text
-pending
+Automated boundary evidence captured (no SMTP import, mailto-only external
+call, draft-created-not-sent ledger event, review-not-sent user message).
+Live manual mailto observation still pending.
 ```
 
 Remaining gap:
 
 ```text
-Run the live checklist only when explicitly ready for Cap 64 P5 evidence.
+Run the live mailto checklist when explicitly ready for Cap 64 P5 evidence.
+Confirm local draft opens and is closed without sending.
 Do not run lock commands from this scaffold.
 ```
 
@@ -350,20 +364,34 @@ Do not run lock commands from this scaffold.
 
 ## Required Test Commands
 
-Record exact commands and results here when the proof run happens.
+Command:
 
 ```text
-pending
+python -m pytest tests/governance/test_approval_gate_wiring.py \
+  tests/websocket/test_behavioral_session_approval_gate.py \
+  tests/executors/test_send_email_draft_executor.py \
+  tests/certification/cap_64_send_email_draft/ \
+  tests/test_send_email_draft_routing.py -v --tb=short
 ```
 
-Candidate focused areas:
+Result:
 
 ```text
-Cap 64 executor tests
-Cap 64 routing tests
-behavioral session approval-gate tests
-approval-gate regression tests
-governor / ledger tests relevant to Cap 64
+132 passed, 0 failed, 28.79s
+Commit: a1f8a4d (main after PR #194)
+```
+
+Test files covering Cap 64:
+
+```text
+tests/governance/test_approval_gate_wiring.py — 24 tests
+tests/websocket/test_behavioral_session_approval_gate.py — 9 tests
+tests/executors/test_send_email_draft_executor.py — 21 tests
+tests/certification/cap_64_send_email_draft/test_p1_unit.py — 21 tests
+tests/certification/cap_64_send_email_draft/test_p2_routing.py — 14 tests
+tests/certification/cap_64_send_email_draft/test_p3_integration.py — 12 tests
+tests/certification/cap_64_send_email_draft/test_p4_api.py — 6 tests
+tests/test_send_email_draft_routing.py — 14 tests (duplicate of p2)
 ```
 
 Do not record:
@@ -399,16 +427,28 @@ ACTION_COMPLETED or documented failure result after executor return
 receipt evidence when draft creation succeeds
 ```
 
-Captured ledger excerpt:
+Captured ledger evidence (automated assertions):
 
 ```text
-pending
+Blocked paths (pending/denied/cancelled/unrelated):
+  ACTION_ATTEMPTED not in ledger events — asserted in 5 tests
+  ACTION_COMPLETED not in ledger events — asserted in 5 tests
+  executor never called — asserted via mock side_effect=AssertionError
+
+Approved path:
+  ACTION_ATTEMPTED count == 1 — asserted
+  EMAIL_DRAFT_CREATED in ledger events — asserted
+  ACTION_COMPLETED count == 1 — asserted
+  ledger event includes to and subject — asserted
+
+Commit: a1f8a4d
 ```
 
 Remaining gap:
 
 ```text
-Capture ledger excerpts from the exact proof run.
+Live ledger excerpts from a running Nova instance are not captured here.
+The automated assertions above prove the ledger contract at the code level.
 ```
 
 ---
@@ -432,13 +472,16 @@ Trust Panel display does not authorize execution.
 Captured receipt excerpt or screenshot reference:
 
 ```text
-pending
+No automated receipt test exists as of a1f8a4d.
+No test asserts receipt creation or Trust Panel API response.
 ```
 
 Remaining gap:
 
 ```text
-Capture receipt evidence after an approved live draft proof.
+Receipt evidence depends on whether the current runtime exposes
+http://localhost:8000/api/trust/receipts. Capture during live proof
+only if endpoint is present. Do not assert receipt if endpoint is absent.
 ```
 
 ---
@@ -446,7 +489,8 @@ Capture receipt evidence after an approved live draft proof.
 ## Manual Steps Performed
 
 ```text
-pending
+Live mailto draft observation: pending.
+No manual steps have been performed yet.
 ```
 
 Required manual note when live proof is run:
@@ -473,24 +517,38 @@ duplicate yes did not double-execute, if tested
 Captured blocked-path evidence:
 
 ```text
-pending
+pending action did not execute — PASS (test_pending_cap64_*)
+denied action did not execute — PASS (test_session_no_clears_pending_*)
+cancelled action did not execute — PASS (test_session_cancel_clears_pending_*)
+unrelated input did not execute — PASS (test_session_unrelated_input_*)
+ambiguous confirmation did not execute — PASS (test_confirmation_resolver_rejects_*)
+duplicate yes did not double-execute — not tested
+Commit: a1f8a4d
 ```
 
 ---
 
 ## Remaining Unverified Items
 
+Verified:
+
 ```text
-repo commit SHA for proof run
-focused test command output
-approved governed invocation evidence
-pending non-execution evidence
-denied/cancelled non-execution evidence
-unrelated-input non-execution evidence
-ledger excerpts
-receipt / Trust Panel evidence
-manual mailto draft observation
-recovery behavior evidence
+repo commit SHA for proof run — a1f8a4d
+focused test command output — 132 passed, 0 failed
+approved governed invocation evidence — captured
+pending non-execution evidence — captured
+denied/cancelled non-execution evidence — captured
+unrelated-input non-execution evidence — captured
+ledger excerpts (automated assertions) — captured
+```
+
+Still pending:
+
+```text
+receipt / Trust Panel evidence — no automated test, runtime-dependent
+manual mailto draft observation — requires live Nova instance
+recovery behavior evidence — no automated test exists
+duplicate-yes non-double-execution — not tested
 ```
 
 ---
@@ -500,16 +558,19 @@ recovery behavior evidence
 Current status:
 
 ```text
-Evidence packet scaffold created.
+Automated evidence captured for Cap 64 pending/approve/deny/cancel/unrelated/
+ledger/mailto-boundary paths (132 tests, 0 failures, commit a1f8a4d).
+Recovery, receipt/Trust Panel, and live mailto observation remain pending.
 Cap 64 P5 remains pending.
 Cap 64 remains not locked.
 Full approval-gate certification remains pending.
 ```
 
-Safe wording after this scaffold lands:
+Safe wording after this evidence update lands:
 
 ```text
-Cap 64 operator-journey proof scaffold added. Evidence capture remains pending.
+Cap 64 automated evidence captured. Manual/live/recovery/receipt gaps remain.
+Cap 64 P5 remains pending. Cap 64 remains not locked.
 ```
 
 Do not say:
