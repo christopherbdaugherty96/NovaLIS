@@ -43,10 +43,12 @@ PR #192 landed Cap 64 operator journey proof scaffold.
 PR #193 landed Cap 22 operator journey proof scaffold.
 PR #195 captured Cap 64 automated evidence (132 tests, 0 failures, scenarios A-D).
 PR #196 captured Cap 64 live mailto proof and receipt evidence (1 live request).
-PR #197 added duplicate-yes non-double-execution tests (134 total Cap 64 tests).
+PR #197 added duplicate-yes non-double-execution tests for Cap 22 / Cap 64.
+PR #198 recorded the full Cap 64 live checklist evidence.
+PR #200 captured Cap 22 automated evidence (23 tests, 0 failures).
 Full approval-gate certification remains pending.
 Cap 64 remaining gap: recovery evidence only.
-Cap 22 evidence capture: pending.
+Cap 22 remaining gaps: live proof, receipt evidence, and recovery evidence.
 ```
 
 ---
@@ -80,7 +82,7 @@ Based on this registry snapshot, no other active capability has `requires_confir
 
 | Capability | Registry Confirmation Required | Pending State Tested | Approve Path Tested | Deny Path Tested | Cancel/Unrelated Input Tested | Duplicate-Yes Tested | Ledger Sequence Tested | Live WS Session Tested | Live Proof Captured | Automated Evidence | Runtime Verified | Certification Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | partial — focused governed ledger sequence | yes — PR #172 | pending | pending | partial | pending |
+| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #200 automated evidence | yes — PR #172 | pending | yes — PR #200 (23 tests, 0 failures) | partial — live/recovery pending | pending |
 | Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #195 scenarios A-D | yes — PR #172 | yes — PR #196 (1 live request + receipt) | yes — PR #195 (132 tests, 0 failures) | partial — recovery pending | pending |
 
 ---
@@ -158,8 +160,8 @@ Current state:
 ```text
 Cap 64: strong behavioral coverage — PR #171, #172 (focused), PR #195 (132 automated
   tests across scenarios A-D), PR #197 (duplicate-yes non-double-execution).
-Cap 22: focused behavioral coverage — PR #171, #172, PR #197 (duplicate-yes).
-  Cap 22 automated evidence capture: pending.
+Cap 22: focused behavioral coverage — PR #171, #172, PR #197 (duplicate-yes),
+  plus PR #200 automated evidence (23 tests, 0 failures).
 Recovery behavior evidence: not yet captured for either capability.
 ```
 
@@ -183,8 +185,8 @@ Current state:
 ```text
 Cap 64: governed ledger sequence verified in PR #172, PR #195 scenarios A-D,
   and PR #196 live receipt endpoint evidence.
-Cap 22: focused governed ledger sequence verified in PR #172.
-  Cap 22 broader ledger verification: pending.
+Cap 22: focused governed ledger sequence verified in PR #172, with broader
+  automated ledger assertions captured in PR #200.
 ```
 
 ---
@@ -206,7 +208,7 @@ Cap 64: focused WS coverage (PR #172) + full live checklist passed (PR #196/PR #
   Test 1 full draft, Test 2 recipient-only, Test 3 body-hint, Test 4 receipt,
   Test 5 gate denial — all 5/5 passed).
 Cap 22: focused WS coverage (PR #172).
-  Cap 22 live checklist: pending.
+  Cap 22 live checklist and receipt evidence: pending.
 ```
 
 ---
@@ -227,8 +229,8 @@ Current state:
 ```text
 Cap 64: focused regression (PR #171) + automated scenarios A-D (PR #195, 132 tests)
   + duplicate-yes (PR #197). Strong regression coverage.
-Cap 22: focused regression (PR #171) + duplicate-yes (PR #197).
-  Cap 22 automated regression suite: pending.
+Cap 22: focused regression (PR #171) + duplicate-yes (PR #197)
+  + automated evidence suite (PR #200, 23 tests). Live/recovery evidence pending.
 ```
 
 ---
@@ -253,9 +255,10 @@ autonomous workflows
 ```text
 Cap 64: strong evidence coverage — automated (132+ tests), live checklist (5/5),
   duplicate-yes protection, receipt verification. Remaining gap: recovery evidence only.
-Cap 22: focused coverage — pending, approved, denied, cancel, unrelated, duplicate-yes
-  tested. Remaining gap: automated evidence suite, live checklist, live proof.
-Broader approval-gate certification: pending until Cap 22 coverage matches Cap 64 depth.
+Cap 22: focused and automated coverage — pending, approved, denied, cancel,
+  unrelated, duplicate-yes, path-root boundary, and governed ledger assertions tested.
+  Remaining gaps: live checklist, live proof/receipt evidence, and recovery evidence.
+Broader approval-gate certification: pending until live/recovery proof supports closeout.
 ```
 
 No document should currently say:
