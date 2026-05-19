@@ -7,18 +7,24 @@ Last reviewed: 2026-05-19
 ## Current Active Task
 
 ```text
-Everyday live-session reliability hardening — simulation harness + results (2026-05-19).
+Everyday live-session reliability hardening — post-mitigation rerun required (2026-05-19).
 ```
 
-Result:
+Result so far:
 
 ```text
-Live user simulation (20 personas, 32 turns) captured and documented.
+Live user simulation baseline (20 personas, 32 turns) captured and documented.
 Governance paths confirmed strong. Everyday reliability gaps identified:
 Ollama timeout under concurrent load, news/weather routing phrase
 sensitivity, multi-turn context fragility.
+
+PR #206 merged the baseline simulation harness and results.
+PR #207 merged the first Ollama wait-serialization mitigation.
+Issue #208 tracks the detailed next-step sequence.
+
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
 Script: nova_backend/tests/simulations/live_user_simulation.py
+Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 ```
 
 Previous completed lane:
@@ -32,11 +38,14 @@ capability_locks.json intentionally not modified (separate P1-P5 process).
 Next correct step:
 
 ```text
-1. Simulation harness and results committed (this PR).
-2. Follow-up PRs for reliability gaps (Ollama timeout, news routing,
-   confirmation-edge timeout, regression tests) each require separate review.
-3. Do not expand capabilities or add Shopify/website workflows.
-4. Do not reopen the approval-gate lane unless registry truth changes.
+1. Rerun the exact same live-user simulation after PR #207:
+   python -u -m tests.simulations.live_user_simulation
+2. Do not change personas, prompts, timeout, model, machine, or concurrency.
+3. Compare exact post-mitigation metrics against the PR #206 baseline:
+   passes, responses received, errors, timeouts, latency avg/median/p95/max.
+4. Classify every failed or timed-out turn before proposing another patch.
+5. Do not expand capabilities or add Shopify/website workflows yet.
+6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ---
@@ -90,6 +99,8 @@ PR #203 — Recovery evidence for Cap 22 and Cap 64 merged.
 PR #202 — Continuity docs synced with PRs #198-203.
 PR #204 — Certification matrix synced with PRs #201 and #203.
 PR #205 — Approval-gate certification closeout merged.
+PR #206 — Live-user simulation harness and baseline results merged.
+PR #207 — Ollama wait-serialization mitigation merged.
 ```
 
 ---
@@ -106,6 +117,26 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 ---
 
 ## Current Open Follow-Ups
+
+### Everyday live-session reliability — ACTIVE
+
+Status:
+
+```text
+baseline captured / first mitigation merged / post-mitigation rerun pending
+```
+
+Tracker:
+
+```text
+Issue #208 — Everyday reliability next steps after live-user simulation
+```
+
+First step:
+
+```text
+Run the exact same simulation from PR #206 after PR #207 and record exact before/after metrics.
+```
 
 ### Approval gate wiring — CLOSED OUT
 
@@ -186,7 +217,6 @@ PR #154 narrowed the freeform-goal execution surface through:
 read-only tool allowlist
 mutation-tool exclusion
 MeteredNetworkProxy enforcement
-conservative network-call budgeting
 governance regression tests
 ```
 
@@ -218,53 +248,3 @@ Most other active capabilities — certification phases pending.
 ```
 
 ---
-
-## Queued / Not Active Without Separate Reviewed Priority Lock
-
-```text
-UI simplification
-Cap 64 P5
-Google connector runtime implementation
-Shopify writes
-ElevenLabs implementation
-OpenClaw expansion
-browser/computer-use expansion
-external writes
-finance automation
-social posting automation
-autonomous workflow execution
-```
-
----
-
-## Preserved Boundaries
-
-```text
-Intelligence is not authority.
-```
-
-The recent audit and hardening merges do not approve:
-
-- Shopify writes
-- autonomous execution
-- browser/computer-use expansion
-- external writes
-- autonomous finance operations
-- autonomous social posting
-- OpenClaw authority expansion
-- direct Cap 63 shortcut use
-- hidden background work
-
----
-
-## Next Correct Step
-
-```text
-1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Everyday live-session reliability hardening is the active workstream.
-3. Follow-up PRs: Ollama timeout, news routing, confirmation-edge
-   timeout, regression tests -- each requires separate review.
-4. Per-capability P5/lock decisions remain separate and pending.
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
-```
