@@ -37,7 +37,16 @@ PR #171 merged focused regression coverage for tested Cap 22 / Cap 64 paths.
 PR #172 merged behavioral live-session coverage for tested Cap 22 / Cap 64 paths.
 PR #175 documented broader workflow verification.
 PR #176 fixed workflow regressions found by that pass.
+PR #188 filled confirmation-bound capability inventory (Cap 22 + Cap 64 only).
+PR #191 defined approval gate workflow simulation targets.
+PR #192 landed Cap 64 operator journey proof scaffold.
+PR #193 landed Cap 22 operator journey proof scaffold.
+PR #195 captured Cap 64 automated evidence (132 tests, 0 failures, scenarios A-D).
+PR #196 captured Cap 64 live mailto proof and receipt evidence (1 live request).
+PR #197 added duplicate-yes non-double-execution tests (134 total Cap 64 tests).
 Full approval-gate certification remains pending.
+Cap 64 remaining gap: recovery evidence only.
+Cap 22 evidence capture: pending.
 ```
 
 ---
@@ -69,10 +78,10 @@ Based on this registry snapshot, no other active capability has `requires_confir
 
 # Required Certification Matrix
 
-| Capability | Registry Confirmation Required | Pending State Tested | Approve Path Tested | Deny Path Tested | Cancel/Unrelated Input Tested | Ledger Sequence Tested | Live WS Session Tested | Runtime Verified | Certification Status |
-|---|---|---|---|---|---|---|---|---|---|
-| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 focused coverage | yes — PR #171 / #172 focused coverage | yes — PR #171 / #172 focused coverage | yes — PR #172 focused coverage | partial — focused governed ledger sequence covered | yes — PR #172 focused coverage | partial | pending |
-| Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 focused coverage | yes — PR #171 / #172 focused coverage | yes — PR #171 / #172 focused coverage | yes — PR #172 focused coverage | partial — focused governed ledger sequence covered | yes — PR #172 focused coverage | partial | pending |
+| Capability | Registry Confirmation Required | Pending State Tested | Approve Path Tested | Deny Path Tested | Cancel/Unrelated Input Tested | Duplicate-Yes Tested | Ledger Sequence Tested | Live WS Session Tested | Live Proof Captured | Automated Evidence | Runtime Verified | Certification Status |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Cap 22 `open_file_folder` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | partial — focused governed ledger sequence | yes — PR #172 | pending | pending | partial | pending |
+| Cap 64 `send_email_draft` | yes | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #171 / #172 | yes — PR #172 | yes — PR #197 | yes — PR #172 + PR #195 scenarios A-D | yes — PR #172 | yes — PR #196 (1 live request + receipt) | yes — PR #195 (132 tests, 0 failures) | partial — recovery pending | pending |
 
 ---
 
@@ -141,13 +150,17 @@ pending path blocks executor dispatch
 approve path resumes through governed execution
 no/cancel path does not execute
 unrelated input does not execute
+duplicate yes does not double-execute
 ```
 
 Current state:
 
 ```text
-focused coverage exists for Cap 22 / Cap 64 via PR #171 and PR #172
-broader/full-suite verification pending
+Cap 64: strong behavioral coverage — PR #171, #172 (focused), PR #195 (132 automated
+  tests across scenarios A-D), PR #197 (duplicate-yes non-double-execution).
+Cap 22: focused behavioral coverage — PR #171, #172, PR #197 (duplicate-yes).
+  Cap 22 automated evidence capture: pending.
+Recovery behavior evidence: not yet captured for either capability.
 ```
 
 ---
@@ -168,8 +181,10 @@ must appear only in expected governed sequences.
 Current state:
 
 ```text
-partial focused ledger coverage exists
-full certification-level ledger review pending
+Cap 64: governed ledger sequence verified in PR #172, PR #195 scenarios A-D,
+  and PR #196 live receipt endpoint evidence.
+Cap 22: focused governed ledger sequence verified in PR #172.
+  Cap 22 broader ledger verification: pending.
 ```
 
 ---
@@ -181,13 +196,17 @@ Required:
 ```text
 WebSocket/session approval flows verified
 frontend state transitions verified where applicable
+live checklist tests passed (per capability_verification/live_checklists/)
 ```
 
 Current state:
 
 ```text
-focused WebSocket/session coverage exists for Cap 22 / Cap 64 via PR #172
-broader/full-suite live-session verification pending
+Cap 64: focused WS coverage (PR #172) + full live checklist passed (PR #196/PR #198:
+  Test 1 full draft, Test 2 recipient-only, Test 3 body-hint, Test 4 receipt,
+  Test 5 gate denial — all 5/5 passed).
+Cap 22: focused WS coverage (PR #172).
+  Cap 22 live checklist: pending.
 ```
 
 ---
@@ -200,13 +219,16 @@ Required:
 must-fail tests for bypass attempts
 executor dispatch forbidden during pending state
 approval cannot be inferred from unrelated text
+duplicate yes does not double-execute
 ```
 
 Current state:
 
 ```text
-focused regression coverage exists
-full certification-level bypass matrix pending
+Cap 64: focused regression (PR #171) + automated scenarios A-D (PR #195, 132 tests)
+  + duplicate-yes (PR #197). Strong regression coverage.
+Cap 22: focused regression (PR #171) + duplicate-yes (PR #197).
+  Cap 22 automated regression suite: pending.
 ```
 
 ---
@@ -229,9 +251,11 @@ autonomous workflows
 # Current Safe Interpretation
 
 ```text
-Approval-gate focused coverage exists for current confirmation-bound Cap 22 / Cap 64 paths.
-The current confirmation-bound capability inventory is filled from registry truth.
-Broader/full-suite approval-gate certification is still pending.
+Cap 64: strong evidence coverage — automated (132+ tests), live checklist (5/5),
+  duplicate-yes protection, receipt verification. Remaining gap: recovery evidence only.
+Cap 22: focused coverage — pending, approved, denied, cancel, unrelated, duplicate-yes
+  tested. Remaining gap: automated evidence suite, live checklist, live proof.
+Broader approval-gate certification: pending until Cap 22 coverage matches Cap 64 depth.
 ```
 
 No document should currently say:
@@ -240,6 +264,8 @@ No document should currently say:
 approval gate fully certified
 all confirmation paths proven
 approval-gate closeout complete
+Cap 64 P5 complete
+Cap 64 locked
 ```
 
 until this matrix is fully resolved and independently verified.
