@@ -2,9 +2,11 @@
 
 Status: full planning synthesis / not shipped runtime capability
 
-This document captures the conclusions from the Google Workspace, agent operating model, email coordination, and Personal Personality Layer planning pass.
+This document captures the conclusions from the Google Workspace, agent operating model, email coordination, Personal Personality Layer, home-presence, and final product goal planning pass.
 
 It is a planning artifact. It does not modify runtime authority, grant new execution rights, or claim that the future capabilities described here are currently implemented.
+
+Use this document as the canonical future-product summary when other docs need to explain Nova's long-term personal/home/business operating-system direction.
 
 ---
 
@@ -20,7 +22,44 @@ Best framing:
 Nova is a governed AI operating layer for personal life, home operations, and small-business coordination.
 ```
 
+Expanded final-product framing:
+
+```text
+Nova is a governed personal/home/business operating system:
+one assistant surface, many internal managers, bounded capabilities,
+visible approvals, and ledgered receipts.
+```
+
 Nova should feel personal and useful, but its authority must remain bounded, visible, and reviewable.
+
+---
+
+## Final Product Clarification
+
+The long-term product goal is a local-first, voice-first operating layer that can coordinate the user's home, work, devices, memory, and business workflows without turning into unrestricted autonomy.
+
+Nova may eventually feel like a home Jarvis, personal chief-of-staff, and small-business operations assistant, but that experience must be built from governed workflows rather than invisible self-directed control.
+
+Correct final-product interpretation:
+
+```text
+The user talks to one Nova.
+Nova routes work through controlled internal managers and assistants.
+Managers and assistants reason, classify, summarize, draft, and propose.
+Only registered capabilities execute.
+The Governor authorizes.
+The user approves risky actions.
+The Trust Panel and ledger show what happened.
+```
+
+Incorrect interpretation:
+
+```text
+Nova becomes a fully autonomous employee, unrestricted agent swarm,
+always-watching home surveillance brain, or silent computer-use system.
+```
+
+The product goal is ambient usefulness with inspectable authority, not hidden autonomy.
 
 ---
 
@@ -179,6 +218,51 @@ This keeps business and personal contexts from blurring.
 
 ---
 
+## Home Presence and Distributed Nodes
+
+The future home layer should use a central Nova Core with distributed terminals, not many independent Novas.
+
+Possible node types:
+
+- Raspberry Pi room nodes
+- wall displays
+- tablets
+- touchscreens
+- speakers and microphones
+- room-presence sensors
+- governed camera inputs
+- local dashboard surfaces
+
+Correct model:
+
+```text
+Nova Core is the governed brain.
+Room nodes are sensory, voice, and display terminals.
+Cameras, speakers, microphones, and displays are peripherals.
+```
+
+Room nodes may:
+
+- capture voice input
+- play spoken responses
+- display dashboard state
+- route room context to Nova Core
+- show approval/review surfaces
+- trigger explicit governed sensor events
+
+Room nodes must not:
+
+- own independent execution authority
+- bypass GovernorMediator
+- store uncontrolled memory
+- silently execute actions
+- create hidden always-on surveillance
+- become autonomous mini-agents
+
+Camera and sensor use must remain explicit, local-first where possible, visible, and ledgered. Event-driven vision may be useful, but the safe model is governed observation and review, not silent continuous authority.
+
+---
+
 ## Google Workspace Direction
 
 Google Workspace should become a governed connector package, not a single broad permission.
@@ -329,6 +413,49 @@ Email/Calendar Coordination Manager
 ```
 
 These assistants should not have independent execution authority. They should reason, summarize, draft, and request capability calls through Nova Core and the governed path.
+
+---
+
+## Employee-Like Work Clarification
+
+Nova may eventually feel like an employee because it can track work, prepare drafts, organize boards, surface risks, and coordinate follow-through across workspaces.
+
+That does not mean Nova becomes an unrestricted employee with independent business authority.
+
+Correct model:
+
+```text
+Nova prepares work.
+Nova explains risk.
+Nova groups approvals.
+Nova executes only through governed capabilities.
+The user remains accountable authority for external effects.
+```
+
+Examples of acceptable employee-like workflows:
+
+- prepare client reply drafts
+- summarize leads
+- create a launch checklist
+- prepare a project status report
+- identify missing client assets
+- draft a calendar proposal
+- prepare a Shopify intelligence report
+- group low-risk approvals for review
+
+Examples of deferred or high-risk workflows:
+
+- send client emails
+- publish website changes
+- merge code
+- change DNS
+- spend money
+- issue refunds
+- alter account settings
+- post publicly
+- delete data
+
+High-risk workflows require strong confirmation, receipts, and mature Trust Panel / batch approval support before implementation.
 
 ---
 
