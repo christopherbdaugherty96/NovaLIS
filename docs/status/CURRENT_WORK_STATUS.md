@@ -19,32 +19,33 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Approval gate certification closeout — certified for current scope (2026-05-19).
+Everyday live-session reliability hardening (2026-05-19).
 ```
 
 Status:
 
 ```text
-Approval-gate certification is complete for the current
-registry-confirmation-bound capability scope: Cap 22 and Cap 64.
-Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
-capability_locks.json intentionally not modified (separate P1-P5 process).
-Website-preview live-backend validation remains follow-up debt.
+Live user simulation (20 personas, 32 turns) captured and documented.
+Governance paths confirmed strong. Everyday reliability gaps identified.
+Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
+Script: nova_backend/tests/simulations/live_user_simulation.py
 ```
 
-Current approval-gate status:
+Previous closed lane:
 
 ```text
-Focused regression coverage: merged.
-Behavioral live-session coverage: merged.
-Automated evidence: captured (Cap 64: 132 tests, Cap 22: 23 tests).
-Live proof: captured (Cap 64: 5/5 checklist, Cap 22: approval + denial).
-Receipt/ledger proof: captured for both capabilities.
-Duplicate-yes protection: tested for both capabilities.
-Recovery proof: captured for both capabilities (3 tests).
-Approval-gate certification: complete for current scope.
-capability_locks.json: not modified (separate process).
-Website-preview live-backend validation: follow-up debt.
+Approval-gate certification closeout -- certified for current scope (2026-05-19).
+Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
+capability_locks.json intentionally not modified (separate P1-P5 process).
+```
+
+Identified reliability gaps:
+
+```text
+1. Ollama timeout under concurrent WebSocket load (high)
+2. News/weather routing phrase sensitivity (medium)
+3. Multi-turn context fragility under load (medium)
+4. Confirmation-edge timeout behavior (low)
 ```
 
 ---
@@ -635,6 +636,26 @@ capability_locks.json intentionally not modified
 no runtime changes
 ```
 
+### Everyday live-session reliability simulation
+
+Status:
+
+```text
+simulation captured and documented — 2026-05-19
+```
+
+Result:
+
+```text
+20-persona, 32-turn live WebSocket simulation run against running Nova
+governance paths confirmed strong (confirmations, denials, boundaries)
+everyday reliability gaps identified (Ollama timeout, news routing,
+  multi-turn context, confirmation-edge timing)
+results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
+script: nova_backend/tests/simulations/live_user_simulation.py
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
@@ -718,8 +739,10 @@ No recent merge authorizes:
 
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Per-capability P5/lock decisions remain separate and pending.
-3. Next lanes: open follow-ups (#142, #143), five-pass roadmap items,
-   or new reviewed priority lock for next workstream.
-4. Do not reopen the approval-gate lane unless registry truth changes.
+2. Everyday live-session reliability hardening is the active workstream.
+3. Follow-up PRs: Ollama timeout, news routing, confirmation-edge
+   timeout, regression tests -- each requires separate review.
+4. Per-capability P5/lock decisions remain separate and pending.
+5. Do not expand capabilities or add Shopify/website workflows.
+6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
