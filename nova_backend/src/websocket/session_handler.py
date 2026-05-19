@@ -1029,6 +1029,218 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await _complete_immediate_turn(_topic_stack_message(session_state, session_state["turn_count"]))
                 continue
 
+            # ── Deterministic-command fast path ──────────────────────────
+            # These recognized commands MUST fire before ambient clarification
+            # so first-turn inputs like "news" or "weather in Boston" reach
+            # their dedicated handlers instead of being intercepted by
+            # context-free follow-up heuristics.
+
+            if TIME_QUERY_RE.match(command_text):
+                await _complete_immediate_turn(
+                    _render_local_time_message(),
+                    suggested_actions=[
+                        {"label": "System status", "command": "system status"},
+                        {"label": "Today's news", "command": "today's news"},
+                    ],
+                )
+                continue
+
+            _arithmetic_answer = _try_arithmetic(command_text)
+            if _arithmetic_answer is not None:
+                await _complete_immediate_turn(_arithmetic_answer)
+                continue
+
+            if is_headline_summary_request(command_text):
+                await _complete_immediate_turn(
+                    render_headline_summary_from_cache(session_state.get("news_cache")),
+                    suggested_actions=[
+                        {"label": "Refresh news", "command": "news"},
+                        {"label": "Show sources", "command": "sources"},
+                    ],
+                    remember_response=False,
+                    tone_domain="daily",
+                )
+                continue
+
+            if lowered in {"news", "headlines", "latest news", "top news"}:
+                _, news_result = await invoke_governed_text_command(
+                    governor,
+                    "news",
+                    session_id,
+                )
+                if news_result is None:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "news",
+                            "items": [],
+                            "summary": "News is currently unavailable.",
+                            "categories": {},
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="News update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+                    await send_chat_done(ws)
+                    continue
+                news_widget = {}
+                if isinstance(news_result.data, dict):
+                    news_widget = dict(news_result.data.get("widget") or {})
+
+                if news_result.success:
+                    message = _structure_long_message(news_result.message)
+                    if not silent_widget_refresh:
+                        session_state["last_response"] = message
+                        await send_chat_message(ws, message, tone_domain="daily")
+                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
+                        items = list(news_widget.get("items") or [])
+                        categories = dict(news_widget.get("categories") or {})
+                        session_state["news_cache"] = items
+                        session_state["news_categories"] = categories
+                        session_state["last_sources"] = _extract_sources_from_results(items)
+                        session_state["last_source_links"] = _extract_source_links(items)
+                        await ws_send(ws, news_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "news",
+                                "items": [],
+                                "summary": "News is currently unavailable.",
+                                "categories": {},
+                            },
+                        )
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}),
+                        "News update",
+                    )
+                else:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
+                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
+                        await ws_send(ws, news_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "news",
+                                "items": [],
+                                "summary": "News is currently unavailable.",
+                                "categories": {},
+                            },
+                        )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="News update",
+                    )
+                await send_trust_status(ws, session_state["trust_status"])
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"weather", "weather update", "current weather"} or re.match(
+                r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered
+            ):
+                _, weather_result = await invoke_governed_text_command(
+                    governor,
+                    "weather",
+                    session_id,
+                )
+                if weather_result is None:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "weather",
+                            "data": {
+                                "summary": "Weather is currently unavailable.",
+                                "temperature": None,
+                                "condition": "Unavailable",
+                                "location": "Local",
+                                "forecast": "",
+                                "alerts": [],
+                            },
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="Weather update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+                    await send_chat_done(ws)
+                    continue
+                weather_widget = {}
+                if isinstance(weather_result.data, dict):
+                    weather_widget = dict(weather_result.data.get("widget") or {})
+
+                if weather_result.success:
+                    message = _structure_long_message(weather_result.message)
+                    if not silent_widget_refresh:
+                        session_state["last_response"] = message
+                        await send_chat_message(ws, message, tone_domain="daily")
+                    if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
+                        await ws_send(ws, weather_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "weather",
+                                "data": {
+                                    "summary": message,
+                                    "temperature": None,
+                                    "condition": "",
+                                    "location": "Local",
+                                    "forecast": "",
+                                    "alerts": [],
+                                },
+                            },
+                        )
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}),
+                        "Weather update",
+                    )
+                else:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
+                    if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
+                        await ws_send(ws, weather_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "weather",
+                                "data": {
+                                    "summary": "Weather is currently unavailable.",
+                                    "temperature": None,
+                                    "condition": "Unavailable",
+                                    "location": "Local",
+                                    "forecast": "",
+                                    "alerts": [],
+                                },
+                            },
+                        )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="Weather update",
+                    )
+                await send_trust_status(ws, session_state["trust_status"])
+                await send_chat_done(ws)
+                continue
+
+            # ── End deterministic fast path ──────────────────────────────
+
             # RC-2/3/4/5/6: Ambient clarification — context-free follow-ups and informal
             # confusion phrases.  Fire only when the session has no useful prior context
             # (no last_response). With prior context let the LLM handle as a follow-up.
@@ -1082,33 +1294,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await _complete_immediate_turn(
                     _capability_help_message(),
                     suggested_actions=deps._capability_help_actions(),
-                )
-                continue
-
-            if TIME_QUERY_RE.match(command_text):
-                await _complete_immediate_turn(
-                    _render_local_time_message(),
-                    suggested_actions=[
-                        {"label": "System status", "command": "system status"},
-                        {"label": "Today's news", "command": "today's news"},
-                    ],
-                )
-                continue
-
-            _arithmetic_answer = _try_arithmetic(command_text)
-            if _arithmetic_answer is not None:
-                await _complete_immediate_turn(_arithmetic_answer)
-                continue
-
-            if is_headline_summary_request(command_text):
-                await _complete_immediate_turn(
-                    render_headline_summary_from_cache(session_state.get("news_cache")),
-                    suggested_actions=[
-                        {"label": "Refresh news", "command": "news"},
-                        {"label": "Show sources", "command": "sources"},
-                    ],
-                    remember_response=False,
-                    tone_domain="daily",
                 )
                 continue
 
@@ -2082,183 +2267,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 context_limit = 40 if session_state.get("presence_mode") else 20
                 session_context = session_context[-context_limit:]
                 session_state["turn_count"] += 1
-                continue
-
-            if lowered in {"weather", "weather update", "current weather"} or re.match(
-                r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered
-            ):
-                _, weather_result = await invoke_governed_text_command(
-                    governor,
-                    "weather",
-                    session_id,
-                )
-                if weather_result is None:
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
-                    await ws_send(
-                        ws,
-                        {
-                            "type": "weather",
-                            "data": {
-                                "summary": "Weather is currently unavailable.",
-                                "temperature": None,
-                                "condition": "Unavailable",
-                                "location": "Local",
-                                "forecast": "",
-                                "alerts": [],
-                            },
-                        },
-                    )
-                    session_state["trust_status"] = failure_ladder.record_failure(
-                        session_state.get("trust_status", {}),
-                        reason="Temporary issue",
-                        external=True,
-                        last_external_call="Weather update",
-                    )
-                    await send_trust_status(ws, session_state["trust_status"])
-                    await send_chat_done(ws)
-                    continue
-                weather_widget = {}
-                if isinstance(weather_result.data, dict):
-                    weather_widget = dict(weather_result.data.get("widget") or {})
-
-                if weather_result.success:
-                    message = _structure_long_message(weather_result.message)
-                    if not silent_widget_refresh:
-                        session_state["last_response"] = message
-                        await send_chat_message(ws, message, tone_domain="daily")
-                    if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
-                        await ws_send(ws, weather_widget)
-                    else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "weather",
-                                "data": {
-                                    "summary": message,
-                                    "temperature": None,
-                                    "condition": "",
-                                    "location": "Local",
-                                    "forecast": "",
-                                    "alerts": [],
-                                },
-                            },
-                        )
-                    session_state["trust_status"] = failure_ladder.record_external_success(
-                        session_state.get("trust_status", {}),
-                        "Weather update",
-                    )
-                else:
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
-                    if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
-                        await ws_send(ws, weather_widget)
-                    else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "weather",
-                                "data": {
-                                    "summary": "Weather is currently unavailable.",
-                                    "temperature": None,
-                                    "condition": "Unavailable",
-                                    "location": "Local",
-                                    "forecast": "",
-                                    "alerts": [],
-                                },
-                            },
-                        )
-                    session_state["trust_status"] = failure_ladder.record_failure(
-                        session_state.get("trust_status", {}),
-                        reason="Temporary issue",
-                        external=True,
-                        last_external_call="Weather update",
-                    )
-                await send_trust_status(ws, session_state["trust_status"])
-                await send_chat_done(ws)
-                continue
-
-            if lowered in {"news", "headlines", "latest news", "top news"}:
-                _, news_result = await invoke_governed_text_command(
-                    governor,
-                    "news",
-                    session_id,
-                )
-                if news_result is None:
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
-                    await ws_send(
-                        ws,
-                        {
-                            "type": "news",
-                            "items": [],
-                            "summary": "News is currently unavailable.",
-                            "categories": {},
-                        },
-                    )
-                    session_state["trust_status"] = failure_ladder.record_failure(
-                        session_state.get("trust_status", {}),
-                        reason="Temporary issue",
-                        external=True,
-                        last_external_call="News update",
-                    )
-                    await send_trust_status(ws, session_state["trust_status"])
-                    await send_chat_done(ws)
-                    continue
-                news_widget = {}
-                if isinstance(news_result.data, dict):
-                    news_widget = dict(news_result.data.get("widget") or {})
-
-                if news_result.success:
-                    message = _structure_long_message(news_result.message)
-                    if not silent_widget_refresh:
-                        session_state["last_response"] = message
-                        await send_chat_message(ws, message, tone_domain="daily")
-                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
-                        items = list(news_widget.get("items") or [])
-                        categories = dict(news_widget.get("categories") or {})
-                        session_state["news_cache"] = items
-                        session_state["news_categories"] = categories
-                        session_state["last_sources"] = _extract_sources_from_results(items)
-                        session_state["last_source_links"] = _extract_source_links(items)
-                        await ws_send(ws, news_widget)
-                    else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "news",
-                                "items": [],
-                                "summary": "News is currently unavailable.",
-                                "categories": {},
-                            },
-                        )
-                    session_state["trust_status"] = failure_ladder.record_external_success(
-                        session_state.get("trust_status", {}),
-                        "News update",
-                    )
-                else:
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
-                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
-                        await ws_send(ws, news_widget)
-                    else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "news",
-                                "items": [],
-                                "summary": "News is currently unavailable.",
-                                "categories": {},
-                            },
-                        )
-                    session_state["trust_status"] = failure_ladder.record_failure(
-                        session_state.get("trust_status", {}),
-                        reason="Temporary issue",
-                        external=True,
-                        last_external_call="News update",
-                    )
-                await send_trust_status(ws, session_state["trust_status"])
-                await send_chat_done(ws)
                 continue
 
             if lowered in {
