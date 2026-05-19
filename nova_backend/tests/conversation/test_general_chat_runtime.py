@@ -17,7 +17,7 @@ class _FakeGeneralChatSkill:
     def can_handle(self, query: str) -> bool:
         return bool(query.strip())
 
-    async def handle(self, query: str, context=None, session_state=None):
+    async def handle(self, query: str, context=None, session_state=None, on_chunk=None):
         self.calls.append(
             {
                 "query": query,
