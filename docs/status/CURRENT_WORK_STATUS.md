@@ -514,6 +514,59 @@ added test_session_duplicate_yes_does_not_double_execute_cap22
 no runtime changes
 ```
 
+### Cap 64 full live checklist evidence
+
+Status:
+
+```text
+merged — PR #198
+```
+
+Result:
+
+```text
+recorded all 5 Cap 64 live checklist tests with timestamps
+updated status docs to reflect full live checklist coverage
+only recovery evidence remains for Cap 64
+no runtime changes
+```
+
+### Certification matrix evidence sync
+
+Status:
+
+```text
+merged — PR #199
+```
+
+Result:
+
+```text
+synced approval gate certification matrix with Cap 64 evidence from PRs #195-197
+added new matrix columns: duplicate-yes, live proof, automated evidence
+Cap 64 shows strong coverage; Cap 22 automated evidence noted
+no runtime changes
+```
+
+### Cap 22 automated evidence
+
+Status:
+
+```text
+merged — PR #200
+```
+
+Result:
+
+```text
+recorded automated evidence in Cap 22 operator journey proof scaffold
+23 tests, 0 failures across 7 test files at commit 59f232e
+scenarios A-D covered with automated assertions
+path-root boundary proof captured (5 tests)
+duplicate-yes non-double-execution covered
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through

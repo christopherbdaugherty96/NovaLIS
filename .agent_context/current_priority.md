@@ -82,6 +82,9 @@ PR #193 — Cap 22 operator journey proof scaffold merged.
 PR #195 — Cap 64 automated evidence capture merged.
 PR #196 — Cap 64 live mailto proof and receipt evidence merged.
 PR #197 — Duplicate-yes non-double-execution tests merged.
+PR #198 — Cap 64 full live checklist evidence and status sync merged.
+PR #199 — Certification matrix evidence sync merged.
+PR #200 — Cap 22 automated evidence (23 tests) merged.
 ```
 
 ## Recent closed / not merged truth
@@ -139,7 +142,8 @@ Current lock truth:
 
 ```text
 Cap 16 — P1-P5 passed / locked.
-Cap 64 — P1-P4 passed / P5 pending / not locked.
+Cap 64 — P1-P4 passed / P5 pending (recovery only) / not locked.
+Cap 22 — automated + live evidence captured / recovery pending / not locked.
 Cap 65 — P1-P4 passed / P5 pending / not locked.
 Most other active capabilities — certification lock phases pending.
 ```
