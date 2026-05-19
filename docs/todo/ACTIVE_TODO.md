@@ -7,35 +7,34 @@ Last reviewed: 2026-05-19
 ## Current Active Task
 
 ```text
-Everyday live-session reliability hardening — handler-ordering follow-up required (2026-05-19).
+Everyday live-session reliability hardening — complete (2026-05-19).
 ```
 
 Result:
 
 ```text
-Baseline simulation: 24/32 passes, 7 timeouts (PR #206).
-Post-PR #207 rerun: 25/32 passes, 5 timeouts (marginal).
-Post-PR #210 rerun: 27/33 passes, 6 timeouts, 0 errors (effective).
-Post-PR #211 rerun: 27/33 passes, 6 timeouts, 0 errors (targeted routing improved some latency, but no overall score gain).
+Baseline simulation:   24/32 passes, 7 timeouts (PR #206).
+Post-PR #207 rerun:    25/32 passes, 5 timeouts (marginal).
+Post-PR #210 rerun:    27/33 passes, 6 timeouts, 0 errors (effective).
+Post-PR #213 rerun:    32/33 passes, 0 timeouts, 0 errors (transformative).
 
-Streaming cycle proved UX mitigation works:
-  Passes:  75% → 82%
-  Avg:     4381ms → 2451ms (-44%)
-  p95:     45016ms → 7114ms (-84%)
-  Errors:  1 → 0
+Full hardening cycle:
+  Passes:   75% → 97% (+22 points)
+  Timeouts: 7 → 0 (eliminated)
+  Avg:      4381ms → 587ms (-87%)
+  p95:      45016ms → 3147ms (-93%)
+  Errors:   1 → 0
 
-PR #211 deterministic routing is mechanically correct for exact math/news/weather phrases, but the live rerun found a handler-ordering issue: ambient clarification can fire before dedicated recognized-command handlers on short/no-context turns.
+Merged PRs (in order):
+  PR #206 — baseline simulation harness and results
+  PR #207 — Ollama wait-serialization mitigation (marginal)
+  PR #209 — streaming design doc and post-#207 results
+  PR #210 — streaming LLM fallback implementation (effective)
+  PR #211 — deterministic routing for math/news/weather
+  PR #212 — on_chunk test-fake compatibility fix
+  PR #213 — handler ordering: deterministic commands before ambient clarification
 
-Remaining bottleneck: Ollama model-level inference serialization.
-Current next highest ROI: move recognized deterministic command handlers before ambient clarification.
-
-PR #206 merged the baseline simulation harness and results.
-PR #207 merged the first Ollama wait-serialization mitigation.
-PR #209 merged the streaming design doc and post-#207 results.
-PR #210 merged the streaming LLM fallback implementation.
-PR #211 merged deterministic routing for math/news/weather.
-PR #212 merged the on_chunk test-fake compatibility fix.
-Issue #208 tracks the detailed next-step sequence.
+Issue #208 tracks the detailed sequence.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
 Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
@@ -51,17 +50,16 @@ Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 capability_locks.json intentionally not modified (separate P1-P5 process).
 ```
 
-Next correct step:
+Remaining lower-priority items:
 
 ```text
-1. Streaming cycle complete: design → implement → verify (PRs #209, #210).
-2. Deterministic routing slice merged (PR #211), and test-fake cleanup merged (PR #212).
-3. Post-PR #211 simulation showed targeted news/weather latency improvement, but no overall score gain.
-4. Next highest ROI: fix session_handler ordering so recognized commands reach news/weather/math/time handlers before ambient clarification.
-5. Add regression tests proving recognized commands do not trigger ambient clarification.
-6. Fix stalled confirmation-context timeouts if reproducible after handler-ordering cleanup.
-7. Do not expand capabilities or add Shopify/website workflows.
-8. Do not reopen the approval-gate lane unless registry truth changes.
+1. Gale confirmation-context edge case (test expectation, not runtime defect).
+2. LLM-dependent general-chat reliability (Drew multi-turn, Blake creative)
+   — requires Ollama throughput or model swap, not Nova code changes.
+3. Multi-turn context persistence regression tests.
+4. Concurrent WebSocket load regression test suite.
+5. Do not expand capabilities or add Shopify/website workflows.
+6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ---

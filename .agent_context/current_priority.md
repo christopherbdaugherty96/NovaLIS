@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Everyday live-session reliability hardening — handler-ordering follow-up required (2026-05-19).
+Everyday live-session reliability hardening — complete (2026-05-19).
 ```
 
 Previous closed lane:
@@ -16,22 +16,30 @@ Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 Status:
 
 ```text
-Four-point reliability sequence complete through PR #212:
-  Baseline (#206):        24/32 passes, 75%, 7 timeouts
-  Wait mitigation (#207): 25/32 passes, 76%, 5 timeouts (marginal)
-  Streaming (#210):       27/33 passes, 82%, 6 timeouts, 0 errors (effective)
-  Routing (#211):         27/33 passes, 82%, 6 timeouts, 0 errors (targeted latency improved, no overall score gain)
+Five-point reliability sequence complete through PR #213:
+  Baseline (#206):          24/32 passes, 75%, 7 timeouts
+  Wait mitigation (#207):   25/32 passes, 76%, 5 timeouts (marginal)
+  Streaming (#210):         27/33 passes, 82%, 6 timeouts, 0 errors (effective)
+  Routing (#211):           27/33 passes, 82%, 6 timeouts, 0 errors (no score gain)
+  Handler ordering (#213):  32/33 passes, 97%, 0 timeouts, 0 errors (transformative)
 
-Key deltas from baseline to streaming:
-  Passes:  75% → 82%  (+6 pts)
-  Avg:     4381ms → 2451ms  (-44%)
-  p95:     45016ms → 7114ms  (-84%)
-  Errors:  1 → 0
+Full hardening cycle deltas (baseline → final):
+  Passes:   75% → 97%  (+22 pts)
+  Timeouts: 7 → 0  (eliminated)
+  Avg:      4381ms → 587ms  (-87%)
+  p95:      45016ms → 3147ms  (-93%)
+  Errors:   1 → 0
 
-PR #211 deterministic routing is mechanically correct for exact math/news/weather phrases, but the live rerun found a handler-ordering issue: ambient clarification can fire before dedicated recognized-command handlers on short/no-context turns.
+Merged PRs (in order):
+  PR #206 — baseline simulation harness and results
+  PR #207 — Ollama wait-serialization mitigation (marginal)
+  PR #209 — streaming design doc and post-#207 results
+  PR #210 — streaming LLM fallback implementation (effective)
+  PR #211 — deterministic routing for math/news/weather
+  PR #212 — on_chunk test-fake compatibility fix
+  PR #213 — handler ordering: deterministic commands before ambient clarification
 
-Remaining bottleneck: Ollama model-level inference serialization plus session_handler ordering.
-Current next highest ROI: move recognized deterministic command handlers before ambient clarification.
+Issue #208 tracks the detailed sequence.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
 Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
@@ -42,10 +50,8 @@ Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 Scope:
 
 ```text
-streaming cycle complete (design → implement → verify)
-deterministic routing slice merged
-on_chunk test-fake compatibility cleanup merged
-post-routing simulation recorded
+full hardening cycle complete (baseline → wait → streaming → routing → ordering)
+handler-ordering fix merged and simulation-verified
 no capability expansion
 no authority expansion
 capability_locks.json not modified
@@ -107,6 +113,7 @@ PR #209 — Post-#207 simulation results and streaming design doc merged.
 PR #210 — Streaming LLM fallback for advisory general-chat path merged.
 PR #211 — Deterministic routing for math/news/weather merged.
 PR #212 — on_chunk test-fake compatibility fix merged.
+PR #213 — Handler ordering: deterministic commands before ambient clarification merged.
 ```
 
 ## Recent closed / not merged truth
@@ -185,15 +192,16 @@ Most other active capabilities — certification lock phases pending.
 
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Everyday live-session reliability hardening is the active workstream.
-3. Streaming cycle is complete and proven useful.
-4. Deterministic routing slice is merged, but handler ordering still blocks some fast paths.
-5. Next patch: move recognized deterministic handlers before ambient clarification.
-6. Add regression tests proving news/weather/math/time recognized commands do not trigger ambient clarification.
-7. Rerun the same live-user simulation after handler-ordering fix.
-8. Per-capability P5/lock decisions remain separate and pending.
-9. Do not expand capabilities or add Shopify/website workflows.
-10. Do not reopen the approval-gate lane unless registry truth changes.
+2. Everyday live-session reliability hardening is complete (2026-05-19).
+   75% → 97% passes, 7 → 0 timeouts, avg 4381ms → 587ms.
+3. Remaining lower-priority items:
+   a. Gale confirmation-context edge case (test expectation, not runtime defect).
+   b. LLM-dependent general-chat reliability (requires Ollama throughput or model swap).
+   c. Multi-turn context persistence regression tests.
+   d. Concurrent WebSocket load regression test suite.
+4. Per-capability P5/lock decisions remain separate and pending.
+5. Do not expand capabilities or add Shopify/website workflows.
+6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary
