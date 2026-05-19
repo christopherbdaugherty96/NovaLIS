@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.deepseek_bridge import DeepSeekBridge
@@ -1639,6 +1639,7 @@ class GeneralChatSkill(BaseSkill):
         *,
         context: Optional[list] = None,
         session_state: Optional[dict] = None,
+        on_chunk: Optional[Callable] = None,
     ) -> SkillResult | None:
         social = self._local_social_result(query)
         if social is not None:
@@ -1695,6 +1696,7 @@ class GeneralChatSkill(BaseSkill):
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
                 temperature=0.7 if mode == "casual" else 0.5,
+                on_chunk=on_chunk,
             )
             text = self._sanitize_response(text or "")
             fallback = self._local_conceptual_fallback(normalized_query, session_state)
@@ -1877,14 +1879,20 @@ class GeneralChatSkill(BaseSkill):
         except Exception:
             pass
 
-    async def handle(self, query: str, context: Optional[list] = None, session_state: Optional[dict] = None) -> SkillResult | None:
+    async def handle(
+        self,
+        query: str,
+        context: Optional[list] = None,
+        session_state: Optional[dict] = None,
+        on_chunk: Optional[Callable] = None,
+    ) -> SkillResult | None:
         social = self._local_social_result(query)
         if social is not None:
             return social
 
         # Backward compatible path
         if context is None or session_state is None:
-            return await self._run_local_model(query, context=context, session_state=session_state)
+            return await self._run_local_model(query, context=context, session_state=session_state, on_chunk=on_chunk)
 
         normalized_query = InputNormalizer.normalize(query)
         semantic_clarification = self._semantic_clarification_prompt(
@@ -1991,6 +1999,7 @@ class GeneralChatSkill(BaseSkill):
             normalized_query,
             context=context,
             session_state=session_state,
+            on_chunk=on_chunk,
         )
         if local is None:
             return None

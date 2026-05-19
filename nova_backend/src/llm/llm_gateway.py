@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Callable, Generator
 
 from src.llm.llm_manager import llm_manager
 
@@ -35,8 +36,13 @@ def generate_chat(
     max_tokens: int = 400,
     temperature: float = 0.3,
     timeout: float | None = None,
+    on_chunk: Callable[[str], None] | None = None,
 ) -> str | None:
-    """Centralized non-authorizing local model gateway (text in, text out)."""
+    """Centralized non-authorizing local model gateway (text in, text out).
+
+    If *on_chunk* is provided, streams tokens through the callback
+    for early UX delivery while still returning the complete text.
+    """
     del mode, safety_profile
 
     try:
@@ -48,9 +54,44 @@ def generate_chat(
             timeout=timeout,
             request_id=request_id,
             session_id=session_id,
+            on_chunk=on_chunk,
         )
     except Exception as error:
         logger.error("LLM gateway call failed: %s", error)
         return None
 
     return (response_text or "").strip() or None
+
+
+def generate_chat_stream(
+    prompt: str,
+    *,
+    mode: str,
+    safety_profile: str,
+    request_id: str,
+    session_id: str | None = None,
+    system_prompt: str | None = None,
+    max_tokens: int = 400,
+    temperature: float = 0.3,
+    timeout: float | None = None,
+) -> Generator[str, None, None]:
+    """Streaming variant of generate_chat for advisory LLM fallback.
+
+    Yields text chunks as they arrive from Ollama. Non-authorizing:
+    same gateway boundary as generate_chat.
+    """
+    del mode, safety_profile
+
+    try:
+        yield from llm_manager.generate_stream(
+            prompt,
+            system_prompt=system_prompt or "",
+            temperature=temperature,
+            max_tokens=max_tokens,
+            timeout=timeout,
+            request_id=request_id,
+            session_id=session_id,
+        )
+    except Exception as error:
+        logger.error("LLM gateway stream call failed: %s", error)
+        return
