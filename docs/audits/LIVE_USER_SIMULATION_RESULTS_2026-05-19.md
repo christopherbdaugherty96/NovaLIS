@@ -3,8 +3,7 @@
 Status:
 
 ```text
-post-PR #207 rerun complete -- Ollama model throughput confirmed
-as primary bottleneck
+three-point comparison complete -- streaming UX mitigation confirmed effective
 ```
 
 ---
@@ -325,6 +324,127 @@ This simulation did not:
 5. Concurrent WebSocket load regression test suite
 ```
 
-Items 2-5 are follow-up items. Each requires its own reviewed
-priority lock before implementation. Item 2 has a design doc
-but no runtime changes yet.
+Items 3-5 are follow-up items. Each requires its own reviewed
+priority lock before implementation.
+
+---
+
+## Post-PR #210 Results — Streaming LLM Fallback
+
+PR #210 implemented the streaming/early-frame LLM fallback proposed
+in the design doc. `chat_stream` WebSocket frames deliver tokens
+during advisory general-chat inference. The final assembled `chat`
+response is preserved unchanged.
+
+### Post-PR #210 metrics
+
+```text
+Personas:               20
+Turns:                  33
+Passes:                 27/33
+Responses received:     28/33
+Errors:                 0
+Timeouts:               6
+Confirmation prompts:   7
+Denial/cancel replies:  5
+Latency avg:            2451ms
+Latency median:         35ms
+Latency p95:            7114ms
+Latency max:            40748ms
+```
+
+### Three-point comparison
+
+| Metric | Baseline (#206) | Wait mitigation (#207) | Streaming (#210) |
+|---|---|---|---|
+| Passes | 24/32 (75.0%) | 25/32 (75.8%) | 27/33 (81.8%) |
+| Timeouts | 7 | 5 | 6 |
+| Errors | 1 | 2 | 0 |
+| Avg latency | 4381ms | 4086ms | 2451ms |
+| Median latency | 65ms | 29ms | 35ms |
+| p95 latency | 45016ms | 10053ms | 7114ms |
+| Max latency | 45017ms | 41209ms | 40748ms |
+| Confirmations | 7/7 | 7/7 | 7/7 |
+| Boundary enforcement | 5/5 | 5/5 | 5/5 |
+
+### Failure classification (6 remaining)
+
+| Category | Count | Queries |
+|---|---|---|
+| LLM queue saturation | 4 | Drew T2 (neural networks), Quinn T1 (math), Blake T1 (story), Frankie T2 (dinner) |
+| Stalled confirmation context | 2 | Gale T2/T3 (yes after email draft timeout) |
+
+### PR #210 verdict
+
+```text
+Impact:     measurable UX improvement
+Passes:     75% -> 82% (+6 points)
+Avg:        4381ms -> 2451ms (-44%)
+p95:        45016ms -> 7114ms (-84%)
+Errors:     1 -> 0
+
+Streaming does not reduce total Ollama inference time.
+It reduces perceived latency by delivering tokens as they arrive.
+The p95 drop from 45s to 7s is the most significant signal:
+turns that previously appeared frozen now show visible progress.
+```
+
+### Remaining bottleneck
+
+```text
+Ollama model-level inference serialization (unchanged).
+4/6 remaining failures are LLM queue saturation timeouts.
+2/6 are stalled confirmation-context edge cases.
+Streaming cannot fix Ollama throughput — only perceived wait.
+```
+
+### Governance integrity preserved
+
+```text
+Confirmation gates:     7/7 correct (unchanged across all 3 runs)
+Boundary enforcement:   5/5 correct (unchanged across all 3 runs)
+Governed action paths:  not modified by PR #210
+Approval-gate behavior: not modified by PR #210
+capability_locks.json:  not modified
+```
+
+---
+
+## Workstream Conclusion
+
+The everyday live-session reliability hardening cycle is complete
+for the current mitigation scope:
+
+```text
+measure  → PR #206 baseline simulation
+mitigate → PR #207 wait serialization (marginal)
+rerun    → confirmed Ollama as bottleneck
+design   → PR #209 streaming design doc
+mitigate → PR #210 streaming LLM fallback (effective)
+rerun    → confirmed UX improvement
+```
+
+### What was proven
+
+```text
+1. Streaming early-frame delivery improves perceived responsiveness.
+2. Governance remained intact across all three simulation runs.
+3. Ollama serialization is the hard ceiling Nova cannot fix.
+4. Further Nova-side streaming patches are not the next ROI step.
+```
+
+### Recommended next work
+
+```text
+1. DONE: PR #207 — wait serialization mitigation (marginal)
+2. DONE: PR #210 — streaming LLM fallback (effective)
+3. NEXT: Improve deterministic routing for news/weather/math
+         to avoid LLM fallback where possible (reduces Ollama load)
+4. Fix stalled confirmation-context timeouts if reproducible
+5. Multi-turn context persistence regression tests
+6. Concurrent WebSocket load regression test suite
+```
+
+Next highest ROI: route simple queries (math, news, weather) away
+from the local model wherever possible. This reduces pressure on
+Ollama instead of trying to make Ollama faster.
