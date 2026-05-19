@@ -56,10 +56,15 @@ Remaining lower-priority items:
 1. Gale confirmation-context edge case (test expectation, not runtime defect).
 2. LLM-dependent general-chat reliability (Drew multi-turn, Blake creative)
    — requires Ollama throughput or model swap, not Nova code changes.
-3. Multi-turn context persistence regression tests.
-4. Concurrent WebSocket load regression test suite.
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
+3. Multi-turn context continuity hardening (Issue #214).
+   Simulation: 22/36 passes, 0 timeouts. Deterministic routing and
+   confirmation safety work in multi-turn sessions. General-chat
+   continuity depends on Ollama throughput.
+   Results: docs/audits/MULTI_TURN_CONTEXT_SIMULATION_RESULTS_2026-05-19.md
+4. Mixed-request edge case simulation (planned next).
+5. Concurrent WebSocket load regression test suite.
+6. Do not expand capabilities or add Shopify/website workflows.
+7. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ---
@@ -136,17 +141,13 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Current Open Follow-Ups
 
-### Everyday live-session reliability — ACTIVE
+### Everyday live-session reliability — COMPLETE
 
 Status:
 
 ```text
-streaming UX mitigation proven effective
-PR #211 deterministic routing merged
-PR #212 test-fake compatibility fixed
-post-PR #211 simulation showed no overall score gain
-remaining bottleneck: Ollama model-level inference serialization plus session_handler ordering
-next ROI: move recognized deterministic handlers before ambient clarification
+Complete (2026-05-19). 75% → 97% passes, 7 → 0 timeouts.
+PRs #206-#213 merged.
 ```
 
 Tracker:
@@ -155,10 +156,28 @@ Tracker:
 Issue #208 — Everyday reliability next steps after live-user simulation
 ```
 
-Next step:
+### Multi-turn context continuity — EVIDENCE CAPTURED
+
+Status:
 
 ```text
-Fix session_handler routing order so recognized news/weather/time/math handlers run before ambient clarification. This is a routing-order change, not a capability expansion.
+Simulation run (2026-05-19). 22/36 passes, 0 timeouts, 0 errors.
+Deterministic routing, confirmation safety, and boundary enforcement
+work in multi-turn sessions. General-chat continuity depends on
+Ollama throughput (same bottleneck as reliability cycle).
+```
+
+Tracker:
+
+```text
+Issue #214 — Multi-turn context continuity hardening
+```
+
+Results:
+
+```text
+docs/audits/MULTI_TURN_CONTEXT_SIMULATION_RESULTS_2026-05-19.md
+nova_backend/tests/simulations/multi_turn_context_simulation.py
 ```
 
 ### Approval gate wiring — CLOSED OUT
