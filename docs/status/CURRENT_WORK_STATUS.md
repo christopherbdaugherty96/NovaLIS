@@ -585,6 +585,26 @@ only recovery evidence remains pending for Cap 22
 no runtime changes
 ```
 
+### Recovery evidence for Cap 22 and Cap 64
+
+Status:
+
+```text
+merged — PR #203
+```
+
+Result:
+
+```text
+added 3 recovery tests proving pending confirmation does not survive
+WebSocket disconnect:
+  test_cap22_disconnect_clears_pending_state
+  test_cap64_disconnect_clears_pending_state
+  test_new_session_can_still_create_fresh_pending
+closes the last remaining evidence gap for both operator journeys
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
