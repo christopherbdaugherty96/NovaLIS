@@ -567,6 +567,24 @@ duplicate-yes non-double-execution covered
 no runtime changes
 ```
 
+### Cap 22 live proof and receipt evidence
+
+Status:
+
+```text
+merged — PR #201
+```
+
+Result:
+
+```text
+recorded live WebSocket proof for Cap 22 open_file_folder
+approval test: Documents folder opened after confirmation, receipt verified
+denial test: Downloads open denied with "no", no new receipt created
+only recovery evidence remains pending for Cap 22
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through

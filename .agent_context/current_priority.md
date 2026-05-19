@@ -85,6 +85,7 @@ PR #197 — Duplicate-yes non-double-execution tests merged.
 PR #198 — Cap 64 full live checklist evidence and status sync merged.
 PR #199 — Certification matrix evidence sync merged.
 PR #200 — Cap 22 automated evidence (23 tests) merged.
+PR #201 — Cap 22 live proof and receipt evidence merged.
 ```
 
 ## Recent closed / not merged truth

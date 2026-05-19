@@ -84,6 +84,7 @@ PR #197 — Duplicate-yes non-double-execution tests merged.
 PR #198 — Cap 64 full live checklist evidence and status sync merged.
 PR #199 — Certification matrix evidence sync merged.
 PR #200 — Cap 22 automated evidence (23 tests) merged.
+PR #201 — Cap 22 live proof and receipt evidence merged.
 ```
 
 ---
@@ -124,8 +125,8 @@ Cap 64 duplicate-yes test: added (PR #197, 134 total tests).
 Cap 64 remaining gap: recovery evidence only.
 Cap 64 P5: pending (recovery decision needed).
 Cap 22 automated evidence: captured (PR #200, 23 tests, 0 failures).
-Cap 22 live proof: pending (PR #201 in CI).
-Cap 22 remaining gaps: live proof, receipt evidence, recovery evidence.
+Cap 22 live proof: captured (PR #201, approval + denial + receipt).
+Cap 22 remaining gap: recovery evidence only.
 Cap 22 lock: not locked / not globally certified.
 Full approval-gate certification: pending.
 ```
