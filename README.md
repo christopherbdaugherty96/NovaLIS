@@ -68,6 +68,7 @@ Latest proof package:
 - [Friction Log](docs/demo_proof/2026-04-28_user_test/FRICTION_LOG.md)
 - [Screenshot Checklist](docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST.md)
 - [Recorded Demo Flow](docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm)
+- [Live User Simulation Results — 2026-05-19](docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md)
 
 Recent local-first proof captures:
 
@@ -77,7 +78,13 @@ Recent local-first proof captures:
 
 ![Nova memory authority boundary](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png)
 
-Current proof verdict: the local demo path mostly works, but Nova is not a finished consumer product. Recent work has shifted the active priority toward runtime-truth synchronization, governance/status alignment, OpenClaw hardening follow-through, and operational coherence before new capability expansion.
+Current proof verdict:
+
+```text
+Governance paths are now strongly evidenced for the current confirmation-bound scope.
+Everyday live-session reliability under concurrent load remains the active workstream.
+Nova is not yet a finished consumer product.
+```
 
 ## Current Status
 Version 0.5 Alpha is a technical-user / early-adopter state, not a finished mainstream release.
@@ -90,11 +97,14 @@ Current grounded status:
 - active runtime capabilities exist
 - active != certified != locked
 - Cap 16 web search is certification-locked
-- Cap 64 email draft remains local mailto draft only, not autonomous email send
+- Cap 22 open_file_folder is approval-gate certified for current scope, not P1-P5 locked
+- Cap 64 send_email_draft is approval-gate certified for current scope and remains local mailto draft only
 - Cap 65 Shopify intelligence remains read-only, not Shopify writes
 - OpenClaw exists as runtime code with bounded/manual-first execution surfaces
 - PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
-- generated runtime docs are current as of 2026-05-12
+- PR #206 merged a real live-user simulation baseline
+- PR #207 merged the first Ollama wait-serialization mitigation
+- generated runtime docs are current as of the latest recorded drift check
 ```
 
 For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
@@ -108,10 +118,15 @@ For the consolidated roadmap and positioning update, use [Repo Sync And Roadmap 
 Current active task:
 
 ```text
-#141 live proof — COMPLETE (2026-05-14).
-Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
-Approval gate wiring priority lock — ACTIVE (2026-05-15).
-Next: review the lock, then implement approval gate wiring in a separate scoped branch.
+Approval-gate certification lane — COMPLETE / closed (2026-05-19).
+
+Current active workstream:
+Everyday live-session reliability hardening.
+
+Next:
+Rerun the exact same 20-persona live-user simulation after PR #207 and compare exact metrics against the PR #206 baseline.
+
+Do not expand capabilities or start Shopify/website workflows yet.
 ```
 
 ## Future Directions
