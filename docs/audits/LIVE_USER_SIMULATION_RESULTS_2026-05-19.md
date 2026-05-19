@@ -3,7 +3,8 @@
 Status:
 
 ```text
-first run complete -- reliability gaps identified
+post-PR #207 rerun complete -- Ollama model throughput confirmed
+as primary bottleneck
 ```
 
 ---
@@ -87,6 +88,98 @@ Latency max:            3165ms
 A parallel manual run reproduced the same qualitative pattern:
 fast deterministic/governed paths were reliable, while Ollama-dependent
 general-chat turns timed out under concurrent load.
+
+---
+
+## Post-PR #207 Rerun Results
+
+PR #207 merged per-thread model HTTP sessions and a lightweight
+`status: thinking` WebSocket frame. The exact same simulation was
+rerun on the same machine, same model, same script, same concurrency.
+
+### Post-PR #207 metrics
+
+```text
+Personas:               20
+Turns:                  32
+Passes:                 25/32
+Responses received:     26/32
+Errors:                 2
+Timeouts:               5
+Confirmation prompts:   7
+Denial/cancel replies:  5
+Latency avg:            4086ms
+Latency median:         29ms
+Latency p95:            10053ms
+Latency max:            41209ms
+```
+
+### Before / after comparison
+
+| Metric | Baseline (PR #206) | Post-PR #207 | Delta |
+|---|---|---|---|
+| Passes | 24/32 | 25/32 | +1 |
+| Responses received | 25/32 | 26/32 | +1 |
+| Errors | 1 | 2 | +1 worse |
+| Timeouts | 7 | 5 | -2 better |
+| Latency avg | 240ms | 4086ms | +3846ms worse |
+| Latency median | 65ms | 29ms | -36ms better |
+| Latency p95 | 471ms | 10053ms | +9582ms worse |
+| Latency max | 3165ms | 41209ms | +38044ms worse |
+
+### Failure classification
+
+| Persona | Turn | Failure | Root cause |
+|---|---|---|---|
+| Drew | 2 ("tell me more") | TIMEOUT 45s | Ollama/model throughput |
+| Quinn | 1 ("247 times 38") | TIMEOUT 45s | Ollama/model throughput |
+| Blake | 1 ("bedtime story") | TIMEOUT 45s | Ollama/model throughput |
+| Frankie | 2 ("what's for dinner") | TIMEOUT 45s | Ollama/model throughput |
+| Gale | 2 ("yes" after draft) | TIMEOUT 45s | Ollama/model throughput |
+| Harper | 0 (connect) | CONNECTION ERROR | WebSocket lifecycle / saturation |
+| Jules | 0 (connect) | CONNECTION ERROR | WebSocket lifecycle / saturation |
+
+5/7 failures: Ollama/model throughput.
+2/7 failures: WebSocket connection rejected under Ollama saturation.
+
+### PR #207 verdict
+
+```text
+Impact:     marginal
+Timeouts:   7 -> 5 (slight improvement)
+Passes:     24 -> 25 (one more turn succeeded)
+Median:     65ms -> 29ms (fast-path turns faster)
+
+But avg/p95/max latency got dramatically worse because turns that
+did succeed under load took much longer before completing.
+
+New failure mode: 2 WebSocket connection errors (Harper, Jules)
+from server saturation during heavy Ollama batches.
+
+Nova-side thread pooling helped deterministic paths but cannot fix
+Ollama model-level request serialization.
+```
+
+### Confirmed bottleneck
+
+```text
+Ollama model-level inference serialization.
+Ollama processes one inference request at a time.
+Under concurrent WebSocket sessions, LLM-dependent turns queue
+at the Ollama level, causing 30-45s timeouts and cascading
+connection failures for later batches.
+This is not a Nova code problem. It is an Ollama architecture
+constraint.
+```
+
+### Highest-ROI next mitigation
+
+```text
+Streaming inference with early-frame delivery.
+Change /api/chat from stream:false to stream:true for advisory
+LLM fallback only. Send first chunk to WebSocket client as soon
+as it arrives. Does not bypass governance gates.
+```
 
 ---
 
@@ -224,12 +317,14 @@ This simulation did not:
 ## Recommended Follow-Up
 
 ```text
-1. Ollama timeout mitigation (inference queue, streaming, timeout config)
-2. News/weather routing phrase coverage expansion
-3. Confirmation-edge timeout UX (loading indicator or status message)
+1. DONE: PR #207 -- Nova-side wait serialization mitigation (marginal)
+2. NEXT: Streaming/early-frame mitigation for advisory LLM fallback
+         Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
+3. News/weather routing phrase coverage expansion
 4. Multi-turn context persistence regression tests
 5. Concurrent WebSocket load regression test suite
 ```
 
-These are follow-up items, not runtime changes. Each requires its
-own reviewed priority lock before implementation.
+Items 2-5 are follow-up items. Each requires its own reviewed
+priority lock before implementation. Item 2 has a design doc
+but no runtime changes yet.

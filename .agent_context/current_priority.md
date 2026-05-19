@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Everyday live-session reliability hardening — post-mitigation rerun required (2026-05-19).
+Everyday live-session reliability hardening — streaming design proposed (2026-05-19).
 ```
 
 Previous closed lane:
@@ -16,15 +16,14 @@ Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
 Status:
 
 ```text
-Live user simulation baseline (20 personas, 32 turns) captured and documented.
-Governance paths confirmed strong. Everyday reliability gaps identified:
-Ollama timeout, news/weather routing, multi-turn context, confirmation-edge timing.
-
-PR #206 merged the baseline simulation harness and results.
-PR #207 merged the first Ollama wait-serialization mitigation.
-Issue #208 tracks the detailed next-step sequence.
+Baseline simulation: 24/32 passes, 7 timeouts (PR #206).
+Post-PR #207 rerun: 25/32 passes, 5 timeouts, 2 connection errors.
+PR #207 verdict: marginal improvement, not a material fix.
+Confirmed bottleneck: Ollama model-level inference serialization.
+Streaming LLM fallback design proposed, not yet implemented.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
+Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
 Script: nova_backend/tests/simulations/live_user_simulation.py
 Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 ```
@@ -32,9 +31,9 @@ Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 Scope:
 
 ```text
-baseline simulation merged
-first narrow runtime mitigation merged
-post-mitigation rerun pending
+post-PR #207 rerun results recorded
+streaming design proposed (not implemented)
+no runtime changes in this PR
 no capability expansion
 no authority expansion
 capability_locks.json not modified
@@ -171,14 +170,14 @@ Most other active capabilities — certification lock phases pending.
 ```text
 1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
 2. Everyday live-session reliability hardening is the active workstream.
-3. Rerun the exact same live-user simulation after PR #207:
-   python -u -m tests.simulations.live_user_simulation
-4. Do not change personas, prompts, timeout, model, machine, or concurrency.
-5. Compare exact post-mitigation metrics against the PR #206 baseline.
-6. Classify every failed or timed-out turn before proposing another patch.
-7. Per-capability P5/lock decisions remain separate and pending.
-8. Do not expand capabilities or add Shopify/website workflows.
-9. Do not reopen the approval-gate lane unless registry truth changes.
+3. Post-PR #207 rerun complete. PR #207 = marginal improvement.
+4. Confirmed bottleneck: Ollama model-level inference serialization.
+5. Streaming LLM fallback design proposed, not yet implemented.
+6. Next: implement streaming design as a separate reviewed PR.
+7. Then rerun the same simulation to verify improvement.
+8. Per-capability P5/lock decisions remain separate and pending.
+9. Do not expand capabilities or add Shopify/website workflows.
+10. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary

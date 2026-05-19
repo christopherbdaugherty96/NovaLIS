@@ -7,22 +7,24 @@ Last reviewed: 2026-05-19
 ## Current Active Task
 
 ```text
-Everyday live-session reliability hardening — post-mitigation rerun required (2026-05-19).
+Everyday live-session reliability hardening — streaming design proposed (2026-05-19).
 ```
 
 Result so far:
 
 ```text
-Live user simulation baseline (20 personas, 32 turns) captured and documented.
-Governance paths confirmed strong. Everyday reliability gaps identified:
-Ollama timeout under concurrent load, news/weather routing phrase
-sensitivity, multi-turn context fragility.
+Baseline simulation: 24/32 passes, 7 timeouts (PR #206).
+Post-PR #207 rerun: 25/32 passes, 5 timeouts, 2 connection errors.
+PR #207 verdict: marginal improvement, not a material fix.
+Confirmed bottleneck: Ollama model-level inference serialization.
+Streaming LLM fallback design proposed (not yet implemented).
 
 PR #206 merged the baseline simulation harness and results.
 PR #207 merged the first Ollama wait-serialization mitigation.
 Issue #208 tracks the detailed next-step sequence.
 
 Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
+Design: docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19.md
 Script: nova_backend/tests/simulations/live_user_simulation.py
 Tracker: https://github.com/christopherbdaugherty96/NovaLIS/issues/208
 ```
@@ -38,13 +40,11 @@ capability_locks.json intentionally not modified (separate P1-P5 process).
 Next correct step:
 
 ```text
-1. Rerun the exact same live-user simulation after PR #207:
-   python -u -m tests.simulations.live_user_simulation
-2. Do not change personas, prompts, timeout, model, machine, or concurrency.
-3. Compare exact post-mitigation metrics against the PR #206 baseline:
-   passes, responses received, errors, timeouts, latency avg/median/p95/max.
-4. Classify every failed or timed-out turn before proposing another patch.
-5. Do not expand capabilities or add Shopify/website workflows yet.
+1. Post-PR #207 rerun complete. Results recorded.
+2. Streaming LLM fallback design proposed (not yet implemented).
+3. Next: implement streaming design as a separate reviewed PR.
+4. Then rerun the same simulation to verify improvement.
+5. Do not expand capabilities or add Shopify/website workflows.
 6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
