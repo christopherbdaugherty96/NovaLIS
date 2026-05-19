@@ -81,7 +81,7 @@ PR #192 — Cap 64 operator journey proof scaffold merged.
 PR #193 — Cap 22 operator journey proof scaffold merged.
 PR #195 — Cap 64 automated evidence capture merged.
 PR #196 — Cap 64 live mailto proof and receipt evidence merged.
-PR #197 — Duplicate-yes non-double-execution tests (pending CI).
+PR #197 — Duplicate-yes non-double-execution tests merged.
 ```
 
 ## Recent closed / not merged truth

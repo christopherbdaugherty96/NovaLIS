@@ -502,7 +502,7 @@ no runtime changes
 Status:
 
 ```text
-pending CI — PR #197
+merged — PR #197
 ```
 
 Result:
