@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import ipaddress
+import json
 import socket
 import threading
 from dataclasses import dataclass
 from time import time
+from typing import Generator
 from urllib.parse import urlparse
 
 import requests
@@ -139,3 +141,73 @@ class ModelNetworkMediator:
             },
         )
         return ModelResponse(status_code=response.status_code, data=payload if isinstance(payload, dict) else {})
+
+    def request_stream(
+        self,
+        *,
+        url: str,
+        json_payload: dict,
+        timeout: float = 30.0,
+        request_id: str | None = None,
+        session_id: str | None = None,
+    ) -> Generator[str, None, None]:
+        """Stream text chunks from a local model endpoint.
+
+        Same validation, rate-limiting, and ledger discipline as
+        request_json. Yields decoded text fragments from Ollama's
+        streaming JSON-lines format. Logs a single MODEL_NETWORK_CALL
+        on completion (not per-chunk).
+        """
+        self._check_rate_limit()
+        self._validate_url(url)
+        correlation: dict[str, str] = {}
+        if request_id:
+            correlation["request_id"] = request_id
+        if session_id:
+            correlation["session_id"] = session_id
+
+        try:
+            response = self._request_session().post(
+                url,
+                json=json_payload,
+                timeout=timeout,
+                stream=True,
+            )
+            response.raise_for_status()
+        except Exception as error:
+            self._ledger.log_event(
+                "MODEL_NETWORK_CALL_FAILED",
+                {"url": url, "method": "POST", "error": str(error),
+                 **correlation},
+            )
+            raise ModelNetworkMediatorError(str(error)) from error
+
+        try:
+            for raw_line in response.iter_lines(decode_unicode=True):
+                if not raw_line:
+                    continue
+                try:
+                    chunk = json.loads(raw_line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                text = (chunk.get("message") or {}).get("content") or ""
+                if text:
+                    yield text
+        except Exception as error:
+            self._ledger.log_event(
+                "MODEL_NETWORK_CALL_FAILED",
+                {"url": url, "method": "POST",
+                 "error": f"stream read: {error}", **correlation},
+            )
+            raise ModelNetworkMediatorError(
+                f"stream read: {error}"
+            ) from error
+        finally:
+            response.close()
+
+        self._ledger.log_event(
+            "MODEL_NETWORK_CALL",
+            {"url": url, "method": "POST",
+             "status_code": response.status_code, "streamed": True,
+             **correlation},
+        )
