@@ -461,6 +461,59 @@ Cap 22 remains not locked / not globally certified
 no runtime changes
 ```
 
+### Cap 64 automated evidence capture
+
+Status:
+
+```text
+merged — PR #195
+```
+
+Result:
+
+```text
+recorded automated evidence in Cap 64 proof scaffold
+132 tests, 0 failures across 8 test files
+scenarios A–D covered with automated assertions
+no runtime changes
+```
+
+### Cap 64 live mailto proof and receipt evidence
+
+Status:
+
+```text
+merged — PR #196
+```
+
+Result:
+
+```text
+recorded live mailto proof for one WebSocket draft request
+receipt endpoint evidence captured from running Nova instance
+live ledger sequence confirmed
+Codex P2 fix applied: narrowed claims to one request, listed remaining
+live checklist items
+no runtime changes
+```
+
+### Duplicate-yes non-double-execution tests
+
+Status:
+
+```text
+pending CI — PR #197
+```
+
+Result:
+
+```text
+added test_session_duplicate_yes_does_not_double_execute_cap64
+added test_session_duplicate_yes_does_not_double_execute_cap22
+134 total tests pass across Cap 64 suite
+no runtime changes
+```
+
 ---
 
 ## Closed / Unmerged Follow-Through
