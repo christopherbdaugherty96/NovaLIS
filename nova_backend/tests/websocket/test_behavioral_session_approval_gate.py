@@ -282,6 +282,78 @@ def test_session_cancel_clears_pending_without_execution(monkeypatch):
     assert any("Cancelled pending action." in message for message in _chat_messages(ws))
 
 
+def test_session_duplicate_yes_does_not_double_execute_cap64(monkeypatch):
+    """A second 'yes' after the pending action is already consumed must not
+    trigger a second governed invocation.  This closes the duplicate-yes
+    evidence gap in the Cap 64 proof scaffold."""
+    calls: list[tuple[int, dict]] = []
+    ledger = _RecordingLedger()
+    _install_session_gate_baseline(
+        monkeypatch,
+        {
+            "draft email": Invocation(
+                capability_id=64,
+                params={"to": "test@example.com", "subject": "Duplicate yes test"},
+            )
+        },
+    )
+
+    async def _fake_invoke(_governor, capability_id: int, params: dict):
+        calls.append((capability_id, dict(params)))
+        ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
+        ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
+        return ActionResult.ok("Draft opened.", request_id="dup-yes-cap64")
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke)
+
+    ws = _ScriptedWebSocket(["draft email", "yes", "yes"])
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="I'm here when you're ready.",
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    # The first "yes" should have consumed the pending action — exactly one invocation.
+    assert len(calls) == 1
+    assert calls[0][0] == 64
+    assert calls[0][1]["confirmed"] is True
+
+    # Ledger must show exactly one ACTION_ATTEMPTED and one ACTION_COMPLETED.
+    assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
+    assert _event_types(ledger).count("ACTION_COMPLETED") == 1
+
+
+def test_session_duplicate_yes_does_not_double_execute_cap22(monkeypatch):
+    """Same duplicate-yes protection test for Cap 22."""
+    calls: list[tuple[int, dict]] = []
+    ledger = _RecordingLedger()
+    _install_session_gate_baseline(
+        monkeypatch,
+        {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
+    )
+
+    async def _fake_invoke(_governor, capability_id: int, params: dict):
+        calls.append((capability_id, dict(params)))
+        ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
+        ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
+        return ActionResult.ok("Opened.", request_id="dup-yes-cap22")
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke)
+
+    ws = _ScriptedWebSocket(["open documents", "yes", "yes"])
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="I'm here when you're ready.",
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(calls) == 1
+    assert calls[0][0] == 22
+    assert calls[0][1]["confirmed"] is True
+    assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
+    assert _event_types(ledger).count("ACTION_COMPLETED") == 1
+
+
 def test_session_unrelated_input_cancels_pending_without_execution(monkeypatch):
     calls: list[tuple[int, dict]] = []
     ledger = _RecordingLedger()
