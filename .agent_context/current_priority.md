@@ -218,6 +218,12 @@ Most other active capabilities — certification lock phases pending.
    Live simulation with config fix: 25/30 passes (83%), 0 crashes.
    Remaining: CPU-only inference on 8 GB is a hardware limit.
    Config fix results: docs/audits/NUM_CTX_CONFIG_FIX_RESULTS_2026-05-20.md
+   e. OLLAMA_NUM_PREDICT=256 perf tuning → code committed.
+      Direct Ollama perf test: 36s @ pred=256 vs 56s @ pred=512 (~40% faster).
+      gemma2:2b 2x faster than phi3:mini in every config tested.
+      Benchmark OOM-killed on 8 GB during full run (hardware limit).
+      Partial results: real responses produced within 55-72s (45s timeout
+      too tight for CPU-only). No code issue remains.
 8. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
    b. Browser/search boundary-routing clarity (Issue #215).
