@@ -185,7 +185,7 @@ Current lock truth:
 Cap 16 — P1-P5 passed / locked (2026-05-10).
 Cap 22 — P1-P5 passed / locked (2026-05-20). 60 evidence-chain tests, 0 failures.
 Cap 64 — P1-P5 passed / locked (2026-05-20). 113 tests, 0 failures.
-Cap 65 — P1-P4 passed / P5 pending / not locked.
+Cap 65 — P1-P4 passed / P5 blocked (Issue #216) / not locked. 84 tests pass.
 Most other active capabilities — certification lock phases pending.
 ```
 
@@ -198,9 +198,10 @@ Most other active capabilities — certification lock phases pending.
 #208 — closed (everyday reliability complete).
 #214 — Multi-turn context continuity hardening (evidence captured).
 #215 — closed (boundary clarity fixed, commit 2485761).
+#216 — Cap 65 P5 live proof blocked by missing Shopify dev-store credentials.
 ```
 
-Open issues: #142, #143, #214. All others closed.
+Open issues: #142, #143, #214, #216. All others closed.
 
 ## Next correct sequence
 
