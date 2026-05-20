@@ -267,6 +267,28 @@ Hardware upgrade profiles documented.
 Doc: docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20.md
 ```
 
+### #216 — Cap 65 P5 live proof blocked
+
+Status:
+
+```text
+P1-P4 pass (84 tests). P5 blocked — no Shopify dev-store credentials.
+```
+
+Blocker:
+
+```text
+NOVA_SHOPIFY_SHOP_DOMAIN and NOVA_SHOPIFY_ACCESS_TOKEN not set.
+Need free Shopify Partner account + dev store + custom app with
+read_orders + read_products scopes.
+```
+
+Checklist:
+
+```text
+docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report.md
+```
+
 ### #142 — RS-2 capability list truncation
 
 Status:
