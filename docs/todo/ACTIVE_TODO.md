@@ -8,7 +8,7 @@ Last reviewed: 2026-05-20
 
 ```text
 No active workstream. All major lanes closed (2026-05-20).
-Next decision: Cap 22 / Cap 64 P5 lock review.
+Next decision: Cap 65 P5 lock review (only remaining unlocked active capability).
 ```
 
 Previous completed:
@@ -168,6 +168,7 @@ PR #213 — Handler ordering: deterministic commands before ambient clarificatio
 4fc28f3 — OLLAMA_NUM_PREDICT configurable via env var merged.
 74f09b6 — Hardware profiles and fast-local default documented.
 2485761 — Issue #215 browser/search/purchase boundary clarity fix merged.
+7fd8e19 — Cap 64 send_email_draft P5 locked (bookkeeping correction).
 ```
 
 ---
