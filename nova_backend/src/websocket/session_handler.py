@@ -67,10 +67,12 @@ def governance_refusal_for(text: str) -> str:
         )
     browser_action = re.search(
         r"\b(?:open|launch|control|click|use|operate|automate|browse)\b.{0,50}"
-        r"\b(?:browser|computer-use|computer use|tabs?|screen control)\b",
+        r"\b(?:browser|computer-use|computer use|tabs?|screen control"
+        r"|chrome|firefox|edge|safari|opera|brave|vivaldi)\b",
         normalized,
     ) or re.search(
-        r"\b(?:browser|computer-use|computer use|tabs?)\b.{0,50}"
+        r"\b(?:browser|computer-use|computer use|tabs?"
+        r"|chrome|firefox|edge|safari|opera|brave|vivaldi)\b.{0,50}"
         r"\b(?:open|launch|control|click|operate|automate)\b",
         normalized,
     )
@@ -78,6 +80,20 @@ def governance_refusal_for(text: str) -> str:
         return (
             "Blocked: browser/computer-use expansion is not approved here. "
             "No browser action was performed and no authority was granted."
+        )
+    # Compound purchase/buy requests — catch "buy X", "purchase X",
+    # "order X" without requiring a specific external-system target noun.
+    if re.search(
+        r"\b(?:buy|purchase|order|checkout|add to cart)\b",
+        normalized,
+    ) and re.search(
+        r"\b(?:open|launch|search|browse|find|go to|visit)\b",
+        normalized,
+    ):
+        return (
+            "Blocked: Nova cannot open browsers or make purchases. "
+            "No purchase was made and no authority was granted. "
+            "If you'd like help researching a topic, ask for a search separately."
         )
     if re.search(r"\b(?:autonomous|background workflow|run on its own|keep running)\b", normalized):
         return (
