@@ -3,14 +3,18 @@
 Current active task:
 
 ```text
-Everyday live-session reliability hardening — complete (2026-05-19).
+No active workstream. All major lanes closed (2026-05-20).
+Next decision: Cap 22 / Cap 64 P5 lock review.
 ```
 
-Previous closed lane:
+Closed lanes (most recent first):
 
 ```text
-Approval gate wiring — certified for current scope (2026-05-19).
-Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
+Issue #215 boundary clarity — fixed (2026-05-20, commit 2485761).
+Local LLM tuning — complete (2026-05-20). Fast-local default applied.
+Conversation quality — complete (2026-05-20). Hardware limit reached.
+Everyday reliability — complete (2026-05-19). 75% → 97%.
+Approval gate — certified for current scope (2026-05-19).
 ```
 
 Status:
@@ -114,6 +118,13 @@ PR #210 — Streaming LLM fallback for advisory general-chat path merged.
 PR #211 — Deterministic routing for math/news/weather merged.
 PR #212 — on_chunk test-fake compatibility fix merged.
 PR #213 — Handler ordering: deterministic commands before ambient clarification merged.
+9eb9984 — OLLAMA_NUM_CTX configurable via env var merged.
+4fc28f3 — OLLAMA_NUM_PREDICT configurable via env var merged.
+4bd035a — num_predict perf tuning and model cleanup results documented.
+74f09b6 — Hardware profiles and fast-local default documented.
+c945f0f — pred=256 benchmark result added to hardware profiles.
+2485761 — Issue #215 browser/search/purchase boundary clarity fix merged.
+4047a34 — Issue #215 continuity doc sync merged.
 ```
 
 ## Recent closed / not merged truth
@@ -180,14 +191,15 @@ Most other active capabilities — certification lock phases pending.
 ## Open carried-forward follow-ups
 
 ```text
-#141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
+#141 — closed.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
-#208 — Everyday reliability hardening complete (2026-05-19).
+#208 — closed (everyday reliability complete).
 #214 — Multi-turn context continuity hardening (evidence captured).
+#215 — closed (boundary clarity fixed, commit 2485761).
 ```
 
-#141 is closed. #208 is complete. #214 is the new usability evidence lane.
+Open issues: #142, #143, #214. All others closed.
 
 ## Next correct sequence
 
