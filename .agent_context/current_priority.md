@@ -224,6 +224,9 @@ Most other active capabilities — certification lock phases pending.
       Benchmark OOM-killed on 8 GB during full run (hardware limit).
       Partial results: real responses produced within 55-72s (45s timeout
       too tight for CPU-only). No code issue remains.
+   f. Fast-local default applied: ctx=2048, pred=128 (~19s first turn).
+      Hardware upgrade profiles documented for 16 GB/GPU and 32+ GB.
+      Doc: docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20.md
 8. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
    b. Browser/search boundary-routing clarity (Issue #215).
