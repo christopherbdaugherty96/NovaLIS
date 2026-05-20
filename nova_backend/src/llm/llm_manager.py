@@ -14,6 +14,7 @@ from src.nova_config import (
     OLLAMA_FALLBACK_MODEL,
     OLLAMA_MODEL,
     OLLAMA_NUM_CTX,
+    OLLAMA_NUM_PREDICT,
     OLLAMA_TIMEOUT,
     OLLAMA_URL,
 )
@@ -79,7 +80,7 @@ class LLMManager:
         # Stable inference parameters (these become part of the version hash)
         self.default_options = {
             "temperature": 0.7,
-            "num_predict": 512,
+            "num_predict": OLLAMA_NUM_PREDICT,
             "num_ctx": OLLAMA_NUM_CTX,
             "top_k": 50,
             "repeat_penalty": 1.1,
