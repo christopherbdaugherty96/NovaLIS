@@ -181,8 +181,8 @@ active != certified != locked
 Current lock truth:
 
 ```text
-Cap 16 — P1-P5 passed / locked.
-Cap 64 — P1-P4 passed / P5 pending / approval-gate certified / not locked.
+Cap 16 — P1-P5 passed / locked (2026-05-10).
+Cap 64 — P1-P5 passed / locked (2026-05-20). 113 tests, 0 failures.
 Cap 22 — approval-gate certified / P1-P5 pending in locks file / not locked.
 Cap 65 — P1-P4 passed / P5 pending / not locked.
 Most other active capabilities — certification lock phases pending.
