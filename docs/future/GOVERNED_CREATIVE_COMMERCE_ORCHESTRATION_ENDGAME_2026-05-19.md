@@ -5,6 +5,34 @@ Status: Future direction / endgame framing only
 
 ---
 
+## Runtime Truth Boundary
+
+This document is not runtime truth.
+
+The authoritative current runtime truth remains:
+
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+
+As of the current generated runtime state, Nova has Cap 65 `shopify_intelligence_report` as a Tier 1 read-only Shopify store intelligence capability.
+
+Cap 65 does not authorize Shopify writes.
+
+This document must not be used to claim that Nova can currently:
+
+- publish Shopify products
+- edit Shopify products
+- change prices
+- change collections
+- send customer messages
+- run ad campaigns
+- post to social channels
+- issue refunds
+- operate a business in the background
+
+All of that remains future-direction only unless explicitly implemented, capability-registered, governed, tested, documented, and approved through runtime truth.
+
+---
+
 ## Purpose
 
 Document a future NovaLIS endgame direction for governed creative and commerce operations.
@@ -131,6 +159,27 @@ High-risk actions should remain blocked or require stronger approvals:
 
 ---
 
+## Minimum Implementation Requirements Before Any Future Writes
+
+Before Nova can perform any customer-facing or external-effect commerce action, all of the following must exist:
+
+1. explicit capability registration for the specific action class
+2. authority classification for the capability
+3. GovernorMediator routing
+4. ExecuteBoundary enforcement
+5. NetworkMediator routing for outbound HTTP where applicable
+6. confirmation policy appropriate to risk
+7. ledger entry for every attempted action
+8. visible review packet before execution
+9. rollback or recovery notes where possible
+10. tests proving refusal for out-of-scope requests
+11. docs distinguishing implemented behavior from future direction
+12. generated runtime truth reflecting the implementation
+
+If any of these are missing, the action must remain draft/recommendation-only.
+
+---
+
 ## Correct Pattern
 
 The desired future architecture is:
@@ -208,6 +257,22 @@ But Nova should not autonomously:
 - make legal claims
 - fake proof
 - mutate public brand surfaces without approval
+
+---
+
+## Current/Future Split
+
+Current Nova Shopify posture:
+
+- read-only Shopify intelligence/reporting through Cap 65
+- no Shopify writes
+- no autonomous commerce operation
+
+Future possible posture:
+
+- governed draft/review workflows first
+- narrow approved write capabilities only after capability-specific implementation and verification
+- no broad business autonomy
 
 ---
 
