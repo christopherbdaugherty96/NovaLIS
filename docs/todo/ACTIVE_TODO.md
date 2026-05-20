@@ -60,11 +60,17 @@ Remaining lower-priority items:
      c. num_ctx=32768 → inference too slow, 17/19 timeouts
      d. OLLAMA_NUM_CTX=4096 config fix → 6/29 passes (20.7%), 1 STRONG
    .env: OLLAMA_MODEL=gemma2:2b, OLLAMA_FALLBACK_MODEL=phi3:mini,
-         OLLAMA_NUM_CTX=4096
+         OLLAMA_NUM_CTX=4096, OLLAMA_NUM_PREDICT=256
    Code: nova_config.py + llm_manager.py + .env.example updated.
-   Tests: 3 new tests (test_llm_manager_num_ctx_config.py), all pass.
+   Tests: 6 tests (3 num_ctx + 3 num_predict), all pass.
    Live simulation: 25/30 passes (83%), 0 server crashes.
    Remaining bottleneck: CPU-only inference on 8 GB (hardware limit).
+   Performance tuning (2026-05-20):
+     Direct Ollama perf test across 8 configs:
+       gemma2:2b ctx=4096 pred=256: 36.0s / 1161 chars (best balance)
+       gemma2:2b ctx=4096 pred=512: 56.6s / 1064 chars (baseline)
+       gemma2:2b ~2x faster than phi3:mini in every config.
+     OLLAMA_NUM_PREDICT=256 committed. Oversized models deleted (18.7 GB freed).
    Benchmark: nova_backend/tests/simulations/conversation_quality_benchmark.py
    Results: docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19.md
    Comparison: docs/audits/CONVERSATION_MODEL_COMPARISON_RESULTS_2026-05-19.md
