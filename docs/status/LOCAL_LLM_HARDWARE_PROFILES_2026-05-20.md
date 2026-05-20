@@ -172,7 +172,7 @@ Stage                           Pass rate   Notes
 gemma4:e4b (OOM)                0/31 (0%)   Model never loaded
 gemma2:2b, ctx=32768            1/19 (5%)   Server crashed at persona 7
 gemma2:2b, ctx=4096, pred=512   6/29 (21%)  First STRONG score
-gemma2:2b, ctx=4096, pred=256   partial     OOM during benchmark run
+gemma2:2b, ctx=4096, pred=256   6/30 (20%)  1 STRONG, 22 timeouts, 1 error
 gemma2:2b, ctx=2048, pred=128   not yet     Fast-local, to be verified
 ```
 
