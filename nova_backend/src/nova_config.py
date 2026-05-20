@@ -102,6 +102,7 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma4:e4b")
 OLLAMA_FALLBACK_MODEL = os.getenv("OLLAMA_FALLBACK_MODEL", "gemma2:2b")
 OLLAMA_KEEP_ALIVE = os.getenv("OLLAMA_KEEP_ALIVE", "5m")
 OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", "300"))
+OLLAMA_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "32768"))
 
 # ==================== SYSTEM PROMPT ====================
 # Single source of truth: src/llm/system_prompt.py
