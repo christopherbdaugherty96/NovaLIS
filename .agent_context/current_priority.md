@@ -4,7 +4,7 @@ Current active task:
 
 ```text
 No active workstream. All major lanes closed (2026-05-20).
-Next decision: Cap 22 / Cap 64 P5 lock review.
+Next decision: Cap 65 P5 lock review (only remaining unlocked active capability).
 ```
 
 Closed lanes (most recent first):
@@ -125,6 +125,7 @@ PR #213 — Handler ordering: deterministic commands before ambient clarificatio
 c945f0f — pred=256 benchmark result added to hardware profiles.
 2485761 — Issue #215 browser/search/purchase boundary clarity fix merged.
 4047a34 — Issue #215 continuity doc sync merged.
+7fd8e19 — Cap 64 send_email_draft P5 locked (bookkeeping correction).
 ```
 
 ## Recent closed / not merged truth
@@ -182,8 +183,8 @@ Current lock truth:
 
 ```text
 Cap 16 — P1-P5 passed / locked (2026-05-10).
+Cap 22 — P1-P5 passed / locked (2026-05-20). 60 evidence-chain tests, 0 failures.
 Cap 64 — P1-P5 passed / locked (2026-05-20). 113 tests, 0 failures.
-Cap 22 — approval-gate certified / P1-P5 pending in locks file / not locked.
 Cap 65 — P1-P4 passed / P5 pending / not locked.
 Most other active capabilities — certification lock phases pending.
 ```
@@ -244,7 +245,9 @@ Open issues: #142, #143, #214. All others closed.
    b. Browser/search boundary-routing clarity — FIXED (PR 2485761).
       Named browsers + compound purchase+search → clear boundary refusal.
       10/10 proof-blocker tests, 553/553 routing tests, 65/65 Cap 16 tests.
-9. Per-capability P5/lock decisions remain separate and pending.
+9. Cap 22 P5 lock complete (2026-05-20). 60 evidence-chain tests, 44 regression tests.
+   Cap 64 P5 lock complete (2026-05-20). 113 evidence-chain tests, 94 regression tests.
+   Cap 65 P5/lock decision remains separate and pending.
 10. Do not expand capabilities or add Shopify/website workflows.
 11. Do not reopen the approval-gate lane unless registry truth changes.
 ```

@@ -227,33 +227,33 @@
       "external_effect": false,
       "reversible": true,
       "p1_unit": {
-        "status": "pending",
-        "date": null,
-        "test_file": null
+        "status": "pass",
+        "date": "2026-05-20",
+        "test_file": "tests/executors/test_open_folder_executor.py, tests/executors/test_local_action_executors.py, tests/test_open_folder_executor.py"
       },
       "p2_routing": {
-        "status": "pending",
-        "date": null,
-        "test_file": null
+        "status": "pass",
+        "date": "2026-05-20",
+        "test_file": "tests/test_governor_mediator_phase4_capabilities.py, tests/governance/test_mediator_registry_enforcement.py"
       },
       "p3_integration": {
-        "status": "pending",
-        "date": null,
-        "test_file": null
+        "status": "pass",
+        "date": "2026-05-20",
+        "test_file": "tests/governance/test_approval_gate_wiring.py"
       },
       "p4_api": {
-        "status": "pending",
-        "date": null,
-        "test_file": null
+        "status": "pass",
+        "date": "2026-05-20",
+        "test_file": "tests/websocket/test_behavioral_session_approval_gate.py, tests/test_brain_server_session_cleanup.py, tests/websocket/test_recovery_no_stale_approval.py"
       },
       "p5_live": {
-        "status": "pending",
-        "date": null,
-        "signed_off_by": null,
-        "notes": null
+        "status": "pass",
+        "date": "2026-05-20",
+        "signed_off_by": "user",
+        "notes": "Live proof PR #201 (approval + denial + receipt). Approval-gate certified 2026-05-19. 60 evidence-chain tests pass. Recovery verified PR #203. Confirmation-gated, reversible local action."
       },
-      "locked": false,
-      "locked_date": null
+      "locked": true,
+      "locked_date": "2026-05-20"
     },
     "31": {
       "name": "response_verification",
