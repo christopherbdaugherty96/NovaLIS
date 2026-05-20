@@ -1,10 +1,17 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-19
+Last reviewed: 2026-05-20
 
 ---
 
 ## Current Active Task
+
+```text
+No active workstream. All major lanes closed (2026-05-20).
+Next decision: Cap 22 / Cap 64 P5 lock review.
+```
+
+Previous completed:
 
 ```text
 Everyday live-session reliability hardening — complete (2026-05-19).
@@ -59,8 +66,9 @@ Remaining lower-priority items:
      b. gemma2:2b correction → model loads, 1 real response produced
      c. num_ctx=32768 → inference too slow, 17/19 timeouts
      d. OLLAMA_NUM_CTX=4096 config fix → 6/29 passes (20.7%), 1 STRONG
-   .env: OLLAMA_MODEL=gemma2:2b, OLLAMA_FALLBACK_MODEL=phi3:mini,
-         OLLAMA_NUM_CTX=4096, OLLAMA_NUM_PREDICT=256
+   .env (fast-local default): OLLAMA_MODEL=gemma2:2b,
+         OLLAMA_FALLBACK_MODEL=phi3:mini,
+         OLLAMA_NUM_CTX=2048, OLLAMA_NUM_PREDICT=128
    Code: nova_config.py + llm_manager.py + .env.example updated.
    Tests: 6 tests (3 num_ctx + 3 num_predict), all pass.
    Live simulation: 25/30 passes (83%), 0 server crashes.
@@ -155,6 +163,11 @@ PR #209 — Post-#207 simulation results and streaming design doc merged.
 PR #210 — Streaming LLM fallback for advisory general-chat path merged.
 PR #211 — Deterministic routing for math/news/weather merged.
 PR #212 — on_chunk test-fake compatibility fix merged.
+PR #213 — Handler ordering: deterministic commands before ambient clarification merged.
+9eb9984 — OLLAMA_NUM_CTX configurable via env var merged.
+4fc28f3 — OLLAMA_NUM_PREDICT configurable via env var merged.
+74f09b6 — Hardware profiles and fast-local default documented.
+2485761 — Issue #215 browser/search/purchase boundary clarity fix merged.
 ```
 
 ---
@@ -231,6 +244,26 @@ Result:
 All evidence dimensions complete for Cap 22 and Cap 64.
 Certification recorded. capability_locks.json not modified.
 Per-capability P5/lock decisions remain separate.
+```
+
+### Issue #215 — Browser/search/purchase boundary clarity — CLOSED
+
+Status:
+
+```text
+Fixed (2026-05-20, commit 2485761). Issue closed on GitHub.
+Named browsers + compound purchase+search → clear boundary refusal.
+10/10 proof-blocker tests, 553/553 routing tests, 65/65 Cap 16 tests.
+```
+
+### Local LLM tuning — CLOSED
+
+Status:
+
+```text
+Complete (2026-05-20). Fast-local default applied (ctx=2048, pred=128).
+Hardware upgrade profiles documented.
+Doc: docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20.md
 ```
 
 ### #142 — RS-2 capability list truncation
