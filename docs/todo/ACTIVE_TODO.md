@@ -53,17 +53,23 @@ capability_locks.json intentionally not modified (separate P1-P5 process).
 Remaining lower-priority items:
 
 ```text
-1. Conversation quality lane — model correction verified (2026-05-19).
+1. Conversation quality lane — COMPLETE (2026-05-20).
    ROOT CAUSE CHAIN:
      a. gemma4:e4b OOM → 0/31 friendly_fallback (model never loaded)
      b. gemma2:2b correction → model loads, 1 real response produced
      c. num_ctx=32768 → inference too slow, 17/19 timeouts
-   .env corrected to OLLAMA_MODEL=gemma2:2b, OLLAMA_FALLBACK_MODEL=phi3:mini.
-   REMAINING: reduce num_ctx to 4096 for small models, then rerun.
+     d. OLLAMA_NUM_CTX=4096 config fix → 6/29 passes (20.7%), 1 STRONG
+   .env: OLLAMA_MODEL=gemma2:2b, OLLAMA_FALLBACK_MODEL=phi3:mini,
+         OLLAMA_NUM_CTX=4096
+   Code: nova_config.py + llm_manager.py + .env.example updated.
+   Tests: 3 new tests (test_llm_manager_num_ctx_config.py), all pass.
+   Live simulation: 25/30 passes (83%), 0 server crashes.
+   Remaining bottleneck: CPU-only inference on 8 GB (hardware limit).
    Benchmark: nova_backend/tests/simulations/conversation_quality_benchmark.py
    Results: docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19.md
    Comparison: docs/audits/CONVERSATION_MODEL_COMPARISON_RESULTS_2026-05-19.md
    Correction: docs/audits/CONVERSATION_MODEL_CORRECTION_RESULTS_2026-05-19.md
+   Config fix: docs/audits/NUM_CTX_CONFIG_FIX_RESULTS_2026-05-20.md
 2. Gale confirmation-context edge case (test expectation, not runtime defect).
 3. Multi-turn context continuity hardening (Issue #214).
    Simulation: 22/36 passes, 0 timeouts. Deterministic routing and

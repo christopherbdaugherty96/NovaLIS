@@ -208,18 +208,16 @@ Most other active capabilities — certification lock phases pending.
    b. Multi-turn context: 61% (LLM-dependent weakness)
    c. Mixed-request safety: 94% (zero authority expansion)
    d. Concurrent load: effective 100% (zero contamination)
-7. Conversation quality benchmark, model comparison, and correction (2026-05-19):
-   ROOT CAUSE CHAIN:
-     a. gemma4:e4b (9.8 GB) exceeds system RAM → OOM → 0/31 (friendly_fallback)
-     b. gemma2:2b .env swap → model loads and produces real output (Dev T2)
-     c. BUT num_ctx=32768 causes inference too slow → 17/19 timeouts
-   .env corrected to OLLAMA_MODEL=gemma2:2b, OLLAMA_FALLBACK_MODEL=phi3:mini.
-   Next: reduce num_ctx from 32768 to 4096 for small models, then rerun.
-   This is the one runtime config change needed.
-   Benchmark: nova_backend/tests/simulations/conversation_quality_benchmark.py
-   Results: docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19.md
-   Comparison: docs/audits/CONVERSATION_MODEL_COMPARISON_RESULTS_2026-05-19.md
-   Correction: docs/audits/CONVERSATION_MODEL_CORRECTION_RESULTS_2026-05-19.md
+7. Conversation quality lane COMPLETE (2026-05-20):
+   ROOT CAUSE CHAIN (all four layers resolved):
+     a. gemma4:e4b OOM → 0/31 friendly_fallback
+     b. gemma2:2b .env swap → model loads, 1 real response (Dev T2)
+     c. num_ctx=32768 → inference too slow → 17/19 timeouts
+     d. OLLAMA_NUM_CTX=4096 config fix → 6/29 passes (20.7%), 1 STRONG
+   Config fix: nova_config.py + llm_manager.py + .env.example + 3 tests.
+   Live simulation with config fix: 25/30 passes (83%), 0 crashes.
+   Remaining: CPU-only inference on 8 GB is a hardware limit.
+   Config fix results: docs/audits/NUM_CTX_CONFIG_FIX_RESULTS_2026-05-20.md
 8. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
    b. Browser/search boundary-routing clarity (Issue #215).

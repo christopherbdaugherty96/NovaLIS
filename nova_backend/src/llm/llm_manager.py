@@ -10,7 +10,13 @@ from typing import Any, Callable, Dict, Generator, Optional
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.writer import LedgerWriter
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
-from src.nova_config import OLLAMA_FALLBACK_MODEL, OLLAMA_MODEL, OLLAMA_TIMEOUT, OLLAMA_URL
+from src.nova_config import (
+    OLLAMA_FALLBACK_MODEL,
+    OLLAMA_MODEL,
+    OLLAMA_NUM_CTX,
+    OLLAMA_TIMEOUT,
+    OLLAMA_URL,
+)
 from src.utils.persistent_state import runtime_path
 
 from .system_prompt import SYSTEM_PROMPT
@@ -74,7 +80,7 @@ class LLMManager:
         self.default_options = {
             "temperature": 0.7,
             "num_predict": 512,
-            "num_ctx": 32768,
+            "num_ctx": OLLAMA_NUM_CTX,
             "top_k": 50,
             "repeat_penalty": 1.1,
             "stop": ["User:", "Human:"],
