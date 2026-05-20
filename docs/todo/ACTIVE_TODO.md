@@ -67,7 +67,11 @@ Remaining lower-priority items:
    0 hidden browser actions. 1 safe-but-unclear boundary-routing
    issue tracked in Issue #215.
    Results: docs/audits/MIXED_REQUEST_EDGE_SIMULATION_RESULTS_2026-05-19.md
-5. Concurrent WebSocket load regression test suite (planned next).
+5. Concurrent WebSocket load simulation complete.
+   12 and 24 simultaneous sessions. 45/45 responses, 0 timeouts,
+   0 errors, 0 cross-session contamination, 0 hidden authority
+   expansions. 3 marker-only failures (correct "300." answer).
+   Results: docs/audits/CONCURRENT_WEBSOCKET_LOAD_SIMULATION_RESULTS_2026-05-19.md
 6. Do not expand capabilities or add Shopify/website workflows.
 7. Do not reopen the approval-gate lane unless registry truth changes.
 ```
