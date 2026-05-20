@@ -53,9 +53,13 @@ capability_locks.json intentionally not modified (separate P1-P5 process).
 Remaining lower-priority items:
 
 ```text
-1. Gale confirmation-context edge case (test expectation, not runtime defect).
-2. LLM-dependent general-chat reliability (Drew multi-turn, Blake creative)
-   — requires Ollama throughput or model swap, not Nova code changes.
+1. Conversation quality benchmark complete (2026-05-19).
+   0/31 passes, 31/31 friendly_fallback. gemma4:e4b cannot serve
+   conversational queries. Deterministic routing unaffected (32/33).
+   Next: model comparison (gemma4:26b, llama3.1:8b, etc.)
+   Benchmark: nova_backend/tests/simulations/conversation_quality_benchmark.py
+   Results: docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19.md
+2. Gale confirmation-context edge case (test expectation, not runtime defect).
 3. Multi-turn context continuity hardening (Issue #214).
    Simulation: 22/36 passes, 0 timeouts. Deterministic routing and
    confirmation safety work in multi-turn sessions. General-chat

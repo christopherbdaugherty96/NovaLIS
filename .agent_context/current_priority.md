@@ -208,14 +208,19 @@ Most other active capabilities — certification lock phases pending.
    b. Multi-turn context: 61% (LLM-dependent weakness)
    c. Mixed-request safety: 94% (zero authority expansion)
    d. Concurrent load: effective 100% (zero contamination)
-7. Remaining lower-priority items:
+7. Conversation quality benchmark complete (2026-05-19):
+   0/31 passes (0.0%), 31/31 friendly_fallback.
+   gemma4:e4b cannot serve conversational queries.
+   Deterministic routing unaffected (32/33 in reliability sanity check).
+   Benchmark: nova_backend/tests/simulations/conversation_quality_benchmark.py
+   Results: docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19.md
+   Next: model comparison using same benchmark (gemma4:26b, llama3.1:8b, etc.)
+8. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
-   b. LLM-dependent general-chat reliability (requires Ollama throughput or model swap).
-   c. Browser/search boundary-routing clarity (Issue #215).
-   d. Local conversation quality lane (model comparison, context packing).
-8. Per-capability P5/lock decisions remain separate and pending.
-9. Do not expand capabilities or add Shopify/website workflows.
-10. Do not reopen the approval-gate lane unless registry truth changes.
+   b. Browser/search boundary-routing clarity (Issue #215).
+9. Per-capability P5/lock decisions remain separate and pending.
+10. Do not expand capabilities or add Shopify/website workflows.
+11. Do not reopen the approval-gate lane unless registry truth changes.
 ```
 
 ## Safety boundary
