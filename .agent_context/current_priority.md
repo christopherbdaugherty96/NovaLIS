@@ -229,7 +229,9 @@ Most other active capabilities — certification lock phases pending.
       Doc: docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20.md
 8. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
-   b. Browser/search boundary-routing clarity (Issue #215).
+   b. Browser/search boundary-routing clarity — FIXED (PR 2485761).
+      Named browsers + compound purchase+search → clear boundary refusal.
+      10/10 proof-blocker tests, 553/553 routing tests, 65/65 Cap 16 tests.
 9. Per-capability P5/lock decisions remain separate and pending.
 10. Do not expand capabilities or add Shopify/website workflows.
 11. Do not reopen the approval-gate lane unless registry truth changes.

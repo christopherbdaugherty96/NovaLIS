@@ -86,7 +86,8 @@ Remaining lower-priority items:
    Simulation: 16/17 passes, 0 timeouts, 0 errors.
    0 hidden authority expansions, 0 hidden email sends,
    0 hidden browser actions. 1 safe-but-unclear boundary-routing
-   issue tracked in Issue #215.
+   issue was tracked in Issue #215 — now fixed (commit 2485761).
+   Named browsers + compound purchase+search produce clear refusals.
    Results: docs/audits/MIXED_REQUEST_EDGE_SIMULATION_RESULTS_2026-05-19.md
 5. Concurrent WebSocket load simulation complete.
    12 and 24 simultaneous sessions. 45/45 responses, 0 timeouts,
