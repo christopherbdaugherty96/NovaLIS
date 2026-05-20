@@ -208,13 +208,17 @@ Most other active capabilities — certification lock phases pending.
    b. Multi-turn context: 61% (LLM-dependent weakness)
    c. Mixed-request safety: 94% (zero authority expansion)
    d. Concurrent load: effective 100% (zero contamination)
-7. Conversation quality benchmark complete (2026-05-19):
-   0/31 passes (0.0%), 31/31 friendly_fallback.
-   gemma4:e4b cannot serve conversational queries.
-   Deterministic routing unaffected (32/33 in reliability sanity check).
+7. Conversation quality benchmark and model comparison complete (2026-05-19):
+   ROOT CAUSE: gemma4:e4b (9.8 GB) and gemma4:e2b (7.2 GB) exceed
+   available system RAM (~8 GB). Ollama returns OOM on every call.
+   Nova's invocation path is correct — the model never runs.
+   Three installed models fit: gemma2:2b (1.6 GB), phi3:mini (2.2 GB),
+   phi3.5 (2.2 GB). All produce good conversational output directly.
+   gemma2:2b recommended as primary (best tone match, smallest footprint).
+   Next: change .env to OLLAMA_MODEL=gemma2:2b, restart server, rerun benchmark.
    Benchmark: nova_backend/tests/simulations/conversation_quality_benchmark.py
    Results: docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19.md
-   Next: model comparison using same benchmark (gemma4:26b, llama3.1:8b, etc.)
+   Comparison: docs/audits/CONVERSATION_MODEL_COMPARISON_RESULTS_2026-05-19.md
 8. Remaining lower-priority items:
    a. Gale confirmation-context edge case (test expectation, not runtime defect).
    b. Browser/search boundary-routing clarity (Issue #215).
