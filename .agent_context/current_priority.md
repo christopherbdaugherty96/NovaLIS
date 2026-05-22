@@ -3,8 +3,9 @@
 Current active task:
 
 ```text
-No active workstream. All major lanes closed (2026-05-20).
-Next decision: Cap 65 P5 lock review (only remaining unlocked active capability).
+No active workstream. All major lanes closed (2026-05-22).
+Cap 65 P5 live proof complete and locked (2026-05-22).
+All four certified capabilities locked.
 ```
 
 Closed lanes (most recent first):
@@ -185,7 +186,7 @@ Current lock truth:
 Cap 16 — P1-P5 passed / locked (2026-05-10).
 Cap 22 — P1-P5 passed / locked (2026-05-20). 60 evidence-chain tests, 0 failures.
 Cap 64 — P1-P5 passed / locked (2026-05-20). 113 tests, 0 failures.
-Cap 65 — P1-P4 passed / P5 blocked (Issue #216) / not locked. 84 tests pass.
+Cap 65 — P1-P5 passed / locked (2026-05-22). 89 tests, 0 failures. Read-only Shopify intelligence only.
 Most other active capabilities — certification lock phases pending.
 ```
 
@@ -198,10 +199,10 @@ Most other active capabilities — certification lock phases pending.
 #208 — closed (everyday reliability complete).
 #214 — Multi-turn context continuity hardening (evidence captured).
 #215 — closed (boundary clarity fixed, commit 2485761).
-#216 — Cap 65 P5 live proof blocked by missing Shopify dev-store credentials.
+#216 — Cap 65 P5 live proof complete, locked (2026-05-22).
 ```
 
-Open issues: #142, #143, #214, #216. All others closed.
+Open issues: #142, #143, #214. All others closed.
 
 ## Next correct sequence
 
@@ -248,7 +249,8 @@ Open issues: #142, #143, #214, #216. All others closed.
       10/10 proof-blocker tests, 553/553 routing tests, 65/65 Cap 16 tests.
 9. Cap 22 P5 lock complete (2026-05-20). 60 evidence-chain tests, 44 regression tests.
    Cap 64 P5 lock complete (2026-05-20). 113 evidence-chain tests, 94 regression tests.
-   Cap 65 P5/lock decision remains separate and pending.
+   Cap 65 P5 complete and locked (2026-05-22). 89 tests, 0 failures.
+     Read-only Shopify intelligence only. No writes, no mutations.
 10. Do not expand capabilities or add Shopify/website workflows.
 11. Do not reopen the approval-gate lane unless registry truth changes.
 ```

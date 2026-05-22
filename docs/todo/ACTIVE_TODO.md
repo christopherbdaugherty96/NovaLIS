@@ -1,14 +1,14 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-20
+Last reviewed: 2026-05-22
 
 ---
 
 ## Current Active Task
 
 ```text
-No active workstream. All major lanes closed (2026-05-20).
-Next decision: Cap 65 P5 lock review (only remaining unlocked active capability).
+No active workstream. All major lanes closed (2026-05-22).
+Cap 65 locked (2026-05-22). All four certified capabilities locked.
 ```
 
 Previous completed:
@@ -267,26 +267,14 @@ Hardware upgrade profiles documented.
 Doc: docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20.md
 ```
 
-### #216 — Cap 65 P5 live proof blocked
+### #216 — Cap 65 P5 live proof — COMPLETE / LOCKED
 
 Status:
 
 ```text
-P1-P4 pass (84 tests). P5 blocked — no Shopify dev-store credentials.
-```
-
-Blocker:
-
-```text
-NOVA_SHOPIFY_SHOP_DOMAIN and NOVA_SHOPIFY_ACCESS_TOKEN not set.
-Need free Shopify Partner account + dev store + custom app with
-read_orders + read_products scopes.
-```
-
-Checklist:
-
-```text
-docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report.md
+P1-P5 pass (89 tests). Locked 2026-05-22.
+Store: auralis-design.myshopify.com. Read-only Shopify intelligence only.
+Evidence: docs/audits/CAP_65_P5_LIVE_PROOF_RESULTS_2026-05-22.md
 ```
 
 ### #142 — RS-2 capability list truncation
