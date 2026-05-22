@@ -3,27 +3,31 @@ Phase 5 of 6 · Priority: after cap 64 lock
 
 ---
 
-## Current Status — 2026-04-27
+## Current Status — 2026-05-22
 
-**P5: BLOCKED — Shopify credentials not present in environment.**
+**P5: PASS — all 5 live tests pass against auralis-design.myshopify.com.**
 
-Automated verification completed 2026-04-27:
-- P1 unit tests: 9/9 pass (`tests/executors/test_shopify_intelligence_report_executor.py`, `tests/connectors/test_shopify_connector.py`)
-- P2 routing tests: 49/49 pass (`tests/test_shopify_intelligence_report_routing.py`)
-- P3 integration tests: 16/16 pass (`tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py`)
-- P4 API tests: 10/10 pass (`tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py`)
-- Total: 84 automated tests green
+Live proof completed 2026-05-22:
+- P5 live proof: 5/5 pass (test_p5_live_proof.py)
+- Full P1-P5 suite: 89/89 pass (60.77s)
+- Store: Auralis Design (auralis-design.myshopify.com)
+- Scopes: read_orders, read_products (read-only)
+- Token: never printed, never committed
+
+Results: docs/audits/CAP_65_P5_LIVE_PROOF_RESULTS_2026-05-22.md
+
+Previous automated verification (2026-04-27):
+- P1 unit tests: 15/15 pass
+- P2 routing tests: 25/25 pass
+- P3 integration tests: 16/16 pass
+- P4 API tests: 10/10 pass
 
 Safety confirmation:
-- Read-only: CONFIRMED — all GraphQL calls use `query {}` not `mutation {}`; no write/update/delete endpoints
-- NetworkMediator: CONFIRMED — `_gql()` instantiates `NetworkMediator()` and routes every Shopify call through `mediator.request()`
-- Credential guard: CONFIRMED — `is_shopify_connected()` check in executor returns clean refusal if env vars absent
-
-Missing to unblock P5:
-- `NOVA_SHOPIFY_SHOP_DOMAIN` — not set
-- `NOVA_SHOPIFY_ACCESS_TOKEN` — not set
-
-When both are set, start at "Prerequisites" below and run the 5 live tests.
+- Read-only: CONFIRMED — all GraphQL calls use `query`, no `mutation`
+- NetworkMediator: CONFIRMED — `_gql()` routes through `mediator.request()`
+- Credential guard: CONFIRMED — clean refusal if env vars absent
+- No writes, no mutations, no product/order edits
+- No confirmation prompt (read-only capability)
 
 ---
 
