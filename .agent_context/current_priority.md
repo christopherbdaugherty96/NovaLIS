@@ -199,7 +199,7 @@ Most other active capabilities — certification lock phases pending.
 #208 — closed (everyday reliability complete).
 #214 — Multi-turn context continuity hardening (evidence captured).
 #215 — closed (boundary clarity fixed, commit 2485761).
-#216 — Cap 65 P5 live proof complete, locked (2026-05-22).
+#216 — closed. Cap 65 P5 complete, locked (2026-05-22).
 ```
 
 Open issues: #142, #143, #214. All others closed.
