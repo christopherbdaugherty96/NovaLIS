@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-19
+Last reviewed: 2026-05-22
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,33 +19,27 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Everyday live-session reliability hardening (2026-05-19).
+No active workstream. All major lanes closed (2026-05-22).
+All four certified capabilities locked.
 ```
 
-Status:
+Lock truth:
 
 ```text
-Live user simulation (20 personas, 32 turns) captured and documented.
-Governance paths confirmed strong. Everyday reliability gaps identified.
-Results: docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md
-Script: nova_backend/tests/simulations/live_user_simulation.py
+Cap 16 — locked (2026-05-10) — governed_web_search
+Cap 22 — locked (2026-05-20) — open_file_folder
+Cap 64 — locked (2026-05-20) — send_email_draft
+Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 ```
 
-Previous closed lane:
+Previous closed lanes:
 
 ```text
-Approval-gate certification closeout -- certified for current scope (2026-05-19).
-Closeout: docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md
-capability_locks.json intentionally not modified (separate P1-P5 process).
-```
-
-Identified reliability gaps:
-
-```text
-1. Ollama timeout under concurrent WebSocket load (high)
-2. News/weather routing phrase sensitivity (medium)
-3. Multi-turn context fragility under load (medium)
-4. Confirmation-edge timeout behavior (low)
+Everyday live-session reliability hardening — complete (2026-05-19).
+  75% → 97% passes, 7 → 0 timeouts. PRs #206-#213.
+Approval-gate certification closeout — certified (2026-05-19).
+Conversation quality tuning — complete (2026-05-20).
+Cap 65 P5 live proof — complete and locked (2026-05-22).
 ```
 
 ---
@@ -688,9 +682,8 @@ Recently completed proof:
 
 ```text
 UI simplification
-Cap 64 P5
 Google connector runtime implementation
-Shopify writes
+Shopify writes (Cap 65 is read-only only)
 ElevenLabs implementation
 OpenClaw expansion
 browser/computer-use expansion
@@ -705,9 +698,10 @@ autonomous workflow execution
 ## Implemented Runtime / Code Truth Snapshot
 
 - Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
-- Cap 16 governed_web_search is certified and locked.
-- Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or autonomous send.
-- Cap 65 remains read-only Shopify intelligence. No Shopify writes.
+- Cap 16 governed_web_search is certified and locked (2026-05-10).
+- Cap 22 open_file_folder is certified and locked (2026-05-20).
+- Cap 64 send_email_draft is certified and locked (2026-05-20). Confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or autonomous send.
+- Cap 65 shopify_intelligence_report is certified and locked (2026-05-22). Read-only Shopify intelligence only. No Shopify writes.
 - OpenClaw is active runtime code with bounded/manual-first execution surfaces.
 - PR #154 narrowed the OpenClaw freeform-goal path to a read-only allowlisted tool surface.
 - Trust Review Card remains display-only and non-authorizing.
@@ -738,11 +732,9 @@ No recent merge authorizes:
 ## Next Correct Step
 
 ```text
-1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Everyday live-session reliability hardening is the active workstream.
-3. Follow-up PRs: Ollama timeout, news routing, confirmation-edge
-   timeout, regression tests -- each requires separate review.
-4. Per-capability P5/lock decisions remain separate and pending.
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
+1. All four certified capabilities locked (Cap 16, 22, 64, 65).
+2. All major workstreams closed (reliability, quality, approval-gate).
+3. Open issues: #142, #143, #214. PR #217 open (goal-card docs).
+4. Do not expand capabilities or add Shopify/website workflows.
+5. Do not reopen the approval-gate lane unless registry truth changes.
 ```
