@@ -153,7 +153,11 @@ class InputNormalizer:
     POLITE_PREFIX_RE = re.compile(
         r"^\s*(?:hey\s+nova[, ]*|ok(?:ay)?\s+nova[, ]*|nova[, ]*|please[, ]*|"
         r"can you\s+|could you\s+|would you\s+|can u\s+|could u\s+|would u\s+|"
-        r"i need to\s+)",
+        r"i need to\s+|"
+        # Conversational preambles (Issue #214 — preamble-tolerant routing)
+        r"also[, ]+|and\s+also[, ]+|by the way[, ]+|anyway[, ]+|"
+        r"oh and[, ]+|oh[, ]+|one more thing[, ]+|plus[, ]+|"
+        r"so[, ]+|ok so[, ]+|alright[, ]+|hey[, ]+)",
         re.IGNORECASE,
     )
     POLITE_SUFFIX_RE = re.compile(r"(?:,\s*please|\s+please)\s*$", re.IGNORECASE)
