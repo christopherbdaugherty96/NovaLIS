@@ -3,11 +3,11 @@
 Current active task:
 
 ```text
-No active workstream. All major lanes closed (2026-05-23).
-Cap 65 P5 live proof complete and locked (2026-05-22).
+Phase: Workflow usability without authority expansion (2026-05-23).
+Next step: Goal Card local display-state wiring.
+Branch target: ui/goal-card-local-display-state
+All active issues closed. LLM throughput tracked as backlog (#227).
 All four certified capabilities locked.
-All active issues closed (2026-05-23). #214 deterministic gaps fixed,
-LLM throughput tracked as backlog (#227).
 ```
 
 Closed lanes (most recent first):
@@ -240,52 +240,45 @@ Open issues: 6 total (0 active, 6 planning/future/backlog).
 ## Next correct sequence
 
 ```text
-1. Approval-gate certification closeout is complete for Cap 22 + Cap 64.
-2. Everyday live-session reliability hardening is complete (2026-05-19).
-   75% → 97% passes, 7 → 0 timeouts, avg 4381ms → 587ms.
-3. Multi-turn context continuity simulation captured (Issue #214).
-   22/36 passes, 0 timeouts. Deterministic routing and confirmation
-   safety work. General-chat continuity depends on Ollama throughput.
-4. Mixed-request edge case simulation complete (Issue #215).
-   16/17 passes, 0 hidden authority expansions. 1 boundary-routing issue.
-5. Concurrent WebSocket load simulation complete.
-   12 and 24 simultaneous sessions. 45/45 responses, 0 timeouts,
-   0 cross-session contamination, 0 hidden authority expansions.
-6. Four-simulation evidence stack complete:
-   a. Everyday reliability: 97% (strong)
-   b. Multi-turn context: 61% (LLM-dependent weakness)
-   c. Mixed-request safety: 94% (zero authority expansion)
-   d. Concurrent load: effective 100% (zero contamination)
-7. Conversation quality lane COMPLETE (2026-05-20):
-   ROOT CAUSE CHAIN (all four layers resolved):
-     a. gemma4:e4b OOM → 0/31 friendly_fallback
-     b. gemma2:2b .env swap → model loads, 1 real response (Dev T2)
-     c. num_ctx=32768 → inference too slow → 17/19 timeouts
-     d. OLLAMA_NUM_CTX=4096 config fix → 6/29 passes (20.7%), 1 STRONG
-   Config fix: nova_config.py + llm_manager.py + .env.example + 3 tests.
-   Live simulation with config fix: 25/30 passes (83%), 0 crashes.
-   Remaining: CPU-only inference on 8 GB is a hardware limit.
-   Config fix results: docs/audits/NUM_CTX_CONFIG_FIX_RESULTS_2026-05-20.md
-   e. OLLAMA_NUM_PREDICT=256 perf tuning → code committed.
-      Direct Ollama perf test: 36s @ pred=256 vs 56s @ pred=512 (~40% faster).
-      gemma2:2b 2x faster than phi3:mini in every config tested.
-      Benchmark OOM-killed on 8 GB during full run (hardware limit).
-      Partial results: real responses produced within 55-72s (45s timeout
-      too tight for CPU-only). No code issue remains.
-   f. Fast-local default applied: ctx=2048, pred=128 (~19s first turn).
-      Hardware upgrade profiles documented for 16 GB/GPU and 32+ GB.
-      Doc: docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20.md
-8. Remaining lower-priority items:
-   a. Gale confirmation-context edge case (test expectation, not runtime defect).
-   b. Browser/search boundary-routing clarity — FIXED (PR 2485761).
-      Named browsers + compound purchase+search → clear boundary refusal.
-      10/10 proof-blocker tests, 553/553 routing tests, 65/65 Cap 16 tests.
-9. Cap 22 P5 lock complete (2026-05-20). 60 evidence-chain tests, 44 regression tests.
-   Cap 64 P5 lock complete (2026-05-20). 113 evidence-chain tests, 94 regression tests.
-   Cap 65 P5 complete and locked (2026-05-22). 89 tests, 0 failures.
-     Read-only Shopify intelligence only. No writes, no mutations.
-10. Do not expand capabilities or add Shopify/website workflows.
-11. Do not reopen the approval-gate lane unless registry truth changes.
+Current phase: Workflow usability without authority expansion (2026-05-23)
+
+Completed phases (summary):
+  - Certification: 4 caps locked (16, 22, 64, 65), P1-P5 all pass
+  - Reliability: 75% → 97%, 0 timeouts, avg 587ms
+  - Deterministic routing: preamble-tolerant, ambient context-guarded
+  - Simulation evidence: 4 simulation types run and documented
+  - Conversation quality: hardware limit reached, config optimized
+  - Issue cleanup: all active follow-ups closed (2026-05-23)
+
+Immediate next step:
+  1. Goal Card local display-state wiring
+     Branch: ui/goal-card-local-display-state
+     Scope:
+       - expanded/collapsed state
+       - selected card / active card highlight
+       - filter by status
+       - sort/grouping
+       - step progress clarity
+       - better blocked-state visuals
+       - receipt reference styling
+       - status timeline visualization
+     Constraint: pure frontend state, no execution authority
+     Persistence: localStorage/sessionStorage only if needed,
+                  no backend persistence, no server-side goal state
+
+  2. After Goal Card display-state, STOP and review:
+       - UX usefulness
+       - clarity
+       - trust surface quality
+       - whether persistence is truly needed next
+
+Future order (do not start until prior step reviewed):
+  3. Goal Card persistence design doc (state storage != execution)
+  4. Local persistence only (still no execution)
+  5. Proposal-only planning (suggest next steps, not execute)
+  6. Single-step governed execution envelopes (much later, requires
+     receipts, trust surfaces, approval envelopes, state restoration,
+     interrupt handling to be mature first)
 ```
 
 ## Safety boundary
@@ -301,4 +294,31 @@ Shopify or website workflows
 external writes
 approval-gate recertification unless registry truth changes
 capability_locks.json changes without a separate P1-P5 lock decision
+goal execution or click-to-run actions
+scheduler or background loops
+OpenClaw integration with goal cards
+Gmail/calendar writes
+phone control, SMS, calls
+memory auto-promotion or learning-based execution
+premature execution authority expansion
+```
+
+## Strategic identity
+
+```text
+Nova's differentiator:
+  governed local intelligence
+  bounded execution
+  visible authority
+  inspectable behavior
+  intelligence separated from authority
+
+Not:
+  most autonomous
+  most agentic
+  most aggressive automation
+
+The next real platform jump will come from better local hardware
+or optimized local inference stack — not another routing patch.
+Issue #227 tracks the hardware constraint.
 ```
