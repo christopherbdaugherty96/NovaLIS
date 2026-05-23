@@ -3,9 +3,11 @@
 Current active task:
 
 ```text
-No active workstream. All major lanes closed (2026-05-22).
+No active workstream. All major lanes closed (2026-05-23).
 Cap 65 P5 live proof complete and locked (2026-05-22).
 All four certified capabilities locked.
+All active issues closed (2026-05-23). #214 deterministic gaps fixed,
+LLM throughput tracked as backlog (#227).
 ```
 
 Closed lanes (most recent first):
@@ -127,6 +129,9 @@ c945f0f — pred=256 benchmark result added to hardware profiles.
 2485761 — Issue #215 browser/search/purchase boundary clarity fix merged.
 4047a34 — Issue #215 continuity doc sync merged.
 7fd8e19 — Cap 64 send_email_draft P5 locked (bookkeeping correction).
+PR #225 — Issue #214 deterministic continuity investigation merged.
+PR #226 — Preamble-tolerant routing fix merged (12 preamble patterns,
+          18 new tests).
 ```
 
 ## Recent closed / not merged truth
@@ -195,9 +200,7 @@ Most other active capabilities — certification lock phases pending.
 Active follow-ups:
 
 ```text
-#142 — RS-2 capability list truncation needs reproduction.
-#143 — "tell me more" with prior context needs session-state-aware test.
-#214 — Multi-turn context continuity hardening (evidence captured).
+(none)
 ```
 
 Open planning / future trackers (not active workstreams):
@@ -208,24 +211,31 @@ Open planning / future trackers (not active workstreams):
 #73 — Governed learning layer planning.
 #74 — Brain matrix / Daily Brief boundary planning.
 #189 — Ecosystem simulation / operator proof / multi-model advisory.
+#227 — Local LLM throughput limits conversational continuity on 8GB
+       CPU-only hardware (hardware backlog, not code defect).
 ```
 
 Open hardening review:
 
 ```text
-#163 — External security scan findings. Needs bounded verification.
+(none)
 ```
 
 Recently closed:
 
 ```text
 #141 — closed.
+#142 — closed (PR #224, frontend collapse exemption for capability help).
+#143 — closed (PR #223, session-state-aware ambient context guard tests).
+#163 — closed (PR #221, security scan verification).
 #208 — closed (everyday reliability complete, PRs #206-#213).
+#214 — closed (PRs #223, #226 fixed deterministic gaps; remaining is
+       hardware-bound, replaced by #227).
 #215 — closed (boundary clarity fixed, commit 2485761).
 #216 — closed. Cap 65 P5 complete, locked (2026-05-22).
 ```
 
-Open issues: 9 total (3 active, 5 planning/future, 1 hardening).
+Open issues: 6 total (0 active, 6 planning/future/backlog).
 
 ## Next correct sequence
 
