@@ -2442,14 +2442,20 @@ function createGoalCardElement(goal) {
   pauseBtn.type = "button";
   pauseBtn.className = "goal-card-action-btn";
   pauseBtn.textContent = goal.status === "paused" ? "Resume" : "Pause";
-  pauseBtn.disabled = !isPausable && goal.status !== "paused";
+  pauseBtn.disabled = true;
+  pauseBtn.title = "Display only — not connected to execution yet";
+  pauseBtn.setAttribute("aria-label",
+    (goal.status === "paused" ? "Resume" : "Pause")
+    + " (display only)");
   actions.appendChild(pauseBtn);
 
   var cancelBtn = document.createElement("button");
   cancelBtn.type = "button";
   cancelBtn.className = "goal-card-action-btn destructive";
   cancelBtn.textContent = "Cancel";
-  cancelBtn.disabled = !isCancelable;
+  cancelBtn.disabled = true;
+  cancelBtn.title = "Display only — not connected to execution yet";
+  cancelBtn.setAttribute("aria-label", "Cancel (display only)");
   actions.appendChild(cancelBtn);
 
   card.appendChild(actions);
@@ -2470,13 +2476,62 @@ function createGoalCardElement(goal) {
   return card;
 }
 
-function renderGoalCardsPage() {
-  const container = $("goal-cards-container");
-  if (!container) return;
-  container.innerHTML = "";
-  DEMO_GOAL_CARDS.forEach(function (goal) {
-    container.appendChild(createGoalCardElement(goal));
+var GOAL_STATUS_LEGEND = [
+  { key: "draft", label: "Draft" },
+  { key: "planning", label: "Planning" },
+  { key: "waiting", label: "Waiting for approval" },
+  { key: "ready", label: "Ready" },
+  { key: "running", label: "Running" },
+  { key: "paused", label: "Paused" },
+  { key: "completed", label: "Completed" },
+  { key: "blocked", label: "Blocked" },
+  { key: "canceled", label: "Canceled" },
+];
+
+function renderGoalStatusLegend() {
+  var legendWidget = $("goal-status-legend");
+  if (!legendWidget) return;
+  var host = legendWidget.querySelector(".goal-legend-items");
+  if (!host || host.children.length > 0) return;
+
+  GOAL_STATUS_LEGEND.forEach(function (entry) {
+    var item = document.createElement("span");
+    item.className = "goal-legend-item";
+
+    var dot = document.createElement("span");
+    dot.className = "goal-legend-dot";
+    dot.dataset.legend = entry.key;
+    item.appendChild(dot);
+
+    var label = document.createElement("span");
+    label.textContent = entry.label;
+    item.appendChild(label);
+
+    host.appendChild(item);
   });
+}
+
+function renderGoalCardsPage() {
+  var container = $("goal-cards-container");
+  var emptyState = $("goal-cards-empty");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  var goals = DEMO_GOAL_CARDS;
+  var hasGoals = Array.isArray(goals) && goals.length > 0;
+
+  if (emptyState) {
+    emptyState.hidden = hasGoals;
+  }
+
+  if (hasGoals) {
+    goals.forEach(function (goal) {
+      container.appendChild(createGoalCardElement(goal));
+    });
+  }
+
+  renderGoalStatusLegend();
 }
 
 /* ── End Goal Cards ────────────────────────────────────────────────── */
