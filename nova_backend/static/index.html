@@ -1101,14 +1101,34 @@
 
       <section id="page-goals" class="page-view page-goals" hidden>
         <div class="widget page-card goal-page-hero" aria-live="polite">
-          <div class="goal-page-kicker">Governed Workflows</div>
-          <div class="goal-page-title-row">
-            <h3>Goals</h3>
-            <span class="news-page-subtle">Visible, bounded, receipt-backed</span>
+          <div class="goal-page-hero-top">
+            <div>
+              <div class="goal-page-kicker">Governed Workflows</div>
+              <div class="goal-page-title-row">
+                <h3>Goals</h3>
+                <span class="news-page-subtle">Visible, bounded, receipt-backed</span>
+              </div>
+            </div>
+            <span class="goal-demo-badge">Display only</span>
           </div>
           <p class="goal-page-intro">
             Goal Cards show what Nova is planning, what it has done,
             what needs approval, and what is blocked. Planning is not authority.
+          </p>
+        </div>
+
+        <div id="goal-status-legend" class="widget page-card goal-status-legend" aria-label="Status legend">
+          <p class="goal-card-section-label">Status legend</p>
+          <div class="goal-legend-items"></div>
+        </div>
+
+        <div id="goal-cards-empty" class="widget page-card goal-cards-empty" hidden>
+          <div class="goal-empty-icon" aria-hidden="true"></div>
+          <p class="goal-empty-title">No goals yet</p>
+          <p class="goal-empty-copy">
+            When Nova helps you work toward a goal, it will appear here
+            as a visible, governed card. You will see every step, every
+            permission boundary, and every receipt.
           </p>
         </div>
 
