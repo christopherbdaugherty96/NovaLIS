@@ -18,6 +18,7 @@ Generated runtime truth files are the authority for exact live status.
 - [Known limitations](product/KNOWN_LIMITATIONS.md)
 - [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md)
 - [Current work status](status/CURRENT_WORK_STATUS.md)
+- [Final baseline summary](status/FINAL_BASELINE_SUMMARY_2026-05-23.md)
 
 ## Future Connector and Product Directions
 - [Google Read-Only Connector Foundation](future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md)
