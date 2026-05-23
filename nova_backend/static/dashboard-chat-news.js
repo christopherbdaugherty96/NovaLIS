@@ -2707,6 +2707,7 @@ function setActivePage(page) {
     news: $("page-news"),
     intro: $("page-intro"),
     home: $("page-home"),
+    goals: $("page-goals"),
     agent: $("page-agent"),
     workspace: $("page-workspace"),
     memory: $("page-memory"),
@@ -2753,6 +2754,9 @@ function setActivePage(page) {
       requestPolicyDetail(policyCenterState.selectedId);
     }
     renderPolicyCenterPage();
+  }
+  if (target === "goals") {
+    if (typeof renderGoalCardsPage === "function") renderGoalCardsPage();
   }
   if (target === "home") {
     requestWorkspaceHomeRefresh(true);
