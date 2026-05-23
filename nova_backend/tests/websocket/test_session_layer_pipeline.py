@@ -325,3 +325,121 @@ class TestAmbientClarificationPatterns:
             f"{repr(raw)} should NOT match AMBIENT_CLARIFICATION_PATTERNS; "
             f"got a match on {repr(command_text)}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Session-state-aware ambient context guard (Issue #143)
+#
+# Production behavior (session_handler ~line 1263):
+#   if not (session_state.get("last_response") or "").strip():
+#       <check AMBIENT_CLARIFICATION_PATTERNS>
+#
+# With prior context, the ambient block is skipped entirely and the
+# phrase falls through to the LLM as a follow-up.
+# ---------------------------------------------------------------------------
+
+def _pipeline_with_session_state(
+    raw: str,
+    session_state: dict | None = None,
+) -> str | int | None:
+    """
+    Like _pipeline but models the session_state context guard around
+    AMBIENT_CLARIFICATION_PATTERNS.
+
+    When session_state["last_response"] is non-empty the ambient block
+    is skipped — matching production behavior.
+    """
+    if session_state is None:
+        session_state = {}
+
+    normalized = InputNormalizer.normalize(raw)
+    command_text = re.sub(r"[.?!]+$", "", normalized).strip()
+
+    # Session-layer checks (same order as _pipeline / session_handler)
+    if TIME_QUERY_RE.match(command_text):
+        return "TIME_QUERY"
+    if EMAIL_INBOX_RE.match(command_text):
+        return "EMAIL_INBOX"
+    if HELP_ORIENT_RE.match(command_text):
+        return "HELP_ORIENT"
+    if CAPABILITY_HELP_RE.match(command_text):
+        return "CAPABILITY_HELP"
+    if REMIND_ME_TIMELESS_RE.match(command_text):
+        return "REMIND_TIMELESS"
+
+    # Context guard: only check ambient patterns when no prior response
+    if not (session_state.get("last_response") or "").strip():
+        for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
+            if pat.match(command_text):
+                return "AMBIENT_CLARIFICATION"
+
+    # Governor fallback
+    result = GovernorMediator.parse_governed_invocation(command_text)
+    if result is None:
+        return None
+    return getattr(result, "capability_id", None)
+
+
+class TestAmbientContextGuard:
+    """
+    Issue #143: with prior session context, ambient follow-up phrases
+    must NOT fire AMBIENT_CLARIFICATION — they fall through to the LLM.
+    """
+
+    _PRIOR_RESPONSE = (
+        "Here are the latest headlines about AI regulation: "
+        "The EU AI Act entered its enforcement phase this month."
+    )
+
+    @pytest.mark.parametrize("raw", [
+        "tell me more",
+        "tell me more about that",
+        "go deeper",
+        "elaborate",
+    ])
+    def test_with_context_does_not_fire_ambient(self, raw: str):
+        """With last_response set, the phrase bypasses ambient patterns."""
+        session_state = {"last_response": self._PRIOR_RESPONSE}
+        result = _pipeline_with_session_state(raw, session_state)
+        assert result != "AMBIENT_CLARIFICATION", (
+            f"{repr(raw)} should NOT fire AMBIENT_CLARIFICATION when "
+            f"session has prior context — it should fall through to LLM"
+        )
+
+    @pytest.mark.parametrize("raw", [
+        "tell me more",
+        "tell me more about that",
+        "go deeper",
+        "elaborate",
+    ])
+    def test_without_context_fires_ambient(self, raw: str):
+        """Without last_response, the phrase fires ambient clarification."""
+        session_state = {"last_response": ""}
+        result = _pipeline_with_session_state(raw, session_state)
+        assert result == "AMBIENT_CLARIFICATION", (
+            f"{repr(raw)} should fire AMBIENT_CLARIFICATION when "
+            f"session has no prior context"
+        )
+
+    def test_empty_last_response_fires_ambient(self):
+        """Whitespace-only last_response counts as empty."""
+        session_state = {"last_response": "   "}
+        result = _pipeline_with_session_state(
+            "tell me more", session_state
+        )
+        assert result == "AMBIENT_CLARIFICATION"
+
+    def test_no_session_state_fires_ambient(self):
+        """Missing session_state entirely counts as no context."""
+        result = _pipeline_with_session_state("tell me more")
+        assert result == "AMBIENT_CLARIFICATION"
+
+    def test_context_does_not_affect_non_ambient_routes(self):
+        """Prior context should not interfere with other routing."""
+        session_state = {"last_response": self._PRIOR_RESPONSE}
+        assert _pipeline_with_session_state(
+            "what time is it", session_state
+        ) == "TIME_QUERY"
+        assert _pipeline_with_session_state(
+            "what can you do", session_state
+        ) == "CAPABILITY_HELP"
