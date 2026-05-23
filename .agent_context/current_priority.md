@@ -272,13 +272,33 @@ Immediate next step:
        - trust surface quality
        - whether persistence is truly needed next
 
+Parallel (manual, no Nova runtime changes):
+  0. Manual Obsidian setup as project operating notebook
+     Create: NovaLIS/00_Current_Truth.md, 01_Next_Actions.md,
+             02_Decision_Log.md, 03_Governance_Rules.md,
+             04_Audit_Notes.md
+     This helps immediately without touching Nova runtime.
+
 Future order (do not start until prior step reviewed):
   3. Goal Card persistence design doc (state storage != execution)
   4. Local persistence only (still no execution)
-  5. Proposal-only planning (suggest next steps, not execute)
-  6. Single-step governed execution envelopes (much later, requires
-     receipts, trust surfaces, approval envelopes, state restoration,
-     interrupt handling to be mature first)
+  5. Second Brain Slice 1: schema + parser + no-mutation lint
+     Scope: KnowledgeEntry/Relationship/Event schemas,
+            frontmatter parser, wikilink extraction,
+            vault health/lint report (read-only),
+            tests proving non-authorizing invariants
+     Plan: docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION.md
+     Research: docs/future/NOVA_SECOND_BRAIN_OBSIDIAN_RESEARCH_AND_IMPLEMENTATION_PLAN_2026-05-18.md
+  6. Second Brain Slice 2: deterministic index (after lint proven)
+     rebuildable index, content hashes, stale/broken link detection
+  7. Second Brain Slice 3: read-only query surface
+     knowledge.search, knowledge.get_note, knowledge.get_graph
+  8. Second Brain Slice 4: proposal-only writes (no auto-edits)
+  9. Second Brain Slice 5: living graph visualization (last)
+  10. Proposal-only planning for Goal Cards (suggest, not execute)
+  11. Single-step governed execution envelopes (much later, requires
+      receipts, trust surfaces, approval envelopes, state restoration,
+      interrupt handling to be mature first)
 ```
 
 ## Safety boundary
@@ -301,6 +321,10 @@ Gmail/calendar writes
 phone control, SMS, calls
 memory auto-promotion or learning-based execution
 premature execution authority expansion
+autonomous vault mutation or silent learning
+notes as permission (Obsidian can help Nova understand, cannot authorize)
+Second Brain slices 2-5 before slice 1 lint is proven
+dashboard visualization before data/events exist
 ```
 
 ## Strategic identity
@@ -321,4 +345,10 @@ Not:
 The next real platform jump will come from better local hardware
 or optimized local inference stack — not another routing patch.
 Issue #227 tracks the hardware constraint.
+
+Obsidian / Second Brain invariant:
+  Obsidian can help Nova understand.
+  Obsidian cannot authorize Nova to act.
+  Knowledge is context, not permission.
+  Notes are knowledge source, not execution proof.
 ```
