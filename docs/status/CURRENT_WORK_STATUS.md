@@ -665,15 +665,36 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Open Carried-Forward Follow-Ups
 
+Active follow-ups:
+
 ```text
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
+#214 — Multi-turn context continuity hardening (evidence captured).
 ```
 
-Recently completed proof:
+Open planning / future trackers (not active workstreams):
 
 ```text
-#141 — Search widget WebSocket surfacing fix and live proof complete; issue is closed.
+#67 — Agent workspaces / Google email-calendar coordination planning.
+#71 — Governed local memory workspace planning.
+#73 — Governed learning layer planning.
+#74 — Brain matrix / Daily Brief boundary planning.
+#189 — Ecosystem simulation / operator proof / multi-model advisory.
+```
+
+Open hardening review:
+
+```text
+#163 — External security scan findings. Needs bounded verification.
+```
+
+Recently closed:
+
+```text
+#141 — closed. Search widget WebSocket surfacing fix and live proof.
+#208 — closed. Everyday reliability complete (PRs #206-#213).
+#216 — closed. Cap 65 P5 complete, locked (2026-05-22).
 ```
 
 ---
@@ -734,7 +755,8 @@ No recent merge authorizes:
 ```text
 1. All four certified capabilities locked (Cap 16, 22, 64, 65).
 2. All major workstreams closed (reliability, quality, approval-gate).
-3. Open issues: #142, #143, #214. PR #217 open (goal-card docs).
-4. Do not expand capabilities or add Shopify/website workflows.
-5. Do not reopen the approval-gate lane unless registry truth changes.
+3. Goal Card display-only UI merged (PRs #217, #218, #219).
+4. Open issues: 9 total (3 active, 5 planning/future, 1 hardening).
+5. Do not expand capabilities or add Shopify/website workflows.
+6. Do not reopen the approval-gate lane unless registry truth changes.
 ```
