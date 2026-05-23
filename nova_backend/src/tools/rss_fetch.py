@@ -2,6 +2,7 @@
 
 import asyncio
 import xml.etree.ElementTree as ET
+from defusedxml.ElementTree import fromstring as _safe_fromstring
 import html
 import re
 from typing import Dict, Any, List
@@ -161,7 +162,7 @@ async def fetch_rss_headlines(
         return []
 
     try:
-        root = ET.fromstring(text)
+        root = _safe_fromstring(text)
     except ET.ParseError:
         return []
 
