@@ -2111,6 +2111,376 @@ function renderMemoryCenterSurface() {
     : "Edit, lock, unlock, defer, and delete stay governed. This page now adds an inline check before state-changing requests are sent.";
 }
 
+/* ── Goal Cards (display-only prototype) ───────────────────────────── */
+
+/**
+ * Demo goal card data. This is static/demo state only.
+ * No execution, no scheduler, no persistence, no backend authority.
+ * Planning is not authority. Goal state is not permission.
+ */
+const DEMO_GOAL_CARDS = [
+  {
+    goal_id: "goal_auralis_launch_001",
+    title: "Prepare Auralis Shopify launch",
+    status: "planning",
+    created_at: "2026-05-22T12:00:00Z",
+    updated_at: "2026-05-22T14:30:00Z",
+    steps: [
+      {
+        step_id: "step_001",
+        title: "Run read-only Shopify intelligence report",
+        status: "completed",
+        required_capability: 65,
+        approval_required: false,
+      },
+      {
+        step_id: "step_002",
+        title: "Summarize products, inventory, and order signals",
+        status: "completed",
+        required_capability: null,
+        approval_required: false,
+      },
+      {
+        step_id: "step_003",
+        title: "Draft a launch checklist",
+        status: "running",
+        required_capability: null,
+        approval_required: false,
+      },
+      {
+        step_id: "step_004",
+        title: "Draft outreach email for user review",
+        status: "planned",
+        required_capability: 64,
+        approval_required: true,
+      },
+      {
+        step_id: "step_005",
+        title: "Wait for user approval before any external effect",
+        status: "planned",
+        required_capability: null,
+        approval_required: true,
+      },
+    ],
+    permission_envelope: {
+      allowed_capabilities: [
+        { id: 16, name: "Web search" },
+        { id: 22, name: "Open folder" },
+        { id: 64, name: "Email draft" },
+        { id: 65, name: "Shopify read" },
+      ],
+      blocked_actions: [
+        "Shopify writes",
+        "Printify",
+        "Purchases",
+        "Publishing",
+        "Browser control",
+        "Customer messages",
+      ],
+      requires_confirmation: [22, 64],
+    },
+    ledger_refs: [
+      { type: "ACTION_COMPLETED", capability_id: 65,
+        summary: "Shopify intelligence report (read-only)" },
+      { type: "ACTION_COMPLETED", capability_id: null,
+        summary: "Product/inventory summary generated" },
+    ],
+  },
+  {
+    goal_id: "goal_repo_cleanup_002",
+    title: "Clean up Nova repo continuity",
+    status: "completed",
+    created_at: "2026-05-21T09:00:00Z",
+    updated_at: "2026-05-22T00:23:00Z",
+    steps: [
+      {
+        step_id: "step_010",
+        title: "Review current priority and active TODO docs",
+        status: "completed",
+        required_capability: null,
+        approval_required: false,
+      },
+      {
+        step_id: "step_011",
+        title: "Identify stale or conflicting docs",
+        status: "completed",
+        required_capability: null,
+        approval_required: false,
+      },
+      {
+        step_id: "step_012",
+        title: "Draft cleanup plan",
+        status: "completed",
+        required_capability: null,
+        approval_required: false,
+      },
+      {
+        step_id: "step_013",
+        title: "Apply changes after approval",
+        status: "completed",
+        required_capability: 22,
+        approval_required: true,
+      },
+    ],
+    permission_envelope: {
+      allowed_capabilities: [
+        { id: 16, name: "Web search" },
+        { id: 22, name: "Open folder" },
+      ],
+      blocked_actions: [
+        "Delete branches",
+        "Merge PRs",
+        "Modify runtime",
+        "Change locks",
+      ],
+      requires_confirmation: [22],
+    },
+    ledger_refs: [
+      { type: "ACTION_COMPLETED", capability_id: 22,
+        summary: "Opened docs folder for review" },
+    ],
+  },
+  {
+    goal_id: "goal_blocked_example_003",
+    title: "Set up Printify integration",
+    status: "blocked",
+    created_at: "2026-05-22T15:00:00Z",
+    updated_at: "2026-05-22T15:00:00Z",
+    steps: [
+      {
+        step_id: "step_020",
+        title: "Connect Printify API",
+        status: "blocked",
+        required_capability: null,
+        approval_required: true,
+      },
+    ],
+    permission_envelope: {
+      allowed_capabilities: [],
+      blocked_actions: [
+        "Printify API",
+        "External writes",
+        "Product creation",
+        "Order management",
+      ],
+      requires_confirmation: [],
+    },
+    ledger_refs: [],
+  },
+];
+
+const STEP_INDICATORS = {
+  planned: "·",
+  proposed: "?",
+  waiting_for_approval: "!",
+  approved: "✓",
+  running: "▶",
+  completed: "✓",
+  failed: "✗",
+  blocked: "‒",
+  skipped: "–",
+  canceled: "–",
+};
+
+function createGoalCardElement(goal) {
+  const card = document.createElement("article");
+  card.className = "goal-card";
+  card.dataset.goalId = goal.goal_id;
+
+  // Header: title + status badge
+  const header = document.createElement("div");
+  header.className = "goal-card-header";
+
+  const title = document.createElement("h4");
+  title.className = "goal-card-title";
+  title.textContent = String(goal.title || "Untitled goal").trim();
+  header.appendChild(title);
+
+  const badge = document.createElement("span");
+  badge.className = "goal-card-status";
+  badge.dataset.status = goal.status || "draft";
+  badge.textContent = (goal.status || "draft").replace(/_/g, " ");
+  header.appendChild(badge);
+
+  card.appendChild(header);
+
+  // Steps
+  if (Array.isArray(goal.steps) && goal.steps.length > 0) {
+    const stepsLabel = document.createElement("p");
+    stepsLabel.className = "goal-card-section-label";
+    stepsLabel.textContent = "Steps";
+    card.appendChild(stepsLabel);
+
+    const stepsList = document.createElement("div");
+    stepsList.className = "goal-card-steps";
+
+    goal.steps.forEach(function (step) {
+      const stepEl = document.createElement("div");
+      stepEl.className = "goal-card-step";
+      stepEl.dataset.stepStatus = step.status || "planned";
+
+      const indicator = document.createElement("span");
+      indicator.className = "goal-card-step-indicator";
+      indicator.textContent = STEP_INDICATORS[step.status] || "·";
+      stepEl.appendChild(indicator);
+
+      const stepTitle = document.createElement("span");
+      stepTitle.className = "goal-card-step-title";
+      stepTitle.textContent = String(step.title || "").trim();
+      if (step.approval_required && step.status !== "completed") {
+        stepTitle.textContent += " (approval required)";
+      }
+      stepEl.appendChild(stepTitle);
+
+      stepsList.appendChild(stepEl);
+    });
+
+    card.appendChild(stepsList);
+  }
+
+  // Permission envelope
+  var env = goal.permission_envelope;
+  if (env) {
+    const envLabel = document.createElement("p");
+    envLabel.className = "goal-card-section-label";
+    envLabel.textContent = "Permission envelope";
+    card.appendChild(envLabel);
+
+    const envGrid = document.createElement("div");
+    envGrid.className = "goal-card-envelope";
+
+    // Allowed column
+    if (Array.isArray(env.allowed_capabilities)
+        && env.allowed_capabilities.length > 0) {
+      const allowedCol = document.createElement("div");
+      allowedCol.className = "goal-card-envelope-col";
+
+      const allowedLabel = document.createElement("p");
+      allowedLabel.className = "goal-card-section-label";
+      allowedLabel.textContent = "Allowed";
+      allowedCol.appendChild(allowedLabel);
+
+      const allowedTags = document.createElement("div");
+      allowedTags.className = "goal-card-tag-list";
+      env.allowed_capabilities.forEach(function (cap) {
+        const tag = document.createElement("span");
+        tag.className = "goal-card-tag allowed";
+        tag.textContent = cap.name || ("Cap " + cap.id);
+        allowedTags.appendChild(tag);
+      });
+      allowedCol.appendChild(allowedTags);
+      envGrid.appendChild(allowedCol);
+    }
+
+    // Blocked column
+    if (Array.isArray(env.blocked_actions)
+        && env.blocked_actions.length > 0) {
+      const blockedCol = document.createElement("div");
+      blockedCol.className = "goal-card-envelope-col";
+
+      const blockedLabel = document.createElement("p");
+      blockedLabel.className = "goal-card-section-label";
+      blockedLabel.textContent = "Blocked";
+      blockedCol.appendChild(blockedLabel);
+
+      const blockedTags = document.createElement("div");
+      blockedTags.className = "goal-card-tag-list";
+      env.blocked_actions.forEach(function (action) {
+        const tag = document.createElement("span");
+        tag.className = "goal-card-tag blocked";
+        tag.textContent = String(action);
+        blockedTags.appendChild(tag);
+      });
+      blockedCol.appendChild(blockedTags);
+      envGrid.appendChild(blockedCol);
+    }
+
+    card.appendChild(envGrid);
+  }
+
+  // Receipt references
+  if (Array.isArray(goal.ledger_refs) && goal.ledger_refs.length > 0) {
+    const receiptsLabel = document.createElement("p");
+    receiptsLabel.className = "goal-card-section-label";
+    receiptsLabel.textContent = "Receipts";
+    card.appendChild(receiptsLabel);
+
+    const receiptsList = document.createElement("div");
+    receiptsList.className = "goal-card-receipts";
+
+    goal.ledger_refs.forEach(function (ref) {
+      const receiptEl = document.createElement("div");
+      receiptEl.className = "goal-card-receipt";
+
+      const dot = document.createElement("span");
+      dot.className = "goal-card-receipt-dot";
+      dot.classList.add(
+        ref.type === "ACTION_COMPLETED" ? "completed" : "attempted"
+      );
+      receiptEl.appendChild(dot);
+
+      const text = document.createElement("span");
+      text.textContent = String(ref.summary || ref.type || "");
+      receiptEl.appendChild(text);
+
+      receiptsList.appendChild(receiptEl);
+    });
+
+    card.appendChild(receiptsList);
+  }
+
+  // Actions (inert UI only — display-only prototype)
+  const actions = document.createElement("div");
+  actions.className = "goal-card-actions";
+
+  var isPausable = ["planning", "running", "ready",
+    "waiting_for_approval"].indexOf(goal.status) !== -1;
+  var isCancelable = goal.status !== "completed"
+    && goal.status !== "canceled" && goal.status !== "failed";
+
+  var pauseBtn = document.createElement("button");
+  pauseBtn.type = "button";
+  pauseBtn.className = "goal-card-action-btn";
+  pauseBtn.textContent = goal.status === "paused" ? "Resume" : "Pause";
+  pauseBtn.disabled = !isPausable && goal.status !== "paused";
+  actions.appendChild(pauseBtn);
+
+  var cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "goal-card-action-btn destructive";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.disabled = !isCancelable;
+  actions.appendChild(cancelBtn);
+
+  card.appendChild(actions);
+
+  // Updated timestamp
+  if (goal.updated_at) {
+    const updated = document.createElement("div");
+    updated.className = "goal-card-updated";
+    try {
+      updated.textContent = "Updated "
+        + new Date(goal.updated_at).toLocaleString();
+    } catch (_e) {
+      updated.textContent = "Updated " + goal.updated_at;
+    }
+    card.appendChild(updated);
+  }
+
+  return card;
+}
+
+function renderGoalCardsPage() {
+  const container = $("goal-cards-container");
+  if (!container) return;
+  container.innerHTML = "";
+  DEMO_GOAL_CARDS.forEach(function (goal) {
+    container.appendChild(createGoalCardElement(goal));
+  });
+}
+
+/* ── End Goal Cards ────────────────────────────────────────────────── */
+
 /* Control-center surfaces moved to dashboard-control-center.js. */
 
 /* Chat, news, and general interaction surfaces moved to dashboard-chat-news.js. */

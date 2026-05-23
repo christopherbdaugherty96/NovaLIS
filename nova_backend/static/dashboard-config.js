@@ -23,6 +23,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     home: "Home",
     agent: "Agent",
     workspace: "Workspace",
+    goals: "Goals",
     memory: "Memory",
     policy: "Rules",
     trust: "Trust",
@@ -31,6 +32,7 @@ window.NOVA_DASHBOARD_CONFIG = {
   PRIMARY_NAV_ITEMS: [
     { page: "chat", label: "Chat" },
     { page: "home", label: "Home" },
+    { page: "goals", label: "Goals" },
     { page: "agent", label: "Agent" },
     { page: "news", label: "News" },
     { page: "workspace", label: "Workspace" },
