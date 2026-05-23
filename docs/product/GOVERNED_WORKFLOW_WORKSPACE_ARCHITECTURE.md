@@ -179,6 +179,29 @@ Lead
 
 ---
 
+## 2A. Governed Goal Cards And Task State
+
+Goal Cards are the user-facing state and planning surfaces for governed goals.
+
+They should show the goal, current status, permission envelope, planned steps, current step, next proposed step, pending approvals, blocked actions, and receipt references.
+
+Goal state does not authorize execution.
+
+Core rule:
+
+```text
+Planning is not authority.
+Goal state is not permission.
+The planner never executes directly.
+Every real action still passes through GovernorMediator, CapabilityRegistry, approval gates, ExecuteBoundary, and ledger receipts.
+```
+
+Goal Cards let Nova maintain visible progress without hidden autonomy. Read-only continuation may only happen inside a visible bounded permission envelope. External writes, file actions, email drafts, connector writes, publishing, purchases, and account changes still require the existing governed capability path and any required confirmation.
+
+Detailed future design: [Governed Goal Cards Design](../future/GOVERNED_GOAL_CARDS_DESIGN.md).
+
+---
+
 ## 3. Permission Profiles
 
 Nova's governance should be surfaced in everyday user language.
@@ -475,6 +498,8 @@ Do not claim any of the following until code, tests, generated runtime truth, an
 - cost posture is runtime-enforced
 - workflow templates are runtime products
 - workflow object model is implemented
+- goal cards are implemented runtime surfaces
+- permission envelopes are runtime-enforced workflow objects
 - onboarding wizard exists
 
 ---
