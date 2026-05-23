@@ -319,3 +319,29 @@ Scope:
 live-backend validation only
 no runtime authority expansion
 ```
+
+---
+
+## Open Planning / Future Trackers
+
+These are not active workstreams. They track future direction and
+should not be treated as blockers or active tasks.
+
+```text
+#67 — Agent workspaces / Google email-calendar coordination planning.
+#71 — Governed local memory workspace planning.
+#73 — Governed learning layer planning.
+#74 — Brain matrix / Daily Brief boundary planning.
+#189 — Ecosystem simulation / operator proof / multi-model advisory.
+```
+
+---
+
+## Open Hardening Review
+
+```text
+#163 — External security scan findings.
+       Needs bounded verification, not broad rewrite.
+       Checklist: TomorrowIO key, tts subprocess, python-multipart,
+       RSS XML parsing, defusedxml. Document true/false-positive.
+```

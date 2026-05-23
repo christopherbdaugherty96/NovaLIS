@@ -192,17 +192,40 @@ Most other active capabilities — certification lock phases pending.
 
 ## Open carried-forward follow-ups
 
+Active follow-ups:
+
 ```text
-#141 — closed.
 #142 — RS-2 capability list truncation needs reproduction.
 #143 — "tell me more" with prior context needs session-state-aware test.
-#208 — closed (everyday reliability complete).
 #214 — Multi-turn context continuity hardening (evidence captured).
+```
+
+Open planning / future trackers (not active workstreams):
+
+```text
+#67 — Agent workspaces / Google email-calendar coordination planning.
+#71 — Governed local memory workspace planning.
+#73 — Governed learning layer planning.
+#74 — Brain matrix / Daily Brief boundary planning.
+#189 — Ecosystem simulation / operator proof / multi-model advisory.
+```
+
+Open hardening review:
+
+```text
+#163 — External security scan findings. Needs bounded verification.
+```
+
+Recently closed:
+
+```text
+#141 — closed.
+#208 — closed (everyday reliability complete, PRs #206-#213).
 #215 — closed (boundary clarity fixed, commit 2485761).
 #216 — closed. Cap 65 P5 complete, locked (2026-05-22).
 ```
 
-Open issues: #142, #143, #214. All others closed.
+Open issues: 9 total (3 active, 5 planning/future, 1 hardening).
 
 ## Next correct sequence
 
