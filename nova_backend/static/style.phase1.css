@@ -737,6 +737,21 @@ body {
     rgba(8, 19, 36, 0.94) 100%
   );
   box-shadow: var(--shadow-panel);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.goal-card--selected {
+  border-color: rgba(104, 177, 255, 0.45);
+  box-shadow: var(--shadow-panel), 0 0 0 1px rgba(104, 177, 255, 0.2);
+}
+
+.goal-card[data-goal-status="blocked"] {
+  border-color: rgba(255, 130, 130, 0.25);
+  background: linear-gradient(
+    160deg,
+    rgba(40, 20, 24, 0.92) 0%,
+    rgba(20, 10, 14, 0.94) 100%
+  );
 }
 
 .goal-card-header {
@@ -744,6 +759,67 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+}
+
+.goal-card-header:hover {
+  opacity: 0.9;
+}
+
+.goal-card-chevron {
+  flex-shrink: 0;
+  width: 16px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding-top: 2px;
+}
+
+/* Progress bar */
+
+.goal-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-card-progress-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(175, 198, 230, 0.12);
+  overflow: hidden;
+}
+
+.goal-card-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ok);
+  transition: width 0.3s ease;
+}
+
+.goal-card-progress-fill[data-goal-status="blocked"] {
+  background: #ff9a9a;
+}
+
+.goal-card-progress-fill[data-goal-status="paused"] {
+  background: var(--warn);
+}
+
+.goal-card-progress-label {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Collapsible body */
+
+.goal-card-body {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-card-body[hidden] {
+  display: none;
 }
 
 .goal-card-title {
@@ -1067,6 +1143,84 @@ body {
 .goal-legend-dot[data-legend="completed"] { background: var(--ok); }
 .goal-legend-dot[data-legend="blocked"] { background: #ff9a9a; }
 .goal-legend-dot[data-legend="canceled"] { background: var(--muted); }
+
+.goal-legend-item--active {
+  border-color: rgba(104, 177, 255, 0.4);
+  background: rgba(104, 177, 255, 0.12);
+  color: var(--text);
+}
+
+/* Receipt capability badge */
+
+.goal-card-receipt-cap {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(143, 218, 255, 0.2);
+  background: rgba(104, 177, 255, 0.08);
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Toolbar */
+
+.goal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  flex-wrap: wrap;
+}
+
+.goal-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.goal-toolbar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+.goal-toolbar-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(175, 198, 230, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.goal-toolbar-btn:hover {
+  border-color: rgba(143, 218, 255, 0.3);
+  background: rgba(104, 177, 255, 0.08);
+  color: var(--text);
+}
+
+.goal-toolbar-btn.active {
+  border-color: rgba(104, 177, 255, 0.4);
+  background: rgba(104, 177, 255, 0.14);
+  color: var(--text);
+}
+
+.goal-toolbar-clear {
+  border-color: rgba(246, 203, 143, 0.25);
+  background: rgba(246, 203, 143, 0.06);
+  color: var(--warn);
+}
+
+.goal-toolbar-clear:hover {
+  border-color: rgba(246, 203, 143, 0.4);
+  background: rgba(246, 203, 143, 0.12);
+}
 
 /* ── End Goal Cards ──────────────────────────────────────── */
 
