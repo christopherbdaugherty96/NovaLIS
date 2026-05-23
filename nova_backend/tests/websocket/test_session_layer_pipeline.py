@@ -280,6 +280,58 @@ class TestGovernorRoutingPipeline:
 
 
 # ---------------------------------------------------------------------------
+# Preamble-tolerant routing (Issue #214)
+# Conversational preambles must be stripped so deterministic routes
+# still fire. The preamble should not cause fallthrough to LLM.
+# ---------------------------------------------------------------------------
+
+class TestPreambleTolerantRouting:
+    """Conversational preambles should not break deterministic routing."""
+
+    # Each tuple: (preamble + target, expected result matching bare target)
+    @pytest.mark.parametrize("raw,expected", [
+        # "also" variants
+        ("also, what is the weather", 55),
+        ("also search for AI news", 16),
+        ("also, open my downloads folder", 22),
+        # "by the way" variants
+        ("by the way, what is the weather", 55),
+        # "anyway" variants
+        ("anyway, what is the weather", 55),
+        # "oh and" / "oh" variants
+        ("oh and what is the weather", 55),
+        ("oh, search for AI news", 16),
+        # other preambles
+        ("one more thing, what is the weather", 55),
+        ("so, what is the weather", 55),
+        ("ok so what is the weather", 55),
+        ("alright, search for AI news", 16),
+        ("plus what is the weather", 55),
+        ("and also, what is the weather", 55),
+    ])
+    def test_preamble_routes_to_correct_cap(self, raw: str, expected: int):
+        result = _pipeline(raw)
+        assert result == expected, (
+            f"{repr(raw)} should route to cap {expected} after preamble "
+            f"stripping; got {result!r}"
+        )
+
+    @pytest.mark.parametrize("raw,expected", [
+        ("also, what can you do", "CAPABILITY_HELP"),
+        ("by the way, what can you do", "CAPABILITY_HELP"),
+        ("anyway, what time is it", "TIME_QUERY"),
+        ("oh and what time is it", "TIME_QUERY"),
+        ("so, what can you do", "CAPABILITY_HELP"),
+    ])
+    def test_preamble_routes_to_session_layer(self, raw: str, expected: str):
+        result = _pipeline(raw)
+        assert result == expected, (
+            f"{repr(raw)} should route to {expected} after preamble "
+            f"stripping; got {result!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Ambient clarification — only fires without prior context
 # (context guard tested at the handler level; here we test pattern matching)
 # ---------------------------------------------------------------------------
