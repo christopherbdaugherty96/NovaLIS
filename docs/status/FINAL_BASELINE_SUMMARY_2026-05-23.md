@@ -129,9 +129,10 @@ remaining conversational weakness isolated to hardware/model throughput
 Goal Cards are currently:
 
 ```text
-visible
-display-only
-non-executing
+interactive workflow visibility (PR #229, merged 2026-05-23)
+expand/collapse, filtering, sorting, progress bars
+localStorage UI preferences (display prefs only)
+display-only — no execution authority
 not scheduled
 not a persistence-backed workflow engine yet
 ```
@@ -145,7 +146,8 @@ not a persistence-backed workflow engine yet
    Tracked by #227. Current 8GB CPU-only hardware limits conversational continuity.
 
 2. Goal Cards
-   Display-only. No local display-state wiring, persistence, scheduler, or governed execution envelope yet.
+   Interactive display-state wiring complete (PR #229). Still display-only.
+   No persistence, scheduler, or governed execution envelope yet.
 
 3. Memory / learning
    Planning/future only. Memory cannot authorize execution. Learning cannot become silent authority.
@@ -164,16 +166,21 @@ not a persistence-backed workflow engine yet
 
 ## Next safe product move
 
-Recommended next work:
+Goal Card display-state wiring is now complete (PR #229).
+
+Recommended next step:
 
 ```text
-Goal Card local display-state wiring
+Use the Goal Card system briefly and observe friction before deciding:
+  - Goal Card UX polish (language, layout, information density)
+  - Goal Card persistence design doc (state storage != execution)
+  - Return to Second Brain Slice 1 planning
+Do not start another implementation push until friction is observed.
 ```
 
-Strict limits:
+Strict limits remain:
 
 ```text
-frontend/local state only
 no backend execution
 no scheduler
 no persistence unless separately designed
@@ -203,6 +210,7 @@ background task loops
 ## Final verdict
 
 ```text
-The repo is clean enough to stop cleaning and resume small product work.
-The next work should make Goal Cards more usable without giving them authority.
+Goal Cards are now interactive workflow visibility (PR #229).
+The UI is more sophisticated, but authority has not expanded.
+Observe friction before the next build. Refinement over expansion.
 ```

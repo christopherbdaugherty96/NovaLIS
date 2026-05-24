@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-22
+Last reviewed: 2026-05-23 (post-PR #229)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,7 +19,10 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-No active workstream. All major lanes closed (2026-05-22).
+Phase: Observe and refine (2026-05-23).
+Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
+Goal Cards are now interactive workflow visibility — still display-only.
+No execution authority added. No backend persistence. No new capabilities.
 All four certified capabilities locked.
 ```
 
@@ -35,6 +38,10 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Goal Card local display-state — completed (PR #229, 2026-05-23).
+  expand/collapse, filtering, sorting, progress bars, blocked styling,
+  receipt capability badges, localStorage UI preferences.
+  Frontend-only. No execution authority. Display-only.
 Everyday live-session reliability hardening — complete (2026-05-19).
   75% → 97% passes, 7 → 0 timeouts. PRs #206-#213.
 Approval-gate certification closeout — certified (2026-05-19).

@@ -3,9 +3,10 @@
 Current active task:
 
 ```text
-Phase: Workflow usability without authority expansion (2026-05-23).
-Next step: Goal Card local display-state wiring.
-Branch target: ui/goal-card-local-display-state
+Phase: Observe and refine (2026-05-23).
+Goal Card local display-state: COMPLETED (PR #229, merged 2026-05-23).
+Goal Cards are now interactive workflow visibility — still display-only.
+No execution authority added. No backend persistence. No new capabilities.
 All active issues closed. LLM throughput tracked as backlog (#227).
 All four certified capabilities locked.
 ```
@@ -132,6 +133,11 @@ c945f0f — pred=256 benchmark result added to hardware profiles.
 PR #225 — Issue #214 deterministic continuity investigation merged.
 PR #226 — Preamble-tolerant routing fix merged (12 preamble patterns,
           18 new tests).
+PR #228 — Final baseline summary for current governed state merged.
+PR #229 — Goal Card local display-state merged (expand/collapse,
+          filtering, sorting, progress bars, blocked styling,
+          receipt capability badges, localStorage persistence).
+          Frontend-only. No execution authority.
 ```
 
 ## Recent closed / not merged truth
@@ -240,7 +246,7 @@ Open issues: 6 total (0 active, 6 planning/future/backlog).
 ## Next correct sequence
 
 ```text
-Current phase: Workflow usability without authority expansion (2026-05-23)
+Current phase: Observe and refine (2026-05-23)
 
 Completed phases (summary):
   - Certification: 4 caps locked (16, 22, 64, 65), P1-P5 all pass
@@ -249,28 +255,20 @@ Completed phases (summary):
   - Simulation evidence: 4 simulation types run and documented
   - Conversation quality: hardware limit reached, config optimized
   - Issue cleanup: all active follow-ups closed (2026-05-23)
+  - Goal Card display-state: interactive workflow visibility (PR #229)
+    expand/collapse, filtering, sorting, progress bars, blocked styling,
+    receipt capability badges, localStorage UI preferences.
+    No execution authority. Display-only. Frontend-only.
 
-Immediate next step:
-  1. Goal Card local display-state wiring
-     Branch: ui/goal-card-local-display-state
-     Scope:
-       - expanded/collapsed state
-       - selected card / active card highlight
-       - filter by status
-       - sort/grouping
-       - step progress clarity
-       - better blocked-state visuals
-       - receipt reference styling
-       - status timeline visualization
-     Constraint: pure frontend state, no execution authority
-     Persistence: localStorage/sessionStorage only if needed,
-                  no backend persistence, no server-side goal state
+Current step:
+  Use the Goal Card system briefly and observe friction before deciding:
+    - Goal Card UX polish (language, layout, information density)
+    - Goal Card persistence design doc (state storage != execution)
+    - Return to Second Brain Slice 1 planning
 
-  2. After Goal Card display-state, STOP and review:
-       - UX usefulness
-       - clarity
-       - trust surface quality
-       - whether persistence is truly needed next
+  Do not start another implementation push until friction is observed.
+  The UI is becoming more sophisticated — the docs must be clear that
+  Goal Cards remain workflow visibility only, not execution capability.
 
 Parallel (manual, no Nova runtime changes):
   0. Manual Obsidian setup as project operating notebook
