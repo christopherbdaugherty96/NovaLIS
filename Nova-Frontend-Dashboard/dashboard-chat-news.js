@@ -367,9 +367,16 @@ function renderMessageHighlights(container, highlights) {
   container.appendChild(card);
 }
 
+function shouldSkipCollapse(text) {
+  // Structured help responses should never be collapsed — they are
+  // intentionally multi-line lists, not casual long answers.
+  return String(text || "").trim().startsWith("Here's what Nova can do right now:");
+}
+
 function shouldCollapseMessage(text) {
   const raw = String(text || "");
   if (!raw.trim()) return false;
+  if (shouldSkipCollapse(raw)) return false;
   if (/https?:\/\/\S+/i.test(raw)) return false;
   const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
   return raw.length > LONG_MESSAGE_CHAR_LIMIT || lines.length > LONG_MESSAGE_LINE_LIMIT;
@@ -2707,6 +2714,7 @@ function setActivePage(page) {
     news: $("page-news"),
     intro: $("page-intro"),
     home: $("page-home"),
+    goals: $("page-goals"),
     agent: $("page-agent"),
     workspace: $("page-workspace"),
     memory: $("page-memory"),
@@ -2735,6 +2743,7 @@ function setActivePage(page) {
   });
 
   activePageState = target;
+  document.body.dataset.activePage = target;
   const workspaceCurrent = $("workspace-current-label");
   if (workspaceCurrent) {
     workspaceCurrent.textContent = PAGE_LABELS[target] || "Chat";
@@ -2753,6 +2762,9 @@ function setActivePage(page) {
       requestPolicyDetail(policyCenterState.selectedId);
     }
     renderPolicyCenterPage();
+  }
+  if (target === "goals") {
+    if (typeof renderGoalCardsPage === "function") renderGoalCardsPage();
   }
   if (target === "home") {
     requestWorkspaceHomeRefresh(true);

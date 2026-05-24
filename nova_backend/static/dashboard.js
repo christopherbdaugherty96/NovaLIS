@@ -2270,7 +2270,7 @@ const DEMO_GOAL_CARDS = [
 ];
 
 const STEP_INDICATORS = {
-  planned: "·",
+  planned: "○",
   proposed: "?",
   waiting_for_approval: "!",
   approved: "✓",
@@ -2505,7 +2505,7 @@ function createGoalCardElement(goal) {
   if (env) {
     const envLabel = document.createElement("p");
     envLabel.className = "goal-card-section-label";
-    envLabel.textContent = "Permission envelope";
+    envLabel.textContent = "What Nova can / can’t do";
     body.appendChild(envLabel);
 
     const envGrid = document.createElement("div");
@@ -2599,30 +2599,35 @@ function createGoalCardElement(goal) {
   }
 
   // Actions (inert UI only — display-only prototype)
-  const actions = document.createElement("div");
-  actions.className = "goal-card-actions";
+  // Hide on completed/canceled cards where Pause/Cancel are semantically wrong
+  var hideActions = goal.status === "completed"
+    || goal.status === "canceled";
+  if (!hideActions) {
+    const actions = document.createElement("div");
+    actions.className = "goal-card-actions";
 
-  var pauseBtn = document.createElement("button");
-  pauseBtn.type = "button";
-  pauseBtn.className = "goal-card-action-btn";
-  pauseBtn.textContent = goal.status === "paused" ? "Resume" : "Pause";
-  pauseBtn.disabled = true;
-  pauseBtn.title = "Display only — not connected to execution yet";
-  pauseBtn.setAttribute("aria-label",
-    (goal.status === "paused" ? "Resume" : "Pause")
-    + " (display only)");
-  actions.appendChild(pauseBtn);
+    var pauseBtn = document.createElement("button");
+    pauseBtn.type = "button";
+    pauseBtn.className = "goal-card-action-btn";
+    pauseBtn.textContent = goal.status === "paused" ? "Resume" : "Pause";
+    pauseBtn.disabled = true;
+    pauseBtn.title = "Display only — not connected to execution yet";
+    pauseBtn.setAttribute("aria-label",
+      (goal.status === "paused" ? "Resume" : "Pause")
+      + " (display only)");
+    actions.appendChild(pauseBtn);
 
-  var cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "goal-card-action-btn destructive";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.disabled = true;
-  cancelBtn.title = "Display only — not connected to execution yet";
-  cancelBtn.setAttribute("aria-label", "Cancel (display only)");
-  actions.appendChild(cancelBtn);
+    var cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "goal-card-action-btn destructive";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.disabled = true;
+    cancelBtn.title = "Display only — not connected to execution yet";
+    cancelBtn.setAttribute("aria-label", "Cancel (display only)");
+    actions.appendChild(cancelBtn);
 
-  body.appendChild(actions);
+    body.appendChild(actions);
+  }
 
   // Updated timestamp
   if (goal.updated_at) {
@@ -2663,9 +2668,28 @@ function renderGoalStatusLegend() {
   var legendWidget = $("goal-status-legend");
   if (!legendWidget) return;
   var host = legendWidget.querySelector(".goal-legend-items");
-  if (!host || host.children.length > 0) return;
+  if (!host) return;
+  host.innerHTML = "";
 
-  GOAL_STATUS_LEGEND.forEach(function (entry) {
+  // Only show statuses that exist in the current goal set
+  var goals = DEMO_GOAL_CARDS;
+  var activeStatuses = {};
+  if (Array.isArray(goals)) {
+    goals.forEach(function (g) {
+      activeStatuses[g.status || "draft"] = true;
+    });
+  }
+
+  // If a filter is active, always show that status in the legend
+  if (_goalDisplayState.activeFilter) {
+    activeStatuses[_goalDisplayState.activeFilter] = true;
+  }
+
+  var visibleEntries = GOAL_STATUS_LEGEND.filter(function (entry) {
+    return !!activeStatuses[entry.key];
+  });
+
+  visibleEntries.forEach(function (entry) {
     var item = document.createElement("span");
     item.className = "goal-legend-item";
     item.style.cursor = "pointer";
@@ -2715,7 +2739,7 @@ function _renderGoalToolbar() {
     if (_goalDisplayState.sortMode === mode) {
       btn.classList.add("active");
     }
-    btn.textContent = mode === "updated" ? "Recent" : "By status";
+    btn.textContent = mode === "updated" ? "Last updated" : "By status";
     btn.addEventListener("click", function () { _setGoalSort(mode); });
     sortGroup.appendChild(btn);
   });
