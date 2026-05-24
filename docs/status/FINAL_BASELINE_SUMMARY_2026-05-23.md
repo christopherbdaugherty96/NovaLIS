@@ -130,7 +130,9 @@ Goal Cards are currently:
 
 ```text
 interactive workflow visibility (PR #229, merged 2026-05-23)
+UX polished (PR #230, merged 2026-05-24)
 expand/collapse, filtering, sorting, progress bars
+user-facing labels, active-status-only legend
 localStorage UI preferences (display prefs only)
 display-only — no execution authority
 not scheduled
@@ -146,8 +148,9 @@ not a persistence-backed workflow engine yet
    Tracked by #227. Current 8GB CPU-only hardware limits conversational continuity.
 
 2. Goal Cards
-   Interactive display-state wiring complete (PR #229). Still display-only.
-   No persistence, scheduler, or governed execution envelope yet.
+   Interactive display-state (PR #229) and UX polish (PR #230) complete.
+   Still display-only. No persistence, scheduler, or governed execution
+   envelope yet.
 
 3. Memory / learning
    Planning/future only. Memory cannot authorize execution. Learning cannot become silent authority.
@@ -166,16 +169,15 @@ not a persistence-backed workflow engine yet
 
 ## Next safe product move
 
-Goal Card display-state wiring is now complete (PR #229).
+Goal Card display-state (PR #229) and UX polish (PR #230) are complete.
 
 Recommended next step:
 
 ```text
-Use the Goal Card system briefly and observe friction before deciding:
-  - Goal Card UX polish (language, layout, information density)
+Use the polished Goal Cards briefly. Decide whether friction remains.
+If not, choose between:
   - Goal Card persistence design doc (state storage != execution)
   - Return to Second Brain Slice 1 planning
-Do not start another implementation push until friction is observed.
 ```
 
 Strict limits remain:
@@ -210,7 +212,7 @@ background task loops
 ## Final verdict
 
 ```text
-Goal Cards are now interactive workflow visibility (PR #229).
-The UI is more sophisticated, but authority has not expanded.
-Observe friction before the next build. Refinement over expansion.
+Goal Cards are now polished workflow visibility (PRs #229, #230).
+The UI is clearer and more user-facing, but authority has not expanded.
+Next decision: persistence design doc or Second Brain Slice 1.
 ```
