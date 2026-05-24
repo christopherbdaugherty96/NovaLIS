@@ -132,11 +132,21 @@ Key constraints:
 ### Write path
 
 ```text
-1. Nova runtime creates/updates a goal during conversation
+1. Goal created/updated from explicit user request or
+   user-visible conversation context
 2. GovernorMediator is NOT involved (goals are not capabilities)
 3. Goal state written to goals.json via a simple file write
 4. Frontend polls or receives WebSocket push for updated goals
 5. No execution happens as a result of the write
+```
+
+Clarifying rule:
+
+```text
+Conversation-created goal updates are record updates only.
+They may be initiated by explicit user request or by
+user-visible workflow state changes.
+They cannot be inferred silently as autonomous work.
 ```
 
 Important: the write path saves state. It does not dispatch actions.
@@ -150,7 +160,8 @@ to happen.
 ```text
 GET  /api/goals          → list all goals
 GET  /api/goals/:id      → single goal detail
-POST /api/goals          → create a new goal (Nova-initiated)
+POST /api/goals          → create a new visible goal record
+                            from explicit user/conversation context
 PUT  /api/goals/:id      → update goal state (status, steps)
 ```
 
