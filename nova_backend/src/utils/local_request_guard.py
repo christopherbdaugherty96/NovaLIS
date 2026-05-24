@@ -11,6 +11,7 @@ _ALLOWED_LOOPBACK_HOSTS = {
     "testserver",
 }
 _LOCAL_ONLY_API_PREFIXES = (
+    "/api/goals",
     "/api/memory",
     "/api/settings",
     "/api/trust",
