@@ -6,6 +6,9 @@
 src/data/*.jsonl
 memory/*.jsonl
 
+# Goal state (personal, not repo state)
+nova_backend/data/goals.json
+
 # Models
 models/
 nova_backend/models/
