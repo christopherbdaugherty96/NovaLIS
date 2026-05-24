@@ -659,6 +659,12 @@ body {
 
 /* ── Goal Cards ──────────────────────────────────────────── */
 
+/* Reduce orb visual weight on content-heavy pages */
+body[data-active-page="goals"] .orb-shell {
+  opacity: 0.25;
+  transform: scale(0.7) translateZ(0);
+}
+
 .page-goals {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
