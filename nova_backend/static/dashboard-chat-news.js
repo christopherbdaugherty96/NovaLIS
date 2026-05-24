@@ -2743,6 +2743,7 @@ function setActivePage(page) {
   });
 
   activePageState = target;
+  document.body.dataset.activePage = target;
   const workspaceCurrent = $("workspace-current-label");
   if (workspaceCurrent) {
     workspaceCurrent.textContent = PAGE_LABELS[target] || "Chat";
