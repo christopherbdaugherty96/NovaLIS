@@ -112,7 +112,9 @@ not persistence-backed yet
    Tracked by #227. Current 8GB CPU-only hardware limits conversational continuity.
 
 2. Goal Cards
-   Display-only. No local display-state wiring, persistence, scheduler,
+   PR #229 completed interactive display-state.
+   PR #230 completed UX polish.
+   Still display-only. No backend persistence, scheduler,
    or governed execution envelope yet.
 
 3. Memory / learning
@@ -137,16 +139,26 @@ not persistence-backed yet
 ## Recommended Next Safe Product Move
 
 ```text
-Goal Card local display-state wiring
+Use polished Goal Cards briefly. If no major friction remains, choose:
+  1. Goal Card persistence design doc (state storage != execution)
+  2. Second Brain Slice 1 planning
+```
+
+Important boundary:
+
+```text
+Goal Card persistence design doc != persistence implementation
+Goal persistence != execution authority
+Goal Card != scheduler
+Goal Card != action engine
 ```
 
 Strict limits:
 
 ```text
-frontend/local state only
 no backend execution
 no scheduler
-no persistence unless separately designed
+no persistence without a reviewed design doc first
 no GovernorMediator changes
 no capability expansion
 no autonomy
@@ -173,6 +185,7 @@ background task loops
 ## Final Operational Direction
 
 ```text
-The repo is clean enough to stop cleaning and resume small product work.
-The next work should make Goal Cards more usable without giving them authority.
+Goal Cards are polished and usable (PRs #229, #230).
+The next work should define persistence boundaries in a design doc,
+not jump to implementation. Design doc before code.
 ```
