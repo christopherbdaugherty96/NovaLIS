@@ -1,6 +1,6 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-23 (post-PR #229)
+Last reviewed: 2026-05-24 (post-PR #230)
 
 ---
 
@@ -9,12 +9,13 @@ Last reviewed: 2026-05-23 (post-PR #229)
 ```text
 Phase: Observe and refine.
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
-Goal Cards are now interactive workflow visibility — still display-only.
+Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
+Goal Cards are now user-comprehensible workflow visibility — display-only.
 No execution authority added. No backend persistence.
 
-Use the system briefly. Observe friction. Then decide:
-  - Goal Card UX polish
-  - Goal Card persistence design doc
+Use the polished Goal Cards briefly. Decide whether friction remains.
+If not, choose between:
+  - Goal Card persistence design doc (state storage != execution)
   - Second Brain Slice 1 planning
 ```
 

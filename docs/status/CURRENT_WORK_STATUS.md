@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-23 (post-PR #229)
+Last reviewed: 2026-05-24 (post-PR #230)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,9 +19,10 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Phase: Observe and refine (2026-05-23).
+Phase: Observe and refine (2026-05-24).
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
-Goal Cards are now interactive workflow visibility — still display-only.
+Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
+Goal Cards are now user-comprehensible workflow visibility — display-only.
 No execution authority added. No backend persistence. No new capabilities.
 All four certified capabilities locked.
 ```
@@ -38,6 +39,10 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Goal Card UX polish — completed (PR #230, 2026-05-24).
+  Clearer user-facing labels, active-status-only legend,
+  "Last updated" sort, reduced orb, hidden completed buttons.
+  Frontend/UI only. No execution authority. No backend persistence.
 Goal Card local display-state — completed (PR #229, 2026-05-23).
   expand/collapse, filtering, sorting, progress bars, blocked styling,
   receipt capability badges, localStorage UI preferences.

@@ -138,6 +138,12 @@ PR #229 — Goal Card local display-state merged (expand/collapse,
           filtering, sorting, progress bars, blocked styling,
           receipt capability badges, localStorage persistence).
           Frontend-only. No execution authority.
+PR #230 — Goal Card UX polish merged (clearer user-facing labels,
+          active-status-only legend, "Last updated" sort,
+          "What Nova can / can't do" section label, clearer step
+          indicator, completed/canceled buttons hidden, reduced
+          orb visual weight). Frontend/UI only. No execution
+          authority. No backend persistence.
 ```
 
 ## Recent closed / not merged truth
@@ -246,7 +252,7 @@ Open issues: 6 total (0 active, 6 planning/future/backlog).
 ## Next correct sequence
 
 ```text
-Current phase: Observe and refine (2026-05-23)
+Current phase: Observe and refine (2026-05-24)
 
 Completed phases (summary):
   - Certification: 4 caps locked (16, 22, 64, 65), P1-P5 all pass
@@ -259,15 +265,16 @@ Completed phases (summary):
     expand/collapse, filtering, sorting, progress bars, blocked styling,
     receipt capability badges, localStorage UI preferences.
     No execution authority. Display-only. Frontend-only.
+  - Goal Card UX polish: completed (PR #230, 2026-05-24)
+    Clearer labels, active-status-only legend, reduced noise.
+    Frontend/UI only. No execution authority. No backend persistence.
 
 Current step:
-  Use the Goal Card system briefly and observe friction before deciding:
-    - Goal Card UX polish (language, layout, information density)
+  Use the polished Goal Cards briefly. Decide whether friction remains.
+  If not, choose between:
     - Goal Card persistence design doc (state storage != execution)
     - Return to Second Brain Slice 1 planning
 
-  Do not start another implementation push until friction is observed.
-  The UI is becoming more sophisticated — the docs must be clear that
   Goal Cards remain workflow visibility only, not execution capability.
 
 Parallel (manual, no Nova runtime changes):
