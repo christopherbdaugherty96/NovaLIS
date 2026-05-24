@@ -1,15 +1,21 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-23
+Last reviewed: 2026-05-23 (post-PR #229)
 
 ---
 
 ## Current Active Task
 
 ```text
-No active workstream.
-All major cleanup and hardening lanes closed.
-All four certified capabilities locked.
+Phase: Observe and refine.
+Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
+Goal Cards are now interactive workflow visibility — still display-only.
+No execution authority added. No backend persistence.
+
+Use the system briefly. Observe friction. Then decide:
+  - Goal Card UX polish
+  - Goal Card persistence design doc
+  - Second Brain Slice 1 planning
 ```
 
 Current lock truth:
