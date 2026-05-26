@@ -138,9 +138,13 @@ persistence-backed (PR #231, merged 2026-05-25)
   local JSON goal store + CRUD API
   73 boundary tests proving no execution path
   goals.json gitignored (personal state)
+frontend wired to API (PR #232, merged 2026-05-26)
+  fetches from /api/goals on each visit
+  fallback to demo data with visible notice
+  loading state with pulse animation
 display-only — no execution authority
 not scheduled
-frontend not yet wired to API (DEMO_GOAL_CARDS still in use)
+persistence complete end to end
 ```
 
 ---
@@ -154,8 +158,9 @@ frontend not yet wired to API (DEMO_GOAL_CARDS still in use)
 2. Goal Cards
    Interactive display-state (PR #229) and UX polish (PR #230) complete.
    Backend persistence (PR #231) complete — local JSON + CRUD API.
-   Frontend not wired to API yet. Still display-only.
-   No scheduler or governed execution envelope.
+   Frontend wired to API (PR #232) — fetches persisted goals, fallback
+   to demo data with visible notice. Persistence complete end to end.
+   Still display-only. No scheduler or governed execution envelope.
 
 3. Memory / learning
    Planning/future only. Memory cannot authorize execution. Learning cannot become silent authority.
@@ -174,18 +179,15 @@ frontend not yet wired to API (DEMO_GOAL_CARDS still in use)
 
 ## Next safe product move
 
-Goal Card persistence design and backend are complete
-(design doc + PR #231).
+Goal Card persistence is complete end to end
+(design doc + PR #231 backend + PR #232 frontend wiring).
 
-Recommended next step:
+Next product move requires a new reviewed priority lock:
 
 ```text
-Phase 3 — wire frontend Goal Cards to /api/goals.
-  Fetch persisted goals from API.
-  Remove DEMO_GOAL_CARDS.
-  Keep localStorage for UI preferences only.
-  Preserve DISPLAY ONLY badge.
-  Add empty/error/loading states.
+Candidates (each requires separate lock decision):
+  - Second Brain Slice 1: schema + parser + no-mutation lint
+  - UI simplification
 ```
 
 Strict limits remain:
@@ -221,7 +223,9 @@ background task loops
 ## Final verdict
 
 ```text
-Goal Cards now have polished UI (PRs #229, #230) and backend
-persistence (PR #231). Authority has not expanded. Frontend API
-wiring (Phase 3) is next. No execution, no scheduler.
+Goal Cards now have polished UI (PRs #229, #230), backend
+persistence (PR #231), and frontend API wiring (PR #232).
+Persistence is complete end to end. Authority has not expanded.
+No execution, no scheduler. Phase 4 (execution envelopes)
+requires a separate design doc and is not authorized.
 ```

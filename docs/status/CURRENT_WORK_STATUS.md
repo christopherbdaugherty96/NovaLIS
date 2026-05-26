@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-25 (post-PR #231)
+Last reviewed: 2026-05-26 (post-PR #232)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,14 +19,17 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Phase: Goal Card persistence / frontend wiring (2026-05-25).
+Phase: Goal Card persistence complete through Phase 3 (2026-05-26).
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
 Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
 Goal Card persistence design doc: COMPLETED (2026-05-24).
 Goal Card persistence Phase 2 backend: COMPLETED (PR #231, 2026-05-25).
   Local JSON goal store + CRUD API. 73 boundary tests.
   goals.json is gitignored personal state.
-Goal Cards are persistence-backed but frontend not wired to API yet.
+Goal Card Phase 3 frontend wiring: COMPLETED (PR #232, 2026-05-26).
+  Frontend fetches from /api/goals. Fallback to demo data with
+  visible notice. Loading state. DISPLAY ONLY preserved.
+Goal Cards are persistence-wired end to end.
 No execution authority added. No scheduler. No GovernorMediator changes.
 All four certified capabilities locked.
 ```
@@ -43,6 +46,11 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Goal Card Phase 3 frontend wiring — completed (PR #232, 2026-05-26).
+  Frontend fetches from /api/goals on each Goals visit.
+  Fallback to demo data with visible notice when API unreachable.
+  Loading state with pulse animation. DISPLAY ONLY preserved.
+  No execution authority. No GovernorMediator changes.
 Goal Card persistence Phase 2 — completed (PR #231, 2026-05-25).
   GoalStore (thread-safe, file-backed), /api/goals CRUD endpoints,
   73 boundary tests, local-only guard, goals.json gitignored.
@@ -778,8 +786,10 @@ No recent merge authorizes:
 ```text
 1. All four certified capabilities locked (Cap 16, 22, 64, 65).
 2. All major workstreams closed (reliability, quality, approval-gate).
-3. Goal Card display-only UI merged (PRs #217, #218, #219).
-4. Open issues: 9 total (3 active, 5 planning/future, 1 hardening).
+3. Goal Card persistence complete end to end (PRs #229-#232).
+4. Open issues: 6 total (0 active, 6 planning/future/backlog).
 5. Do not expand capabilities or add Shopify/website workflows.
 6. Do not reopen the approval-gate lane unless registry truth changes.
+7. Goal Card Phase 4 (execution) requires separate design doc.
+8. Next product move requires a new reviewed priority lock.
 ```
