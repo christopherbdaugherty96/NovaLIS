@@ -27,6 +27,11 @@ UI simplification slice: COMPLETED (PR #233, squash-merged 2026-05-26, merge com
   Frontend mirror synced.
   UI boundary tests hardened for backend static + mirror files.
   No backend runtime/governance files changed.
+Second Brain Slice 1 priority lock: ACCEPTED (PR #234, squash-merged 2026-05-26, merge commit 3c5b47e).
+  Lock-only. No implementation code.
+  Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+  No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+  execution integration, scheduler, OpenClaw integration, or capability expansion.
 No execution authority added. No scheduler. No GovernorMediator changes.
 No OpenClaw integration. No capability expansion. No Goal Card Phase 4.
 All four certified capabilities locked.
@@ -183,6 +188,14 @@ PR #233 — UI Simplification merged (priority lock, UI audit,
           frontend mirror sync, hardened UI boundary tests).
           Dashboard clarity improved without authority expansion.
           No backend runtime/governance changes.
+PR #234 — Second Brain Slice 1 priority lock merged (schema/parser/
+          no-mutation lint only). Lock-only. No implementation code.
+          Accepted next implementation scope: schemas, frontmatter parser,
+          wikilink extraction, vault health/lint, read-only file-derived
+          scaffold if needed, and non-authorizing/no-mutation tests.
+          No vector DB, MCP, dashboard graph, memory promotion, proposal
+          writes, execution integration, scheduler, OpenClaw integration,
+          or capability expansion.
 ```
 
 ## Recent closed / not merged truth
@@ -333,7 +346,8 @@ Goal Card persistence is complete through Phase 3.
 UI simplification slice is complete.
 Phase 4 (execution envelopes) requires a separate design doc
   and is not authorized.
-Next product move requires a new reviewed priority lock.
+Second Brain Slice 1 priority lock is accepted.
+Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
 
 Parallel (manual, no Nova runtime changes):
   0. Manual Obsidian setup as project operating notebook
@@ -343,24 +357,23 @@ Parallel (manual, no Nova runtime changes):
      This helps immediately without touching Nova runtime.
 
 Future order (do not start until prior step reviewed):
-  5. Decide next reviewed priority lock:
-       A. Second Brain Slice 1: schema + parser + no-mutation lint
-       B. Pause / observe / refine the newly clarified UI
-  6. Second Brain Slice 1: schema + parser + no-mutation lint
+  5. Second Brain Slice 1 implementation PR:
+     schema + parser + wikilink extraction + vault health/lint +
+     no-mutation and non-authorizing tests only.
      Scope: KnowledgeEntry/Relationship/Event schemas,
             frontmatter parser, wikilink extraction,
             vault health/lint report (read-only),
             tests proving non-authorizing invariants
-     Plan: docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION.md
+     Lock: docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1.md
      Research: docs/future/NOVA_SECOND_BRAIN_OBSIDIAN_RESEARCH_AND_IMPLEMENTATION_PLAN_2026-05-18.md
-  7. Second Brain Slice 2: deterministic index (after lint proven)
+  6. Second Brain Slice 2: deterministic index (after lint proven)
      rebuildable index, content hashes, stale/broken link detection
-  8. Second Brain Slice 3: read-only query surface
+  7. Second Brain Slice 3: read-only query surface
      knowledge.search, knowledge.get_note, knowledge.get_graph
-  9. Second Brain Slice 4: proposal-only writes (no auto-edits)
-  10. Second Brain Slice 5: living graph visualization (last)
-  11. Proposal-only planning for Goal Cards (suggest, not execute)
-  12. Single-step governed execution envelopes (much later, requires
+  8. Second Brain Slice 4: proposal-only writes (no auto-edits)
+  9. Second Brain Slice 5: living graph visualization (last)
+  10. Proposal-only planning for Goal Cards (suggest, not execute)
+  11. Single-step governed execution envelopes (much later, requires
       receipts, trust surfaces, approval envelopes, state restoration,
       interrupt handling to be mature first)
 ```

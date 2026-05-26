@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-26 (post-PR #233)
+Last reviewed: 2026-05-26 (post-PR #234)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -38,6 +38,11 @@ UI simplification slice: COMPLETED (PR #233, squash-merged 2026-05-26).
   Runtime Permissions and bounded OpenAI lane wording preserved.
   Frontend mirror synced. UI boundary tests hardened.
   No backend runtime/governance files changed.
+Second Brain Slice 1 priority lock: ACCEPTED (PR #234, squash-merged 2026-05-26).
+  Lock-only. No implementation code.
+  Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+  No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+  execution integration, scheduler, OpenClaw integration, or capability expansion.
 No execution authority added. No scheduler. No GovernorMediator changes.
 No OpenClaw integration. No capability expansion. No Goal Card Phase 4.
 All four certified capabilities locked.
@@ -55,6 +60,13 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Second Brain Slice 1 priority lock — accepted (PR #234, 2026-05-26).
+  Lock-only. No implementation code or runtime behavior changes.
+  Authorizes a future implementation PR scoped to schema, parser,
+  wikilink extraction, vault health/lint, read-only file-derived scaffold
+  if needed, and non-authorizing/no-mutation tests only.
+  No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+  execution integration, scheduler, OpenClaw integration, or capability expansion.
 UI simplification slice — completed (PR #233, 2026-05-26).
   Priority lock, UI audit, nav regrouping, clearer dashboard copy,
   Activity & Receipts terminology, Runtime Permissions, bounded OpenAI lane,
@@ -814,6 +826,8 @@ No recent merge authorizes:
 8. Do not expand capabilities or add Shopify/website workflows.
 9. Do not reopen the approval-gate lane unless registry truth changes.
 10. Goal Card Phase 4 (execution) requires separate design doc.
-11. Next product move requires a new reviewed priority lock.
-12. Next likely priority decision: Second Brain Slice 1 or pause/observe/refine.
+11. Second Brain Slice 1 priority lock accepted (PR #234).
+12. Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+13. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+    execution integration, scheduler, OpenClaw integration, or capability expansion.
 ```
