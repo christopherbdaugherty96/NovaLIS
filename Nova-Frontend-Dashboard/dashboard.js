@@ -237,6 +237,7 @@ const {
   STORAGE_KEYS,
   PAGE_LABELS,
   PRIMARY_NAV_ITEMS,
+  SECONDARY_NAV_ITEMS,
   MORNING_FALLBACK_TIMEOUT_MS,
   QUICK_ACTIONS_BY_PAGE,
   COMMAND_SUGGESTIONS,
@@ -418,6 +419,23 @@ function injectPrimaryNav() {
     button.setAttribute("aria-pressed", "false");
     host.appendChild(button);
   });
+
+  if (SECONDARY_NAV_ITEMS && SECONDARY_NAV_ITEMS.length) {
+    const sep = document.createElement("span");
+    sep.className = "nav-separator";
+    sep.setAttribute("aria-hidden", "true");
+    host.appendChild(sep);
+
+    SECONDARY_NAV_ITEMS.forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "primary-nav-btn secondary-nav-btn";
+      button.dataset.page = item.page;
+      button.textContent = item.label;
+      button.setAttribute("aria-pressed", "false");
+      host.appendChild(button);
+    });
+  }
 }
 
 function setPTTButtonState(state = "idle") {

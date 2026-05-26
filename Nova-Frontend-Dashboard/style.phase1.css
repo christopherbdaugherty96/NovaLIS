@@ -203,6 +203,45 @@ body {
   color: #f4fbff;
 }
 
+.nav-separator {
+  display: inline-block;
+  width: 1px;
+  height: 1.2em;
+  margin: 0 0.3rem;
+  background: rgba(143, 218, 255, 0.18);
+  vertical-align: middle;
+}
+
+.secondary-nav-btn {
+  opacity: 0.7;
+  font-size: 0.78rem;
+}
+
+.secondary-nav-btn:hover {
+  opacity: 1;
+}
+
+.secondary-nav-btn.active {
+  opacity: 1;
+}
+
+.goal-page-trust-link {
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.goal-page-trust-link a {
+  color: rgba(143, 218, 255, 0.85);
+  text-decoration: underline;
+  text-decoration-color: rgba(143, 218, 255, 0.3);
+}
+
+.goal-page-trust-link a:hover {
+  color: #f4fbff;
+  text-decoration-color: rgba(143, 218, 255, 0.6);
+}
+
 .brand-subtitle {
   margin: 2px 0 0;
   color: var(--muted);
