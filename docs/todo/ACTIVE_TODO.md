@@ -1,6 +1,6 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-26 (post-PR #233)
+Last reviewed: 2026-05-26 (post-PR #234)
 
 ---
 
@@ -25,11 +25,16 @@ UI simplification slice: COMPLETED (PR #233, 2026-05-26).
   Runtime Permissions and bounded OpenAI lane wording preserved.
   Frontend mirror synced. UI boundary tests hardened.
   No backend runtime/governance changes.
+Second Brain Slice 1 priority lock: ACCEPTED (PR #234, 2026-05-26).
+  Lock-only. No implementation code.
+  Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+  No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+  execution integration, scheduler, OpenClaw integration, or capability expansion.
 
 Goal Card persistence is complete. Phase 4 (execution envelopes)
 requires a separate design doc and is not authorized.
 Dashboard clarity is improved. Goal Cards remain display-only.
-Next product move requires a new reviewed priority lock.
+Second Brain Slice 1 priority lock is accepted.
 ```
 
 Current lock truth:
@@ -162,12 +167,12 @@ dashboard clarity improved (PR #233 UI simplification)
 ```text
 Goal Card persistence is complete through Phase 3.
 UI simplification slice is complete.
+Second Brain Slice 1 priority lock is accepted.
 Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
-Next product moves (each requires separate reviewed priority lock):
-  - Second Brain Slice 1: schema + parser + no-mutation lint
-  - Pause / observe / refine the newly clarified UI
+Next authorized implementation PR:
+  - Second Brain Slice 1: schema/parser/wikilink/vault lint/no-mutation tests only
 ```
 
 Important boundary:
@@ -204,6 +209,9 @@ Goal Card persistence is complete end to end (design doc +
 PR #231 backend + PR #232 frontend wiring). UI simplification
 is complete (PR #233). Dashboard clarity improved without
 authority expansion. Goal Cards remain display-only. No
-execution, no scheduler, no GovernorMediator changes. Next
-product move requires a new reviewed priority lock.
+execution, no scheduler, no GovernorMediator changes. Second
+Brain Slice 1 priority lock is accepted (PR #234). Next
+implementation PR is limited to schema, parser, wikilink
+extraction, vault health/lint, and non-authorizing/no-mutation
+tests only.
 ```

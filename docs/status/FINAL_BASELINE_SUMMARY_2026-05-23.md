@@ -151,6 +151,11 @@ UI simplification completed (PR #233, squash-merged 2026-05-26)
   Runtime Permissions and bounded OpenAI lane wording preserved
   frontend mirror synced
   UI boundary tests hardened
+Second Brain Slice 1 priority lock accepted (PR #234, squash-merged 2026-05-26)
+  lock-only; no implementation code
+  next implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only
+  no vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+  execution integration, scheduler, OpenClaw integration, or capability expansion
 display-only — no execution authority
 not scheduled
 persistence complete end to end
@@ -194,13 +199,18 @@ Goal Card persistence is complete end to end
 UI simplification slice is complete (PR #233).
 Dashboard clarity improved without authority expansion.
 Goal Cards remain display-only.
+Second Brain Slice 1 priority lock is accepted (PR #234).
 
-Next product move requires a new reviewed priority lock:
+Next authorized implementation PR:
 
 ```text
-Candidates (each requires separate lock decision):
-  - Second Brain Slice 1: schema + parser + no-mutation lint
-  - Pause / observe / refine the newly clarified UI
+Second Brain Slice 1:
+  schema
+  parser
+  wikilink extraction
+  vault health/lint
+  no-mutation tests
+  non-authorizing tests
 ```
 
 Strict limits remain:
@@ -213,6 +223,8 @@ no capability expansion
 no autonomy
 no automatic step advancement
 no OpenClaw integration
+no vector DB / MCP / dashboard graph in Second Brain Slice 1
+no memory promotion / proposal writes / execution integration in Slice 1
 ```
 
 Do not start next:
@@ -242,6 +254,8 @@ Persistence is complete end to end. UI simplification is complete
 (PR #233). Dashboard clarity improved without authority expansion.
 Goal Cards remain display-only. No execution, no scheduler.
 Phase 4 (execution envelopes) requires a separate design doc and
-is not authorized. Next product move requires a new reviewed
-priority lock.
+is not authorized. Second Brain Slice 1 priority lock is accepted
+(PR #234). Next implementation PR is limited to schema, parser,
+wikilink extraction, vault health/lint, and non-authorizing/no-mutation
+tests only.
 ```
