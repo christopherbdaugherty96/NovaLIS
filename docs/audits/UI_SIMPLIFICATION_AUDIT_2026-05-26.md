@@ -17,8 +17,9 @@ Issues:
 - No visual grouping between "use Nova" pages (Chat, Home,
   Goals, News) and "inspect/configure" pages (Trust, Settings,
   Rules, Memory, Agent, Workspace)
-- Intro is last in the list but is the first thing a new user
-  needs
+- Intro is useful during first-run, but the welcome flow already
+  covers that path; it does not need to stay in the primary nav
+  after setup
 ```
 
 Classification:
@@ -140,8 +141,8 @@ optional polish: Simplify "governed card" language
 
 ## Trust / receipt discoverability
 
-Trust page exists at nav item "Trust" with title "Activity
-Log." Contains: Operating State, Action Receipts, Recent
+Trust page exists at nav item "Activity" with title "Activity
+& Receipts." Contains: Operating State, Action Receipts, Recent
 Governed Actions, Blocked Conditions, Runtime Health,
 Operational Context, Assistive Notices, Voice Runtime,
 Reasoning Transparency, Remote Bridge, Rules And Limits,
@@ -160,10 +161,10 @@ Issues:
 Classification:
 
 ```text
-must fix: Add "View activity log" link on Goals page
+must fix: Add "View activity receipts" link on Goals page
   so users can find receipts from Goal Cards context
 optional polish: Rename "Recent Governed Actions" to
-  "Recent Actions"
+  "Recent Action Receipts"
 defer: Simplify Trust page section count
 ```
 
@@ -221,7 +222,7 @@ defer: Rules page execution language (separate concern)
 1. Goals page: replace "Your Workflows" kicker
 2. Goals page: replace "Visible, bounded, proof-tracked"
 3. Goals page: add helper text about no execution
-4. Goals page: add link to Trust / Activity Log
+4. Goals page: add link to Activity & Receipts
 5. Replace "governed" jargon in key user-facing labels
 6. Nav grouping: separate use-pages from inspect-pages
 ```
@@ -234,6 +235,7 @@ defer: Rules page execution language (separate concern)
 3. Rename "Workflow Focus" kicker
 4. Simplify empty state "governed card" language
 5. Rename "Recent Governed Actions" in Trust page
+   to "Recent Action Receipts"
 6. Soften Agent page execution language
 ```
 

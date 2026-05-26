@@ -26,7 +26,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     goals: "Goals",
     memory: "Memory",
     policy: "Rules",
-    trust: "Activity",
+    trust: "Activity & Receipts",
     settings: "Settings",
   },
   PRIMARY_NAV_ITEMS: [

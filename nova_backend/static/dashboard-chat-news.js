@@ -2736,7 +2736,7 @@ function setActivePage(page) {
   if (main) main.scrollTop = 0;
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
-  document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn").forEach((btn) => {
+  document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn, .goal-page-link").forEach((btn) => {
     const active = btn.dataset.page === target;
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-pressed", active ? "true" : "false");
@@ -3346,7 +3346,7 @@ function setupProfileHandlers() {
 }
 
 function setupPageNavigation() {
-  const buttons = document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn");
+  const buttons = document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn, .goal-page-link");
   if (!buttons || buttons.length === 0) return;
 
   buttons.forEach((btn) => {
@@ -3937,7 +3937,7 @@ function injectHeaderMenus() {
     { label: "Home", page: "home" },
     { label: "Goals", page: "goals" },
     { label: "News", page: "news" },
-    { label: "Activity", page: "trust" },
+    { label: "Activity & Receipts", page: "trust" },
     { label: "Settings", page: "settings" },
     { label: "Agent", page: "agent" },
     { label: "Workspace", page: "workspace" },
