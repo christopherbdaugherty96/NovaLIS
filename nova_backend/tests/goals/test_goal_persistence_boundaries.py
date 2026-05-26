@@ -352,6 +352,15 @@ class TestUIClarity:
         )
         return path.read_text(encoding="utf-8")
 
+    def _ui_source_paths(self):
+        root = Path(__file__).resolve().parent.parent.parent.parent
+        return [
+            root / "nova_backend" / "static" / "index.html",
+            root / "Nova-Frontend-Dashboard" / "index.html",
+            root / "nova_backend" / "static" / "dashboard.js",
+            root / "Nova-Frontend-Dashboard" / "dashboard.js",
+        ]
+
     def test_display_only_badge_still_present(self):
         text = self._read_static("index.html")
         assert "Display only" in text
@@ -369,6 +378,28 @@ class TestUIClarity:
             assert forbidden not in goal_section.lower(), (
                 f"Goal page must not contain '{forbidden}'"
             )
+
+    def test_no_visible_goal_execution_labels_in_static_or_mirror(self):
+        forbidden_labels = [
+            "Run goal",
+            "Execute goal",
+            "Schedule goal",
+            "Start automation",
+            "Click to run",
+        ]
+        for path in self._ui_source_paths():
+            text = path.read_text(encoding="utf-8")
+            for label in forbidden_labels:
+                assert label not in text, (
+                    f"{path.name} must not expose visible goal execution "
+                    f"label {label!r}"
+                )
+
+    def test_goal_receipt_link_uses_navigation_handler(self):
+        for path in self._ui_source_paths()[:2]:
+            text = path.read_text(encoding="utf-8")
+            assert "onclick=\"setActivePage('trust')" not in text
+            assert 'class="goal-page-link" data-page="trust"' in text
 
     def test_no_run_execute_schedule_in_goal_js(self):
         text = self._read_static("dashboard.js")
