@@ -1107,6 +1107,27 @@ body[data-active-page="goals"] .orb-shell {
   color: var(--muted);
 }
 
+/* Goal Card — loading state */
+
+.goal-loading-state {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: 32px 14px;
+}
+
+.goal-loading-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  animation: goal-loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes goal-loading-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 /* Goal Card — status legend */
 
 .goal-status-legend {
