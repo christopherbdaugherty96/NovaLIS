@@ -19,7 +19,16 @@ Goal Card Phase 3 frontend wiring: COMPLETED (PR #232, merged 2026-05-26).
   localStorage for UI preferences only.
   DISPLAY ONLY badge preserved.
 Goal Cards are now persistence-wired end to end.
+UI simplification slice: COMPLETED (PR #233, squash-merged 2026-05-26, merge commit 37e61f9).
+  Dashboard clarity improved without authority expansion.
+  Goals copy now states display-only/no task execution.
+  Activity & Receipts terminology restored where receipt/proof truth matters.
+  Runtime Permissions and bounded OpenAI lane wording preserved.
+  Frontend mirror synced.
+  UI boundary tests hardened for backend static + mirror files.
+  No backend runtime/governance files changed.
 No execution authority added. No scheduler. No GovernorMediator changes.
+No OpenClaw integration. No capability expansion. No Goal Card Phase 4.
 All four certified capabilities locked.
 ```
 
@@ -168,6 +177,12 @@ PR #232 — Goal Card Phase 3 frontend wiring merged (fetch from
           /api/goals, fallback to demo data with visible notice,
           loading state, DISPLAY ONLY preserved). No execution
           authority. No GovernorMediator changes.
+PR #233 — UI Simplification merged (priority lock, UI audit,
+          nav regrouping, clearer dashboard copy, Activity & Receipts
+          terminology, Runtime Permissions, bounded OpenAI lane,
+          frontend mirror sync, hardened UI boundary tests).
+          Dashboard clarity improved without authority expansion.
+          No backend runtime/governance changes.
 ```
 
 ## Recent closed / not merged truth
@@ -276,7 +291,7 @@ Open issues: 6 total (0 active, 6 planning/future/backlog).
 ## Next correct sequence
 
 ```text
-Current phase: Goal Card persistence / frontend wiring (2026-05-25)
+Current phase: Post-UI-simplification continuity sync (2026-05-26)
 
 Completed phases (summary):
   - Certification: 4 caps locked (16, 22, 64, 65), P1-P5 all pass
@@ -306,10 +321,19 @@ Completed:
     loading/error/empty states added.
   No execution, no scheduler, no automatic step advancement,
     no GovernorMediator integration, no OpenClaw integration.
+  UI simplification slice: completed (PR #233).
+    Priority lock and audit landed.
+    Dashboard clarity improved without authority expansion.
+    Activity & Receipts, Runtime Permissions, bounded OpenAI lane,
+      Goals display-only language, nav hierarchy, and mirror sync landed.
+    Hardened UI boundary tests cover backend static + frontend mirror files.
+    No backend runtime/governance changes.
 
 Goal Card persistence is complete through Phase 3.
+UI simplification slice is complete.
 Phase 4 (execution envelopes) requires a separate design doc
   and is not authorized.
+Next product move requires a new reviewed priority lock.
 
 Parallel (manual, no Nova runtime changes):
   0. Manual Obsidian setup as project operating notebook
@@ -319,21 +343,24 @@ Parallel (manual, no Nova runtime changes):
      This helps immediately without touching Nova runtime.
 
 Future order (do not start until prior step reviewed):
-  5. Second Brain Slice 1: schema + parser + no-mutation lint
+  5. Decide next reviewed priority lock:
+       A. Second Brain Slice 1: schema + parser + no-mutation lint
+       B. Pause / observe / refine the newly clarified UI
+  6. Second Brain Slice 1: schema + parser + no-mutation lint
      Scope: KnowledgeEntry/Relationship/Event schemas,
             frontmatter parser, wikilink extraction,
             vault health/lint report (read-only),
             tests proving non-authorizing invariants
      Plan: docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION.md
      Research: docs/future/NOVA_SECOND_BRAIN_OBSIDIAN_RESEARCH_AND_IMPLEMENTATION_PLAN_2026-05-18.md
-  6. Second Brain Slice 2: deterministic index (after lint proven)
+  7. Second Brain Slice 2: deterministic index (after lint proven)
      rebuildable index, content hashes, stale/broken link detection
-  7. Second Brain Slice 3: read-only query surface
+  8. Second Brain Slice 3: read-only query surface
      knowledge.search, knowledge.get_note, knowledge.get_graph
-  8. Second Brain Slice 4: proposal-only writes (no auto-edits)
-  9. Second Brain Slice 5: living graph visualization (last)
-  10. Proposal-only planning for Goal Cards (suggest, not execute)
-  11. Single-step governed execution envelopes (much later, requires
+  9. Second Brain Slice 4: proposal-only writes (no auto-edits)
+  10. Second Brain Slice 5: living graph visualization (last)
+  11. Proposal-only planning for Goal Cards (suggest, not execute)
+  12. Single-step governed execution envelopes (much later, requires
       receipts, trust surfaces, approval envelopes, state restoration,
       interrupt handling to be mature first)
 ```

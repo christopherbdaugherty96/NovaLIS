@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-26 (post-PR #232)
+Last reviewed: 2026-05-26 (post-PR #233)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -30,7 +30,16 @@ Goal Card Phase 3 frontend wiring: COMPLETED (PR #232, 2026-05-26).
   Frontend fetches from /api/goals. Fallback to demo data with
   visible notice. Loading state. DISPLAY ONLY preserved.
 Goal Cards are persistence-wired end to end.
+UI simplification slice: COMPLETED (PR #233, squash-merged 2026-05-26).
+  Priority lock and UI audit landed.
+  Dashboard clarity improved without authority expansion.
+  Goals page clarity improved while preserving display-only truth.
+  Activity & Receipts terminology restored.
+  Runtime Permissions and bounded OpenAI lane wording preserved.
+  Frontend mirror synced. UI boundary tests hardened.
+  No backend runtime/governance files changed.
 No execution authority added. No scheduler. No GovernorMediator changes.
+No OpenClaw integration. No capability expansion. No Goal Card Phase 4.
 All four certified capabilities locked.
 ```
 
@@ -46,6 +55,12 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+UI simplification slice — completed (PR #233, 2026-05-26).
+  Priority lock, UI audit, nav regrouping, clearer dashboard copy,
+  Activity & Receipts terminology, Runtime Permissions, bounded OpenAI lane,
+  frontend mirror sync, and hardened UI boundary tests landed.
+  Dashboard clarity improved without authority expansion.
+  No backend runtime/governance changes.
 Goal Card Phase 3 frontend wiring — completed (PR #232, 2026-05-26).
   Frontend fetches from /api/goals on each Goals visit.
   Fallback to demo data with visible notice when API unreachable.
@@ -699,9 +714,7 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 Active follow-ups:
 
 ```text
-#142 — RS-2 capability list truncation needs reproduction.
-#143 — "tell me more" with prior context needs session-state-aware test.
-#214 — Multi-turn context continuity hardening (evidence captured).
+(none)
 ```
 
 Open planning / future trackers (not active workstreams):
@@ -712,19 +725,27 @@ Open planning / future trackers (not active workstreams):
 #73 — Governed learning layer planning.
 #74 — Brain matrix / Daily Brief boundary planning.
 #189 — Ecosystem simulation / operator proof / multi-model advisory.
+#227 — Local LLM throughput limits conversational continuity on 8GB
+       CPU-only hardware (hardware backlog, not code defect).
 ```
 
 Open hardening review:
 
 ```text
-#163 — External security scan findings. Needs bounded verification.
+(none)
 ```
 
 Recently closed:
 
 ```text
 #141 — closed. Search widget WebSocket surfacing fix and live proof.
+#142 — closed (PR #224, frontend collapse exemption for capability help).
+#143 — closed (PR #223, session-state-aware ambient context guard tests).
+#163 — closed (PR #221, security scan verification).
 #208 — closed. Everyday reliability complete (PRs #206-#213).
+#214 — closed (PRs #223, #226 fixed deterministic gaps; remaining is
+       hardware-bound, replaced by #227).
+#215 — closed (boundary clarity fixed, commit 2485761).
 #216 — closed. Cap 65 P5 complete, locked (2026-05-22).
 ```
 
@@ -733,7 +754,6 @@ Recently closed:
 ## Queued / Not Active Without Separate Reviewed Priority Lock
 
 ```text
-UI simplification
 Google connector runtime implementation
 Shopify writes (Cap 65 is read-only only)
 ElevenLabs implementation
@@ -787,9 +807,13 @@ No recent merge authorizes:
 1. All four certified capabilities locked (Cap 16, 22, 64, 65).
 2. All major workstreams closed (reliability, quality, approval-gate).
 3. Goal Card persistence complete end to end (PRs #229-#232).
-4. Open issues: 6 total (0 active, 6 planning/future/backlog).
-5. Do not expand capabilities or add Shopify/website workflows.
-6. Do not reopen the approval-gate lane unless registry truth changes.
-7. Goal Card Phase 4 (execution) requires separate design doc.
-8. Next product move requires a new reviewed priority lock.
+4. UI simplification slice complete (PR #233).
+5. Dashboard clarity improved without authority expansion.
+6. Goal Cards remain display-only.
+7. Open issues: 6 total (0 active, 6 planning/future/backlog).
+8. Do not expand capabilities or add Shopify/website workflows.
+9. Do not reopen the approval-gate lane unless registry truth changes.
+10. Goal Card Phase 4 (execution) requires separate design doc.
+11. Next product move requires a new reviewed priority lock.
+12. Next likely priority decision: Second Brain Slice 1 or pause/observe/refine.
 ```
