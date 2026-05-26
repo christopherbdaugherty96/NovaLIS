@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-24 (post-PR #230)
+Last reviewed: 2026-05-25 (post-PR #231)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,11 +19,15 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Phase: Observe and refine (2026-05-24).
+Phase: Goal Card persistence / frontend wiring (2026-05-25).
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
 Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
-Goal Cards are now user-comprehensible workflow visibility — display-only.
-No execution authority added. No backend persistence. No new capabilities.
+Goal Card persistence design doc: COMPLETED (2026-05-24).
+Goal Card persistence Phase 2 backend: COMPLETED (PR #231, 2026-05-25).
+  Local JSON goal store + CRUD API. 73 boundary tests.
+  goals.json is gitignored personal state.
+Goal Cards are persistence-backed but frontend not wired to API yet.
+No execution authority added. No scheduler. No GovernorMediator changes.
 All four certified capabilities locked.
 ```
 
@@ -39,6 +43,13 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Goal Card persistence Phase 2 — completed (PR #231, 2026-05-25).
+  GoalStore (thread-safe, file-backed), /api/goals CRUD endpoints,
+  73 boundary tests, local-only guard, goals.json gitignored.
+  No execution authority. No GovernorMediator changes. No scheduler.
+Goal Card persistence design doc — completed (2026-05-24).
+  Defined goal→action PROHIBITED boundary.
+  Design doc before code. Wording tightened for no autonomous mutation.
 Goal Card UX polish — completed (PR #230, 2026-05-24).
   Clearer user-facing labels, active-status-only legend,
   "Last updated" sort, reduced orb, hidden completed buttons.

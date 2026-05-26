@@ -3,11 +3,16 @@
 Current active task:
 
 ```text
-Phase: Observe and refine (2026-05-23).
+Phase: Goal Card persistence (2026-05-25).
 Goal Card local display-state: COMPLETED (PR #229, merged 2026-05-23).
-Goal Cards are now interactive workflow visibility — still display-only.
-No execution authority added. No backend persistence. No new capabilities.
-All active issues closed. LLM throughput tracked as backlog (#227).
+Goal Card UX polish: COMPLETED (PR #230, merged 2026-05-24).
+Goal Card persistence design doc: COMPLETED (2026-05-24).
+Goal Card persistence Phase 2 backend: COMPLETED (PR #231, merged 2026-05-25).
+  Local JSON goal store + CRUD API implemented.
+  73 boundary tests proving no execution path.
+  goals.json is gitignored personal state.
+Goal Cards are now persistence-backed but frontend not wired yet.
+No execution authority added. No scheduler. No GovernorMediator changes.
 All four certified capabilities locked.
 ```
 
@@ -144,6 +149,14 @@ PR #230 — Goal Card UX polish merged (clearer user-facing labels,
           indicator, completed/canceled buttons hidden, reduced
           orb visual weight). Frontend/UI only. No execution
           authority. No backend persistence.
+65afc3e — Goal Card persistence design doc committed (2026-05-24).
+144d86f — Persistence design doc wording tightened — no autonomous
+          mutation. "Nova-initiated" → "explicit user/conversation
+          context."
+PR #231 — Goal Card persistence Phase 2 merged (local JSON goal
+          store, GET/POST/PUT /api/goals, 73 boundary tests,
+          local-only guard, goals.json gitignored). No execution
+          authority. No GovernorMediator changes. No scheduler.
 ```
 
 ## Recent closed / not merged truth
@@ -252,7 +265,7 @@ Open issues: 6 total (0 active, 6 planning/future/backlog).
 ## Next correct sequence
 
 ```text
-Current phase: Observe and refine (2026-05-24)
+Current phase: Goal Card persistence / frontend wiring (2026-05-25)
 
 Completed phases (summary):
   - Certification: 4 caps locked (16, 22, 64, 65), P1-P5 all pass
@@ -268,14 +281,20 @@ Completed phases (summary):
   - Goal Card UX polish: completed (PR #230, 2026-05-24)
     Clearer labels, active-status-only legend, reduced noise.
     Frontend/UI only. No execution authority. No backend persistence.
+  - Goal Card persistence design doc: completed (2026-05-24)
+    Defined goal→action PROHIBITED boundary.
+    Authorized local JSON + CRUD API only.
+  - Goal Card persistence Phase 2: completed (PR #231, 2026-05-25)
+    GoalStore, /api/goals endpoints, 73 boundary tests.
+    No execution authority. No scheduler. No GovernorMediator changes.
 
 Current step:
-  Use the polished Goal Cards briefly. Decide whether friction remains.
-  If not, choose between:
-    - Goal Card persistence design doc (state storage != execution)
-    - Return to Second Brain Slice 1 planning
-
-  Goal Cards remain workflow visibility only, not execution capability.
+  Phase 3 — wire frontend Goal Cards to /api/goals.
+  Scope: fetch persisted goals, remove DEMO_GOAL_CARDS,
+    keep localStorage for UI prefs only, preserve DISPLAY ONLY,
+    add empty/error/loading states.
+  No execution, no scheduler, no automatic step advancement,
+    no GovernorMediator integration, no OpenClaw integration.
 
 Parallel (manual, no Nova runtime changes):
   0. Manual Obsidian setup as project operating notebook
@@ -285,8 +304,6 @@ Parallel (manual, no Nova runtime changes):
      This helps immediately without touching Nova runtime.
 
 Future order (do not start until prior step reviewed):
-  3. Goal Card persistence design doc (state storage != execution)
-  4. Local persistence only (still no execution)
   5. Second Brain Slice 1: schema + parser + no-mutation lint
      Scope: KnowledgeEntry/Relationship/Event schemas,
             frontmatter parser, wikilink extraction,

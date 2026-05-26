@@ -134,9 +134,13 @@ UX polished (PR #230, merged 2026-05-24)
 expand/collapse, filtering, sorting, progress bars
 user-facing labels, active-status-only legend
 localStorage UI preferences (display prefs only)
+persistence-backed (PR #231, merged 2026-05-25)
+  local JSON goal store + CRUD API
+  73 boundary tests proving no execution path
+  goals.json gitignored (personal state)
 display-only — no execution authority
 not scheduled
-not a persistence-backed workflow engine yet
+frontend not yet wired to API (DEMO_GOAL_CARDS still in use)
 ```
 
 ---
@@ -149,8 +153,9 @@ not a persistence-backed workflow engine yet
 
 2. Goal Cards
    Interactive display-state (PR #229) and UX polish (PR #230) complete.
-   Still display-only. No persistence, scheduler, or governed execution
-   envelope yet.
+   Backend persistence (PR #231) complete — local JSON + CRUD API.
+   Frontend not wired to API yet. Still display-only.
+   No scheduler or governed execution envelope.
 
 3. Memory / learning
    Planning/future only. Memory cannot authorize execution. Learning cannot become silent authority.
@@ -169,15 +174,18 @@ not a persistence-backed workflow engine yet
 
 ## Next safe product move
 
-Goal Card display-state (PR #229) and UX polish (PR #230) are complete.
+Goal Card persistence design and backend are complete
+(design doc + PR #231).
 
 Recommended next step:
 
 ```text
-Use the polished Goal Cards briefly. Decide whether friction remains.
-If not, choose between:
-  - Goal Card persistence design doc (state storage != execution)
-  - Return to Second Brain Slice 1 planning
+Phase 3 — wire frontend Goal Cards to /api/goals.
+  Fetch persisted goals from API.
+  Remove DEMO_GOAL_CARDS.
+  Keep localStorage for UI preferences only.
+  Preserve DISPLAY ONLY badge.
+  Add empty/error/loading states.
 ```
 
 Strict limits remain:
@@ -185,10 +193,11 @@ Strict limits remain:
 ```text
 no backend execution
 no scheduler
-no persistence unless separately designed
 no GovernorMediator changes
 no capability expansion
 no autonomy
+no automatic step advancement
+no OpenClaw integration
 ```
 
 Do not start next:
@@ -212,7 +221,7 @@ background task loops
 ## Final verdict
 
 ```text
-Goal Cards are now polished workflow visibility (PRs #229, #230).
-The UI is clearer and more user-facing, but authority has not expanded.
-Next decision: persistence design doc or Second Brain Slice 1.
+Goal Cards now have polished UI (PRs #229, #230) and backend
+persistence (PR #231). Authority has not expanded. Frontend API
+wiring (Phase 3) is next. No execution, no scheduler.
 ```
