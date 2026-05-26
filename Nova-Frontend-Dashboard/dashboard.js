@@ -2118,9 +2118,9 @@ function renderMemoryCenterSurface() {
  * No execution, no scheduler, no backend authority.
  * Planning is not authority. Goal state is not permission.
  *
- * DEMO_GOAL_CARDS is kept as fallback data only — used when
- * the API is unreachable (e.g., server not running).
- * Once the API responds, this is replaced by real data.
+ * _DEMO_GOAL_CARDS_FALLBACK is kept as fallback data only — used
+ * when the API is unreachable during local development.
+ * Once the API responds, fetched goal data replaces it.
  */
 var _goalCardsData = null;   // null = not yet fetched
 var _goalCardsFetchState = "idle"; // idle | loading | loaded | error
@@ -2823,6 +2823,16 @@ function renderGoalCardsPage() {
   if (_goalCardsData === null && _goalCardsFetchState === "idle") {
     _fetchGoalCards();
     return;
+  }
+
+  // Show visible fallback notice when API failed
+  if (_goalCardsFetchState === "error") {
+    var notice = document.createElement("div");
+    notice.className = "goal-fallback-notice";
+    notice.setAttribute("role", "status");
+    notice.textContent =
+      "Showing demo goals because local goal storage is unavailable.";
+    container.appendChild(notice);
   }
 
   var goals = _getGoalCards();
