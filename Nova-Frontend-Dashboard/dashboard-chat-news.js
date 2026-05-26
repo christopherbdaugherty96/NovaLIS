@@ -3934,14 +3934,16 @@ function injectHeaderMenus() {
   workspaceGrid.className = "header-menu-grid";
   [
     { label: "Chat", page: "chat" },
-    { label: "News", page: "news" },
-    { label: "Intro", page: "intro" },
     { label: "Home", page: "home" },
+    { label: "Goals", page: "goals" },
+    { label: "News", page: "news" },
+    { label: "Activity", page: "trust" },
+    { label: "Settings", page: "settings" },
+    { label: "Agent", page: "agent" },
     { label: "Workspace", page: "workspace" },
     { label: "Memory", page: "memory" },
-    { label: "Policies", page: "policy" },
-    { label: "Trust", page: "trust" },
-    { label: "Settings", page: "settings" },
+    { label: "Rules", page: "policy" },
+    { label: "Intro", page: "intro" },
   ].forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";

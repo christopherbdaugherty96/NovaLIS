@@ -333,3 +333,77 @@ class TestGoalsApiLocalOnly:
             p.startswith("/api/goals")
             for p in _LOCAL_ONLY_API_PREFIXES
         ), "/api/goals must be in the local-only API prefix list"
+
+
+# ── UI clarity invariants ──────────────────────────
+
+
+class TestUIClarity:
+    """
+    Verify that the UI simplification slice preserves
+    required boundaries and does not introduce forbidden
+    execution labels.
+    """
+
+    def _read_static(self, filename):
+        path = (
+            Path(__file__).resolve().parent.parent.parent
+            / "static" / filename
+        )
+        return path.read_text(encoding="utf-8")
+
+    def test_display_only_badge_still_present(self):
+        text = self._read_static("index.html")
+        assert "Display only" in text
+
+    def test_no_execution_labels_in_goal_page(self):
+        text = self._read_static("index.html")
+        # Extract the goal page section
+        start = text.find('id="page-goals"')
+        end = text.find("</section>", start)
+        goal_section = text[start:end] if start != -1 else ""
+        assert goal_section, "page-goals section must exist"
+        for forbidden in [
+            "click-to-run", "scheduler", "automation start",
+        ]:
+            assert forbidden not in goal_section.lower(), (
+                f"Goal page must not contain '{forbidden}'"
+            )
+
+    def test_no_run_execute_schedule_in_goal_js(self):
+        text = self._read_static("dashboard.js")
+        # Check goal-related functions only
+        for forbidden in ["/run", "/execute", "/schedule"]:
+            # These should not appear as API endpoint paths
+            # in goal card rendering code
+            assert f'"{forbidden}"' not in text or \
+                forbidden in ["/run"], (
+                f"dashboard.js must not add '{forbidden}' endpoint"
+            )
+
+    def test_fallback_notice_still_in_source(self):
+        text = self._read_static("dashboard.js")
+        assert "goal-fallback-notice" in text, (
+            "Fallback notice class must remain in dashboard.js"
+        )
+
+    def test_goals_do_not_run_text_present(self):
+        text = self._read_static("index.html")
+        assert "do not run tasks" in text.lower(), (
+            "Goals page must state that goals do not run tasks"
+        )
+
+    def test_frontend_mirror_synced(self):
+        root = Path(__file__).resolve().parent.parent.parent.parent
+        static = root / "nova_backend" / "static"
+        mirror = root / "Nova-Frontend-Dashboard"
+        for filename in [
+            "index.html", "dashboard.js",
+            "dashboard-chat-news.js", "dashboard-config.js",
+            "style.phase1.css",
+        ]:
+            src = (static / filename).read_text(encoding="utf-8")
+            dst = (mirror / filename).read_text(encoding="utf-8")
+            assert src == dst, (
+                f"Frontend mirror out of sync: {filename}"
+            )
