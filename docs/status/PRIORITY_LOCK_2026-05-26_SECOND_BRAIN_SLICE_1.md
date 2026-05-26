@@ -321,8 +321,12 @@ runtime execution integration
 
 ## 10. Final Verdict
 
-Second Brain Slice 1 is approved for review as a lock-first, code-second
+Second Brain Slice 1 is ready for review as a lock-first, code-second
 workstream.
+
+This lock does not implement Second Brain Slice 1. When merged, it authorizes a
+future implementation PR scoped to schema, parser, wikilink extraction, vault
+health/lint, and non-authorizing tests only.
 
 Authorized next action:
 
