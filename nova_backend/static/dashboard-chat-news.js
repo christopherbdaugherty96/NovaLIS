@@ -2764,6 +2764,11 @@ function setActivePage(page) {
     renderPolicyCenterPage();
   }
   if (target === "goals") {
+    // Refresh goal data from API on each navigation to goals page
+    if (typeof _fetchGoalCards === "function") {
+      _goalCardsFetchState = "idle";
+      _goalCardsData = null;
+    }
     if (typeof renderGoalCardsPage === "function") renderGoalCardsPage();
   }
   if (target === "home") {
