@@ -142,6 +142,15 @@ frontend wired to API (PR #232, merged 2026-05-26)
   fetches from /api/goals on each visit
   fallback to demo data with visible notice
   loading state with pulse animation
+UI simplification completed (PR #233, squash-merged 2026-05-26)
+  priority lock and UI audit landed
+  dashboard clarity improved without authority expansion
+  cleaner nav hierarchy
+  clearer Goals display-only language
+  Activity & Receipts terminology restored
+  Runtime Permissions and bounded OpenAI lane wording preserved
+  frontend mirror synced
+  UI boundary tests hardened
 display-only — no execution authority
 not scheduled
 persistence complete end to end
@@ -160,6 +169,7 @@ persistence complete end to end
    Backend persistence (PR #231) complete — local JSON + CRUD API.
    Frontend wired to API (PR #232) — fetches persisted goals, fallback
    to demo data with visible notice. Persistence complete end to end.
+   UI simplification/product clarity (PR #233) complete.
    Still display-only. No scheduler or governed execution envelope.
 
 3. Memory / learning
@@ -181,13 +191,16 @@ persistence complete end to end
 
 Goal Card persistence is complete end to end
 (design doc + PR #231 backend + PR #232 frontend wiring).
+UI simplification slice is complete (PR #233).
+Dashboard clarity improved without authority expansion.
+Goal Cards remain display-only.
 
 Next product move requires a new reviewed priority lock:
 
 ```text
 Candidates (each requires separate lock decision):
   - Second Brain Slice 1: schema + parser + no-mutation lint
-  - UI simplification
+  - Pause / observe / refine the newly clarified UI
 ```
 
 Strict limits remain:
@@ -225,7 +238,10 @@ background task loops
 ```text
 Goal Cards now have polished UI (PRs #229, #230), backend
 persistence (PR #231), and frontend API wiring (PR #232).
-Persistence is complete end to end. Authority has not expanded.
-No execution, no scheduler. Phase 4 (execution envelopes)
-requires a separate design doc and is not authorized.
+Persistence is complete end to end. UI simplification is complete
+(PR #233). Dashboard clarity improved without authority expansion.
+Goal Cards remain display-only. No execution, no scheduler.
+Phase 4 (execution envelopes) requires a separate design doc and
+is not authorized. Next product move requires a new reviewed
+priority lock.
 ```

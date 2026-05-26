@@ -1,6 +1,6 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-26 (post-PR #232)
+Last reviewed: 2026-05-26 (post-PR #233)
 
 ---
 
@@ -18,9 +18,18 @@ Goal Card Phase 3 frontend wiring: COMPLETED (PR #232, 2026-05-26).
   Frontend fetches from /api/goals. Fallback to demo data with
   visible notice. Loading state. DISPLAY ONLY preserved.
   No execution authority. No GovernorMediator changes.
+UI simplification slice: COMPLETED (PR #233, 2026-05-26).
+  Priority lock and UI audit landed.
+  Dashboard clarity improved without authority expansion.
+  Activity & Receipts terminology restored.
+  Runtime Permissions and bounded OpenAI lane wording preserved.
+  Frontend mirror synced. UI boundary tests hardened.
+  No backend runtime/governance changes.
 
 Goal Card persistence is complete. Phase 4 (execution envelopes)
 requires a separate design doc and is not authorized.
+Dashboard clarity is improved. Goal Cards remain display-only.
+Next product move requires a new reviewed priority lock.
 ```
 
 Current lock truth:
@@ -107,6 +116,9 @@ not scheduled
 persistence-backed (PR #231, local JSON + CRUD API)
 frontend wired to API (PR #232, fetches from /api/goals)
 fallback to demo data with visible notice when API unreachable
+dashboard clarity improved (PR #233 UI simplification)
+  clearer Goals copy, cleaner nav hierarchy, Activity & Receipts
+  terminology, Runtime Permissions, bounded OpenAI lane
 ```
 
 ---
@@ -122,6 +134,7 @@ fallback to demo data with visible notice when API unreachable
    PR #230 completed UX polish.
    PR #231 completed backend persistence (local JSON + CRUD API).
    PR #232 completed frontend API wiring.
+   PR #233 completed UI simplification/product clarity.
    Persistence complete end to end. Still display-only.
    No scheduler or governed execution envelope.
 
@@ -148,12 +161,13 @@ fallback to demo data with visible notice when API unreachable
 
 ```text
 Goal Card persistence is complete through Phase 3.
+UI simplification slice is complete.
 Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
 Next product moves (each requires separate reviewed priority lock):
   - Second Brain Slice 1: schema + parser + no-mutation lint
-  - UI simplification
+  - Pause / observe / refine the newly clarified UI
 ```
 
 Important boundary:
@@ -187,7 +201,9 @@ background task loops
 
 ```text
 Goal Card persistence is complete end to end (design doc +
-PR #231 backend + PR #232 frontend wiring). Authority has
-not expanded. No execution, no scheduler, no GovernorMediator
-changes. Next product move requires a new reviewed priority lock.
+PR #231 backend + PR #232 frontend wiring). UI simplification
+is complete (PR #233). Dashboard clarity improved without
+authority expansion. Goal Cards remain display-only. No
+execution, no scheduler, no GovernorMediator changes. Next
+product move requires a new reviewed priority lock.
 ```
