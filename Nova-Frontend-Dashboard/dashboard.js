@@ -2114,11 +2114,59 @@ function renderMemoryCenterSurface() {
 /* ── Goal Cards (display-only prototype) ───────────────────────────── */
 
 /**
- * Demo goal card data. This is static/demo state only.
- * No execution, no scheduler, no persistence, no backend authority.
+ * Goal card data — fetched from /api/goals.
+ * No execution, no scheduler, no backend authority.
  * Planning is not authority. Goal state is not permission.
+ *
+ * _DEMO_GOAL_CARDS_FALLBACK is kept as fallback data only — used
+ * when the API is unreachable during local development.
+ * Once the API responds, fetched goal data replaces it.
  */
-const DEMO_GOAL_CARDS = [
+var _goalCardsData = null;   // null = not yet fetched
+var _goalCardsFetchState = "idle"; // idle | loading | loaded | error
+
+function _fetchGoalCards() {
+  if (_goalCardsFetchState === "loading") return;
+  _goalCardsFetchState = "loading";
+  _renderGoalLoadingState();
+
+  fetch("/api/goals")
+    .then(function (resp) {
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      return resp.json();
+    })
+    .then(function (data) {
+      _goalCardsData = Array.isArray(data.goals) ? data.goals : [];
+      _goalCardsFetchState = "loaded";
+      renderGoalCardsPage();
+      renderGoalStatusLegend();
+    })
+    .catch(function (err) {
+      console.warn("Goal Cards API unavailable, using demo data:", err);
+      _goalCardsData = _DEMO_GOAL_CARDS_FALLBACK;
+      _goalCardsFetchState = "error";
+      renderGoalCardsPage();
+      renderGoalStatusLegend();
+    });
+}
+
+function _renderGoalLoadingState() {
+  var container = $("goal-cards-container");
+  var emptyState = $("goal-cards-empty");
+  if (!container) return;
+  container.innerHTML =
+    '<div class="goal-loading-state" aria-live="polite">'
+    + '<p class="goal-loading-text">Loading goals…</p>'
+    + '</div>';
+  if (emptyState) emptyState.hidden = true;
+}
+
+function _getGoalCards() {
+  if (_goalCardsData !== null) return _goalCardsData;
+  return _DEMO_GOAL_CARDS_FALLBACK;
+}
+
+const _DEMO_GOAL_CARDS_FALLBACK = [
   {
     goal_id: "goal_auralis_launch_001",
     title: "Prepare Auralis Shopify launch",
@@ -2672,7 +2720,7 @@ function renderGoalStatusLegend() {
   host.innerHTML = "";
 
   // Only show statuses that exist in the current goal set
-  var goals = DEMO_GOAL_CARDS;
+  var goals = _getGoalCards();
   var activeStatuses = {};
   if (Array.isArray(goals)) {
     goals.forEach(function (g) {
@@ -2771,7 +2819,23 @@ function renderGoalCardsPage() {
 
   container.innerHTML = "";
 
-  var goals = DEMO_GOAL_CARDS;
+  // If not yet fetched, trigger a fetch and show loading
+  if (_goalCardsData === null && _goalCardsFetchState === "idle") {
+    _fetchGoalCards();
+    return;
+  }
+
+  // Show visible fallback notice when API failed
+  if (_goalCardsFetchState === "error") {
+    var notice = document.createElement("div");
+    notice.className = "goal-fallback-notice";
+    notice.setAttribute("role", "status");
+    notice.textContent =
+      "Showing demo goals because local goal storage is unavailable.";
+    container.appendChild(notice);
+  }
+
+  var goals = _getGoalCards();
   var hasGoals = Array.isArray(goals) && goals.length > 0;
 
   // Filter
