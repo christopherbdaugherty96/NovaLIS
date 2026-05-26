@@ -3,7 +3,7 @@
 Current active task:
 
 ```text
-Phase: Goal Card persistence (2026-05-25).
+Phase: Goal Card persistence complete through Phase 3 (2026-05-26).
 Goal Card local display-state: COMPLETED (PR #229, merged 2026-05-23).
 Goal Card UX polish: COMPLETED (PR #230, merged 2026-05-24).
 Goal Card persistence design doc: COMPLETED (2026-05-24).
@@ -11,7 +11,14 @@ Goal Card persistence Phase 2 backend: COMPLETED (PR #231, merged 2026-05-25).
   Local JSON goal store + CRUD API implemented.
   73 boundary tests proving no execution path.
   goals.json is gitignored personal state.
-Goal Cards are now persistence-backed but frontend not wired yet.
+Goal Card Phase 3 frontend wiring: COMPLETED (PR #232, merged 2026-05-26).
+  Frontend fetches from /api/goals on each Goals visit.
+  _DEMO_GOAL_CARDS_FALLBACK used only when API unreachable.
+  Visible fallback notice when showing demo data.
+  Loading state with pulse animation.
+  localStorage for UI preferences only.
+  DISPLAY ONLY badge preserved.
+Goal Cards are now persistence-wired end to end.
 No execution authority added. No scheduler. No GovernorMediator changes.
 All four certified capabilities locked.
 ```
@@ -157,6 +164,10 @@ PR #231 — Goal Card persistence Phase 2 merged (local JSON goal
           store, GET/POST/PUT /api/goals, 73 boundary tests,
           local-only guard, goals.json gitignored). No execution
           authority. No GovernorMediator changes. No scheduler.
+PR #232 — Goal Card Phase 3 frontend wiring merged (fetch from
+          /api/goals, fallback to demo data with visible notice,
+          loading state, DISPLAY ONLY preserved). No execution
+          authority. No GovernorMediator changes.
 ```
 
 ## Recent closed / not merged truth
@@ -288,13 +299,17 @@ Completed phases (summary):
     GoalStore, /api/goals endpoints, 73 boundary tests.
     No execution authority. No scheduler. No GovernorMediator changes.
 
-Current step:
-  Phase 3 — wire frontend Goal Cards to /api/goals.
-  Scope: fetch persisted goals, remove DEMO_GOAL_CARDS,
-    keep localStorage for UI prefs only, preserve DISPLAY ONLY,
-    add empty/error/loading states.
+Completed:
+  Phase 3 — frontend Goal Cards wired to /api/goals (PR #232).
+  Fetches persisted goals, falls back to demo data with visible notice,
+    localStorage for UI prefs only, DISPLAY ONLY preserved,
+    loading/error/empty states added.
   No execution, no scheduler, no automatic step advancement,
     no GovernorMediator integration, no OpenClaw integration.
+
+Goal Card persistence is complete through Phase 3.
+Phase 4 (execution envelopes) requires a separate design doc
+  and is not authorized.
 
 Parallel (manual, no Nova runtime changes):
   0. Manual Obsidian setup as project operating notebook

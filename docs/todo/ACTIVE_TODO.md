@@ -1,24 +1,26 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-25 (post-PR #231)
+Last reviewed: 2026-05-26 (post-PR #232)
 
 ---
 
 ## Current Active Task
 
 ```text
-Phase: Goal Card persistence / frontend wiring.
+Phase: Goal Card persistence complete through Phase 3 (2026-05-26).
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
 Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
 Goal Card persistence design doc: COMPLETED (2026-05-24).
 Goal Card persistence Phase 2 backend: COMPLETED (PR #231, 2026-05-25).
   Local JSON goal store + CRUD API. 73 boundary tests.
   No execution authority. No scheduler. No GovernorMediator changes.
+Goal Card Phase 3 frontend wiring: COMPLETED (PR #232, 2026-05-26).
+  Frontend fetches from /api/goals. Fallback to demo data with
+  visible notice. Loading state. DISPLAY ONLY preserved.
+  No execution authority. No GovernorMediator changes.
 
-Next: Phase 3 — wire frontend Goal Cards to /api/goals.
-  Remove DEMO_GOAL_CARDS. Keep localStorage for UI prefs only.
-  Preserve DISPLAY ONLY. Add empty/error/loading states.
-  No execution, no scheduler, no GovernorMediator integration.
+Goal Card persistence is complete. Phase 4 (execution envelopes)
+requires a separate design doc and is not authorized.
 ```
 
 Current lock truth:
@@ -103,7 +105,8 @@ display-only
 non-executing
 not scheduled
 persistence-backed (PR #231, local JSON + CRUD API)
-frontend not wired to API yet (DEMO_GOAL_CARDS still in use)
+frontend wired to API (PR #232, fetches from /api/goals)
+fallback to demo data with visible notice when API unreachable
 ```
 
 ---
@@ -118,7 +121,8 @@ frontend not wired to API yet (DEMO_GOAL_CARDS still in use)
    PR #229 completed interactive display-state.
    PR #230 completed UX polish.
    PR #231 completed backend persistence (local JSON + CRUD API).
-   Frontend not wired to API yet. Still display-only.
+   PR #232 completed frontend API wiring.
+   Persistence complete end to end. Still display-only.
    No scheduler or governed execution envelope.
 
 3. Memory / learning
@@ -143,12 +147,13 @@ frontend not wired to API yet (DEMO_GOAL_CARDS still in use)
 ## Recommended Next Safe Product Move
 
 ```text
-Phase 3 — wire frontend Goal Cards to /api/goals.
-  Fetch persisted goals from API.
-  Remove DEMO_GOAL_CARDS.
-  Keep localStorage for UI preferences only.
-  Preserve DISPLAY ONLY badge.
-  Add empty/error/loading states.
+Goal Card persistence is complete through Phase 3.
+Phase 4 (execution envelopes) requires a separate design doc
+and is not authorized.
+
+Next product moves (each requires separate reviewed priority lock):
+  - Second Brain Slice 1: schema + parser + no-mutation lint
+  - UI simplification
 ```
 
 Important boundary:
@@ -157,24 +162,12 @@ Important boundary:
 Goal persistence != execution authority
 Goal Card != scheduler
 Goal Card != action engine
-frontend wiring != execution wiring
-```
-
-Strict limits:
-
-```text
-no backend execution
-no scheduler
-no GovernorMediator changes
-no capability expansion
-no autonomy
-no automatic step advancement
-no OpenClaw integration
 ```
 
 Do not start next:
 
 ```text
+Goal Card execution or click-to-run
 Shopify writes
 Printify automation
 Gmail send
@@ -193,8 +186,8 @@ background task loops
 ## Final Operational Direction
 
 ```text
-Goal Card persistence design and backend are complete
-(design doc + PR #231). Frontend API wiring is next.
-Phase 3 wires the existing Goal Card UI to /api/goals.
-No execution authority. No scheduler. No GovernorMediator changes.
+Goal Card persistence is complete end to end (design doc +
+PR #231 backend + PR #232 frontend wiring). Authority has
+not expanded. No execution, no scheduler, no GovernorMediator
+changes. Next product move requires a new reviewed priority lock.
 ```
