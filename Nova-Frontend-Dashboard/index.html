@@ -66,7 +66,7 @@
         <section id="workflow-focus-widget" class="widget page-card workflow-focus-widget" aria-live="polite">
           <div class="workflow-focus-header">
             <div>
-              <div class="home-launch-kicker">Workflow Focus</div>
+              <div class="home-launch-kicker">Current Focus</div>
               <h3>What are we getting done?</h3>
             </div>
             <span id="workflow-focus-status-badge" class="confidence-badge">Ready</span>
@@ -434,7 +434,7 @@
             <span class="confidence-badge">Visible and bounded</span>
           </div>
           <p id="agent-page-summary" class="workspace-board-section-copy">
-            Home Agent helps Nova run manual tasks you can review and stop. It stays visible, bounded, and permission-first.
+            Home Agent helps Nova prepare tasks you can review and approve. It stays visible and permission-first.
           </p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-agent-refresh" type="button">Refresh agent</button>
@@ -610,11 +610,11 @@
           <div class="workspace-board-hero-header">
             <div>
               <div class="home-launch-kicker">Trust</div>
-              <h3>Activity Log</h3>
+              <h3>Activity &amp; Receipts</h3>
             </div>
             <span class="confidence-badge">Visible and inspectable</span>
           </div>
-          <p id="trust-center-summary">Activity Log shows what Nova did, what it declined, what left the device, and what may need your attention.</p>
+          <p id="trust-center-summary">The Activity &amp; Receipts page shows what Nova did, what it declined, what left the device, and what may need your attention.</p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-trust-center-refresh" type="button">Refresh trust</button>
             <button id="btn-trust-center-system" type="button">System status</button>
@@ -657,8 +657,8 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Recent Governed Actions</div>
-              <p class="workspace-board-section-copy">Review the latest actions, why they ran, and what effect they had.</p>
+              <div class="workspace-home-section-title">Recent Action Receipts</div>
+              <p class="workspace-board-section-copy">Review the latest receipt-backed actions, why they ran, and what effect they had.</p>
             </div>
           </div>
           <div id="trust-center-activity" class="trust-section trust-center-list"></div>
@@ -896,14 +896,14 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Governed Permissions</div>
+              <div class="workspace-home-section-title">Runtime Permissions</div>
               <p id="settings-permission-summary" class="workspace-board-section-copy">Runtime permissions will appear here after the next settings refresh.</p>
             </div>
           </div>
           <div id="settings-permission-grid" class="settings-mode-grid"></div>
           <div id="settings-history-list" class="trust-center-list"></div>
           <p class="first-run-note">
-            These controls are live now. They decide whether governed second opinions, the metered OpenAI lane, the remote bridge, and the home-agent foundation are available at runtime.
+            These controls are live now. They decide whether second opinions, the bounded OpenAI lane, the remote bridge, and the home-agent foundation are available at runtime.
           </p>
         </div>
 
@@ -1103,17 +1103,21 @@
         <div class="widget page-card goal-page-hero" aria-live="polite">
           <div class="goal-page-hero-top">
             <div>
-              <div class="goal-page-kicker">Your Workflows</div>
+              <div class="goal-page-kicker">Goal Tracking</div>
               <div class="goal-page-title-row">
                 <h3>Goals</h3>
-                <span class="news-page-subtle">Visible, bounded, proof-tracked</span>
+                <span class="news-page-subtle">View-only progress tracking</span>
               </div>
             </div>
             <span class="goal-demo-badge">Display only</span>
           </div>
           <p class="goal-page-intro">
             Goal Cards show what Nova is planning, what it has done,
-            what needs approval, and what is blocked. Planning is not authority.
+            what needs approval, and what is blocked.
+            Goals track visible work. They do not run tasks.
+          </p>
+          <p class="goal-page-trust-link">
+            <button type="button" class="goal-page-link" data-page="trust">View activity receipts</button> to see what Nova actually did.
           </p>
         </div>
 
@@ -1127,8 +1131,8 @@
           <p class="goal-empty-title">No goals yet</p>
           <p class="goal-empty-copy">
             When Nova helps you work toward a goal, it will appear here
-            as a visible, governed card. You will see every step, every
-            permission boundary, and every receipt.
+            as a visible card. You will see every step, every
+            permission boundary, and every action receipt.
           </p>
         </div>
 
@@ -1216,14 +1220,14 @@
                   <button id="btn-memory-detail-delete" type="button">Delete</button>
                 </div>
                 <div id="memory-inline-confirmation" class="memory-inline-confirmation" hidden>
-                  <p id="memory-inline-confirmation-text" class="memory-detail-note">Confirm this governed memory action.</p>
+                  <p id="memory-inline-confirmation-text" class="memory-detail-note">Confirm this memory action.</p>
                   <div class="memory-inline-confirmation-actions">
                     <button id="btn-memory-inline-confirm" type="button">Confirm</button>
                     <button id="btn-memory-inline-cancel" type="button">Cancel</button>
                   </div>
                 </div>
                 <p id="memory-detail-note" class="memory-detail-note">
-                  Memory remains explicit and user-owned. Edit, unlock, and delete still require the governed confirmation flow.
+                  Memory remains explicit and user-owned. Edit, unlock, and delete still require confirmation.
                 </p>
               </div>
             </section>
