@@ -4,12 +4,16 @@ import re
 from typing import List
 
 from src.cognition.cognitive_operation_logger import CognitiveOperationLogger
+from src.governor.capability_registry import CapabilityRegistry
+from src.governor.exceptions import CapabilityRegistryError
 from src.llm import llm_gateway
 from src.providers.deepseek_reasoning_provider import (
     DeepSeekReasoningProvider,
     DeepSeekReasoningProviderError,
 )
 from src.usage.provider_usage_store import provider_usage_store
+
+_CAP_62_ID = 62
 
 from . import prompts
 
@@ -32,6 +36,7 @@ class DeepSeekBridge:
     def __init__(self) -> None:
         self._cognitive_log = CognitiveOperationLogger()
         self._provider = DeepSeekReasoningProvider()
+        self._registry = CapabilityRegistry()
 
     def analyze(
         self,
@@ -42,6 +47,12 @@ class DeepSeekBridge:
         analysis_profile: str = "deep_reason",
         timeout_seconds: float = ANALYSIS_TIMEOUT_SECONDS,
     ) -> str:
+        try:
+            if not self._registry.is_enabled(_CAP_62_ID):
+                return "I can provide structured analysis, but the governed DeepSeek provider is not enabled."
+        except CapabilityRegistryError:
+            return "I can provide structured analysis, but the governed DeepSeek provider is not available."
+
         started_at = self._cognitive_log.started(
             module_name="deepseek_bridge",
             mode="analysis",

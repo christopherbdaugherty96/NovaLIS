@@ -16,6 +16,26 @@ def test_external_reasoning_requires_text():
     assert result.structured_data["failure_kind"] == "missing_text"
 
 
+def test_external_reasoning_executor_delegates_with_cap62(monkeypatch):
+    from src.executors import external_reasoning_executor as mod
+
+    captured_requests: list = []
+    original_execute = mod.ResponseVerificationExecutor.execute
+
+    def _capture_execute(self, request):
+        captured_requests.append(request)
+        return mod.ActionResult.failure("intercepted", data={}, structured_data={})
+
+    monkeypatch.setattr(mod.ResponseVerificationExecutor, "execute", _capture_execute)
+
+    mod.ExternalReasoningExecutor().execute(
+        _request({"text": "Some review text."})
+    )
+
+    assert len(captured_requests) == 1
+    assert captured_requests[0].capability_id == 62
+
+
 def test_external_reasoning_returns_governed_second_opinion(monkeypatch):
     from src.executors import external_reasoning_executor as mod
 

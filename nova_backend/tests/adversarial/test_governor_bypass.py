@@ -48,6 +48,7 @@ def test_no_direct_network_request_calls_outside_mediator_and_executors():
     allowed_files = {
         str(SRC_ROOT / "conversation" / "deepseek_bridge.py"),
         str(SRC_ROOT / "providers" / "openai_responses_lane.py"),
+        str(SRC_ROOT / "providers" / "deepseek_reasoning_provider.py"),  # delegates via NetworkMediator
         str(SRC_ROOT / "services" / "weather_service.py"),
         str(SRC_ROOT / "tools" / "rss_fetch.py"),
         str(SRC_ROOT / "openclaw" / "agent_runner.py"),  # delegates via NetworkMediator, no raw requests

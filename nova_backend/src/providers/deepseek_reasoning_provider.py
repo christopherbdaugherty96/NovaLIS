@@ -21,10 +21,14 @@ ROUTE_LABEL = "DeepSeek Chat Completions API via NetworkMediator"
 
 _TOOLISH_PATTERNS = (
     re.compile(r"<function_call[^>]*>", re.IGNORECASE),
+    re.compile(r"<tool_use[^>]*>", re.IGNORECASE),
+    re.compile(r"<\|tool_call\|>", re.IGNORECASE),
     re.compile(r"\btool_call\b", re.IGNORECASE),
     re.compile(r"\bfunction\s*:\s*(?P<name>[A-Za-z0-9_.-]+)?", re.IGNORECASE),
     re.compile(r"\bcapability\s*[_-]?id\s*[:=]?\s*(?P<capability_id>\d+)", re.IGNORECASE),
     re.compile(r"\bconfirmed\s*[:=]\s*true\b", re.IGNORECASE),
+    re.compile(r'[{]\s*"(?:tool|function_call|function|action)"\s*:', re.IGNORECASE),
+    re.compile(r"```(?:tool_call|function_call)[^\n]*\n.*?```", re.IGNORECASE | re.DOTALL),
 )
 _ACTIONISH_PATTERNS = (
     re.compile(r"\b(shopify|store)\b.{0,80}\b(write|update|change|set|publish|refund|fulfill|delete)\b", re.IGNORECASE),
@@ -33,6 +37,8 @@ _ACTIONISH_PATTERNS = (
     re.compile(r"\b(send|draft|open|submit)\b.{0,80}\b(email|mail|message)\b", re.IGNORECASE),
     re.compile(r"\b(print|printer|rj\s*print)\b.{0,80}\b(print|send|submit|queue)\b", re.IGNORECASE),
     re.compile(r"\b(print|send|submit|queue)\b.{0,80}\b(print|printer|rj\s*print)\b", re.IGNORECASE),
+    re.compile(r"\b(file|directory|folder)\b.{0,80}\b(delete|remove|rm|rmdir|unlink|write|overwrite)\b", re.IGNORECASE),
+    re.compile(r"\b(delete|remove|rm|rmdir|unlink|write|overwrite)\b.{0,80}\b(file|directory|folder)\b", re.IGNORECASE),
 )
 
 
