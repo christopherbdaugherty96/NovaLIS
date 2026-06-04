@@ -129,11 +129,13 @@ class TestGovernorBudgetGate:
 # ---------------------------------------------------------------------------
 
 class TestBudgetSnapshotInResult:
-    def test_budget_gated_cap_ids_match_known_network_caps(self):
+    def test_budget_gated_cap_ids_match_known_metered_network_caps(self):
         from src.governor.governor import _BUDGET_GATED_CAP_IDS
 
-        # These are the expected network-mediated caps that consume external tokens.
-        expected = {16, 48, 49, 50, 55, 56, 62, 63}
+        # Budget-gated = consumes metered external/network resources, subject to
+        # daily usage enforcement.  This is distinct from cost_posture (pricing
+        # category label).  A capability can be budget-gated while free_tier.
+        expected = {16, 48, 49, 50, 55, 56, 62, 63, 65}
         assert _BUDGET_GATED_CAP_IDS == expected
 
     def test_fresh_usage_store_snapshot_has_normal_state(self, tmp_path):
