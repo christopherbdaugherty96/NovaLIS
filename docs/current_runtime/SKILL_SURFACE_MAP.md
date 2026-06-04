@@ -4,7 +4,7 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 
 | skill_or_surface | module | surface_type | network_usage | model_usage | capability_id |
 | --- | --- | --- | --- | --- | --- |
-| deepseek_bridge | src/conversation/deepseek_bridge.py | conversation | no | llm_gateway |  |
+| deepseek_bridge | src/conversation/deepseek_bridge.py | conversation | yes | deepseek_provider |  |
 | analysis_document | src/governor/governor_mediator.py | governor_capability | no | none | 54 |
 | brightness | src/governor/governor_mediator.py | governor_capability | no | none | 21 |
 | calendar_snapshot | src/governor/governor_mediator.py | governor_capability | no | none | 57 |
@@ -32,6 +32,7 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | topic_memory_map | src/governor/governor_mediator.py | governor_capability | yes | none | 51 |
 | volume | src/governor/governor_mediator.py | governor_capability | no | none | 19 |
 | weather_snapshot | src/governor/governor_mediator.py | governor_capability | yes | none | 55 |
+| deepseek_reasoning_provider | src/providers/deepseek_reasoning_provider.py | provider | yes | deepseek_api |  |
 | calendar | src/skills/calendar.py | skill | no | none |  |
 | general_chat | src/skills/general_chat.py | skill | yes | llm_gateway |  |
 | news | src/skills/news.py | skill | yes | none |  |

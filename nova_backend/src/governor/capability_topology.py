@@ -126,14 +126,14 @@ _TOPOLOGY_OVERRIDES: dict[int, dict[str, Any]] = {
         "delegation_class": "informational",
     },
     62: {
-        "authority_class": "read_only_local",
+        "authority_class": "read_only_network",
         "policy_delegatable": False,
         "reversible": True,
         "persistent_change": False,
-        "external_effect": False,
-        "requires_network_mediator": False,
+        "external_effect": True,
+        "requires_network_mediator": True,
         "delegation_class": "informational",
-        "envelope_notes": "External reasoning remains advisory-only and cannot widen Nova's execution authority.",
+        "envelope_notes": "External reasoning is network/cloud advisory-only and cannot widen Nova's execution authority.",
     },
     32: {
         "authority_class": "read_only_local",

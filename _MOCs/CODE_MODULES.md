@@ -42,7 +42,7 @@ tests that pair by filename — so you can see the whole blast radius.
 - [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-- _…and 35 more_
+- _…and 36 more_
 
 ## `agents` (11 files)
 
@@ -86,7 +86,7 @@ ___all__ = [_
 - [[nova_backend/tests/phase42/test_phase42_orchestrator_context.py|test_phase42_orchestrator_context]]
 - [[nova_backend/tests/phase42/test_phase42_runtime_lock.py|test_phase42_runtime_lock]]
 
-## `api` (11 files)
+## `api` (12 files)
 
 _Focused FastAPI route modules for Nova runtime surfaces._
 
@@ -99,6 +99,8 @@ _Focused FastAPI route modules for Nova runtime surfaces._
     - Step 6 note: bridge is a conversational gateway, not a template runner.
 - [[nova_backend/src/api/connections_api.py|connections_api]]
     - Connection cards API.
+- [[nova_backend/src/api/goals_api.py|goals_api]]
+    - Goal persistence API — CRUD for goal state records.
 - [[nova_backend/src/api/live_screen_api.py|live_screen_api]]
     - log = logging.getLogger("nova.live_screen")
 - [[nova_backend/src/api/memory_api.py|memory_api]]
@@ -117,6 +119,7 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 ### Imports from
 
 - [[nova_backend/src/connections/connections_store.py|connections_store]]
+- [[nova_backend/src/goals/goal_store.py|goal_store]]
 - [[nova_backend/src/governor/execute_boundary/__init__.py|src/governor/execute_boundary]]
 - [[nova_backend/src/governor/governor_mediator.py|governor_mediator - src/governor]]
 - [[nova_backend/src/ledger/writer.py|writer]]
@@ -138,12 +141,14 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 ### Imported by
 
 - [[nova_backend/src/brain_server.py|brain_server]]
+- [[nova_backend/tests/goals/test_goals_api.py|test_goals_api]]
 - [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
 - [[nova_backend/tests/test_live_screen_api.py|test_live_screen_api]]
 
 ### Tests
 
+- [[nova_backend/tests/goals/test_goals_api.py|test_goals_api]]
 - [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
 - [[nova_backend/tests/test_audit_api.py|test_audit_api]]
@@ -322,6 +327,7 @@ _Read-only Brain scaffolding._
 - [[nova_backend/src/api/audit_api.py|audit_api]]
 - [[nova_backend/src/api/bridge_api.py|bridge_api]]
 - [[nova_backend/src/api/connections_api.py|connections_api]]
+- [[nova_backend/src/api/goals_api.py|goals_api]]
 - [[nova_backend/src/api/live_screen_api.py|live_screen_api]]
 - [[nova_backend/src/api/memory_api.py|memory_api]]
 - [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
@@ -432,7 +438,7 @@ _Read-only Brain scaffolding._
 ### Files
 
 - [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
-- [[nova_backend/src/capabilities/capabilities.py|capabilities]]
+- [[nova_backend/src/capabilities/capabilities.py|capabilities - src/capabilities]]
     - NovaLIS capability declarations.
 
 ## `cognition` (8 files)
@@ -525,6 +531,7 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 - [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 - [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
 - [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
@@ -576,7 +583,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/conversation/conversation_router.py|conversation_router]]
     - class ConversationRouter:
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
-    - logger = logging.getLogger(__name__)
+    - DeepSeekReasoningProvider,
 - [[nova_backend/src/conversation/deepseek_safety_wrapper.py|deepseek_safety_wrapper]]
     - class DeepSeekSafetyWrapper:
 - [[nova_backend/src/conversation/escalation_policy.py|escalation_policy]]
@@ -625,6 +632,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/memory/memory_skill.py|memory_skill]]
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
+- [[nova_backend/src/providers/__init__.py|src/providers]]
 - [[nova_backend/src/services/weather_service.py|weather_service]]
 - [[nova_backend/src/skills/calendar.py|calendar]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
@@ -649,7 +657,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
-- _…and 29 more_
+- _…and 31 more_
 
 ### Tests
 
@@ -788,6 +796,7 @@ _Debug utilities package._
 - [[nova_backend/src/skills/web_search.py|web_search - src/skills]]
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
 - [[nova_backend/tests/adversarial/test_search_injection_no_escalation.py|test_search_injection_no_escalation]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
 - [[nova_backend/tests/executors/test_analysis_document_executor.py|test_analysis_document_executor]]
 - [[nova_backend/tests/executors/test_explain_anything_executor.py|test_explain_anything_executor]]
 - [[nova_backend/tests/executors/test_external_reasoning_executor.py|test_external_reasoning_executor]]
@@ -796,8 +805,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_local_control_executors.py|test_local_control_executors]]
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
 - [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
-- [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
-- _…and 21 more_
+- _…and 22 more_
 
 ### Tests
 
@@ -837,6 +845,25 @@ _Debug utilities package._
 ### Tests
 
 - [[nova_backend/tests/test_confirmation_gate.py|test_confirmation_gate]]
+
+## `goals` (2 files)
+
+### Files
+
+- [[nova_backend/src/goals/__init__.py|src/goals]]
+- [[nova_backend/src/goals/goal_store.py|goal_store]]
+    - Goal state persistence — local JSON file storage.
+
+### Imported by
+
+- [[nova_backend/src/api/goals_api.py|goals_api]]
+- [[nova_backend/tests/goals/test_goal_persistence_boundaries.py|test_goal_persistence_boundaries]]
+- [[nova_backend/tests/goals/test_goal_store.py|test_goal_store]]
+- [[nova_backend/tests/goals/test_goals_api.py|test_goals_api]]
+
+### Tests
+
+- [[nova_backend/tests/goals/test_goal_store.py|test_goal_store]]
 
 ## `governor` (12 files)
 
@@ -919,7 +946,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- _…and 58 more_
+- _…and 62 more_
 
 ### Tests
 
@@ -997,7 +1024,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
     - logger = logging.getLogger(__name__)
 - [[nova_backend/src/llm/llm_manager.py|llm_manager]]
-    - logger = logging.getLogger(__name__)
+    - OLLAMA_FALLBACK_MODEL,
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
     - Ollama LLM integration with constitutional version locking.
 - [[nova_backend/src/llm/model_network_mediator.py|model_network_mediator]]
@@ -1026,10 +1053,10 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/executors/test_local_control_executors.py|test_local_control_executors]]
+- [[nova_backend/tests/governance/test_model_network_mediator_concurrency.py|test_model_network_mediator_concurrency]]
 - [[nova_backend/tests/governance/test_model_network_mediator_thread_safety.py|test_model_network_mediator_thread_safety]]
-- [[nova_backend/tests/simulation/nova_trial_runner.py|nova_trial_runner]]
-- [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
-- _…and 1 more_
+- [[nova_backend/tests/governance/test_streaming_llm_fallback.py|test_streaming_llm_fallback]]
+- _…and 4 more_
 
 ## `memory` (5 files)
 
@@ -1090,6 +1117,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 
 - [[nova_backend/src/llm/llm_manager.py|llm_manager]]
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
+- [[nova_backend/tests/test_llm_manager_num_ctx_config.py|test_llm_manager_num_ctx_config]]
 
 ## `nova_protocol` (1 files)
 
@@ -1405,6 +1433,7 @@ _Provider lanes for optional metered model access._
 
 ### Imported by
 
+- [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 
@@ -1817,6 +1846,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 
 ### Imported by
 
+- [[nova_backend/src/api/goals_api.py|goals_api]]
 - [[nova_backend/src/api/trust_api.py|trust_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/connections/connections_store.py|connections_store]]
@@ -1831,8 +1861,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
 - [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
-- [[nova_backend/src/nova_config.py|nova_config]]
-- _…and 14 more_
+- _…and 16 more_
 
 ### Tests
 
@@ -1938,6 +1967,7 @@ _Websocket session runtime modules._
 - [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 - [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
+- [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
 - [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
 

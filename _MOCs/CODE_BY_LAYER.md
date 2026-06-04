@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (284)
+## Backend runtime (287)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -52,6 +52,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Step 6 note: bridge is a conversational gateway, not a template runner.
 - [[nova_backend/src/api/connections_api.py|connections_api]]
   summary: Connection cards API.
+- [[nova_backend/src/api/goals_api.py|goals_api]]
+  summary: Goal persistence API — CRUD for goal state records.
 - [[nova_backend/src/api/live_screen_api.py|live_screen_api]]
   summary: log = logging.getLogger("nova.live_screen")
 - [[nova_backend/src/api/memory_api.py|memory_api]]
@@ -129,7 +131,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/build_phase.py|build_phase]]
   summary: Compile-time style phase gate. This constant is intentionally static in source
 - [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
-- [[nova_backend/src/capabilities/capabilities.py|capabilities]]
+- [[nova_backend/src/capabilities/capabilities.py|capabilities - src/capabilities]]
   summary: NovaLIS capability declarations.
 - [[nova_backend/src/cognition/__init__.py|src/cognition]]
   summary: CognitiveMode,
@@ -185,7 +187,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/conversation/conversation_router.py|conversation_router]]
   summary: class ConversationRouter:
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
-  summary: logger = logging.getLogger(__name__)
+  summary: DeepSeekReasoningProvider,
 - [[nova_backend/src/conversation/deepseek_safety_wrapper.py|deepseek_safety_wrapper]]
   summary: class DeepSeekSafetyWrapper:
 - [[nova_backend/src/conversation/escalation_policy.py|escalation_policy]]
@@ -270,6 +272,9 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/gates/__init__.py|src/gates]]
 - [[nova_backend/src/gates/confirmation_gate.py|confirmation_gate]]
   summary: ConfirmationGate — Provably Passive
+- [[nova_backend/src/goals/__init__.py|src/goals]]
+- [[nova_backend/src/goals/goal_store.py|goal_store]]
+  summary: Goal state persistence — local JSON file storage.
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]]
   summary: @dataclass(frozen=True)
 - [[nova_backend/src/governor/capability_registry.py|capability_registry]]
@@ -308,7 +313,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
   summary: logger = logging.getLogger(__name__)
 - [[nova_backend/src/llm/llm_manager.py|llm_manager]]
-  summary: logger = logging.getLogger(__name__)
+  summary: OLLAMA_FALLBACK_MODEL,
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
   summary: Ollama LLM integration with constitutional version locking.
 - [[nova_backend/src/llm/model_network_mediator.py|model_network_mediator]]
@@ -570,7 +575,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (370)
+## Tests and verification (392)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -636,6 +641,13 @@ Use this to orient yourself before diving into a specific module.
   summary: Phase 4 — API/WebSocket certification for capability 16 (governed_web_search).
 - [[nova_backend/tests/certification/cap_16_governed_web_search/test_p5_ws_widget.py|test_p5_ws_widget]]
   summary: Phase 5 — WebSocket widget-emission certification for capability 16 (governed_web_search).
+- [[nova_backend/tests/certification/cap_22_open_file_folder/__init__.py|tests/certification/cap_22_open_file_folder]]
+- [[nova_backend/tests/certification/cap_22_open_file_folder/test_p1_unit.py|test_p1_unit - certification/cap_22_open_file_folder]]
+  summary: Phase 1 — Unit certification for capability 22 (open_file_folder).
+- [[nova_backend/tests/certification/cap_22_open_file_folder/test_p2_routing.py|test_p2_routing - certification/cap_22_open_file_folder]]
+  summary: Phase 2 — Routing certification for capability 22 (open_file_folder).
+- [[nova_backend/tests/certification/cap_22_open_file_folder/test_p3_integration.py|test_p3_integration - certification/cap_22_open_file_folder]]
+  summary: Phase 3 — Integration certification for capability 22 (open_file_folder).
 - [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit - certification/cap_64_send_email_draft]]
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
@@ -646,10 +658,16 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
   summary: Phase 4 — API certification for capability 64 (send_email_draft).
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/__init__.py|tests/certification/cap_65_shopify_intelligence_report]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p1_unit.py|test_p1_unit - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 1 — Unit certification for capability 65 (shopify_intelligence_report).
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p2_routing.py|test_p2_routing - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 2 — Routing certification for capability 65 (shopify_intelligence_report).
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
   summary: Phase 3 — Integration certification for capability 65 (shopify_intelligence_report).
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
   summary: Phase 4 — API certification for capability 65 (shopify_intelligence_report).
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
+  summary: Cap 65 P5 Live Proof — shopify_intelligence_report
 - [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
   summary: Shared fixtures and helpers for capability certification tests.
 - [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
@@ -770,6 +788,13 @@ Use this to orient yourself before diving into a specific module.
   summary: @pytest.fixture(autouse=True)
 - [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
   summary: ﻿from __future__ import annotations
+- [[nova_backend/tests/goals/__init__.py|tests/goals]]
+- [[nova_backend/tests/goals/test_goal_persistence_boundaries.py|test_goal_persistence_boundaries]]
+  summary: Goal persistence boundary tests.
+- [[nova_backend/tests/goals/test_goal_store.py|test_goal_store]]
+  summary: Goal store unit tests.
+- [[nova_backend/tests/goals/test_goals_api.py|test_goals_api]]
+  summary: Goals API endpoint tests.
 - [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
   summary: Approval gate wiring - governance regression tests.
 - [[nova_backend/tests/governance/test_brain_server_no_hardcoded_location_suggestions.py|test_brain_server_no_hardcoded_location_suggestions]]
@@ -782,12 +807,16 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
   summary: def test_deepseek_bridge_has_no_authority_imports_or_network_mediator_calls():
+- [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
+  summary: Regression tests for deterministic routing of everyday utility prompts.
 - [[nova_backend/tests/governance/test_ledger_only_governor_logs_actions.py|test_ledger_only_governor_logs_actions]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/governance/test_legacy_bypass_surfaces_removed.py|test_legacy_bypass_surfaces_removed]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/governance/test_mediator_registry_enforcement.py|test_mediator_registry_enforcement]]
   summary: def test_mediator_routes_only_enabled_capabilities():
+- [[nova_backend/tests/governance/test_model_network_mediator_concurrency.py|test_model_network_mediator_concurrency]]
+  summary: def test_model_network_mediator_allows_overlapping_request_waits():
 - [[nova_backend/tests/governance/test_model_network_mediator_thread_safety.py|test_model_network_mediator_thread_safety]]
   summary: def test_model_network_mediator_has_explicit_locks_for_shared_state():
 - [[nova_backend/tests/governance/test_network_governance_boundaries.py|test_network_governance_boundaries]]
@@ -818,6 +847,8 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/governance/test_startup_script_contract.py|test_startup_script_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [[nova_backend/tests/governance/test_streaming_llm_fallback.py|test_streaming_llm_fallback]]
+  summary: Tests for the streaming advisory LLM fallback path.
 - [[nova_backend/tests/governance/test_tts_invocation_bound.py|test_tts_invocation_bound]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/governance/test_working_context_non_persistent.py|test_working_context_non_persistent]]
@@ -1191,6 +1222,18 @@ Use this to orient yourself before diving into a specific module.
   summary: aggregate_simulation_runs,
 - [[nova_backend/tests/simulation/trial_evaluator.py|trial_evaluator]]
   summary: @dataclass(frozen=True)
+- [[nova_backend/tests/simulations/__init__.py|tests/simulations]]
+  summary: Nova live simulation test harness.
+- [[nova_backend/tests/simulations/concurrent_websocket_load_simulation.py|concurrent_websocket_load_simulation]]
+  summary: Concurrent WebSocket load simulation for a running Nova instance.
+- [[nova_backend/tests/simulations/conversation_quality_benchmark.py|conversation_quality_benchmark]]
+  summary: Conversation quality benchmark for Nova's local/free LLM-dependent path.
+- [[nova_backend/tests/simulations/live_user_simulation.py|live_user_simulation]]
+  summary: Live user simulation for a running Nova instance.
+- [[nova_backend/tests/simulations/mixed_request_edge_simulation.py|mixed_request_edge_simulation]]
+  summary: Mixed-request edge case simulation for a running Nova instance.
+- [[nova_backend/tests/simulations/multi_turn_context_simulation.py|multi_turn_context_simulation]]
+  summary: Multi-turn context continuity simulation for a running Nova instance.
 - [[nova_backend/tests/test_audit_api.py|test_audit_api]]
   summary: def test_phase_status_returns_phase_fields():
 - [[nova_backend/tests/test_brain_server_session_cleanup.py|test_brain_server_session_cleanup]]
@@ -1227,6 +1270,8 @@ Use this to orient yourself before diving into a specific module.
   summary: class _FakeOCR:
 - [[nova_backend/tests/test_llm_gateway_model_confirmation.py|test_llm_gateway_model_confirmation]]
   summary: class _FakeManager:
+- [[nova_backend/tests/test_llm_manager_num_ctx_config.py|test_llm_manager_num_ctx_config]]
+  summary: Tests that OLLAMA_NUM_CTX and OLLAMA_NUM_PREDICT env vars are respected.
 - [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
   summary: class _FakeNetwork:
 - [[nova_backend/tests/test_local_baseline_meta_intents.py|test_local_baseline_meta_intents]]
@@ -1292,6 +1337,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
 - [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
   summary: class _RecordingLedger:
+- [[nova_backend/tests/websocket/test_recovery_no_stale_approval.py|test_recovery_no_stale_approval]]
+  summary: Recovery evidence: pending confirmation must not survive WebSocket disconnect.
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
   summary: governance_refusal_for,
 - [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]

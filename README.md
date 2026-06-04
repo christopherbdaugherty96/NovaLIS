@@ -100,8 +100,8 @@ Current grounded status:
 - active runtime capabilities exist
 - active != certified != locked
 - Cap 16 web search is certification-locked
-- Cap 22 open_file_folder is approval-gate certified for current scope, not P1-P5 locked
-- Cap 64 send_email_draft is approval-gate certified for current scope and remains local mailto draft only
+- Cap 22 file-folder access is approval-gate certified for current scope, not P1-P5 locked
+- Cap 64 email draft is approval-gate certified for current scope and remains local mailto draft only
 - Cap 65 Shopify intelligence remains read-only, not Shopify writes
 - OpenClaw exists as runtime code with bounded/manual-first execution surfaces
 - PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access

@@ -97,7 +97,7 @@ class RuntimeSettingsStore:
     PERMISSION_DEFINITIONS = {
         "external_reasoning_enabled": {
             "label": "Governed second opinion",
-            "description": "Allows advisory-only second-opinion reviews inside Nova's governed reasoning lane.",
+            "description": "Allows advisory-only second-opinion reviews through Nova's governed external reasoning lane.",
             "default": True,
         },
         "remote_bridge_enabled": {
@@ -421,7 +421,7 @@ class RuntimeSettingsStore:
                 "label": "Daily metered token budget",
                 "value": daily_budget,
                 "value_label": f"{daily_budget:,} tokens",
-                "description": "This budget only applies to metered provider lanes such as OpenAI. Local execution stays outside this budget.",
+                "description": "This budget applies to metered provider lanes such as DeepSeek and OpenAI. Local execution stays outside this budget.",
                 "action_kind": "daily_metered_token_budget",
                 "options": [
                     {"label": "4k", "value": 4000},
@@ -474,8 +474,8 @@ class RuntimeSettingsStore:
                 "routing_mode_label": provider_routing_definition["label"],
                 "routing_mode_badge": provider_routing_definition["badge"],
                 "routing_mode_description": provider_routing_definition["description"],
-                "metered_provider": "openai",
-                "metered_provider_label": "OpenAI optional lane",
+                "metered_provider": "external_reasoning",
+                "metered_provider_label": "Optional metered provider lanes",
                 "preferred_openai_model": preferred_openai_model,
                 "preferred_openai_model_label": preferred_openai_definition["label"],
                 "preferred_openai_model_description": preferred_openai_definition["description"],

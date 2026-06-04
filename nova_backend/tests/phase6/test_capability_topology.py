@@ -25,6 +25,7 @@ def test_topology_blocks_network_and_persistent_classes_from_current_limit():
     topology = CapabilityTopology(CapabilityRegistry())
 
     weather = topology.get(55)
+    external_reasoning = topology.get(62)
     memory = topology.get(61)
     headline_summary = topology.get(49)
     intelligence_brief = topology.get(50)
@@ -37,6 +38,10 @@ def test_topology_blocks_network_and_persistent_classes_from_current_limit():
     assert headline_summary.requires_network_mediator is True
     assert intelligence_brief.authority_class == "read_only_network"
     assert intelligence_brief.requires_network_mediator is True
+    assert external_reasoning.authority_class == "read_only_network"
+    assert external_reasoning.external_effect is True
+    assert external_reasoning.requires_network_mediator is True
+    assert external_reasoning.policy_delegatable is False
     assert story_update.authority_class == "persistent_change"
     assert story_update.persistent_change is True
     assert story_update.reversible is False

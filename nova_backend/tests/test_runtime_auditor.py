@@ -340,7 +340,8 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
             ]
         ),
         ra.SETTINGS_API_PATH: '@router.get("/api/settings/runtime")',
-        ra.DEEPSEEK_BRIDGE_PATH: "response = llm_gateway.generate_chat(prompt)",
+        ra.DEEPSEEK_BRIDGE_PATH: "provider = DeepSeekReasoningProvider()",
+        ra.DEEPSEEK_PROVIDER_PATH: "NetworkMediator api.deepseek.com",
     }
     monkeypatch.setattr(ra, "_safe_read", lambda path: contents.get(path, ""))
 

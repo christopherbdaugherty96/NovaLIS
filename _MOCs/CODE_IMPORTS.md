@@ -24,6 +24,7 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/connections/__init__.py|src/connections]]
+- [[nova_backend/src/goals/__init__.py|src/goals]]
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
 - [[nova_backend/src/ledger/event_types.py|event_types]] (in `ledger`)
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
@@ -124,6 +125,7 @@ Imports from:
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
 - [[nova_backend/src/personality/__init__.py|src/personality]]
+- [[nova_backend/src/providers/__init__.py|src/providers]]
 - [[nova_backend/src/services/stt_engine.py|stt_engine]] (in `services`)
 - [[nova_backend/src/skills/__init__.py|src/skills]]
 - [[nova_backend/src/trust/__init__.py|src/trust]]

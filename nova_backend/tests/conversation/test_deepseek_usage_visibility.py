@@ -9,6 +9,8 @@ def test_deepseek_bridge_records_usage_event(monkeypatch, tmp_path):
 
     usage_store = ProviderUsageStore(tmp_path / "provider_usage.json")
     monkeypatch.setattr(mod, "provider_usage_store", usage_store)
+    monkeypatch.setenv("NOVA_ALLOW_LOCAL_REASONING_FALLBACK", "1")
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.setattr(
         mod.llm_gateway,
         "generate_chat",

@@ -18,12 +18,12 @@ def test_deepseek_bridge_normalizes_plain_deep_reason_output(monkeypatch):
     import src.conversation.deepseek_bridge as mod
 
     monkeypatch.setattr(
-        mod.llm_gateway,
-        "generate_chat",
-        lambda *args, **kwargs: (
+        mod.DeepSeekReasoningProvider,
+        "analyze",
+        lambda self, **kwargs: type("Result", (), {"text": (
             "Inference demand is shifting toward inference-heavy workloads. "
             "Power and cooling constraints matter. Supply visibility remains uneven."
-        ),
+        )})(),
     )
 
     bridge = DeepSeekBridge()
@@ -44,9 +44,9 @@ def test_deepseek_bridge_strips_duplicate_core_answer_prefix(monkeypatch):
     import src.conversation.deepseek_bridge as mod
 
     monkeypatch.setattr(
-        mod.llm_gateway,
-        "generate_chat",
-        lambda *args, **kwargs: "Core answer: Version locking preserves trusted model behavior.",
+        mod.DeepSeekReasoningProvider,
+        "analyze",
+        lambda self, **kwargs: type("Result", (), {"text": "Core answer: Version locking preserves trusted model behavior."})(),
     )
 
     result = mod.DeepSeekBridge().analyze(
@@ -76,11 +76,11 @@ def test_deepseek_bridge_requests_extended_timeout(monkeypatch):
 
     captured = {}
 
-    def _fake_generate_chat(*args, **kwargs):
+    def _fake_analyze(self, **kwargs):
         captured.update(kwargs)
-        return "Core answer: Version locking preserves trusted model behavior."
+        return type("Result", (), {"text": "Core answer: Version locking preserves trusted model behavior."})()
 
-    monkeypatch.setattr(mod.llm_gateway, "generate_chat", _fake_generate_chat)
+    monkeypatch.setattr(mod.DeepSeekReasoningProvider, "analyze", _fake_analyze)
 
     result = mod.DeepSeekBridge().analyze(
         "Why does model version locking matter?",
@@ -98,11 +98,11 @@ def test_deepseek_bridge_allows_timeout_override(monkeypatch):
 
     captured = {}
 
-    def _fake_generate_chat(*args, **kwargs):
+    def _fake_analyze(self, **kwargs):
         captured.update(kwargs)
-        return "Structured analysis is available."
+        return type("Result", (), {"text": "Structured analysis is available."})()
 
-    monkeypatch.setattr(mod.llm_gateway, "generate_chat", _fake_generate_chat)
+    monkeypatch.setattr(mod.DeepSeekReasoningProvider, "analyze", _fake_analyze)
 
     result = mod.DeepSeekBridge().analyze(
         "Create a structured analysis document.",
@@ -113,3 +113,23 @@ def test_deepseek_bridge_allows_timeout_override(monkeypatch):
 
     assert result == "Structured analysis is available."
     assert captured.get("timeout") == 150.0
+
+
+def test_deepseek_bridge_fails_closed_without_provider_config(monkeypatch):
+    import src.conversation.deepseek_bridge as mod
+
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("NOVA_ALLOW_LOCAL_REASONING_FALLBACK", raising=False)
+    monkeypatch.setattr(
+        mod.llm_gateway,
+        "generate_chat",
+        lambda *args, **kwargs: pytest.fail("local fallback must not run unless explicitly allowed"),
+    )
+
+    result = mod.DeepSeekBridge().analyze(
+        "Review this answer.",
+        [],
+        analysis_profile="task_scoped",
+    )
+
+    assert "governed DeepSeek provider is currently unavailable" in result

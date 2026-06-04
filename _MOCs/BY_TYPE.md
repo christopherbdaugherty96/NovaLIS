@@ -391,7 +391,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 274 code)
+## Runtime and ops (22 docs, 277 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -431,6 +431,8 @@ concern is reflected across docs, code and tests.
   summary: Step 6 note: bridge is a conversational gateway, not a template runner.
 - [code] [[nova_backend/src/api/connections_api.py|connections_api]]
   summary: Connection cards API.
+- [code] [[nova_backend/src/api/goals_api.py|goals_api]]
+  summary: Goal persistence API — CRUD for goal state records.
 - [code] [[nova_backend/src/api/live_screen_api.py|live_screen_api]]
   summary: log = logging.getLogger("nova.live_screen")
 - [code] [[nova_backend/src/api/memory_api.py|memory_api]]
@@ -508,7 +510,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/build_phase.py|build_phase]]
   summary: Compile-time style phase gate. This constant is intentionally static in source
 - [code] [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
-- [code] [[nova_backend/src/capabilities/capabilities.py|capabilities]]
+- [code] [[nova_backend/src/capabilities/capabilities.py|capabilities - src/capabilities]]
   summary: NovaLIS capability declarations.
 - [code] [[nova_backend/src/cognition/__init__.py|src/cognition]]
   summary: CognitiveMode,
@@ -564,7 +566,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/conversation/conversation_router.py|conversation_router]]
   summary: class ConversationRouter:
 - [code] [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
-  summary: logger = logging.getLogger(__name__)
+  summary: DeepSeekReasoningProvider,
 - [code] [[nova_backend/src/conversation/deepseek_safety_wrapper.py|deepseek_safety_wrapper]]
   summary: class DeepSeekSafetyWrapper:
 - [code] [[nova_backend/src/conversation/escalation_policy.py|escalation_policy]]
@@ -649,6 +651,9 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/gates/__init__.py|src/gates]]
 - [code] [[nova_backend/src/gates/confirmation_gate.py|confirmation_gate]]
   summary: ConfirmationGate — Provably Passive
+- [code] [[nova_backend/src/goals/__init__.py|src/goals]]
+- [code] [[nova_backend/src/goals/goal_store.py|goal_store]]
+  summary: Goal state persistence — local JSON file storage.
 - [code] [[nova_backend/src/identity/__init__.py|src/identity]]
 - [code] [[nova_backend/src/identity/nova_self_awareness.py|nova_self_awareness]]
   summary: Nova self-awareness context builder.
@@ -663,7 +668,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
   summary: logger = logging.getLogger(__name__)
 - [code] [[nova_backend/src/llm/llm_manager.py|llm_manager]]
-  summary: logger = logging.getLogger(__name__)
+  summary: OLLAMA_FALLBACK_MODEL,
 - [code] [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
   summary: Ollama LLM integration with constitutional version locking.
 - [code] [[nova_backend/src/llm/model_network_mediator.py|model_network_mediator]]
@@ -931,7 +936,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: f06d241757c72aad8a341f59e1e8fb2f695b80d411713cd70657df4c050165f9
+  summary: Runtime Fingerprint: 227d5b144a3cc58a5737773bd06f3cbbfa225444098128a4cc2677fc947163a1
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +960,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: dc233ae1deaa29a7ec6e6259ccb6a3d5f44bee025f06da9a2c0ef09bda55205a
+  summary: - runtimesurfacehash: 3d1057e6856fba736ce536f6af01214fae868cc1e097e87726a79a8b5891b549
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -967,7 +972,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[nova_backend/src/archive_quarantine/phase35_execution/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase35_execution]]
   summary: ﻿# PHASE 3.5 EXECUTION QUARANTINE
 - [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
-  summary: f2acb7c0dd4b266380d8918492c949359fb272f3bc60e46b1d96d10334eebc41
+  summary: 94a0f3f4c8e08d5f51f239e084dccf9f99219d9f6601562af483de0e78f18ee3
 - [doc] [[nova_backend/src/requirements-optional-wakeword.txt|Compatibility shim for existing tooling paths.]]
   summary: -r ../requirements-optional-wakeword.txt
 - [doc] [[nova_backend/src/requirements.txt|Compatibility shim for existing workflow paths.]]
@@ -1032,7 +1037,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 370 code)
+## Tests (5 docs, 392 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1098,6 +1103,13 @@ concern is reflected across docs, code and tests.
   summary: Phase 4 — API/WebSocket certification for capability 16 (governed_web_search).
 - [code] [[nova_backend/tests/certification/cap_16_governed_web_search/test_p5_ws_widget.py|test_p5_ws_widget]]
   summary: Phase 5 — WebSocket widget-emission certification for capability 16 (governed_web_search).
+- [code] [[nova_backend/tests/certification/cap_22_open_file_folder/__init__.py|tests/certification/cap_22_open_file_folder]]
+- [code] [[nova_backend/tests/certification/cap_22_open_file_folder/test_p1_unit.py|test_p1_unit - certification/cap_22_open_file_folder]]
+  summary: Phase 1 — Unit certification for capability 22 (open_file_folder).
+- [code] [[nova_backend/tests/certification/cap_22_open_file_folder/test_p2_routing.py|test_p2_routing - certification/cap_22_open_file_folder]]
+  summary: Phase 2 — Routing certification for capability 22 (open_file_folder).
+- [code] [[nova_backend/tests/certification/cap_22_open_file_folder/test_p3_integration.py|test_p3_integration - certification/cap_22_open_file_folder]]
+  summary: Phase 3 — Integration certification for capability 22 (open_file_folder).
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit - certification/cap_64_send_email_draft]]
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
@@ -1108,10 +1120,16 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
   summary: Phase 4 — API certification for capability 64 (send_email_draft).
 - [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/__init__.py|tests/certification/cap_65_shopify_intelligence_report]]
+- [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p1_unit.py|test_p1_unit - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 1 — Unit certification for capability 65 (shopify_intelligence_report).
+- [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p2_routing.py|test_p2_routing - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 2 — Routing certification for capability 65 (shopify_intelligence_report).
 - [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
   summary: Phase 3 — Integration certification for capability 65 (shopify_intelligence_report).
 - [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
   summary: Phase 4 — API certification for capability 65 (shopify_intelligence_report).
+- [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
+  summary: Cap 65 P5 Live Proof — shopify_intelligence_report
 - [code] [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
   summary: Shared fixtures and helpers for capability certification tests.
 - [code] [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
@@ -1232,6 +1250,13 @@ concern is reflected across docs, code and tests.
   summary: @pytest.fixture(autouse=True)
 - [code] [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
   summary: ﻿from __future__ import annotations
+- [code] [[nova_backend/tests/goals/__init__.py|tests/goals]]
+- [code] [[nova_backend/tests/goals/test_goal_persistence_boundaries.py|test_goal_persistence_boundaries]]
+  summary: Goal persistence boundary tests.
+- [code] [[nova_backend/tests/goals/test_goal_store.py|test_goal_store]]
+  summary: Goal store unit tests.
+- [code] [[nova_backend/tests/goals/test_goals_api.py|test_goals_api]]
+  summary: Goals API endpoint tests.
 - [code] [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
   summary: Approval gate wiring - governance regression tests.
 - [code] [[nova_backend/tests/governance/test_brain_server_no_hardcoded_location_suggestions.py|test_brain_server_no_hardcoded_location_suggestions]]
@@ -1244,12 +1269,16 @@ concern is reflected across docs, code and tests.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
   summary: def test_deepseek_bridge_has_no_authority_imports_or_network_mediator_calls():
+- [code] [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
+  summary: Regression tests for deterministic routing of everyday utility prompts.
 - [code] [[nova_backend/tests/governance/test_ledger_only_governor_logs_actions.py|test_ledger_only_governor_logs_actions]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/governance/test_legacy_bypass_surfaces_removed.py|test_legacy_bypass_surfaces_removed]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/governance/test_mediator_registry_enforcement.py|test_mediator_registry_enforcement]]
   summary: def test_mediator_routes_only_enabled_capabilities():
+- [code] [[nova_backend/tests/governance/test_model_network_mediator_concurrency.py|test_model_network_mediator_concurrency]]
+  summary: def test_model_network_mediator_allows_overlapping_request_waits():
 - [code] [[nova_backend/tests/governance/test_model_network_mediator_thread_safety.py|test_model_network_mediator_thread_safety]]
   summary: def test_model_network_mediator_has_explicit_locks_for_shared_state():
 - [code] [[nova_backend/tests/governance/test_network_governance_boundaries.py|test_network_governance_boundaries]]
@@ -1280,6 +1309,8 @@ concern is reflected across docs, code and tests.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/governance/test_startup_script_contract.py|test_startup_script_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [code] [[nova_backend/tests/governance/test_streaming_llm_fallback.py|test_streaming_llm_fallback]]
+  summary: Tests for the streaming advisory LLM fallback path.
 - [code] [[nova_backend/tests/governance/test_tts_invocation_bound.py|test_tts_invocation_bound]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/governance/test_working_context_non_persistent.py|test_working_context_non_persistent]]
@@ -1653,6 +1684,18 @@ concern is reflected across docs, code and tests.
   summary: aggregate_simulation_runs,
 - [code] [[nova_backend/tests/simulation/trial_evaluator.py|trial_evaluator]]
   summary: @dataclass(frozen=True)
+- [code] [[nova_backend/tests/simulations/__init__.py|tests/simulations]]
+  summary: Nova live simulation test harness.
+- [code] [[nova_backend/tests/simulations/concurrent_websocket_load_simulation.py|concurrent_websocket_load_simulation]]
+  summary: Concurrent WebSocket load simulation for a running Nova instance.
+- [code] [[nova_backend/tests/simulations/conversation_quality_benchmark.py|conversation_quality_benchmark]]
+  summary: Conversation quality benchmark for Nova's local/free LLM-dependent path.
+- [code] [[nova_backend/tests/simulations/live_user_simulation.py|live_user_simulation]]
+  summary: Live user simulation for a running Nova instance.
+- [code] [[nova_backend/tests/simulations/mixed_request_edge_simulation.py|mixed_request_edge_simulation]]
+  summary: Mixed-request edge case simulation for a running Nova instance.
+- [code] [[nova_backend/tests/simulations/multi_turn_context_simulation.py|multi_turn_context_simulation]]
+  summary: Multi-turn context continuity simulation for a running Nova instance.
 - [code] [[nova_backend/tests/test_audit_api.py|test_audit_api]]
   summary: def test_phase_status_returns_phase_fields():
 - [code] [[nova_backend/tests/test_brain_server_session_cleanup.py|test_brain_server_session_cleanup]]
@@ -1689,6 +1732,8 @@ concern is reflected across docs, code and tests.
   summary: class _FakeOCR:
 - [code] [[nova_backend/tests/test_llm_gateway_model_confirmation.py|test_llm_gateway_model_confirmation]]
   summary: class _FakeManager:
+- [code] [[nova_backend/tests/test_llm_manager_num_ctx_config.py|test_llm_manager_num_ctx_config]]
+  summary: Tests that OLLAMA_NUM_CTX and OLLAMA_NUM_PREDICT env vars are respected.
 - [code] [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
   summary: class _FakeNetwork:
 - [code] [[nova_backend/tests/test_local_baseline_meta_intents.py|test_local_baseline_meta_intents]]
@@ -1754,6 +1799,8 @@ concern is reflected across docs, code and tests.
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
 - [code] [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
   summary: class _RecordingLedger:
+- [code] [[nova_backend/tests/websocket/test_recovery_no_stale_approval.py|test_recovery_no_stale_approval]]
+  summary: Recovery evidence: pending confirmation must not survive WebSocket disconnect.
 - [code] [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
   summary: governance_refusal_for,
 - [code] [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
@@ -1855,7 +1902,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (235 docs, 24 code)
+## Proofs (237 docs, 24 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -1932,6 +1979,10 @@ concern is reflected across docs, code and tests.
   summary: clean, minimal, authoritative ENVIRONMENTLOCK.md you can paste directly into:
 - [doc] [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCKphase3.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]] - Phase 3
   summary: clean, minimal, authoritative ENVIRONMENTLOCK.md you can paste directly into:
+- [doc] [[docs/PROOFS/Operator-Journeys/CAP22_OPEN_FILE_FOLDER_OPERATOR_JOURNEY|Cap 22 Open File / Folder Operator Journey]]
+  summary: Status: automated + live proof captured / recovery pending / not locked / not globally certified.
+- [doc] [[docs/PROOFS/Operator-Journeys/CAP64_EMAIL_DRAFT_OPERATOR_JOURNEY|Cap 64 Email Draft Operator Journey]]
+  summary: Status: proof scaffold / evidence pending / not Cap 64 P5 / not locked.
 - [doc] [[docs/PROOFS/phase 3.5-4/# INTENT_ROUTING_AUDIT|**INTENT_ROUTING_AUDIT.md - Phase-3.5 Final Proof**]]
   summary: System: NovaLIS Phase-3.5 (Behaviorally Complete)
 - [doc] [[docs/PROOFS/phase 3.5-4/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - PROOFS/phase 3.5-4]]
@@ -2371,7 +2422,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (410 docs, 30 code)
+## Reference (507 docs, 40 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2413,6 +2464,26 @@ concern is reflected across docs, code and tests.
   summary: scenario_id": "mock_lawncare_belleville_001",
 - [code] [[docs/future/auralis_mock_leads/mock_mobile_detailing_ypsilanti_001.json|mock_mobile_detailing_ypsilanti_001]]
   summary: scenario_id": "mock_mobile_detailing_ypsilanti_001",
+- [code] [[future/brain/second_brain/knowledge_entry.schema.json|knowledge_entry.schema]]
+  summary: $schema": "https://json-schema.org/draft/2020-12/schema",
+- [code] [[future/brain/second_brain/knowledge_event.schema.json|knowledge_event.schema]]
+  summary: $schema": "https://json-schema.org/draft/2020-12/schema",
+- [code] [[future/brain/second_brain/knowledge_relationship.schema.json|knowledge_relationship.schema]]
+  summary: $schema": "https://json-schema.org/draft/2020-12/schema",
+- [code] [[future/brain/second_brain/obsidian_vault/indexes/living_graph_mock_snapshot.json|living_graph_mock_snapshot]]
+  summary: schema_version": 1,
+- [code] [[future/brain/second_brain/obsidian_vault/indexes/living_graph_visual_intentions.json|living_graph_visual_intentions]]
+  summary: schema_version": 1,
+- [code] [[future/brain/second_brain/obsidian_vault/indexes/mock_export_snapshot.json|mock_export_snapshot]]
+  summary: schema_version": 1,
+- [code] [[future/brain/second_brain/obsidian_vault/indexes/mock_health_report.json|mock_health_report]]
+  summary: schema_version": 1,
+- [code] [[future/brain/second_brain/obsidian_vault/indexes/mock_search_results.json|mock_search_results]]
+  summary: schema_version": 1,
+- [code] [[future/brain/second_brain/obsidian_vault/logs/living_graph_event_stream_example.json|living_graph_event_stream_example]]
+  summary: schema_version": 1,
+- [code] [[future/Final product goal|Final product goal]]
+  summary: Nova Ecosystem — Realistic End-State Summary
 - [code] [[installer/windows/nova_bootstrap.ps1|nova_bootstrap]]
   summary: .SYNOPSIS
 - [code] [[installer/windows/nova_setup.iss|nova_setup]]
@@ -2519,8 +2590,28 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-26
 - [doc] [[docs/audits/BRANCH_CONSOLIDATION_AUDIT_2026-05-17|BRANCH_CONSOLIDATION_AUDIT_2026-05-17]]
   summary: ﻿# Branch Consolidation Audit - 2026-05-17
+- [doc] [[docs/audits/CAP_65_P5_LIVE_PROOF_RESULTS_2026-05-22|Cap 65 P5 Live Proof Results — 2026-05-22]]
+  summary: Cap 65: shopifyintelligencereport
+- [doc] [[docs/audits/CONCURRENT_WEBSOCKET_LOAD_SIMULATION_RESULTS_2026-05-19|Concurrent WebSocket Load Simulation Results]]
+  summary: Date: 2026-05-19
+- [doc] [[docs/audits/CONVERSATION_MODEL_COMPARISON_RESULTS_2026-05-19|Conversation Model Comparison Results]]
+  summary: Date: 2026-05-19
+- [doc] [[docs/audits/CONVERSATION_MODEL_CORRECTION_RESULTS_2026-05-19|Conversation Model Correction Results]]
+  summary: Date: 2026-05-19
+- [doc] [[docs/audits/CONVERSATION_QUALITY_BENCHMARK_RESULTS_2026-05-19|Conversation Quality Benchmark Results]]
+  summary: Date: 2026-05-19
+- [doc] [[docs/audits/ISSUE_214_DETERMINISTIC_CONTINUITY_INVESTIGATION_2026-05-23|Issue #214 — Deterministic Continuity Investigation]]
+  summary: Date: 2026-05-23
+- [doc] [[docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19|Live User Simulation Results -- 2026-05-19]]
+  summary: Status:
+- [doc] [[docs/audits/MIXED_REQUEST_EDGE_SIMULATION_RESULTS_2026-05-19|Mixed-Request Edge Case Simulation Results]]
+  summary: Date: 2026-05-19
+- [doc] [[docs/audits/MULTI_TURN_CONTEXT_SIMULATION_RESULTS_2026-05-19|Multi-Turn Context Continuity Simulation Results]]
+  summary: Date: 2026-05-19
 - [doc] [[docs/audits/NOVA_BASIC_WORKFLOW_VERIFICATION_2026-05-17|Nova Basic Workflow Verification - 2026-05-17]]
   summary: Branch: test/nova-basic-workflow-verification
+- [doc] [[docs/audits/NUM_CTX_CONFIG_FIX_RESULTS_2026-05-20|OLLAMA_NUM_CTX Configuration Fix Results]]
+  summary: Date: 2026-05-20
 - [doc] [[docs/audits/PASS1_RUNTIME_AND_OPENCLAW_AUDIT_2026-05-11|PASS 1 — Runtime / Generated Truth / OpenClaw Audit]]
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/PASS3_FULL_ALIGNMENT_AUDIT_2026-05-11|Full Repo / Doc / Code Alignment Audit]]
@@ -2533,6 +2624,8 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-05-12
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
+- [doc] [[docs/audits/UI_SIMPLIFICATION_AUDIT_2026-05-26|UI Simplification Audit — 2026-05-26]]
+  summary: Audit of Nova dashboard before the product clarity slice.
 - [doc] [[docs/brain|Nova Brain]]
   summary: This document is the canonical overview of Nova's Brain architecture.
 - [doc] [[docs/brain/AUTHORITY_PLANE|Authority Plane]]
@@ -2561,6 +2654,8 @@ concern is reflected across docs, code and tests.
   summary: Turn Website LLC into a real, repeatable service business.
 - [doc] [[docs/business/website_llc/WEBSITE_LLC_REVENUE_ASSETS_2026-04-23|Website LLC Revenue Assets (2026-04-23)]]
   summary: Simple assets that help turn outreach into conversations and conversations into paying clients.
+- [doc] [[docs/capability_verification/APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18|Approval Gate Certification Matrix — 2026-05-18]]
+  summary: Status:
 - [doc] [[docs/capability_verification/basic_conversation_understanding_2026-04-22|Basic Conversation and Understanding Verification - 2026-04-22]]
   summary: This is a platform/runtime verification slice, not a numbered governed action capability. It covers:
 - [doc] [[docs/capability_verification/basic_user_command_simulation_2026-04-22|Basic User Command Simulation - 2026-04-22]]
@@ -2779,6 +2874,10 @@ concern is reflected across docs, code and tests.
   summary: Status: future connector design / not implemented
 - [doc] [[docs/future/governed_content_operator|Nova Governed Content Operator - Implementation Blueprint]]
   summary: Version: 2.2
+- [doc] [[docs/future/GOVERNED_CREATIVE_COMMERCE_ORCHESTRATION_ENDGAME_2026-05-19|Governed Creative Commerce Orchestration Endgame]]
+  summary: Date: 2026-05-19
+- [doc] [[docs/future/GOVERNED_GOAL_CARDS_DESIGN|Governed Goal Cards Design]]
+  summary: Status: future / product design; not implemented runtime truth
 - [doc] [[docs/future/GUARD_SYSTEM_SPEC|Guard System Specification]]
   summary: Status: planning.
 - [doc] [[docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12|Hydrogen And Oxygen Storefront Build Rules]]
@@ -2791,6 +2890,8 @@ concern is reflected across docs, code and tests.
   summary: Status: planning / architecture recommendation.
 - [doc] [[docs/future/NOVA_APPROVAL_QUEUE_PRODUCT_PLAN_2026-04-27|Nova Approval Queue Product Plan]]
   summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18|Nova / Auralis Big Picture Operating Model - 2026-05-18]]
+  summary: Status: future planning / not runtime truth.
 - [doc] [[docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE|Nova x Auralis Digital Website Engine]]
   summary: Status: future concept / business application
 - [doc] [[docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN|Nova Background Reasoning, Not Background Automation Plan]]
@@ -2865,6 +2966,8 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_ROLE_BASED_ASSISTANT_DECISION_RECORD_2026-04-26|Nova Role-Based Assistant — Product Decision Record]]
   summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_SECOND_BRAIN_OBSIDIAN_RESEARCH_AND_IMPLEMENTATION_PLAN_2026-05-18|Nova Second Brain / Obsidian Research And Implementation Plan - 2026-05-18]]
+  summary: Status: future planning / not runtime truth.
 - [doc] [[docs/future/NOVA_SENSITIVE_DATA_ROUTING_PLAN_2026-04-27|Nova Sensitive Data Routing Plan]]
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_SESSION_REFERENCE_SUMMARY_2026-04-26|Nova Session Reference Summary]]
@@ -2909,6 +3012,8 @@ concern is reflected across docs, code and tests.
   summary: Website LLC is the first and main revenue engine in the portfolio.
 - [doc] [[docs/future/README|Future Docs Guide]]
   summary: Purpose: Explain what future documents are for, how much authority they carry, and how they relate to Nova's live project state.
+- [doc] [[docs/future/README_CREATIVE_COMMERCE_ORCHESTRATION|Creative Commerce Orchestration — Future Index]]
+  summary: Status: future-direction index only
 - [doc] [[docs/future/REALISTIC_SCOPE_AND_PRIORITIES|Realistic Scope and Priorities]]
   summary: Status: planning guardrail / future scope control
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
@@ -3091,6 +3196,10 @@ concern is reflected across docs, code and tests.
   summary: - Ideas moved from chat into repo memory
 - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
   summary: Date: 2026-04-28
+- [doc] [[docs/simulations/APPROVAL_GATE_WORKFLOW_SIMULATIONS|Approval-Gate Workflow Simulations]]
+  summary: Status: future planning / proof target / not runtime truth.
+- [doc] [[docs/simulations/ECOSYSTEM_SIMULATION_MATRIX|Ecosystem Simulation Matrix]]
+  summary: Status: future planning / not runtime truth.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04|Active Priority Lock — 2026-05-04]]
   summary: Status: completed.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT|Active Priority Lock - 2026-05-06 Runtime Truth Audit]]
@@ -3107,22 +3216,42 @@ concern is reflected across docs, code and tests.
   summary: Status: ACTIVE
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING|Active Priority Lock - Approval Gate Wiring]]
   summary: Status: ACTIVE
+- [doc] [[docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19|Approval Gate Certification Closeout — 2026-05-19]]
+  summary: Status:
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-17
+  summary: Last reviewed: 2026-05-26 (post-PR #234)
+- [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
+  summary: This is a human-maintained status summary. It is not generated runtime truth.
 - [doc] [[docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12|Five-Pass Stability And Operational Roadmap]]
   summary: Status: active operational direction record.
+- [doc] [[docs/status/GOAL_CARD_PERSISTENCE_DESIGN_2026-05-24|Goal Card Persistence Design — 2026-05-24]]
+  summary: Status:
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
+- [doc] [[docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20|Local LLM Hardware Profiles]]
+  summary: Date: 2026-05-20
+- [doc] [[docs/status/OBSIDIAN_OVERLAY_AUTHORITY_TIERS_2026-05-18|Obsidian Overlay Authority Tiers]]
+  summary: Date: 2026-05-18
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
   summary: Status: complete / awaiting next reviewed priority lock
+- [doc] [[docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1|Priority Lock - 2026-05-26 Second Brain Slice 1]]
+  summary: Status: proposed / ready for review.
+- [doc] [[docs/status/PRIORITY_LOCK_2026-05-26_UI_SIMPLIFICATION|UI Simplification Priority Lock — Product Clarity Slice]]
+  summary: Locked: 2026-05-26
 - [doc] [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
   summary: Status: substantially reduced / visual proof blocked / closeout-ready
+- [doc] [[docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION|Proposed Priority Lock - Second Brain Foundation]]
+  summary: Status: PROPOSED / not active.
 - [doc] [[docs/status/README|Status Notes]]
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
 - [doc] [[docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12|NovaLIS Repo Synchronization & Roadmap Update Plan — 2026-05-12]]
   summary: This document consolidates the newest findings from recent repo audits, runtime reviews, governance
+- [doc] [[docs/status/SECOND_BRAIN_FOUNDATION_PLANNING_PACKET_2026-05-18|Second Brain Foundation Planning Packet - 2026-05-18]]
+  summary: Status: planning packet complete / not active runtime work.
+- [doc] [[docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19|Streaming LLM Fallback Design -- 2026-05-19]]
+  summary: Status:
 - [doc] [[docs/status/TRUST_PANEL_MVP_CLOSEOUT_2026-05-14|Trust Panel MVP Closeout]]
   summary: Date: 2026-05-14
 - [doc] [[docs/status/TRUST_REVIEW_CARD_MVP_CLOSEOUT_REVIEW_2026-05-07|Trust Review Card MVP Closeout Review - 2026-05-07]]
@@ -3138,7 +3267,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
   summary: Status: historical operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Last reviewed: 2026-05-17
+  summary: Last reviewed: 2026-05-26 (post-PR #234)
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
@@ -3177,6 +3306,132 @@ concern is reflected across docs, code and tests.
   summary: Defines the full lifecycle for future governed Brain-planned runs.
 - [doc] [[future/brain/RUN_SYSTEM|Run System (Planning Only)]]
   summary: Defines Nova's future governed run orchestration model.
+- [doc] [[future/brain/second_brain/acceptance_test_plan|Second Brain Acceptance Test Plan]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/api_contract|Second Brain API / MCP Contract]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/event_replay_contract|Second Brain Event Replay Contract]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/governance_threat_model|Second Brain Governance Threat Model]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/health_check_contract|Second Brain Health Check Contract]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_backlog|Second Brain Implementation Backlog]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/01_schema_loader|Slice 1 - Schema Loader]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/02_markdown_health|Slice 2 - Markdown Parser And Health]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/03_index_projection|Slice 3 - Deterministic Index Projection]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/04_query_surface|Slice 4 - Read-Only Query Surface]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/06_event_feed|Slice 6 - Append-Only Event Feed]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/07_proposal_writes|Slice 7 - Proposal-Only Writes]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/08_living_dashboard|Slice 8 - Living Dashboard Graph]]
+  summary: Status: future implementation blueprint / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/ACCEPTANCE_GATE|Second Brain Acceptance Gate]]
+  summary: Status: future implementation gate / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/README|Second Brain Implementation Blueprint]]
+  summary: Status: future implementation handoff / not runtime truth.
+- [doc] [[future/brain/second_brain/implementation_blueprint/TEST_FIXTURE_MATRIX|Test Fixture Matrix]]
+  summary: Status: future fixture matrix / not runtime truth.
+- [doc] [[future/brain/second_brain/index_projection_contract|Second Brain Index Projection Contract]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/living_dashboard_visual_contract|Living Dashboard Visual Contract]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/00_START_HERE|Nova Second Brain Vault Start Here]]
+  summary: This vault is a file-first scaffold for Nova's future second brain.
+- [doc] [[future/brain/second_brain/obsidian_vault/concepts/kb_concept_non_authorizing_memory|Non-Authorizing Memory]]
+  summary: Memory can help Nova retrieve context and reason about a task.
+- [doc] [[future/brain/second_brain/obsidian_vault/concepts/README|Concepts]]
+  summary: Use this folder for durable concepts and glossary notes.
+- [doc] [[future/brain/second_brain/obsidian_vault/entities/capabilities/README|Capabilities - entities/capabilities]]
+  summary: Use this folder for capability context.
+- [doc] [[future/brain/second_brain/obsidian_vault/entities/people/README|People]]
+  summary: Use this folder for person/entity context only.
+- [doc] [[future/brain/second_brain/obsidian_vault/entities/projects/README|Projects]]
+  summary: Use this folder for project entity notes and cross-links.
+- [doc] [[future/brain/second_brain/obsidian_vault/entities/README|Entities]]
+  summary: Status: durable entity namespace.
+- [doc] [[future/brain/second_brain/obsidian_vault/entities/tools/README|Tools]]
+  summary: Use this folder for tool references and local setup notes.
+- [doc] [[future/brain/second_brain/obsidian_vault/indexes/README|Human-Readable Indexes]]
+  summary: Status: generated or curated navigation aids / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/capability_logs/kb_capability_log_approval_gate_boundary_example|Approval Gate Boundary Example]]
+  summary: Approval gate wiring.
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/conversations/README|Conversations]]
+  summary: Use this folder for conversation summaries and durable user/context notes.
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/decisions/kb_decision_file_first_event_first_foundation|Use File-First Knowledge With Append-Only Events]]
+  summary: Use Markdown/Obsidian notes as the durable second-brain knowledge source, with machine indexes as rebuildable projections and knowledge even...
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/patterns/README|Patterns]]
+  summary: Use this folder for reusable patterns Nova can retrieve as context.
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/README|Knowledge]]
+  summary: Status: reviewed or reviewable knowledge area.
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/references/README|References]]
+  summary: Use this folder for source-backed reference notes.
+- [doc] [[future/brain/second_brain/obsidian_vault/knowledge/research/kb_research_second_brain_robustness_example|Second Brain Robustness Requirements]]
+  summary: Nova's second brain should be file-first, review-gated, event-backed, and non-authorizing.
+- [doc] [[future/brain/second_brain/obsidian_vault/logs/README|Second-Brain Logs]]
+  summary: Status: operation logs / not execution receipts.
+- [doc] [[future/brain/second_brain/obsidian_vault/proposals/kb_proposal_health_index_slice|Health And Index Slice Proposal]]
+  summary: Implement the no-mutation health report and deterministic rebuildable projection after schema validation.
+- [doc] [[future/brain/second_brain/obsidian_vault/proposals/kb_proposal_living_graph_visual_slice|Living Graph Visual Slice Proposal]]
+  summary: After data/index/event slices exist, add the living graph visualization with glowing neuron nodes, synaptic edges, electric pulses, idle bre...
+- [doc] [[future/brain/second_brain/obsidian_vault/proposals/kb_proposal_schema_validation_slice|Schema Validation Slice Proposal]]
+  summary: When a reviewed priority lock exists, implement the schema loader and validation tests first.
+- [doc] [[future/brain/second_brain/obsidian_vault/proposals/README|Proposals]]
+  summary: Status: proposal queue / not promoted knowledge.
+- [doc] [[future/brain/second_brain/obsidian_vault/raw/assets/README|Raw Assets]]
+  summary: Status: untrusted source assets.
+- [doc] [[future/brain/second_brain/obsidian_vault/raw/inbox/README|Raw Inbox]]
+  summary: Status: untrusted source area.
+- [doc] [[future/brain/second_brain/obsidian_vault/raw/README|Raw]]
+  summary: Status: untrusted source material.
+- [doc] [[future/brain/second_brain/obsidian_vault/README|Nova Second Brain Vault]]
+  summary: Status: future Obsidian vault scaffold / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/RUNBOOK_CAPTURE_REVIEW_PROMOTE|Runbook - Capture, Review, Promote]]
+  summary: Status: future vault runbook / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/RUNBOOK_HEALTH_LINT|Runbook - Health And Lint]]
+  summary: Status: future vault runbook / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/RUNBOOK_LIVING_GRAPH|Runbook - Living Graph]]
+  summary: Status: future vault runbook / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/synthesis/kb_synthesis_second_brain_build_order|Second Brain Build Order]]
+  summary: Build order should be:
+- [doc] [[future/brain/second_brain/obsidian_vault/synthesis/README|Synthesis]]
+  summary: Status: generated synthesis area.
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/capability_log|REPLACE_TITLE - obsidian_vault/templates]]
+  summary: Use only one:
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/concept|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/conversation|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/decision|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/entity|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/pattern|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/proposal|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/README|Templates]]
+  summary: Status: future vault templates / not runtime truth.
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/reference|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/research|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/synthesis|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/templates/tombstone_review|REPLACE_TITLE - obsidian_vault/templates]]
+- [doc] [[future/brain/second_brain/obsidian_vault/VAULT_MANIFEST|Vault Manifest]]
+  summary: Status: future scaffold manifest / not runtime truth.
+- [doc] [[future/brain/second_brain/OBSIDIAN_VAULT_END_TO_END|Nova Second Brain Obsidian Vault - End To End]]
+  summary: Status: future planning / vault scaffold / not runtime truth.
+- [doc] [[future/brain/second_brain/README|Future Second Brain Schemas]]
+  summary: Status: future planning / not runtime truth.
+- [doc] [[future/brain/second_brain/templates/capability_log|Example Capability Log]]
+  summary: Name or ID.
+- [doc] [[future/brain/second_brain/templates/decision|Example Decision Entry]]
+  summary: State the decision.
+- [doc] [[future/brain/second_brain/templates/research|Example Research Entry]]
+  summary: Short source-backed summary.
+- [doc] [[future/brain/SECOND_BRAIN_FOUNDATION|Second Brain Foundation]]
+  summary: Status: future planning / not runtime truth.
 - [doc] [[future/brain/SIGNAL_REGISTRY|Signal Registry]]
   summary: Defines approved triggers that future NovaLIS Brain systems may respond to in a controlled way.
 - [doc] [[future/brain/TASK_UNDERSTANDING_AND_ENVELOPE|Task Understanding and Envelope (Planning Only)]]

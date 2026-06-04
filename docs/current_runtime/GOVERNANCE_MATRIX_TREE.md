@@ -61,7 +61,7 @@ graph TD
   Caps --> C61[61:memory_governance]
   C61 --> C61A[authority=persistent_change, risk=low, cost=free, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
   Caps --> C62[62:external_reasoning_review]
-  C62 --> C62A[authority=read_only_local, risk=low, cost=free_tier, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C62 --> C62A[authority=read_only_network, risk=low, cost=paid, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Caps --> C63[63:openclaw_execute]
   C63 --> C63A[authority=read_only_network, risk=low, cost=unknown_cost, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Caps --> C64[64:send_email_draft]
@@ -97,7 +97,7 @@ graph TD
   Routes --> R19_volume[volume -> capability 19]
   Routes --> R55_weather_snapshot[weather_snapshot -> capability 55]
   Runtime --> LLM[Conversation/Model Surfaces]
-  LLM --> src_conversation_deepseek_bridge_py[src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat]
+  LLM --> src_conversation_deepseek_bridge_py[src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat only for explicit local fallback]
   LLM --> src_skills_general_chat_py[src/skills/general_chat.py uses llm_gateway.generate_chat]
   LLM --> src_openclaw_agent_runner_py[src/openclaw/agent_runner.py uses llm_gateway.generate_chat]
 ```
@@ -136,7 +136,7 @@ Runtime
 |  |- 59 screen_analysis (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 60 explain_anything (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 61 memory_governance (authority=persistent_change, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 62 external_reasoning_review (authority=read_only_local, risk=low, cost=free_tier, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 62 external_reasoning_review (authority=read_only_network, risk=low, cost=paid, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 63 openclaw_execute (authority=read_only_network, risk=low, cost=unknown_cost, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 64 send_email_draft (authority=persistent_change, risk=confirm, cost=free, network=False, exfil=True, confirm=True, surface=Governor -> Executor)
 |  |- 65 shopify_intelligence_report (authority=read_only_network, risk=low, cost=free_tier, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
@@ -169,7 +169,7 @@ Runtime
 |  |- volume -> 19
 |  |- weather_snapshot -> 55
 |- Conversation/model surfaces
-   |- src/conversation/deepseek_bridge.py -> llm_gateway.generate_chat
-   |- src/skills/general_chat.py -> llm_gateway.generate_chat
-   |- src/openclaw/agent_runner.py -> llm_gateway.generate_chat
+   |- src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat only for explicit local fallback
+   |- src/skills/general_chat.py uses llm_gateway.generate_chat
+   |- src/openclaw/agent_runner.py uses llm_gateway.generate_chat
 ```

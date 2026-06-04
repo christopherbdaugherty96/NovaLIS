@@ -769,6 +769,8 @@ class OSDiagnosticsExecutor:
         settings_snapshot = runtime_settings_store.snapshot()
         usage_snapshot = provider_usage_store.snapshot()
         model_availability, _, model_remediation, model_ready = OSDiagnosticsExecutor._model_status_details()
+        deepseek_key_configured = bool(str(os.getenv("DEEPSEEK_API_KEY", "") or "").strip())
+        deepseek_model = str(os.getenv("DEEPSEEK_MODEL", "") or "").strip() or "deepseek-v4-flash"
 
         last_used = ""
         last_outcome = ""
@@ -822,20 +824,25 @@ class OSDiagnosticsExecutor:
         except Exception:
             pass
 
-        if capability_enabled and model_ready and reasoning_permission_enabled:
+        if capability_enabled and deepseek_key_configured and reasoning_permission_enabled:
             status = "available"
             summary = (
-                "Governed second opinion is available. Nova can ask the DeepSeek reasoning lane to review an answer without granting it any execution authority."
+                "Governed second opinion is available. Nova can ask the DeepSeek network reasoning provider to review an answer without granting it any execution authority."
             )
         elif capability_enabled and not reasoning_permission_enabled:
             status = "paused"
             summary = (
                 "Governed second opinion is paused in Settings. Re-enable it when you want advisory-only review help again."
             )
+        elif capability_enabled and not deepseek_key_configured:
+            status = "not_configured"
+            summary = (
+                "Governed second opinion is not configured. Set DEEPSEEK_API_KEY to enable the advisory network reasoning provider."
+            )
         elif capability_enabled:
             status = "limited"
             summary = (
-                "Governed second opinion is wired in, but the reasoning lane is limited until the current model route is healthy."
+                "Governed second opinion is wired in, but the reasoning lane is limited until the current provider route is healthy."
             )
         else:
             status = "disabled"
@@ -850,14 +857,15 @@ class OSDiagnosticsExecutor:
             "summary": summary,
             "provider": "DeepSeek",
             "provider_label": last_provider,
-            "route": "Governor -> ExternalReasoningExecutor -> DeepSeekBridge -> llm_gateway",
+            "route": "Governor -> ExternalReasoningExecutor -> DeepSeekBridge -> DeepSeekReasoningProvider -> NetworkMediator",
             "route_label": last_route,
             "authority": "analysis_only",
             "authority_label": "Advisory only",
             "capability_id": "62" if capability_enabled else "",
             "mode": last_mode,
-            "available": "yes" if capability_enabled and model_ready and reasoning_permission_enabled else "no",
-            "switching_note": "Provider switching arrives later. Today's second-opinion lane stays inside Nova's governed route.",
+            "available": "yes" if capability_enabled and deepseek_key_configured and reasoning_permission_enabled else "no",
+            "configured_model": deepseek_model,
+            "switching_note": "DeepSeek runs as a governed network reasoning provider. Optional local fallback must be explicitly enabled.",
             "governance_note": "Second opinions can critique and clarify, but they cannot execute actions or widen authority.",
             "reasoning_summary_line": reasoning_summary_line,
             "top_issue": top_issue,
@@ -1156,7 +1164,7 @@ class OSDiagnosticsExecutor:
             {
                 "label": "Metered budget",
                 "value": f"{int(openai_runtime.get('daily_budget_tokens') or 0):,} tokens/day",
-                "note": "This cap applies only to metered providers such as OpenAI. Local routes stay outside it.",
+                "note": "This cap applies to metered providers such as DeepSeek and OpenAI. Local routes stay outside it.",
             },
         ]
 
