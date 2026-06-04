@@ -86,10 +86,10 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="connection-cards-grid"' in source
     assert 'id="btn-connections-refresh"' in source
     assert 'id="btn-reset-all"' in source
-    assert "Activity Log shows what Nova did, what it declined, what left the device, and what may need your attention." in source
+    assert "The Activity &amp; Receipts page shows what Nova did, what it declined, what left the device, and what may need your attention." in source
     assert "A quick answer to whether Nova stayed local, called anything external, or hit a problem." in source
     assert "See where Nova stopped instead of guessing or pushing past a boundary." in source
-    assert "Home Agent helps Nova run manual tasks you can review and stop. It stays visible, bounded, and permission-first." in source
+    assert "Home Agent helps Nova prepare tasks you can review and approve. It stays visible and permission-first." in source
     assert 'id="btn-trust-center-refresh"' in source
     assert 'id="btn-trust-center-system"' in source
     assert 'id="btn-trust-center-workspace"' in source
