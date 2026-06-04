@@ -37,8 +37,10 @@ CAPABILITY_TIMEOUT_OVERRIDES = {
     64: 60.0,  # Email draft composes body via local LLM — allow cold-start time.
 }
 
-# Capabilities that consume external tokens and are subject to daily budget enforcement.
-_BUDGET_GATED_CAP_IDS: frozenset[int] = frozenset({16, 48, 49, 50, 55, 56, 62, 63})
+# Capabilities subject to daily usage/budget enforcement because they consume
+# metered external or network resources.  This is NOT the same as cost_posture —
+# a capability can be budget-gated (metered) while its cost_posture is free_tier.
+_BUDGET_GATED_CAP_IDS: frozenset[int] = frozenset({16, 48, 49, 50, 55, 56, 62, 63, 65})
 
 
 class Governor:
