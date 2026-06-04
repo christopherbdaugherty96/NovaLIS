@@ -133,7 +133,7 @@ class TestBudgetSnapshotInResult:
         from src.governor.governor import _BUDGET_GATED_CAP_IDS
 
         # These are the expected network-mediated caps that consume external tokens.
-        expected = {16, 48, 49, 50, 55, 56, 63}
+        expected = {16, 48, 49, 50, 55, 56, 62, 63}
         assert _BUDGET_GATED_CAP_IDS == expected
 
     def test_fresh_usage_store_snapshot_has_normal_state(self, tmp_path):

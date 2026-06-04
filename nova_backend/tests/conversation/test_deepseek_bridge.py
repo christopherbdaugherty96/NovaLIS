@@ -133,3 +133,49 @@ def test_deepseek_bridge_fails_closed_without_provider_config(monkeypatch):
     )
 
     assert "governed DeepSeek provider is currently unavailable" in result
+
+
+def test_deepseek_bridge_blocks_when_cap62_disabled(monkeypatch):
+    import src.conversation.deepseek_bridge as mod
+
+    monkeypatch.setattr(
+        mod.CapabilityRegistry,
+        "is_enabled",
+        lambda self, cap_id: False,
+    )
+    monkeypatch.setattr(
+        mod.DeepSeekReasoningProvider,
+        "analyze",
+        lambda self, **kwargs: pytest.fail("provider must not be called when Cap 62 is disabled"),
+    )
+
+    result = mod.DeepSeekBridge().analyze(
+        "Review this answer.",
+        [],
+        analysis_profile="task_scoped",
+    )
+
+    assert "not enabled" in result
+
+
+def test_deepseek_bridge_proceeds_when_cap62_enabled(monkeypatch):
+    import src.conversation.deepseek_bridge as mod
+
+    monkeypatch.setattr(
+        mod.CapabilityRegistry,
+        "is_enabled",
+        lambda self, cap_id: True,
+    )
+    monkeypatch.setattr(
+        mod.DeepSeekReasoningProvider,
+        "analyze",
+        lambda self, **kwargs: type("Result", (), {"text": "Analysis complete."})(),
+    )
+
+    result = mod.DeepSeekBridge().analyze(
+        "Review this answer.",
+        [],
+        analysis_profile="task_scoped",
+    )
+
+    assert result == "Analysis complete."

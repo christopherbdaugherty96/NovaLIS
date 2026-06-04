@@ -7,10 +7,10 @@ def test_deepseek_bridge_has_no_authority_imports_or_network_mediator_calls():
     text = DEEPSEEK_BRIDGE_PATH.read_text(encoding="utf-8", errors="replace")
 
     forbidden_snippets = [
-        "src.governor",
+        "src.governor.governor",
+        "src.governor.governor_mediator",
         "src.executors",
         "network_mediator",
-        "capability_id",
         "requests.",
     ]
 

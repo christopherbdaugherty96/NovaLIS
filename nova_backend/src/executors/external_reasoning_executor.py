@@ -87,7 +87,7 @@ class ExternalReasoningExecutor:
             )
 
         base_request = SimpleNamespace(
-            capability_id=31,
+            capability_id=62,
             params={"text": text, "review_mode": "second_opinion"},
             request_id=request.request_id,
         )
