@@ -30,8 +30,9 @@ def test_phase7_registry_keeps_external_reasoning_bounded():
     assert capability["name"] == "external_reasoning_review"
     assert capability["phase_introduced"] == "7"
     assert capability["enabled"] is True
-    assert capability["authority_class"] == "read_only_local"
-    assert capability["external_effect"] is False
+    assert capability["authority_class"] == "read_only_network"
+    assert capability["external_effect"] is True
+    assert capability["cost_posture"] == "paid"
     assert capability["reversible"] is True
 
 
@@ -62,8 +63,8 @@ def test_phase7_external_reasoning_executor_stays_advisory_only(monkeypatch):
     result = mod.ExternalReasoningExecutor().execute(_request("Review this answer for gaps."))
 
     assert result.success is True
-    assert result.authority_class == "read_only"
-    assert result.external_effect is False
+    assert result.authority_class == "read_only_network"
+    assert result.external_effect is True
     assert "Provider: DeepSeek" in result.message
     assert result.structured_data["reasoning_provider"] == "DeepSeek"
     assert result.structured_data["reasoning_authority"] == "analysis_only"

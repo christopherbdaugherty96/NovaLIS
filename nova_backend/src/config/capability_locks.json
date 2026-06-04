@@ -817,9 +817,9 @@
     },
     "62": {
       "name": "external_reasoning_review",
-      "authority_class": "read_only_local",
+      "authority_class": "read_only_network",
       "risk_level": "low",
-      "external_effect": false,
+      "external_effect": true,
       "reversible": true,
       "p1_unit": {
         "status": "pending",

@@ -12,7 +12,7 @@ class ExternalReasoningExecutor:
 
     _PROVIDER_LABEL = "DeepSeek"
     _ROUTE_LABEL = "Governed second-opinion lane"
-    _ROUTE_DETAIL = "Governor -> ExternalReasoningExecutor -> DeepSeekBridge -> llm_gateway"
+    _ROUTE_DETAIL = "Governor -> ExternalReasoningExecutor -> DeepSeekBridge -> DeepSeekReasoningProvider -> NetworkMediator"
     _AUTHORITY_LABEL = "Advisory only"
     _GOVERNANCE_NOTE = (
         "This review can critique Nova's answer, but it cannot take actions or widen Nova's authority."
@@ -46,8 +46,8 @@ class ExternalReasoningExecutor:
                 structured_data=payload,
                 speakable_text="Governed second opinion is paused in Settings.",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
+                authority_class="read_only_network",
+                external_effect=True,
                 reversible=True,
                 outcome_reason=message,
             )
@@ -67,8 +67,8 @@ class ExternalReasoningExecutor:
                     "reasoning_governance_note": self._GOVERNANCE_NOTE,
                 },
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
+                authority_class="read_only_network",
+                external_effect=True,
                 reversible=True,
                 speakable_text="I need an answer or exchange to review first.",
                 structured_data={
@@ -124,8 +124,8 @@ class ExternalReasoningExecutor:
                 structured_data=payload,
                 speakable_text="Governed second opinion is unavailable right now.",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
+                authority_class="read_only_network",
+                external_effect=True,
                 reversible=True,
                 outcome_reason=message,
             )
@@ -210,7 +210,7 @@ class ExternalReasoningExecutor:
             structured_data=payload,
             speakable_text=speakable_text,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
+            authority_class="read_only_network",
+            external_effect=True,
             reversible=True,
         )

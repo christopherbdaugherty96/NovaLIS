@@ -142,10 +142,10 @@ def test_shopify_intelligence_report_is_free_tier():
     assert cap.cost_posture == "free_tier"
 
 
-def test_external_reasoning_review_is_free_tier():
+def test_external_reasoning_review_is_paid():
     registry = CapabilityRegistry()
     cap = registry.get(62)
-    assert cap.cost_posture == "free_tier"
+    assert cap.cost_posture == "paid"
 
 
 def test_send_email_draft_is_free():
@@ -177,11 +177,11 @@ def test_local_control_caps_are_free():
 
 
 def test_count_of_free_tier_capabilities():
-    """Exactly 5 caps should be free_tier: 16, 55, 56, 62, 65."""
+    """Exactly 4 caps should be free_tier: 16, 55, 56, 65."""
     registry = CapabilityRegistry()
     free_tier = [c for c in registry.all_capabilities() if c.cost_posture == "free_tier"]
-    assert len(free_tier) == 5
-    assert {c.id for c in free_tier} == {16, 55, 56, 62, 65}
+    assert len(free_tier) == 4
+    assert {c.id for c in free_tier} == {16, 55, 56, 65}
 
 
 def test_count_of_unknown_cost_capabilities():
@@ -192,11 +192,11 @@ def test_count_of_unknown_cost_capabilities():
     assert unknown[0].id == 63
 
 
-def test_no_paid_capabilities_in_current_registry():
-    """No cap should be 'paid' — paid tier is reserved for future use."""
+def test_paid_capabilities_are_expected_metered_provider_lanes():
+    """Paid caps should be explicit governed provider lanes."""
     registry = CapabilityRegistry()
     paid = [c for c in registry.all_capabilities() if c.cost_posture == "paid"]
-    assert paid == [], f"Unexpected paid caps: {[c.id for c in paid]}"
+    assert {c.id for c in paid} == {62}
 
 
 # ---------------------------------------------------------------------------

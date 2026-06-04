@@ -193,14 +193,14 @@
       "status": "active",
       "phase_introduced": "7",
       "risk_level": "low",
-      "data_exfiltration": false,
+      "data_exfiltration": true,
       "enabled": true,
-      "authority_class": "read_only_local",
+      "authority_class": "read_only_network",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false,
-      "cost_posture": "free_tier",
-      "description": "Provides a same-thread governed second-opinion lane that can critique an answer without gaining execution authority."
+      "external_effect": true,
+      "cost_posture": "paid",
+      "description": "Provides a same-thread governed external reasoning lane through a network/cloud provider. It can critique an answer without gaining execution authority."
     },
     {
       "id": 32,

@@ -19,6 +19,7 @@ REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "config" / "registry.jso
 RUNTIME_DOC_PATH = RUNTIME_DOC_DIR / "CURRENT_RUNTIME_STATE.md"
 CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "PHASE_4_RUNTIME_TRUTH.md"
 DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_bridge.py"
+DEEPSEEK_PROVIDER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "providers" / "deepseek_reasoning_provider.py"
 LLM_MANAGER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_manager.py"
 LLM_GATEWAY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_gateway.py"
 GOVERNOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor.py"
@@ -86,6 +87,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         RUNTIME_DOC_PATH,
         CANONICAL_RUNTIME_DOC_PATH,
         DEEPSEEK_BRIDGE_PATH,
+        DEEPSEEK_PROVIDER_PATH,
         LLM_MANAGER_PATH,
         LLM_GATEWAY_PATH,
         GOVERNOR_PATH,
@@ -459,13 +461,23 @@ def _skill_surface_rows() -> list[dict[str, str]]:
         )
 
     deepseek_src = _safe_read(DEEPSEEK_BRIDGE_PATH)
+    deepseek_provider_src = _safe_read(DEEPSEEK_PROVIDER_PATH)
     rows.append(
         {
             "name": "deepseek_bridge",
             "module": "src/conversation/deepseek_bridge.py",
             "surface_type": "conversation",
-            "network_usage": "no",
-            "model_usage": "llm_gateway" if "generate_chat" in deepseek_src else ("ollama_direct" if "ollama.chat" in deepseek_src else "none"),
+            "network_usage": "yes" if "DeepSeekReasoningProvider" in deepseek_src else "no",
+            "model_usage": "deepseek_provider" if "DeepSeekReasoningProvider" in deepseek_src else ("llm_gateway" if "generate_chat" in deepseek_src else ("ollama_direct" if "ollama.chat" in deepseek_src else "none")),
+        }
+    )
+    rows.append(
+        {
+            "name": "deepseek_reasoning_provider",
+            "module": "src/providers/deepseek_reasoning_provider.py",
+            "surface_type": "provider",
+            "network_usage": "yes" if "NetworkMediator" in deepseek_provider_src else "no",
+            "model_usage": "deepseek_api" if "api.deepseek.com" in deepseek_provider_src else "none",
         }
     )
 
@@ -919,10 +931,16 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
     brain_src = _safe_read(BRAIN_SERVER_PATH)
     settings_api_src = _safe_read(SETTINGS_API_PATH)
     bridge_src = _safe_read(DEEPSEEK_BRIDGE_PATH)
+    provider_src = _safe_read(DEEPSEEK_PROVIDER_PATH)
     capability_enabled = 62 in enabled_ids
     executor_present = EXTERNAL_REASONING_EXECUTOR_PATH.exists()
     safety_wrapper_present = DEEPSEEK_SAFETY_WRAPPER_PATH.exists()
-    gateway_mediated = "generate_chat" in bridge_src and "ollama.chat" not in bridge_src
+    provider_mediated = (
+        DEEPSEEK_PROVIDER_PATH.exists()
+        and "DeepSeekReasoningProvider" in bridge_src
+        and "NetworkMediator" in provider_src
+        and "api.deepseek.com" in provider_src
+    )
     governor_wired = "req.capability_id == 62" in governor_src
     mediator_wired = "SECOND_OPINION_RE" in mediator_src and "second opinion" in MEDIATOR_TRIGGER_PROBES
     trust_surface_present = (
@@ -954,7 +972,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and capability_enabled
         and executor_present
         and safety_wrapper_present
-        and gateway_mediated
+        and provider_mediated
         and governor_wired
         and mediator_wired
         and trust_surface_present
@@ -963,7 +981,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and runtime_support_present
     ):
         return "COMPLETE"
-    if capability_enabled and executor_present and gateway_mediated and governor_wired:
+    if capability_enabled and executor_present and provider_mediated and governor_wired:
         return "ACTIVE"
     if capability_enabled or executor_present:
         return "PARTIAL"
@@ -1417,11 +1435,15 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     disabled = [row["id"] for row in rows if not row["enabled"]]
     enforcement = _governor_enforcement_summary()
     skill_routes = [r for r in _skill_surface_rows() if r.get("surface_type") == "governor_capability" and r.get("capability_id")]
-    llm_gateway_users = []
+    llm_gateway_users: list[tuple[str, str]] = []
     for rel_path in ("src/conversation/deepseek_bridge.py", "src/skills/general_chat.py", "src/openclaw/agent_runner.py"):
-        src = _safe_read(PROJECT_ROOT / "nova_backend" / rel_path)
+        path = PROJECT_ROOT / "nova_backend" / rel_path
+        src = _safe_read(path)
         if "generate_chat" in src:
-            llm_gateway_users.append(rel_path)
+            label = f"{rel_path} uses llm_gateway.generate_chat"
+            if path == DEEPSEEK_BRIDGE_PATH and "NOVA_ALLOW_LOCAL_REASONING_FALLBACK" in src:
+                label = f"{rel_path} uses llm_gateway.generate_chat only for explicit local fallback"
+            llm_gateway_users.append((rel_path, label))
 
     lines = [
         "# GOVERNANCE_MATRIX_TREE",
@@ -1451,9 +1473,9 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     for route in skill_routes:
         lines.append(f"  Routes --> R{route['capability_id']}_{route['name']}[{route['name']} -> capability {route['capability_id']}]")
     lines.append("  Runtime --> LLM[Conversation/Model Surfaces]")
-    for module in llm_gateway_users:
+    for module, label in llm_gateway_users:
         key = module.replace("/", "_").replace(".", "_")
-        lines.append(f"  LLM --> {key}[{module} uses llm_gateway.generate_chat]")
+        lines.append(f"  LLM --> {key}[{label}]")
     lines.extend(["```", "", "```text", "Runtime", f"|- Enabled IDs: {enabled}", f"|- Disabled IDs: {disabled}", "|- Governor Guards"])
     lines.extend(
         [
@@ -1473,8 +1495,8 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     for route in skill_routes:
         lines.append(f"|  |- {route['name']} -> {route['capability_id']}")
     lines.append("|- Conversation/model surfaces")
-    for module in llm_gateway_users:
-        lines.append(f"   |- {module} -> llm_gateway.generate_chat")
+    for _module, label in llm_gateway_users:
+        lines.append(f"   |- {label}")
     lines.append("```")
     lines.append("")
     return "\n".join(lines)

@@ -27,7 +27,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 59 | screen_analysis | True | active | 4 | low | free | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 60 | explain_anything | True | active | 4 | low | free | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 61 | memory_governance | True | active | 5 | low | free | False | persistent_change | False | False | False | False | Governor -> Executor | True | True | True | True | True |
-| 62 | external_reasoning_review | True | active | 7 | low | free_tier | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
+| 62 | external_reasoning_review | True | active | 7 | low | paid | True | read_only_network | False | True | True | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 63 | openclaw_execute | True | active | 8 | low | unknown_cost | False | read_only_network | False | True | True | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 64 | send_email_draft | True | active | 8 | confirm | free | True | persistent_change | True | False | True | False | Governor -> Executor | True | True | True | True | True |
 | 65 | shopify_intelligence_report | True | active | 9 | low | free_tier | False | read_only_network | False | True | True | True | Governor -> NetworkMediator | True | True | True | True | True |

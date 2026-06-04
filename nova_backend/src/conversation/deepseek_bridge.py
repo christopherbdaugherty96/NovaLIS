@@ -1,9 +1,14 @@
 import logging
+import os
 import re
 from typing import List
 
 from src.cognition.cognitive_operation_logger import CognitiveOperationLogger
 from src.llm import llm_gateway
+from src.providers.deepseek_reasoning_provider import (
+    DeepSeekReasoningProvider,
+    DeepSeekReasoningProviderError,
+)
 from src.usage.provider_usage_store import provider_usage_store
 
 from . import prompts
@@ -15,7 +20,7 @@ ANALYSIS_TIMEOUT_SECONDS = 90.0
 
 
 class DeepSeekBridge:
-    """Analysis-only cognitive bridge. No network, no capabilities, no execution."""
+    """Analysis-only cognitive bridge. No capabilities, no execution."""
 
     _DEEP_REASON_HEADERS = (
         "Core answer:",
@@ -26,6 +31,7 @@ class DeepSeekBridge:
 
     def __init__(self) -> None:
         self._cognitive_log = CognitiveOperationLogger()
+        self._provider = DeepSeekReasoningProvider()
 
     def analyze(
         self,
@@ -44,6 +50,26 @@ class DeepSeekBridge:
         prompt = prompts.build_analysis_prompt(user_message, context, profile=analysis_profile)
         response = ""
         try:
+            try:
+                provider_result = self._provider.analyze(
+                    prompt=prompt,
+                    request_id="deepseek_bridge",
+                    analysis_profile=analysis_profile,
+                    max_tokens=min(MAX_TOKENS, suggested_max_tokens),
+                    temperature=0.2,
+                    timeout=timeout_seconds,
+                )
+                response = provider_result.text
+                if response:
+                    if analysis_profile == "deep_reason":
+                        return self._normalize_deep_reason_response(response)
+                    return response
+            except DeepSeekReasoningProviderError as error:
+                if not self._local_fallback_enabled():
+                    logger.error("DeepSeek provider unavailable: %s", error)
+                    return "I can provide structured analysis, but the governed DeepSeek provider is currently unavailable."
+                logger.warning("DeepSeek provider unavailable; using explicit local fallback: %s", error)
+
             response = llm_gateway.generate_chat(
                 prompt,
                 mode="analysis_only",
@@ -56,11 +82,11 @@ class DeepSeekBridge:
             if response:
                 provider_usage_store.record_reasoning_event(
                     provider="DeepSeek reasoning lane",
-                    route="DeepSeekBridge -> llm_gateway",
+                    route="DeepSeekBridge -> llm_gateway (explicit local fallback)",
                     analysis_profile=analysis_profile,
                     prompt_text=prompt,
                     response_text=response,
-                    model_label="DeepSeek via llm_gateway",
+                    model_label="local fallback for DeepSeekBridge",
                     request_id="deepseek_bridge",
                     exact_usage_available=False,
                 )
@@ -77,6 +103,15 @@ class DeepSeekBridge:
                 request_id="deepseek_bridge",
                 success=bool(response),
             )
+
+    @staticmethod
+    def _local_fallback_enabled() -> bool:
+        return str(os.getenv("NOVA_ALLOW_LOCAL_REASONING_FALLBACK") or "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
 
     @classmethod
     def _normalize_deep_reason_response(cls, text: str) -> str:

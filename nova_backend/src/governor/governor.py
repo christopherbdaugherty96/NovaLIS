@@ -38,7 +38,7 @@ CAPABILITY_TIMEOUT_OVERRIDES = {
 }
 
 # Capabilities that consume external tokens and are subject to daily budget enforcement.
-_BUDGET_GATED_CAP_IDS: frozenset[int] = frozenset({16, 48, 49, 50, 55, 56, 63})
+_BUDGET_GATED_CAP_IDS: frozenset[int] = frozenset({16, 48, 49, 50, 55, 56, 62, 63})
 
 
 class Governor:
