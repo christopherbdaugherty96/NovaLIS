@@ -6,6 +6,8 @@ from typing import Any, Mapping, Sequence
 
 from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
 
+EMPTY_BRIEFING_TEXT = "I do not see anything that needs your attention right now."
+
 
 @dataclass(frozen=True)
 class BriefingSection:
@@ -27,7 +29,7 @@ class Briefing:
 
     def as_text(self) -> str:
         if not self.sections:
-            return "Nothing to report right now."
+            return EMPTY_BRIEFING_TEXT
         parts: list[str] = []
         for section in self.sections:
             parts.append(f"**{section.label}**")
@@ -42,7 +44,7 @@ class Briefing:
 
     def as_unprioritized_text(self) -> str:
         if not self.sections:
-            return "Nothing to report right now."
+            return EMPTY_BRIEFING_TEXT
         parts: list[str] = []
         for section in sorted(self.sections, key=lambda s: s.label):
             parts.append(f"**{section.label}**")

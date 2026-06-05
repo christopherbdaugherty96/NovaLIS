@@ -20,6 +20,16 @@ _CAPABILITY_REF = re.compile(
     re.IGNORECASE,
 )
 
+_INVALID_FAILURE_SUBJECTS = {
+    "is",
+    "are",
+    "was",
+    "were",
+    "currently",
+    "temporarily",
+    "unavailable",
+}
+
 
 class PersonalityInterfaceAgent:
     """Presentation-only personality layer for outbound chat messages."""
@@ -228,7 +238,9 @@ class PersonalityInterfaceAgent:
         if not cleaned:
             cleaned = "Something did not work as expected."
         cap_match = _CAPABILITY_REF.search(cleaned)
-        subject = cap_match.group(1).replace("_", " ") if cap_match else "that"
+        subject = cap_match.group(1).replace("_", " ") if cap_match else "Nova"
+        if not subject.strip() or subject.strip().lower() in _INVALID_FAILURE_SUBJECTS:
+            subject = "Nova"
         suggestion = p.permitted_suggestion_language[0]
         return (
             f"It looks like {subject} ran into a problem. "
