@@ -46,6 +46,28 @@ class NovaStyleContract:
             "- Use clear cause-and-effect language.\n"
             "- Avoid ornamental framing or academic showiness.\n"
         ),
+        # Chief of Staff mode-aware guidance (Phase 2)
+        "home": (
+            "Communication style: Calm and conversational.\n"
+            "- Lead with the point, keep it simple.\n"
+            "- One short paragraph or two short sentences.\n"
+            "- Warm but not performative.\n"
+            "- Offer next steps as questions, not commands.\n"
+        ),
+        "business": (
+            "Communication style: Structured and metrics-aware.\n"
+            "- Lead with the key number or status.\n"
+            "- Use short labeled sections for multiple items.\n"
+            "- Keep recommendations actionable and specific.\n"
+            "- Offer next steps as questions, not commands.\n"
+        ),
+        "development": (
+            "Communication style: Technical and concise.\n"
+            "- Lead with the relevant file, function, or status.\n"
+            "- Use code-adjacent language when appropriate.\n"
+            "- Keep suggestions concrete and task-scoped.\n"
+            "- Offer next steps as questions, not commands.\n"
+        ),
     }
     _INITIATIVE_TEMPLATES = {
         "casual": {
@@ -71,6 +93,25 @@ class NovaStyleContract:
             "branch": "If you want, I can map two or three directions and compare them.",
             "depth": "If you want, I can go deeper on one path or keep it broad.",
             "combined": "If you want, I can compare two or three directions or go deeper on one path.",
+        },
+        # Chief of Staff mode-aware templates (Phase 2)
+        "home": {
+            "clarify": "Want me to keep this short, or go a bit deeper?",
+            "branch": "If you want, I can keep going on this or take it somewhere else.",
+            "depth": "Want me to dig into one part of this?",
+            "combined": "Want me to go deeper on one part, or take this in a different direction?",
+        },
+        "business": {
+            "clarify": "I can keep this at summary level or break down the details. Which is more useful?",
+            "branch": "If useful, I can compare the options or focus on the highest-priority item.",
+            "depth": "If useful, I can break this down further or tighten it into action items.",
+            "combined": "If useful, I can compare the options or break one down into action items.",
+        },
+        "development": {
+            "clarify": "Want me to keep this high-level, or get into the specifics?",
+            "branch": "If useful, I can trace through the code path or look at the test coverage.",
+            "depth": "If useful, I can go deeper on one layer or compress this into a checklist.",
+            "combined": "Want me to trace one path deeper, or compress this into next steps?",
         },
     }
     _MODE_WORDING_REPLACEMENTS = {
