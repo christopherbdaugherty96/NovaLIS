@@ -18,6 +18,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
 pytest.importorskip("fastapi")
 pytest.importorskip("httpx")
 

@@ -8,6 +8,8 @@ import pytest
 
 from tests.test_brain_server_session_cleanup import _ScriptedWebSocket
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.mark.skipif(
     os.getenv("CI") == "true",

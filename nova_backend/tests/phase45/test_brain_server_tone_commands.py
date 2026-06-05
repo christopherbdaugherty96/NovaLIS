@@ -4,10 +4,13 @@ import asyncio
 import json
 from unittest.mock import patch
 
+import pytest
 from fastapi import WebSocketDisconnect
 
 from src import brain_server
 from src.conversation.session_router import GateResult
+
+pytestmark = pytest.mark.slow
 
 
 class _ScriptedWebSocket:

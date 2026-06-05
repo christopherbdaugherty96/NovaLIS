@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 
+import pytest
 from fastapi import WebSocketDisconnect
 
 from src import brain_server
@@ -136,6 +137,7 @@ def test_pending_file_folder_confirmation_yes_bypasses_normal_gates(monkeypatch)
     assert not any("What should I continue from" in message for message in chat_messages)
 
 
+@pytest.mark.slow
 def test_response_verification_chat_surface_prefers_accuracy_label(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

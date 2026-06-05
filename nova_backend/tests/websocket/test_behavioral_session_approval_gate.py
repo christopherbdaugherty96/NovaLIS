@@ -4,6 +4,8 @@ import asyncio
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
@@ -282,6 +284,7 @@ def test_session_cancel_clears_pending_without_execution(monkeypatch):
     assert any("Cancelled pending action." in message for message in _chat_messages(ws))
 
 
+@pytest.mark.slow
 def test_session_duplicate_yes_does_not_double_execute_cap64(monkeypatch):
     """A second 'yes' after the pending action is already consumed must not
     trigger a second governed invocation.  This closes the duplicate-yes
@@ -323,6 +326,7 @@ def test_session_duplicate_yes_does_not_double_execute_cap64(monkeypatch):
     assert _event_types(ledger).count("ACTION_COMPLETED") == 1
 
 
+@pytest.mark.slow
 def test_session_duplicate_yes_does_not_double_execute_cap22(monkeypatch):
     """Same duplicate-yes protection test for Cap 22."""
     calls: list[tuple[int, dict]] = []

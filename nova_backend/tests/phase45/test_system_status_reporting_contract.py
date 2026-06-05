@@ -1,4 +1,8 @@
+import pytest
+
 from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor
+
+pytestmark = pytest.mark.slow
 
 
 class _Request:

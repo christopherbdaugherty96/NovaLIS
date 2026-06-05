@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from .conversation_runner import run_scenario_library
 
 
+@pytest.mark.slow
 def test_scenario_simulation_library_executes_all_workflows():
     scenario_dir = Path(__file__).resolve().parent / "scenarios"
     runs = run_scenario_library(scenario_dir)
