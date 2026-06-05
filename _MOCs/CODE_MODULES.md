@@ -627,12 +627,14 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/brain/task_understanding.py|task_understanding]]
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
 - [[nova_backend/src/cognition/cognitive_operation_logger.py|cognitive_operation_logger]]
+- [[nova_backend/src/governor/capability_registry.py|capability_registry]]
+- [[nova_backend/src/governor/exceptions.py|exceptions]]
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
 - [[nova_backend/src/memory/memory_skill.py|memory_skill]]
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
-- [[nova_backend/src/providers/__init__.py|src/providers]]
+- [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
 - [[nova_backend/src/services/weather_service.py|weather_service]]
 - [[nova_backend/src/skills/calendar.py|calendar]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
@@ -937,6 +939,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
+- [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/identity/nova_self_awareness.py|nova_self_awareness]]
@@ -945,8 +948,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
-- [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- _…and 62 more_
+- _…and 65 more_
 
 ### Tests
 
@@ -1415,13 +1417,15 @@ ___all__ = ["AtomicPolicyStore", "PolicyValidationResult", "PolicyValidator"]_
 - [[nova_backend/src/prompts/research_prompt.py|research_prompt]]
     - RESEARCH_SUMMARIZE_SYSTEM = (
 
-## `providers` (2 files)
+## `providers` (3 files)
 
 _Provider lanes for optional metered model access._
 
 ### Files
 
 - [[nova_backend/src/providers/__init__.py|src/providers]]
+- [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
+    - class DeepSeekReasoningProviderError(RuntimeError):
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
     - class OpenAIResponsesLaneError(RuntimeError):
 
@@ -1435,11 +1439,14 @@ _Provider lanes for optional metered model access._
 
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
+- [[nova_backend/tests/governance/test_deepseek_external_reasoning_boundaries.py|test_deepseek_external_reasoning_boundaries]]
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
+- [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
 
 ### Tests
 
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
+- [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
 
 ## `rendering` (3 files)
 
@@ -1808,6 +1815,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/governor/governor.py|governor]]
+- [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
 - [[nova_backend/tests/certification/cap_16_governed_web_search/conftest.py|conftest - certification/cap_16_governed_web_search]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
@@ -1816,8 +1824,8 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [[nova_backend/tests/phase7/test_phase7_runtime_contract.py|test_phase7_runtime_contract]]
 - [[nova_backend/tests/phase9/test_token_awareness.py|test_token_awareness]]
-- [[nova_backend/tests/simulation/nova_trial_runner.py|nova_trial_runner]]
-- [[nova_backend/tests/test_openclaw_agent_api.py|test_openclaw_agent_api]]
+- [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
+- _…and 2 more_
 
 ### Tests
 

@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (145)
+## governance (146)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -54,6 +54,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/governance/test_cognition_module_scaffolds.py|test_cognition_module_scaffolds]]
 - [code] [[nova_backend/tests/governance/test_cognitive_layer_contract.py|test_cognitive_layer_contract]]
 - [code] [[nova_backend/tests/governance/test_cognitive_modules_analysis_only.py|test_cognitive_modules_analysis_only]]
+- [code] [[nova_backend/tests/governance/test_deepseek_external_reasoning_boundaries.py|test_deepseek_external_reasoning_boundaries]]
 - [code] [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
 - [code] [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
 - [code] [[nova_backend/tests/openclaw/test_freeform_goal_governance.py|test_freeform_goal_governance]]
@@ -557,7 +558,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (743)
+## testing (746)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -596,6 +597,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/dashboard_event_replay_harness.py|dashboard_event_replay_harness]]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/dashboard_event_replay_harness_results.json|dashboard_event_replay_harness_results]]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json|dashboard_stale_degraded_rendering_contract]]
+- [code] [[nova_backend/tests/simulations/deepseek_reasoning_simulation.py|deepseek_reasoning_simulation]]
 - [code] [[nova_backend/tests/simulation/scenarios/degraded_runtime_local_model_locked.json|degraded_runtime_local_model_locked]]
 - [code] [[nova_backend/tests/simulation/scenarios/developer_debugging_workflow.json|developer_debugging_workflow]]
 - [code] [[nova_backend/tests/simulation/scenarios/failed_provider_calendar_degrades.json|failed_provider_calendar_degrades]]
@@ -717,7 +719,9 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_dashboard_workspace_board_widget.py|test_dashboard_workspace_board_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_workspace_home_widget.py|test_dashboard_workspace_home_widget]]
 - [code] [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
+- [code] [[nova_backend/tests/governance/test_deepseek_external_reasoning_boundaries.py|test_deepseek_external_reasoning_boundaries]]
 - [code] [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
+- [code] [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
 - [code] [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
 - [code] [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
 - [code] [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
