@@ -229,13 +229,18 @@ class Governor:
 
         if not self._execute_boundary.allow_execution():
             capability_label = str(getattr(cap, "name", "that action") or "that action").replace("_", " ").strip()
+            if capability_id == 62:
+                message = (
+                    "External reasoning is currently unavailable. "
+                    "Nova can continue without a second opinion."
+                )
+            else:
+                message = (
+                    f"I recognized the action '{capability_label}', but this runtime can't execute it right now. "
+                    "Try again with a more specific local command or retry when execution is available."
+                )
             return self._normalize_action_result(
-                ActionResult.failure(
-                    (
-                        f"I recognized the action '{capability_label}', but this runtime can't execute it right now. "
-                        "Try again with a more specific local command or retry when execution is available."
-                    )
-                ),
+                ActionResult.failure(message),
                 capability_id=capability_id,
             )
 
