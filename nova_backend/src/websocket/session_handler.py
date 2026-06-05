@@ -43,7 +43,33 @@ def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) ->
     return ""
 
 
-def _personality_failure_message(raw_message: str) -> str:
+def _detect_session_mode(
+    session_state: dict[str, Any],
+    user_text: str = "",
+) -> str:
+    """Detect the current mode from session context.
+
+    Read-only — reads session state and user text, returns a mode
+    string. Does not modify routing, governance, or execution.
+    """
+    from src.personality.mode_detection import ModeDetector
+    detector = ModeDetector()
+    explicit_override = str(session_state.get("session_mode_override") or "").strip() or None
+    recent_caps = [
+        int(item.get("capability_id") or 0)
+        for item in list(session_state.get("recent_governed_actions") or [])[:5]
+        if isinstance(item, dict) and item.get("capability_id")
+    ]
+    result = detector.detect(
+        user_text=user_text,
+        explicit_override=explicit_override,
+        recent_capabilities=recent_caps if recent_caps else None,
+    )
+    session_state["detected_mode"] = result.mode
+    return result.mode
+
+
+def _personality_failure_message(raw_message: str, *, mode: str = "home") -> str:
     """Replace raw 'unavailable' strings with calm personality output.
 
     Pure string transformation — no routing, no capability invocation.
@@ -52,7 +78,7 @@ def _personality_failure_message(raw_message: str) -> str:
     from src.personality.interface_agent import PersonalityInterfaceAgent
     from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
     return PersonalityInterfaceAgent().humanize_failure(
-        raw_message, profile=ChiefOfStaffProfile(),
+        raw_message, profile=ChiefOfStaffProfile(), mode=mode,
     )
 
 
@@ -61,6 +87,8 @@ def _personality_gate_message(
     cap_name: str,
     cap_id: int,
     authority_class: str = "local_write",
+    *,
+    mode: str = "home",
 ) -> str:
     """Replace hand-written gate prompts with personality-wrapped gates.
 
@@ -75,6 +103,7 @@ def _personality_gate_message(
         cap_id=cap_id,
         authority_class=authority_class,
         profile=ChiefOfStaffProfile(),
+        mode=mode,
     )
 
 
@@ -897,6 +926,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 set_current_ws_turn_id(incoming_turn_id)
 
             session_state["last_input_channel"] = channel
+            _detected_mode = _detect_session_mode(session_state, raw_text)
             interpreted_confirmation_consumed = False
 
             pending_interpret_confirm = session_state.get("pending_interpret_confirm")
