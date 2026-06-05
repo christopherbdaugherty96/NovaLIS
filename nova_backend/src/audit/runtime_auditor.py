@@ -343,6 +343,13 @@ def _network_mediated_capability_ids(governor_source: str) -> list[int]:
             continue
         if current_cap is not None and "self.network" in line:
             mediated.add(current_cap)
+    # Also include capabilities whose registry authority_class is
+    # read_only_network — they route through NetworkMediator inside
+    # their executors even when the governor does not pass self.network.
+    registry = _load_registry()
+    for capability in registry.get("capabilities", []):
+        if str(capability.get("authority_class") or "").strip() == "read_only_network":
+            mediated.add(int(capability.get("id", -1)))
     return sorted(mediated)
 
 

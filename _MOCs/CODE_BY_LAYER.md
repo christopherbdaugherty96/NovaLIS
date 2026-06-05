@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (287)
+## Backend runtime (288)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -440,6 +440,8 @@ Use this to orient yourself before diving into a specific module.
   summary: RESEARCH_SUMMARIZE_SYSTEM = (
 - [[nova_backend/src/providers/__init__.py|src/providers]]
   summary: Provider lanes for optional metered model access.
+- [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
+  summary: class DeepSeekReasoningProviderError(RuntimeError):
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
   summary: class OpenAIResponsesLaneError(RuntimeError):
 - [[nova_backend/src/rendering/__init__.py|src/rendering]]
@@ -575,7 +577,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (392)
+## Tests and verification (395)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -805,6 +807,8 @@ Use this to orient yourself before diving into a specific module.
   summary: CognitiveMode,
 - [[nova_backend/tests/governance/test_cognitive_modules_analysis_only.py|test_cognitive_modules_analysis_only]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
+- [[nova_backend/tests/governance/test_deepseek_external_reasoning_boundaries.py|test_deepseek_external_reasoning_boundaries]]
+  summary: def test_deepseek_shopify_write_suggestion_does_not_route_to_cap65():
 - [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
   summary: def test_deepseek_bridge_has_no_authority_imports_or_network_mediator_calls():
 - [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
@@ -1093,6 +1097,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase9/__init__.py|tests/phase9]]
 - [[nova_backend/tests/phase9/test_token_awareness.py|test_token_awareness]]
   summary: Phase 9 — Token Awareness Layer tests.
+- [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
+  summary: class _FakeNetwork:
 - [[nova_backend/tests/rendering/test_intelligence_brief_renderer.py|test_intelligence_brief_renderer]]
   summary: def test_render_brief_contains_structured_sections():
 - [[nova_backend/tests/rendering/test_speech_formatter.py|test_speech_formatter]]
@@ -1228,6 +1234,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Concurrent WebSocket load simulation for a running Nova instance.
 - [[nova_backend/tests/simulations/conversation_quality_benchmark.py|conversation_quality_benchmark]]
   summary: Conversation quality benchmark for Nova's local/free LLM-dependent path.
+- [[nova_backend/tests/simulations/deepseek_reasoning_simulation.py|deepseek_reasoning_simulation]]
+  summary: DeepSeek reasoning layer simulation for a running Nova instance.
 - [[nova_backend/tests/simulations/live_user_simulation.py|live_user_simulation]]
   summary: Live user simulation for a running Nova instance.
 - [[nova_backend/tests/simulations/mixed_request_edge_simulation.py|mixed_request_edge_simulation]]

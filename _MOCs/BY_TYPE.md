@@ -391,7 +391,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 277 code)
+## Runtime and ops (22 docs, 278 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -795,6 +795,8 @@ concern is reflected across docs, code and tests.
   summary: RESEARCH_SUMMARIZE_SYSTEM = (
 - [code] [[nova_backend/src/providers/__init__.py|src/providers]]
   summary: Provider lanes for optional metered model access.
+- [code] [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
+  summary: class DeepSeekReasoningProviderError(RuntimeError):
 - [code] [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
   summary: class OpenAIResponsesLaneError(RuntimeError):
 - [code] [[nova_backend/src/rendering/__init__.py|src/rendering]]
@@ -936,7 +938,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 227d5b144a3cc58a5737773bd06f3cbbfa225444098128a4cc2677fc947163a1
+  summary: Runtime Fingerprint: d96606585f88269a7558ff957bc305da9c6b5ee1ec886897c3729dba226c4160
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -960,7 +962,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 3d1057e6856fba736ce536f6af01214fae868cc1e097e87726a79a8b5891b549
+  summary: - runtimesurfacehash: ae606cc3ed95ed8941a2dc77e31ba920b3e4edaa6c5d6daf6e5bb12c2bfdc6f2
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1037,7 +1039,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 392 code)
+## Tests (5 docs, 395 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1267,6 +1269,8 @@ concern is reflected across docs, code and tests.
   summary: CognitiveMode,
 - [code] [[nova_backend/tests/governance/test_cognitive_modules_analysis_only.py|test_cognitive_modules_analysis_only]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
+- [code] [[nova_backend/tests/governance/test_deepseek_external_reasoning_boundaries.py|test_deepseek_external_reasoning_boundaries]]
+  summary: def test_deepseek_shopify_write_suggestion_does_not_route_to_cap65():
 - [code] [[nova_backend/tests/governance/test_deepseek_non_authorizing.py|test_deepseek_non_authorizing]]
   summary: def test_deepseek_bridge_has_no_authority_imports_or_network_mediator_calls():
 - [code] [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
@@ -1555,6 +1559,8 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/phase9/__init__.py|tests/phase9]] - Phase 9
 - [code] [[nova_backend/tests/phase9/test_token_awareness.py|test_token_awareness]] - Phase 9
   summary: Phase 9 — Token Awareness Layer tests.
+- [code] [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
+  summary: class _FakeNetwork:
 - [code] [[nova_backend/tests/rendering/test_intelligence_brief_renderer.py|test_intelligence_brief_renderer]]
   summary: def test_render_brief_contains_structured_sections():
 - [code] [[nova_backend/tests/rendering/test_speech_formatter.py|test_speech_formatter]]
@@ -1690,6 +1696,8 @@ concern is reflected across docs, code and tests.
   summary: Concurrent WebSocket load simulation for a running Nova instance.
 - [code] [[nova_backend/tests/simulations/conversation_quality_benchmark.py|conversation_quality_benchmark]]
   summary: Conversation quality benchmark for Nova's local/free LLM-dependent path.
+- [code] [[nova_backend/tests/simulations/deepseek_reasoning_simulation.py|deepseek_reasoning_simulation]]
+  summary: DeepSeek reasoning layer simulation for a running Nova instance.
 - [code] [[nova_backend/tests/simulations/live_user_simulation.py|live_user_simulation]]
   summary: Live user simulation for a running Nova instance.
 - [code] [[nova_backend/tests/simulations/mixed_request_edge_simulation.py|mixed_request_edge_simulation]]
@@ -2422,7 +2430,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (507 docs, 40 code)
+## Reference (508 docs, 40 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -3018,6 +3026,8 @@ concern is reflected across docs, code and tests.
   summary: Status: planning guardrail / future scope control
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
   summary: NovaLIS has evolved into a serious governance-first AI platform with unusually strong internal discipline: runtime truth docs, testing rigor...
+- [doc] [[docs/Future/RJ_PRINT_GOVERNED_PRODUCTION_TICKET_PLAN|RJ Print — Governed Production Ticket System (Phase 1)]]
+  summary: Status: future / product design; not implemented runtime truth
 - [doc] [[docs/future/ROADMAP|Nova Roadmap]]
   summary: Status: planning roadmap. Runtime truth still comes from code and generated runtime docs.
 - [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
