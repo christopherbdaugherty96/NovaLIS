@@ -3327,7 +3327,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {"morning", "morning brief", "brief"}:
+            if lowered in {"morning", "morning brief", "brief", "brief me", "what did i miss", "catch me up"}:
                 weather_summary = "Weather unavailable."
                 news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."
@@ -3423,75 +3423,64 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     else:
                         calendar_line = calendar_result.message
 
-                # Build structured morning brief
-                from datetime import datetime as _dt
-                _now = _dt.now()
-                _day_str = f"{_now.strftime('%A, %B')} {_now.day}"
-                _time_str = _now.strftime("%I:%M %p").lstrip("0")
+                # Compose morning brief via ProactiveBriefing
+                import time as _time_mod
+                from src.personality.proactive_briefing import (
+                    BriefingTrigger as _BT,
+                    ProactiveBriefing as _PB,
+                )
+                from src.personality.chief_of_staff_profile import (
+                    ChiefOfStaffProfile as _CSP,
+                )
 
-                # Richer weather line from widget data
-                _weather_widget_data: dict = {}
-                if weather_result is not None and weather_result.success and isinstance(weather_result.data, dict):
-                    _w_widget = weather_result.data.get("widget") or {}
-                    if isinstance(_w_widget, dict):
-                        _weather_widget_data = dict(_w_widget.get("data") or {})
-                _temp = str(_weather_widget_data.get("temperature") or "").strip()
-                _cond = str(_weather_widget_data.get("condition") or "").strip()
-                _loc = str(_weather_widget_data.get("location") or "").strip()
-                _fcast = str(_weather_widget_data.get("forecast") or "").strip()
-                if _temp and _cond:
-                    _weather_line = f"{_temp}°F, {_cond}"
-                    if _loc:
-                        _weather_line += f" in {_loc}"
-                    _weather_line += "."
-                    if _fcast:
-                        _weather_line += f" {_fcast}"
-                    _weather_line = _weather_line.replace("Â°F", "°F")
-                else:
-                    _weather_line = weather_summary
+                # Build session snapshot from already-fetched capability results
+                _brief_session_data: dict = {}
+                if weather_result is not None and weather_result.success:
+                    _w_widget = {}
+                    if isinstance(weather_result.data, dict):
+                        _w_widget = dict((weather_result.data.get("widget") or {}).get("data") or {})
+                    _brief_session_data["weather"] = {
+                        "summary": weather_summary,
+                        "temperature": _w_widget.get("temperature"),
+                        "condition": _w_widget.get("condition"),
+                        "timestamp": _time_mod.time(),
+                    }
+                if isinstance(session_state.get("last_calendar_events"), list):
+                    _brief_session_data["calendar"] = {
+                        "events": list(session_state.get("last_calendar_events") or [])[:5],
+                        "timestamp": _time_mod.time(),
+                    }
+                _news_items = list(session_state.get("news_cache") or [])
+                if _news_items:
+                    _brief_session_data["news"] = {
+                        "headlines": [
+                            str(item.get("title") or "").strip()
+                            for item in _news_items[:5]
+                            if isinstance(item, dict)
+                        ],
+                        "timestamp": _time_mod.time(),
+                    }
 
-                # Calendar section — list events individually when available
-                _cal_events = list(session_state.get("last_calendar_events") or [])
-                if _cal_events:
-                    _event_lines = "\n".join(
-                        f"  {str(ev.get('time') or '').strip():<12}{str(ev.get('title') or '').strip()}"
-                        for ev in _cal_events[:5]
-                    )
-                    _cal_section = f"Schedule:\n{_event_lines}"
-                else:
-                    _cal_section = f"Schedule: {calendar_line}"
+                # Thread snapshot from session if available
+                _thread_snap = None
+                if hasattr(project_threads, "list_summaries"):
+                    _thread_snap = [dict(s) for s in project_threads.list_summaries()[:5]]
 
-                # Top headlines from news cache
-                _news_cache = list(session_state.get("news_cache") or [])
-                _headlines = [
-                    str(item.get("title") or "").strip()
-                    for item in _news_cache[:3]
-                    if isinstance(item, dict) and str(item.get("title") or "").strip()
-                ]
+                _detected_mode = session_state.get("detected_mode", "home")
+                _trigger = _BT(
+                    trigger_type="morning",
+                    source_label="Morning brief command",
+                    data_timestamp=_time_mod.time(),
+                )
+                _brief_result = _PB().compose_and_format(
+                    trigger=_trigger,
+                    session_data=_brief_session_data,
+                    thread_snapshot=_thread_snap,
+                    mode=_detected_mode,
+                    profile=_CSP(),
+                )
 
-                # Compose brief
-                _parts = [f"Morning Brief — {_day_str} at {_time_str}", ""]
-                _parts.append(f"Weather: {_weather_line}")
-                _parts.append("")
-                _parts.append(_cal_section)
-                if _headlines:
-                    _parts.append("")
-                    _parts.append("News: " + _headlines[0])
-                    for _h in _headlines[1:]:
-                        _parts.append(f"  Also: {_h}")
-                elif (
-                    news_summary
-                    and "unavailable" not in news_summary.lower()
-                    and "no headline" not in news_summary.lower()
-                ):
-                    _parts.append("")
-                    _parts.append(f"News: {news_summary}")
-                _sys_ok = any(w in system_line.lower() for w in ("nominal", "healthy", "ok"))
-                if not _sys_ok:
-                    _parts.append("")
-                    _parts.append(f"System: {system_line}")
-
-                morning_brief = "\n".join(_parts)
+                morning_brief = (_brief_result or {}).get("briefing_text", "Morning brief unavailable.")
                 await send_chat_message(ws, morning_brief, tone_domain="daily")
                 await send_chat_done(ws)
                 continue
