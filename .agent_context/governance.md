@@ -17,7 +17,20 @@ Execution still requires the existing governed runtime path.
 - Cap 65 is Shopify read-only intelligence; no writes.
 - OpenClaw is an execution environment, not the brain.
 - Memory is context, not permission.
+- Learning creates proposals; governance creates permissions.
 - Receipts prove events; they do not authorize future actions.
+
+## Learning Doctrine
+
+Knowledge may grow.
+Context may grow.
+Judgment may improve.
+
+Authority may not grow automatically.
+
+Nova may remember and recommend. Nova may not self-authorize.
+
+Any learning feature that changes execution behavior, approval requirements, permissions, routing, ledger behavior, or external effects without a reviewed governance change fails review.
 
 ## Agent Rule
 

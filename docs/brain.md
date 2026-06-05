@@ -273,6 +273,14 @@ A remembered preference does not give Nova permission to send, buy, publish, del
 
 Governed actions still require capability checks, confirmation when needed, and receipts.
 
+## Learning Boundary
+
+Learning creates better proposals. Governance creates permissions. Execution requires permission.
+
+Nova may notice patterns, improve recommendations, summarize friction, identify capability gaps, and record user preferences as inspectable context. Nova may not skip confirmations, lower approval requirements, enable connectors, unlock capabilities, modify policies, expand permissions, execute new action classes, or create external effects because of learned experience.
+
+See [`docs/brain/NOVA_LEARNING_DOCTRINE.md`](brain/NOVA_LEARNING_DOCTRINE.md).
+
 ## OpenClaw Boundary
 
 OpenClaw is an environment, not the Brain.
@@ -293,6 +301,7 @@ Use these files for implementation guidance:
 - [`docs/brain/AUTHORITY_PLANE.md`](brain/AUTHORITY_PLANE.md)
 - [`docs/brain/BRAIN_TRACE_UI_SPEC.md`](brain/BRAIN_TRACE_UI_SPEC.md)
 - [`docs/brain/MEMORY_LAYERS.md`](brain/MEMORY_LAYERS.md)
+- [`docs/brain/NOVA_LEARNING_DOCTRINE.md`](brain/NOVA_LEARNING_DOCTRINE.md)
 - [`docs/brain/PROJECT_CONTEXTS.md`](brain/PROJECT_CONTEXTS.md)
 - [`docs/brain/OPENCLAW_ENVIRONMENT_MODEL.md`](brain/OPENCLAW_ENVIRONMENT_MODEL.md)
 - [`docs/brain/IMPLEMENTATION_ROADMAP.md`](brain/IMPLEMENTATION_ROADMAP.md)

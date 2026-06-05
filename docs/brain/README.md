@@ -33,6 +33,7 @@ Let receipts prove.
 - dry-run / plan-preview behavior
 - Brain Trace UI concepts
 - memory layers and project contexts
+- learning doctrine for proposal-only growth
 - OpenClaw as an environment, not the brain
 - implementation roadmap
 
@@ -122,7 +123,8 @@ Current runtime truth still comes from generated runtime docs and code.
 5. [`AUTHORITY_PLANE.md`](AUTHORITY_PLANE.md)
 6. [`BRAIN_TRACE_UI_SPEC.md`](BRAIN_TRACE_UI_SPEC.md)
 7. [`MEMORY_LAYERS.md`](MEMORY_LAYERS.md)
-8. [`PROJECT_CONTEXTS.md`](PROJECT_CONTEXTS.md)
-9. [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRONMENT_MODEL.md)
-10. [`../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`](../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
-11. [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md)
+8. [`NOVA_LEARNING_DOCTRINE.md`](NOVA_LEARNING_DOCTRINE.md)
+9. [`PROJECT_CONTEXTS.md`](PROJECT_CONTEXTS.md)
+10. [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRONMENT_MODEL.md)
+11. [`../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`](../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
+12. [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md)
