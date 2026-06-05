@@ -3564,6 +3564,20 @@ def _maybe_auto_speak_for_voice_turn(
     )
     if not speakable:
         return
+
+    # Apply VoicePersonality formatting (Phase 2C wiring)
+    try:
+        from src.personality.voice_personality import VoicePersonality
+        from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+        _vp_result = VoicePersonality().format_for_voice(
+            speakable,
+            mode=str(session_state.get("detected_mode") or "home"),
+            profile=ChiefOfStaffProfile(),
+        )
+        speakable = _vp_result.spoken_text
+    except Exception:
+        log.debug("VoicePersonality formatting skipped", exc_info=True)
+
     speech_state.last_spoken_text = speakable
     try:
         nova_speak(speakable)
