@@ -120,6 +120,45 @@ class TestFailureHumanization:
         assert isinstance(out, str)
         assert len(out) > 0
 
+    def test_failure_humanization_uses_valid_subject(self, agent, profile):
+        out = agent.humanize_failure(
+            "Capability is currently unavailable.",
+            profile=profile,
+        )
+        lowered = out.lower()
+        assert "it looks like is ran" not in lowered
+        assert "nova" in lowered
+
+    def test_failure_humanization_stays_transparent_about_failure(self, agent, profile):
+        out = agent.humanize_failure(
+            "Weather is currently unavailable.",
+            profile=profile,
+        )
+        lowered = out.lower()
+        assert any(phrase in lowered for phrase in [
+            "did not complete",
+            "did not finish",
+            "ran into a problem",
+            "step",
+        ])
+
+    def test_failure_humanization_does_not_imply_authority(self, agent, profile):
+        out = agent.humanize_failure(
+            "Capability 55 is currently unavailable.",
+            profile=profile,
+        )
+        lowered = out.lower()
+        forbidden = (
+            "i will fix",
+            "i fixed",
+            "i handled",
+            "i executed",
+            "approved",
+            "confirmed",
+            "bypassed",
+        )
+        assert not any(phrase in lowered for phrase in forbidden)
+
 
 # ---- Mode-aware tone -------------------------------------------------------
 

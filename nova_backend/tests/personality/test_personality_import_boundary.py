@@ -192,7 +192,7 @@ def test_personality_off_briefing_is_inert():
     from src.personality.briefing_composer import BriefingComposer
     composer = BriefingComposer(profile=None)
     briefing = composer.compose()
-    assert briefing.as_text() == "Nothing to report right now."
+    assert briefing.as_text() == "I do not see anything that needs your attention right now."
 
 
 def test_personality_off_no_governance_side_effects():

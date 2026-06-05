@@ -12,7 +12,7 @@ def test_compose_from_empty_session():
     assert isinstance(briefing, Briefing)
     text = briefing.as_text()
     assert isinstance(text, str)
-    assert text == "Nothing to report right now."
+    assert text == "I do not see anything that needs your attention right now."
 
 
 def test_compose_with_shopify_data():
@@ -217,4 +217,52 @@ def test_rejects_none_gracefully():
         thread_snapshot=None,
         notice_snapshot=None,
     )
-    assert briefing.as_text() == "Nothing to report right now."
+    assert briefing.as_text() == "I do not see anything that needs your attention right now."
+
+
+def test_empty_briefing_copy_is_not_alarming():
+    briefing = Briefing(sections=(), mode="home", generated_at=time.time())
+    text = briefing.as_text()
+    lowered = text.lower()
+    assert "urgent" not in lowered
+    assert "alert" not in lowered
+    assert "critical" not in lowered
+    assert "error" not in lowered
+
+
+def test_empty_briefing_does_not_invent_updates():
+    briefing = Briefing(sections=(), mode="home", generated_at=time.time())
+    text = briefing.as_text().lower()
+    invented_update_terms = (
+        "new update",
+        "new updates",
+        "new event",
+        "new alert",
+        "i found",
+        "i noticed",
+    )
+    assert not any(term in text for term in invented_update_terms)
+
+
+def test_empty_briefing_remains_advisory_only():
+    briefing = Briefing(sections=(), mode="home", generated_at=time.time())
+    text = briefing.as_text().lower()
+    assert "needs your attention" in text
+    assert "i will" not in text
+    assert "i ran" not in text
+    assert "i executed" not in text
+
+
+def test_empty_briefing_includes_no_capability_invocation_or_action():
+    briefing = Briefing(sections=(), mode="home", generated_at=time.time())
+    text = briefing.as_text().lower()
+    forbidden = (
+        "capability_id",
+        "executor",
+        "confirmed=true",
+        "invoke",
+        "execute",
+        "dispatch",
+    )
+    assert not any(term in text for term in forbidden)
+    assert briefing.as_unprioritized_text() == briefing.as_text()
