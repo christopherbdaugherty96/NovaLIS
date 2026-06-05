@@ -250,6 +250,101 @@ def _active_trust_condition_notice(
     }
 
 
+def build_tier2_flag_notice(
+    *,
+    metric_name: str,
+    current_value: float | int,
+    threshold: float | int,
+    source_label: str,
+    source_timestamp: str,
+) -> dict[str, Any] | None:
+    if current_value < threshold:
+        return None
+    return {
+        "id": f"tier2_flag::{_clean(metric_name).lower().replace(' ', '_')}",
+        "type": "tier2_flag",
+        "title": f"{_clean(metric_name)} crossed threshold",
+        "summary": (
+            f"{_clean(metric_name)} is at {current_value} "
+            f"(threshold: {threshold}). Source: {_clean(source_label)}."
+        ),
+        "why_now": f"Threshold crossed at {_clean(source_timestamp)}.",
+        "risk_level": "low",
+        "requires_permission": False,
+        "suggested_actions": [
+            {"label": "Show details", "command": f"show {_clean(metric_name).lower()}"},
+            {"label": "System status", "command": "system status"},
+        ],
+    }
+
+
+def build_tier3_recommend_notice(
+    *,
+    pattern_description: str,
+    recommendation: str,
+    source_label: str,
+) -> dict[str, Any] | None:
+    desc = _clean(pattern_description)
+    rec = _clean(recommendation)
+    if not desc or not rec:
+        return None
+    summary = f"{desc}. {rec} — want me to look into this?"
+    return {
+        "id": f"tier3_recommend::{desc[:40].lower().replace(' ', '_')}",
+        "type": "tier3_recommend",
+        "title": f"Pattern noticed: {desc[:60]}",
+        "summary": summary,
+        "why_now": f"Observed in {_clean(source_label)}.",
+        "risk_level": "low",
+        "requires_permission": True,
+        "suggested_actions": [
+            {"label": "Look into this", "command": f"investigate {rec.lower()[:60]}"},
+            {"label": "Dismiss", "command": "dismiss assistive notice"},
+        ],
+    }
+
+
+def build_tier4_prepare_notice(
+    *,
+    preview_summary: str,
+    source_label: str,
+    source_timestamp: str,
+    profile: Any = None,
+) -> dict[str, Any] | None:
+    from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+    p = profile if isinstance(profile, ChiefOfStaffProfile) else ChiefOfStaffProfile()
+    desc = _clean(preview_summary)
+    if not desc:
+        return None
+    ts = _parse_ts(source_timestamp)
+    now = _utc_now()
+    staleness_seconds = p.default_staleness_threshold_seconds
+    is_stale = ts is not None and (now - ts).total_seconds() > staleness_seconds
+    if is_stale and ts is not None:
+        age_minutes = int((now - ts).total_seconds() / 60)
+        if age_minutes >= 60:
+            age_str = f"{age_minutes // 60}h {age_minutes % 60}m ago"
+        else:
+            age_str = f"{age_minutes}m ago"
+        summary = f"{desc} (data from {age_str}, may be stale)"
+    else:
+        summary = desc
+    return {
+        "id": f"tier4_prepare::{desc[:40].lower().replace(' ', '_')}",
+        "type": "tier4_prepare",
+        "title": f"Preview ready: {desc[:60]}",
+        "summary": summary,
+        "why_now": f"Prepared from {_clean(source_label)}.",
+        "risk_level": "low",
+        "requires_permission": True,
+        "ephemeral": True,
+        "suggested_actions": [
+            {"label": "Show preview", "command": f"show {desc.lower()[:60]}"},
+            {"label": "Dismiss", "command": "dismiss assistive notice"},
+        ],
+    }
+
+
 def _decorate_notice(notice: dict[str, Any]) -> dict[str, Any]:
     payload = dict(notice)
     payload["dismiss_command"] = f"dismiss assistive notice {_clean(payload.get('id'))}"
