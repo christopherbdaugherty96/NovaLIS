@@ -1,9 +1,24 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
+
+if TYPE_CHECKING:
+    from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+
+
+_ALARM_WORDS = re.compile(
+    r"\b(ERROR|CRITICAL|ALERT|FATAL|PANIC|FAILURE)\b",
+    re.IGNORECASE,
+)
+
+_CAPABILITY_REF = re.compile(
+    r"(?:capability|cap(?:ability)?)\s*['\"]?([a-z_]+)['\"]?",
+    re.IGNORECASE,
+)
 
 
 class PersonalityInterfaceAgent:
@@ -173,3 +188,76 @@ class PersonalityInterfaceAgent:
         expanded = re.sub(r"\n-([^\s])", r"\n- \1", expanded)
         expanded = re.sub(r"\n{3,}", "\n\n", expanded)
         return expanded.strip()
+
+    # ---- Phase 1B: gate wrapping -------------------------------------------
+
+    def wrap_gate(
+        self,
+        action_description: str,
+        cap_name: str,
+        cap_id: int,
+        authority_class: str,
+        *,
+        profile: ChiefOfStaffProfile | None = None,
+        mode: str = "home",
+    ) -> str:
+        from src.personality.chief_of_staff_profile import ChiefOfStaffProfile as _P
+        p = profile or _P()
+        tpl = p.confirmation_template
+        footer = tpl.governance_footer.format(
+            cap_name=cap_name,
+            cap_id=cap_id,
+            authority_class=authority_class,
+        )
+        body = self.present(action_description)
+        return f"{tpl.action_preamble} {body} {tpl.question_suffix}\n{footer}"
+
+    # ---- Phase 1B: failure humanization ------------------------------------
+
+    def humanize_failure(
+        self,
+        error_text: str,
+        *,
+        profile: ChiefOfStaffProfile | None = None,
+        mode: str = "home",
+    ) -> str:
+        from src.personality.chief_of_staff_profile import ChiefOfStaffProfile as _P
+        p = profile or _P()
+        cleaned = _ALARM_WORDS.sub("", str(error_text or "")).strip()
+        cleaned = re.sub(r"\s{2,}", " ", cleaned)
+        if not cleaned:
+            cleaned = "Something did not work as expected."
+        cap_match = _CAPABILITY_REF.search(cleaned)
+        subject = cap_match.group(1).replace("_", " ") if cap_match else "that"
+        suggestion = p.permitted_suggestion_language[0]
+        return (
+            f"It looks like {subject} ran into a problem. "
+            f"{suggestion} try again, or we can look at alternatives."
+        )
+
+    # ---- Phase 1B: mode-aware presentation ---------------------------------
+
+    _MODE_PREFIXES = {
+        "home": "",
+        "business": "",
+        "development": "",
+    }
+
+    def present_with_mode(
+        self,
+        text: str,
+        *,
+        mode: str = "home",
+        domain: str = "general",
+        profile: ChiefOfStaffProfile | None = None,
+    ) -> str:
+        from src.personality.chief_of_staff_profile import ChiefOfStaffProfile as _P
+        p = profile or _P()
+        mode_profile = p.mode_by_name(mode)
+        if mode_profile is None:
+            return self.present(text, domain=domain)
+        if mode == "business":
+            domain = "system"
+        elif mode == "development":
+            domain = "system"
+        return self.present(text, domain=domain)
