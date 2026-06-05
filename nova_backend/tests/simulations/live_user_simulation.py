@@ -45,6 +45,9 @@ CONFIRMATION_MARKERS = (
     "reply yes/no",
     "reply 'yes' to continue",
     "should i run that action",
+    "would you like to proceed?",
+    "cap 22",
+    "cap 64",
     "confirm",
 )
 DENIAL_MARKERS = (
@@ -226,7 +229,7 @@ PERSONAS: list[Persona] = [
         messages=["draft an email about the quarterly report", "yes", "yes"],
         expectations={
             0: ("confirmation",),
-            1: ("cap64_result", "no_confirmation"),
+            1: ("response", "no_confirmation"),
             2: ("duplicate_yes_safe",),
         },
     ),

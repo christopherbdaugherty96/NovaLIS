@@ -321,6 +321,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _maybe_handle_local_architecture_report_request = deps._maybe_handle_local_architecture_report_request
     _maybe_handle_local_project_structure_map_request = deps._maybe_handle_local_project_structure_map_request
     _maybe_prepare_local_open_request = deps._maybe_prepare_local_open_request
+    _personality_gate_message = deps._personality_gate_message
     _maybe_handle_local_project_request = deps._maybe_handle_local_project_request
     WORKSPACE_HOME_RE = deps.WORKSPACE_HOME_RE
     send_workspace_home_widget = deps.send_workspace_home_widget

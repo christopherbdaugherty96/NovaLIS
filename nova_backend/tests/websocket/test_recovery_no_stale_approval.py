@@ -88,7 +88,7 @@ def test_cap22_disconnect_clears_pending_state(monkeypatch):
     # Verify pending was created but not executed
     assert calls == []
     assert any(
-        "This action needs confirmation." in m for m in _chat_messages(ws1)
+        "open_file_folder" in m and "Cap 22" in m for m in _chat_messages(ws1)
     )
 
     # Session 2: new connection sends "yes" — must NOT resume stale pending
@@ -145,7 +145,7 @@ def test_cap64_disconnect_clears_pending_state(monkeypatch):
 
     assert calls == []
     assert any(
-        "Reply 'yes' to proceed or 'no' to cancel." in m
+        "send_email_draft" in m and "Cap 64" in m
         for m in _chat_messages(ws1)
     )
 

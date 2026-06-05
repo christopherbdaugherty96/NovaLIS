@@ -849,6 +849,24 @@ def _memory_confirmation_prompt(action: str, params: dict) -> str:
     )
 
 
+def _personality_gate_message(
+    action_description: str,
+    cap_name: str,
+    cap_id: int,
+    authority_class: str = "local_write",
+) -> str:
+    from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+    from src.personality.interface_agent import PersonalityInterfaceAgent
+
+    return PersonalityInterfaceAgent().wrap_gate(
+        action_description=action_description,
+        cap_name=cap_name,
+        cap_id=cap_id,
+        authority_class=authority_class,
+        profile=ChiefOfStaffProfile(),
+    )
+
+
 def _enrich_thread_map_widget_memory(widget: dict) -> dict:
     if not isinstance(widget, dict):
         return widget
@@ -2100,10 +2118,10 @@ def _maybe_prepare_local_open_request(
 
     open_path = resolved_path if resolved_path.is_dir() else resolved_path.parent
     resource = str(open_path)
-    message = (
-        f"Open {resource}?\n"
-        "This action needs confirmation.\n"
-        "Reply 'yes' to proceed or 'no' to cancel."
+    message = _personality_gate_message(
+        f"Open {resource}",
+        cap_name="open_file_folder",
+        cap_id=22,
     )
     suggestions = [
         {"label": "Open folder", "command": f"open {open_path}"},
