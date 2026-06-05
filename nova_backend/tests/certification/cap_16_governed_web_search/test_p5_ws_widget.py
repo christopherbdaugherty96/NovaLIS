@@ -22,6 +22,8 @@ from unittest.mock import MagicMock, patch
 import anyio
 import pytest
 
+pytestmark = pytest.mark.slow
+
 # ---------------------------------------------------------------------------
 # Unit tests — send_widget_message search case
 # ---------------------------------------------------------------------------

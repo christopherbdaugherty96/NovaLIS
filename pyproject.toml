@@ -41,6 +41,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
+    "pytest-timeout>=2.3",
     "ruff>=0.6",
 ]
 
@@ -80,3 +81,7 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["nova_backend/tests"]
 asyncio_mode = "auto"
+timeout = 180
+markers = [
+    "slow: marks tests that take >20s (typically websocket/brain_server integration hitting Ollama)",
+]

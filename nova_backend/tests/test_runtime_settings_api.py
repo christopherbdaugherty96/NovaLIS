@@ -3,11 +3,14 @@ from __future__ import annotations
 import importlib
 from types import SimpleNamespace
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src import brain_server
 from src.executors.external_reasoning_executor import ExternalReasoningExecutor
 from src.settings.runtime_settings_store import RuntimeSettingsStore
+
+pytestmark = pytest.mark.slow
 
 
 def _install_runtime_settings_store(monkeypatch, tmp_path):

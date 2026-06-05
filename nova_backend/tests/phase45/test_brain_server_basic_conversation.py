@@ -5,6 +5,10 @@ from datetime import datetime
 from unittest.mock import patch
 
 import pytest
+
+pytestmark = pytest.mark.slow
+
+import pytest
 from fastapi import WebSocketDisconnect
 from src import brain_server
 from src.actions.action_result import ActionResult

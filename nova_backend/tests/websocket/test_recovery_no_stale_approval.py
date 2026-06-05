@@ -12,6 +12,8 @@ from __future__ import annotations
 import asyncio
 from unittest.mock import patch
 
+import pytest
+
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
@@ -55,6 +57,7 @@ def _install_gate_baseline(monkeypatch, routes):
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.slow
 def test_cap22_disconnect_clears_pending_state(monkeypatch):
     """After a WebSocket session ends with a pending Cap 22 action,
     a new session sending 'yes' must NOT execute the stale action."""
@@ -107,6 +110,7 @@ def test_cap22_disconnect_clears_pending_state(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.slow
 def test_cap64_disconnect_clears_pending_state(monkeypatch):
     """After a WebSocket session ends with a pending Cap 64 action,
     a new session sending 'yes' must NOT execute the stale action."""

@@ -1,3 +1,5 @@
+import pytest
+
 from src.actions.action_request import ActionRequest
 from src.executors.brightness_executor import BrightnessExecutor
 from src.executors.media_executor import MediaExecutor
@@ -74,6 +76,7 @@ def test_volume_executor_fails_when_system_control_cannot_apply(monkeypatch):
     assert "couldn't set volume" in result.message.lower()
 
 
+@pytest.mark.slow
 def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
 
@@ -222,6 +225,7 @@ def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_act
     assert item["ledger_ref"] == "L57"
 
 
+@pytest.mark.slow
 def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
 

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import pytest
+
 from tests.simulation.analytics import aggregate_simulation_runs
 from tests.simulation.conversation_runner import build_run_record
 from tests.simulation.conversation_simulator import run_simulation
 
 from .stress_generator import generate_stress_scripts
 from .stress_profiles import ADVERSARIAL_PROFILE, LIGHT_PROFILE, StressProfile
+
+pytestmark = pytest.mark.slow
 
 
 def _run_profile(profile: StressProfile, seed: int) -> dict:
