@@ -1726,6 +1726,8 @@ def _render_trust_center_message(trust_status: dict[str, Any]) -> tuple[str, lis
     if blocked:
         lines.append("")
         lines.append("Currently blocked:")
+        from src.personality.trust_presenter import TrustPresenter
+        _trust_presenter = TrustPresenter()
         for item in blocked:
             label = str(item.get("label") or item.get("area") or "Condition").strip()
             status = str(item.get("status") or "unknown").strip()
@@ -1733,6 +1735,11 @@ def _render_trust_center_message(trust_status: dict[str, Any]) -> tuple[str, lis
             rendered = f"- {label}: {status}"
             if reason:
                 rendered += f" - {reason}"
+            explanation = _trust_presenter.explain_boundary(
+                action_description=label,
+                reason=reason or "A trust condition is active",
+            )
+            rendered += f"\n  {explanation}"
             lines.append(rendered)
     suggestions = [
         {"label": "Workspace Home", "command": "workspace home"},

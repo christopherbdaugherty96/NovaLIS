@@ -71,7 +71,7 @@ def test_cap22_session_request_creates_pending_state_without_execution(monkeypat
     assert calls == []
     assert "ACTION_ATTEMPTED" not in _event_types(ledger)
     assert "ACTION_COMPLETED" not in _event_types(ledger)
-    assert any("This action needs confirmation." in message for message in _chat_messages(ws))
+    assert any("?" in message and ("open_file_folder" in message or "Cap 22" in message) for message in _chat_messages(ws))
 
 
 def test_cap64_session_request_creates_pending_state_without_execution(monkeypatch):
@@ -103,8 +103,7 @@ def test_cap64_session_request_creates_pending_state_without_execution(monkeypat
     assert "ACTION_ATTEMPTED" not in _event_types(ledger)
     assert "ACTION_COMPLETED" not in _event_types(ledger)
     chat_messages = _chat_messages(ws)
-    assert any("Reply 'yes' to proceed or 'no' to cancel." in message for message in chat_messages)
-    assert any("Nova never sends email automatically" in message for message in chat_messages)
+    assert any("?" in message and ("send_email_draft" in message or "Cap 64" in message) for message in chat_messages)
 
 
 def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monkeypatch):

@@ -43,6 +43,41 @@ def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) ->
     return ""
 
 
+def _personality_failure_message(raw_message: str) -> str:
+    """Replace raw 'unavailable' strings with calm personality output.
+
+    Pure string transformation — no routing, no capability invocation.
+    Called after the governance decision is already made.
+    """
+    from src.personality.interface_agent import PersonalityInterfaceAgent
+    from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+    return PersonalityInterfaceAgent().humanize_failure(
+        raw_message, profile=ChiefOfStaffProfile(),
+    )
+
+
+def _personality_gate_message(
+    action_description: str,
+    cap_name: str,
+    cap_id: int,
+    authority_class: str = "local_write",
+) -> str:
+    """Replace hand-written gate prompts with personality-wrapped gates.
+
+    Pure string transformation — does not change confirmation logic,
+    pending state, or yes/no resolution.
+    """
+    from src.personality.interface_agent import PersonalityInterfaceAgent
+    from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+    return PersonalityInterfaceAgent().wrap_gate(
+        action_description=action_description,
+        cap_name=cap_name,
+        cap_id=cap_id,
+        authority_class=authority_class,
+        profile=ChiefOfStaffProfile(),
+    )
+
+
 def governance_refusal_for(text: str) -> str:
     normalized = " ".join(str(text or "").lower().split())
     if not normalized:
@@ -1086,7 +1121,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 if news_result is None:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
+                        await send_chat_message(ws, _personality_failure_message("News capability is temporarily unavailable"), tone_domain="daily")
                     await ws_send(
                         ws,
                         {
@@ -1138,7 +1173,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
+                        await send_chat_message(ws, _personality_failure_message("News capability is temporarily unavailable"), tone_domain="daily")
                     if isinstance(news_widget, dict) and news_widget.get("type") == "news":
                         await ws_send(ws, news_widget)
                     else:
@@ -1171,7 +1206,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 if weather_result is None:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
+                        await send_chat_message(ws, _personality_failure_message("Weather capability is temporarily unavailable"), tone_domain="daily")
                     await ws_send(
                         ws,
                         {
@@ -1227,7 +1262,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
+                        await send_chat_message(ws, _personality_failure_message("Weather capability is temporarily unavailable"), tone_domain="daily")
                     if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
                         await ws_send(ws, weather_widget)
                     else:
@@ -2262,7 +2297,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 except RuntimeError:
                     phase42_message = "Phase 4.2 runtime is locked in this build profile."
                 except Exception:
-                    phase42_message = "Phase 4.2 analysis is currently unavailable."
+                    phase42_message = _personality_failure_message("Analysis capability is temporarily unavailable")
 
                 session_state["last_response"] = phase42_message
                 speech_state.last_spoken_text = phase42_message
@@ -2323,7 +2358,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 if calendar_result is None:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Calendar is currently unavailable.", tone_domain="daily")
+                        await send_chat_message(ws, _personality_failure_message("Calendar capability is temporarily unavailable"), tone_domain="daily")
                     await send_widget_message(
                         ws,
                         "calendar",
@@ -2353,7 +2388,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Calendar is currently unavailable.", tone_domain="daily")
+                        await send_chat_message(ws, _personality_failure_message("Calendar capability is temporarily unavailable"), tone_domain="daily")
                     if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
                         await send_widget_message(
                             ws,
@@ -2378,7 +2413,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_id,
                 )
                 if action_result is None:
-                    failure_message = "System diagnostics are currently unavailable."
+                    failure_message = _personality_failure_message("System diagnostics are temporarily unavailable")
                     if not silent_widget_refresh:
                         await send_chat_message(ws, failure_message, tone_domain="system")
                     await ws_send(
@@ -2416,7 +2451,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state.get("trust_status", {})
                     )
                 else:
-                    failure_message = "System diagnostics are currently unavailable."
+                    failure_message = _personality_failure_message("System diagnostics are temporarily unavailable")
                     if not silent_widget_refresh:
                         await send_chat_message(ws, failure_message, tone_domain="system")
                     await ws_send(
@@ -3607,10 +3642,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     }
                     await send_chat_message(
                         ws,
-                        (
-                            f"Open {resource}?\n"
-                            "This action needs confirmation.\n"
-                            "Reply 'yes' to proceed or 'no' to cancel."
+                        _personality_gate_message(
+                            f"Open {resource}",
+                            cap_name="open_file_folder",
+                            cap_id=22,
                         ),
                     )
                     await send_chat_done(ws)
@@ -3619,20 +3654,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if capability_id == 64 and not params.get("confirmed"):
                     to = str(params.get("to") or "").strip()
                     subject = str(params.get("subject") or "").strip()
-                    recipient_line = f"To: {to}" if to else "To: (fill in)"
-                    subject_line = f"Subject: {subject}" if subject else "Subject: (fill in)"
+                    recipient_line = f"To: {to}" if to else "(fill in)"
+                    subject_line = f"about {subject}" if subject else ""
                     session_state["pending_governed_confirm"] = {
                         "capability_id": capability_id,
                         "params": dict(params),
                     }
                     await send_chat_message(
                         ws,
-                        (
-                            f"I'll draft this email and open it in your mail client:\n"
-                            f"{recipient_line}\n"
-                            f"{subject_line}\n\n"
-                            "Nova never sends email automatically — you review and send.\n"
-                            "Reply 'yes' to proceed or 'no' to cancel."
+                        _personality_gate_message(
+                            f"Draft email to {recipient_line} {subject_line}".strip(),
+                            cap_name="send_email_draft",
+                            cap_id=64,
                         ),
                     )
                     await send_chat_done(ws)

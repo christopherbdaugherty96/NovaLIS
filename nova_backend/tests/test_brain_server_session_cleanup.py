@@ -92,7 +92,7 @@ def test_open_file_folder_requires_confirmation_before_dispatch(monkeypatch):
     asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert any(
-        msg.get("type") == "chat" and "This action needs confirmation." in msg.get("message", "")
+        msg.get("type") == "chat" and "?" in msg.get("message", "") and ("open_file_folder" in msg.get("message", "") or "Cap 22" in msg.get("message", ""))
         for msg in ws.sent_messages
     )
     assert calls, "Expected confirmed capability dispatch."
