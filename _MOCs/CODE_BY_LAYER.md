@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (288)
+## Backend runtime (295)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -411,6 +411,10 @@ Use this to orient yourself before diving into a specific module.
   summary: __all__ = [
 - [[nova_backend/src/personality/announce.py|announce]]
   summary: def deep_mode_activation_notice() -> str:
+- [[nova_backend/src/personality/briefing_composer.py|briefing_composer]]
+  summary: EMPTY_BRIEFING_TEXT = "I do not see anything that needs your attention right now.
+- [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
+  summary: @dataclass(frozen=True)
 - [[nova_backend/src/personality/conversation_personality_agent.py|conversation_personality_agent]]
   summary: class ConversationPersonalityAgent:
 - [[nova_backend/src/personality/core.py|core]]
@@ -418,15 +422,25 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/personality/deep_mode.py|deep_mode]]
   summary: @dataclass
 - [[nova_backend/src/personality/interface_agent.py|interface_agent]]
-  summary: class PersonalityInterfaceAgent:
+  summary: if TYPE_CHECKING:
+- [[nova_backend/src/personality/mode_detection.py|mode_detection]]
+  summary: Context-aware mode detection for the Chief of Staff personality layer.
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
   summary: class NovaStyleContract:
 - [[nova_backend/src/personality/presenter.py|presenter]]
   summary: def present_raw_outputs(outputs: Iterable[AgentOutput]) -> str:
+- [[nova_backend/src/personality/proactive_briefing.py|proactive_briefing]]
+  summary: Proactive briefing framework for the Chief of Staff personality layer.
+- [[nova_backend/src/personality/reminder_framework.py|reminder_framework]]
+  summary: Reminder suggestion framework for the Chief of Staff personality layer.
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
   summary: def _utc_now() -> str:
+- [[nova_backend/src/personality/trust_presenter.py|trust_presenter]]
+  summary: Trust presentation for the Chief of Staff personality layer.
 - [[nova_backend/src/personality/validate.py|validate]]
   summary: class PersonalityValidator:
+- [[nova_backend/src/personality/voice_personality.py|voice_personality]]
+  summary: Voice personality rules for the Chief of Staff personality layer.
 - [[nova_backend/src/policies/__init__.py|src/policies]]
   summary: __all__ = ["AtomicPolicyStore", "PolicyValidationResult", "PolicyValidator"]
 - [[nova_backend/src/policies/atomic_policy_store.py|atomic_policy_store]]
@@ -577,7 +591,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (395)
+## Tests and verification (418)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -915,6 +929,43 @@ Use this to orient yourself before diving into a specific module.
   summary: ToolPermission,
 - [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
   summary: ------------------------------------------------------------------
+- [[nova_backend/tests/personality/__init__.py|tests/personality]]
+- [[nova_backend/tests/personality/test_assistive_noticing_tiers.py|test_assistive_noticing_tiers]]
+  summary: Phase 1B — AssistiveNoticing tier extensions (Tier 2-4).
+- [[nova_backend/tests/personality/test_briefing_composer.py|test_briefing_composer]]
+  summary: def test_compose_from_empty_session():
+- [[nova_backend/tests/personality/test_chief_of_staff_profile.py|test_chief_of_staff_profile]]
+  summary: ChiefOfStaffProfile,
+- [[nova_backend/tests/personality/test_existing_personality_compatibility.py|test_existing_personality_compatibility]]
+  summary: Compatibility tests verifying existing personality behavior is unchanged.
+- [[nova_backend/tests/personality/test_initiative_template_refinement.py|test_initiative_template_refinement]]
+  summary: Phase 2 — Initiative template refinement tests.
+- [[nova_backend/tests/personality/test_interface_agent_extensions.py|test_interface_agent_extensions]]
+  summary: Phase 1B — PersonalityInterfaceAgent extensions.
+- [[nova_backend/tests/personality/test_mode_authority_neutrality.py|test_mode_authority_neutrality]]
+  summary: Phase 2 — Mode authority neutrality tests.
+- [[nova_backend/tests/personality/test_mode_detection.py|test_mode_detection]]
+  summary: Phase 2 — ModeDetector tests.
+- [[nova_backend/tests/personality/test_mode_detector_wiring.py|test_mode_detector_wiring]]
+  summary: Wiring Phase 2A — ModeDetector integration tests.
+- [[nova_backend/tests/personality/test_personality_import_boundary.py|test_personality_import_boundary]]
+  summary: These tests enforce the structural isolation rule from the audited
+- [[nova_backend/tests/personality/test_personality_wiring.py|test_personality_wiring]]
+  summary: Personality Live Wiring Phase 1 — Integration Tests.
+- [[nova_backend/tests/personality/test_phase3_import_boundary.py|test_phase3_import_boundary]]
+  summary: Phase 3 — Import boundary and personality-off baseline tests.
+- [[nova_backend/tests/personality/test_proactive_briefing.py|test_proactive_briefing]]
+  summary: Phase 3 — ProactiveBriefing tests.
+- [[nova_backend/tests/personality/test_proactive_briefing_wiring.py|test_proactive_briefing_wiring]]
+  summary: Wiring Phase 2B — ProactiveBriefing integration tests.
+- [[nova_backend/tests/personality/test_reminder_framework.py|test_reminder_framework]]
+  summary: Phase 2 — ReminderFramework tests.
+- [[nova_backend/tests/personality/test_trust_presenter.py|test_trust_presenter]]
+  summary: Phase 3 — TrustPresenter tests.
+- [[nova_backend/tests/personality/test_voice_personality.py|test_voice_personality]]
+  summary: Phase 3 — VoicePersonality tests.
+- [[nova_backend/tests/personality/test_voice_personality_wiring.py|test_voice_personality_wiring]]
+  summary: Wiring Phase 2C — VoicePersonality integration tests.
 - [[nova_backend/tests/phase42/test_context_snapshot.py|test_context_snapshot]]
   summary: def test_agent_context_snapshot_is_immutable_and_hashed():
 - [[nova_backend/tests/phase42/test_intelligence_report_contract.py|test_intelligence_report_contract]]
@@ -948,11 +999,11 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase45/test_brain_server_memory_and_continuity.py|test_brain_server_memory_and_continuity]]
   summary: ﻿from __future__ import annotations
 - [[nova_backend/tests/phase45/test_brain_server_tone_commands.py|test_brain_server_tone_commands]]
-  summary: class _ScriptedWebSocket:
+  summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]]
   summary: class _WebSocket:
 - [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]]
-  summary: @pytest.mark.skipif(
+  summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/phase45/test_capability_discoverability_contract.py|test_capability_discoverability_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
@@ -1026,13 +1077,13 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase45/test_personality_interface_contract.py|test_personality_interface_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_policy_center_surface.py|test_policy_center_surface]]
-  summary: class _ScriptedWebSocket:
+  summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
   summary: Tests for /api/profile endpoints via profile_api.py.
 - [[nova_backend/tests/phase45/test_screen_capture_executor.py|test_screen_capture_executor]]
   summary: def _request(params: dict):
 - [[nova_backend/tests/phase45/test_system_status_reporting_contract.py|test_system_status_reporting_contract]]
-  summary: class _Request:
+  summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
   summary: def test_normalize_trust_status_bounds_fields():
 - [[nova_backend/tests/phase45/test_user_profile_store.py|test_user_profile_store]]
@@ -1211,7 +1262,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/simulation/stress/stress_runner.py|stress_runner]]
   summary: aggregate_simulation_runs,
 - [[nova_backend/tests/simulation/stress/test_cognitive_stress.py|test_cognitive_stress]]
-  summary: def _run_profile(profile: StressProfile, seed: int) -> dict:
+  summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/simulation/test_capability_routing_simulation.py|test_capability_routing_simulation]]
   summary: def test_capability_routing_simulation():
 - [[nova_backend/tests/simulation/test_cognitive_trace_layer.py|test_cognitive_trace_layer]]
@@ -1220,10 +1271,16 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_governor_safety_simulation():
 - [[nova_backend/tests/simulation/test_nova_trial_runner.py|test_nova_trial_runner]]
   summary: def test_trial_evaluator_reports_capability_sequence_gap():
+- [[nova_backend/tests/simulation/test_personality_simulation.py|test_personality_simulation]]
+  summary: Phase 1 Personality Validation Simulation.
+- [[nova_backend/tests/simulation/test_phase2_personality_simulation.py|test_phase2_personality_simulation]]
+  summary: Phase 2 Personality Validation Simulation.
+- [[nova_backend/tests/simulation/test_phase3_personality_simulation.py|test_phase3_personality_simulation]]
+  summary: Phase 3 Personality Validation Simulation.
 - [[nova_backend/tests/simulation/test_research_conversation_flow.py|test_research_conversation_flow]]
   summary: def test_research_conversation_flow(monkeypatch):
 - [[nova_backend/tests/simulation/test_scenario_simulation_library.py|test_scenario_simulation_library]]
-  summary: def test_scenario_simulation_library_executes_all_workflows():
+  summary: @pytest.mark.slow
 - [[nova_backend/tests/simulation/test_simulation_analytics.py|test_simulation_analytics]]
   summary: aggregate_simulation_runs,
 - [[nova_backend/tests/simulation/trial_evaluator.py|trial_evaluator]]
@@ -1317,7 +1374,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/test_runtime_governance_docs.py|test_runtime_governance_docs]]
   summary: def test_current_runtime_state_path_is_docs_current_runtime():
 - [[nova_backend/tests/test_runtime_settings_api.py|test_runtime_settings_api]]
-  summary: def _install_runtime_settings_store(monkeypatch, tmp_path):
+  summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/test_send_email_draft_routing.py|test_send_email_draft_routing]]
   summary: Tests for GovernorMediator routing of capability 64 (send_email_draft).
 - [[nova_backend/tests/test_shopify_intelligence_report_routing.py|test_shopify_intelligence_report_routing]]
@@ -1344,6 +1401,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
 - [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
+  summary: class _RecordingLedger:
+- [[nova_backend/tests/websocket/test_deterministic_personality_gate_wrapping.py|test_deterministic_personality_gate_wrapping]]
   summary: class _RecordingLedger:
 - [[nova_backend/tests/websocket/test_recovery_no_stale_approval.py|test_recovery_no_stale_approval]]
   summary: Recovery evidence: pending confirmation must not survive WebSocket disconnect.
@@ -1478,7 +1537,7 @@ Use this to orient yourself before diving into a specific module.
 - [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Workspace and repo support (11)
+## Workspace and repo support (12)
 
 - [[.gitattributes|.gitattributes]]
   summary: text=auto
@@ -1494,6 +1553,8 @@ Use this to orient yourself before diving into a specific module.
   summary: topics": [
 - [[pyproject.toml|pyproject]]
   summary: [build-system]
+- [[pytest-fast.ini|pytest-fast]]
+  summary: [pytest]
 - [[start_nova.bat|start_nova - .]]
   summary: @echo off
 - [[start_nova.sh|start_nova - .]]

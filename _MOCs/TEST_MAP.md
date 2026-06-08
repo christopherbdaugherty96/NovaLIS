@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 114
+Paired tests: 121
 
 - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
     - tests → [[nova_backend/src/brain/brain_mode.py|brain_mode]]
@@ -159,6 +159,20 @@ Paired tests: 114
     - tests → [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
 - [[nova_backend/tests/openclaw/test_user_tool_permissions.py|test_user_tool_permissions]]
     - tests → [[nova_backend/src/openclaw/user_tool_permissions.py|user_tool_permissions]]
+- [[nova_backend/tests/personality/test_briefing_composer.py|test_briefing_composer]]
+    - tests → [[nova_backend/src/personality/briefing_composer.py|briefing_composer]]
+- [[nova_backend/tests/personality/test_chief_of_staff_profile.py|test_chief_of_staff_profile]]
+    - tests → [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
+- [[nova_backend/tests/personality/test_mode_detection.py|test_mode_detection]]
+    - tests → [[nova_backend/src/personality/mode_detection.py|mode_detection]]
+- [[nova_backend/tests/personality/test_proactive_briefing.py|test_proactive_briefing]]
+    - tests → [[nova_backend/src/personality/proactive_briefing.py|proactive_briefing]]
+- [[nova_backend/tests/personality/test_reminder_framework.py|test_reminder_framework]]
+    - tests → [[nova_backend/src/personality/reminder_framework.py|reminder_framework]]
+- [[nova_backend/tests/personality/test_trust_presenter.py|test_trust_presenter]]
+    - tests → [[nova_backend/src/personality/trust_presenter.py|trust_presenter]]
+- [[nova_backend/tests/personality/test_voice_personality.py|test_voice_personality]]
+    - tests → [[nova_backend/src/personality/voice_personality.py|voice_personality]]
 - [[nova_backend/tests/phase42/test_intelligence_report_contract.py|test_intelligence_report_contract]]
     - tests → [[nova_backend/src/cognition/intelligence_report_contract.py|intelligence_report_contract]]
 - [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
