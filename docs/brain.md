@@ -308,22 +308,27 @@ Use these files for implementation guidance:
 
 ## Current Priority
 
-Cap 16 search reliability and evidence quality remains the active P1 blocker.
+This section previously listed Cap 16 search reliability as the active P1
+blocker. That note is superseded.
 
-The Brain can clarify and prepare structure, but current-evidence tasks still depend on a reliable governed search lane.
+For current priority and authorized implementation scope, defer to
+`.agent_context/current_priority.md`.
 
-Best next implementation order:
+As of the latest continuity sync, Second Brain Slice 1 is the accepted next
+implementation lane and remains limited to:
 
 ```text
-1. Re-run Cap 16 conversation/search proof after Search Evidence Synthesis.
-2. Add live/static Capability Contracts.
-3. Add Context Assembler and Intention Parser scaffolds.
-4. Add Sandbox Boundary Enforcer.
-5. Implement read-only Dry Run / Plan Preview.
-6. Add Brain Trace metadata/UI.
-7. Add OpenClaw environment planning.
-8. Expand project contexts and suggestion buffer.
+schema
+frontmatter parser
+wikilink extraction
+vault health/lint
+no-mutation tests
+non-authorizing tests
 ```
+
+This Brain document remains architecture guidance. It does not authorize
+runtime behavior, capability expansion, memory authority, OpenClaw integration,
+or execution integration.
 
 ## Final Framing
 

@@ -173,6 +173,99 @@ class NoteRef:
     summary: str = ""
 
 
+@dataclass(frozen=True)
+class AuthorityTier:
+    id: str
+    label: str
+    meaning: str
+    rules: tuple[str, ...]
+    examples: tuple[str, ...]
+
+
+AUTHORITY_TIERS: tuple[AuthorityTier, ...] = (
+    AuthorityTier(
+        id="tier0",
+        label="Tier 0 - Generated Runtime Truth",
+        meaning="Generated runtime snapshots and matrices for exact runtime state.",
+        rules=(
+            "Generated runtime docs win for exact runtime facts.",
+            "Do not manually edit generated runtime truth.",
+            "Delegate capability counts, hashes, and runtime surfaces here.",
+        ),
+        examples=(
+            "docs/current_runtime/CURRENT_RUNTIME_STATE.md",
+            "docs/current_runtime/RUNTIME_FINGERPRINT.md",
+            "docs/current_runtime/GOVERNANCE_MATRIX.md",
+        ),
+    ),
+    AuthorityTier(
+        id="tier1",
+        label="Tier 1 - Current Operational Continuity",
+        meaning="Human-maintained current priority, working state, and handoff context.",
+        rules=(
+            "Use this tier for current priority and next safe action.",
+            "If Tier 1 and Tier 0 disagree on runtime facts, Tier 0 wins.",
+            "Continuity notes are current-work truth, not runtime authority.",
+        ),
+        examples=(
+            ".agent_context/current_priority.md",
+            "docs/status/CURRENT_WORK_STATUS.md",
+            "docs/todo/ACTIVE_TODO.md",
+            "AGENTS.md",
+        ),
+    ),
+    AuthorityTier(
+        id="tier2",
+        label="Tier 2 - Accepted Evidence, Locks, And Proofs",
+        meaning="Accepted proof, audit, closeout, and priority-lock records.",
+        rules=(
+            "Proof records support claims but do not override generated runtime truth.",
+            "Locks define reviewed scope; they are not execution authority by themselves.",
+            "Keep active, certified, and locked status distinct.",
+        ),
+        examples=(
+            "docs/PROOFS/**",
+            "docs/status/*LOCK*.md",
+            "docs/status/*CLOSEOUT*.md",
+            "docs/audits/**",
+        ),
+    ),
+    AuthorityTier(
+        id="tier3",
+        label="Tier 3 - Future / Planning Only",
+        meaning="Design direction, future plans, and proposed systems.",
+        rules=(
+            "Future docs are not implemented runtime behavior.",
+            "Planning docs do not authorize new capabilities, writes, or integrations.",
+            "Do not treat future designs as current truth without code, tests, and current status.",
+        ),
+        examples=(
+            "docs/future/**",
+            "future/**",
+            "docs/design/**",
+        ),
+    ),
+    AuthorityTier(
+        id="tier4",
+        label="Tier 4 - Historical / Archive",
+        meaning="Archived, superseded, or historical context.",
+        rules=(
+            "Archive docs are useful for context but should not drive current work.",
+            "Revive historical work only through a new reviewed priority lock.",
+            "Do not merge stale generated output over newer generated output.",
+        ),
+        examples=(
+            "docs/archive/**",
+            "archive/**",
+            "paths containing archive",
+        ),
+    ),
+)
+
+AUTHORITY_TIER_BY_ID = {tier.id: tier for tier in AUTHORITY_TIERS}
+UNCLASSIFIED_AUTHORITY_LABEL = "Reference / Unclassified"
+
+
 def _tracked_repo_paths() -> list[Path]:
     try:
         raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=REPO_ROOT)
@@ -444,6 +537,48 @@ def _wikilink(note: NoteRef) -> str:
     return f"[[{rel}|{note.title}]]"
 
 
+def classify_authority_tier(note: NoteRef) -> AuthorityTier | None:
+    """Classify a note for truth-ranked vault navigation only."""
+    rel = note.rel.as_posix()
+    rel_lower = rel.lower()
+    parts_lower = tuple(part.lower() for part in note.rel.parts)
+    name_lower = note.rel.name.lower()
+
+    if "archive" in parts_lower or any(part.startswith("archive(") for part in parts_lower):
+        return AUTHORITY_TIER_BY_ID["tier4"]
+    if rel_lower.startswith("docs/archive/") or rel_lower.startswith("archive/"):
+        return AUTHORITY_TIER_BY_ID["tier4"]
+
+    if rel_lower.startswith("docs/current_runtime/"):
+        return AUTHORITY_TIER_BY_ID["tier0"]
+
+    if rel_lower in {
+        ".agent_context/current_priority.md",
+        "docs/status/current_work_status.md",
+        "docs/todo/active_todo.md",
+        "agents.md",
+    }:
+        return AUTHORITY_TIER_BY_ID["tier1"]
+
+    if rel_lower.startswith("docs/proofs/") or rel_lower.startswith("docs/capability_verification/"):
+        return AUTHORITY_TIER_BY_ID["tier2"]
+    if rel_lower.startswith("docs/audits/"):
+        return AUTHORITY_TIER_BY_ID["tier2"]
+    if rel_lower.startswith("docs/status/") and (
+        "lock" in name_lower or "closeout" in name_lower
+    ):
+        return AUTHORITY_TIER_BY_ID["tier2"]
+
+    if (
+        rel_lower.startswith("docs/future/")
+        or rel_lower.startswith("future/")
+        or rel_lower.startswith("docs/design/")
+    ):
+        return AUTHORITY_TIER_BY_ID["tier3"]
+
+    return None
+
+
 def _link_target_exists(target: str) -> bool:
     return (REPO_ROOT / target).exists() or (REPO_ROOT / f"{target}.md").exists()
 
@@ -460,6 +595,84 @@ def _write(path: Path, body: str) -> None:
 
 def _frontmatter(tags: list[str]) -> list[str]:
     return ["---", "tags:", *[f"  - {tag}" for tag in tags], "---"]
+
+
+def write_authority_tiers(notes: list[NoteRef]) -> None:
+    grouped: dict[str, list[NoteRef]] = {tier.id: [] for tier in AUTHORITY_TIERS}
+    unclassified_count = 0
+    for note in notes:
+        tier = classify_authority_tier(note)
+        if tier is None:
+            unclassified_count += 1
+            continue
+        grouped[tier.id].append(note)
+
+    lines = [
+        *_frontmatter(["moc", "nova", "authority", "truth-rank"]),
+        GENERATED_MARKER,
+        "",
+        "# Read by authority tier",
+        "",
+        "This page ranks vault navigation by truth authority before graph browsing.",
+        "Obsidian is navigation and context only. It cannot authorize runtime behavior,",
+        "expand capabilities, approve execution, replace receipts, or override generated",
+        "runtime truth.",
+        "",
+        "## How to read this vault",
+        "",
+        "- Start with Tier 0 for exact runtime facts.",
+        "- Use Tier 1 for the current work lane and next safe action.",
+        "- Use Tier 2 for accepted proof, locks, closeouts, and audits.",
+        "- Treat Tier 3 as planning unless current code, tests, and status promote it.",
+        "- Treat Tier 4 as historical context unless revived by a reviewed lock.",
+        "",
+        "Related maps:",
+        "",
+        "- [[_MOCs/HOME|Vault home]]",
+        "- [[_MOCs/USER_PATHS|Guided entry points]]",
+        "- [[_MOCs/BY_TYPE|Browse by category]]",
+        "- [[_MOCs/REPO_BY_FOLDER|Repo by folder]]",
+        "",
+    ]
+
+    for tier in AUTHORITY_TIERS:
+        tier_notes = sorted(grouped[tier.id], key=lambda note: note.rel.as_posix().lower())
+        lines.extend(
+            [
+                f"## {tier.label}",
+                "",
+                tier.meaning,
+                "",
+                "Examples:",
+                "",
+            ]
+        )
+        for example in tier.examples:
+            lines.append(f"- `{example}`")
+        lines.extend(["", "Rules:", ""])
+        for rule in tier.rules:
+            lines.append(f"- {rule}")
+        lines.extend(["", f"Linked files ({len(tier_notes)}):", ""])
+        if tier_notes:
+            for note in tier_notes:
+                lines.append(f"- {_wikilink(note)}")
+        else:
+            lines.append("- _No files matched this tier in the current vault scan._")
+        lines.append("")
+
+    lines.extend(
+        [
+            f"## {UNCLASSIFIED_AUTHORITY_LABEL}",
+            "",
+            (
+                f"{unclassified_count} scanned files are reference, code, assets, or otherwise "
+                "outside the truth-rank tiers above."
+            ),
+            "Use the broad browsing maps for those files; do not treat this fallback as an authority tier.",
+            "",
+        ]
+    )
+    _write(MOC_DIR / "AUTHORITY_TIERS.md", "\n".join(lines))
 
 
 def write_home(notes: list[NoteRef]) -> None:
@@ -483,6 +696,7 @@ def write_home(notes: list[NoteRef]) -> None:
         "",
         "## New here? Start here",
         "",
+        "- [[_MOCs/AUTHORITY_TIERS|Read by authority tier - current truth vs planning vs archive]]",
         "- [[_MOCs/USER_PATHS|Guided entry points — the fewest clicks to what you need]]",
         "",
         "## Browse the repo",
@@ -1298,9 +1512,10 @@ def write_obsidian_config() -> None:
     (VAULT_CONFIG_DIR / "graph.json").write_text(json.dumps(graph, indent=2), encoding="utf-8")
 
     # Star order = reading order a new user should try first.
-    # Guided paths and Home come before any internal browsing MOC.
+    # Authority tiers and guided paths come before broad browsing MOCs.
     starred = {
         "items": [
+            {"type": "file", "title": "Read by authority tier", "path": "_MOCs/AUTHORITY_TIERS.md"},
             {"type": "file", "title": "Guided paths (start here)", "path": "_MOCs/USER_PATHS.md"},
             {"type": "file", "title": "Vault home", "path": "_MOCs/HOME.md"},
             {"type": "file", "title": "Dive into a module", "path": "_MOCs/CODE_MODULES.md"},
@@ -1326,6 +1541,7 @@ def main() -> int:
     by_module, imports_by_file = _build_import_index(notes)
     test_pairs = _pair_tests_to_sources(notes, by_module)
 
+    write_authority_tiers(notes)
     write_home(notes)
     write_user_paths(notes)
     write_repo_by_folder(notes)
