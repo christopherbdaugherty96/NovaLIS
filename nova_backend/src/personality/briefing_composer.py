@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
