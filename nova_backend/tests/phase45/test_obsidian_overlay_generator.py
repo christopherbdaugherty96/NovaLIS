@@ -29,6 +29,7 @@ def overlay(tmp_path, monkeypatch):
     github = repo / ".github" / "workflows"
     gov_repo = repo / "NovaLIS-Governance"
     verification = repo / "verification"
+    agent_context = repo / ".agent_context"
     (docs / "design" / "Phase 4.5").mkdir(parents=True)
     (docs / "design" / "Phase-9").mkdir(parents=True)
     (docs / "PROOFS").mkdir(parents=True)
@@ -36,6 +37,8 @@ def overlay(tmp_path, monkeypatch):
     (docs / "demo_proof" / "sample_proof" / "screenshots").mkdir(parents=True)
     (docs / "GOVERNANCE").mkdir(parents=True)
     (docs / "current_runtime").mkdir(parents=True)
+    (docs / "future").mkdir(parents=True)
+    (docs / "status").mkdir(parents=True)
     (docs / "archive" / "phase 2").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
     (repo / "nova_backend" / "src" / "governor").mkdir(parents=True)
@@ -45,6 +48,7 @@ def overlay(tmp_path, monkeypatch):
     github.mkdir(parents=True)
     gov_repo.mkdir(parents=True)
     verification.mkdir(parents=True)
+    agent_context.mkdir(parents=True)
 
     (docs / "design" / "Phase 4.5" / "note_a.md").write_text(
         "# UX Friction Roadmap\n\nThis plan reduces friction in the product surface.\n",
@@ -80,6 +84,30 @@ def overlay(tmp_path, monkeypatch):
     )
     (docs / "current_runtime" / "RUNTIME.md").write_text(
         "# Runtime\n\nCurrent runtime snapshot.\n",
+        encoding="utf-8",
+    )
+    (docs / "current_runtime" / "CURRENT_RUNTIME_STATE.md").write_text(
+        "# Current Runtime State\n\nGenerated runtime truth.\n",
+        encoding="utf-8",
+    )
+    (agent_context / "current_priority.md").write_text(
+        "# Current Priority\n\nCurrent operational continuity.\n",
+        encoding="utf-8",
+    )
+    (docs / "status" / "CURRENT_WORK_STATUS.md").write_text(
+        "# Nova Current Work Status\n\nHuman-maintained continuity note.\n",
+        encoding="utf-8",
+    )
+    (docs / "status" / "PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1.md").write_text(
+        "# Priority Lock - Second Brain Slice 1\n\nAccepted lock record.\n",
+        encoding="utf-8",
+    )
+    (docs / "status" / "TRUST_PANEL_MVP_CLOSEOUT_2026-05-14.md").write_text(
+        "# Trust Panel MVP Closeout\n\nAccepted closeout record.\n",
+        encoding="utf-8",
+    )
+    (docs / "future" / "SECOND_BRAIN_PLAN.md").write_text(
+        "# Second Brain Plan\n\nFuture planning only.\n",
         encoding="utf-8",
     )
     (docs / "archive" / "phase 2" / "old.md").write_text(
@@ -170,6 +198,27 @@ def test_generator_indexes_docs_and_code_with_path_categories(overlay):
     assert by_rel["verification/governor_proof.py"].category == "tests"
 
 
+def test_authority_tier_classifier_ranks_truth_sources(overlay):
+    module, _repo, _docs = overlay
+    notes = module.scan_notes()
+    by_rel = {note.rel.as_posix(): note for note in notes}
+
+    assert module.classify_authority_tier(
+        by_rel["docs/current_runtime/CURRENT_RUNTIME_STATE.md"]
+    ).id == "tier0"
+    assert module.classify_authority_tier(
+        by_rel[".agent_context/current_priority.md"]
+    ).id == "tier1"
+    assert module.classify_authority_tier(
+        by_rel["docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1.md"]
+    ).id == "tier2"
+    assert module.classify_authority_tier(by_rel["docs/PROOFS/proof_one.md"]).id == "tier2"
+    assert module.classify_authority_tier(
+        by_rel["docs/future/SECOND_BRAIN_PLAN.md"]
+    ).id == "tier3"
+    assert module.classify_authority_tier(by_rel["docs/archive/phase 2/old.md"]).id == "tier4"
+
+
 def test_phase_detection_normalizes_hyphen_and_space_variants(overlay):
     module, _repo, _docs = overlay
     phases = {note.phase for note in module.scan_notes() if note.phase}
@@ -194,6 +243,7 @@ def test_main_writes_all_overlay_outputs(overlay):
     assert module.main() == 0
 
     for moc in (
+        "AUTHORITY_TIERS.md",
         "HOME.md",
         "USER_PATHS.md",
         "REPO_BY_FOLDER.md",
@@ -233,6 +283,41 @@ def test_home_uses_outcome_first_language(overlay):
     assert "Same-color dots" in home
     # Counts table demoted below the legend.
     assert home.index("## How to read the graph") < home.index("## By the numbers")
+
+
+def test_home_links_authority_tiers_before_broad_browsing(overlay):
+    module, repo, _docs = overlay
+    module.main()
+
+    home = (repo / "_MOCs" / "HOME.md").read_text(encoding="utf-8")
+    assert "[[_MOCs/AUTHORITY_TIERS|Read by authority tier" in home
+    assert home.index("[[_MOCs/AUTHORITY_TIERS") < home.index("[[_MOCs/USER_PATHS")
+    assert home.index("[[_MOCs/AUTHORITY_TIERS") < home.index("## Browse the repo")
+
+
+def test_authority_tiers_moc_is_generated_and_boundary_first(overlay):
+    module, repo, _docs = overlay
+    module.main()
+
+    authority = (repo / "_MOCs" / "AUTHORITY_TIERS.md").read_text(encoding="utf-8")
+    assert authority.startswith("---\n")
+    assert module.GENERATED_MARKER in authority
+    assert "Obsidian is navigation and context only" in authority
+    assert "It cannot authorize runtime behavior" in authority
+    assert "## Tier 0 - Generated Runtime Truth" in authority
+    assert "[[docs/current_runtime/CURRENT_RUNTIME_STATE|Current Runtime State]]" in authority
+    assert "## Tier 1 - Current Operational Continuity" in authority
+    assert "[[.agent_context/current_priority|Current Priority]]" in authority
+    assert "## Tier 2 - Accepted Evidence, Locks, And Proofs" in authority
+    assert "[[docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1" in authority
+    assert "## Tier 3 - Future / Planning Only" in authority
+    assert "[[docs/future/SECOND_BRAIN_PLAN|Second Brain Plan]]" in authority
+    assert "## Tier 4 - Historical / Archive" in authority
+    assert "[[docs/archive/phase 2/old|Old Note]]" in authority
+    assert "[[_MOCs/HOME|Vault home]]" in authority
+    assert "[[_MOCs/USER_PATHS|Guided entry points]]" in authority
+    assert "[[_MOCs/BY_TYPE|Browse by category]]" in authority
+    assert "[[_MOCs/REPO_BY_FOLDER|Repo by folder]]" in authority
 
 
 def test_user_paths_uses_question_headings_with_guidance(overlay):

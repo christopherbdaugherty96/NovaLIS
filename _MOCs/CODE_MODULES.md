@@ -42,7 +42,7 @@ tests that pair by filename — so you can see the whole blast radius.
 - [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-- _…and 36 more_
+- _…and 38 more_
 
 ## `agents` (11 files)
 
@@ -142,6 +142,7 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/tests/goals/test_goals_api.py|test_goals_api]]
+- [[nova_backend/tests/personality/test_personality_wiring.py|test_personality_wiring]]
 - [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
 - [[nova_backend/tests/test_live_screen_api.py|test_live_screen_api]]
@@ -355,11 +356,14 @@ _Read-only Brain scaffolding._
 - [[nova_backend/src/openclaw/agent_runtime_store.py|agent_runtime_store]]
 - [[nova_backend/src/openclaw/agent_scheduler.py|agent_scheduler]]
 - [[nova_backend/src/patterns/pattern_review_store.py|pattern_review_store - src/patterns]]
+- [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
 - [[nova_backend/src/personality/conversation_personality_agent.py|conversation_personality_agent]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/personality/interface_agent.py|interface_agent]]
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
+- [[nova_backend/src/personality/trust_presenter.py|trust_presenter]]
+- [[nova_backend/src/personality/voice_personality.py|voice_personality]]
 - [[nova_backend/src/policies/atomic_policy_store.py|atomic_policy_store]]
 - [[nova_backend/src/routers/stt.py|stt]]
 - [[nova_backend/src/settings/runtime_settings_store.py|runtime_settings_store]]
@@ -659,7 +663,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
-- _…and 31 more_
+- _…and 33 more_
 
 ### Tests
 
@@ -948,7 +952,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
-- _…and 65 more_
+- _…and 74 more_
 
 ### Tests
 
@@ -1302,7 +1306,7 @@ ___all__ = [_
 
 - [[nova_backend/tests/phase45/test_vision_analyzer.py|test_vision_analyzer]]
 
-## `personality` (10 files)
+## `personality` (17 files)
 
 ___all__ = [_
 
@@ -1311,6 +1315,10 @@ ___all__ = [_
 - [[nova_backend/src/personality/__init__.py|src/personality]]
 - [[nova_backend/src/personality/announce.py|announce]]
     - def deep_mode_activation_notice() -> str:
+- [[nova_backend/src/personality/briefing_composer.py|briefing_composer]]
+    - EMPTY_BRIEFING_TEXT = "I do not see anything that needs your attention right now.
+- [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
+    - @dataclass(frozen=True)
 - [[nova_backend/src/personality/conversation_personality_agent.py|conversation_personality_agent]]
     - class ConversationPersonalityAgent:
 - [[nova_backend/src/personality/core.py|core]]
@@ -1318,15 +1326,25 @@ ___all__ = [_
 - [[nova_backend/src/personality/deep_mode.py|deep_mode]]
     - @dataclass
 - [[nova_backend/src/personality/interface_agent.py|interface_agent]]
-    - class PersonalityInterfaceAgent:
+    - if TYPE_CHECKING:
+- [[nova_backend/src/personality/mode_detection.py|mode_detection]]
+    - Context-aware mode detection for the Chief of Staff personality layer.
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
     - class NovaStyleContract:
 - [[nova_backend/src/personality/presenter.py|presenter]]
     - def present_raw_outputs(outputs: Iterable[AgentOutput]) -> str:
+- [[nova_backend/src/personality/proactive_briefing.py|proactive_briefing]]
+    - Proactive briefing framework for the Chief of Staff personality layer.
+- [[nova_backend/src/personality/reminder_framework.py|reminder_framework]]
+    - Reminder suggestion framework for the Chief of Staff personality layer.
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
     - def _utc_now() -> str:
+- [[nova_backend/src/personality/trust_presenter.py|trust_presenter]]
+    - Trust presentation for the Chief of Staff personality layer.
 - [[nova_backend/src/personality/validate.py|validate]]
     - class PersonalityValidator:
+- [[nova_backend/src/personality/voice_personality.py|voice_personality]]
+    - Voice personality rules for the Chief of Staff personality layer.
 
 ### Imports from
 
@@ -1347,15 +1365,24 @@ ___all__ = [_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/voice/voice_agent.py|voice_agent]]
+- [[nova_backend/src/websocket/session_handler.py|session_handler]]
+- [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
 - [[nova_backend/tests/conversation/test_conversation_personality_agent.py|test_conversation_personality_agent]]
 - [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
 - [[nova_backend/tests/conversation/test_personality_interface_agent.py|test_personality_interface_agent]]
-- [[nova_backend/tests/phase42/test_phase42_runtime_lock.py|test_phase42_runtime_lock]]
-- [[nova_backend/tests/phase5/test_tone_profile_store.py|test_tone_profile_store]]
+- [[nova_backend/tests/personality/test_assistive_noticing_tiers.py|test_assistive_noticing_tiers]]
+- _…and 21 more_
 
 ### Tests
 
 - [[nova_backend/tests/conversation/test_conversation_personality_agent.py|test_conversation_personality_agent]]
+- [[nova_backend/tests/personality/test_briefing_composer.py|test_briefing_composer]]
+- [[nova_backend/tests/personality/test_chief_of_staff_profile.py|test_chief_of_staff_profile]]
+- [[nova_backend/tests/personality/test_mode_detection.py|test_mode_detection]]
+- [[nova_backend/tests/personality/test_proactive_briefing.py|test_proactive_briefing]]
+- [[nova_backend/tests/personality/test_reminder_framework.py|test_reminder_framework]]
+- [[nova_backend/tests/personality/test_trust_presenter.py|test_trust_presenter]]
+- [[nova_backend/tests/personality/test_voice_personality.py|test_voice_personality]]
 - [[nova_backend/tests/phase5/test_tone_profile_store.py|test_tone_profile_store]]
 
 ## `policies` (3 files)
@@ -1966,6 +1993,10 @@ _Websocket session runtime modules._
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
 - [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+- [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
+- [[nova_backend/src/personality/interface_agent.py|interface_agent]]
+- [[nova_backend/src/personality/mode_detection.py|mode_detection]]
+- [[nova_backend/src/personality/proactive_briefing.py|proactive_briefing]]
 - [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]
 
 ### Imported by
@@ -2011,16 +2042,19 @@ _build_operational_context_widget,_
 
 - [[nova_backend/src/ledger/writer.py|writer]]
 - [[nova_backend/src/patterns/pattern_review_store.py|pattern_review_store - src/patterns]]
+- [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
 
 ### Imported by
 
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+- [[nova_backend/tests/personality/test_assistive_noticing_tiers.py|test_assistive_noticing_tiers]]
 - [[nova_backend/tests/phase45/test_working_context_store.py|test_working_context_store - tests/phase45]]
 - [[nova_backend/tests/phase5/test_operational_remembrance.py|test_operational_remembrance]]
 - [[nova_backend/tests/phase5/test_project_thread_store.py|test_project_thread_store]]
 - [[nova_backend/tests/phase5/test_working_context_store.py|test_working_context_store - tests/phase5]]
 - [[nova_backend/tests/phase8/test_assistive_noticing.py|test_assistive_noticing]]
+- [[nova_backend/tests/simulation/test_personality_simulation.py|test_personality_simulation]]
 
 ### Tests
 

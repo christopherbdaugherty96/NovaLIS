@@ -372,6 +372,7 @@ Imports from:
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
 - [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
+- [[nova_backend/src/personality/__init__.py|src/personality]]
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `working_context`
@@ -380,3 +381,4 @@ Imports from:
 
 - [[nova_backend/src/ledger/event_types.py|event_types]] (in `ledger`)
 - [[nova_backend/src/patterns/__init__.py|src/patterns]]
+- [[nova_backend/src/personality/__init__.py|src/personality]]
