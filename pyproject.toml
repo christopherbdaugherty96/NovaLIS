@@ -85,4 +85,5 @@ asyncio_mode = "auto"
 timeout = 180
 markers = [
     "slow: marks tests that take >20s (typically websocket/brain_server integration hitting Ollama)",
+    "live_shopify: marks Cap 65 Shopify live P5 proof tests that require protected Shopify credentials",
 ]
