@@ -15,7 +15,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-
 VALID_MODES = frozenset({"home", "business", "development"})
 
 _BUSINESS_KEYWORDS = re.compile(

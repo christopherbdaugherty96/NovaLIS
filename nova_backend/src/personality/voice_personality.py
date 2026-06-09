@@ -126,7 +126,6 @@ class VoicePersonality:
         if not cleaned:
             cleaned = "Something did not work as expected."
         suggestion = profile.permitted_suggestion_language[0]
-        short = self._shorten(cleaned)
         return (
             f"It looks like something ran into a problem. "
             f"{suggestion} try again, or we can look at alternatives."

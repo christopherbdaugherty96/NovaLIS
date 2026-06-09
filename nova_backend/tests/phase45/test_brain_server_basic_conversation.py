@@ -19,6 +19,15 @@ from src.utils import path_resolver
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 
+def _has_open_repo_confirmation(chat_messages: list[str]) -> bool:
+    return any(
+        "Here's what this will do: Open" in msg
+        and "Nova-Project" in msg
+        and "Would you like to proceed?" in msg
+        for msg in chat_messages
+    )
+
+
 @pytest.fixture(autouse=True)
 def fake_nova_workspace(tmp_path, monkeypatch):
     """Create a platform-independent Nova-Project workspace for path-dependent tests."""
@@ -70,6 +79,8 @@ def fake_nova_workspace(tmp_path, monkeypatch):
         "src.utils.path_resolver._candidate_local_project_paths",
         _patched_candidates,
     )
+    monkeypatch.setattr(brain_server, "_resolve_existing_local_path", _patched_resolve)
+    monkeypatch.setattr(brain_server, "_candidate_local_project_paths", _patched_candidates)
     return workspace
 
 
@@ -761,7 +772,7 @@ def test_open_folder_named_workspace_resolves_to_repo_confirmation(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Open" in msg and "Nova-Project?" in msg for msg in chat_messages)
+    assert _has_open_repo_confirmation(chat_messages)
     assert not any("I couldn't find that path: folder Nova-Project" in msg for msg in chat_messages)
 
 
@@ -794,7 +805,7 @@ def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch, fa
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Open" in msg and "Nova-Project?" in msg for msg in chat_messages)
+    assert _has_open_repo_confirmation(chat_messages)
     assert any("Opened folder:" in msg and "Nova-Project" in msg for msg in chat_messages)
 
 
@@ -827,7 +838,7 @@ def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkey
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Open" in msg and "Nova-Project?" in msg for msg in chat_messages)
+    assert _has_open_repo_confirmation(chat_messages)
     assert any("Opened folder:" in msg and "Nova-Project" in msg for msg in chat_messages)
 
 
