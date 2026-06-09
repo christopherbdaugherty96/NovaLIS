@@ -1,0 +1,40 @@
+name: Shopify Live P5 Validation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  shopify-live-p5:
+    runs-on: ubuntu-latest
+    environment: shopify-live-p5
+
+    env:
+      NOVA_SHOPIFY_SHOP_DOMAIN: ${{ secrets.NOVA_SHOPIFY_SHOP_DOMAIN }}
+      NOVA_SHOPIFY_ACCESS_TOKEN: ${{ secrets.NOVA_SHOPIFY_ACCESS_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install package + dev extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install -r nova_backend/requirements.txt
+
+      - name: Validate protected Shopify secrets are present
+        run: |
+          test -n "$NOVA_SHOPIFY_SHOP_DOMAIN"
+          test -n "$NOVA_SHOPIFY_ACCESS_TOKEN"
+
+      - name: Run Cap 65 Shopify live P5 proof
+        env:
+          PYTHONPATH: nova_backend
+        run: |
+          pytest nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py -q --tb=short -m live_shopify
