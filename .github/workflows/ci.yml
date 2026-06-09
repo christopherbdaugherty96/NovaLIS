@@ -47,7 +47,7 @@ jobs:
         env:
           PYTHONPATH: nova_backend
         run: |
-          pytest nova_backend/tests -q --maxfail=5
+          pytest nova_backend/tests -q --maxfail=5 -m "not live_shopify"
 
   # Windows job: verifies that the entry point resolves, adversarial suite
   # passes, and certification tests pass on the primary shipping platform.
@@ -97,4 +97,4 @@ jobs:
         env:
           PYTHONPATH: nova_backend
         run: |
-          pytest nova_backend/tests/certification -q --tb=short --maxfail=5
+          pytest nova_backend/tests/certification -q --tb=short --maxfail=5 -m "not live_shopify"
