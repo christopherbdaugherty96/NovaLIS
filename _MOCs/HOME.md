@@ -57,10 +57,10 @@ Sources are never edited — this overlay just builds navigation on top.
 | Runtime and ops | 22 | 285 |
 | Frontend | 0 | 29 |
 | Tests | 5 | 418 |
-| Scripts and tools | 4 | 20 |
+| Scripts and tools | 4 | 21 |
 | Design specs | 14 | 0 |
 | Proofs | 237 | 24 |
-| Reference | 522 | 41 |
+| Reference | 557 | 41 |
 | Archive | 139 | 15 |
 
-_Indexed 1124 docs and 844 non-doc files._
+_Indexed 1159 docs and 845 non-doc files._

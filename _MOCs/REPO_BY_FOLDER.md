@@ -27,7 +27,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[.gitattributes|.gitattributes]]
   summary: text=auto
 
-## .github (6)
+## .github (7)
 
 - [code] [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -41,6 +41,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: name: Phase‑3.5 Invariants
 - [code] [[.github/workflows/runtime-docs.yml|runtime-docs]]
   summary: name: Runtime Docs
+- [code] [[.github/workflows/shopify-live-p5.yml|shopify-live-p5]]
+  summary: name: Shopify Live P5 Validation
 
 ## .gitignore (1)
 
@@ -137,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1014)
+## docs (1049)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -578,7 +580,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 78eece6b296fdbb4b476a3338060a7e8e5af70ead29fd86c57534e3e2ba803af
+  summary: Runtime Fingerprint: 97742ab1e724994b8ea4c52ae5e6a4b3a0f6f16c04d4dc933431f25da4d487f8
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -602,7 +604,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 6345e2b6bd2efd61e0c886dda72a77c11610b367f235ddc6a510370122374c65
+  summary: - runtimesurfacehash: da8806b44623828208bdf6f4f13572e0b79d1df4b4903712fd84139fc4dfcb74
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1116,6 +1118,72 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: What NovaLIS Is (Truth):
 - [doc] [[docs/future/active_screen_command_layer/README|Active Screen Command Layer]]
   summary: Status: future design plan / not shipped runtime capability
+- [doc] [[docs/Future/ai_ecosystem_operating_model/ACTIVE_PRIORITY|Active Priority - Future/ai_ecosystem_operating_model]]
+  summary: Status: Draft operating-model file
+- [doc] [[docs/Future/ai_ecosystem_operating_model/AI_ECOSYSTEM_OPERATING_RULES|AI Ecosystem Operating Rules]]
+  summary: Status: Draft
+- [doc] [[docs/Future/ai_ecosystem_operating_model/CURRENT_TRUTH|Current Truth]]
+  summary: Status: Draft current-truth summary for this operating-model package
+- [doc] [[docs/Future/ai_ecosystem_operating_model/FINAL_IMPLEMENTATION_SUMMARY_2026-06-08|Final Implementation Summary - 2026-06-08]]
+  summary: Status: Draft final report
+- [doc] [[docs/Future/ai_ecosystem_operating_model/FINDINGS_REPORT_2026-06-08|Findings Report - 2026-06-08]]
+  summary: Status: Draft findings report
+- [doc] [[docs/Future/ai_ecosystem_operating_model/IMPROVEMENT_RECOMMENDATIONS|Improvement Recommendations]]
+  summary: Status: Draft
+- [doc] [[docs/Future/ai_ecosystem_operating_model/README|AI Ecosystem Operating Model]]
+  summary: Status: Draft operating package
+- [doc] [[docs/Future/ai_ecosystem_operating_model/RISK_REPORT_2026-06-08|Risk Report - 2026-06-08]]
+  summary: Status: Draft risk report
+- [doc] [[docs/Future/ai_ecosystem_operating_model/VALIDATION_PROCEDURES|Validation Procedures]]
+  summary: Status: Draft validation procedure
+- [doc] [[docs/Future/ai_ecosystem_operating_model/VALIDATION_REPORT_2026-06-08|Validation Report - 2026-06-08]]
+  summary: Status: Draft validation report
+- [doc] [[docs/Future/ai_ecosystem_operating_model/VAULT_STRUCTURE|Vault Structure]]
+  summary: Status: Draft template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/00_HOME/HOME|Home]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/01_CURRENT_PRIORITY/ACTIVE_PRIORITY|Active Priority - vault_template/01_CURRENT_PRIORITY]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Active Priority|Nova Active Priority]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Current Runtime Truth|Nova Current Runtime Truth]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Decision Log|Nova Decision Log]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Deferred Work|Nova Deferred Work]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Governance Boundaries|Nova Governance Boundaries]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Known Risks|Nova Known Risks]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Session Handoff|Nova Session Handoff]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Vision|Nova Vision]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/AI Work Queue|AI Work Queue]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Auralis Digital Master Context|Auralis Digital Master Context]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Business Operations Backlog|Business Operations Backlog]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Lucid Creations Master Context|Lucid Creations Master Context]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Printify Product Pipeline|Printify Product Pipeline]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/RJ Print Master Context|RJ Print Master Context]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Shopify Commerce Plan|Shopify Commerce Plan]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/04_DECISIONS/Decision Log|Decision Log]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/05_AI_HANDOFFS/Session Handoff|Session Handoff]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/06_OUTPUT_REVIEW/Output Review Queue|Output Review Queue]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/07_ROADMAPS/Roadmap Index|Roadmap Index]]
+  summary: Status: Template
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/08_ARCHIVE/Archive Index|Archive Index]]
+  summary: Status: Template
 - [doc] [[docs/future/ARCHITECTURAL_POSITIONING|Nova Architectural Positioning]]
   summary: Status: Reference — kept current
 - [code] [[docs/future/Auralis-Novalis merger goals|Auralis-Novalis merger goals]]
@@ -2080,6 +2148,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: ACTIVE
 - [doc] [[docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19|Approval Gate Certification Closeout — 2026-05-19]]
   summary: Status:
+- [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
+  summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
   summary: Last reviewed: 2026-05-26 (post-PR #234)
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
@@ -2110,6 +2180,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
+- [doc] [[docs/status/REPO_DOC_OPERATING_LOOP_PROOF_2026-06-09|Repo-Doc Operating Loop Proof - 2026-06-09]]
+  summary: Status: docs-only operating-loop proof.
 - [doc] [[docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12|NovaLIS Repo Synchronization & Roadmap Update Plan — 2026-05-12]]
   summary: This document consolidates the newest findings from recent repo audits, runtime reviews, governance
 - [doc] [[docs/status/SECOND_BRAIN_FOUNDATION_PLANNING_PACKET_2026-05-18|Second Brain Foundation Planning Packet - 2026-05-18]]

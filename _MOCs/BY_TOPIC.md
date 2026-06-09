@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (151)
+## governance (152)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -126,6 +126,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 8/PHASE_8_ADVANCED_GOVERNOR_LAYER_ARCHITECTURE_2026-03-27|Nova - Advanced Governor Layer Architecture (Phase 8)]]
 - [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT|Nova Demo Script - 2026-04-28 User Test]]
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Governance Boundaries|Nova Governance Boundaries]]
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
 - [doc] [[docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21|Nova OpenClaw Governance Hardening Plan]]
 - [doc] [[docs/Future/PERSONALITY_LAYER_ARCHITECTURE|Nova Personality Layer — Architecture & Governance Review]]
@@ -503,7 +504,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Web-News-Reporting/FRICTION_LOG|Web / News / Reporting Friction Log - 2026-05-06]]
 - [doc] [[docs/archive/phase 2/# 🎨 Nova Frontend Dashboard — Tech.txt|🎨 Nova Frontend Dashboard — Technical Overview]]
 
-## runtime (60)
+## runtime (61)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -551,6 +552,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/GOVERNANCE_MATRIX|GOVERNANCE_MATRIX]]
 - [doc] [[docs/current_runtime/GOVERNANCE_MATRIX_TREE|GOVERNANCE_MATRIX_TREE]]
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
+- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Current Runtime Truth|Nova Current Runtime Truth]]
 - [doc] [[docs/current_runtime/nova_first_50_user_trial_report_2026-04-22|Nova First-50 User Trial Report - 2026-04-22]]
 - [doc] [[docs/current_runtime/PHASE_SEMANTICS|NOVA Phase Semantics]]
 - [doc] [[docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE|NOVA Runtime Capability Reference]]
