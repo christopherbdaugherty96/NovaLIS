@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-26 (post-PR #234)
+Last reviewed: 2026-06-09 (post-PR #240)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,6 +19,35 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
+Phase: Continuity freshness sync after CI/doc governance stack (2026-06-09).
+
+Recently landed:
+  PR #236 - baseline CI/dependency cleanup.
+  PR #237 - AI ecosystem operating model.
+  PR #235 - Obsidian authority-tier overlay.
+  PR #240 - repo-doc operating-loop proof.
+
+Stable outcome:
+  CI/dependency blocker cleared.
+  AI ecosystem docs model landed.
+  Obsidian authority-tier overlay landed.
+  Repo-doc operating-loop proof landed.
+  No active blocker remains from this sequence.
+
+Current active lane:
+  Continuity freshness sync.
+
+Current objective:
+  Update current continuity surfaces and add a Daily Command Center so the
+  vault reflects the landed stack without implying execution authority.
+
+No runtime lane is authorized by PR #240 or this sync.
+No execution authority added. No scheduler. No GovernorMediator changes.
+No OpenClaw integration. No capability expansion. No Shopify/browser scope.
+All four certified capabilities remain locked.
+
+Historical context follows:
+
 Phase: Goal Card persistence complete through Phase 3 (2026-05-26).
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
 Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
@@ -58,6 +87,23 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 ```
 
 Previous closed lanes:
+
+```text
+Repo-doc operating-loop proof - complete (PR #240, 2026-06-09).
+  Docs-only proof of approved repo-doc update -> branch -> PR -> checks ->
+  review -> merge decision -> continuity handoff.
+  Does not authorize runtime execution or a new runtime lane.
+Obsidian authority-tier overlay - complete (PR #235, 2026-06-09).
+  Generated truth-ranked Obsidian navigation.
+  Obsidian ranks and navigates reality; it does not authorize execution.
+AI ecosystem operating model - complete (PR #237, 2026-06-09).
+  Docs-only future/planning package.
+  Obsidian coordinates context; it does not authorize execution.
+Baseline CI/dependency cleanup - complete (PR #236, 2026-06-09).
+  Baseline CI blockers cleared without runtime authority expansion.
+```
+
+Historical closed lanes:
 
 ```text
 Second Brain Slice 1 priority lock — accepted (PR #234, 2026-05-26).
@@ -820,6 +866,25 @@ No recent merge authorizes:
 ## Next Correct Step
 
 ```text
+Current sequence:
+1. All four certified capabilities remain locked (Cap 16, 22, 64, 65).
+2. CI/doc governance stack is closed clean (#236, #237, #235, #240).
+3. No active blocker remains from that sequence.
+4. Current continuity surfaces should point to the landed stack and Daily
+   Command Center.
+5. Do not expand capabilities or add Shopify/website workflows.
+6. Do not reopen the approval-gate lane unless registry truth changes.
+7. Goal Card Phase 4 (execution) requires separate design doc.
+8. No runtime lane is authorized by the repo-doc operating-loop proof.
+9. If a separate implementation lane is explicitly started later, the accepted
+   Second Brain Slice 1 scope remains schema/parser/wikilink/vault
+   health-lint/no-mutation/non-authorizing tests only.
+10. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+    execution integration, scheduler, OpenClaw integration, or capability
+    expansion.
+
+Historical May 26 sequence:
+
 1. All four certified capabilities locked (Cap 16, 22, 64, 65).
 2. All major workstreams closed (reliability, quality, approval-gate).
 3. Goal Card persistence complete end to end (PRs #229-#232).
