@@ -2503,7 +2503,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (557 docs, 41 code)
+## Reference (558 docs, 41 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2586,7 +2586,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[.agent_context/brain_loop|Brain Loop Context]]
   summary: Nova's proposed Brain loop is:
 - [doc] [[.agent_context/current_priority|Current Priority]]
-  summary: Current active task:
+  summary: Current active lane:
 - [doc] [[.agent_context/environments|Environment Context]]
   summary: Nova's Brain should reason about environments before execution.
 - [doc] [[.agent_context/governance|Governance Context]]
@@ -3394,7 +3394,9 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-26 (post-PR #234)
+  summary: Last reviewed: 2026-06-09 (post-PR #240)
+- [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
+  summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
   summary: This is a human-maintained status summary. It is not generated runtime truth.
 - [doc] [[docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12|Five-Pass Stability And Operational Roadmap]]

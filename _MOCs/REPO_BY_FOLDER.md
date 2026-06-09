@@ -16,7 +16,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[.agent_context/brain_loop|Brain Loop Context]]
   summary: Nova's proposed Brain loop is:
 - [doc] [[.agent_context/current_priority|Current Priority]]
-  summary: Current active task:
+  summary: Current active lane:
 - [doc] [[.agent_context/environments|Environment Context]]
   summary: Nova's Brain should reason about environments before execution.
 - [doc] [[.agent_context/governance|Governance Context]]
@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1049)
+## docs (1050)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -2151,7 +2151,9 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-26 (post-PR #234)
+  summary: Last reviewed: 2026-06-09 (post-PR #240)
+- [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
+  summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
   summary: This is a human-maintained status summary. It is not generated runtime truth.
 - [doc] [[docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12|Five-Pass Stability And Operational Roadmap]]
