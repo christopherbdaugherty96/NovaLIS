@@ -75,8 +75,8 @@ def _personality_failure_message(raw_message: str, *, mode: str = "home") -> str
     Pure string transformation — no routing, no capability invocation.
     Called after the governance decision is already made.
     """
-    from src.personality.interface_agent import PersonalityInterfaceAgent
     from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+    from src.personality.interface_agent import PersonalityInterfaceAgent
     return PersonalityInterfaceAgent().humanize_failure(
         raw_message, profile=ChiefOfStaffProfile(), mode=mode,
     )
@@ -95,8 +95,8 @@ def _personality_gate_message(
     Pure string transformation — does not change confirmation logic,
     pending state, or yes/no resolution.
     """
-    from src.personality.interface_agent import PersonalityInterfaceAgent
     from src.personality.chief_of_staff_profile import ChiefOfStaffProfile
+    from src.personality.interface_agent import PersonalityInterfaceAgent
     return PersonalityInterfaceAgent().wrap_gate(
         action_description=action_description,
         cap_name=cap_name,
@@ -3426,12 +3426,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
                 # Compose morning brief via ProactiveBriefing
                 import time as _time_mod
-                from src.personality.proactive_briefing import (
-                    BriefingTrigger as _BT,
-                    ProactiveBriefing as _PB,
-                )
+
                 from src.personality.chief_of_staff_profile import (
                     ChiefOfStaffProfile as _CSP,
+                )
+                from src.personality.proactive_briefing import (
+                    BriefingTrigger as _BT,
+                )
+                from src.personality.proactive_briefing import (
+                    ProactiveBriefing as _PB,
                 )
 
                 # Build session snapshot from already-fetched capability results

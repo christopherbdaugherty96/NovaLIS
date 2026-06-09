@@ -16,8 +16,12 @@ Safety boundary:
 from __future__ import annotations
 
 import os
-import sys
 import re
+import sys
+
+import pytest
+
+pytestmark = pytest.mark.live_shopify
 
 # ── Bootstrap ──────────────────────────────────────────────────────────
 # Load .env so the connector can find credentials.
@@ -38,11 +42,8 @@ os.chdir(_backend_root)
 sys.path.insert(0, _backend_root)
 
 from src.connectors.shopify_connector import (
-    HttpShopifyConnector,
     bootstrap_shopify_connector,
-    get_shopify_connector,
     is_shopify_connected,
-    set_shopify_connector,
 )
 from src.executors.shopify_intelligence_report_executor import (
     ShopifyIntelligenceReportExecutor,
@@ -228,13 +229,13 @@ def test_p5_read_only_confirmation():
     assert token_env.startswith("shpat_"), "Token not set"
     # We intentionally do NOT print or assert on the full token value
 
-    print(f"  mutation_blocks_found: 0")
+    print("  mutation_blocks_found: 0")
     print(f"  query_blocks_found: {len(query_matches)}")
-    print(f"  non_gql_write_endpoints: 0")
+    print("  non_gql_write_endpoints: 0")
     print(f"  requires_confirmation: {cap65['requires_confirmation']}")
     print(f"  authority_class: {cap65['authority_class']}")
     print(f"  token_format_valid: {token_env.startswith('shpat_')}")
-    print(f"  token_printed: False")
+    print("  token_printed: False")
 
 
 # ── Runner ─────────────────────────────────────────────────────────────
@@ -256,7 +257,7 @@ if __name__ == "__main__":
         print(f"{'='*60}")
         try:
             fn()
-            print(f"  PASS")
+            print("  PASS")
             passed += 1
         except Exception as e:
             print(f"  FAIL: {e}")
