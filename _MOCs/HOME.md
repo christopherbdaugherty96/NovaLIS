@@ -14,6 +14,7 @@ Sources are never edited — this overlay just builds navigation on top.
 
 ## New here? Start here
 
+- [[_MOCs/AUTHORITY_TIERS|Read by authority tier - current truth vs planning vs archive]]
 - [[_MOCs/USER_PATHS|Guided entry points — the fewest clicks to what you need]]
 
 ## Browse the repo
@@ -51,15 +52,15 @@ Sources are never edited — this overlay just builds navigation on top.
 
 | Category | Docs | Code |
 |---|---:|---:|
-| Phases | 167 | 0 |
+| Phases | 173 | 0 |
 | Governance | 8 | 12 |
-| Runtime and ops | 22 | 278 |
+| Runtime and ops | 22 | 285 |
 | Frontend | 0 | 29 |
-| Tests | 5 | 395 |
+| Tests | 5 | 418 |
 | Scripts and tools | 4 | 20 |
 | Design specs | 14 | 0 |
 | Proofs | 237 | 24 |
-| Reference | 508 | 40 |
+| Reference | 522 | 41 |
 | Archive | 139 | 15 |
 
-_Indexed 1104 docs and 813 non-doc files._
+_Indexed 1124 docs and 844 non-doc files._

@@ -215,10 +215,14 @@ Records:
 
 ```text
 - PR #155 closed unmerged
-- runtime docs still require generator run
+- historical/superseded: runtime docs still required a generator run at PR #158 time
 - exact regeneration commands
 - generated-files-only scope
 ```
+
+Superseded by later status below: generated runtime docs are current as of the
+latest recorded drift check on PR #185. No regeneration PR is pending unless
+`python scripts/check_runtime_doc_drift.py` fails again.
 
 ### Current priority/status synchronization
 

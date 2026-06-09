@@ -74,8 +74,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[4-15-26 NEW ROADMAP/SOFT_ROADMAP_GUIDE_2026-04-28|Soft Roadmap Guide — Post Current Roadmap]]
   summary: This document is a lightweight guide for direction after the current active roadmap is completed.
 
-## _MOCs (11)
+## _MOCs (12)
 
+- [doc] [[_MOCs/AUTHORITY_TIERS|Read by authority tier]]
+  summary: This page ranks vault navigation by truth authority before graph browsing.
 - [doc] [[_MOCs/BY_PHASE|Follow the build phase by phase]]
   summary: Docs and code grouped by project phase, inferred from folder and file
 - [doc] [[_MOCs/BY_TOPIC|Browse by theme]]
@@ -135,7 +137,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (995)
+## docs (1014)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -441,6 +443,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Date: 2026-05-11
 - [doc] [[docs/audits/PATCH_ROADMAP_2026-05-11|Audit Patch Roadmap]]
   summary: Status update after PR #158 and 2026-05-12 runtime-doc confirmation:
+- [doc] [[docs/audits/PERSONALITY_GATE_WRAPPING_LIVE_VALIDATION_2026-06-05|Personality Gate Wrapping Live Validation - 2026-06-05]]
+  summary: Status: COMPLETE
 - [doc] [[docs/audits/SECOND_PASS_REVIEW_2026-05-12|Nova — Brutally Grounded Second-Pass Review]]
   summary: Date: 2026-05-12
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
@@ -463,6 +467,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: The Nova Brain is a governed cognitive loop.
 - [doc] [[docs/brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE|Nova Brain Runtime Architecture]]
   summary: This document defines how Nova can become a practical “full brain” without requiring a giant local model.
+- [doc] [[docs/brain/NOVA_LEARNING_DOCTRINE|Nova Learning Doctrine]]
+  summary: Status: doctrine / design guardrail.
 - [doc] [[docs/brain/OPENCLAW_ENVIRONMENT_MODEL|OpenClaw Environment Model]]
   summary: OpenClaw is an environment, not the brain.
 - [doc] [[docs/brain/PROJECT_CONTEXTS|Project Contexts]]
@@ -572,7 +578,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: d96606585f88269a7558ff957bc305da9c6b5ee1ec886897c3729dba226c4160
+  summary: Runtime Fingerprint: 78eece6b296fdbb4b476a3338060a7e8e5af70ead29fd86c57534e3e2ba803af
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -596,7 +602,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: ae606cc3ed95ed8941a2dc77e31ba920b3e4edaa6c5d6daf6e5bb12c2bfdc6f2
+  summary: - runtimesurfacehash: 6345e2b6bd2efd61e0c886dda72a77c11610b367f235ddc6a510370122374c65
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1314,6 +1320,24 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Document version: 1.1
 - [doc] [[docs/future/PERSONAL_PERSONALITY_LAYER|Personal Personality Layer - docs/future]]
   summary: Status: future architecture plan / not shipped runtime capability
+- [doc] [[docs/Future/PERSONALITY_IMPLEMENTATION_PLAN_AUDIT|Implementation Plan — Governance Audit]]
+  summary: Status: governance audit of implementation plan
+- [doc] [[docs/Future/PERSONALITY_LAYER_ARCHITECTURE|Nova Personality Layer — Architecture & Governance Review]]
+  summary: Status: design review (no code, no runtime changes)
+- [doc] [[docs/Future/PERSONALITY_LAYER_DESIGN_PROMPT|Personality Layer Design — Session Prompt]]
+  summary: Status: prompt template for future design session
+- [doc] [[docs/Future/PERSONALITY_LAYER_GOVERNANCE_AUDIT|Personality Layer Architecture — Governance Audit]]
+  summary: Status: governance audit (no code, no runtime changes)
+- [doc] [[docs/Future/PERSONALITY_LAYER_GOVERNANCE_AUDIT_v2|Personality Layer Architecture — Governance Audit v2]]
+  summary: Status: re-audit after patching (no code, no runtime changes)
+- [doc] [[docs/Future/PERSONALITY_LAYER_IMPLEMENTATION_PLAN|Nova Personality Layer — Implementation Plan]]
+  summary: Status: implementation planning (no code, no runtime changes)
+- [doc] [[docs/Future/PERSONALITY_LIVE_WIRING_DESIGN_SCOPE|Personality Live Wiring — Design Scope]]
+  summary: Status: design (no code, no runtime changes)
+- [doc] [[docs/Future/PERSONALITY_PHASE_3_DESIGN_SCOPE|Phase 3 Personality — Design Scope]]
+  summary: Status: design (no code, no runtime changes)
+- [doc] [[docs/Future/PHASE_2_DESIGN_SCOPE|Phase 2 — Design Scope]]
+  summary: Status: design (no code, no runtime changes)
 - [doc] [[docs/future/PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22|Website LLC — Primary First Revenue Engine]]
   summary: Website LLC is the first and main revenue engine in the portfolio.
 - [doc] [[docs/future/README|Future Docs Guide]]
@@ -1344,6 +1368,16 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Use this page to find the right document quickly.
 - [doc] [[docs/integrations/youtubelis/README|YouTubeLIS Integration Concept]]
   summary: YouTubeLIS is a proposed governed content-production workflow for NovaLIS.
+- [doc] [[docs/milestones/PERSONALITY_WIRING_COMPLETE_REPORT|Personality Wiring — Complete Report]]
+  summary: Status: ALL WIRING COMPLETE
+- [doc] [[docs/milestones/PERSONALITY_WIRING_PHASE_1_REPORT|Personality Wiring Phase 1 — Completion Report]]
+  summary: Status: COMPLETE
+- [doc] [[docs/milestones/PHASE_1_PERSONALITY_COMPLETION_REPORT|Phase 1 Personality Layer — Completion Report]]
+  summary: Status: COMPLETE
+- [doc] [[docs/milestones/PHASE_2_PERSONALITY_COMPLETION_REPORT|Phase 2 Personality Layer — Completion Report]]
+  summary: Status: COMPLETE
+- [doc] [[docs/milestones/PHASE_3_PERSONALITY_COMPLETION_REPORT|Phase 3 Personality Layer — Completion Report]]
+  summary: Status: COMPLETE
 - [doc] [[docs/nova-conversation-response-contract|Nova Conversation Response Contract]]
   summary: Branch: docs/nova-conversation-response-contract
 - [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
@@ -2058,6 +2092,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/LOCAL_LLM_HARDWARE_PROFILES_2026-05-20|Local LLM Hardware Profiles]]
   summary: Date: 2026-05-20
+- [doc] [[docs/status/OBSIDIAN_AUTHORITY_TIER_OVERLAY_RECONCILIATION_2026-06-08|Obsidian Authority-Tier Overlay Reconciliation - 2026-06-08]]
+  summary: Status: docs/tooling reconciliation.
 - [doc] [[docs/status/OBSIDIAN_OVERLAY_AUTHORITY_TIERS_2026-05-18|Obsidian Overlay Authority Tiers]]
   summary: Date: 2026-05-18
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
@@ -2078,6 +2114,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This document consolidates the newest findings from recent repo audits, runtime reviews, governance
 - [doc] [[docs/status/SECOND_BRAIN_FOUNDATION_PLANNING_PACKET_2026-05-18|Second Brain Foundation Planning Packet - 2026-05-18]]
   summary: Status: planning packet complete / not active runtime work.
+- [doc] [[docs/status/SESSION_SUMMARY_2026-06-04_DEEPSEEK_GOVERNANCE|Session Summary — 2026-06-04]]
+  summary: Status: completed session evidence
+- [doc] [[docs/status/SIMULATION_RESULTS_2026-06-04|Simulation Results — 2026-06-04]]
+  summary: Status: validated evidence; not runtime truth
 - [doc] [[docs/status/STREAMING_LLM_FALLBACK_DESIGN_2026-05-19|Streaming LLM Fallback Design -- 2026-05-19]]
   summary: Status:
 - [doc] [[docs/status/TRUST_PANEL_MVP_CLOSEOUT_2026-05-14|Trust Panel MVP Closeout]]
@@ -2374,7 +2414,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (706)
+## nova_backend (736)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2786,6 +2826,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: __all__ = [
 - [code] [[nova_backend/src/personality/announce.py|announce]]
   summary: def deep_mode_activation_notice() -> str:
+- [code] [[nova_backend/src/personality/briefing_composer.py|briefing_composer]]
+  summary: EMPTY_BRIEFING_TEXT = "I do not see anything that needs your attention right now.
+- [code] [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
+  summary: @dataclass(frozen=True)
 - [code] [[nova_backend/src/personality/conversation_personality_agent.py|conversation_personality_agent]]
   summary: class ConversationPersonalityAgent:
 - [code] [[nova_backend/src/personality/core.py|core]]
@@ -2793,15 +2837,25 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/personality/deep_mode.py|deep_mode]]
   summary: @dataclass
 - [code] [[nova_backend/src/personality/interface_agent.py|interface_agent]]
-  summary: class PersonalityInterfaceAgent:
+  summary: if TYPE_CHECKING:
+- [code] [[nova_backend/src/personality/mode_detection.py|mode_detection]]
+  summary: Context-aware mode detection for the Chief of Staff personality layer.
 - [code] [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
   summary: class NovaStyleContract:
 - [code] [[nova_backend/src/personality/presenter.py|presenter]]
   summary: def present_raw_outputs(outputs: Iterable[AgentOutput]) -> str:
+- [code] [[nova_backend/src/personality/proactive_briefing.py|proactive_briefing]]
+  summary: Proactive briefing framework for the Chief of Staff personality layer.
+- [code] [[nova_backend/src/personality/reminder_framework.py|reminder_framework]]
+  summary: Reminder suggestion framework for the Chief of Staff personality layer.
 - [code] [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
   summary: def _utc_now() -> str:
+- [code] [[nova_backend/src/personality/trust_presenter.py|trust_presenter]]
+  summary: Trust presentation for the Chief of Staff personality layer.
 - [code] [[nova_backend/src/personality/validate.py|validate]]
   summary: class PersonalityValidator:
+- [code] [[nova_backend/src/personality/voice_personality.py|voice_personality]]
+  summary: Voice personality rules for the Chief of Staff personality layer.
 - [code] [[nova_backend/src/policies/__init__.py|src/policies]]
   summary: __all__ = ["AtomicPolicyStore", "PolicyValidationResult", "PolicyValidator"]
 - [code] [[nova_backend/src/policies/atomic_policy_store.py|atomic_policy_store]]
@@ -3322,6 +3376,43 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: ToolPermission,
 - [code] [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
   summary: ------------------------------------------------------------------
+- [code] [[nova_backend/tests/personality/__init__.py|tests/personality]]
+- [code] [[nova_backend/tests/personality/test_assistive_noticing_tiers.py|test_assistive_noticing_tiers]]
+  summary: Phase 1B — AssistiveNoticing tier extensions (Tier 2-4).
+- [code] [[nova_backend/tests/personality/test_briefing_composer.py|test_briefing_composer]]
+  summary: def test_compose_from_empty_session():
+- [code] [[nova_backend/tests/personality/test_chief_of_staff_profile.py|test_chief_of_staff_profile]]
+  summary: ChiefOfStaffProfile,
+- [code] [[nova_backend/tests/personality/test_existing_personality_compatibility.py|test_existing_personality_compatibility]]
+  summary: Compatibility tests verifying existing personality behavior is unchanged.
+- [code] [[nova_backend/tests/personality/test_initiative_template_refinement.py|test_initiative_template_refinement]]
+  summary: Phase 2 — Initiative template refinement tests.
+- [code] [[nova_backend/tests/personality/test_interface_agent_extensions.py|test_interface_agent_extensions]]
+  summary: Phase 1B — PersonalityInterfaceAgent extensions.
+- [code] [[nova_backend/tests/personality/test_mode_authority_neutrality.py|test_mode_authority_neutrality]]
+  summary: Phase 2 — Mode authority neutrality tests.
+- [code] [[nova_backend/tests/personality/test_mode_detection.py|test_mode_detection]]
+  summary: Phase 2 — ModeDetector tests.
+- [code] [[nova_backend/tests/personality/test_mode_detector_wiring.py|test_mode_detector_wiring]]
+  summary: Wiring Phase 2A — ModeDetector integration tests.
+- [code] [[nova_backend/tests/personality/test_personality_import_boundary.py|test_personality_import_boundary]]
+  summary: These tests enforce the structural isolation rule from the audited
+- [code] [[nova_backend/tests/personality/test_personality_wiring.py|test_personality_wiring]]
+  summary: Personality Live Wiring Phase 1 — Integration Tests.
+- [code] [[nova_backend/tests/personality/test_phase3_import_boundary.py|test_phase3_import_boundary]]
+  summary: Phase 3 — Import boundary and personality-off baseline tests.
+- [code] [[nova_backend/tests/personality/test_proactive_briefing.py|test_proactive_briefing]]
+  summary: Phase 3 — ProactiveBriefing tests.
+- [code] [[nova_backend/tests/personality/test_proactive_briefing_wiring.py|test_proactive_briefing_wiring]]
+  summary: Wiring Phase 2B — ProactiveBriefing integration tests.
+- [code] [[nova_backend/tests/personality/test_reminder_framework.py|test_reminder_framework]]
+  summary: Phase 2 — ReminderFramework tests.
+- [code] [[nova_backend/tests/personality/test_trust_presenter.py|test_trust_presenter]]
+  summary: Phase 3 — TrustPresenter tests.
+- [code] [[nova_backend/tests/personality/test_voice_personality.py|test_voice_personality]]
+  summary: Phase 3 — VoicePersonality tests.
+- [code] [[nova_backend/tests/personality/test_voice_personality_wiring.py|test_voice_personality_wiring]]
+  summary: Wiring Phase 2C — VoicePersonality integration tests.
 - [code] [[nova_backend/tests/phase42/test_context_snapshot.py|test_context_snapshot]]
   summary: def test_agent_context_snapshot_is_immutable_and_hashed():
 - [code] [[nova_backend/tests/phase42/test_intelligence_report_contract.py|test_intelligence_report_contract]]
@@ -3355,11 +3446,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/phase45/test_brain_server_memory_and_continuity.py|test_brain_server_memory_and_continuity]]
   summary: ﻿from __future__ import annotations
 - [code] [[nova_backend/tests/phase45/test_brain_server_tone_commands.py|test_brain_server_tone_commands]]
-  summary: class _ScriptedWebSocket:
+  summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]]
   summary: class _WebSocket:
 - [code] [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]]
-  summary: @pytest.mark.skipif(
+  summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/phase45/test_capability_discoverability_contract.py|test_capability_discoverability_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
@@ -3433,13 +3524,13 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/phase45/test_personality_interface_contract.py|test_personality_interface_contract]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_policy_center_surface.py|test_policy_center_surface]]
-  summary: class _ScriptedWebSocket:
+  summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
   summary: Tests for /api/profile endpoints via profile_api.py.
 - [code] [[nova_backend/tests/phase45/test_screen_capture_executor.py|test_screen_capture_executor]]
   summary: def _request(params: dict):
 - [code] [[nova_backend/tests/phase45/test_system_status_reporting_contract.py|test_system_status_reporting_contract]]
-  summary: class _Request:
+  summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
   summary: def test_normalize_trust_status_bounds_fields():
 - [code] [[nova_backend/tests/phase45/test_user_profile_store.py|test_user_profile_store]]
@@ -3618,7 +3709,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/simulation/stress/stress_runner.py|stress_runner]]
   summary: aggregate_simulation_runs,
 - [code] [[nova_backend/tests/simulation/stress/test_cognitive_stress.py|test_cognitive_stress]]
-  summary: def _run_profile(profile: StressProfile, seed: int) -> dict:
+  summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/simulation/test_capability_routing_simulation.py|test_capability_routing_simulation]]
   summary: def test_capability_routing_simulation():
 - [code] [[nova_backend/tests/simulation/test_cognitive_trace_layer.py|test_cognitive_trace_layer]]
@@ -3627,10 +3718,16 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def test_governor_safety_simulation():
 - [code] [[nova_backend/tests/simulation/test_nova_trial_runner.py|test_nova_trial_runner]]
   summary: def test_trial_evaluator_reports_capability_sequence_gap():
+- [code] [[nova_backend/tests/simulation/test_personality_simulation.py|test_personality_simulation]]
+  summary: Phase 1 Personality Validation Simulation.
+- [code] [[nova_backend/tests/simulation/test_phase2_personality_simulation.py|test_phase2_personality_simulation]]
+  summary: Phase 2 Personality Validation Simulation.
+- [code] [[nova_backend/tests/simulation/test_phase3_personality_simulation.py|test_phase3_personality_simulation]]
+  summary: Phase 3 Personality Validation Simulation.
 - [code] [[nova_backend/tests/simulation/test_research_conversation_flow.py|test_research_conversation_flow]]
   summary: def test_research_conversation_flow(monkeypatch):
 - [code] [[nova_backend/tests/simulation/test_scenario_simulation_library.py|test_scenario_simulation_library]]
-  summary: def test_scenario_simulation_library_executes_all_workflows():
+  summary: @pytest.mark.slow
 - [code] [[nova_backend/tests/simulation/test_simulation_analytics.py|test_simulation_analytics]]
   summary: aggregate_simulation_runs,
 - [code] [[nova_backend/tests/simulation/trial_evaluator.py|trial_evaluator]]
@@ -3724,7 +3821,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/test_runtime_governance_docs.py|test_runtime_governance_docs]]
   summary: def test_current_runtime_state_path_is_docs_current_runtime():
 - [code] [[nova_backend/tests/test_runtime_settings_api.py|test_runtime_settings_api]]
-  summary: def _install_runtime_settings_store(monkeypatch, tmp_path):
+  summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/test_send_email_draft_routing.py|test_send_email_draft_routing]]
   summary: Tests for GovernorMediator routing of capability 64 (send_email_draft).
 - [code] [[nova_backend/tests/test_shopify_intelligence_report_routing.py|test_shopify_intelligence_report_routing]]
@@ -3751,6 +3848,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
   summary: def test_open_website_rejects_single_label_target_before_confirmation():
 - [code] [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
+  summary: class _RecordingLedger:
+- [code] [[nova_backend/tests/websocket/test_deterministic_personality_gate_wrapping.py|test_deterministic_personality_gate_wrapping]]
   summary: class _RecordingLedger:
 - [code] [[nova_backend/tests/websocket/test_recovery_no_stale_approval.py|test_recovery_no_stale_approval]]
   summary: Recovery evidence: pending confirmation must not survive WebSocket disconnect.
@@ -3794,6 +3893,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 
 - [code] [[pyproject.toml|pyproject]]
   summary: [build-system]
+
+## pytest-fast.ini (1)
+
+- [code] [[pytest-fast.ini|pytest-fast]]
+  summary: [pytest]
 
 ## QUICKSTART.md (1)
 
