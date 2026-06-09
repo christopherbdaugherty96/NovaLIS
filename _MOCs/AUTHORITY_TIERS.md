@@ -105,7 +105,7 @@ Rules:
 - Locks define reviewed scope; they are not execution authority by themselves.
 - Keep active, certified, and locked status distinct.
 
-Linked files (349):
+Linked files (350):
 
 - [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
 - [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
@@ -447,6 +447,7 @@ Linked files (349):
 - [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-14_TRUST_PANEL_MVP|Active Priority Lock - Trust Panel MVP]]
 - [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-15_APPROVAL_GATE_WIRING|Active Priority Lock - Approval Gate Wiring]]
 - [[docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19|Approval Gate Certification Closeout — 2026-05-19]]
+- [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
 - [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
 - [[docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1|Priority Lock - 2026-05-26 Second Brain Slice 1]]
 - [[docs/status/PRIORITY_LOCK_2026-05-26_UI_SIMPLIFICATION|UI Simplification Priority Lock — Product Clarity Slice]]
@@ -473,7 +474,7 @@ Rules:
 - Planning docs do not authorize new capabilities, writes, or integrations.
 - Do not treat future designs as current truth without code, tests, and current status.
 
-Linked files (417):
+Linked files (450):
 
 - [[docs/design/brain/AGENT_FEED_CONTRACT|Agent Feed Contract]]
 - [[docs/design/brain/PERSONAL_PERSONALITY_LAYER|Personal Personality Layer - design/brain]]
@@ -660,6 +661,39 @@ Linked files (417):
 - [[docs/future/2026-04-15_portfolio_transformation_vision.txt|Gap Why It Matters Fix Priority]]
 - [[docs/future/2026-04-15_portfolio_upgrade_plan.txt|NovaLIS Portfolio Upgrade Plan]]
 - [[docs/future/active_screen_command_layer/README|Active Screen Command Layer]]
+- [[docs/Future/ai_ecosystem_operating_model/ACTIVE_PRIORITY|Active Priority - Future/ai_ecosystem_operating_model]]
+- [[docs/Future/ai_ecosystem_operating_model/AI_ECOSYSTEM_OPERATING_RULES|AI Ecosystem Operating Rules]]
+- [[docs/Future/ai_ecosystem_operating_model/CURRENT_TRUTH|Current Truth]]
+- [[docs/Future/ai_ecosystem_operating_model/FINAL_IMPLEMENTATION_SUMMARY_2026-06-08|Final Implementation Summary - 2026-06-08]]
+- [[docs/Future/ai_ecosystem_operating_model/FINDINGS_REPORT_2026-06-08|Findings Report - 2026-06-08]]
+- [[docs/Future/ai_ecosystem_operating_model/IMPROVEMENT_RECOMMENDATIONS|Improvement Recommendations]]
+- [[docs/Future/ai_ecosystem_operating_model/README|AI Ecosystem Operating Model]]
+- [[docs/Future/ai_ecosystem_operating_model/RISK_REPORT_2026-06-08|Risk Report - 2026-06-08]]
+- [[docs/Future/ai_ecosystem_operating_model/VALIDATION_PROCEDURES|Validation Procedures]]
+- [[docs/Future/ai_ecosystem_operating_model/VALIDATION_REPORT_2026-06-08|Validation Report - 2026-06-08]]
+- [[docs/Future/ai_ecosystem_operating_model/VAULT_STRUCTURE|Vault Structure]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/00_HOME/HOME|Home]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/01_CURRENT_PRIORITY/ACTIVE_PRIORITY|Active Priority - vault_template/01_CURRENT_PRIORITY]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Active Priority|Nova Active Priority]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Current Runtime Truth|Nova Current Runtime Truth]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Decision Log|Nova Decision Log]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Deferred Work|Nova Deferred Work]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Governance Boundaries|Nova Governance Boundaries]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Known Risks|Nova Known Risks]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Session Handoff|Nova Session Handoff]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Vision|Nova Vision]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/AI Work Queue|AI Work Queue]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Auralis Digital Master Context|Auralis Digital Master Context]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Business Operations Backlog|Business Operations Backlog]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Lucid Creations Master Context|Lucid Creations Master Context]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Printify Product Pipeline|Printify Product Pipeline]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/RJ Print Master Context|RJ Print Master Context]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Shopify Commerce Plan|Shopify Commerce Plan]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/04_DECISIONS/Decision Log|Decision Log]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/05_AI_HANDOFFS/Session Handoff|Session Handoff]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/06_OUTPUT_REVIEW/Output Review Queue|Output Review Queue]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/07_ROADMAPS/Roadmap Index|Roadmap Index]]
+- [[docs/Future/ai_ecosystem_operating_model/vault_template/08_ARCHIVE/Archive Index|Archive Index]]
 - [[docs/future/ARCHITECTURAL_POSITIONING|Nova Architectural Positioning]]
 - [[docs/future/Auralis-Novalis merger goals|Auralis-Novalis merger goals]]
 - [[docs/future/AURALIS_CLIENT_FUNNEL|Auralis Client Funnel]]
@@ -1068,5 +1102,5 @@ Linked files (154):
 
 ## Reference / Unclassified
 
-1028 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
+1030 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
 Use the broad browsing maps for those files; do not treat this fallback as an authority tier.

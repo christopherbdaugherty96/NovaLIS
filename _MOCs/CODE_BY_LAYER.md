@@ -1477,7 +1477,7 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (19)
+## Scripts and automations (20)
 
 - [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -1491,6 +1491,8 @@ Use this to orient yourself before diving into a specific module.
   summary: name: Phase‑3.5 Invariants
 - [[.github/workflows/runtime-docs.yml|runtime-docs]]
   summary: name: Runtime Docs
+- [[.github/workflows/shopify-live-p5.yml|shopify-live-p5]]
+  summary: name: Shopify Live P5 Validation
 - [[automations/weekly-engineering-summary/automation.toml|automation]]
   summary: version = 1
 - [[scripts/certify_capability.py|certify_capability]]
