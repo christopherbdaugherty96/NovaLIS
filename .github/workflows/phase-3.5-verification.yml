@@ -29,7 +29,7 @@ jobs:
         timeout-minutes: 25
         run: |
           cd nova_backend
-          python -c "import os, sys, pytest; code = pytest.main(['-q', '--maxfail=5']); sys.stdout.flush(); sys.stderr.flush(); os._exit(int(code))"
+          python -c "import os, sys, pytest; code = pytest.main(['-q', '--maxfail=5', '-m', 'not live_shopify']); sys.stdout.flush(); sys.stderr.flush(); os._exit(int(code))"
 
       - name: Enforce generated runtime docs
         run: |
