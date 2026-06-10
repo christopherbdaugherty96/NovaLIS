@@ -1,11 +1,11 @@
 # Current Priority
 
-## Post-Merge Command Center Refresh - 2026-06-10
+## Second Brain Slice 1 Foundation Activation - 2026-06-10
 
 Current active lane:
 
 ```text
-Post-merge Daily Command Center refresh.
+Second Brain Slice 1 foundation activation.
 ```
 
 Newly landed stack:
@@ -33,23 +33,23 @@ No active blocker remains from this sequence.
 Current objective:
 
 ```text
-Refresh the Daily Command Center after PR #241 merge so current surfaces no
-longer present the continuity sync as pending.
+Explicitly choose Second Brain Slice 1 foundation as the next lane while
+keeping implementation in a separate PR.
 ```
 
 This sync includes:
 
 ```text
-Record that PR #241 is merged.
-Record that no active blocker remains.
-Record that the next lane has not been chosen.
-Keep the work docs-only and non-authorizing.
+Confirm the existing Second Brain Slice 1 priority lock is still valid.
+Update current priority, current work status, and Daily Command Center.
+Restate allowed and blocked scope.
+Add no implementation code.
 ```
 
 Boundary:
 
 ```text
-No runtime lane is authorized by PR #240, PR #241, or this refresh.
+This activation chooses the next lane but does not implement it.
 No execution authority added.
 No scheduler.
 No GovernorMediator changes.
@@ -57,6 +57,17 @@ No OpenClaw integration.
 No capability expansion.
 No Shopify/browser scope.
 All four certified capabilities remain locked.
+```
+
+Allowed future implementation scope after this activation lands:
+
+```text
+schema
+frontmatter parser
+wikilink extraction
+vault health/lint
+no-mutation tests
+non-authorizing tests only
 ```
 
 Current active task:
