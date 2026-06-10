@@ -1,5 +1,61 @@
 # Current Priority
 
+## Current Freshness Sync - 2026-06-09
+
+Current active lane:
+
+```text
+Continuity freshness sync.
+```
+
+Newly landed stack:
+
+```text
+PR #236 - baseline CI/dependency cleanup merged.
+PR #237 - AI ecosystem operating model merged.
+PR #235 - Obsidian authority-tier overlay merged.
+PR #240 - repo-doc operating-loop proof merged.
+```
+
+Stable outcome:
+
+```text
+CI/dependency blocker cleared.
+AI ecosystem docs model landed.
+Obsidian authority-tier overlay landed.
+Repo-doc operating-loop proof landed.
+No active blocker remains from this sequence.
+```
+
+Current objective:
+
+```text
+Update current continuity surfaces so the vault reflects the landed stack and
+the absence of active blockers without treating notes as execution authority.
+```
+
+This sync includes:
+
+```text
+Refresh .agent_context/current_priority.md.
+Refresh docs/status/CURRENT_WORK_STATUS.md.
+Add a Daily Command Center status surface.
+Keep the work docs-only and non-authorizing.
+```
+
+Boundary:
+
+```text
+No runtime lane is authorized by PR #240 or this sync.
+No execution authority added.
+No scheduler.
+No GovernorMediator changes.
+No OpenClaw integration.
+No capability expansion.
+No Shopify/browser scope.
+All four certified capabilities remain locked.
+```
+
 Current active task:
 
 ```text

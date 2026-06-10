@@ -314,7 +314,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt|🔊 NOVA — GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION]]
 - [doc] [[docs/archive/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
 
-## memory (79)
+## memory (80)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -359,6 +359,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
 - [doc] [[docs/product/CONVERSATION_AND_MEMORY_MODEL|Conversation and Memory Model]]
 - [doc] [[docs/demo_proof/daily_operating_baseline/CONVERSATION_CONTINUITY_PROOF|Conversation Continuity Proof]]
+- [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
 - [doc] [[docs/audits/ISSUE_214_DETERMINISTIC_CONTINUITY_INVESTIGATION_2026-05-23|Issue #214 — Deterministic Continuity Investigation]]
 - [doc] [[docs/capability_verification/live_checklists/cap_51_topic_memory_map|Live Test Checklist — Cap 51: topic_memory_map]]
 - [doc] [[docs/capability_verification/live_checklists/cap_61_memory_governance|Live Test Checklist — Cap 61: memory_governance]]
