@@ -2,7 +2,7 @@
 
 Status: manual continuity surface.
 Last reviewed: 2026-06-10.
-Source: post-merge refresh after PR #241.
+Source: Second Brain Slice 1 foundation activation.
 
 This note is a human-facing command surface for current repo/vault orientation.
 It is not generated runtime truth and it does not authorize execution.
@@ -17,9 +17,9 @@ For exact runtime facts, use:
 ## Current Priorities
 
 ```text
-1. Keep the Daily Command Center current after each merged lane.
+1. Activate Second Brain Slice 1 foundation as the next lane.
 2. Preserve the Obsidian authority boundary.
-3. Choose the next lane explicitly before any implementation work.
+3. Keep implementation separate from this activation PR.
 ```
 
 ## Current Blockers
@@ -31,8 +31,8 @@ No active blocker remains from the #236 / #237 / #235 / #240 / #241 sequence.
 ## Decisions Needed
 
 ```text
-Next lane has not been chosen.
-Do not infer runtime authorization from the docs stack.
+Review this docs-only activation lane.
+If it lands cleanly, prepare the separate Slice 1 implementation PR.
 ```
 
 ## This Week
@@ -40,8 +40,25 @@ Do not infer runtime authorization from the docs stack.
 ```text
 1. Keep Obsidian as context/navigation only.
 2. Do not treat repo-doc proof as runtime authorization.
-3. Choose the next lane explicitly.
-4. If no lane is chosen, stay in review/planning mode.
+3. Keep this PR docs-only.
+4. Do not start implementation until the activation lane is reviewed.
+```
+
+## Chosen Next Lane
+
+```text
+Second Brain Slice 1 foundation.
+```
+
+Allowed implementation scope after this activation lands:
+
+```text
+schema
+frontmatter parser
+wikilink extraction
+vault health/lint
+no-mutation tests
+non-authorizing tests only
 ```
 
 ## Recent Landed Stack
@@ -75,6 +92,6 @@ browser/computer-use expansion
 scheduler or background loops
 external writes
 memory promotion
-Second Brain implementation
+Second Brain implementation in this activation PR
 Obsidian execution authority
 ```
