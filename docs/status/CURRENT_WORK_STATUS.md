@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-06-09 (post-PR #240)
+Last reviewed: 2026-06-10 (post-PR #241)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,29 +19,33 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Phase: Continuity freshness sync after CI/doc governance stack (2026-06-09).
+Phase: Post-merge Daily Command Center refresh (2026-06-10).
 
 Recently landed:
   PR #236 - baseline CI/dependency cleanup.
   PR #237 - AI ecosystem operating model.
   PR #235 - Obsidian authority-tier overlay.
   PR #240 - repo-doc operating-loop proof.
+  PR #241 - continuity freshness sync and Daily Command Center.
 
 Stable outcome:
   CI/dependency blocker cleared.
   AI ecosystem docs model landed.
   Obsidian authority-tier overlay landed.
   Repo-doc operating-loop proof landed.
+  Continuity freshness sync landed.
+  Daily Command Center landed.
   No active blocker remains from this sequence.
 
 Current active lane:
-  Continuity freshness sync.
+  Post-merge Daily Command Center refresh.
 
 Current objective:
-  Update current continuity surfaces and add a Daily Command Center so the
-  vault reflects the landed stack without implying execution authority.
+  Refresh current continuity surfaces after PR #241 merge so they no longer
+  present the continuity sync as pending.
 
-No runtime lane is authorized by PR #240 or this sync.
+Next lane has not been chosen.
+No runtime lane is authorized by PR #240, PR #241, or this refresh.
 No execution authority added. No scheduler. No GovernorMediator changes.
 No OpenClaw integration. No capability expansion. No Shopify/browser scope.
 All four certified capabilities remain locked.
@@ -89,6 +93,10 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Continuity freshness sync - complete (PR #241, 2026-06-10).
+  Updated current continuity surfaces, added Daily Command Center, and
+  refreshed generated MOCs.
+  Does not authorize runtime execution or a new runtime lane.
 Repo-doc operating-loop proof - complete (PR #240, 2026-06-09).
   Docs-only proof of approved repo-doc update -> branch -> PR -> checks ->
   review -> merge decision -> continuity handoff.
@@ -868,18 +876,18 @@ No recent merge authorizes:
 ```text
 Current sequence:
 1. All four certified capabilities remain locked (Cap 16, 22, 64, 65).
-2. CI/doc governance stack is closed clean (#236, #237, #235, #240).
+2. CI/doc governance stack is closed clean (#236, #237, #235, #240, #241).
 3. No active blocker remains from that sequence.
-4. Current continuity surfaces should point to the landed stack and Daily
-   Command Center.
+4. Daily Command Center is present and must be refreshed after each lane closes.
 5. Do not expand capabilities or add Shopify/website workflows.
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. If a separate implementation lane is explicitly started later, the accepted
+9. Next lane has not been chosen.
+10. If a separate implementation lane is explicitly started later, the accepted
    Second Brain Slice 1 scope remains schema/parser/wikilink/vault
    health-lint/no-mutation/non-authorizing tests only.
-10. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+11. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
     execution integration, scheduler, OpenClaw integration, or capability
     expansion.
 
