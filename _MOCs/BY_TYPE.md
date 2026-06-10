@@ -3394,7 +3394,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-06-09 (post-PR #240)
+  summary: Last reviewed: 2026-06-10 (post-PR #241)
 - [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
   summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]

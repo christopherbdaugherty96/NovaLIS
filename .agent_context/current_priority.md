@@ -1,11 +1,11 @@
 # Current Priority
 
-## Current Freshness Sync - 2026-06-09
+## Post-Merge Command Center Refresh - 2026-06-10
 
 Current active lane:
 
 ```text
-Continuity freshness sync.
+Post-merge Daily Command Center refresh.
 ```
 
 Newly landed stack:
@@ -15,6 +15,7 @@ PR #236 - baseline CI/dependency cleanup merged.
 PR #237 - AI ecosystem operating model merged.
 PR #235 - Obsidian authority-tier overlay merged.
 PR #240 - repo-doc operating-loop proof merged.
+PR #241 - continuity freshness sync and Daily Command Center merged.
 ```
 
 Stable outcome:
@@ -24,29 +25,31 @@ CI/dependency blocker cleared.
 AI ecosystem docs model landed.
 Obsidian authority-tier overlay landed.
 Repo-doc operating-loop proof landed.
+Continuity freshness sync landed.
+Daily Command Center landed.
 No active blocker remains from this sequence.
 ```
 
 Current objective:
 
 ```text
-Update current continuity surfaces so the vault reflects the landed stack and
-the absence of active blockers without treating notes as execution authority.
+Refresh the Daily Command Center after PR #241 merge so current surfaces no
+longer present the continuity sync as pending.
 ```
 
 This sync includes:
 
 ```text
-Refresh .agent_context/current_priority.md.
-Refresh docs/status/CURRENT_WORK_STATUS.md.
-Add a Daily Command Center status surface.
+Record that PR #241 is merged.
+Record that no active blocker remains.
+Record that the next lane has not been chosen.
 Keep the work docs-only and non-authorizing.
 ```
 
 Boundary:
 
 ```text
-No runtime lane is authorized by PR #240 or this sync.
+No runtime lane is authorized by PR #240, PR #241, or this refresh.
 No execution authority added.
 No scheduler.
 No GovernorMediator changes.
