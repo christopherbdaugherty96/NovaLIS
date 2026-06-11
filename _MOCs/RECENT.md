@@ -25,6 +25,7 @@ Use this to catch up on what's been touched lately.
 - `2026-06-09` [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
 - `2026-06-09` [doc] [[.agent_context/current_priority|Current Priority]]
 - `2026-06-09` [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
+- `2026-06-09` [doc] [[docs/status/SECOND_BRAIN_SLICE_1_FOUNDATION_ACTIVATION_2026-06-10|Second Brain Slice 1 Foundation Activation - 2026-06-10]]
 - `2026-06-09` [doc] [[_MOCs/RECENT|What changed most recently (top 80)]]
 - `2026-06-09` [code] [[scripts/generate_obsidian_overlay.py|generate_obsidian_overlay]]
 - `2026-06-09` [code] [[pyproject.toml|pyproject]]
@@ -90,4 +91,3 @@ Use this to catch up on what's been touched lately.
 - `2026-06-05` [doc] [[docs/brain/NOVA_LEARNING_DOCTRINE|Nova Learning Doctrine]]
 - `2026-06-05` [code] [[nova_backend/tests/personality/test_personality_import_boundary.py|test_personality_import_boundary]]
 - `2026-06-05` [code] [[nova_backend/src/personality/interface_agent.py|interface_agent]]
-- `2026-06-05` [code] [[nova_backend/tests/personality/test_briefing_composer.py|test_briefing_composer]]

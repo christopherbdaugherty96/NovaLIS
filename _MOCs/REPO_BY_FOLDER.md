@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1050)
+## docs (1051)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -2151,7 +2151,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-06-10 (post-PR #241)
+  summary: Last reviewed: 2026-06-10 (Second Brain Slice 1 activation)
 - [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
   summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
@@ -2188,6 +2188,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This document consolidates the newest findings from recent repo audits, runtime reviews, governance
 - [doc] [[docs/status/SECOND_BRAIN_FOUNDATION_PLANNING_PACKET_2026-05-18|Second Brain Foundation Planning Packet - 2026-05-18]]
   summary: Status: planning packet complete / not active runtime work.
+- [doc] [[docs/status/SECOND_BRAIN_SLICE_1_FOUNDATION_ACTIVATION_2026-06-10|Second Brain Slice 1 Foundation Activation - 2026-06-10]]
+  summary: Status: docs-only lane activation.
 - [doc] [[docs/status/SESSION_SUMMARY_2026-06-04_DEEPSEEK_GOVERNANCE|Session Summary — 2026-06-04]]
   summary: Status: completed session evidence
 - [doc] [[docs/status/SIMULATION_RESULTS_2026-06-04|Simulation Results — 2026-06-04]]
