@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
+import time
 import uuid
 from typing import Any
 
@@ -26,6 +28,7 @@ _QUOTED_CONTENT_REQUEST_RE = re.compile(
     r"\b(?:article|text|content|search result|result|snippet|quote|quoted)\b",
     re.IGNORECASE,
 )
+_ACTIVE_WS_SESSIONS: list[dict[str, Any]] = []
 
 
 def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) -> str:
@@ -276,6 +279,8 @@ def untrusted_quoted_content_response(text: str) -> str:
 async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     """Run Nova's websocket session loop using the assembled runtime module as deps."""
     log = deps.log
+    ws_idle_timeout_seconds = int(os.environ.get("NOVA_WS_IDLE_TIMEOUT_SECONDS", "60"))
+    max_dashboard_sessions = int(os.environ.get("NOVA_MAX_DASHBOARD_WS_SESSIONS", "2"))
     RUNTIME_GOVERNOR = deps.RUNTIME_GOVERNOR
     build_general_chat_skill = deps.build_general_chat_skill
     _Phase42PersonalityAgent = deps._Phase42PersonalityAgent
@@ -467,6 +472,20 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     log.info("WebSocket connected")
 
     session_id = str(uuid.uuid4())
+    session_record: dict[str, Any] | None = None
+    if callable(getattr(ws, "close", None)) and max_dashboard_sessions > 0:
+        session_record = {"id": session_id, "ws": ws, "opened_at": time.monotonic()}
+        _ACTIVE_WS_SESSIONS.append(session_record)
+        stale_records = _ACTIVE_WS_SESSIONS[:-max_dashboard_sessions]
+        del _ACTIVE_WS_SESSIONS[:-max_dashboard_sessions]
+        for stale in stale_records:
+            stale_ws = stale.get("ws")
+            if stale_ws is ws or not callable(getattr(stale_ws, "close", None)):
+                continue
+            try:
+                await stale_ws.close(code=1001, reason="Older Nova dashboard session replaced.")
+            except Exception:
+                pass
     governor = RUNTIME_GOVERNOR
     general_chat_skill = build_general_chat_skill(network=governor.network)
     personality_agent = _Phase42PersonalityAgent() if _Phase42PersonalityAgent is not None else None
@@ -546,9 +565,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     run_event_relay_task: asyncio.Task[None] | None = None
 
     async def _relay_run_status_events() -> None:
-        while True:
-            event = await run_event_queue.get()
-            await ws_send(ws, {"type": "run_status", "data": event})
+        try:
+            while True:
+                event = await run_event_queue.get()
+                await ws_send(ws, {"type": "run_status", "data": event})
+        except asyncio.CancelledError:
+            raise
+        except WebSocketDisconnect:
+            return
+        except Exception:
+            log.debug("Run-status relay ended for websocket session", exc_info=True)
 
     # Load any unconsumed user corrections from previous sessions and make
     # them available for context injection in the first few turns.
@@ -883,7 +909,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     try:
         while True:
             GovernorMediator.clear_stale_sessions()
-            raw = await ws.receive_text()
+            try:
+                raw = await asyncio.wait_for(ws.receive_text(), timeout=ws_idle_timeout_seconds)
+            except asyncio.TimeoutError:
+                log.info("WebSocket idle timeout after %ss; closing stale session", ws_idle_timeout_seconds)
+                try:
+                    await ws.close(code=1001, reason="Nova dashboard session idle timeout.")
+                except Exception:
+                    pass
+                break
             raw_bytes = raw.encode("utf-8")
             if len(raw_bytes) > WS_INPUT_MAX_BYTES:
                 log.warning("WebSocket input rejected: %d bytes exceeds limit %d", len(raw_bytes), WS_INPUT_MAX_BYTES)
@@ -1643,8 +1677,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if silent_widget_refresh:
                     await _complete_silent_widget_refresh()
                 else:
+                    _trust_snap = await deps._get_or_build_trust_review_snapshot()
                     trust_message, trust_suggestions = _render_trust_center_message(
-                        session_state.get("trust_status", {})
+                        session_state.get("trust_status", {}),
+                        trust_snapshot=_trust_snap,
                     )
                     await _complete_immediate_turn(
                         trust_message,
@@ -3424,68 +3460,47 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     else:
                         calendar_line = calendar_result.message
 
-                # Compose morning brief via ProactiveBriefing
-                import time as _time_mod
-
-                from src.personality.chief_of_staff_profile import (
-                    ChiefOfStaffProfile as _CSP,
-                )
-                from src.personality.proactive_briefing import (
-                    BriefingTrigger as _BT,
-                )
-                from src.personality.proactive_briefing import (
-                    ProactiveBriefing as _PB,
+                # Compose governed morning brief via RoutineGraph engine
+                from src.conversation.morning_brief_handler import (
+                    calendar_result_to_brief_data,
+                    compose_governed_morning_brief,
+                    weather_result_to_brief_data,
                 )
 
-                # Build session snapshot from already-fetched capability results
-                _brief_session_data: dict = {}
-                if weather_result is not None and weather_result.success:
-                    _w_widget = {}
-                    if isinstance(weather_result.data, dict):
-                        _w_widget = dict((weather_result.data.get("widget") or {}).get("data") or {})
-                    _brief_session_data["weather"] = {
-                        "summary": weather_summary,
-                        "temperature": _w_widget.get("temperature"),
-                        "condition": _w_widget.get("condition"),
-                        "timestamp": _time_mod.time(),
-                    }
-                if isinstance(session_state.get("last_calendar_events"), list):
-                    _brief_session_data["calendar"] = {
-                        "events": list(session_state.get("last_calendar_events") or [])[:5],
-                        "timestamp": _time_mod.time(),
-                    }
-                _news_items = list(session_state.get("news_cache") or [])
-                if _news_items:
-                    _brief_session_data["news"] = {
-                        "headlines": [
-                            str(item.get("title") or "").strip()
-                            for item in _news_items[:5]
-                            if isinstance(item, dict)
-                        ],
-                        "timestamp": _time_mod.time(),
-                    }
-
-                # Thread snapshot from session if available
-                _thread_snap = None
-                if hasattr(project_threads, "list_summaries"):
-                    _thread_snap = [dict(s) for s in project_threads.list_summaries()[:5]]
-
-                _detected_mode = session_state.get("detected_mode", "home")
-                _trigger = _BT(
-                    trigger_type="morning",
-                    source_label="Morning brief command",
-                    data_timestamp=_time_mod.time(),
+                _weather_brief_data = weather_result_to_brief_data(
+                    weather_result, weather_summary,
                 )
-                _brief_result = _PB().compose_and_format(
-                    trigger=_trigger,
-                    session_data=_brief_session_data,
-                    thread_snapshot=_thread_snap,
-                    mode=_detected_mode,
-                    profile=_CSP(),
+                _calendar_brief_data = calendar_result_to_brief_data(session_state)
+
+                _memory_items: list = []
+                if _select_relevant_memory_context is not None:
+                    _memory_items = _select_relevant_memory_context(
+                        "morning brief",
+                        session_state=session_state,
+                        project_threads=project_threads,
+                    )
+
+                _brief_result = compose_governed_morning_brief(
+                    session_state=session_state,
+                    memory_items=_memory_items,
+                    weather_data=_weather_brief_data,
+                    calendar_data=_calendar_brief_data,
                 )
 
-                morning_brief = (_brief_result or {}).get("briefing_text", "Morning brief unavailable.")
-                await send_chat_message(ws, morning_brief, tone_domain="daily")
+                _log_ledger_event(
+                    governor,
+                    "ROUTINE_BRIEF_COMPLETED",
+                    {
+                        "session_id": session_id,
+                        "run_id": _brief_result.run.run_id,
+                        "receipt_id": _brief_result.receipt.receipt_id,
+                        "graph_name": _brief_result.receipt.graph_name,
+                        "sources_consulted": list(_brief_result.receipt.sources_consulted),
+                        "has_content": _brief_result.has_content,
+                    },
+                )
+
+                await send_chat_message(ws, _brief_result.text, tone_domain="daily")
                 await send_chat_done(ws)
                 continue
 
@@ -4334,6 +4349,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     except Exception:
         log.exception("WS receive loop crashed — session will close")
     finally:
+        if session_record is not None:
+            try:
+                _ACTIVE_WS_SESSIONS.remove(session_record)
+            except ValueError:
+                pass
         if initial_trust_refresh_task and not initial_trust_refresh_task.done():
             initial_trust_refresh_task.cancel()
         if run_event_relay_task and not run_event_relay_task.done():
