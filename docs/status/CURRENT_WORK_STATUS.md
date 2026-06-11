@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-06-10 (post-PR #241)
+Last reviewed: 2026-06-10 (Second Brain Slice 1 activation)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,7 +19,7 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Phase: Post-merge Daily Command Center refresh (2026-06-10).
+Phase: Second Brain Slice 1 foundation activation (2026-06-10).
 
 Recently landed:
   PR #236 - baseline CI/dependency cleanup.
@@ -38,14 +38,20 @@ Stable outcome:
   No active blocker remains from this sequence.
 
 Current active lane:
-  Post-merge Daily Command Center refresh.
+  Second Brain Slice 1 foundation activation.
 
 Current objective:
-  Refresh current continuity surfaces after PR #241 merge so they no longer
-  present the continuity sync as pending.
+  Explicitly choose Second Brain Slice 1 foundation as the next lane while
+  keeping implementation in a separate PR.
 
-Next lane has not been chosen.
-No runtime lane is authorized by PR #240, PR #241, or this refresh.
+Chosen next lane:
+  Second Brain Slice 1 foundation.
+
+Allowed future implementation scope after this activation lands:
+  schema, frontmatter parser, wikilink extraction, vault health/lint,
+  no-mutation tests, and non-authorizing tests only.
+
+This activation does not implement the lane.
 No execution authority added. No scheduler. No GovernorMediator changes.
 No OpenClaw integration. No capability expansion. No Shopify/browser scope.
 All four certified capabilities remain locked.
@@ -93,6 +99,9 @@ Cap 65 — locked (2026-05-22) — shopify_intelligence_report (read-only)
 Previous closed lanes:
 
 ```text
+Post-merge Daily Command Center refresh - complete (PR #242, 2026-06-10).
+  Updated the command surface so PR #241 is no longer represented as pending.
+  Does not authorize runtime execution or a new runtime lane.
 Continuity freshness sync - complete (PR #241, 2026-06-10).
   Updated current continuity surfaces, added Daily Command Center, and
   refreshed generated MOCs.
@@ -876,18 +885,18 @@ No recent merge authorizes:
 ```text
 Current sequence:
 1. All four certified capabilities remain locked (Cap 16, 22, 64, 65).
-2. CI/doc governance stack is closed clean (#236, #237, #235, #240, #241).
+2. CI/doc governance stack is closed clean (#236, #237, #235, #240, #241, #242).
 3. No active blocker remains from that sequence.
 4. Daily Command Center is present and must be refreshed after each lane closes.
 5. Do not expand capabilities or add Shopify/website workflows.
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Next lane has not been chosen.
-10. If a separate implementation lane is explicitly started later, the accepted
-   Second Brain Slice 1 scope remains schema/parser/wikilink/vault
-   health-lint/no-mutation/non-authorizing tests only.
-11. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+9. Next lane is Second Brain Slice 1 foundation.
+10. This activation PR does not implement that lane.
+11. The future implementation PR scope is schema/parser/wikilink/vault
+    health-lint/no-mutation/non-authorizing tests only.
+12. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
     execution integration, scheduler, OpenClaw integration, or capability
     expansion.
 

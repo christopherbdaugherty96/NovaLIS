@@ -105,5 +105,7 @@ EVENT_TYPES = frozenset(
         "OPENCLAW_ACTION_DENIED",       # approval gate returned deny
         "OPENCLAW_ACTION_PENDING",      # user confirmation required; run suspended
         "OPENCLAW_AUTHORITY_DIVERGENCE",  # old and new approval decisions disagree (transition audit)
+        # Governed routine lifecycle
+        "ROUTINE_BRIEF_COMPLETED",      # Morning Brief RoutineGraph finished with receipt
     }
 )
