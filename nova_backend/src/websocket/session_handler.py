@@ -1677,7 +1677,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if silent_widget_refresh:
                     await _complete_silent_widget_refresh()
                 else:
-                    _trust_snap = await deps._get_or_build_trust_review_snapshot()
+                    _trust_snap = await asyncio.to_thread(deps._build_trust_review_snapshot)
                     trust_message, trust_suggestions = _render_trust_center_message(
                         session_state.get("trust_status", {}),
                         trust_snapshot=_trust_snap,
