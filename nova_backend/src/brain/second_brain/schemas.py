@@ -12,11 +12,9 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
-
 
 _KB_ID_RE = re.compile(r"^kb_[A-Za-z0-9][A-Za-z0-9_-]*$")
 _CONTENT_HASH_RE = re.compile(r"^sha256:[a-f0-9]{64}$")
