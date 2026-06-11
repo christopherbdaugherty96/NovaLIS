@@ -13,11 +13,10 @@ from typing import Any
 
 from src.brain.second_brain.frontmatter_parser import (
     ParsedNote,
-    extract_wikilinks,
     frontmatter_to_entry,
     parse_note,
 )
-from src.brain.second_brain.schemas import KnowledgeEntry, SchemaError
+from src.brain.second_brain.schemas import KnowledgeEntry
 
 
 class FindingSeverity(str, Enum):

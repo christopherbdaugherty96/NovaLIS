@@ -11,12 +11,11 @@ execute capabilities, grant authority, or modify state.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from src.routine.daily_brief_routine import run_daily_brief_routine
 from src.routine.routine_graph import RoutineReceipt, RoutineRun
 from src.trust.receipt_store import get_recent_receipts
-
 
 MORNING_BRIEF_TRIGGERS = frozenset({
     "morning",

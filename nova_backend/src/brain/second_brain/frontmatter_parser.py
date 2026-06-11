@@ -26,7 +26,6 @@ from src.brain.second_brain.schemas import (
     SchemaError,
 )
 
-
 _FRONTMATTER_RE = re.compile(
     r"\A---\s*\n(.*?\n)---\s*\n?",
     re.DOTALL,
