@@ -107,5 +107,9 @@ EVENT_TYPES = frozenset(
         "OPENCLAW_AUTHORITY_DIVERGENCE",  # old and new approval decisions disagree (transition audit)
         # Governed routine lifecycle
         "ROUTINE_BRIEF_COMPLETED",      # Morning Brief RoutineGraph finished with receipt
+        # Provider budget visibility
+        "PROVIDER_USAGE_RECORDED",      # metered provider call completed and logged
+        "PROVIDER_USAGE_BLOCKED",       # budget guard refused a provider call
+        "PROVIDER_BUDGET_WARNING",      # provider usage crossed warning threshold
     }
 )
