@@ -44,21 +44,33 @@ class ProviderBudgetPolicy:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ProviderBudgetPolicy:
+        def _int(key: str, default: int) -> int:
+            v = data.get(key)
+            return int(v) if v is not None else default
+
+        def _float(key: str, default: float) -> float:
+            v = data.get(key)
+            return float(v) if v is not None else default
+
+        def _str(key: str, default: str) -> str:
+            v = data.get(key)
+            return str(v) if v is not None else default
+
         return cls(
-            provider_id=str(data.get("provider_id") or ""),
-            display_name=str(data.get("display_name") or ""),
+            provider_id=_str("provider_id", ""),
+            display_name=_str("display_name", ""),
             enabled=bool(data.get("enabled")),
             metered=bool(data.get("metered")),
-            daily_token_limit=int(data.get("daily_token_limit") or 0),
-            monthly_token_limit=int(data.get("monthly_token_limit") or 0),
-            daily_cost_limit_usd=float(data.get("daily_cost_limit_usd") or 0.0),
-            monthly_cost_limit_usd=float(
-                data.get("monthly_cost_limit_usd") or 0.0
+            daily_token_limit=_int("daily_token_limit", 0),
+            monthly_token_limit=_int("monthly_token_limit", 0),
+            daily_cost_limit_usd=_float("daily_cost_limit_usd", 0.0),
+            monthly_cost_limit_usd=_float(
+                "monthly_cost_limit_usd", 0.0
             ),
-            warn_ratio=float(data.get("warn_ratio") or 0.8),
-            max_output_tokens=int(data.get("max_output_tokens") or 500),
+            warn_ratio=_float("warn_ratio", 0.8),
+            max_output_tokens=_int("max_output_tokens", 500),
             requires_approval=bool(data.get("requires_approval")),
-            fallback=str(data.get("fallback") or "local"),
+            fallback=_str("fallback", "local"),
         )
 
 
@@ -203,28 +215,33 @@ def compute_budget_state(
     policy: ProviderBudgetPolicy,
 ) -> str:
     """Determine budget state from usage and policy. Pure function."""
-    if not policy.metered or policy.daily_token_limit <= 0:
+    if not policy.metered:
         return "normal"
 
-    daily_ratio = usage.daily_tokens / policy.daily_token_limit
-    if daily_ratio >= 1.0:
-        return "limit"
-    if daily_ratio >= policy.warn_ratio:
-        return "warning"
+    worst = "normal"
+
+    if policy.daily_token_limit > 0:
+        daily_ratio = usage.daily_tokens / policy.daily_token_limit
+        if daily_ratio >= 1.0:
+            return "limit"
+        if daily_ratio >= policy.warn_ratio:
+            worst = "warning"
 
     if policy.daily_cost_limit_usd > 0:
         cost_ratio = usage.daily_cost_usd / policy.daily_cost_limit_usd
         if cost_ratio >= 1.0:
             return "limit"
         if cost_ratio >= policy.warn_ratio:
-            return "warning"
+            worst = "warning"
 
     if policy.monthly_token_limit > 0:
-        monthly_ratio = usage.monthly_tokens / policy.monthly_token_limit
+        monthly_ratio = (
+            usage.monthly_tokens / policy.monthly_token_limit
+        )
         if monthly_ratio >= 1.0:
             return "limit"
         if monthly_ratio >= policy.warn_ratio:
-            return "warning"
+            worst = "warning"
 
     if policy.monthly_cost_limit_usd > 0:
         monthly_cost_ratio = (
@@ -233,6 +250,6 @@ def compute_budget_state(
         if monthly_cost_ratio >= 1.0:
             return "limit"
         if monthly_cost_ratio >= policy.warn_ratio:
-            return "warning"
+            worst = "warning"
 
-    return "normal"
+    return worst
