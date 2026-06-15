@@ -244,8 +244,12 @@ BRIDGE_STATUS_RE = re.compile(
     r"^\s*(?:(?:openclaw|remote|bridge)\s+status|bridge\s+status)\s*$",
     re.IGNORECASE,
 )
+PROVIDER_STATUS_RE = re.compile(
+    r"^\s*(?:(?:provider|providers|dependency|dependencies)\s+status|show\s+(?:provider|providers|dependencies))\s*$",
+    re.IGNORECASE,
+)
 CONNECTION_STATUS_RE = re.compile(
-    r"^\s*(?:(?:connection|connections|provider|providers)\s+status|show\s+connections)\s*$",
+    r"^\s*(?:(?:connection|connections)\s+status|show\s+connections)\s*$",
     re.IGNORECASE,
 )
 
