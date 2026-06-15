@@ -45,6 +45,89 @@ _ACTIONISH_PATTERNS = (
 )
 
 
+def _check_budget_gate(
+    *,
+    analysis_profile: str,
+    request_id: str,
+    model: str,
+) -> str:
+    """Pre-call budget gate. Returns budget state.
+
+    If "limit", emits PROVIDER_USAGE_BLOCKED. Caller must not
+    proceed with the network call when state is "limit".
+    """
+    try:
+        from src.usage.provider_budget_policy import (
+            DEFAULT_POLICIES,
+            ProviderUsageTotals,
+            compute_budget_state,
+        )
+
+        policy = DEFAULT_POLICIES.get("deepseek")
+        if policy is None:
+            return "normal"
+
+        snapshot = provider_usage_store.snapshot()
+        daily_tokens = int(
+            snapshot.get("estimated_total_tokens") or 0
+        )
+        daily_cost = float(
+            snapshot.get("estimated_cost_usd") or 0.0
+        )
+        daily_calls = int(snapshot.get("event_count") or 0)
+
+        usage = ProviderUsageTotals(
+            daily_tokens=daily_tokens,
+            daily_cost_usd=daily_cost,
+            daily_call_count=daily_calls,
+        )
+        budget_state = compute_budget_state(usage, policy)
+
+        if budget_state == "limit":
+            event_meta = {
+                "provider_id": "deepseek",
+                "model": model,
+                "analysis_profile": analysis_profile,
+                "request_id": request_id,
+                "daily_tokens": daily_tokens,
+                "daily_cost_usd": round(daily_cost, 6),
+                "daily_call_count": daily_calls,
+                "budget_state": "limit",
+                "policy_daily_token_limit": (
+                    policy.daily_token_limit
+                ),
+                "policy_daily_cost_limit_usd": (
+                    policy.daily_cost_limit_usd
+                ),
+                "enforcement": "hard",
+            }
+            try:
+                from src.ledger.writer import LedgerWriter
+
+                ledger = LedgerWriter()
+                ledger.log_event(
+                    "PROVIDER_USAGE_BLOCKED", event_meta,
+                )
+            except Exception:
+                _log.debug(
+                    "Budget gate ledger event failed",
+                    exc_info=True,
+                )
+            _log.warning(
+                "DeepSeek budget blocked: %d/%d daily tokens"
+                " (profile=%s, request=%s)",
+                daily_tokens,
+                policy.daily_token_limit,
+                analysis_profile,
+                request_id,
+            )
+
+        return budget_state
+    except Exception:
+        _log.debug("Budget gate check failed", exc_info=True)
+        return "normal"
+
+
 def _log_budget_event(
     *,
     usage_snapshot: dict[str, Any],
@@ -52,10 +135,7 @@ def _log_budget_event(
     request_id: str,
     model: str,
 ) -> str:
-    """Compute policy-based budget state and log ledger events.
-
-    Returns the computed budget state. Log-only — never blocks.
-    """
+    """Post-call budget logging. Records usage and warns if needed."""
     from src.usage.provider_budget_policy import (
         DEFAULT_POLICIES,
         ProviderUsageTotals,
@@ -92,7 +172,7 @@ def _log_budget_event(
         "budget_state": budget_state,
         "policy_daily_token_limit": policy.daily_token_limit,
         "policy_daily_cost_limit_usd": policy.daily_cost_limit_usd,
-        "enforcement": "log_only",
+        "enforcement": "hard",
     }
 
     try:
@@ -112,12 +192,12 @@ def _log_budget_event(
                 request_id,
             )
         elif budget_state == "limit":
-            ledger.log_event("PROVIDER_BUDGET_WARNING", {
+            ledger.log_event("PROVIDER_USAGE_BLOCKED", {
                 **event_meta,
-                "would_block": True,
+                "crossed_during_call": True,
             })
             _log.warning(
-                "DeepSeek budget would-block (log-only): "
+                "DeepSeek budget crossed limit during call: "
                 "%d/%d daily tokens"
                 " (profile=%s, request=%s)",
                 daily_tokens,
@@ -221,6 +301,31 @@ class DeepSeekReasoningProvider:
             raise DeepSeekReasoningProviderError("DEEPSEEK_API_KEY is not configured.")
 
         model = self.validate_model()
+
+        budget_gate_state = _check_budget_gate(
+            analysis_profile=analysis_profile,
+            request_id=request_id,
+            model=model,
+        )
+        if budget_gate_state == "limit":
+            return DeepSeekReasoningResult(
+                text=(
+                    "DeepSeek analysis is temporarily unavailable"
+                    " — daily budget limit reached. Nova will"
+                    " use local reasoning as a fallback."
+                ),
+                provider="DeepSeek",
+                model=model,
+                route="budget_blocked",
+                request_id=str(request_id or "").strip(),
+                usage_meta={
+                    "policy_budget_state": "limit",
+                    "analysis_profile": analysis_profile,
+                    "blocked": True,
+                    "enforcement": "hard",
+                },
+            )
+
         payload = {
             "model": model,
             "messages": [
