@@ -350,6 +350,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     BRIDGE_STATUS_RE = deps.BRIDGE_STATUS_RE
     _render_bridge_status_message = deps._render_bridge_status_message
     OSDiagnosticsExecutor = deps.OSDiagnosticsExecutor
+    PROVIDER_STATUS_RE = deps.PROVIDER_STATUS_RE
+    _render_provider_status_message = deps._render_provider_status_message
     CONNECTION_STATUS_RE = deps.CONNECTION_STATUS_RE
     _render_connection_status_message = deps._render_connection_status_message
     VOICE_STATUS_RE = deps.VOICE_STATUS_RE
@@ -1798,6 +1800,20 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await _complete_immediate_turn(
                     bridge_message,
                     suggested_actions=bridge_suggestions,
+                    tone_domain="system",
+                )
+                continue
+
+            if PROVIDER_STATUS_RE.match(command_text):
+                await send_trust_status(ws, session_state["trust_status"])
+                from src.usage.provider_status import provider_status as _provider_status_fn
+                _ps_snapshot = _provider_status_fn()
+                provider_msg, provider_suggestions = _render_provider_status_message(
+                    _ps_snapshot
+                )
+                await _complete_immediate_turn(
+                    provider_msg,
+                    suggested_actions=provider_suggestions,
                     tone_domain="system",
                 )
                 continue
