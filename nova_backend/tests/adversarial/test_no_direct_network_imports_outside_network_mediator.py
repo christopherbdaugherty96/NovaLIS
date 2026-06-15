@@ -34,6 +34,9 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     # search_synthesis.py uses urllib.parse only for urlparse() to extract the hostname
     # from source URLs during evidence synthesis. It makes no outbound network calls.
     SRC_ROOT / "brain" / "search_synthesis.py",
+    # provider_status.py uses urllib.request only for a localhost Ollama health probe
+    # (http://localhost:11434/api/tags). No external network calls — local-only check.
+    SRC_ROOT / "usage" / "provider_status.py",
 }
 
 
