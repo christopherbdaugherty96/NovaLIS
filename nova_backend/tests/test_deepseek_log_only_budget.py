@@ -1,21 +1,19 @@
-"""Tests for PR #247 — DeepSeek Log-Only Budget Check.
+"""Tests for PR #247/#248 — DeepSeek Budget Policy.
 
 Proves:
 1. from_dict preserves valid falsy values (0, 0.0, "")
 2. compute_budget_state supports monthly-only metered policies
 3. _log_budget_event computes policy-based state and logs events
-4. DeepSeek calls proceed even at warning/limit (no blocking)
+4. Post-call logging uses hard enforcement
 5. Ledger events are emitted with purpose tags
 6. Existing usage recording still works
 7. Morning Brief remains unaffected
 """
 from __future__ import annotations
 
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from src.usage.provider_budget_policy import (
     DEFAULT_POLICIES,
     ProviderBudgetPolicy,
@@ -23,7 +21,6 @@ from src.usage.provider_budget_policy import (
     compute_budget_state,
 )
 from src.usage.provider_usage_store import provider_usage_store
-
 
 # ── Fix 1: from_dict falsy-value handling ─────────────────────
 
@@ -211,7 +208,7 @@ class TestLogBudgetEvent:
                         "budget_state": "normal",
                         "policy_daily_token_limit": 50000,
                         "policy_daily_cost_limit_usd": 0.05,
-                        "enforcement": "log_only",
+                        "enforcement": "hard",
                     },
                     abs=1e-6,
                 ),
@@ -243,7 +240,7 @@ class TestLogBudgetEvent:
             assert calls[0][0][0] == "PROVIDER_USAGE_RECORDED"
             assert calls[1][0][0] == "PROVIDER_BUDGET_WARNING"
 
-    def test_returns_limit_and_logs_would_block(self):
+    def test_returns_limit_and_logs_blocked_crossed(self):
         from src.providers.deepseek_reasoning_provider import (
             _log_budget_event,
         )
@@ -267,10 +264,10 @@ class TestLogBudgetEvent:
             assert mock_ledger.log_event.call_count == 2
             calls = mock_ledger.log_event.call_args_list
             assert calls[0][0][0] == "PROVIDER_USAGE_RECORDED"
-            assert calls[1][0][0] == "PROVIDER_BUDGET_WARNING"
-            warning_meta = calls[1][0][1]
-            assert warning_meta["would_block"] is True
-            assert warning_meta["enforcement"] == "log_only"
+            assert calls[1][0][0] == "PROVIDER_USAGE_BLOCKED"
+            blocked_meta = calls[1][0][1]
+            assert blocked_meta["crossed_during_call"] is True
+            assert blocked_meta["enforcement"] == "hard"
 
     def test_includes_purpose_tag(self):
         from src.providers.deepseek_reasoning_provider import (
@@ -331,9 +328,9 @@ class TestLogBudgetEvent:
 
 # ── Proof: DeepSeek never blocked ─────────────────────────────
 
-class TestDeepSeekNeverBlocked:
-    """Prove that _log_budget_event is log-only — no blocking,
-    no exception, no early return, regardless of budget state."""
+class TestPostCallLogging:
+    """Prove that _log_budget_event (post-call) always returns a
+    string and never raises, regardless of budget state."""
 
     def test_normal_state_returns_string(self):
         from src.providers.deepseek_reasoning_provider import (
@@ -366,7 +363,7 @@ class TestDeepSeekNeverBlocked:
             assert isinstance(result, str)
             assert result == "warning"
 
-    def test_limit_state_returns_string_not_exception(self):
+    def test_limit_state_returns_string(self):
         from src.providers.deepseek_reasoning_provider import (
             _log_budget_event,
         )
@@ -382,9 +379,9 @@ class TestDeepSeekNeverBlocked:
             assert isinstance(result, str)
             assert result == "limit"
 
-    def test_analyze_method_does_not_raise_on_budget_limit(self):
-        """The full analyze() call path must not block even when
-        the policy budget state is 'limit'."""
+    def test_analyze_proceeds_when_normal(self):
+        """Normal budget state: full analyze() call proceeds
+        through the network and returns real results."""
         from src.providers.deepseek_reasoning_provider import (
             DeepSeekReasoningProvider,
         )
@@ -411,39 +408,34 @@ class TestDeepSeekNeverBlocked:
             patch.dict("os.environ", {"DEEPSEEK_API_KEY": "test-key"}),
             patch.object(
                 provider_usage_store,
-                "record_reasoning_event",
+                "snapshot",
                 return_value={
-                    "estimated_total_tokens": 999999,
-                    "estimated_cost_usd": 99.0,
-                    "event_count": 500,
-                    "budget_state": "limit",
-                    "budget_state_label": "Budget reached",
+                    "estimated_total_tokens": 1000,
+                    "estimated_cost_usd": 0.001,
+                    "event_count": 1,
                 },
             ),
-            patch(
-                "src.ledger.writer.LedgerWriter",
+            patch.object(
+                provider_usage_store,
+                "record_reasoning_event",
+                return_value={
+                    "estimated_total_tokens": 1150,
+                    "estimated_cost_usd": 0.002,
+                    "event_count": 2,
+                    "budget_state": "normal",
+                    "budget_state_label": "Normal",
+                },
             ),
+            patch("src.ledger.writer.LedgerWriter"),
         ):
             result = provider.analyze(
                 prompt="Test prompt",
                 analysis_profile="task_scoped",
-                request_id="no-block-test",
+                request_id="normal-test",
             )
             assert result.text == "Test advisory response"
-            assert result.usage_meta["policy_budget_state"] == "limit"
             assert result.usage_meta["analysis_profile"] == "task_scoped"
-
-    def test_analyze_source_has_no_raise_on_budget(self):
-        """Static proof: _log_budget_event never raises or returns
-        a refusal — it only returns a string."""
-        import inspect
-        from src.providers.deepseek_reasoning_provider import (
-            _log_budget_event,
-        )
-        source = inspect.getsource(_log_budget_event)
-        assert "raise" not in source.lower().split("exc_info")[0]
-        assert "refusal" not in source.lower()
-        assert "block(" not in source.lower()
+            mock_network.request.assert_called_once()
 
 
 # ── Existing usage recording still works ──────────────────────
