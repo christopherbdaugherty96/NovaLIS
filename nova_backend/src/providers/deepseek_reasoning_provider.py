@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 from dataclasses import dataclass, field
 from typing import Any
-
-import logging
 
 from src.governor.network_mediator import NetworkMediator, NetworkMediatorError
 from src.usage.provider_usage_store import provider_usage_store
