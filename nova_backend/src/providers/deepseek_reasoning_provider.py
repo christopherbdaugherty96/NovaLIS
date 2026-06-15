@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 from dataclasses import dataclass, field
@@ -7,6 +8,8 @@ from typing import Any
 
 from src.governor.network_mediator import NetworkMediator, NetworkMediatorError
 from src.usage.provider_usage_store import provider_usage_store
+
+_log = logging.getLogger(__name__)
 
 
 class DeepSeekReasoningProviderError(RuntimeError):
@@ -40,6 +43,92 @@ _ACTIONISH_PATTERNS = (
     re.compile(r"\b(file|directory|folder)\b.{0,80}\b(delete|remove|rm|rmdir|unlink|write|overwrite)\b", re.IGNORECASE),
     re.compile(r"\b(delete|remove|rm|rmdir|unlink|write|overwrite)\b.{0,80}\b(file|directory|folder)\b", re.IGNORECASE),
 )
+
+
+def _log_budget_event(
+    *,
+    usage_snapshot: dict[str, Any],
+    analysis_profile: str,
+    request_id: str,
+    model: str,
+) -> str:
+    """Compute policy-based budget state and log ledger events.
+
+    Returns the computed budget state. Log-only — never blocks.
+    """
+    from src.usage.provider_budget_policy import (
+        DEFAULT_POLICIES,
+        ProviderUsageTotals,
+        compute_budget_state,
+    )
+
+    policy = DEFAULT_POLICIES.get("deepseek")
+    if policy is None:
+        return "normal"
+
+    daily_tokens = int(
+        usage_snapshot.get("estimated_total_tokens") or 0
+    )
+    daily_cost = float(
+        usage_snapshot.get("estimated_cost_usd") or 0.0
+    )
+    daily_calls = int(usage_snapshot.get("event_count") or 0)
+
+    usage = ProviderUsageTotals(
+        daily_tokens=daily_tokens,
+        daily_cost_usd=daily_cost,
+        daily_call_count=daily_calls,
+    )
+    budget_state = compute_budget_state(usage, policy)
+
+    event_meta = {
+        "provider_id": "deepseek",
+        "model": model,
+        "analysis_profile": analysis_profile,
+        "request_id": request_id,
+        "daily_tokens": daily_tokens,
+        "daily_cost_usd": round(daily_cost, 6),
+        "daily_call_count": daily_calls,
+        "budget_state": budget_state,
+        "policy_daily_token_limit": policy.daily_token_limit,
+        "policy_daily_cost_limit_usd": policy.daily_cost_limit_usd,
+        "enforcement": "log_only",
+    }
+
+    try:
+        from src.ledger.writer import LedgerWriter
+
+        ledger = LedgerWriter()
+        ledger.log_event("PROVIDER_USAGE_RECORDED", event_meta)
+
+        if budget_state == "warning":
+            ledger.log_event("PROVIDER_BUDGET_WARNING", event_meta)
+            _log.info(
+                "DeepSeek budget warning: %d/%d daily tokens"
+                " (profile=%s, request=%s)",
+                daily_tokens,
+                policy.daily_token_limit,
+                analysis_profile,
+                request_id,
+            )
+        elif budget_state == "limit":
+            ledger.log_event("PROVIDER_BUDGET_WARNING", {
+                **event_meta,
+                "would_block": True,
+            })
+            _log.warning(
+                "DeepSeek budget would-block (log-only): "
+                "%d/%d daily tokens"
+                " (profile=%s, request=%s)",
+                daily_tokens,
+                policy.daily_token_limit,
+                analysis_profile,
+                request_id,
+            )
+    except Exception:
+        _log.debug("Budget ledger event failed", exc_info=True)
+
+    return budget_state
 
 
 @dataclass(frozen=True)
@@ -186,6 +275,12 @@ class DeepSeekReasoningProvider:
             exact_output_tokens=usage["output_tokens"],
             exact_total_tokens=usage["total_tokens"],
         )
+        policy_budget_state = _log_budget_event(
+            usage_snapshot=usage_snapshot,
+            analysis_profile=analysis_profile,
+            request_id=request_id,
+            model=model,
+        )
         return DeepSeekReasoningResult(
             text=clean_text,
             provider="DeepSeek",
@@ -200,6 +295,8 @@ class DeepSeekReasoningProvider:
                 "exact_usage_available": usage["exact_usage_available"],
                 "budget_state": str(usage_snapshot.get("budget_state") or "normal"),
                 "budget_state_label": str(usage_snapshot.get("budget_state_label") or "Normal"),
+                "policy_budget_state": policy_budget_state,
+                "analysis_profile": analysis_profile,
             },
         )
 
