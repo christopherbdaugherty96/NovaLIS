@@ -115,7 +115,7 @@ from src.websocket.intent_patterns import (
     LOCAL_PROJECT_CURRENT_RE, LOCAL_PROJECT_TARGET_RE, LOCAL_PROJECT_DISK_RE,
     CODEBASE_SUMMARY_CURRENT_RE, CODEBASE_SUMMARY_TARGET_RE, CODEBASE_SUMMARY_TARGET_ONLY_RE,
     CODEBASE_DO_RE, CODEBASE_CAPABILITY_RE, LOCAL_ARCHITECTURE_REPORT_RE,
-    TRUST_CENTER_RE, VOICE_CHECK_RE, VOICE_STATUS_RE, BRIDGE_STATUS_RE, CONNECTION_STATUS_RE,
+    TRUST_CENTER_RE, VOICE_CHECK_RE, VOICE_STATUS_RE, BRIDGE_STATUS_RE, PROVIDER_STATUS_RE, CONNECTION_STATUS_RE,
     OPEN_LOCAL_PROJECT_CURRENT_RE, OPEN_LOCAL_PROJECT_TARGET_RE, LOCAL_LOCATION_HINT_RE,
     CREATE_THREAD_RE, CONTINUE_THREAD_RE, PAUSED_SCOPE_RE, SHOW_THREADS_RE, ATTACH_THREAD_RE, ATTACH_ACTIVE_THREAD_RE,
     EXPLICIT_MEMORY_SAVE_RE, DECISION_THREAD_RE, PROJECT_STATUS_RE, BIGGEST_BLOCKER_RE,
@@ -3543,6 +3543,59 @@ def _render_bridge_status_message(snapshot: dict[str, Any]) -> tuple[str, list[d
     return "\n".join(lines), suggestions
 
 
+def _render_provider_status_message(
+    snapshot: dict[str, Any],
+) -> tuple[str, list[dict[str, str]]]:
+    providers = list(snapshot.get("providers") or [])
+    lines = ["Provider & Dependency Status", ""]
+
+    _state_icons = {
+        "normal": "ok",
+        "warning": "warning",
+        "limit": "at limit",
+    }
+
+    for p in providers:
+        pid = str(p.get("provider_id") or "")
+        name = str(p.get("display_name") or pid)
+        connected = p.get("connected", False)
+        enabled = p.get("enabled", False)
+        metered = p.get("metered", False)
+        budget = str(p.get("budget_state") or "normal")
+        error = str(p.get("last_error") or "").strip()
+
+        if not connected and not enabled:
+            status = "disabled"
+        elif not connected:
+            status = "unavailable"
+        elif metered:
+            status = _state_icons.get(budget, budget)
+        else:
+            status = "connected"
+
+        line = f"- {name}: {status}"
+        if metered and connected and budget != "normal":
+            line += f" (budget {budget})"
+        if error and not connected:
+            line += f" — {error[:80]}"
+        lines.append(line)
+
+    total = snapshot.get("provider_count", 0)
+    conn = snapshot.get("connected_count", 0)
+    met = snapshot.get("metered_count", 0)
+    lines.append("")
+    lines.append(
+        f"{conn}/{total} connected, {met} metered"
+    )
+
+    suggestions = [
+        {"label": "Connection status", "command": "connection status"},
+        {"label": "Trust center", "command": "trust center"},
+        {"label": "Open Settings", "command": "settings"},
+    ]
+    return "\n".join(lines), suggestions
+
+
 def _render_connection_status_message(snapshot: dict[str, Any]) -> tuple[str, list[dict[str, str]]]:
     payload = dict(snapshot or {})
     items = [dict(item or {}) for item in list(payload.get("items") or [])[:6]]
@@ -3561,6 +3614,7 @@ def _render_connection_status_message(snapshot: dict[str, Any]) -> tuple[str, li
             if note:
                 lines.append(f"  {note}")
     suggestions = [
+        {"label": "Provider status", "command": "provider status"},
         {"label": "Open Settings", "command": "settings"},
         {"label": "Bridge status", "command": "bridge status"},
         {"label": "System status", "command": "system status"},
