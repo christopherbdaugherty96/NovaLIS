@@ -245,7 +245,13 @@ BRIDGE_STATUS_RE = re.compile(
     re.IGNORECASE,
 )
 PROVIDER_STATUS_RE = re.compile(
-    r"^\s*(?:(?:provider|providers|dependency|dependencies)\s+status|show\s+(?:provider|providers|dependencies))\s*$",
+    r"^\s*(?:"
+    r"(?:provider|providers|dependency|dependencies)\s+status"
+    r"|show\s+(?:provider|providers|dependencies)"
+    r"|why\s+did(?:n'?t)?\s+\w+\s+(?:not\s+)?(?:run|work|respond)"
+    r"|what\s+(?:providers?|services?)\s+(?:are\s+)?(?:available|connected|blocked|unavailable)"
+    r"|what\s+is\s+(?:blocked|unavailable)"
+    r")\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
 CONNECTION_STATUS_RE = re.compile(
@@ -506,6 +512,30 @@ POLICY_SIMULATE_RE = re.compile(
 POLICY_RUN_ONCE_RE = re.compile(
     r"^\s*policy\s+run\s+(?P<policy_id>POL-[A-Z0-9\-]+)(?:\s+(?P<once>once))?\s*$",
     re.IGNORECASE,
+)
+
+# -------------------------------------------------
+# Adversarial / out-of-authority refusal patterns
+# -------------------------------------------------
+ADVERSARIAL_REFUSAL_RE = re.compile(
+    r"^\s*(?:"
+    r"(?:delete|remove|erase|destroy|wipe)\s+(?:all\s+)?(?:my\s+)?(?:files?|data|everything)"
+    r"|(?:run|execute)\s+(?:rm|del|format|shutdown|reboot)"
+    r"|rm\s+\-rf"
+    r"|(?:send|forward|post)\s+(?:\w+\s+)*without\s+(?:my\s+)?(?:asking|permission|approval|consent)"
+    r"|(?:bypass|skip|ignore|disable)\s+(?:governance|authority|approval|consent|safety)"
+    r"|(?:hack|exploit|crack|break\s+into)\b"
+    r"|(?:install|download)\s+(?:\w+\s+)*(?:malware|virus|trojan|keylogger)"
+    r"|sudo\s+"
+    r"|format\s+(?:c:|drive|disk)"
+    r")(?:\b.*|$)",
+    re.IGNORECASE,
+)
+ADVERSARIAL_REFUSAL_RESPONSE = (
+    "That falls outside what Nova is allowed to do. "
+    "Nova can read, search, and propose — but can't delete files, "
+    "bypass approvals, or act without your explicit say-so. "
+    "Try: \"what can you do\" to see what's available."
 )
 
 # -------------------------------------------------

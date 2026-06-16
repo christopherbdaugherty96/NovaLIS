@@ -131,6 +131,7 @@ from src.websocket.intent_patterns import (
     POLICY_CREATE_RE, POLICY_SHOW_RE, POLICY_DELETE_RE, POLICY_SIMULATE_RE, POLICY_RUN_ONCE_RE,
     HARD_ACTION_PREFIXES, TOPIC_NOISE_TERMS, _is_hard_action_command, _extract_topic_candidate,
     _build_phase42_agents, _extract_phase42_query,
+    ADVERSARIAL_REFUSAL_RE, ADVERSARIAL_REFUSAL_RESPONSE,
 )
 from src.utils.path_resolver import (
     PROJECT_SURFACE_HINTS, BACKEND_MODULE_HINTS,

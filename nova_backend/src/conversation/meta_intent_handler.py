@@ -335,6 +335,8 @@ _WHAT_CAN_YOU_DO_RE = re.compile(
     r"|help\s+me"
     r"|(?:get\s+started|where\s+do\s+i\s+start|how\s+(?:do\s+i|can\s+i)\s+(?:use|start)(?:\s+(?:you|nova|this))?)"
     r"|what(?:'?s|\s+is)\s+(?:available|possible)"
+    r"|show\s+me\s+around"
+    r"|give\s+me\s+(?:a(?:n)?\s+)?(?:tour|overview)"
     r")\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
