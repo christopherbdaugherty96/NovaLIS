@@ -536,7 +536,13 @@ RUN_TEMPLATE_RE = re.compile(
     re.IGNORECASE,
 )
 MORNING_BRIEF_RE = re.compile(
-    r"^\s*(?:run|give me|show me|start)?\s*(?:the\s+)?morning\s+brief(?:\s+template)?\s*$",
+    r"^\s*(?:"
+    r"(?:run|give me|show me|start)?\s*(?:the\s+)?morning\s+brief(?:\s+template)?"
+    r"|what(?:'s| is|\s+does)\s+(?:my\s+)?day\s+look\s+like"
+    r"|what\s+matters\s+today"
+    r"|what\s+should\s+i\s+focus\s+on"
+    r"|brief\s+me"
+    r")\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
 SHOPIFY_REPORT_RE = re.compile(
@@ -990,6 +996,9 @@ class GovernorMediator:
             if _ve_candidate.lower() in {"this", "that", "it"}:
                 _ve_candidate = ""
             return _invocation_if_enabled(31, {"text": _ve_candidate})
+
+        if MORNING_BRIEF_RE.match(t):
+            return _invocation_if_enabled(63, {"template_id": "morning_brief", "triggered_by": "user_command"})
 
         m = LATEST_ON_RE.match(t)
         if m:

@@ -358,6 +358,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     inspect_voice_runtime = deps.inspect_voice_runtime
     _render_voice_runtime_message = deps._render_voice_runtime_message
     VOICE_CHECK_RE = deps.VOICE_CHECK_RE
+    ADVERSARIAL_REFUSAL_RE = deps.ADVERSARIAL_REFUSAL_RE
+    ADVERSARIAL_REFUSAL_RESPONSE = deps.ADVERSARIAL_REFUSAL_RESPONSE
     SHOW_THREADS_RE = deps.SHOW_THREADS_RE
     MOST_BLOCKED_PROJECT_RE = deps.MOST_BLOCKED_PROJECT_RE
     WHY_RECOMMENDATION_RE = deps.WHY_RECOMMENDATION_RE
@@ -4343,6 +4345,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                     else:
                         session_state["general_chat_context"] = chat_context
+                session_state["turn_count"] += 1
+                continue
+
+            # --- Adversarial refusal (before generic fallback) ---
+            if ADVERSARIAL_REFUSAL_RE.match(raw_text):
+                refusal_msg = ADVERSARIAL_REFUSAL_RESPONSE
+                session_state["last_response"] = refusal_msg
+                await send_chat_message(ws, refusal_msg)
+                await send_chat_done(ws)
                 session_state["turn_count"] += 1
                 continue
 
