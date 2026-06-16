@@ -313,6 +313,7 @@ _IDENTITY_RE = re.compile(
     r"|what\s+kind\s+of\s+(?:ai|assistant|program|software|app)\s+(?:are\s+you|is\s+(?:nova|this))"
     r"|(?:is|are)\s+(?:nova|you)\s+(?:open\s*source|free|private|local)"
     r"|how\s+(?:does\s+nova|do\s+you)\s+work"
+    r"|what\s+is\s+this"
     r"|(?:nova\s+)?(?:about|info|information)(?:\s+nova)?"
     r")\s*[.?!]*\s*$",
     re.IGNORECASE,
