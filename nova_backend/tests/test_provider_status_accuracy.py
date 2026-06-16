@@ -119,14 +119,19 @@ class TestProviderStatusRendering:
         )
         from src.usage.provider_status import provider_status
 
-        with patch.object(
-            provider_usage_store,
-            "snapshot",
-            return_value={
-                "estimated_total_tokens": 42000,
-                "estimated_cost_usd": 0.04,
-                "event_count": 5,
-            },
+        with (
+            patch.dict("os.environ", {
+                "DEEPSEEK_API_KEY": "test-key",
+            }),
+            patch.object(
+                provider_usage_store,
+                "snapshot",
+                return_value={
+                    "estimated_total_tokens": 42000,
+                    "estimated_cost_usd": 0.04,
+                    "event_count": 5,
+                },
+            ),
         ):
             snap = provider_status()
             msg, _ = _render_provider_status_message(snap)
@@ -138,14 +143,19 @@ class TestProviderStatusRendering:
         )
         from src.usage.provider_status import provider_status
 
-        with patch.object(
-            provider_usage_store,
-            "snapshot",
-            return_value={
-                "estimated_total_tokens": 55000,
-                "estimated_cost_usd": 0.06,
-                "event_count": 10,
-            },
+        with (
+            patch.dict("os.environ", {
+                "DEEPSEEK_API_KEY": "test-key",
+            }),
+            patch.object(
+                provider_usage_store,
+                "snapshot",
+                return_value={
+                    "estimated_total_tokens": 55000,
+                    "estimated_cost_usd": 0.06,
+                    "event_count": 10,
+                },
+            ),
         ):
             snap = provider_status()
             msg, _ = _render_provider_status_message(snap)
