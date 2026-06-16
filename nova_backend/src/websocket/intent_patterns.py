@@ -250,7 +250,7 @@ PROVIDER_STATUS_RE = re.compile(
     r"|show\s+(?:provider|providers|dependencies)"
     r"|why\s+did(?:n'?t)?\s+\w+\s+(?:not\s+)?(?:run|work|respond)"
     r"|what\s+(?:providers?|services?)\s+(?:are\s+)?(?:available|connected|blocked|unavailable)"
-    r"|what\s+is\s+(?:blocked|unavailable)"
+    r"|what\s+is\s+(?:blocked|unavailable)(?:\s+or\s+(?:blocked|unavailable))?"
     r")\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
@@ -522,7 +522,7 @@ ADVERSARIAL_REFUSAL_RE = re.compile(
     r"(?:delete|remove|erase|destroy|wipe)\s+(?:all\s+)?(?:my\s+)?(?:files?|data|everything)"
     r"|(?:run|execute)\s+(?:rm|del|format|shutdown|reboot)"
     r"|rm\s+\-rf"
-    r"|(?:send|forward|post)\s+(?:\w+\s+)*without\s+(?:my\s+)?(?:asking|permission|approval|consent)"
+    r"|(?:send|forward|post|spend|transfer)\s+(?:\w+\s+)*without\s+(?:my\s+)?(?:asking|permission|approval|consent)"
     r"|(?:bypass|skip|ignore|disable)\s+(?:governance|authority|approval|consent|safety)"
     r"|(?:hack|exploit|crack|break\s+into)\b"
     r"|(?:install|download)\s+(?:\w+\s+)*(?:malware|virus|trojan|keylogger)"
