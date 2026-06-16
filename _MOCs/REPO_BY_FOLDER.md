@@ -580,7 +580,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 30bc2052c28e36d8b44cf6e4555f5513ff91815fb0aae020029b39d14f375cf4
+  summary: Runtime Fingerprint: 981b99392834a39cd8f3303474df8d9acb4e67cef31536a6fb2cf67d292d05c6
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -604,7 +604,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: d807cf3316ddd4dcdb6979ef48af414c0b7191f5b588b778277e5d60bf764929
+  summary: - runtimesurfacehash: 7c404872783a921c824f9fb01d0df1523b5d74137534a59e14a5723205d5332a
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -2589,7 +2589,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/audit/__init__.py|src/audit]]
   summary: Runtime audit utilities for NovaLIS.
 - [code] [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
-  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+  summary: LOCAL_ONLY_ROUTE_PROTECTIONS,
 - [code] [[nova_backend/src/base_skill.py|base_skill]]
   summary: Base skill classes and result structure for NovaLIS.
 - [code] [[nova_backend/src/brain/__init__.py|src/brain]]
@@ -2830,7 +2830,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
   summary: Persistent user memory store — preferences, personal details, and observed patterns.
 - [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
-  summary: 9a34425a877d7ed9d3c8bc60feebb069abdb1642e9655efb8a01a5906b96cfc3
+  summary: 94a0f3f4c8e08d5f51f239e084dccf9f99219d9f6601562af483de0e78f18ee3
 - [code] [[nova_backend/src/nova_config.py|nova_config]]
   summary: NovaLIS Core Configuration (Phase 1)
 - [code] [[nova_backend/src/nova_protocol.py|nova_protocol]]
@@ -3883,7 +3883,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/test_execute_boundary_timeout_behavior.py|test_execute_boundary_timeout_behavior]]
   summary: def test_timeout_waits_for_worker_completion_before_returning():
 - [code] [[nova_backend/tests/test_first_user_intent_clarity.py|test_first_user_intent_clarity]]
-  summary: Tests for PR #250 -- First-user intent routing and fallback clarity.
+  summary: Tests for first-user intent routing and fallback clarity.
 - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
   summary: def test_general_chat_has_local_memory_intelligence_fallback():
 - [code] [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]

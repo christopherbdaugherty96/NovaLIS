@@ -3,6 +3,7 @@ from __future__ import annotations
 from urllib.parse import urlparse
 
 from fastapi import HTTPException, Request, WebSocket
+from src.utils.route_protection import is_local_only_path, local_only_prefixes
 
 _ALLOWED_LOOPBACK_HOSTS = {
     "localhost",
@@ -10,14 +11,7 @@ _ALLOWED_LOOPBACK_HOSTS = {
     "::1",
     "testserver",
 }
-_LOCAL_ONLY_API_PREFIXES = (
-    "/api/goals",
-    "/api/memory",
-    "/api/settings",
-    "/api/trust",
-    "/api/workspace",
-    "/api/openclaw/agent",
-)
+_LOCAL_ONLY_API_PREFIXES = local_only_prefixes()
 
 
 def _normalize_host(raw: str | None) -> str:
@@ -54,8 +48,7 @@ def _is_allowed_loopback_host(host: str) -> bool:
 
 
 def is_local_only_http_path(path: str) -> bool:
-    clean = str(path or "").strip()
-    return clean.startswith(_LOCAL_ONLY_API_PREFIXES)
+    return is_local_only_path(path)
 
 
 def describe_request_rebinding_violation(host: str | None, origin: str | None) -> str | None:

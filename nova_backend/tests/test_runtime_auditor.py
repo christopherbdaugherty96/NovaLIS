@@ -134,6 +134,29 @@ def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkey
     assert "Token-gated read/reasoning ingress active" in rendered
 
 
+def test_route_protection_coverage_mentions_profile_and_no_unclassified_routes():
+    import src.audit.runtime_auditor as ra
+
+    rendered = ra.render_route_protection_coverage_markdown()
+
+    assert "`/api/profile`" in rendered
+    assert "- unclassified: 0" in rendered
+    assert "POST | `/api/profile/identity` | local_only" in rendered
+    assert "POST | `/api/openclaw/bridge/message` | token_gated_remote" in rendered
+
+
+def test_current_runtime_state_includes_route_protection_summary():
+    import src.audit.runtime_auditor as ra
+
+    rendered = ra.render_current_runtime_state_markdown(
+        {"discrepancies": []},
+        {"capabilities": []},
+    )
+
+    assert "## Route Protection Coverage" in rendered
+    assert "ROUTE_PROTECTION_COVERAGE.md" in rendered
+
+
 def test_render_current_runtime_state_mentions_openclaw_home_agent_foundation(monkeypatch, tmp_path):
     import src.audit.runtime_auditor as ra
 

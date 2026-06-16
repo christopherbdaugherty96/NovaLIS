@@ -213,7 +213,7 @@ _Runtime audit utilities for NovaLIS._
 
 - [[nova_backend/src/audit/__init__.py|src/audit]]
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
-    - PROJECT_ROOT = Path(__file__).resolve().parents[3]
+    - LOCAL_ONLY_ROUTE_PROTECTIONS,
 
 ### Imports from
 
