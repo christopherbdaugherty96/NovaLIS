@@ -16,6 +16,26 @@ from src.usage.provider_budget_policy import (
     ProviderUsageTotals,
     compute_budget_state,
 )
+from src.usage.provider_usage_store import provider_usage_store
+
+
+def _metered_usage_snapshot() -> ProviderUsageTotals:
+    """Read current daily usage from the provider usage store."""
+    try:
+        snap = provider_usage_store.snapshot()
+        return ProviderUsageTotals(
+            daily_tokens=int(
+                snap.get("estimated_total_tokens") or 0
+            ),
+            daily_cost_usd=float(
+                snap.get("estimated_cost_usd") or 0.0
+            ),
+            daily_call_count=int(
+                snap.get("event_count") or 0
+            ),
+        )
+    except Exception:
+        return ProviderUsageTotals()
 
 
 def _env_key_present(key: str) -> bool:
@@ -94,11 +114,13 @@ def provider_status(
         "shopify": "NOVA_SHOPIFY_ACCESS_TOKEN",
     }
 
+    usage_snapshot = _metered_usage_snapshot()
+
     for provider_id, policy in pol.items():
         env_key = provider_env_keys.get(provider_id, "")
         connected = _env_key_present(env_key) if env_key else False
 
-        usage = ProviderUsageTotals()
+        usage = usage_snapshot if policy.metered else ProviderUsageTotals()
         budget_state = compute_budget_state(usage, policy)
 
         entries.append(

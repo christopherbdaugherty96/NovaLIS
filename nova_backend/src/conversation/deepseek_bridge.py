@@ -70,11 +70,23 @@ class DeepSeekBridge:
                     temperature=0.2,
                     timeout=timeout_seconds,
                 )
-                response = provider_result.text
-                if response:
-                    if analysis_profile == "deep_reason":
-                        return self._normalize_deep_reason_response(response)
-                    return response
+                if provider_result.route == "budget_blocked":
+                    if not self._local_fallback_enabled():
+                        return (
+                            "DeepSeek analysis is temporarily"
+                            " unavailable -- daily budget limit"
+                            " reached."
+                        )
+                    logger.info(
+                        "DeepSeek budget-blocked; falling"
+                        " through to local reasoning"
+                    )
+                else:
+                    response = provider_result.text
+                    if response:
+                        if analysis_profile == "deep_reason":
+                            return self._normalize_deep_reason_response(response)
+                        return response
             except DeepSeekReasoningProviderError as error:
                 if not self._local_fallback_enabled():
                     logger.error("DeepSeek provider unavailable: %s", error)
