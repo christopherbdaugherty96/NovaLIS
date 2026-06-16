@@ -540,7 +540,7 @@ MORNING_BRIEF_RE = re.compile(
     r"(?:run|give me|show me|start)?\s*(?:the\s+)?morning\s+brief(?:\s+template)?"
     r"|what(?:'s| is|\s+does)\s+(?:my\s+)?day\s+look\s+like"
     r"|what\s+matters\s+today"
-    r"|what\s+should\s+i\s+focus\s+on"
+    r"|what\s+should\s+i\s+focus\s+on(?:\s+(?:today|this\s+morning))?"
     r"|brief\s+me"
     r")\s*[.?!]*\s*$",
     re.IGNORECASE,

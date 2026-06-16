@@ -102,7 +102,7 @@ AMBIENT_CLARIFICATION_PATTERNS = [
     # RC-5: informal confusion
     (
         re.compile(
-            r"^\s*(?:idk\s+what\s+to\s+do|i\s+don'?t\s+know\s+(?:what\s+to\s+do|where\s+to\s+start)|"
+            r"^\s*(?:idk\s+what\s+to\s+do|i\s+(?:don'?t|do\s+not)\s+know\s+(?:what\s+to\s+(?:do|ask|say)|where\s+to\s+start|how\s+to\s+use\s+this)|"
             r"i'?m\s+(?:lost|stuck|confused)|i\s+have\s+no\s+idea|not\s+sure\s+where\s+to\s+start|"
             r"what\s+do\s+i\s+(?:even\s+)?do|where\s+do\s+i\s+start)\s*$",
             re.IGNORECASE,
@@ -229,7 +229,7 @@ LOCAL_ARCHITECTURE_REPORT_RE = re.compile(
 # System status patterns
 # -------------------------------------------------
 TRUST_CENTER_RE = re.compile(
-    r"^\s*(?:show\s+)?trust\s+(?:center|review|status)\s*$",
+    r"^\s*(?:show\s+)?trust\s+(?:center|review|status)\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
 VOICE_CHECK_RE = re.compile(
@@ -255,7 +255,7 @@ PROVIDER_STATUS_RE = re.compile(
     re.IGNORECASE,
 )
 CONNECTION_STATUS_RE = re.compile(
-    r"^\s*(?:(?:connection|connections)\s+status|show\s+connections)\s*$",
+    r"^\s*(?:(?:connection|connections)\s+status|show\s+connections)\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
 
@@ -523,7 +523,8 @@ ADVERSARIAL_REFUSAL_RE = re.compile(
     r"|(?:run|execute)\s+(?:rm|del|format|shutdown|reboot)"
     r"|rm\s+\-rf"
     r"|(?:send|forward|post|spend|transfer)\s+(?:\w+\s+)*without\s+(?:my\s+)?(?:asking|permission|approval|consent)"
-    r"|(?:bypass|skip|ignore|disable)\s+(?:governance|authority|approval|consent|safety)"
+    r"|(?:bypass|skip|ignore|disable)\s+(?:the\s+)?(?:governance|governor|authority|approval|consent|safety)"
+    r"|(?:ignore|disregard)\s+(?:your\s+)?(?:rules|instructions|guidelines)"
     r"|(?:hack|exploit|crack|break\s+into)\b"
     r"|(?:install|download)\s+(?:\w+\s+)*(?:malware|virus|trojan|keylogger)"
     r"|sudo\s+"
