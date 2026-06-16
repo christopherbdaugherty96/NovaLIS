@@ -23,7 +23,7 @@ def test_deepseek_bridge_normalizes_plain_deep_reason_output(monkeypatch):
         lambda self, **kwargs: type("Result", (), {"text": (
             "Inference demand is shifting toward inference-heavy workloads. "
             "Power and cooling constraints matter. Supply visibility remains uneven."
-        )})(),
+        ), "route": "deepseek_api"})(),
     )
 
     bridge = DeepSeekBridge()
@@ -46,7 +46,7 @@ def test_deepseek_bridge_strips_duplicate_core_answer_prefix(monkeypatch):
     monkeypatch.setattr(
         mod.DeepSeekReasoningProvider,
         "analyze",
-        lambda self, **kwargs: type("Result", (), {"text": "Core answer: Version locking preserves trusted model behavior."})(),
+        lambda self, **kwargs: type("Result", (), {"text": "Core answer: Version locking preserves trusted model behavior.", "route": "deepseek_api"})(),
     )
 
     result = mod.DeepSeekBridge().analyze(
@@ -78,7 +78,7 @@ def test_deepseek_bridge_requests_extended_timeout(monkeypatch):
 
     def _fake_analyze(self, **kwargs):
         captured.update(kwargs)
-        return type("Result", (), {"text": "Core answer: Version locking preserves trusted model behavior."})()
+        return type("Result", (), {"text": "Core answer: Version locking preserves trusted model behavior.", "route": "deepseek_api"})()
 
     monkeypatch.setattr(mod.DeepSeekReasoningProvider, "analyze", _fake_analyze)
 
@@ -100,7 +100,7 @@ def test_deepseek_bridge_allows_timeout_override(monkeypatch):
 
     def _fake_analyze(self, **kwargs):
         captured.update(kwargs)
-        return type("Result", (), {"text": "Structured analysis is available."})()
+        return type("Result", (), {"text": "Structured analysis is available.", "route": "deepseek_api"})()
 
     monkeypatch.setattr(mod.DeepSeekReasoningProvider, "analyze", _fake_analyze)
 
@@ -169,7 +169,7 @@ def test_deepseek_bridge_proceeds_when_cap62_enabled(monkeypatch):
     monkeypatch.setattr(
         mod.DeepSeekReasoningProvider,
         "analyze",
-        lambda self, **kwargs: type("Result", (), {"text": "Analysis complete."})(),
+        lambda self, **kwargs: type("Result", (), {"text": "Analysis complete.", "route": "deepseek_api"})(),
     )
 
     result = mod.DeepSeekBridge().analyze(

@@ -310,9 +310,9 @@ class DeepSeekReasoningProvider:
         if budget_gate_state == "limit":
             return DeepSeekReasoningResult(
                 text=(
-                    "DeepSeek analysis is temporarily unavailable"
-                    " — daily budget limit reached. Nova will"
-                    " use local reasoning as a fallback."
+                    "DeepSeek analysis is temporarily"
+                    " unavailable -- daily budget limit"
+                    " reached."
                 ),
                 provider="DeepSeek",
                 model=model,

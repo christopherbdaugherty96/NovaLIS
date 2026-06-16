@@ -286,7 +286,7 @@ class TestAnalyzeHardEnforcement:
                 request_id="block-text-test",
             )
             assert "budget limit reached" in result.text.lower()
-            assert "fallback" in result.text.lower()
+            assert "--" in result.text
 
     def test_blocked_result_metadata(self):
         from src.providers.deepseek_reasoning_provider import (
