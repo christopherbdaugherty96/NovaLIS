@@ -103,8 +103,9 @@ class ResponseFormatter:
     @staticmethod
     def friendly_fallback() -> str:
         return (
-            "Not sure what you mean — try: \"what's the news\", "
-            "\"check the weather\", or \"what can you do\"."
+            "I didn't match that to something I can do yet. "
+            "Try: \"morning brief\", \"provider status\", "
+            "\"what can you do\", or \"help\"."
         )
 
     @staticmethod
