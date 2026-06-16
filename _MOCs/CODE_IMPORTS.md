@@ -126,6 +126,7 @@ Imports from:
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
 - [[nova_backend/src/personality/__init__.py|src/personality]]
 - [[nova_backend/src/providers/__init__.py|src/providers]]
+- [[nova_backend/src/routine/__init__.py|src/routine]]
 - [[nova_backend/src/services/stt_engine.py|stt_engine]] (in `services`)
 - [[nova_backend/src/skills/__init__.py|src/skills]]
 - [[nova_backend/src/trust/__init__.py|src/trust]]
@@ -268,6 +269,7 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
+- [[nova_backend/src/ledger/event_types.py|event_types]] (in `ledger`)
 - [[nova_backend/src/settings/__init__.py|src/settings]]
 - [[nova_backend/src/usage/__init__.py|src/usage]]
 
@@ -373,6 +375,7 @@ Imports from:
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
 - [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
 - [[nova_backend/src/personality/__init__.py|src/personality]]
+- [[nova_backend/src/usage/__init__.py|src/usage]]
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `working_context`
