@@ -12,6 +12,11 @@ from typing import Any
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.governor.execute_boundary.execute_boundary import GOVERNED_ACTIONS_ENABLED
 from src.governor.governor_mediator import GovernorMediator, Invocation
+from src.utils.route_protection import (
+    LOCAL_ONLY_ROUTE_PROTECTIONS,
+    PUBLIC_ROUTE_PREFIXES,
+    REMOTE_TOKEN_GATED_ROUTE_PREFIXES,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RUNTIME_DOC_DIR = PROJECT_ROOT / "docs" / "current_runtime"
@@ -60,12 +65,15 @@ OPENAI_RESPONSES_LANE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "providers"
 ASSISTIVE_NOTICING_PATH = PROJECT_ROOT / "nova_backend" / "src" / "working_context" / "assistive_noticing.py"
 CONNECTOR_PACKAGE_REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "connectors" / "package_registry.py"
 CONNECTOR_PACKAGES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "config" / "connector_packages.json"
+ROUTE_PROTECTION_PATH = PROJECT_ROOT / "nova_backend" / "src" / "utils" / "route_protection.py"
+STT_ROUTER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "routers" / "stt.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
 BYPASS_SURFACES_PATH = RUNTIME_DOC_DIR / "BYPASS_SURFACES.md"
 RUNTIME_FINGERPRINT_PATH = RUNTIME_DOC_DIR / "RUNTIME_FINGERPRINT.md"
 GOVERNANCE_MATRIX_TREE_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX_TREE.md"
+ROUTE_PROTECTION_COVERAGE_PATH = RUNTIME_DOC_DIR / "ROUTE_PROTECTION_COVERAGE.md"
 
 SKILLS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "skills"
 EXECUTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "executors"
@@ -115,6 +123,8 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         OPENAI_RESPONSES_LANE_PATH,
         CONNECTOR_PACKAGE_REGISTRY_PATH,
         CONNECTOR_PACKAGES_PATH,
+        ROUTE_PROTECTION_PATH,
+        STT_ROUTER_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -1422,6 +1432,119 @@ def render_bypass_surfaces_markdown() -> str:
     return "\n".join(lines)
 
 
+def _source_route_rows() -> list[dict[str, str]]:
+    route_sources = sorted(API_DIR.glob("*.py")) + [STT_ROUTER_PATH, BRAIN_SERVER_PATH]
+    pattern = re.compile(r'@(?:router|app)\.(get|post|put|delete|patch)\(\s*["\']([^"\']+)["\']')
+    rows: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for path in route_sources:
+        if path not in ALLOWED_READ_PATHS:
+            continue
+        source = _safe_read(path)
+        for match in pattern.finditer(source):
+            method = match.group(1).upper()
+            route_path = match.group(2).strip()
+            key = (method, route_path, _path_for_report(path))
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(
+                {
+                    "method": method,
+                    "path": route_path,
+                    "source": _path_for_report(path),
+                    "protection": _route_protection_for_path(route_path),
+                }
+            )
+    return sorted(rows, key=lambda item: (item["path"], item["method"], item["source"]))
+
+
+def _route_protection_for_path(path: str) -> str:
+    text = str(path or "").strip()
+    local_prefixes = tuple(item.prefix for item in LOCAL_ONLY_ROUTE_PROTECTIONS)
+    if text.startswith(local_prefixes):
+        return "local_only"
+    if text.startswith(REMOTE_TOKEN_GATED_ROUTE_PREFIXES):
+        return "token_gated_remote"
+    if text == "/" or text.startswith(tuple(prefix for prefix in PUBLIC_ROUTE_PREFIXES if prefix != "/")):
+        return "public"
+    return "unclassified"
+
+
+def _route_protection_summary() -> dict[str, Any]:
+    rows = _source_route_rows()
+    counts: dict[str, int] = {}
+    for row in rows:
+        protection = row["protection"]
+        counts[protection] = counts.get(protection, 0) + 1
+    return {
+        "rows": rows,
+        "counts": counts,
+        "unclassified": [row for row in rows if row["protection"] == "unclassified"],
+    }
+
+
+def render_route_protection_coverage_markdown() -> str:
+    summary = _route_protection_summary()
+    rows = summary["rows"]
+    counts = summary["counts"]
+    unclassified = summary["unclassified"]
+
+    lines = [
+        "# ROUTE_PROTECTION_COVERAGE",
+        "",
+        "Deterministic route protection coverage derived from allowlisted route modules and `src/utils/route_protection.py`.",
+        "",
+        "This report is separate from the capability governance matrix. A capability can be governed while a non-capability HTTP route still needs its own local-only or token-gated boundary.",
+        "",
+        "## Summary",
+        "",
+        f"- local_only: {counts.get('local_only', 0)}",
+        f"- token_gated_remote: {counts.get('token_gated_remote', 0)}",
+        f"- public: {counts.get('public', 0)}",
+        f"- unclassified: {counts.get('unclassified', 0)}",
+        "",
+        "## Local-Only Prefixes",
+        "",
+    ]
+    lines.extend(f"- `{item.prefix}` - {item.reason}" for item in LOCAL_ONLY_ROUTE_PROTECTIONS)
+
+    lines.extend(
+        [
+            "",
+            "## Token-Gated Remote Prefixes",
+            "",
+        ]
+    )
+    lines.extend(f"- `{prefix}`" for prefix in REMOTE_TOKEN_GATED_ROUTE_PREFIXES)
+
+    lines.extend(
+        [
+            "",
+            "## Route Table",
+            "",
+            "| method | path | protection | source |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    for row in rows:
+        lines.append(
+            f"| {row['method']} | `{row['path']}` | {row['protection']} | `{row['source']}` |"
+        )
+
+    lines.extend(["", "## Unclassified Routes", ""])
+    if unclassified:
+        lines.extend(
+            f"- `{row['method']} {row['path']}` in `{row['source']}`"
+            for row in unclassified
+        )
+    else:
+        lines.append("- None.")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
 def render_runtime_fingerprint_markdown(registry_enabled_ids: list[int]) -> str:
     fp = _runtime_fingerprint(registry_enabled_ids)
     lines = [
@@ -1521,6 +1644,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     fingerprint = _runtime_fingerprint(enabled_ids)
     known_gaps = _known_runtime_gaps()
     design_divergences = _design_runtime_divergences(registry)
+    route_protection = _route_protection_summary()
     profile_context = _runtime_profile_context(registry)
     phase_4_status = _phase_4_status(registry)
     phase_42_status = _phase_42_status()
@@ -1701,6 +1825,14 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "",
         f"- Active profile: {profile_context['profile']}",
         f"- Enabled groups: {profile_context['groups']}",
+        "",
+        "## Route Protection Coverage",
+        "",
+        f"- Local-only routes: {route_protection['counts'].get('local_only', 0)}",
+        f"- Token-gated remote routes: {route_protection['counts'].get('token_gated_remote', 0)}",
+        f"- Public routes: {route_protection['counts'].get('public', 0)}",
+        f"- Unclassified routes: {route_protection['counts'].get('unclassified', 0)}",
+        "- Detailed table: `docs/current_runtime/ROUTE_PROTECTION_COVERAGE.md`",
         "",
         "## Active Capabilities",
         "",
@@ -1922,12 +2054,14 @@ def write_runtime_governance_docs(output_dir: Path | None = None, registry: dict
     bypass_surfaces_path = output_dir / "BYPASS_SURFACES.md"
     runtime_fingerprint_path = output_dir / "RUNTIME_FINGERPRINT.md"
     governance_matrix_tree_path = output_dir / "GOVERNANCE_MATRIX_TREE.md"
+    route_protection_coverage_path = output_dir / "ROUTE_PROTECTION_COVERAGE.md"
 
     governance_matrix_path.write_text(render_governance_matrix_markdown(registry), encoding="utf-8")
     skill_surface_map_path.write_text(render_skill_surface_map_markdown(), encoding="utf-8")
     bypass_surfaces_path.write_text(render_bypass_surfaces_markdown(), encoding="utf-8")
     runtime_fingerprint_path.write_text(render_runtime_fingerprint_markdown(enabled_ids), encoding="utf-8")
     governance_matrix_tree_path.write_text(render_governance_matrix_tree_markdown(registry), encoding="utf-8")
+    route_protection_coverage_path.write_text(render_route_protection_coverage_markdown(), encoding="utf-8")
 
     return {
         "governance_matrix": governance_matrix_path.resolve(),
@@ -1935,6 +2069,7 @@ def write_runtime_governance_docs(output_dir: Path | None = None, registry: dict
         "bypass_surfaces": bypass_surfaces_path.resolve(),
         "runtime_fingerprint": runtime_fingerprint_path.resolve(),
         "governance_matrix_tree": governance_matrix_tree_path.resolve(),
+        "route_protection_coverage": route_protection_coverage_path.resolve(),
     }
 
 

@@ -100,7 +100,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/audit/__init__.py|src/audit]]
   summary: Runtime audit utilities for NovaLIS.
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
-  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+  summary: LOCAL_ONLY_ROUTE_PROTECTIONS,
 - [[nova_backend/src/base_skill.py|base_skill]]
   summary: Base skill classes and result structure for NovaLIS.
 - [[nova_backend/src/brain/__init__.py|src/brain]]
@@ -1348,7 +1348,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/test_execute_boundary_timeout_behavior.py|test_execute_boundary_timeout_behavior]]
   summary: def test_timeout_waits_for_worker_completion_before_returning():
 - [[nova_backend/tests/test_first_user_intent_clarity.py|test_first_user_intent_clarity]]
-  summary: Tests for PR #250 -- First-user intent routing and fallback clarity.
+  summary: Tests for first-user intent routing and fallback clarity.
 - [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
   summary: def test_general_chat_has_local_memory_intelligence_fallback():
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
