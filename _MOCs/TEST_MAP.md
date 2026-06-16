@@ -13,8 +13,14 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 121
+Paired tests: 125
 
+- [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
+    - tests → [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
+- [[nova_backend/tests/brain/second_brain/test_schemas.py|test_schemas]]
+    - tests → [[nova_backend/src/brain/second_brain/schemas.py|schemas]]
+- [[nova_backend/tests/brain/second_brain/test_vault_lint.py|test_vault_lint]]
+    - tests → [[nova_backend/src/brain/second_brain/vault_lint.py|vault_lint]]
 - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
     - tests → [[nova_backend/src/brain/brain_mode.py|brain_mode]]
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
@@ -53,6 +59,8 @@ Paired tests: 121
     - tests → [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
     - tests → [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
+- [[nova_backend/tests/conversation/test_morning_brief_handler.py|test_morning_brief_handler]]
+    - tests → [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
     - tests → [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
 - [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]

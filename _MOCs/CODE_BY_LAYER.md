@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (295)
+## Backend runtime (302)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -117,6 +117,14 @@ Use this to orient yourself before diving into a specific module.
   summary: Planning-only Brain run manager.
 - [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
   summary: Deterministic search evidence synthesis for Cap 16.
+- [[nova_backend/src/brain/second_brain/__init__.py|src/brain/second_brain]]
+  summary: Second Brain Slice 1 — schema, parser, wikilinks, vault lint.
+- [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
+  summary: Frontmatter parser and wikilink extractor for Obsidian vault notes.
+- [[nova_backend/src/brain/second_brain/schemas.py|schemas]]
+  summary: Second Brain knowledge schemas.
+- [[nova_backend/src/brain/second_brain/vault_lint.py|vault_lint]]
+  summary: Read-only vault health and lint report.
 - [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
   summary: Deterministic Brain task clarification and boundary wording.
 - [[nova_backend/src/brain/task_understanding.py|task_understanding]]
@@ -196,6 +204,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Helpers for keeping general-chat fallback behavior out of the websocket monolith.
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
   summary: meta_intent_handler.py
+- [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
+  summary: Morning Brief handler — governed brief via RoutineGraph.
 - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
   summary: Conversation-facing planning run preview helpers.
 - [[nova_backend/src/conversation/prompts.py|prompts]]
@@ -455,7 +465,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/providers/__init__.py|src/providers]]
   summary: Provider lanes for optional metered model access.
 - [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
-  summary: class DeepSeekReasoningProviderError(RuntimeError):
+  summary: _log = logging.getLogger(__name__)
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
   summary: class OpenAIResponsesLaneError(RuntimeError):
 - [[nova_backend/src/rendering/__init__.py|src/rendering]]
@@ -528,6 +538,10 @@ Use this to orient yourself before diving into a specific module.
   summary: ALLOWED_MODES = {"Local-only", "Online"}
 - [[nova_backend/src/usage/__init__.py|src/usage]]
   summary: __all__ = ["ProviderUsageStore", "provider_usage_store"]
+- [[nova_backend/src/usage/provider_budget_policy.py|provider_budget_policy]]
+  summary: Provider budget policy and status models.
+- [[nova_backend/src/usage/provider_status.py|provider_status]]
+  summary: Read-only provider status snapshot.
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
   summary: def _utc_now() -> str:
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]]
@@ -591,7 +605,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (418)
+## Tests and verification (432)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -625,6 +639,15 @@ Use this to orient yourself before diving into a specific module.
   summary: Goal:
 - [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [[nova_backend/tests/brain/second_brain/__init__.py|tests/brain/second_brain]]
+- [[nova_backend/tests/brain/second_brain/test_boundary_invariants.py|test_boundary_invariants]]
+  summary: Boundary invariant tests for Second Brain Slice 1.
+- [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
+  summary: Tests for frontmatter parser and wikilink extraction.
+- [[nova_backend/tests/brain/second_brain/test_schemas.py|test_schemas]]
+  summary: Tests for Second Brain schemas.
+- [[nova_backend/tests/brain/second_brain/test_vault_lint.py|test_vault_lint]]
+  summary: Tests for vault health/lint report.
 - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
   summary: Tests for brain_mode.py — prove the four Stage 5 invariants.
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
@@ -690,6 +713,7 @@ Use this to orient yourself before diving into a specific module.
   summary: Capability Lock Regression Guard
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
   summary: def test_http_shopify_connector_uses_configured_api_version():
+- [[nova_backend/tests/conversation/__init__.py|tests/conversation]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -714,6 +738,10 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_general_chat_depth_hint_detection():
 - [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
   summary: Unit tests for MetaIntentHandler.
+- [[nova_backend/tests/conversation/test_morning_brief_handler.py|test_morning_brief_handler]]
+  summary: Tests for the morning brief handler module.
+- [[nova_backend/tests/conversation/test_morning_brief_live.py|test_morning_brief_live]]
+  summary: Live WebSocket test for the morning brief flow.
 - [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
   summary: OpenClawAgentPersonalityBridge,
 - [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
@@ -1309,12 +1337,18 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_gate_silent_when_idle():
 - [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
   summary: def _capability_entry(capability_id: int, name: str) -> dict[str, object]:
+- [[nova_backend/tests/test_deepseek_hard_budget.py|test_deepseek_hard_budget]]
+  summary: Tests for PR #248 — DeepSeek Hard Budget Enforcement.
+- [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
+  summary: Tests for PR #247/#248 — DeepSeek Budget Policy.
 - [[nova_backend/tests/test_dns_rebinding_block.py|test_dns_rebinding_block]]
   summary: def test_validate_url_blocks_private_dns_resolution(monkeypatch):
 - [[nova_backend/tests/test_execute_boundary_concurrency.py|test_execute_boundary_concurrency]]
   summary: def test_execute_boundary_enforces_concurrency_cap():
 - [[nova_backend/tests/test_execute_boundary_timeout_behavior.py|test_execute_boundary_timeout_behavior]]
   summary: def test_timeout_waits_for_worker_completion_before_returning():
+- [[nova_backend/tests/test_first_user_intent_clarity.py|test_first_user_intent_clarity]]
+  summary: Tests for PR #250 -- First-user intent routing and fallback clarity.
 - [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
   summary: def test_general_chat_has_local_memory_intelligence_fallback():
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
@@ -1363,6 +1397,12 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/test_phase4_runtime_active.py|test_phase4_runtime_active]]
   summary: def test_phase4_runtime_enabled():
+- [[nova_backend/tests/test_provider_budget_visibility.py|test_provider_budget_visibility]]
+  summary: Tests for Provider Budget Visibility Foundation.
+- [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
+  summary: Tests for PR #249 -- Provider Budget Status Accuracy.
+- [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
+  summary: Tests for Provider Status Visibility (PR #246).
 - [[nova_backend/tests/test_registry_fail_closed.py|test_registry_fail_closed]]
   summary: def _capability_entry(
 - [[nova_backend/tests/test_registry_phase_alignment.py|test_registry_phase_alignment]]

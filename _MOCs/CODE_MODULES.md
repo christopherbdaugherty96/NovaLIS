@@ -261,7 +261,7 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/tests/executors/test_info_snapshot_executor.py|test_info_snapshot_executor]]
 - _…and 2 more_
 
-## `brain` (9 files)
+## `brain` (13 files)
 
 _Read-only Brain scaffolding._
 
@@ -280,6 +280,13 @@ _Read-only Brain scaffolding._
     - Planning-only Brain run manager.
 - [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
     - Deterministic search evidence synthesis for Cap 16.
+- [[nova_backend/src/brain/second_brain/__init__.py|src/brain/second_brain]]
+- [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
+    - Frontmatter parser and wikilink extractor for Obsidian vault notes.
+- [[nova_backend/src/brain/second_brain/schemas.py|schemas]]
+    - Second Brain knowledge schemas.
+- [[nova_backend/src/brain/second_brain/vault_lint.py|vault_lint]]
+    - Read-only vault health and lint report.
 - [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
     - Deterministic Brain task clarification and boundary wording.
 - [[nova_backend/src/brain/task_understanding.py|task_understanding]]
@@ -293,19 +300,22 @@ _Read-only Brain scaffolding._
 - [[nova_backend/src/conversation/session_router.py|session_router]]
 - [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
 - [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
+- [[nova_backend/tests/brain/second_brain/test_boundary_invariants.py|test_boundary_invariants]]
+- [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
+- [[nova_backend/tests/brain/second_brain/test_schemas.py|test_schemas]]
+- [[nova_backend/tests/brain/second_brain/test_vault_lint.py|test_vault_lint]]
 - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
 - [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
 - [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
-- [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
-- [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
-- [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
-- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
-- _…and 1 more_
+- _…and 5 more_
 
 ### Tests
 
+- [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
+- [[nova_backend/tests/brain/second_brain/test_schemas.py|test_schemas]]
+- [[nova_backend/tests/brain/second_brain/test_vault_lint.py|test_vault_lint]]
 - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
 - [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
@@ -392,6 +402,8 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
+- [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
+- [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 
 ## `brief` (3 files)
 
@@ -413,6 +425,10 @@ _Read-only Brain scaffolding._
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+- [[nova_backend/tests/test_deepseek_hard_budget.py|test_deepseek_hard_budget]]
+- [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
+- [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
+- [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 
 ### Tests
 
@@ -571,7 +587,7 @@ ___all__ = ["ContextSnapshotService"]_
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 
-## `conversation` (22 files)
+## `conversation` (23 files)
 
 _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 
@@ -596,6 +612,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
     - Helpers for keeping general-chat fallback behavior out of the websocket monolith.
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
     - meta_intent_handler.py
+- [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
+    - Morning Brief handler — governed brief via RoutineGraph.
 - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
     - Conversation-facing planning run preview helpers.
 - [[nova_backend/src/conversation/prompts.py|prompts]]
@@ -639,6 +657,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
 - [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
+- [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+- [[nova_backend/src/routine/routine_graph.py|routine_graph]]
 - [[nova_backend/src/services/weather_service.py|weather_service]]
 - [[nova_backend/src/skills/calendar.py|calendar]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
@@ -663,7 +683,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
-- _…and 33 more_
+- _…and 39 more_
 
 ### Tests
 
@@ -675,6 +695,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_escalation_policy.py|test_escalation_policy]]
 - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
 - [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
+- [[nova_backend/tests/conversation/test_morning_brief_handler.py|test_morning_brief_handler]]
 - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
 - [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
@@ -811,7 +832,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_local_control_executors.py|test_local_control_executors]]
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
 - [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
-- _…and 22 more_
+- _…and 23 more_
 
 ### Tests
 
@@ -952,7 +973,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
-- _…and 74 more_
+- _…and 80 more_
 
 ### Tests
 
@@ -1019,7 +1040,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 - [[nova_backend/src/llm/llm_manager.py|llm_manager]]
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
-- _…and 11 more_
+- _…and 14 more_
 
 ## `llm` (6 files)
 
@@ -1452,14 +1473,16 @@ _Provider lanes for optional metered model access._
 
 - [[nova_backend/src/providers/__init__.py|src/providers]]
 - [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
-    - class DeepSeekReasoningProviderError(RuntimeError):
+    - _log = logging.getLogger(__name__)
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
     - class OpenAIResponsesLaneError(RuntimeError):
 
 ### Imports from
 
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
+- [[nova_backend/src/ledger/writer.py|writer]]
 - [[nova_backend/src/settings/runtime_settings_store.py|runtime_settings_store]]
+- [[nova_backend/src/usage/provider_budget_policy.py|provider_budget_policy]]
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
 
 ### Imported by
@@ -1469,6 +1492,10 @@ _Provider lanes for optional metered model access._
 - [[nova_backend/tests/governance/test_deepseek_external_reasoning_boundaries.py|test_deepseek_external_reasoning_boundaries]]
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
+- [[nova_backend/tests/test_deepseek_hard_budget.py|test_deepseek_hard_budget]]
+- [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
+- [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
+- [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 
 ### Tests
 
@@ -1535,9 +1562,12 @@ _Provider lanes for optional metered model access._
 
 ### Imported by
 
+- [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
 - [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
 - [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+- [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
+- [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 
 ### Tests
 
@@ -1685,7 +1715,7 @@ _NovaLIS Backend Package_
 - [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
-- _…and 5 more_
+- _…and 6 more_
 
 ### Tests
 
@@ -1811,6 +1841,7 @@ ___all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"
 - [[nova_backend/src/api/trust_api.py|trust_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+- [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
 - [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
@@ -1821,13 +1852,17 @@ ___all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
 - [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
 
-## `usage` (2 files)
+## `usage` (4 files)
 
 ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 
 ### Files
 
 - [[nova_backend/src/usage/__init__.py|src/usage]]
+- [[nova_backend/src/usage/provider_budget_policy.py|provider_budget_policy]]
+    - Provider budget policy and status models.
+- [[nova_backend/src/usage/provider_status.py|provider_status]]
+    - Read-only provider status snapshot.
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
     - def _utc_now() -> str:
 
@@ -1844,6 +1879,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/governor/governor.py|governor]]
 - [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
+- [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/certification/cap_16_governed_web_search/conftest.py|conftest - certification/cap_16_governed_web_search]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
@@ -1851,8 +1887,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [[nova_backend/tests/phase7/test_phase7_runtime_contract.py|test_phase7_runtime_contract]]
 - [[nova_backend/tests/phase9/test_token_awareness.py|test_token_awareness]]
-- [[nova_backend/tests/providers/test_deepseek_reasoning_provider.py|test_deepseek_reasoning_provider]]
-- _…and 2 more_
+- _…and 8 more_
 
 ### Tests
 
@@ -1988,6 +2023,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/agents/memory.py|memory - src/agents]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
+- [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
@@ -1996,7 +2032,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/personality/chief_of_staff_profile.py|chief_of_staff_profile]]
 - [[nova_backend/src/personality/interface_agent.py|interface_agent]]
 - [[nova_backend/src/personality/mode_detection.py|mode_detection]]
-- [[nova_backend/src/personality/proactive_briefing.py|proactive_briefing]]
+- [[nova_backend/src/usage/provider_status.py|provider_status]]
 - [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]
 
 ### Imported by
@@ -2007,6 +2043,8 @@ _Websocket session runtime modules._
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 - [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
 - [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
+- [[nova_backend/tests/test_first_user_intent_clarity.py|test_first_user_intent_clarity]]
+- [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
 - [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
 
