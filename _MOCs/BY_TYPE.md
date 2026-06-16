@@ -403,7 +403,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 285 code)
+## Runtime and ops (22 docs, 292 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -508,6 +508,14 @@ concern is reflected across docs, code and tests.
   summary: Planning-only Brain run manager.
 - [code] [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
   summary: Deterministic search evidence synthesis for Cap 16.
+- [code] [[nova_backend/src/brain/second_brain/__init__.py|src/brain/second_brain]]
+  summary: Second Brain Slice 1 — schema, parser, wikilinks, vault lint.
+- [code] [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
+  summary: Frontmatter parser and wikilink extractor for Obsidian vault notes.
+- [code] [[nova_backend/src/brain/second_brain/schemas.py|schemas]]
+  summary: Second Brain knowledge schemas.
+- [code] [[nova_backend/src/brain/second_brain/vault_lint.py|vault_lint]]
+  summary: Read-only vault health and lint report.
 - [code] [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
   summary: Deterministic Brain task clarification and boundary wording.
 - [code] [[nova_backend/src/brain/task_understanding.py|task_understanding]]
@@ -587,6 +595,8 @@ concern is reflected across docs, code and tests.
   summary: Helpers for keeping general-chat fallback behavior out of the websocket monolith.
 - [code] [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
   summary: meta_intent_handler.py
+- [code] [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
+  summary: Morning Brief handler — governed brief via RoutineGraph.
 - [code] [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
   summary: Conversation-facing planning run preview helpers.
 - [code] [[nova_backend/src/conversation/prompts.py|prompts]]
@@ -822,7 +832,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/providers/__init__.py|src/providers]]
   summary: Provider lanes for optional metered model access.
 - [code] [[nova_backend/src/providers/deepseek_reasoning_provider.py|deepseek_reasoning_provider]]
-  summary: class DeepSeekReasoningProviderError(RuntimeError):
+  summary: _log = logging.getLogger(__name__)
 - [code] [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
   summary: class OpenAIResponsesLaneError(RuntimeError):
 - [code] [[nova_backend/src/rendering/__init__.py|src/rendering]]
@@ -895,6 +905,10 @@ concern is reflected across docs, code and tests.
   summary: ALLOWED_MODES = {"Local-only", "Online"}
 - [code] [[nova_backend/src/usage/__init__.py|src/usage]]
   summary: __all__ = ["ProviderUsageStore", "provider_usage_store"]
+- [code] [[nova_backend/src/usage/provider_budget_policy.py|provider_budget_policy]]
+  summary: Provider budget policy and status models.
+- [code] [[nova_backend/src/usage/provider_status.py|provider_status]]
+  summary: Read-only provider status snapshot.
 - [code] [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
   summary: def _utc_now() -> str:
 - [code] [[nova_backend/src/utils/content_extractor.py|content_extractor]]
@@ -964,7 +978,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 97742ab1e724994b8ea4c52ae5e6a4b3a0f6f16c04d4dc933431f25da4d487f8
+  summary: Runtime Fingerprint: 30bc2052c28e36d8b44cf6e4555f5513ff91815fb0aae020029b39d14f375cf4
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -988,7 +1002,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: da8806b44623828208bdf6f4f13572e0b79d1df4b4903712fd84139fc4dfcb74
+  summary: - runtimesurfacehash: d807cf3316ddd4dcdb6979ef48af414c0b7191f5b588b778277e5d60bf764929
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1000,7 +1014,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[nova_backend/src/archive_quarantine/phase35_execution/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase35_execution]]
   summary: ﻿# PHASE 3.5 EXECUTION QUARANTINE
 - [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
-  summary: 94a0f3f4c8e08d5f51f239e084dccf9f99219d9f6601562af483de0e78f18ee3
+  summary: 9a34425a877d7ed9d3c8bc60feebb069abdb1642e9655efb8a01a5906b96cfc3
 - [doc] [[nova_backend/src/requirements-optional-wakeword.txt|Compatibility shim for existing tooling paths.]]
   summary: -r ../requirements-optional-wakeword.txt
 - [doc] [[nova_backend/src/requirements.txt|Compatibility shim for existing workflow paths.]]
@@ -1065,7 +1079,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 418 code)
+## Tests (11 docs, 432 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1099,6 +1113,15 @@ concern is reflected across docs, code and tests.
   summary: Goal:
 - [code] [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [code] [[nova_backend/tests/brain/second_brain/__init__.py|tests/brain/second_brain]]
+- [code] [[nova_backend/tests/brain/second_brain/test_boundary_invariants.py|test_boundary_invariants]]
+  summary: Boundary invariant tests for Second Brain Slice 1.
+- [code] [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
+  summary: Tests for frontmatter parser and wikilink extraction.
+- [code] [[nova_backend/tests/brain/second_brain/test_schemas.py|test_schemas]]
+  summary: Tests for Second Brain schemas.
+- [code] [[nova_backend/tests/brain/second_brain/test_vault_lint.py|test_vault_lint]]
+  summary: Tests for vault health/lint report.
 - [code] [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
   summary: Tests for brain_mode.py — prove the four Stage 5 invariants.
 - [code] [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
@@ -1164,6 +1187,7 @@ concern is reflected across docs, code and tests.
   summary: Capability Lock Regression Guard
 - [code] [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
   summary: def test_http_shopify_connector_uses_configured_api_version():
+- [code] [[nova_backend/tests/conversation/__init__.py|tests/conversation]]
 - [code] [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [code] [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -1188,6 +1212,10 @@ concern is reflected across docs, code and tests.
   summary: def test_general_chat_depth_hint_detection():
 - [code] [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
   summary: Unit tests for MetaIntentHandler.
+- [code] [[nova_backend/tests/conversation/test_morning_brief_handler.py|test_morning_brief_handler]]
+  summary: Tests for the morning brief handler module.
+- [code] [[nova_backend/tests/conversation/test_morning_brief_live.py|test_morning_brief_live]]
+  summary: Live WebSocket test for the morning brief flow.
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
   summary: OpenClawAgentPersonalityBridge,
 - [code] [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
@@ -1783,12 +1811,18 @@ concern is reflected across docs, code and tests.
   summary: def test_gate_silent_when_idle():
 - [code] [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
   summary: def _capability_entry(capability_id: int, name: str) -> dict[str, object]:
+- [code] [[nova_backend/tests/test_deepseek_hard_budget.py|test_deepseek_hard_budget]]
+  summary: Tests for PR #248 — DeepSeek Hard Budget Enforcement.
+- [code] [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
+  summary: Tests for PR #247/#248 — DeepSeek Budget Policy.
 - [code] [[nova_backend/tests/test_dns_rebinding_block.py|test_dns_rebinding_block]]
   summary: def test_validate_url_blocks_private_dns_resolution(monkeypatch):
 - [code] [[nova_backend/tests/test_execute_boundary_concurrency.py|test_execute_boundary_concurrency]]
   summary: def test_execute_boundary_enforces_concurrency_cap():
 - [code] [[nova_backend/tests/test_execute_boundary_timeout_behavior.py|test_execute_boundary_timeout_behavior]]
   summary: def test_timeout_waits_for_worker_completion_before_returning():
+- [code] [[nova_backend/tests/test_first_user_intent_clarity.py|test_first_user_intent_clarity]]
+  summary: Tests for PR #250 -- First-user intent routing and fallback clarity.
 - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
   summary: def test_general_chat_has_local_memory_intelligence_fallback():
 - [code] [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
@@ -1837,6 +1871,12 @@ concern is reflected across docs, code and tests.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [code] [[nova_backend/tests/test_phase4_runtime_active.py|test_phase4_runtime_active]] - Phase 4
   summary: def test_phase4_runtime_enabled():
+- [code] [[nova_backend/tests/test_provider_budget_visibility.py|test_provider_budget_visibility]]
+  summary: Tests for Provider Budget Visibility Foundation.
+- [code] [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
+  summary: Tests for PR #249 -- Provider Budget Status Accuracy.
+- [code] [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
+  summary: Tests for Provider Status Visibility (PR #246).
 - [code] [[nova_backend/tests/test_registry_fail_closed.py|test_registry_fail_closed]]
   summary: def _capability_entry(
 - [code] [[nova_backend/tests/test_registry_phase_alignment.py|test_registry_phase_alignment]]
@@ -1896,6 +1936,18 @@ concern is reflected across docs, code and tests.
   summary: This test harness runs scripted conversations through Nova's routed conversation stack:
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
+- [doc] [[nova_backend/tests/fixtures/second_brain/bad_promoted_no_review|Promoted Without Review]]
+  summary: This note claims promoted status but has no review metadata.
+- [doc] [[nova_backend/tests/fixtures/second_brain/duplicate_id_note|Duplicate ID Note]]
+  summary: This note reuses kbtestcandidate as its ID, which should be a lint error.
+- [doc] [[nova_backend/tests/fixtures/second_brain/missing_frontmatter|Note Without Frontmatter]]
+  summary: This note has no YAML frontmatter at all.
+- [doc] [[nova_backend/tests/fixtures/second_brain/proves_without_evidence|Proves Without Evidence]]
+  summary: This note has a 'proves' relationship but no sourceref or ledgerref.
+- [doc] [[nova_backend/tests/fixtures/second_brain/valid_candidate_note|Valid Candidate Note]]
+  summary: A candidate note with a link to [[kbtestvalidpromoted]].
+- [doc] [[nova_backend/tests/fixtures/second_brain/valid_promoted_note|Valid Promoted Note]]
+  summary: This is a valid promoted note for testing.
 - [doc] [[verification/README_verification|**README_verification.md** - verification]]
   summary: Purpose: Verify constitutional compliance without expanding capability
 
