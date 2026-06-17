@@ -403,7 +403,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 292 code)
+## Runtime and ops (23 docs, 293 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -921,6 +921,8 @@ concern is reflected across docs, code and tests.
   summary: Local path resolution and project exploration utilities for the Nova brain server.
 - [code] [[nova_backend/src/utils/persistent_state.py|persistent_state]]
   summary: _REGISTRY_LOCK = Lock()
+- [code] [[nova_backend/src/utils/route_protection.py|route_protection]]
+  summary: @dataclass(frozen=True)
 - [code] [[nova_backend/src/utils/web_target_planner.py|web_target_planner - src/utils]]
   summary: Presets and aliases that can open directly without confirmation.
 - [code] [[nova_backend/src/validation/__init__.py|src/validation]]
@@ -997,6 +999,8 @@ concern is reflected across docs, code and tests.
   summary: Updated: 2026-03-14
 - [doc] [[docs/current_runtime/PHASE_SEMANTICS|NOVA Phase Semantics]]
   summary: This document explains how multiple phase markers can coexist without contradiction.
+- [doc] [[docs/current_runtime/ROUTE_PROTECTION_COVERAGE|ROUTE_PROTECTION_COVERAGE]]
+  summary: Deterministic route protection coverage derived from allowlisted route modules and src/utils/routeprotection.py.
 - [doc] [[docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE|NOVA Runtime Capability Reference]]
   summary: Updated: 2026-05-04
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
@@ -1079,7 +1083,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (11 docs, 432 code)
+## Tests (11 docs, 433 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1881,6 +1885,8 @@ concern is reflected across docs, code and tests.
   summary: def _capability_entry(
 - [code] [[nova_backend/tests/test_registry_phase_alignment.py|test_registry_phase_alignment]]
   summary: REGISTRY_PATH = Path(__file__).resolve().parents[1] / "src" / "config" / "registry.json
+- [code] [[nova_backend/tests/test_route_protection_coverage.py|test_route_protection_coverage]]
+  summary: LOCAL_ONLY_ROUTE_PROTECTIONS,
 - [code] [[nova_backend/tests/test_rss_fetch.py|test_rss_fetch]]
   summary: def test_fetch_rss_headlines_parses_summary_and_published(monkeypatch):
 - [code] [[nova_backend/tests/test_runtime_auditor.py|test_runtime_auditor]]
@@ -3446,7 +3452,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-06-10 (Second Brain Slice 1 activation)
+  summary: Last reviewed: 2026-06-16 (Route protection audit closure)
 - [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
   summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
