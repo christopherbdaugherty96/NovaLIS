@@ -1,11 +1,11 @@
 # Current Priority
 
-## Second Brain Slice 1 Foundation Activation - 2026-06-10
+## Runtime Recovery And Health Truth - 2026-06-17
 
 Current active lane:
 
 ```text
-Second Brain Slice 1 foundation activation.
+Runtime recovery and health truth.
 ```
 
 Newly landed stack:
@@ -35,14 +35,15 @@ No active blocker remains from this sequence.
 Current objective:
 
 ```text
-Explicitly choose Second Brain Slice 1 foundation as the next lane while
-keeping implementation in a separate PR.
+Scope the next product lane around visible recovery when Nova stalls.
+Make runtime health truth canonical enough that the UI cannot look usable
+while local requests are timing out without telling the user what happened.
 ```
 
 This sync includes:
 
 ```text
-Confirm the existing Second Brain Slice 1 priority lock is still valid.
+Add runtime recovery and health truth priority lock.
 Update current priority, current work status, and Daily Command Center.
 Restate allowed and blocked scope.
 Add no implementation code.
@@ -51,7 +52,7 @@ Add no implementation code.
 Boundary:
 
 ```text
-This activation chooses the next lane but does not implement it.
+This lock chooses the recovery lane but does not implement it.
 No execution authority added.
 No scheduler.
 No GovernorMediator changes.
@@ -59,6 +60,44 @@ No OpenClaw integration.
 No capability expansion.
 No Shopify/browser scope.
 All four certified capabilities remain locked.
+```
+
+Priority lock:
+
+```text
+docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md
+```
+
+Allowed future implementation scope after this lock lands:
+
+```text
+canonical health truth
+runtime timeout/degraded/unavailable status modeling
+stuck-response detection and user-facing recovery copy
+chat/action timeout recovery affordances
+Trust explanation of product failures, not only governed receipts
+tests proving stale/timeout health cannot be shown as Normal
+tests proving no execution authority is added
+```
+
+Explicitly not authorized by this lock:
+
+```text
+Plan My Week, model presets, more agents, more providers, bigger dashboard
+redesign, advanced navigation cleanup, broad empty-state simplification,
+Second Brain implementation, browser/computer-use expansion, OpenClaw
+expansion, scheduler/background loops, external writes, Shopify writes,
+Gmail/calendar writes, autonomous workflow execution, capability_locks.json
+changes, or capability expansion.
+```
+
+Second Brain Slice 1 status:
+
+```text
+Second Brain Slice 1 priority lock remains accepted.
+Its implementation remains limited to schema/parser/wikilink/vault
+health-lint/no-mutation/non-authorizing tests only.
+It is no longer the immediate next product lane while the recovery lock is active.
 ```
 
 Recently closed trust-model hardening:
@@ -79,7 +118,7 @@ PR #252 - merged (2026-06-16, commit a2c6f58).
   No capability expansion. No GovernorMediator changes. No runtime execution authority added.
 ```
 
-Allowed future implementation scope after this activation lands:
+Previously allowed Second Brain implementation scope after its activation:
 
 ```text
 schema
@@ -119,7 +158,7 @@ UI simplification slice: COMPLETED (PR #233, squash-merged 2026-05-26, merge com
   No backend runtime/governance files changed.
 Second Brain Slice 1 priority lock: ACCEPTED (PR #234, squash-merged 2026-05-26, merge commit 3c5b47e).
   Lock-only. No implementation code.
-  Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+  Original authorized implementation scope was schema/parser/wikilink/vault lint/no-mutation tests only.
   No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
   execution integration, scheduler, OpenClaw integration, or capability expansion.
 No execution authority added. No scheduler. No GovernorMediator changes.
@@ -437,7 +476,9 @@ UI simplification slice is complete.
 Phase 4 (execution envelopes) requires a separate design doc
   and is not authorized.
 Second Brain Slice 1 priority lock is accepted.
-Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+Runtime recovery and health truth is the active next product lane.
+Second Brain Slice 1 implementation remains accepted but deferred behind
+the recovery lane.
 
 Parallel (manual, no Nova runtime changes):
   0. Manual Obsidian setup as project operating notebook
@@ -447,7 +488,13 @@ Parallel (manual, no Nova runtime changes):
      This helps immediately without touching Nova runtime.
 
 Future order (do not start until prior step reviewed):
-  5. Second Brain Slice 1 implementation PR:
+  5. Runtime recovery and health truth implementation PR:
+     canonical health truth + timeout/degraded/unavailable status modeling +
+     stuck-response recovery copy + Trust explanation of product failures +
+     tests proving stale/timeout health cannot be shown as Normal +
+     tests proving no execution authority is added
+     Lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md
+  6. Second Brain Slice 1 implementation PR:
      schema + parser + wikilink extraction + vault health/lint +
      no-mutation and non-authorizing tests only.
      Scope: KnowledgeEntry/Relationship/Event schemas,
@@ -456,14 +503,14 @@ Future order (do not start until prior step reviewed):
             tests proving non-authorizing invariants
      Lock: docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1.md
      Research: docs/future/NOVA_SECOND_BRAIN_OBSIDIAN_RESEARCH_AND_IMPLEMENTATION_PLAN_2026-05-18.md
-  6. Second Brain Slice 2: deterministic index (after lint proven)
+  7. Second Brain Slice 2: deterministic index (after lint proven)
      rebuildable index, content hashes, stale/broken link detection
-  7. Second Brain Slice 3: read-only query surface
+  8. Second Brain Slice 3: read-only query surface
      knowledge.search, knowledge.get_note, knowledge.get_graph
-  8. Second Brain Slice 4: proposal-only writes (no auto-edits)
-  9. Second Brain Slice 5: living graph visualization (last)
-  10. Proposal-only planning for Goal Cards (suggest, not execute)
-  11. Single-step governed execution envelopes (much later, requires
+  9. Second Brain Slice 4: proposal-only writes (no auto-edits)
+  10. Second Brain Slice 5: living graph visualization (last)
+  11. Proposal-only planning for Goal Cards (suggest, not execute)
+  12. Single-step governed execution envelopes (much later, requires
       receipts, trust surfaces, approval envelopes, state restoration,
       interrupt handling to be mature first)
 ```
