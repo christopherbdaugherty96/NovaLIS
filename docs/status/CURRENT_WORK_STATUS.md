@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-06-10 (Second Brain Slice 1 activation)
+Last reviewed: 2026-06-16 (Route protection audit closure)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -27,6 +27,7 @@ Recently landed:
   PR #235 - Obsidian authority-tier overlay.
   PR #240 - repo-doc operating-loop proof.
   PR #241 - continuity freshness sync and Daily Command Center.
+  PR #252 - route protection coverage / local-only guard hardening.
 
 Stable outcome:
   CI/dependency blocker cleared.
@@ -35,6 +36,7 @@ Stable outcome:
   Repo-doc operating-loop proof landed.
   Continuity freshness sync landed.
   Daily Command Center landed.
+  Third-pass route-protection audit item closed.
   No active blocker remains from this sequence.
 
 Current active lane:
@@ -85,6 +87,26 @@ Second Brain Slice 1 priority lock: ACCEPTED (PR #234, squash-merged 2026-05-26)
 No execution authority added. No scheduler. No GovernorMediator changes.
 No OpenClaw integration. No capability expansion. No Goal Card Phase 4.
 All four certified capabilities locked.
+```
+
+Recently closed trust-model hardening:
+
+```text
+Route protection audit item - CLOSED (PR #252, 2026-06-16).
+  Main commit: a2c6f58d47530fed3bfb3052e7b8fecb26ab4083.
+  Explicit route protection policy added.
+  Sensitive non-capability local routes classified local_only:
+    /api/profile/*, /api/live-screen/*, /stt/*, /api/token/budget,
+    /api/openclaw/bridge/status, /api/openclaw/approve-action,
+    /phase-status, and /system/audit/*.
+  /api/openclaw/bridge/message remains token_gated_remote.
+  Generated runtime docs now include ROUTE_PROTECTION_COVERAGE.md.
+  Hostile Host/Origin regression coverage added.
+  Post-merge main gates green:
+    CI, NovaLIS Governance Check, Runtime Docs,
+    Fingerprint Clean, Phase-3.5 Verification.
+  No capability expansion. No GovernorMediator changes.
+  No runtime execution authority added.
 ```
 
 Lock truth:

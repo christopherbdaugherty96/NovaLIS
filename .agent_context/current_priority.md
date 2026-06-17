@@ -16,6 +16,7 @@ PR #237 - AI ecosystem operating model merged.
 PR #235 - Obsidian authority-tier overlay merged.
 PR #240 - repo-doc operating-loop proof merged.
 PR #241 - continuity freshness sync and Daily Command Center merged.
+PR #252 - route protection coverage / local-only guard hardening merged.
 ```
 
 Stable outcome:
@@ -27,6 +28,7 @@ Obsidian authority-tier overlay landed.
 Repo-doc operating-loop proof landed.
 Continuity freshness sync landed.
 Daily Command Center landed.
+Third-pass route-protection audit item closed.
 No active blocker remains from this sequence.
 ```
 
@@ -57,6 +59,24 @@ No OpenClaw integration.
 No capability expansion.
 No Shopify/browser scope.
 All four certified capabilities remain locked.
+```
+
+Recently closed trust-model hardening:
+
+```text
+PR #252 - merged (2026-06-16, commit a2c6f58).
+  Closed the third-pass audit's highest-risk route-protection finding.
+  Added explicit route protection classification in src/utils/route_protection.py.
+  Sensitive non-capability local routes are now classified local_only:
+    /api/profile/*, /api/live-screen/*, /stt/*, /api/token/budget,
+    /api/openclaw/bridge/status, /api/openclaw/approve-action,
+    /phase-status, and /system/audit/*.
+  /api/openclaw/bridge/message remains token_gated_remote.
+  Generated docs now include docs/current_runtime/ROUTE_PROTECTION_COVERAGE.md.
+  Hostile Host/Origin regression tests prove protected routes reject non-loopback access.
+  Main post-merge checks green: CI, Governance, Runtime Docs,
+    Fingerprint Clean, Phase-3.5 Verification.
+  No capability expansion. No GovernorMediator changes. No runtime execution authority added.
 ```
 
 Allowed future implementation scope after this activation lands:
