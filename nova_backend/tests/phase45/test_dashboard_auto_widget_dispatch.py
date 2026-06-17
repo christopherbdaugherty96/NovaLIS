@@ -75,7 +75,10 @@ def test_dashboard_blocks_overlapping_manual_chat_sends():
     source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
 
     assert "if (waitingForAssistant || manualTurnInFlight)" in source
-    assert "Nova is still answering. Give this turn a moment before sending another." in source
+    assert "Nova is still working on this. Please wait before sending another message. Nothing new has run from this extra send." in source
+    assert "function setChatComposerBusy(isBusy)" in source
+    assert "input.disabled = busy;" in source
+    assert "sendBtn.disabled = busy;" in source
 
 
 def test_dashboard_sends_and_filters_manual_turn_ids():
@@ -102,8 +105,9 @@ def test_dashboard_surfaces_unsupported_widget_messages():
     source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
 
     assert "function renderUnsupportedWidgetEvent(msg)" in source
-    assert "Unsupported dashboard message" in source
-    assert "Nova did not treat it as success or execute anything." in source
+    assert "Unsupported dashboard message" in source  # console-only internal diagnostic
+    assert "Nova could not understand that dashboard request. Nothing was executed." in source
+    assert "I couldn't retrieve connection status right now. Nothing was executed." in source
     assert "renderUnsupportedWidgetEvent(msg);" in source
 
 
@@ -114,7 +118,8 @@ def test_dashboard_unsupported_widget_fallback_is_mirrored_to_frontend_copy():
     for expected in (
         "function renderUnsupportedWidgetEvent(msg)",
         "Unsupported dashboard message",
-        "Nova did not treat it as success or execute anything.",
+        "Nova could not understand that dashboard request. Nothing was executed.",
+        "I couldn't retrieve connection status right now. Nothing was executed.",
         "renderUnsupportedWidgetEvent(msg);",
     ):
         assert expected in backend_source
