@@ -109,6 +109,21 @@ Route protection audit item - CLOSED (PR #252, 2026-06-16).
   No runtime execution authority added.
 ```
 
+Recent multi-track closeout:
+
+```text
+See RECENT_WORKSTREAM_CLOSEOUT_2026-06-17.md.
+Tracks summarized:
+  provider governance / budget control (#245-#249)
+  first-user friction and comprehension (#250-#251)
+  deep repository audits
+  route protection governance (#252)
+  continuity sync (#253)
+Dominant posture:
+  Nova has moved from capability building toward usability, trust,
+  and operational maturity for what already exists.
+```
+
 Lock truth:
 
 ```text
