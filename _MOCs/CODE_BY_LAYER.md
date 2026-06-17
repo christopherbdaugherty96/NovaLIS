@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (302)
+## Backend runtime (303)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -554,6 +554,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Local path resolution and project exploration utilities for the Nova brain server.
 - [[nova_backend/src/utils/persistent_state.py|persistent_state]]
   summary: _REGISTRY_LOCK = Lock()
+- [[nova_backend/src/utils/route_protection.py|route_protection]]
+  summary: @dataclass(frozen=True)
 - [[nova_backend/src/utils/web_target_planner.py|web_target_planner - src/utils]]
   summary: Presets and aliases that can open directly without confirmation.
 - [[nova_backend/src/validation/__init__.py|src/validation]]
@@ -605,7 +607,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (432)
+## Tests and verification (433)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1407,6 +1409,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def _capability_entry(
 - [[nova_backend/tests/test_registry_phase_alignment.py|test_registry_phase_alignment]]
   summary: REGISTRY_PATH = Path(__file__).resolve().parents[1] / "src" / "config" / "registry.json
+- [[nova_backend/tests/test_route_protection_coverage.py|test_route_protection_coverage]]
+  summary: LOCAL_ONLY_ROUTE_PROTECTIONS,
 - [[nova_backend/tests/test_rss_fetch.py|test_rss_fetch]]
   summary: def test_fetch_rss_headlines_parses_summary_and_published(monkeypatch):
 - [[nova_backend/tests/test_runtime_auditor.py|test_runtime_auditor]]

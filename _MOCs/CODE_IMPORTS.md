@@ -51,6 +51,7 @@ Imports from:
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/connectors/__init__.py|src/connectors]]
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `brain_server`
 
