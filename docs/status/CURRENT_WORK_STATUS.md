@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-06-16 (Route protection audit closure)
+Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,6 +19,56 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
+Phase: Runtime recovery and health truth priority lock (2026-06-17).
+
+Current active lane:
+  Runtime recovery and health truth.
+
+Product signal:
+  Nova can look alive while the local runtime is not actually responding.
+  A deeper browser/computer-use pass observed visible UI, visible buttons,
+  CONNECTING status, stuck chat, and local API timeouts in the same user
+  experience. That is now the highest-value trust gap.
+
+Current objective:
+  Scope a focused recovery lane before broader UX cleanup or new capability
+  work. When Nova stalls, the user must know what happened, whether anything
+  ran, whether anything left the device, whether Nova is healthy, and what to
+  do next.
+
+Priority lock:
+  docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md
+
+Allowed future implementation scope after this lock lands:
+  canonical health truth
+  runtime timeout/degraded/unavailable status modeling
+  stuck-response detection and user-facing recovery copy
+  chat/action timeout recovery affordances
+  Trust explanation of product failures, not only governed receipts
+  tests proving stale/timeout health cannot be shown as Normal
+  tests proving no execution authority is added
+
+This lock does not implement the lane.
+No execution authority added. No scheduler. No GovernorMediator changes.
+No OpenClaw integration. No capability expansion. No Shopify/browser scope.
+All four certified capabilities remain locked.
+
+Not authorized in this lane:
+  Plan My Week, model presets, more agents, more providers, bigger dashboard
+  redesign, advanced navigation cleanup, broad empty-state simplification,
+  Second Brain implementation, browser/computer-use expansion, OpenClaw
+  expansion, scheduler/background loops, external writes, Shopify writes,
+  Gmail/calendar writes, autonomous workflow execution, capability_locks.json
+  changes, or capability expansion.
+
+Second Brain Slice 1 status:
+  Second Brain Slice 1 priority lock remains accepted.
+  Its implementation remains limited to schema/parser/wikilink/vault
+  health-lint/no-mutation/non-authorizing tests only.
+  It is deferred behind the active runtime recovery lane.
+
+Historical context follows:
+
 Phase: Second Brain Slice 1 foundation activation (2026-06-10).
 
 Recently landed:
@@ -42,8 +92,8 @@ Stable outcome:
 Current active lane:
   Second Brain Slice 1 foundation activation.
 
-Current objective:
-  Explicitly choose Second Brain Slice 1 foundation as the next lane while
+Historical objective at that time:
+  Explicitly choose the Second Brain foundation lane while
   keeping implementation in a separate PR.
 
 Chosen next lane:
@@ -81,7 +131,7 @@ UI simplification slice: COMPLETED (PR #233, squash-merged 2026-05-26).
   No backend runtime/governance files changed.
 Second Brain Slice 1 priority lock: ACCEPTED (PR #234, squash-merged 2026-05-26).
   Lock-only. No implementation code.
-  Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+  Original authorized implementation scope was schema/parser/wikilink/vault lint/no-mutation tests only.
   No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
   execution integration, scheduler, OpenClaw integration, or capability expansion.
 No execution authority added. No scheduler. No GovernorMediator changes.
@@ -929,11 +979,14 @@ Current sequence:
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Next lane is Second Brain Slice 1 foundation.
-10. This activation PR does not implement that lane.
-11. The future implementation PR scope is schema/parser/wikilink/vault
-    health-lint/no-mutation/non-authorizing tests only.
-12. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+9. Next lane is Runtime recovery and health truth.
+10. This priority lock does not implement that lane.
+11. The future implementation PR scope is canonical health truth,
+    timeout/degraded/unavailable status modeling, stuck-response recovery,
+    Trust explanation of product failures, and tests proving stale/timeout
+    health cannot be shown as Normal.
+12. Second Brain Slice 1 remains accepted but deferred behind recovery.
+13. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
     execution integration, scheduler, OpenClaw integration, or capability
     expansion.
 
@@ -950,7 +1003,7 @@ Historical May 26 sequence:
 9. Do not reopen the approval-gate lane unless registry truth changes.
 10. Goal Card Phase 4 (execution) requires separate design doc.
 11. Second Brain Slice 1 priority lock accepted (PR #234).
-12. Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+12. At that time, next authorized implementation PR was schema/parser/wikilink/vault lint/no-mutation tests only.
 13. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
     execution integration, scheduler, OpenClaw integration, or capability expansion.
 ```

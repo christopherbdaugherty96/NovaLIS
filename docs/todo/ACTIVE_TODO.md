@@ -1,12 +1,42 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-05-26 (post-PR #234)
+Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
 
 ---
 
 ## Current Active Task
 
 ```text
+Runtime recovery and health truth priority lock: ACTIVE (2026-06-17).
+  Product signal: Nova can look alive while the local runtime is not actually
+  responding. The user can see UI/buttons/pages while status says CONNECTING,
+  chat is stuck, Trust can imply Normal, and local APIs time out.
+  Highest-value next question:
+    When Nova stalls, does the user know what happened and what to do?
+  Current answer: not reliably.
+  Lock:
+    docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md
+  Allowed future implementation scope:
+    canonical health truth
+    runtime timeout/degraded/unavailable status modeling
+    stuck-response detection and user-facing recovery copy
+    chat/action timeout recovery affordances
+    Trust explanation of product failures, not only governed receipts
+    tests proving stale/timeout health cannot be shown as Normal
+    tests proving no execution authority is added
+  Not authorized:
+    Plan My Week, model presets, more agents, more providers, broad dashboard
+    redesign, advanced navigation cleanup, broad empty-state simplification,
+    Second Brain implementation, browser/computer-use expansion, OpenClaw
+    expansion, scheduler/background loops, external writes, Shopify writes,
+    Gmail/calendar writes, autonomous workflow execution, capability_locks.json
+    changes, or capability expansion.
+
+Second Brain Slice 1 priority lock remains ACCEPTED but is deferred behind
+the active runtime recovery lane.
+
+Historical context follows:
+
 Phase: Goal Card persistence complete through Phase 3 (2026-05-26).
 Goal Card local display-state: COMPLETED (PR #229, 2026-05-23).
 Goal Card UX polish: COMPLETED (PR #230, 2026-05-24).
@@ -27,7 +57,7 @@ UI simplification slice: COMPLETED (PR #233, 2026-05-26).
   No backend runtime/governance changes.
 Second Brain Slice 1 priority lock: ACCEPTED (PR #234, 2026-05-26).
   Lock-only. No implementation code.
-  Next authorized implementation PR is schema/parser/wikilink/vault lint/no-mutation tests only.
+  Original authorized implementation scope was schema/parser/wikilink/vault lint/no-mutation tests only.
   No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
   execution integration, scheduler, OpenClaw integration, or capability expansion.
 
@@ -172,7 +202,13 @@ Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
 Next authorized implementation PR:
-  - Second Brain Slice 1: schema/parser/wikilink/vault lint/no-mutation tests only
+  - Runtime recovery and health truth:
+    canonical health truth, timeout/degraded/unavailable status modeling,
+    stuck-response recovery affordances, Trust explanation of product failures,
+    and tests proving stale/timeout health cannot be shown as Normal.
+
+Second Brain Slice 1 remains accepted but deferred:
+  - schema/parser/wikilink/vault lint/no-mutation tests only
 ```
 
 Important boundary:
@@ -186,6 +222,14 @@ Goal Card != action engine
 Do not start next:
 
 ```text
+Plan My Week
+model presets
+more agents
+more providers
+bigger dashboard redesign
+advanced navigation cleanup
+broad empty-state simplification
+Second Brain implementation while the recovery lock is active
 Goal Card execution or click-to-run
 Shopify writes
 Printify automation
@@ -210,8 +254,8 @@ PR #231 backend + PR #232 frontend wiring). UI simplification
 is complete (PR #233). Dashboard clarity improved without
 authority expansion. Goal Cards remain display-only. No
 execution, no scheduler, no GovernorMediator changes. Second
-Brain Slice 1 priority lock is accepted (PR #234). Next
-implementation PR is limited to schema, parser, wikilink
-extraction, vault health/lint, and non-authorizing/no-mutation
-tests only.
+Brain Slice 1 priority lock is accepted (PR #234) but deferred
+behind the active runtime recovery and health truth lock. Next
+implementation PR is limited to recovery clarity and canonical
+health truth without new execution authority.
 ```
