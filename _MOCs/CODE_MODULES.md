@@ -221,6 +221,7 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
 - [[nova_backend/src/governor/execute_boundary/execute_boundary.py|execute_boundary]]
 - [[nova_backend/src/governor/governor_mediator.py|governor_mediator - src/governor]]
+- [[nova_backend/src/utils/route_protection.py|route_protection]]
 
 ### Imported by
 
@@ -1893,7 +1894,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 
 - [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]
 
-## `utils` (6 files)
+## `utils` (7 files)
 
 ### Files
 
@@ -1907,6 +1908,8 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
     - Local path resolution and project exploration utilities for the Nova brain server.
 - [[nova_backend/src/utils/persistent_state.py|persistent_state]]
     - _REGISTRY_LOCK = Lock()
+- [[nova_backend/src/utils/route_protection.py|route_protection]]
+    - @dataclass(frozen=True)
 - [[nova_backend/src/utils/web_target_planner.py|web_target_planner - src/utils]]
     - Presets and aliases that can open directly without confirmation.
 
@@ -1918,6 +1921,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 
 - [[nova_backend/src/api/goals_api.py|goals_api]]
 - [[nova_backend/src/api/trust_api.py|trust_api]]
+- [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/connections/connections_store.py|connections_store]]
 - [[nova_backend/src/executors/news_intelligence_executor.py|news_intelligence_executor]]
@@ -1930,8 +1934,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
-- [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
-- _…and 16 more_
+- _…and 18 more_
 
 ### Tests
 

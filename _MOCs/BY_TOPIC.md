@@ -505,7 +505,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Web-News-Reporting/FRICTION_LOG|Web / News / Reporting Friction Log - 2026-05-06]]
 - [doc] [[docs/archive/phase 2/# 🎨 Nova Frontend Dashboard — Tech.txt|🎨 Nova Frontend Dashboard — Technical Overview]]
 
-## runtime (61)
+## runtime (62)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -562,6 +562,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/PHASE_5_RUNTIME_SURFACE|Phase-5 Runtime Surface]]
 - [doc] [[docs/PROOFS/Phase-5/PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12|Phase-5 Thread-Memory Bridge Runtime Slice]]
 - [doc] [[docs/current_runtime/PHASE_6_FOUNDATION_SURFACE|Phase-6 Foundation Surface]]
+- [doc] [[docs/current_runtime/ROUTE_PROTECTION_COVERAGE|ROUTE_PROTECTION_COVERAGE]]
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
@@ -569,7 +570,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (790)
+## testing (791)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -924,6 +925,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
 - [code] [[nova_backend/tests/executors/test_response_verification_executor.py|test_response_verification_executor]]
 - [code] [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
+- [code] [[nova_backend/tests/test_route_protection_coverage.py|test_route_protection_coverage]]
 - [code] [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
 - [code] [[nova_backend/tests/test_rss_fetch.py|test_rss_fetch]]
 - [code] [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
@@ -1362,7 +1364,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/check-in.txt|🧬 NOVA — Phase-4 Infrastructure Completion Record]]
 - [doc] [[docs/PROOFS/Phase-4/PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION.txt|🧬 NOVA — PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION]]
 
-## architecture (312)
+## architecture (313)
 
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA INTELLIGENCE CAPACITY THE.txt|# 🧬 NOVA INTELLIGENCE CAPACITY THE]]
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA PHASE 4.2 ROADMAP.txt|# 🧬 NOVA PHASE 4.2 ROADMAP]]
@@ -1606,6 +1608,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-4.5/PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-09|PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-09]]
 - [doc] [[docs/design/archive(phase 4)/primary intelligence.txt|primary intelligence]]
 - [doc] [[docs/reference/HUMAN_GUIDES/05_PROJECT_CONTINUITY_AND_MEMORY|Project Continuity and Memory]]
+- [doc] [[docs/current_runtime/ROUTE_PROTECTION_COVERAGE|ROUTE_PROTECTION_COVERAGE]]
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]

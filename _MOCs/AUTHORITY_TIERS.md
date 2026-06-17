@@ -45,7 +45,7 @@ Rules:
 - Do not manually edit generated runtime truth.
 - Delegate capability counts, hashes, and runtime surfaces here.
 
-Linked files (16):
+Linked files (17):
 
 - [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
 - [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
@@ -58,6 +58,7 @@ Linked files (16):
 - [[docs/current_runtime/PHASE_5_RUNTIME_SURFACE|Phase-5 Runtime Surface]]
 - [[docs/current_runtime/PHASE_6_FOUNDATION_SURFACE|Phase-6 Foundation Surface]]
 - [[docs/current_runtime/PHASE_SEMANTICS|NOVA Phase Semantics]]
+- [[docs/current_runtime/ROUTE_PROTECTION_COVERAGE|ROUTE_PROTECTION_COVERAGE]]
 - [[docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE|NOVA Runtime Capability Reference]]
 - [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
 - [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
@@ -1102,5 +1103,5 @@ Linked files (154):
 
 ## Reference / Unclassified
 
-1059 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
+1061 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
 Use the broad browsing maps for those files; do not treat this fallback as an authority tier.

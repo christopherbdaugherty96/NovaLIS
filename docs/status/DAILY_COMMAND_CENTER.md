@@ -87,6 +87,18 @@ Fingerprint Clean, Phase-3.5 Verification.
 No capability expansion or execution authority added.
 ```
 
+## Recent Multi-Track Closeout
+
+```text
+See docs/status/RECENT_WORKSTREAM_CLOSEOUT_2026-06-17.md.
+Provider governance and budget control are complete for current scope.
+Latest synthetic-user testing reached 98%.
+Deep audit pass 3 produced the route-protection finding closed by PR #252.
+The active next lane remains Second Brain Slice 1.
+Real-use observation, Morning Brief usage, friction logging, and workflow
+validation continue as operating practice, not a new authority lane.
+```
+
 ## Boundary
 
 ```text
