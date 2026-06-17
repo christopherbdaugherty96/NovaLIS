@@ -377,7 +377,7 @@ function getHeaderConnectionPresentation() {
 
   const failureState = String(trustState.failureState || "").trim().toLowerCase();
   if (failureState && failureState !== "normal") {
-    return { tone: "degraded", label: "Degraded" };
+    return { tone: "degraded", label: "Degraded - check status" };
   }
 
   const connectionSummary = String((trustReviewState.connectionRuntime && trustReviewState.connectionRuntime.summary) || "").trim().toLowerCase();

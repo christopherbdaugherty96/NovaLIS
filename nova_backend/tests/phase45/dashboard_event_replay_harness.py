@@ -13,6 +13,27 @@ MANUAL_TURN_WIDGET_TYPES = {
     "calendar",
 }
 
+BUSY_TURN_HINT = (
+    "Nova is still working on this. Please wait before sending another message. "
+    "Nothing new has run from this extra send."
+)
+
+QUEUED_RECONNECT_HINT = (
+    "Your message is queued while Nova reconnects. Nothing has run yet. "
+    "Nova will send it automatically when the connection returns; wait for this "
+    "status to clear before retrying."
+)
+
+UNSUPPORTED_REQUEST_HINT = (
+    "Nova could not understand that dashboard request. Nothing was executed. "
+    "Try: provider status, connection status, or trust center."
+)
+
+STATUS_UNAVAILABLE_HINT = (
+    "I couldn't retrieve connection status right now. Nothing was executed. "
+    "Try: provider status, connection status, or trust center."
+)
+
 
 @dataclass
 class ReplayMessage:
@@ -38,6 +59,7 @@ class DashboardEventReplayHarness:
     last_assistant_turn_key: str = ""
     loading_hint: str = ""
     thinking_bar: bool = False
+    composer_busy: bool = False
     widget_auto_refresh_started: int = 0
     widget_auto_refresh_stopped: int = 0
     startup_hydration_cleared: int = 0
@@ -52,7 +74,7 @@ class DashboardEventReplayHarness:
         if not clean:
             return False
         if self.waiting_for_assistant or self.manual_turn_in_flight:
-            self.loading_hint = "Nova is still answering. Give this turn a moment before sending another."
+            self.loading_hint = BUSY_TURN_HINT
             self.thinking_bar = True
             return False
         self.inject_user_text(clean, now=now)
@@ -71,11 +93,15 @@ class DashboardEventReplayHarness:
         self.widget_auto_refresh_stopped += 1
         self.user_messages.append(clean)
         self.waiting_for_assistant = True
-        self.loading_hint = "Thinking..."
+        self.composer_busy = True
+        self.loading_hint = "Nova is working on your request"
         self.thinking_bar = True
         self.sent_payloads.append(
             {"text": clean, "channel": channel, "turn_id": self.active_manual_turn_id}
         )
+
+    def queue_for_reconnect(self) -> None:
+        self._append_assistant(QUEUED_RECONNECT_HINT, "System status")
 
     def handle_ws_message(self, msg: dict[str, Any], *, now: int) -> str:
         if self._widget_matches_active_manual_turn(msg):
@@ -109,6 +135,7 @@ class DashboardEventReplayHarness:
                 self.active_manual_turn_id = ""
                 self.widget_auto_refresh_started += 1
             self.waiting_for_assistant = False
+            self.composer_busy = False
             self.loading_hint = ""
             self.thinking_bar = False
             return "handled"
@@ -119,6 +146,7 @@ class DashboardEventReplayHarness:
             self.manual_turn_started_at = 0
             self.active_manual_turn_id = ""
             self.waiting_for_assistant = False
+            self.composer_busy = False
             self.thinking_bar = False
             self._append_assistant(str(msg.get("message") or ""), "System status")
             return "handled"
@@ -128,13 +156,13 @@ class DashboardEventReplayHarness:
 
         self.unsupported_events.append(msg)
         reason = (
-            "A dashboard message arrived without a recognized type."
+            UNSUPPORTED_REQUEST_HINT
             if msg_type == "unknown"
-            else f'Unsupported dashboard message "{msg_type}" was ignored.'
+            else STATUS_UNAVAILABLE_HINT if msg_type == "status" else UNSUPPORTED_REQUEST_HINT
         )
         self._append_assistant(
-            f"{reason} Nova did not treat it as success or execute anything.",
-            "Unsupported",
+            reason,
+            "Request not run",
         )
         return "unsupported"
 
@@ -144,6 +172,7 @@ class DashboardEventReplayHarness:
         self.manual_turn_started_at = 0
         self.active_manual_turn_id = ""
         self.waiting_for_assistant = False
+        self.composer_busy = False
         self.thinking_bar = False
         self.startup_hydration_cleared += 1
         self.widget_auto_refresh_stopped += 1

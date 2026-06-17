@@ -2077,8 +2077,23 @@ function translateError(code, message) {
 }
 
 function tryHandleLocalPageCommand(text) {
-  const clean = String(text || "").trim().toLowerCase();
+  const raw = String(text || "").trim();
+  const clean = raw.toLowerCase();
   if (!clean) return false;
+
+  if (/\b(can i trust|trust this|is this trustworthy|what was executed|what was blocked|what receipts|receipts exist)\b/i.test(raw)) {
+    appendChatMessage("user", text);
+    setActivePage("trust");
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+    safeWSSend({ text: "system status", silent_widget_refresh: true });
+    appendChatMessage(
+      "assistant",
+      "Here is what I can verify right now: what is connected, what was executed, what was blocked, and what receipts exist. I opened Activity & Receipts so you can inspect the current evidence. Nothing new was executed by this check.",
+      null,
+      "Trust status",
+    );
+    return true;
+  }
 
   const localRoutes = [
     { pattern: /^(intro|introduction|get(ting)? started|welcome)$/i, page: "intro", reply: "Opening the Introduction page so you can see what Nova is, how it works, and the safest way to start." },
@@ -2112,6 +2127,7 @@ function injectUserText(text, channel = "text") {
 
   appendChatMessage("user", clean);
   waitingForAssistant = true;
+  setChatComposerBusy(true);
   const loadingHint = loadingHintForInput(clean);
   setLoadingHint(loadingHint);
   setThinkingBar(true);
@@ -2121,7 +2137,7 @@ function injectUserText(text, channel = "text") {
   if (!safeWSSend({ text: clean, channel, turn_id: activeManualTurnId }, { queueIfUnavailable: true })) {
     appendChatMessage(
       "assistant",
-      "Connection is waking back up. I queued your message and will send it as soon as Nova reconnects.",
+      "Your message is queued while Nova reconnects. Nothing has run yet. Nova will send it automatically when the connection returns; wait for this status to clear before retrying.",
       null,
       "System status",
     );
@@ -2134,6 +2150,7 @@ function requestInlineAssistantAction(text, statusText = "", invocationSource = 
   if (tryRouteLiveHelpCommand(clean, { echoUserMessage: false, updateFocus: true })) return true;
 
   waitingForAssistant = true;
+  setChatComposerBusy(true);
   const loadingHint = statusText || loadingHintForInput(clean);
   setLoadingHint(loadingHint);
   setThinkingBar(true);
@@ -2143,7 +2160,7 @@ function requestInlineAssistantAction(text, statusText = "", invocationSource = 
   if (!safeWSSend({ text: clean, invocation_source: invocationSource }, { queueIfUnavailable: true })) {
     appendChatMessage(
       "assistant",
-      "Connection is waking back up. I queued that request and will send it as soon as Nova reconnects.",
+      "That request is queued while Nova reconnects. Nothing has run yet. Nova will send it automatically when the connection returns; wait for this status to clear before retrying.",
       null,
       "System status",
     );
@@ -2165,17 +2182,21 @@ function renderUnsupportedWidgetEvent(msg) {
     ? "A dashboard message arrived without a recognized type."
     : `Unsupported dashboard message "${rawType}" was ignored.`;
   console.warn(`[Nova] ${reason}`);
+  const userMessage = rawType === "status"
+    ? "I couldn't retrieve connection status right now. Nothing was executed. Try: provider status, connection status, or trust center."
+    : "Nova could not understand that dashboard request. Nothing was executed. Try: provider status, connection status, or trust center.";
   appendChatMessage(
     "assistant",
-    `${reason} Nova did not treat it as success or execute anything.`,
+    userMessage,
     null,
-    "Unsupported",
+    "Request not run",
   );
 }
 
 function requestDeepSeekSecondOpinion() {
   appendChatMessage("user", "Second opinion");
   waitingForAssistant = true;
+  setChatComposerBusy(true);
   setLoadingHint("Checking a second opinion on the recent exchange...");
   setThinkingBar(true);
   updateWorkflowFocusFromUserInput("Second opinion on the recent exchange");
@@ -2184,7 +2205,7 @@ function requestDeepSeekSecondOpinion() {
   if (!safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" }, { queueIfUnavailable: true })) {
     appendChatMessage(
       "assistant",
-      "Connection is waking back up. I queued the second-opinion request and will send it as soon as Nova reconnects.",
+      "The second-opinion request is queued while Nova reconnects. Nothing has run yet. Nova will send it automatically when the connection returns; wait for this status to clear before retrying.",
       null,
       "System status",
     );
@@ -2619,6 +2640,7 @@ function connectWebSocket() {
           startWidgetAutoRefresh();
         }
         waitingForAssistant = false;
+        setChatComposerBusy(false);
         setLoadingHint("");
         setThinkingBar(false);
         if (workflowFocusState.awaitingResponse) {
@@ -2641,6 +2663,7 @@ function connectWebSocket() {
         manualTurnStartedAt = 0;
         activeManualTurnId = "";
         waitingForAssistant = false;
+        setChatComposerBusy(false);
         setThinkingBar(false);
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
         updateWorkflowFocusFromError(translateError(msg.code, msg.message));
@@ -2657,6 +2680,7 @@ function connectWebSocket() {
     manualTurnStartedAt = 0;
     activeManualTurnId = "";
     waitingForAssistant = false;
+    setChatComposerBusy(false);
     setThinkingBar(false);
     clearStartupHydrationTimers();
     stopWidgetAutoRefresh();
@@ -3363,13 +3387,33 @@ function sendChat() {
   const input = $("chat-input");
   if (!input) return;
   if (waitingForAssistant || manualTurnInFlight) {
-    setLoadingHint("Nova is still answering. Give this turn a moment before sending another.");
+    setLoadingHint("Nova is still working on this. Please wait before sending another message. Nothing new has run from this extra send.");
     setThinkingBar(true);
     input.focus();
     return;
   }
   injectUserText(input.value, "text");
   input.value = "";
+}
+
+function setChatComposerBusy(isBusy) {
+  const busy = Boolean(isBusy);
+  const input = $("chat-input");
+  const sendBtn = $("send-btn");
+  if (input) {
+    input.disabled = busy;
+    input.setAttribute("aria-busy", busy ? "true" : "false");
+    input.placeholder = busy
+      ? "Nova is working. Wait for the current response before sending another message."
+      : "What are you trying to get done? Example: build me a landing page for my business.";
+  }
+  if (sendBtn) {
+    sendBtn.disabled = busy;
+    sendBtn.setAttribute("aria-disabled", busy ? "true" : "false");
+    sendBtn.title = busy
+      ? "Nova is still working. Wait for this response to finish before sending another message."
+      : "Send message (Enter)";
+  }
 }
 
 function setupPrimaryChatControls() {

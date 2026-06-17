@@ -625,7 +625,7 @@ function handleVoiceAck(message) {
 function setLoadingHint(text = "") {
   const bar = $("thinking-bar");
   if (!bar) return;
-  bar.textContent = text || "Nova is thinking...";
+  bar.textContent = text || "Nova is working. Please wait for the current response before sending another message.";
 }
 
 function setThinkingBar(visible) {
@@ -667,7 +667,7 @@ function loadingHintForInput(text) {
   if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
   if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Turning your idea into a build plan";
   if (q.includes("help me") || q.includes("plan")) return "Turning your goal into the next steps";
-  return "Turning your request into the next step";
+  return "Nova is working on your request";
 }
 
 function compactWorkflowText(text, fallback = "") {
@@ -765,7 +765,7 @@ function updateWorkflowFocusFromUserInput(text) {
   workflowFocusState.goal = compactWorkflowText(clean, workflowFocusState.goal);
   workflowFocusState.status = workflowStatusForGoal(clean);
   workflowFocusState.copy = "Nova is treating your last request as the current focus and will keep the next step visible.";
-  workflowFocusState.now = compactWorkflowText(loadingHintForInput(clean), "Turning your request into the next step");
+  workflowFocusState.now = compactWorkflowText(loadingHintForInput(clean), "Nova is working on your request");
   workflowFocusState.next = nextWorkflowHintForInput(clean);
   workflowFocusState.lastUserInput = clean;
   workflowFocusState.awaitingResponse = true;
@@ -799,7 +799,7 @@ function updateWorkflowFocusFromError(message) {
   workflowFocusState.status = "Needs adjustment";
   workflowFocusState.copy = "The current step hit a snag, but the goal is still in focus.";
   workflowFocusState.now = compactWorkflowText(message, "Something went wrong with the current step.");
-  workflowFocusState.next = "Try rephrasing the goal, trimming the request, or asking Nova for a smaller next step.";
+  workflowFocusState.next = "Nothing new was executed by the failed step. Retry is safe after the status clears, or ask for connection status.";
   workflowFocusState.awaitingResponse = false;
   renderWorkflowFocusWidget();
 }
@@ -2337,6 +2337,19 @@ function runCapabilityPrompt(prompt) {
   injectUserText(clean, "text");
 }
 
+function userRuntimeStateLabel(value) {
+  const state = String(value || "").trim();
+  const normalized = state.toLowerCase();
+  if (!state || normalized === "normal") return "Normal";
+  if (normalized === "degraded") {
+    return "Degraded - the response path was interrupted. Your request may not have completed; retry after the status clears or check connection status.";
+  }
+  if (normalized === "offline-safe mode") {
+    return "Offline-safe mode - remote paths are paused after repeated failures. Nothing runs remotely until the connection recovers.";
+  }
+  return state;
+}
+
 function renderTrustPanel(data = {}) {
   if (data && typeof data === "object") {
     trustReviewState.summary = String(data.trust_review_summary || trustReviewState.summary).trim() || trustReviewState.summary;
@@ -2385,7 +2398,7 @@ function renderTrustPanel(data = {}) {
   if (mode) mode.textContent = trustState.mode;
   if (lastCall) lastCall.textContent = trustState.lastExternalCall;
   if (egress) egress.textContent = trustState.dataEgress;
-  if (failure) failure.textContent = trustState.failureState;
+  if (failure) failure.textContent = userRuntimeStateLabel(trustState.failureState);
   if (summary) {
     const activityCount = trustReviewState.activity.length;
     const blockedCount = trustReviewState.blocked.length;
@@ -2870,7 +2883,7 @@ function renderTrustCenterPage() {
   mode.textContent = trustState.mode || "Local-only";
   lastCall.textContent = trustState.lastExternalCall || "None";
   egress.textContent = trustState.dataEgress || "Read-only requests only";
-  failure.textContent = trustState.failureState || "Normal";
+  failure.textContent = userRuntimeStateLabel(trustState.failureState);
   _renderReceiptRows(receiptHost);
   _renderReceiptDetail(receiptDetail);
 

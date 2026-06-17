@@ -154,14 +154,15 @@ def test_unsupported_widget_type_routes_to_visible_fallback():
     src = _src()
     # Unknown type hits the default case and renders a visible non-action state
     assert "renderUnsupportedWidgetEvent(msg)" in src
-    assert "Unsupported dashboard message" in src
-    assert "Nova did not treat it as success or execute anything." in src
+    assert "Unsupported dashboard message" in src  # console-only internal diagnostic
+    assert "Nova could not understand that dashboard request. Nothing was executed." in src
+    assert "I couldn't retrieve connection status right now. Nothing was executed." in src
 
 
 def test_unsupported_widget_fallback_does_not_imply_execution():
     src = _src()
     # Fallback wording is explicit: no success, no execution
-    assert "Nova did not treat it as success or execute anything." in src
+    assert "Nothing was executed." in src
 
 
 # ---------------------------------------------------------------------------
