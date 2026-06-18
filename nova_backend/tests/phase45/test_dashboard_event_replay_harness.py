@@ -6,6 +6,7 @@ from nova_backend.tests.phase45.dashboard_event_replay_harness import (
     BUSY_TURN_HINT,
     QUEUED_RECONNECT_HINT,
     STATUS_UNAVAILABLE_HINT,
+    TURN_TIMEOUT_HINT,
     UNSUPPORTED_REQUEST_HINT,
     DashboardEventReplayHarness,
 )
@@ -60,6 +61,7 @@ def test_replay_filters_stale_turn_events_and_completes_current_turn():
     assert replay.waiting_for_assistant is False
     assert replay.composer_busy is False
     assert replay.active_manual_turn_id == ""
+    assert replay.manual_turn_terminal_state == "Completed"
     assert replay.widget_auto_refresh_started == 1
 
 
@@ -105,6 +107,25 @@ def test_replay_early_done_without_response_does_not_fake_completion():
     assert replay.widget_auto_refresh_started == 0
 
 
+def test_replay_manual_turn_timeout_is_terminal_and_explanatory():
+    replay = DashboardEventReplayHarness()
+    replay.primary_send("explain this", now=9000)
+
+    assert not replay.expire_manual_turn(now=99000 - 1)
+    assert replay.manual_turn_in_flight is True
+
+    assert replay.expire_manual_turn(now=99000)
+
+    assert replay.manual_turn_in_flight is False
+    assert replay.waiting_for_assistant is False
+    assert replay.composer_busy is False
+    assert replay.manual_turn_terminal_state == "Timed Out"
+    assert replay.assistant_messages[-1].confidence == "Timed out"
+    assert replay.assistant_messages[-1].text == TURN_TIMEOUT_HINT
+    assert "Nothing new was confirmed" in replay.assistant_messages[-1].text
+    assert "Retry after checking status" in replay.assistant_messages[-1].text
+
+
 def test_replay_error_and_socket_close_clear_pending_turn_without_extra_payload():
     replay = DashboardEventReplayHarness()
     replay.primary_send("memory overview", now=6000)
@@ -115,6 +136,7 @@ def test_replay_error_and_socket_close_clear_pending_turn_without_extra_payload(
     assert replay.waiting_for_assistant is False
     assert replay.composer_busy is False
     assert len(replay.sent_payloads) == 1
+    assert replay.manual_turn_terminal_state == "Failed"
 
     replay.primary_send("news", now=7000)
     replay.handle_ws_close()
@@ -172,6 +194,11 @@ def test_dashboard_event_replay_harness_is_anchored_to_source_contracts():
         "I couldn't retrieve connection status right now. Nothing was executed.",
         "Here is what I can verify right now: what is connected, what was executed, what was blocked, and what receipts exist.",
         "lastAssistantTurnKey",
+        "MANUAL_TURN_TIMEOUT_MS",
+        "function scheduleManualTurnTimeout(turnId)",
+        "clearActiveManualTurn(\"Timed Out\"",
+        "Nothing new was confirmed.",
+        "Retry after checking status",
     ):
         assert expected in source
 

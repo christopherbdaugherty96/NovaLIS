@@ -39,6 +39,8 @@ let manualTurnStartedAt = 0;
 let manualTurnCounter = 0;
 let activeManualTurnId = "";
 let lastAssistantTurnKey = "";
+let manualTurnTerminalState = "Idle";
+let manualTurnTimeoutTimer = null;
 let suppressWidgetHydrationUntil = 0;
 let morningState = {
   weather: "Loading...",
@@ -117,6 +119,31 @@ let trustReviewState = {
   reasoningRuntime: {},
   bridgeRuntime: {},
   connectionRuntime: {},
+};
+const RUNTIME_HEALTH_STATES = ["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering"];
+const RUNTIME_HEALTH_PRECEDENCE = {
+  Healthy: 1,
+  Connecting: 2,
+  Degraded: 3,
+  Recovering: 4,
+  Unavailable: 5,
+};
+const RUNTIME_HEALTH_PROBE_INTERVAL_MS = 15000;
+const RUNTIME_HEALTH_PROBE_TIMEOUT_MS = 4000;
+const RUNTIME_HEALTH_RECOVERY_WINDOW_MS = 10000;
+const MANUAL_TURN_TIMEOUT_MS = 90000;
+let runtimeHealthProbeTimer = null;
+let runtimeHealthState = {
+  state: "Connecting",
+  reason: "Nova is checking the local runtime.",
+  whatHappened: "Nova is opening the local runtime connection.",
+  whatIsHappening: "The dashboard is waiting for fresh runtime health.",
+  whatNext: "Wait for the connection to finish, or check status if it does not clear.",
+  source: "startup",
+  lastChangedAt: Date.now(),
+  lastUnavailableAt: 0,
+  recoveringUntil: 0,
+  httpTimedOut: false,
 };
 let threadMapState = {
   summary: "No project threads yet. Save work updates to start continuity.",
@@ -366,27 +393,165 @@ function getInitialPage() {
   return normalizePageKey(localStorage.getItem(STORAGE_KEYS.activePage) || "chat");
 }
 
-function getHeaderConnectionPresentation() {
+function runtimeHealthRank(state) {
+  const normalized = RUNTIME_HEALTH_STATES.includes(state) ? state : "Healthy";
+  return RUNTIME_HEALTH_PRECEDENCE[normalized] || 0;
+}
+
+function normalizeRuntimeHealthState(state) {
+  const clean = String(state || "").trim();
+  return RUNTIME_HEALTH_STATES.includes(clean) ? clean : "Healthy";
+}
+
+function runtimeHealthFromTrustFailure(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized || normalized === "normal" || normalized === "recovered") return "Healthy";
+  return "Degraded";
+}
+
+function runtimeHealthCopy(state, reason = "") {
+  const cleanReason = String(reason || "").trim();
+  if (state === "Unavailable") {
+    return {
+      reason: cleanReason || "Nova's local runtime is not responding.",
+      whatHappened: "A runtime request timed out or the active turn did not finish.",
+      whatIsHappening: "The page is still open, but Nova cannot confirm the local runtime is responding.",
+      whatNext: "Retry after status recovers, check status, or restart Nova if this does not clear.",
+    };
+  }
+  if (state === "Recovering") {
+    return {
+      reason: cleanReason || "Nova is receiving healthy signals again after an interruption.",
+      whatHappened: "Nova recently lost runtime health.",
+      whatIsHappening: "The local runtime is responding again and Nova is confirming recovery.",
+      whatNext: "Wait for Healthy before assuming the interrupted request completed.",
+    };
+  }
+  if (state === "Degraded") {
+    return {
+      reason: cleanReason || "Part of the response path was interrupted.",
+      whatHappened: "A request or runtime component reported a problem.",
+      whatIsHappening: "Nova may still be reachable, but the last request may not have completed.",
+      whatNext: "Retry after status clears or check status before sending another request.",
+    };
+  }
+  if (state === "Connecting") {
+    return {
+      reason: cleanReason || "Nova is connecting to the local runtime.",
+      whatHappened: "The browser has not confirmed a ready runtime channel yet.",
+      whatIsHappening: "Nova is trying to connect or reconnect.",
+      whatNext: "Wait for the connection to finish, or check status if it does not clear.",
+    };
+  }
+  return {
+    reason: cleanReason || "Nova's local runtime is responding.",
+    whatHappened: "No runtime interruption is active.",
+    whatIsHappening: "Nova is reachable and ready for local-first requests.",
+    whatNext: "Continue with your request.",
+  };
+}
+
+function resolveCanonicalRuntimeHealth(overrides = {}) {
+  const now = Date.now();
   const readyState = ws ? ws.readyState : WebSocket.CONNECTING;
+  const candidates = [];
+
+  if (runtimeHealthState.httpTimedOut || overrides.httpTimedOut) {
+    candidates.push(["Unavailable", String(overrides.reason || "A local runtime health request timed out.")]);
+  }
+  if (manualTurnTerminalState === "Timed Out" || overrides.manualTurnState === "Timed Out") {
+    candidates.push(["Degraded", "The active turn timed out before Nova confirmed completion."]);
+  }
+  if (runtimeHealthState.recoveringUntil && now < runtimeHealthState.recoveringUntil) {
+    candidates.push(["Recovering", "Nova is receiving healthy signals after a recent interruption."]);
+  }
   if (readyState === WebSocket.CONNECTING) {
-    return { tone: "connecting", label: "Connecting" };
+    candidates.push(["Connecting", "Nova is opening the local runtime channel."]);
+  } else if (readyState !== WebSocket.OPEN) {
+    candidates.push(["Connecting", "Nova is reconnecting to the local runtime channel."]);
   }
-  if (readyState !== WebSocket.OPEN) {
-    return { tone: "reconnecting", label: "Reconnecting" };
-  }
+  candidates.push([runtimeHealthFromTrustFailure(trustState.failureState), userRuntimeStateLabel(trustState.failureState)]);
 
-  const failureState = String(trustState.failureState || "").trim().toLowerCase();
-  if (failureState && failureState !== "normal") {
-    return { tone: "degraded", label: "Degraded - check status" };
-  }
+  let winner = ["Healthy", "Nova's local runtime is responding."];
+  candidates.forEach((candidate) => {
+    if (runtimeHealthRank(candidate[0]) > runtimeHealthRank(winner[0])) winner = candidate;
+  });
 
-  const connectionSummary = String((trustReviewState.connectionRuntime && trustReviewState.connectionRuntime.summary) || "").trim().toLowerCase();
-  const trustMode = String(trustState.mode || "").trim().toLowerCase();
-  if (connectionSummary.includes("local") || trustMode.includes("local")) {
-    return { tone: "connected", label: "Local-only" };
-  }
+  const state = normalizeRuntimeHealthState(winner[0]);
+  return { state, ...runtimeHealthCopy(state, winner[1]) };
+}
 
-  return { tone: "connected", label: "Connected" };
+function applyCanonicalRuntimeHealth(overrides = {}) {
+  const next = resolveCanonicalRuntimeHealth(overrides);
+  const previousState = runtimeHealthState.state;
+  const changed = previousState !== next.state
+    || runtimeHealthState.reason !== next.reason
+    || runtimeHealthState.whatNext !== next.whatNext;
+
+  runtimeHealthState = {
+    ...runtimeHealthState,
+    ...next,
+    source: String(overrides.source || runtimeHealthState.source || "runtime").trim() || "runtime",
+    lastChangedAt: changed ? Date.now() : runtimeHealthState.lastChangedAt,
+  };
+
+  if (changed) {
+    renderHeaderStatus(activePageState);
+    if (typeof renderTrustPanel === "function") renderTrustPanel();
+    if (typeof renderTrustCenterPage === "function") renderTrustCenterPage();
+  }
+  return runtimeHealthState;
+}
+
+function markRuntimeHealthProbeSuccess() {
+  const wasUnavailable = runtimeHealthState.httpTimedOut || runtimeHealthState.state === "Unavailable";
+  runtimeHealthState.httpTimedOut = false;
+  if (wasUnavailable) {
+    runtimeHealthState.recoveringUntil = Date.now() + RUNTIME_HEALTH_RECOVERY_WINDOW_MS;
+  }
+  applyCanonicalRuntimeHealth({ source: "http_probe" });
+}
+
+function markRuntimeHealthProbeFailure(reason = "A local runtime health request timed out.") {
+  runtimeHealthState.httpTimedOut = true;
+  runtimeHealthState.lastUnavailableAt = Date.now();
+  applyCanonicalRuntimeHealth({ source: "http_probe", httpTimedOut: true, reason });
+}
+
+async function probeRuntimeHealthOnce() {
+  if (typeof fetch !== "function" || typeof AbortController === "undefined") return;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), RUNTIME_HEALTH_PROBE_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error("runtime_health_probe_failed");
+    markRuntimeHealthProbeSuccess();
+  } catch (_) {
+    clearTimeout(timeout);
+    markRuntimeHealthProbeFailure("Nova's local runtime health check timed out or failed.");
+  }
+}
+
+function startRuntimeHealthProbes() {
+  if (runtimeHealthProbeTimer) return;
+  probeRuntimeHealthOnce();
+  runtimeHealthProbeTimer = setInterval(probeRuntimeHealthOnce, RUNTIME_HEALTH_PROBE_INTERVAL_MS);
+}
+
+function getHeaderConnectionPresentation() {
+  const canonical = applyCanonicalRuntimeHealth({ source: "header" });
+  if (canonical.state === "Unavailable") return { tone: "degraded", label: "Unavailable" };
+  if (canonical.state === "Recovering") return { tone: "connecting", label: "Recovering" };
+  if (canonical.state === "Degraded") return { tone: "degraded", label: "Degraded - check status" };
+  if (canonical.state === "Connecting") {
+    const readyState = ws ? ws.readyState : WebSocket.CONNECTING;
+    return { tone: readyState === WebSocket.CONNECTING ? "connecting" : "reconnecting", label: readyState === WebSocket.CONNECTING ? "Connecting" : "Reconnecting" };
+  }
+  return { tone: "connected", label: "Healthy" };
 }
 
 function renderHeaderStatus(page = activePageState) {

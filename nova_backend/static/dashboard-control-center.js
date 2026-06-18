@@ -2338,6 +2338,9 @@ function runCapabilityPrompt(prompt) {
 }
 
 function userRuntimeStateLabel(value) {
+  if (runtimeHealthState && runtimeHealthState.state && runtimeHealthState.state !== "Healthy") {
+    return `${runtimeHealthState.state} - ${runtimeHealthState.whatNext || runtimeHealthState.reason || "Check runtime status before retrying."}`;
+  }
   const state = String(value || "").trim();
   const normalized = state.toLowerCase();
   if (!state || normalized === "normal") return "Normal";
@@ -3140,9 +3143,15 @@ function renderTrustCenterPage() {
     });
   }
 
-  healthSummary.textContent = operatorHealthState.summary || "Loading runtime health...";
+  healthSummary.textContent = [
+    `${runtimeHealthState.state}: ${runtimeHealthState.reason}`,
+    runtimeHealthState.whatNext,
+    operatorHealthState.summary || "Loading runtime health...",
+  ].filter(Boolean).join(" ");
   clear(healthGrid);
   [
+    ["Health", runtimeHealthState.state],
+    ["Next", runtimeHealthState.whatNext],
     ["Governor", String((operatorHealthState.snapshot && operatorHealthState.snapshot.governor_status) || "Unknown")],
     ["Boundary", String((operatorHealthState.snapshot && operatorHealthState.snapshot.execution_boundary_status) || "Unknown")],
     ["Network", String((operatorHealthState.snapshot && operatorHealthState.snapshot.network_mediator_status) || "Unknown")],
