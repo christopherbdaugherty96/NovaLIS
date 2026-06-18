@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-
 RuntimeHealthState = Literal["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering"]
 
 _PRECEDENCE: dict[RuntimeHealthState, int] = {
