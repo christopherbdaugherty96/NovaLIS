@@ -8,6 +8,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import threading
+
 import psutil
 
 from src.actions.action_result import ActionResult
@@ -15,6 +17,11 @@ from src.build_phase import BUILD_PHASE
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
+
+_model_status_cache: dict[str, object] = {}
+_model_status_cache_ts: float = 0.0
+_MODEL_STATUS_CACHE_TTL: float = 10.0
+_model_status_cache_lock = threading.Lock()
 
 
 class OSDiagnosticsExecutor:
@@ -554,6 +561,26 @@ class OSDiagnosticsExecutor:
 
     @staticmethod
     def _model_status_details() -> tuple[str, str, str, bool]:
+        global _model_status_cache, _model_status_cache_ts
+        now = time.monotonic()
+        with _model_status_cache_lock:
+            if _model_status_cache and (now - _model_status_cache_ts) < _MODEL_STATUS_CACHE_TTL:
+                cached = _model_status_cache
+                return (cached["status"], cached["note"], cached["remediation"], cached["ready"])
+
+        result = OSDiagnosticsExecutor._model_status_details_uncached()
+        with _model_status_cache_lock:
+            _model_status_cache = {
+                "status": result[0],
+                "note": result[1],
+                "remediation": result[2],
+                "ready": result[3],
+            }
+            _model_status_cache_ts = time.monotonic()
+        return result
+
+    @staticmethod
+    def _model_status_details_uncached() -> tuple[str, str, str, bool]:
         try:
             from src.llm.llm_manager import llm_manager
 
