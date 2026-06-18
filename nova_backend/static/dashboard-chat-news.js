@@ -2110,6 +2110,62 @@ function tryHandleLocalPageCommand(text) {
   return true;
 }
 
+function clearManualTurnTimeout() {
+  if (manualTurnTimeoutTimer) {
+    clearTimeout(manualTurnTimeoutTimer);
+    manualTurnTimeoutTimer = null;
+  }
+}
+
+function markManualTurnTerminal(state, reason = "") {
+  manualTurnTerminalState = String(state || "Idle").trim() || "Idle";
+  if (typeof applyCanonicalRuntimeHealth === "function") {
+    applyCanonicalRuntimeHealth({
+      source: "manual_turn",
+      manualTurnState: manualTurnTerminalState,
+      reason,
+    });
+  }
+}
+
+function clearActiveManualTurn(state = "Completed", reason = "") {
+  clearManualTurnTimeout();
+  manualTurnInFlight = false;
+  manualTurnAssistantSeen = false;
+  manualTurnStartedAt = 0;
+  activeManualTurnId = "";
+  waitingForAssistant = false;
+  setChatComposerBusy(false);
+  setLoadingHint("");
+  setThinkingBar(false);
+  markManualTurnTerminal(state, reason);
+}
+
+function scheduleManualTurnTimeout(turnId) {
+  clearManualTurnTimeout();
+  manualTurnTimeoutTimer = setTimeout(() => {
+    if (!manualTurnInFlight || activeManualTurnId !== turnId) return;
+    const message = [
+      "Nova is taking longer than expected.",
+      "Your request may not have completed.",
+      "Nothing new was confirmed.",
+      "Retry after checking status, or restart Nova if the local runtime is not responding.",
+    ].join(" ");
+    appendChatMessage("assistant", message, null, "Timed out");
+    clearActiveManualTurn("Timed Out", "The active turn timed out before Nova confirmed completion.");
+    startWidgetAutoRefresh();
+    if (typeof probeRuntimeHealthOnce === "function") probeRuntimeHealthOnce();
+    if (workflowFocusState.awaitingResponse) {
+      workflowFocusState.status = "Needs adjustment";
+      workflowFocusState.copy = "The current step timed out before Nova confirmed completion.";
+      workflowFocusState.now = "No completion was confirmed for the timed-out request.";
+      workflowFocusState.next = "Check status or retry after the runtime health state clears.";
+      workflowFocusState.awaitingResponse = false;
+      renderWorkflowFocusWidget();
+    }
+  }, MANUAL_TURN_TIMEOUT_MS);
+}
+
 function injectUserText(text, channel = "text") {
   const clean = (text || "").trim();
   if (!clean) return;
@@ -2119,8 +2175,10 @@ function injectUserText(text, channel = "text") {
   manualTurnInFlight = true;
   manualTurnAssistantSeen = false;
   manualTurnStartedAt = Date.now();
+  manualTurnTerminalState = "Working";
   manualTurnCounter += 1;
   activeManualTurnId = `ui-turn-${manualTurnStartedAt}-${manualTurnCounter}`;
+  scheduleManualTurnTimeout(activeManualTurnId);
   suppressWidgetHydrationUntil = manualTurnStartedAt + 30000;
   clearStartupHydrationTimers();
   stopWidgetAutoRefresh();
@@ -2141,6 +2199,9 @@ function injectUserText(text, channel = "text") {
       null,
       "System status",
     );
+    if (typeof applyCanonicalRuntimeHealth === "function") {
+      applyCanonicalRuntimeHealth({ source: "manual_turn", manualTurnState: "Working" });
+    }
   }
 }
 
@@ -2478,6 +2539,7 @@ function connectWebSocket() {
   ws.onopen = () => {
     clearStartupHydrationTimers();
     flushQueuedUserMessages();
+    if (typeof probeRuntimeHealthOnce === "function") probeRuntimeHealthOnce();
     renderHeaderStatus(activePageState);
     renderIntroPage();
     renderHomeLaunchWidget();
@@ -2628,21 +2690,19 @@ function connectWebSocket() {
         if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
         if (manualTurnInFlight && !manualTurnAssistantSeen) {
           if (Date.now() - manualTurnStartedAt < 60000) break;
-          manualTurnInFlight = false;
-          manualTurnStartedAt = 0;
-          activeManualTurnId = "";
+          clearActiveManualTurn("Completed", "Nova ended the turn without a visible assistant message.");
         }
         if (manualTurnInFlight && manualTurnAssistantSeen) {
-          manualTurnInFlight = false;
-          manualTurnAssistantSeen = false;
-          manualTurnStartedAt = 0;
-          activeManualTurnId = "";
+          clearActiveManualTurn("Completed", "Nova completed the active turn.");
           startWidgetAutoRefresh();
         }
-        waitingForAssistant = false;
-        setChatComposerBusy(false);
-        setLoadingHint("");
-        setThinkingBar(false);
+        if (!manualTurnInFlight && waitingForAssistant) {
+          waitingForAssistant = false;
+          setChatComposerBusy(false);
+          setLoadingHint("");
+          setThinkingBar(false);
+          markManualTurnTerminal("Completed", "Nova completed the active request.");
+        }
         if (workflowFocusState.awaitingResponse) {
           workflowFocusState.status = "Ready";
           workflowFocusState.awaitingResponse = false;
@@ -2658,13 +2718,7 @@ function connectWebSocket() {
         }
         break;
       case "error":
-        manualTurnInFlight = false;
-        manualTurnAssistantSeen = false;
-        manualTurnStartedAt = 0;
-        activeManualTurnId = "";
-        waitingForAssistant = false;
-        setChatComposerBusy(false);
-        setThinkingBar(false);
+        clearActiveManualTurn("Failed", translateError(msg.code, msg.message));
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
         updateWorkflowFocusFromError(translateError(msg.code, msg.message));
         break;
@@ -2675,15 +2729,16 @@ function connectWebSocket() {
   };
 
   ws.onclose = () => {
-    manualTurnInFlight = false;
-    manualTurnAssistantSeen = false;
-    manualTurnStartedAt = 0;
-    activeManualTurnId = "";
-    waitingForAssistant = false;
-    setChatComposerBusy(false);
-    setThinkingBar(false);
+    if (manualTurnInFlight || waitingForAssistant) {
+      clearActiveManualTurn("Failed", "The runtime connection closed before Nova confirmed completion.");
+    } else {
+      clearManualTurnTimeout();
+    }
     clearStartupHydrationTimers();
     stopWidgetAutoRefresh();
+    if (typeof applyCanonicalRuntimeHealth === "function") {
+      applyCanonicalRuntimeHealth({ source: "websocket_close" });
+    }
     renderHeaderStatus(activePageState);
     renderIntroPage();
     renderSettingsPage();
@@ -4084,6 +4139,7 @@ window.addEventListener("DOMContentLoaded", () => {
   ensureDatalist();
   setupPrimaryChatControls();
   safeInit("connectWebSocket", () => connectWebSocket());
+  safeInit("startRuntimeHealthProbes", () => startRuntimeHealthProbes());
   safeInit("renderMorningPanel", () => renderMorningPanel());
   safeInit("renderWorkflowFocusWidget", () => renderWorkflowFocusWidget());
   safeInit("renderLiveHelpWidget", () => renderLiveHelpWidget());

@@ -89,6 +89,8 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
     assert message["data"]["reasoning_runtime"]["provider_label"] == "DeepSeek"
     assert message["data"]["bridge_runtime"]["status_label"] == "Enabled"
     assert message["data"]["connection_runtime"]["configured_provider_count"] == 1
+    assert message["data"]["canonical_runtime_health"]["state"] == "Healthy"
+    assert message["data"]["canonical_runtime_health"]["what_next"] == "Continue with your request."
 
 
 def test_send_chat_message_can_include_display_only_trust_review_card(monkeypatch):

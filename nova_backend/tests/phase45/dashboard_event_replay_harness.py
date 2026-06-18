@@ -34,6 +34,12 @@ STATUS_UNAVAILABLE_HINT = (
     "Try: provider status, connection status, or trust center."
 )
 
+TURN_TIMEOUT_HINT = (
+    "Nova is taking longer than expected. Your request may not have completed. "
+    "Nothing new was confirmed. Retry after checking status, or restart Nova if "
+    "the local runtime is not responding."
+)
+
 
 @dataclass
 class ReplayMessage:
@@ -56,6 +62,7 @@ class DashboardEventReplayHarness:
     manual_turn_started_at: int = 0
     manual_turn_counter: int = 0
     active_manual_turn_id: str = ""
+    manual_turn_terminal_state: str = "Idle"
     last_assistant_turn_key: str = ""
     loading_hint: str = ""
     thinking_bar: bool = False
@@ -87,6 +94,7 @@ class DashboardEventReplayHarness:
         self.manual_turn_in_flight = True
         self.manual_turn_assistant_seen = False
         self.manual_turn_started_at = now
+        self.manual_turn_terminal_state = "Working"
         self.manual_turn_counter += 1
         self.active_manual_turn_id = f"ui-turn-{now}-{self.manual_turn_counter}"
         self.startup_hydration_cleared += 1
@@ -125,29 +133,14 @@ class DashboardEventReplayHarness:
                 if now - self.manual_turn_started_at < 60000:
                     self.ignored_events.append(msg)
                     return "ignored"
-                self.manual_turn_in_flight = False
-                self.manual_turn_started_at = 0
-                self.active_manual_turn_id = ""
+                self._clear_active_manual_turn("Completed")
             if self.manual_turn_in_flight and self.manual_turn_assistant_seen:
-                self.manual_turn_in_flight = False
-                self.manual_turn_assistant_seen = False
-                self.manual_turn_started_at = 0
-                self.active_manual_turn_id = ""
+                self._clear_active_manual_turn("Completed")
                 self.widget_auto_refresh_started += 1
-            self.waiting_for_assistant = False
-            self.composer_busy = False
-            self.loading_hint = ""
-            self.thinking_bar = False
             return "handled"
 
         if msg_type == "error":
-            self.manual_turn_in_flight = False
-            self.manual_turn_assistant_seen = False
-            self.manual_turn_started_at = 0
-            self.active_manual_turn_id = ""
-            self.waiting_for_assistant = False
-            self.composer_busy = False
-            self.thinking_bar = False
+            self._clear_active_manual_turn("Failed")
             self._append_assistant(str(msg.get("message") or ""), "System status")
             return "handled"
 
@@ -167,15 +160,33 @@ class DashboardEventReplayHarness:
         return "unsupported"
 
     def handle_ws_close(self) -> None:
+        if self.manual_turn_in_flight or self.waiting_for_assistant:
+            self._clear_active_manual_turn("Failed")
+        else:
+            self.manual_turn_terminal_state = "Idle"
+        self.startup_hydration_cleared += 1
+        self.widget_auto_refresh_stopped += 1
+
+    def expire_manual_turn(self, *, now: int) -> bool:
+        if not self.manual_turn_in_flight:
+            return False
+        if now - self.manual_turn_started_at < 90000:
+            return False
+        self._append_assistant(TURN_TIMEOUT_HINT, "Timed out")
+        self._clear_active_manual_turn("Timed Out")
+        self.widget_auto_refresh_started += 1
+        return True
+
+    def _clear_active_manual_turn(self, terminal_state: str) -> None:
         self.manual_turn_in_flight = False
         self.manual_turn_assistant_seen = False
         self.manual_turn_started_at = 0
         self.active_manual_turn_id = ""
+        self.manual_turn_terminal_state = terminal_state
         self.waiting_for_assistant = False
         self.composer_busy = False
+        self.loading_hint = ""
         self.thinking_bar = False
-        self.startup_hydration_cleared += 1
-        self.widget_auto_refresh_stopped += 1
 
     def _append_assistant(self, text: str, confidence: str = "") -> bool:
         clean = str(text or "")
