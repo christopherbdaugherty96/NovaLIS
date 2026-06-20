@@ -107,6 +107,9 @@ EVENT_TYPES = frozenset(
         "OPENCLAW_AUTHORITY_DIVERGENCE",  # old and new approval decisions disagree (transition audit)
         # Governed routine lifecycle
         "ROUTINE_BRIEF_COMPLETED",      # Morning Brief RoutineGraph finished with receipt
+        # Daily Awareness Brief
+        "AWARENESS_BRIEF_ASSEMBLED",    # Awareness brief composed and sent to frontend
+        "AWARENESS_SHOPIFY_SNAPSHOT_READ",  # Read-only Shopify snapshot for awareness brief
         # Provider budget visibility
         "PROVIDER_USAGE_RECORDED",      # metered provider call completed and logged
         "PROVIDER_USAGE_BLOCKED",       # budget guard refused a provider call

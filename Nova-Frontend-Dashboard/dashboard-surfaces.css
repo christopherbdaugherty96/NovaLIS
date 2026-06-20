@@ -873,6 +873,76 @@ button.workspace-spotlight-card.active {
   pointer-events: auto;
 }
 
+.chat-streaming {
+  border-color: rgba(127, 181, 245, 0.35);
+}
+.chat-streaming span::after {
+  content: "\25CF";
+  display: inline;
+  margin-left: 2px;
+  animation: stream-pulse 1s ease-in-out infinite;
+  color: rgba(127, 181, 245, 0.7);
+}
+@keyframes stream-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.awareness-brief-card {
+  max-width: min(96%, 118ch);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(127, 181, 245, 0.25);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.awareness-brief-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(175, 198, 230, 0.15);
+  padding-bottom: 8px;
+}
+.awareness-brief-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: rgba(200, 220, 255, 0.9);
+}
+.awareness-brief-date {
+  font-size: 0.8rem;
+  color: rgba(175, 198, 230, 0.55);
+}
+.awareness-brief-section {
+  margin-bottom: 8px;
+}
+.awareness-brief-section h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(200, 220, 255, 0.85);
+}
+.awareness-brief-section ul {
+  margin: 0;
+  padding-left: 18px;
+  list-style: none;
+}
+.awareness-brief-section li {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(200, 220, 255, 0.75);
+}
+.awareness-brief-dim {
+  opacity: 0.5;
+}
+.awareness-brief-meta {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: rgba(175, 198, 230, 0.4);
+  text-align: right;
+}
+
 .message-utilities {
   justify-content: flex-end;
 }
