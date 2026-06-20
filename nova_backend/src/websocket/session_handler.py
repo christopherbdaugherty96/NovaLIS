@@ -2855,9 +2855,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_message(
                     ws,
                     (
-                        f"Reminder scheduled: {item['id']}\n"
+                        f"Reminder saved: {item['id']}\n"
                         f"Text: {reminder_body}\n"
-                        f"Next run: {_format_local_schedule_time(scheduled_for)}\n\n"
+                        f"Requested for: {_format_local_schedule_time(scheduled_for)}\n\n"
+                        "Honesty note: Nova does not yet have background "
+                        "reminder delivery. This reminder is saved but will "
+                        "not fire automatically. You can view saved reminders "
+                        "with \"show schedules\".\n\n"
                         f"{str(snapshot.get('summary') or '').strip()}"
                     ),
                     tone_domain="system",
@@ -3377,6 +3381,85 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     tone_domain="system",
                 )
                 await send_policy_overview_widget(ws, session_state, snapshot=policy_drafts.overview())
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"awareness brief", "daily awareness", "awareness"}:
+                from src.brief.awareness_brief import compose_awareness_brief
+
+                _aw_weather: dict | None = None
+                _aw_news_items: list | None = None
+                _aw_news_cats: dict | None = None
+                _aw_calendar: dict | None = None
+                _aw_shopify: dict | None = None
+                _aw_receipts: list = list(session_state.get("recent_receipts") or [])
+
+                _, _aw_w = await invoke_governed_text_command(governor, "weather", session_id)
+                if _aw_w is not None and _aw_w.success and isinstance(_aw_w.data, dict):
+                    w_widget = _aw_w.data.get("widget")
+                    if isinstance(w_widget, dict):
+                        _aw_weather = w_widget
+                        await ws_send(ws, w_widget)
+
+                _, _aw_n = await invoke_governed_text_command(governor, "news", session_id)
+                if _aw_n is not None and _aw_n.success and isinstance(_aw_n.data, dict):
+                    n_widget = _aw_n.data.get("widget")
+                    if isinstance(n_widget, dict):
+                        _aw_news_items = list(n_widget.get("items") or [])
+                        _aw_news_cats = dict(n_widget.get("categories") or {})
+                        session_state["news_cache"] = _aw_news_items
+                        session_state["news_categories"] = _aw_news_cats
+                        await ws_send(ws, n_widget)
+
+                _, _aw_c = await invoke_governed_text_command(governor, "calendar", session_id)
+                if _aw_c is not None and _aw_c.success and isinstance(_aw_c.data, dict):
+                    c_widget = _aw_c.data.get("widget")
+                    if isinstance(c_widget, dict):
+                        _aw_calendar = c_widget
+
+                from src.connectors.shopify_connector import get_shopify_connector
+                _shop_conn = get_shopify_connector()
+                if _shop_conn is not None and _shop_conn.is_configured:
+                    try:
+                        _snap = await _shop_conn.fetch_store_snapshot()
+                        _aw_shopify = _snap.as_dict()
+                        _log_ledger_event(
+                            governor,
+                            "AWARENESS_SHOPIFY_SNAPSHOT_READ",
+                            {"shop": _snap.shop_domain, "source": "awareness_brief"},
+                        )
+                    except Exception:
+                        _aw_shopify = None
+
+                _awareness = compose_awareness_brief(
+                    weather_data=_aw_weather,
+                    news_items=_aw_news_items,
+                    news_categories=_aw_news_cats,
+                    calendar_data=_aw_calendar,
+                    session_state=session_state,
+                    shopify_snapshot=_aw_shopify,
+                    recent_receipts=_aw_receipts,
+                )
+                _aw_dict = _awareness.to_dict()
+                _log_ledger_event(
+                    governor,
+                    "AWARENESS_BRIEF_ASSEMBLED",
+                    {
+                        "session_id": session_id,
+                        "available_sections": _aw_dict["available_count"],
+                        "total_sections": _aw_dict["total_count"],
+                    },
+                )
+                await ws_send(ws, _aw_dict)
+                if not silent_widget_refresh:
+                    available = _awareness.to_dict()["available_count"]
+                    total = _awareness.to_dict()["total_count"]
+                    await send_chat_message(
+                        ws,
+                        f"{_awareness.greeting}. Your daily awareness brief is ready — "
+                        f"{available} of {total} sections have live data.",
+                        tone_domain="daily",
+                    )
                 await send_chat_done(ws)
                 continue
 

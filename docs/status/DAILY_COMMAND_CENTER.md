@@ -1,11 +1,13 @@
 # Daily Command Center
 
 Status: manual continuity surface.
-Last reviewed: 2026-06-17.
-Source: runtime recovery and health truth product lock after deeper browser pass.
+Last reviewed: 2026-06-20.
+Source: post-implementation sync after startup health stabilization
+and daily awareness brief groundwork.
 
-This note is a human-facing command surface for current repo/vault orientation.
-It is not generated runtime truth and it does not authorize execution.
+This note is a human-facing command surface for current repo/vault
+orientation. It is not generated runtime truth and it does not
+authorize execution.
 
 For exact runtime facts, use:
 
@@ -17,45 +19,48 @@ For exact runtime facts, use:
 ## Current Priorities
 
 ```text
-1. Runtime recovery and health truth.
-2. Preserve visible user trust when Nova stalls.
-3. Keep this as a focused lock before implementation.
+1. Stabilize startup health checks (active branch, implementation in
+   progress).
+2. Daily Awareness Brief — the on-open product surface (code started,
+   not yet merged).
+3. Preserve visible user trust when Nova stalls or degrades.
 4. Preserve the Obsidian authority boundary.
-5. Treat PR #252 route-protection audit item as closed.
+5. Keep all four certified capabilities locked.
 ```
 
 ## Current Blockers
 
 ```text
-No active blocker remains from the #236 / #237 / #235 / #240 / #241 sequence.
-No active blocker remains from the PR #252 route-protection trust patch.
-The active product trust blocker is recovery clarity: Nova can look alive while
-local runtime requests are timing out.
+No active blocker from the doc/governance stack (#236-#254).
+Test suite pre-existing stall at 85-91% remains a verification
+friction item but does not block current work.
 ```
 
 ## Decisions Needed
 
 ```text
-Review this docs-only recovery priority lock.
-If it lands cleanly, prepare a separate implementation PR scoped to runtime
-recovery and health truth only.
-No action needed on the third-pass route-protection audit item; PR #252 is merged.
+1. Merge or continue the stabilize-startup-health-checks branch
+   (3 commits ahead of main, plus uncommitted awareness brief and
+   dashboard work).
+2. Decide scope boundary for the Daily Awareness Brief: ship the
+   7-section read-only brief as a standalone PR, or bundle with
+   the startup health stabilization.
 ```
 
 ## This Week
 
 ```text
-1. Scope runtime recovery and health truth before broader UX cleanup.
-2. Keep Obsidian as context/navigation only.
-3. Do not treat repo-doc proof as runtime authorization.
-4. Keep Second Brain implementation deferred behind the active recovery lane.
-5. Do not reopen route-protection scope unless a new audit or CI failure proves a missed sensitive route.
+1. Land startup health stabilization.
+2. Wire the Daily Awareness Brief as the on-open product surface.
+3. Continue Morning Brief friction logging.
+4. Keep Obsidian as context/navigation only.
+5. Keep Second Brain implementation deferred behind the active lane.
 ```
 
 ## Chosen Next Lane
 
 ```text
-Runtime recovery and health truth.
+Startup health stabilization + Daily Awareness Brief.
 ```
 
 Priority lock:
@@ -64,61 +69,63 @@ Priority lock:
 docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md
 ```
 
-Allowed implementation scope after this lock lands:
+## Active Branch: stabilize-startup-health-checks
 
 ```text
-canonical health truth
-runtime timeout/degraded/unavailable status modeling
-stuck-response detection and user-facing recovery copy
-chat/action timeout recovery affordances
-Trust explanation of product failures, not only governed receipts
-tests proving stale/timeout health cannot be shown as Normal
-tests proving no execution authority is added
+3 committed:
+  63af16a - Add canonical runtime health truth
+  15db24e - Fix runtime health CI drift
+  bd71b64 - Stabilize startup health checks
+
+Uncommitted work in progress:
+  - awareness_brief.py (new: 7-section daily awareness assembler)
+  - test_awareness_brief.py (new: tests for awareness brief)
+  - session_handler.py (health check + awareness wiring)
+  - event_types.py (new ledger event types)
+  - dashboard-chat-news.js (frontend awareness rendering)
+  - dashboard-surfaces.css (awareness card styling)
+  - index.html (dashboard template update)
+  - Runtime docs regenerated
 ```
 
-## Recent Landed Stack
+## Recent Landed Stack (since 2026-06-14)
 
 ```text
-PR #236 - baseline CI/dependency cleanup merged.
-PR #237 - AI ecosystem operating model merged.
-PR #235 - Obsidian authority-tier overlay merged.
-PR #240 - repo-doc operating-loop proof merged.
-PR #241 - continuity freshness sync and Daily Command Center merged.
-PR #252 - route protection coverage / local-only guard hardening merged.
+PR #245 - Provider budget visibility foundation (2026-06-15).
+PR #246 - Provider/dependency status visibility (2026-06-15).
+PR #247 - DeepSeek log-only budget check (2026-06-15).
+PR #248 - DeepSeek hard budget enforcement (2026-06-15).
+PR #249 - Provider budget status accuracy / fallback (2026-06-16).
+PR #250 - First-user intent routing and fallback clarity (2026-06-16).
+PR #251 - Batch 2/3 pattern coverage tightening (2026-06-16).
+PR #252 - Route protection coverage / local-only guards (2026-06-16).
+PR #253 - Continuity sync after route protection (2026-06-16).
+PR #254 - Recent workstream closeout (2026-06-16).
 ```
 
-## Recently Closed Trust Item
+## Earlier Landed Stack (2026-06-08 to 2026-06-13)
 
 ```text
-Route protection audit item - CLOSED (PR #252, 2026-06-16).
-Sensitive non-capability local routes are now explicit local_only.
-/api/openclaw/bridge/message remains token_gated_remote.
-docs/current_runtime/ROUTE_PROTECTION_COVERAGE.md is generated.
-Main post-merge gates green: CI, Governance, Runtime Docs,
-Fingerprint Clean, Phase-3.5 Verification.
-No capability expansion or execution authority added.
+PR #236 - Baseline CI/dependency cleanup.
+PR #237 - AI ecosystem operating model.
+PR #235 - Obsidian authority-tier overlay.
+PR #240 - Repo-doc operating-loop proof.
+PR #241 - Continuity freshness sync and Daily Command Center.
+PR #242 - Post-merge command center refresh.
+PR #243 - Second Brain Slice 1 + governed Morning Brief activation.
+PR #244 - Trust review snapshot CI fix.
 ```
 
-## Recent Multi-Track Closeout
+## Recent Product Direction
 
 ```text
-See docs/status/RECENT_WORKSTREAM_CLOSEOUT_2026-06-17.md.
-Provider governance and budget control are complete for current scope.
-Latest synthetic-user testing reached 98%.
-Deep audit pass 3 produced the route-protection finding closed by PR #252.
-The active next lane is now Runtime recovery and health truth.
-Real-use observation, Morning Brief usage, friction logging, and workflow
-validation continue as operating practice, not a new authority lane.
-```
-
-## Recent Product Finding
-
-```text
-The deeper browser/computer-use pass found the clearest current product signal:
-Nova can look alive while the local runtime is not actually responding.
-
-The next successful product improvement is not making Nova do more.
-It is making Nova fail clearly.
+Nova is a governed daily awareness assistant.
+Opening Nova should be useful within 30 seconds.
+Seven awareness sections on open: weather, news, calendar,
+project state, Shopify snapshot, Printify snapshot, what changed.
+Each section is independently optional with graceful degradation.
+Read-only awareness first, governed action second.
+See: docs/status/PRODUCT_DIRECTION_DAILY_AWARENESS_2026-06-18.md
 ```
 
 ## Boundary
@@ -133,7 +140,7 @@ Notes do not grant permission.
 ## Not Authorized Here
 
 ```text
-runtime behavior changes
+runtime authority expansion
 capability_locks.json changes
 GovernorMediator changes
 Shopify writes or commerce mutation
@@ -142,13 +149,12 @@ browser/computer-use expansion
 scheduler or background loops
 external writes
 memory promotion
-Second Brain implementation in this recovery lock
+Second Brain implementation (deferred behind active lane)
 Plan My Week
 model presets
 more agents
 more providers
 bigger dashboard redesign
-advanced navigation cleanup
 autonomous workflow execution
 Obsidian execution authority
 ```
