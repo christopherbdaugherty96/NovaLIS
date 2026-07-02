@@ -54,13 +54,13 @@ Sources are never edited — this overlay just builds navigation on top.
 |---|---:|---:|
 | Phases | 173 | 0 |
 | Governance | 8 | 12 |
-| Runtime and ops | 23 | 293 |
+| Runtime and ops | 23 | 294 |
 | Frontend | 0 | 29 |
-| Tests | 11 | 433 |
+| Tests | 11 | 436 |
 | Scripts and tools | 4 | 21 |
 | Design specs | 14 | 0 |
 | Proofs | 237 | 24 |
-| Reference | 559 | 41 |
+| Reference | 562 | 41 |
 | Archive | 139 | 15 |
 
-_Indexed 1168 docs and 868 non-doc files._
+_Indexed 1171 docs and 872 non-doc files._

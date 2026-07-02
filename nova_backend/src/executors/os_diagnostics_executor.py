@@ -4,11 +4,10 @@ import json
 import os
 import platform
 import shutil
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-
-import threading
 
 import psutil
 
