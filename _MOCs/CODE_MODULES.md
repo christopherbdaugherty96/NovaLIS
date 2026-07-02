@@ -407,11 +407,13 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 
-## `brief` (3 files)
+## `brief` (4 files)
 
 ### Files
 
 - [[nova_backend/src/brief/__init__.py|src/brief]]
+- [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
+    - Daily Awareness Brief — the on-open product surface.
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
     - Daily Brief synthesis module.
 - [[nova_backend/src/brief/recommendations.py|recommendations]]
@@ -426,6 +428,8 @@ _Read-only Brain scaffolding._
 
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+- [[nova_backend/src/websocket/session_handler.py|session_handler]]
+- [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
 - [[nova_backend/tests/test_deepseek_hard_budget.py|test_deepseek_hard_budget]]
 - [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
@@ -434,6 +438,7 @@ _Read-only Brain scaffolding._
 
 ### Tests
 
+- [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
 
 ## `build_phase` (1 files)
@@ -551,6 +556,7 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
+- [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
@@ -2037,7 +2043,9 @@ _Websocket session runtime modules._
 - [[nova_backend/src/agents/contradiction.py|contradiction]]
 - [[nova_backend/src/agents/deep_audit.py|deep_audit]]
 - [[nova_backend/src/agents/memory.py|memory - src/agents]]
+- [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
 - [[nova_backend/src/build_phase.py|build_phase]]
+- [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
 - [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]

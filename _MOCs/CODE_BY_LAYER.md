@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (304)
+## Backend runtime (305)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -132,6 +132,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
 - [[nova_backend/src/brief/__init__.py|src/brief]]
+- [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
+  summary: Daily Awareness Brief — the on-open product surface.
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
   summary: Daily Brief synthesis module.
 - [[nova_backend/src/brief/recommendations.py|recommendations]]
@@ -609,7 +611,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (436)
+## Tests and verification (438)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -668,6 +670,9 @@ Use this to orient yourself before diving into a specific module.
   summary: def _response(prompt: str) -> str:
 - [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
   summary: ApprovalLevel,
+- [[nova_backend/tests/brief/__init__.py|tests/brief]]
+- [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
+  summary: Tests for the Daily Awareness Brief module.
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [[nova_backend/tests/certification/__init__.py|tests/certification]]
