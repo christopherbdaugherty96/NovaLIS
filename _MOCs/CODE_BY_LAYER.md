@@ -207,7 +207,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
   summary: meta_intent_handler.py
 - [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
-  summary: Morning Brief handler — governed brief via RoutineGraph.
+  summary: Daily Brief handler — governed brief via RoutineGraph.
 - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
   summary: Conversation-facing planning run preview helpers.
 - [[nova_backend/src/conversation/prompts.py|prompts]]
@@ -611,7 +611,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (438)
+## Tests and verification (439)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -720,6 +720,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Shared fixtures and helpers for capability certification tests.
 - [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
   summary: Capability Lock Regression Guard
+- [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
+  summary: Suite-wide test isolation fixtures.
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
   summary: def test_http_shopify_connector_uses_configured_api_version():
 - [[nova_backend/tests/conversation/__init__.py|tests/conversation]]

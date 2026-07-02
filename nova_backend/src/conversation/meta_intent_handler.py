@@ -95,7 +95,7 @@ _CAP_LABELS: dict[str, str] = {
     "screen_analysis":           "Screen analysis",
     "explain_anything":          "Explain what you're looking at",
     "memory_governance":         "Memory",
-    "openclaw_execute":          "Morning brief / home agent",
+    "openclaw_execute":          "Daily brief / home agent",
     "send_email_draft":          "Email draft",
 }
 
@@ -176,7 +176,7 @@ _CAP_DESCRIPTIONS: dict[str, str] = {
         "I can remember things you tell me and bring them up later when they're useful."
     ),
     "openclaw_execute": (
-        "I can run a morning brief or home agent template."
+        "I can run a daily brief or home agent template."
     ),
     "send_email_draft": (
         "I can draft an email and open it in your mail app — you decide whether to send."

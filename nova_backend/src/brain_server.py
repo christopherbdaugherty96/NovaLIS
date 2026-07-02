@@ -1570,7 +1570,7 @@ def _capability_help_actions() -> list[dict[str, str]]:
     if active_run:
         _add("Check active run", "openclaw status")
     if weather_live and calendar_live:
-        _add("Morning brief", "morning brief")
+        _add("Daily brief", "daily brief")
     if calendar_live:
         _add("Today's schedule", "today's schedule")
     if news_live:
@@ -1619,7 +1619,7 @@ def _capability_help_message() -> str:
         lines.append("- Weather, news, and calendar can be connected in Settings for a richer daily view.")
 
     if weather_live and calendar_live:
-        lines.append("- With weather and calendar connected, I can do a full morning brief: weather, schedule, and headlines.")
+        lines.append("- With weather and calendar connected, I can do a full daily brief: weather, schedule, and headlines.")
     elif calendar_live:
         lines.append("- Calendar is connected — try: today's schedule, tomorrow, or what's coming up this week.")
     elif weather_live:

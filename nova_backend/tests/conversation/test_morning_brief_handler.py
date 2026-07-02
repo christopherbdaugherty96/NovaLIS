@@ -15,11 +15,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.conversation.morning_brief_handler import (
+    DAILY_BRIEF_TRIGGERS,
     MORNING_BRIEF_TRIGGERS,
     MorningBriefResult,
     calendar_result_to_brief_data,
     compose_governed_morning_brief,
+    is_daily_brief_request,
     is_morning_brief_request,
+    normalize_brief_text,
     weather_result_to_brief_data,
 )
 
@@ -29,18 +32,62 @@ from src.conversation.morning_brief_handler import (
 # -------------------------------------------------------------------
 
 class TestTriggerDetection:
-    @pytest.mark.parametrize("trigger", sorted(MORNING_BRIEF_TRIGGERS))
+    @pytest.mark.parametrize("trigger", sorted(DAILY_BRIEF_TRIGGERS))
     def test_known_triggers_match(self, trigger: str):
-        assert is_morning_brief_request(trigger) is True
+        assert is_daily_brief_request(trigger) is True
 
     def test_non_trigger_rejected(self):
-        assert is_morning_brief_request("hello") is False
-        assert is_morning_brief_request("good morning") is False
-        assert is_morning_brief_request("") is False
+        assert is_daily_brief_request("hello") is False
+        assert is_daily_brief_request("good morning") is False
+        assert is_daily_brief_request("") is False
+        assert is_daily_brief_request("give me a brief summary of this article") is False
+        assert is_daily_brief_request("intelligence brief") is False
 
     def test_triggers_are_lowercase(self):
-        for t in MORNING_BRIEF_TRIGGERS:
+        for t in DAILY_BRIEF_TRIGGERS:
             assert t == t.lower()
+
+    def test_compat_aliases_preserved(self):
+        assert MORNING_BRIEF_TRIGGERS is DAILY_BRIEF_TRIGGERS
+        assert is_morning_brief_request is is_daily_brief_request
+
+
+class TestTriggerNormalization:
+    """One user-facing Daily Brief: phrasing variants must all resolve."""
+
+    @pytest.mark.parametrize("phrase", [
+        "Daily Brief",
+        "daily brief!",
+        "morning brief please",
+        "Morning brief.",
+        "give me my daily brief",
+        "give me the daily brief please",
+        "can you run the morning brief",
+        "hey nova, daily brief",
+        "brief me!",
+        "what's my day look like?",
+        "What does my day look like today?",
+        "what matters today?",
+        "what should i focus on today",
+        "plan my day",
+        "Catch me up.",
+    ])
+    def test_phrasing_variants_match(self, phrase: str):
+        assert is_daily_brief_request(phrase) is True
+
+    @pytest.mark.parametrize("phrase", [
+        "brief history of rome",
+        "write a brief for the legal team",
+        "what should i focus on in my career",
+        "daily standup notes",
+        "news brief",
+    ])
+    def test_non_brief_phrases_rejected(self, phrase: str):
+        assert is_daily_brief_request(phrase) is False
+
+    def test_normalize_strips_punctuation_and_courtesy(self):
+        assert normalize_brief_text("Give me my Daily Brief, please!") == "daily brief"
+        assert normalize_brief_text("  morning   brief  ") == "morning brief"
 
 
 # -------------------------------------------------------------------

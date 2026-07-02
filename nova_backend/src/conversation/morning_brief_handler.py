@@ -1,8 +1,13 @@
-"""Morning Brief handler — governed brief via RoutineGraph.
+"""Daily Brief handler — governed brief via RoutineGraph.
 
-Extracts the morning brief path from session_handler into a clean
-module. Uses run_daily_brief_routine() to produce a RoutineRun and
-RoutineReceipt alongside the brief text.
+Single source of truth for the user-facing Daily Brief trigger and the
+governed brief assembly path. Uses run_daily_brief_routine() to produce
+a RoutineRun and RoutineReceipt alongside the brief text.
+
+One user-facing brief: every phrasing variant ("daily brief",
+"morning brief", "brief me", "what matters today", a quick-action
+button) must resolve through is_daily_brief_request() to this one
+governed path. Do not add brief trigger sets elsewhere.
 
 Non-authorizing: the brief is read-only synthesis. It does not
 execute capabilities, grant authority, or modify state.
@@ -10,6 +15,7 @@ execute capabilities, grant authority, or modify state.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -17,19 +23,63 @@ from src.routine.daily_brief_routine import run_daily_brief_routine
 from src.routine.routine_graph import RoutineReceipt, RoutineRun
 from src.trust.receipt_store import get_recent_receipts
 
-MORNING_BRIEF_TRIGGERS = frozenset({
-    "morning",
+DAILY_BRIEF_TRIGGERS = frozenset({
+    "daily brief",
     "morning brief",
+    "morning",
     "brief",
     "brief me",
     "what did i miss",
     "catch me up",
+    "plan my day",
+    "what matters today",
 })
+
+# Natural phrasings that don't reduce to a fixed trigger string.
+_DAILY_BRIEF_PATTERNS = (
+    re.compile(r"^what(?:'?s| is| does) (?:my |the )?day look(?:ing)? like(?: today)?$"),
+    re.compile(r"^what should i focus on(?: today| this morning)?$"),
+)
+
+# Courtesy words stripped from the edges before trigger matching, so
+# "give me my daily brief please" resolves to "daily brief".
+_COURTESY_EDGE_WORDS = frozenset({
+    "hey", "hi", "nova", "please", "thanks", "can", "could", "you",
+    "give", "show", "run", "start", "me", "my", "the", "a",
+})
+
+
+def normalize_brief_text(text: str) -> str:
+    """Lowercase, strip punctuation, collapse spaces, trim courtesy words."""
+    lowered = str(text or "").lower()
+    lowered = re.sub(r"[^a-z' ]+", " ", lowered)
+    words = lowered.split()
+    while words and words[0] in _COURTESY_EDGE_WORDS:
+        words.pop(0)
+    while words and words[-1] in _COURTESY_EDGE_WORDS:
+        words.pop()
+    return " ".join(words)
+
+
+def is_daily_brief_request(text: str) -> bool:
+    """True when the message asks for the Daily Brief, in any phrasing."""
+    lowered = str(text or "").strip().lower()
+    if lowered in DAILY_BRIEF_TRIGGERS:
+        return True
+    normalized = normalize_brief_text(text)
+    if normalized in DAILY_BRIEF_TRIGGERS:
+        return True
+    return any(p.match(normalized) for p in _DAILY_BRIEF_PATTERNS)
+
+
+# Backwards-compatible aliases (older call sites and tests).
+MORNING_BRIEF_TRIGGERS = DAILY_BRIEF_TRIGGERS
+is_morning_brief_request = is_daily_brief_request
 
 
 @dataclass(frozen=True)
 class MorningBriefResult:
-    """Result of assembling a governed morning brief."""
+    """Result of assembling a governed daily brief."""
     text: str
     run: RoutineRun
     receipt: RoutineReceipt
@@ -38,10 +88,6 @@ class MorningBriefResult:
     @property
     def has_content(self) -> bool:
         return bool(self.brief_dict.get("sections"))
-
-
-def is_morning_brief_request(lowered: str) -> bool:
-    return lowered in MORNING_BRIEF_TRIGGERS
 
 
 def compose_governed_morning_brief(

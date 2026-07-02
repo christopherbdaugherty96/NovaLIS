@@ -51,7 +51,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "chat_build_page", label: "Build a page", command: "build me a landing page for my business" },
       { id: "chat_research", label: "Research a topic", command: "research latest technology news" },
       { id: "chat_explain", label: "Explain what I'm seeing", command: "explain this" },
-      { id: "chat_brief", label: "Plan my day", command: "daily brief" },
+      { id: "chat_brief", label: "Daily brief", command: "daily brief" },
       { id: "chat_threads", label: "Continue a project", command: "show threads" },
       { id: "chat_thread_status", label: "Check project status", command: "project status this" },
       { id: "chat_thread_memory", label: "Review project memory", command: "memory list thread this" },
@@ -103,7 +103,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "agent_refresh", label: "Refresh agent", command: "bridge status", stayOnPage: true },
       { id: "agent_settings", label: "Settings", command: "connection status", switchToPage: "settings", stayOnPage: true },
       { id: "agent_trust", label: "Trust", command: "trust center", switchToPage: "trust", stayOnPage: true },
-      { id: "agent_brief", label: "Morning brief", command: "daily brief", switchToPage: "chat" },
+      { id: "agent_brief", label: "Daily brief", command: "daily brief", switchToPage: "chat" },
     ],
     memory: [
       { id: "memory_page_overview", label: "Overview", command: "memory overview", stayOnPage: true },

@@ -54,7 +54,7 @@ PROVIDER_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "weather": {
         "label": "Weather (Visual Crossing)",
-        "description": "Current conditions, forecasts, and morning brief weather.",
+        "description": "Current conditions, forecasts, and daily brief weather.",
         "env_var": "WEATHER_API_KEY",
         "kind": "api_key",
         "placeholder": "Your Visual Crossing key",
