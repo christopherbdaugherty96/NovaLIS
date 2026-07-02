@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1052)
+## docs (1055)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -580,7 +580,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 981b99392834a39cd8f3303474df8d9acb4e67cef31536a6fb2cf67d292d05c6
+  summary: Runtime Fingerprint: 82d1cdec13cd6db9fe2489e5f2c081e2f81c9d17673fa7faa06a351e254300a2
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -606,7 +606,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 7c404872783a921c824f9fb01d0df1523b5d74137534a59e14a5723205d5332a
+  summary: - runtimesurfacehash: 599bf6ebe318559008fe3fec38c47a488ff1148c263e984dadba23056bc8baf1
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -2153,7 +2153,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-06-16 (Route protection audit closure)
+  summary: Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
 - [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
   summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
@@ -2176,12 +2176,16 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: proposed / ready for review.
 - [doc] [[docs/status/PRIORITY_LOCK_2026-05-26_UI_SIMPLIFICATION|UI Simplification Priority Lock — Product Clarity Slice]]
   summary: Locked: 2026-05-26
+- [doc] [[docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH|Runtime Recovery And Health Truth Priority Lock - 2026-06-17]]
+  summary: Status: proposed next product lane.
 - [doc] [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
   summary: Status: substantially reduced / visual proof blocked / closeout-ready
 - [doc] [[docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION|Proposed Priority Lock - Second Brain Foundation]]
   summary: Status: PROPOSED / not active.
 - [doc] [[docs/status/README|Status Notes]]
   summary: This folder contains human-maintained work-continuity notes.
+- [doc] [[docs/status/RECENT_WORKSTREAM_CLOSEOUT_2026-06-17|Recent Workstream Closeout - 2026-06-17]]
+  summary: Human-maintained continuity note.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
 - [doc] [[docs/status/REPO_DOC_OPERATING_LOOP_PROOF_2026-06-09|Repo-Doc Operating Loop Proof - 2026-06-09]]
@@ -2208,6 +2212,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: inventory / product-direction corrected 2026-05-09 / no runtime changes in this branch
 - [doc] [[docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07|Web / News / UI Proof Lock Closeout Review - 2026-05-07]]
   summary: Status: qualified closeout / screenshot proof explicitly blocked
+- [doc] [[docs/status/WEBSOCKET_FREEZE_INVESTIGATION_2026-06-18|WebSocket-Induced Server Freeze — Investigation Report]]
+  summary: Date: 2026-06-18
 - [doc] [[docs/status/WORK_STYLE_ENFORCEMENT_LOCK_2026-05-11|Work Style Enforcement Lock]]
   summary: Date: 2026-05-11
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
@@ -2221,7 +2227,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Last reviewed: 2026-05-26 (post-PR #234)
+  summary: Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
@@ -2492,7 +2498,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (765)
+## nova_backend (769)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2749,7 +2755,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
   summary: OpenClaw Execute Executor — cap 63 (openclaw_execute)
 - [code] [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-  summary: class OSDiagnosticsExecutor:
+  summary: _model_status_cache: dict[str, object] = {}
 - [code] [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
   summary: class ResponseVerificationExecutor:
 - [code] [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
@@ -2979,6 +2985,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Plan My Week — everyday workflow demo with an explicit approval boundary.
 - [code] [[nova_backend/src/routine/routine_graph.py|routine_graph]]
   summary: Core RoutineGraph objects: RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt.
+- [code] [[nova_backend/src/runtime_health.py|runtime_health]]
+  summary: RuntimeHealthState = Literal["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering"]
 - [code] [[nova_backend/src/services/stt_engine.py|stt_engine]]
   summary: Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 - [code] [[nova_backend/src/services/weather_service.py|weather_service]]
@@ -3590,7 +3598,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/phase45/test_dashboard_context_insight_widget.py|test_dashboard_context_insight_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_event_replay_harness.py|test_dashboard_event_replay_harness]]
-  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+  summary: BUSY_TURN_HINT,
 - [code] [[nova_backend/tests/phase45/test_dashboard_header_and_news_refinement.py|test_dashboard_header_and_news_refinement]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_intelligence_brief_widget.py|test_dashboard_intelligence_brief_widget]]
@@ -3615,6 +3623,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_policy_center_widget.py|test_dashboard_policy_center_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [code] [[nova_backend/tests/phase45/test_dashboard_runtime_health_contract.py|test_dashboard_runtime_health_contract]]
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_search_widget_followups.py|test_dashboard_search_widget_followups]]
   summary: def test_search_widget_buttons_use_supported_topic_followups():
 - [code] [[nova_backend/tests/phase45/test_dashboard_structured_report_widget.py|test_dashboard_structured_report_widget]]
@@ -3635,6 +3645,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def test_explain_anything_router_prefers_file_route_when_file_selected():
 - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
   summary: def test_failure_ladder_progression_to_offline_safe_mode():
+- [code] [[nova_backend/tests/phase45/test_health_check_cache_and_hydration.py|test_health_check_cache_and_hydration]]
+  summary: Tests for model-health check caching introduced in the
 - [code] [[nova_backend/tests/phase45/test_non_search_widget_fuzzing.py|test_non_search_widget_fuzzing]]
   summary: ---------------------------------------------------------------------------
 - [code] [[nova_backend/tests/phase45/test_obsidian_overlay_generator.py|test_obsidian_overlay_generator]]
@@ -3647,6 +3659,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
   summary: Tests for /api/profile endpoints via profile_api.py.
+- [code] [[nova_backend/tests/phase45/test_runtime_health_model.py|test_runtime_health_model]]
+  summary: def test_http_timeout_beats_trust_normal():
 - [code] [[nova_backend/tests/phase45/test_screen_capture_executor.py|test_screen_capture_executor]]
   summary: def _request(params: dict):
 - [code] [[nova_backend/tests/phase45/test_system_status_reporting_contract.py|test_system_status_reporting_contract]]

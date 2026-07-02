@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -48,7 +49,7 @@ def build_settings_router(deps) -> APIRouter:
 
     @router.get("/api/settings/runtime")
     async def get_runtime_settings():
-        return _runtime_settings_payload(deps)
+        return await asyncio.to_thread(_runtime_settings_payload, deps)
 
     @router.post("/api/settings/runtime/setup-mode")
     async def set_runtime_setup_mode(payload: dict[str, Any]):
@@ -201,18 +202,20 @@ def build_settings_router(deps) -> APIRouter:
     @router.get("/api/settings/model/status")
     async def get_model_status():
         """Return current LLM model status including fallback state."""
-        from src.llm.llm_gateway import model_status_snapshot
-        status = model_status_snapshot()
-        model_status, model_note, model_hint, model_ready = (
-            deps.OSDiagnosticsExecutor._model_status_details()
-        )
-        return {
-            **status,
-            "status": model_status,
-            "note": model_note,
-            "hint": model_hint,
-            "ready": model_ready,
-        }
+        def _build():
+            from src.llm.llm_gateway import model_status_snapshot
+            status = model_status_snapshot()
+            model_status, model_note, model_hint, model_ready = (
+                deps.OSDiagnosticsExecutor._model_status_details()
+            )
+            return {
+                **status,
+                "status": model_status,
+                "note": model_note,
+                "hint": model_hint,
+                "ready": model_ready,
+            }
+        return await asyncio.to_thread(_build)
 
     @router.post("/api/settings/model/confirm")
     async def confirm_model_update_api():

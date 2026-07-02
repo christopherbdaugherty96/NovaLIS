@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (303)
+## Backend runtime (304)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -258,7 +258,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
   summary: OpenClaw Execute Executor — cap 63 (openclaw_execute)
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-  summary: class OSDiagnosticsExecutor:
+  summary: _model_status_cache: dict[str, object] = {}
 - [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
   summary: class ResponseVerificationExecutor:
 - [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
@@ -482,6 +482,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Plan My Week — everyday workflow demo with an explicit approval boundary.
 - [[nova_backend/src/routine/routine_graph.py|routine_graph]]
   summary: Core RoutineGraph objects: RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt.
+- [[nova_backend/src/runtime_health.py|runtime_health]]
+  summary: RuntimeHealthState = Literal["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering"]
 - [[nova_backend/src/services/stt_engine.py|stt_engine]]
   summary: Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 - [[nova_backend/src/services/weather_service.py|weather_service]]
@@ -607,7 +609,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (433)
+## Tests and verification (436)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1053,7 +1055,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase45/test_dashboard_context_insight_widget.py|test_dashboard_context_insight_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_event_replay_harness.py|test_dashboard_event_replay_harness]]
-  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+  summary: BUSY_TURN_HINT,
 - [[nova_backend/tests/phase45/test_dashboard_header_and_news_refinement.py|test_dashboard_header_and_news_refinement]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_intelligence_brief_widget.py|test_dashboard_intelligence_brief_widget]]
@@ -1078,6 +1080,8 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_policy_center_widget.py|test_dashboard_policy_center_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [[nova_backend/tests/phase45/test_dashboard_runtime_health_contract.py|test_dashboard_runtime_health_contract]]
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_search_widget_followups.py|test_dashboard_search_widget_followups]]
   summary: def test_search_widget_buttons_use_supported_topic_followups():
 - [[nova_backend/tests/phase45/test_dashboard_structured_report_widget.py|test_dashboard_structured_report_widget]]
@@ -1098,6 +1102,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_explain_anything_router_prefers_file_route_when_file_selected():
 - [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
   summary: def test_failure_ladder_progression_to_offline_safe_mode():
+- [[nova_backend/tests/phase45/test_health_check_cache_and_hydration.py|test_health_check_cache_and_hydration]]
+  summary: Tests for model-health check caching introduced in the
 - [[nova_backend/tests/phase45/test_non_search_widget_fuzzing.py|test_non_search_widget_fuzzing]]
   summary: ---------------------------------------------------------------------------
 - [[nova_backend/tests/phase45/test_obsidian_overlay_generator.py|test_obsidian_overlay_generator]]
@@ -1110,6 +1116,8 @@ Use this to orient yourself before diving into a specific module.
   summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
   summary: Tests for /api/profile endpoints via profile_api.py.
+- [[nova_backend/tests/phase45/test_runtime_health_model.py|test_runtime_health_model]]
+  summary: def test_http_timeout_beats_trust_normal():
 - [[nova_backend/tests/phase45/test_screen_capture_executor.py|test_screen_capture_executor]]
   summary: def _request(params: dict):
 - [[nova_backend/tests/phase45/test_system_status_reporting_contract.py|test_system_status_reporting_contract]]
