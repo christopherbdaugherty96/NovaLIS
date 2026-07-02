@@ -418,9 +418,13 @@ def test_news_intelligence_parsing():
     assert inv.capability_id == 49
     assert inv.params["selection"] == "topic"
 
-    inv = GovernorMediator.parse_governed_invocation("daily brief")
+    inv = GovernorMediator.parse_governed_invocation("intelligence brief")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 50
+
+    # "daily brief" is the user-facing Daily Brief and is handled by the
+    # session-level governed RoutineGraph path, not the mediator parser.
+    assert GovernorMediator.parse_governed_invocation("daily brief") is None
 
     inv = GovernorMediator.parse_governed_invocation("show topic memory map")
     assert isinstance(inv, Invocation)

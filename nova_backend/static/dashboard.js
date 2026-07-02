@@ -1506,7 +1506,7 @@ function getSetupReadinessItems() {
           : "optional",
       ready: true,
       copy: calendarConnected
-        ? (String((calendarProvider && calendarProvider.health_detail) || "").trim() || "Calendar is connected and available to morning brief and evening digest.")
+        ? (String((calendarProvider && calendarProvider.health_detail) || "").trim() || "Calendar is connected and available to daily brief and evening digest.")
         : calendarNeedsAttention
           ? (String(calendarProvider.health_detail || "").trim() || "Calendar path is saved but needs attention in Settings.")
           : "Calendar is optional. Add your local .ics file path in Connections when you want schedule-aware briefs and daily summaries.",
@@ -1755,13 +1755,13 @@ function getIntroFirstSuccessItems(items = []) {
 
   if (weatherLive && calendarLive) {
     liveItems.push({
-      title: "Morning brief",
+      title: "Daily brief",
       badge: "Full brief",
       copy: "Weather, calendar events, and top news in one daily summary — pulled fresh from your connected sources.",
-      actionLabel: "Morning brief",
+      actionLabel: "Daily brief",
       action: () => {
         setActivePage("chat");
-        injectUserText("morning brief", "text");
+        injectUserText("daily brief", "text");
       },
     });
   }

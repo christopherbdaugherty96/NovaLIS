@@ -2797,7 +2797,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     body="Run your scheduled daily brief.",
                     recurrence="daily",
                     next_run_at=scheduled_for,
-                    command="morning brief",
+                    command="daily brief",
                 )
                 snapshot = notification_schedules.summarize()
                 _log_ledger_event(
@@ -3463,7 +3463,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {"morning", "morning brief", "brief", "brief me", "what did i miss", "catch me up"}:
+            # Daily Brief — single user-facing brief; trigger truth lives in
+            # morning_brief_handler.is_daily_brief_request (do not inline sets here)
+            from src.conversation.morning_brief_handler import is_daily_brief_request
+
+            if is_daily_brief_request(lowered):
                 weather_summary = "Weather unavailable."
                 news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."

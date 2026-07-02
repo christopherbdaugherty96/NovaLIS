@@ -621,7 +621,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
     - meta_intent_handler.py
 - [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
-    - Morning Brief handler — governed brief via RoutineGraph.
+    - Daily Brief handler — governed brief via RoutineGraph.
 - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
     - Conversation-facing planning run preview helpers.
 - [[nova_backend/src/conversation/prompts.py|prompts]]
@@ -832,6 +832,7 @@ _Debug utilities package._
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
 - [[nova_backend/tests/adversarial/test_search_injection_no_escalation.py|test_search_injection_no_escalation]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
+- [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
 - [[nova_backend/tests/executors/test_analysis_document_executor.py|test_analysis_document_executor]]
 - [[nova_backend/tests/executors/test_explain_anything_executor.py|test_explain_anything_executor]]
 - [[nova_backend/tests/executors/test_external_reasoning_executor.py|test_external_reasoning_executor]]
@@ -839,8 +840,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_local_action_executors.py|test_local_action_executors]]
 - [[nova_backend/tests/executors/test_local_control_executors.py|test_local_control_executors]]
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
-- [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
-- _…and 24 more_
+- _…and 25 more_
 
 ### Tests
 
