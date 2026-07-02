@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1055)
+## docs (1056)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -580,7 +580,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 82d1cdec13cd6db9fe2489e5f2c081e2f81c9d17673fa7faa06a351e254300a2
+  summary: Runtime Fingerprint: 17ce1d2d4b064383334830401e6c96ebc6e5edba41614a63205a412657c3aa2d
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -606,7 +606,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 599bf6ebe318559008fe3fec38c47a488ff1148c263e984dadba23056bc8baf1
+  summary: - runtimesurfacehash: 8e7a5d3a6301979504e956bfa96781f2681336514a6f66f522eeb0eb2a1426f4
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -2178,6 +2178,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Locked: 2026-05-26
 - [doc] [[docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH|Runtime Recovery And Health Truth Priority Lock - 2026-06-17]]
   summary: Status: proposed next product lane.
+- [doc] [[docs/status/PRODUCT_DIRECTION_DAILY_AWARENESS_2026-06-18|Nova Product Direction: Governed Daily Awareness Assistant]]
+  summary: Date: 2026-06-18
 - [doc] [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
   summary: Status: substantially reduced / visual proof blocked / closeout-ready
 - [doc] [[docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION|Proposed Priority Lock - Second Brain Foundation]]
@@ -2498,7 +2500,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (769)
+## nova_backend (772)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2629,6 +2631,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
 - [code] [[nova_backend/src/brief/__init__.py|src/brief]]
+- [code] [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
+  summary: Daily Awareness Brief — the on-open product surface.
 - [code] [[nova_backend/src/brief/daily_brief.py|daily_brief]]
   summary: Daily Brief synthesis module.
 - [code] [[nova_backend/src/brief/recommendations.py|recommendations]]
@@ -2838,7 +2842,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
   summary: Persistent user memory store — preferences, personal details, and observed patterns.
 - [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
-  summary: 94a0f3f4c8e08d5f51f239e084dccf9f99219d9f6601562af483de0e78f18ee3
+  summary: 9a34425a877d7ed9d3c8bc60feebb069abdb1642e9655efb8a01a5906b96cfc3
 - [code] [[nova_backend/src/nova_config.py|nova_config]]
   summary: NovaLIS Core Configuration (Phase 1)
 - [code] [[nova_backend/src/nova_protocol.py|nova_protocol]]
@@ -3199,6 +3203,9 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def _response(prompt: str) -> str:
 - [code] [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
   summary: ApprovalLevel,
+- [code] [[nova_backend/tests/brief/__init__.py|tests/brief]]
+- [code] [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
+  summary: Tests for the Daily Awareness Brief module.
 - [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
