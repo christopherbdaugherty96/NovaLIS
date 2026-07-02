@@ -104,7 +104,7 @@ class ResponseFormatter:
     def friendly_fallback() -> str:
         return (
             "I didn't match that to something I can do yet. "
-            "Try: \"morning brief\", \"provider status\", "
+            "Try: \"daily brief\", \"provider status\", "
             "\"what can you do\", or \"help\"."
         )
 

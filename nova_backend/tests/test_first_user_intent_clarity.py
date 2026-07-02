@@ -169,7 +169,7 @@ class TestFallbackTextImproved:
         )
 
         msg = ResponseFormatter.friendly_fallback()
-        assert "morning brief" in msg.lower()
+        assert "daily brief" in msg.lower()
         assert "help" in msg.lower()
 
     def test_fallback_no_longer_says_not_sure(self):

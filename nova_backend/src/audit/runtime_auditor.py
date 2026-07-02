@@ -175,7 +175,7 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "summarize ai safety": "report",
     "summarize headline 2": "headline_summary",
     "summarize headlines 1 and 3": "headline_summary",
-    "daily brief": "intelligence_brief",
+    "intelligence brief": "intelligence_brief",
     "show topic memory map": "topic_memory_map",
     "verify this": "response_verification",
     "second opinion": "external_reasoning_review",

@@ -49,7 +49,7 @@ def _follow_up_prompts(capability_id: int) -> list[str]:
         return [
             "weather forecast",
             "today's news",
-            "morning brief",
+            "daily brief",
         ]
     if capability_id == 56:
         return [
@@ -61,7 +61,7 @@ def _follow_up_prompts(capability_id: int) -> list[str]:
         "today's schedule",
         "tomorrow's schedule",
         "upcoming events",
-        "morning brief",
+        "daily brief",
         "system status",
     ]
 
@@ -80,7 +80,7 @@ def _build_snapshot_message(capability_id: int, widget: dict[str, Any], fallback
             lines.append(f"Forecast: {forecast}")
         if alerts:
             lines.append(f"Alerts: {len(alerts)} active")
-        lines.append("Try next: weather forecast, today's news, or morning brief.")
+        lines.append("Try next: weather forecast, today's news, or daily brief.")
         return "\n".join(lines)
 
     if capability_id == 56:
@@ -97,7 +97,7 @@ def _build_snapshot_message(capability_id: int, widget: dict[str, Any], fallback
     lines = [summary or fallback]
     if events:
         lines.append(f"Upcoming events loaded: {len(events)}")
-    lines.append("Try next: today's schedule, tomorrow's schedule, what's coming up, or morning brief.")
+    lines.append("Try next: today's schedule, tomorrow's schedule, what's coming up, or daily brief.")
     return "\n".join(lines)
 
 
