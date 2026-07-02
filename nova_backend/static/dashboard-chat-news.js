@@ -1264,6 +1264,65 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   chat.scrollTop = chat.scrollHeight;
 }
 
+const _streamBubbles = new Map();
+
+function appendStreamChunk(text, turnId) {
+  const chat = $("chat-log");
+  if (!chat) return;
+  const key = turnId || "__default__";
+
+  let entry = _streamBubbles.get(key);
+  if (!entry) {
+    const div = document.createElement("div");
+    div.className = "chat-assistant chat-streaming";
+    const span = document.createElement("span");
+    div.appendChild(span);
+    chat.appendChild(div);
+    entry = { div, span, chunks: [] };
+    _streamBubbles.set(key, entry);
+  }
+  entry.chunks.push(text);
+  entry.span.textContent = entry.chunks.join("");
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function finalizeStreamBubble(turnId) {
+  const key = turnId || "__default__";
+  const entry = _streamBubbles.get(key);
+  if (!entry) return;
+  _streamBubbles.delete(key);
+  entry.div.classList.remove("chat-streaming");
+
+  const fullText = entry.chunks.join("");
+  entry.span.textContent = "";
+  appendLinkedText(entry.span, fullText);
+
+  if (shouldCollapseMessage(fullText)) {
+    const preview = buildMessagePreview(fullText);
+    entry.span.textContent = preview;
+    entry.span.dataset.fullText = fullText;
+    entry.span.dataset.previewText = preview;
+    entry.span.dataset.expanded = "false";
+    const expandBtn = document.createElement("button");
+    expandBtn.type = "button";
+    expandBtn.className = "message-expand-btn";
+    expandBtn.textContent = "Show more";
+    expandBtn.setAttribute("aria-expanded", "false");
+    expandBtn.addEventListener("click", () => {
+      const expanded = entry.span.dataset.expanded === "true";
+      entry.span.textContent = expanded ? entry.span.dataset.previewText : entry.span.dataset.fullText;
+      entry.span.dataset.expanded = expanded ? "false" : "true";
+      expandBtn.textContent = expanded ? "Show more" : "Show less";
+      expandBtn.setAttribute("aria-expanded", expanded ? "false" : "true");
+    });
+    entry.div.appendChild(expandBtn);
+  }
+
+  appendTrustStrip(entry.div, fullText, "");
+  addMessageUtilities(entry.div, fullText);
+  appendAssistantActions(entry.div, fullText, null);
+}
+
 function appendPlainAssistantMessage(text) {
   const chat = $("chat-log");
   if (!chat) return;
@@ -1274,6 +1333,64 @@ function appendPlainAssistantMessage(text) {
   span.textContent = String(text || "");
   div.appendChild(span);
   chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function renderAwarenessBrief(msg) {
+  const chat = $("chat-log");
+  if (!chat) return;
+
+  const existing = chat.querySelector(".awareness-brief-card");
+  if (existing) existing.remove();
+
+  const container = document.createElement("div");
+  container.className = "chat-assistant awareness-brief-card";
+
+  const header = document.createElement("div");
+  header.className = "awareness-brief-header";
+  const greeting = document.createElement("h3");
+  greeting.textContent = msg.greeting || "Your Daily Brief";
+  header.appendChild(greeting);
+  const dateLine = document.createElement("span");
+  dateLine.className = "awareness-brief-date";
+  dateLine.textContent = msg.date || "";
+  header.appendChild(dateLine);
+  container.appendChild(header);
+
+  const sections = Array.isArray(msg.sections) ? msg.sections : [];
+  const STATUS_ICON = { ok: "✓", not_configured: "—", not_available: "•", empty: "•" };
+
+  sections.forEach((section) => {
+    const sec = document.createElement("div");
+    sec.className = "awareness-brief-section";
+    if (section.status !== "ok") sec.classList.add("awareness-brief-dim");
+
+    const title = document.createElement("h4");
+    const icon = STATUS_ICON[section.status] || "•";
+    title.textContent = `${icon} ${section.title || ""}`;
+    sec.appendChild(title);
+
+    const items = Array.isArray(section.items) ? section.items : [];
+    if (items.length) {
+      const list = document.createElement("ul");
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = String(item);
+        list.appendChild(li);
+      });
+      sec.appendChild(list);
+    }
+    container.appendChild(sec);
+  });
+
+  const meta = document.createElement("div");
+  meta.className = "awareness-brief-meta";
+  const avail = Number(msg.available_count) || 0;
+  const total = Number(msg.total_count) || 0;
+  meta.textContent = `${avail} of ${total} sections reporting live data`;
+  container.appendChild(meta);
+
+  chat.appendChild(container);
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -2461,13 +2578,14 @@ function scheduleStartupHydration() {
   clearStartupHydrationTimers();
 
   queueStartupHydration(250, () => {
-    safeWSSend({ text: "weather", silent_widget_refresh: true });
-    safeWSSend({ text: "calendar", silent_widget_refresh: true });
+    safeWSSend({ text: "awareness brief", silent_widget_refresh: true });
+    loadConnectionsData();
   });
 
   queueStartupHydration(800, () => {
+    safeWSSend({ text: "weather", silent_widget_refresh: true });
+    safeWSSend({ text: "calendar", silent_widget_refresh: true });
     safeWSSend({ text: "news", silent_widget_refresh: true });
-    loadConnectionsData();
   });
 
   queueStartupHydration(1600, () => {
@@ -2591,6 +2709,9 @@ function connectWebSocket() {
         morningState.calendar = msg.summary || msg.message || "No events scheduled today.";
         renderMorningPanel();
         break;
+      case "awareness_brief":
+        renderAwarenessBrief(msg);
+        break;
       case "screen_capture":
         renderScreenCaptureInsight(msg.data || {});
         break;
@@ -2653,6 +2774,7 @@ function connectWebSocket() {
         break;
       case "chat":
         if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
+        if (msg.turn_id && _streamBubbles.has(msg.turn_id)) break;
         if (manualTurnInFlight) manualTurnAssistantSeen = true;
         appendChatMessage(
           "assistant",
@@ -2688,6 +2810,7 @@ function connectWebSocket() {
         break;
       case "chat_done":
         if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
+        finalizeStreamBubble(msg.turn_id || "");
         if (manualTurnInFlight && !manualTurnAssistantSeen) {
           if (Date.now() - manualTurnStartedAt < 60000) break;
           clearActiveManualTurn("Completed", "Nova ended the turn without a visible assistant message.");
@@ -2716,6 +2839,11 @@ function connectWebSocket() {
           if (anchor) showThoughtOverlay(anchor, msg.data || {});
           pendingThoughtMessageId = null;
         }
+        break;
+      case "chat_stream":
+        if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
+        if (manualTurnInFlight) manualTurnAssistantSeen = true;
+        appendStreamChunk(msg.text || "", msg.turn_id || "");
         break;
       case "error":
         clearActiveManualTurn("Failed", translateError(msg.code, msg.message));
@@ -2943,12 +3071,20 @@ async function loadConnectionsData() {
     if (!res.ok) return;
     _connectionsData = await res.json();
     renderConnectionCards();
+    updateSecondOpinionVisibility();
     renderIntroPage();
     renderSettingsPage();
     renderHomeLaunchWidget();
   } catch (_) {
     // silently ignore — cards will stay empty until next load
   }
+}
+
+function updateSecondOpinionVisibility() {
+  const btn = $("deepseek-btn");
+  if (!btn) return;
+  const provider = getConnectionCardProvider("openai");
+  btn.style.display = (provider && provider.connected === true) ? "" : "none";
 }
 
 function renderConnectionCards() {

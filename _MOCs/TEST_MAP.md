@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 125
+Paired tests: 126
 
 - [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
     - tests → [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
@@ -37,6 +37,8 @@ Paired tests: 125
     - tests → [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
 - [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
     - tests → [[nova_backend/src/brain/task_understanding.py|task_understanding]]
+- [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
+    - tests → [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
     - tests → [[nova_backend/src/brief/daily_brief.py|daily_brief]]
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]

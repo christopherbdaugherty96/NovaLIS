@@ -572,7 +572,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (794)
+## testing (796)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -672,6 +672,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/personality/test_assistive_noticing_tiers.py|test_assistive_noticing_tiers]]
 - [code] [[nova_backend/tests/phase6/test_atomic_policy_store.py|test_atomic_policy_store]]
 - [code] [[nova_backend/tests/test_audit_api.py|test_audit_api]]
+- [code] [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
 - [code] [[nova_backend/tests/websocket/test_behavioral_session_approval_gate.py|test_behavioral_session_approval_gate]]
 - [code] [[nova_backend/tests/brain/second_brain/test_boundary_invariants.py|test_boundary_invariants]]
 - [code] [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
@@ -1011,6 +1012,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/adversarial/__init__.py|tests/adversarial]]
 - [code] [[nova_backend/tests/brain/second_brain/__init__.py|tests/brain/second_brain]]
+- [code] [[nova_backend/tests/brief/__init__.py|tests/brief]]
 - [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
 - [code] [[nova_backend/tests/certification/cap_16_governed_web_search/__init__.py|tests/certification/cap_16_governed_web_search]]
 - [code] [[nova_backend/tests/certification/cap_22_open_file_folder/__init__.py|tests/certification/cap_22_open_file_folder]]
