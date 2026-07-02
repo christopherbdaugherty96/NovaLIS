@@ -377,6 +377,7 @@ _Read-only Brain scaffolding._
 - [[nova_backend/src/personality/voice_personality.py|voice_personality]]
 - [[nova_backend/src/policies/atomic_policy_store.py|atomic_policy_store]]
 - [[nova_backend/src/routers/stt.py|stt]]
+- [[nova_backend/src/runtime_health.py|runtime_health]]
 - [[nova_backend/src/settings/runtime_settings_store.py|runtime_settings_store]]
 - [[nova_backend/src/speech_state.py|speech_state]]
 - [[nova_backend/src/tasks/notification_schedule_store.py|notification_schedule_store]]
@@ -750,7 +751,7 @@ _Debug utilities package._
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
     - OpenClaw Execute Executor — cap 63 (openclaw_execute)
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-    - class OSDiagnosticsExecutor:
+    - _model_status_cache: dict[str, object] = {}
 - [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
     - class ResponseVerificationExecutor:
 - [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
@@ -833,7 +834,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_local_control_executors.py|test_local_control_executors]]
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
 - [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
-- _…and 23 more_
+- _…and 24 more_
 
 ### Tests
 
@@ -1575,6 +1576,18 @@ _Provider lanes for optional metered model access._
 - [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
 - [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
 - [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+
+## `runtime_health` (1 files)
+
+### Files
+
+- [[nova_backend/src/runtime_health.py|runtime_health]]
+    - RuntimeHealthState = Literal["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering"]
+
+### Imported by
+
+- [[nova_backend/src/brain_server.py|brain_server]]
+- [[nova_backend/tests/phase45/test_runtime_health_model.py|test_runtime_health_model]]
 
 ## `services` (2 files)
 
