@@ -299,8 +299,11 @@ TOPIC_UPDATES_RE = re.compile(
     r"^\s*(?:search(?:\s+for)?\s+)?(?:most\s+recent\s+updates?|recent\s+updates?|updates?)\s+(?:with|on|about)\s+(?P<topic>.+?)\s*$",
     re.IGNORECASE,
 )
+# "daily brief" is intentionally NOT matched here: the user-facing Daily
+# Brief routes through the session-level governed RoutineGraph path
+# (src/conversation/morning_brief_handler.is_daily_brief_request).
 INTEL_BRIEF_RE = re.compile(
-    r"^\s*(?:daily|intelligence|news)\s+brief\s*$|^\s*give me (?:the )?(?:daily|intelligence)\s+brief\s*$",
+    r"^\s*(?:intelligence|news)\s+brief\s*$|^\s*give me (?:the )?intelligence\s+brief\s*$",
     re.IGNORECASE,
 )
 TODAY_NEWS_RE = re.compile(

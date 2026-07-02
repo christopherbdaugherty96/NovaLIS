@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1056)
+## docs (1057)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -580,7 +580,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 17ce1d2d4b064383334830401e6c96ebc6e5edba41614a63205a412657c3aa2d
+  summary: Runtime Fingerprint: efe9eff9854175db5caa18c42c9751c020bc32b4cd718bea6a278519701b74d5
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -606,7 +606,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 8e7a5d3a6301979504e956bfa96781f2681336514a6f66f522eeb0eb2a1426f4
+  summary: - runtimesurfacehash: e967ec5583a25d1a5aa9d1a2287b7754c7fe317bdba6aaf016c066fd44ee4e3b
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -2212,6 +2212,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: implementation proof / review required
 - [doc] [[docs/status/UI_SIMPLIFICATION_INVENTORY_2026-05-09|UI Simplification Inventory - 2026-05-09]]
   summary: Status: inventory / product-direction corrected 2026-05-09 / no runtime changes in this branch
+- [doc] [[docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02|UX Simplification And Discoverability Priority Lock - 2026-07-02]]
+  summary: Status: proposed next product lane. Activates only after PR #258 (startup health checks) and the
 - [doc] [[docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07|Web / News / UI Proof Lock Closeout Review - 2026-05-07]]
   summary: Status: qualified closeout / screenshot proof explicitly blocked
 - [doc] [[docs/status/WEBSOCKET_FREEZE_INVESTIGATION_2026-06-18|WebSocket-Induced Server Freeze — Investigation Report]]
@@ -2500,7 +2502,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (772)
+## nova_backend (773)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2706,7 +2708,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
   summary: meta_intent_handler.py
 - [code] [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
-  summary: Morning Brief handler — governed brief via RoutineGraph.
+  summary: Daily Brief handler — governed brief via RoutineGraph.
 - [code] [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
   summary: Conversation-facing planning run preview helpers.
 - [code] [[nova_backend/src/conversation/prompts.py|prompts]]
@@ -3253,6 +3255,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Shared fixtures and helpers for capability certification tests.
 - [code] [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
   summary: Capability Lock Regression Guard
+- [code] [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
+  summary: Suite-wide test isolation fixtures.
 - [code] [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
   summary: def test_http_shopify_connector_uses_configured_api_version():
 - [code] [[nova_backend/tests/conversation/__init__.py|tests/conversation]]

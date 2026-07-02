@@ -572,7 +572,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (796)
+## testing (797)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -598,6 +598,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/simulations/concurrent_websocket_load_simulation.py|concurrent_websocket_load_simulation]]
 - [code] [[conftest.py|conftest - .]]
 - [code] [[nova_backend/tests/certification/cap_16_governed_web_search/conftest.py|conftest - certification/cap_16_governed_web_search]]
+- [code] [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
 - [code] [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
 - [code] [[nova_backend/tests/evaluation/conftest.py|conftest - tests/evaluation]]
 - [code] [[nova_backend/tests/phase45/conftest.py|conftest - tests/phase45]]

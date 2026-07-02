@@ -469,11 +469,11 @@ def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
 
     chat_messages = _chat_messages(ws)
     assert any("Connected right now: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
-    assert any("full morning brief" in msg for msg in chat_messages)
+    assert any("full daily brief" in msg for msg in chat_messages)
     assert any("Morning Brief is running now from the Run now flow." in msg for msg in chat_messages)
     chat_payloads = [item for item in ws.sent_messages if item.get("type") == "chat"]
     assert any(action.get("command") == "openclaw status" for item in chat_payloads for action in item.get("suggested_actions", []))
-    assert any(action.get("command") == "morning brief" for item in chat_payloads for action in item.get("suggested_actions", []))
+    assert any(action.get("command") == "daily brief" for item in chat_payloads for action in item.get("suggested_actions", []))
 
 
 def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):
