@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from typing import Any
 
@@ -272,7 +273,7 @@ def build_openclaw_agent_router(deps) -> APIRouter:
 
     @router.get("/api/openclaw/agent/status")
     async def get_openclaw_agent_status():
-        return _agent_status_payload(deps)
+        return await asyncio.to_thread(_agent_status_payload, deps)
 
     @router.post("/api/openclaw/agent/templates/{template_id}/delivery")
     async def set_openclaw_agent_delivery_mode(template_id: str, payload: dict[str, Any]):

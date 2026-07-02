@@ -314,7 +314,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt|🔊 NOVA — GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION]]
 - [doc] [[docs/archive/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
 
-## memory (80)
+## memory (81)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -393,11 +393,12 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-6/PHASE_6_DASHBOARD_REFINEMENT_MEMORY_AND_NEWS_RUNTIME_SLICE_2026-03-14|Phase-6 Dashboard Refinement, Memory Page, and News Source-Grounding Runtime Slice]]
 - [doc] [[docs/reference/HUMAN_GUIDES/05_PROJECT_CONTINUITY_AND_MEMORY|Project Continuity and Memory]]
 - [doc] [[future/brain/RECEIPT_TO_MEMORY|Receipt to Memory Policy]]
+- [doc] [[docs/status/RECENT_WORKSTREAM_CLOSEOUT_2026-06-17|Recent Workstream Closeout - 2026-06-17]]
 - [doc] [[docs/SECOND_PASS_OVERVIEW_2026-04-28|Second Pass Overview — 2026-04-28]]
 - [doc] [[docs/status/README|Status Notes]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (105)
+## ux (106)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
@@ -453,6 +454,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_dashboard_pattern_review_widget.py|test_dashboard_pattern_review_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_phase7_chat_controls.py|test_dashboard_phase7_chat_controls]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_policy_center_widget.py|test_dashboard_policy_center_widget]]
+- [code] [[nova_backend/tests/phase45/test_dashboard_runtime_health_contract.py|test_dashboard_runtime_health_contract]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_search_widget_followups.py|test_dashboard_search_widget_followups]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_structured_report_widget.py|test_dashboard_structured_report_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_system_status_widget.py|test_dashboard_system_status_widget]]
@@ -570,7 +572,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (791)
+## testing (794)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -727,6 +729,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_dashboard_pattern_review_widget.py|test_dashboard_pattern_review_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_phase7_chat_controls.py|test_dashboard_phase7_chat_controls]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_policy_center_widget.py|test_dashboard_policy_center_widget]]
+- [code] [[nova_backend/tests/phase45/test_dashboard_runtime_health_contract.py|test_dashboard_runtime_health_contract]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_search_widget_followups.py|test_dashboard_search_widget_followups]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_structured_report_widget.py|test_dashboard_structured_report_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_system_status_widget.py|test_dashboard_system_status_widget]]
@@ -779,6 +782,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/test_governor_mediator_phase4_capabilities.py|test_governor_mediator_phase4_capabilities]]
 - [code] [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
 - [code] [[nova_backend/tests/simulation/test_governor_safety_simulation.py|test_governor_safety_simulation]]
+- [code] [[nova_backend/tests/phase45/test_health_check_cache_and_hydration.py|test_health_check_cache_and_hydration]]
 - [code] [[nova_backend/tests/adversarial/test_import_surface_integrity.py|test_import_surface_integrity]]
 - [code] [[nova_backend/tests/executors/test_info_snapshot_executor.py|test_info_snapshot_executor]]
 - [code] [[nova_backend/tests/personality/test_initiative_template_refinement.py|test_initiative_template_refinement]]
@@ -932,6 +936,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]
 - [code] [[nova_backend/tests/test_runtime_auditor.py|test_runtime_auditor]]
 - [code] [[nova_backend/tests/test_runtime_governance_docs.py|test_runtime_governance_docs]]
+- [code] [[nova_backend/tests/phase45/test_runtime_health_model.py|test_runtime_health_model]]
 - [code] [[nova_backend/tests/test_runtime_settings_api.py|test_runtime_settings_api]]
 - [code] [[nova_backend/tests/governance/test_runtime_snapshot.py|test_runtime_snapshot]]
 - [code] [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]

@@ -106,7 +106,7 @@ Rules:
 - Locks define reviewed scope; they are not execution authority by themselves.
 - Keep active, certified, and locked status distinct.
 
-Linked files (350):
+Linked files (352):
 
 - [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
 - [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
@@ -452,8 +452,10 @@ Linked files (350):
 - [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
 - [[docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1|Priority Lock - 2026-05-26 Second Brain Slice 1]]
 - [[docs/status/PRIORITY_LOCK_2026-05-26_UI_SIMPLIFICATION|UI Simplification Priority Lock — Product Clarity Slice]]
+- [[docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH|Runtime Recovery And Health Truth Priority Lock - 2026-06-17]]
 - [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
 - [[docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION|Proposed Priority Lock - Second Brain Foundation]]
+- [[docs/status/RECENT_WORKSTREAM_CLOSEOUT_2026-06-17|Recent Workstream Closeout - 2026-06-17]]
 - [[docs/status/TRUST_PANEL_MVP_CLOSEOUT_2026-05-14|Trust Panel MVP Closeout]]
 - [[docs/status/TRUST_REVIEW_CARD_MVP_CLOSEOUT_REVIEW_2026-05-07|Trust Review Card MVP Closeout Review - 2026-05-07]]
 - [[docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07|Web / News / UI Proof Lock Closeout Review - 2026-05-07]]
@@ -1103,5 +1105,5 @@ Linked files (154):
 
 ## Reference / Unclassified
 
-1061 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
+1066 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
 Use the broad browsing maps for those files; do not treat this fallback as an authority tier.

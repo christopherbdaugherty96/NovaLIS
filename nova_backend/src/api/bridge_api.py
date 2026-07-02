@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 from functools import lru_cache
@@ -234,11 +235,13 @@ def build_bridge_router(deps) -> APIRouter:
 
     @router.get("/api/openclaw/bridge/status")
     async def openclaw_bridge_status():
-        return {
-            "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),
-            "connections": deps.OSDiagnosticsExecutor._connection_status_details(),
-            "settings": deps.runtime_settings_store.snapshot(),
-        }
+        def _build():
+            return {
+                "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),
+                "connections": deps.OSDiagnosticsExecutor._connection_status_details(),
+                "settings": deps.runtime_settings_store.snapshot(),
+            }
+        return await asyncio.to_thread(_build)
 
     @router.post("/api/openclaw/bridge/message")
     async def openclaw_bridge_message(
