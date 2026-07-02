@@ -1105,5 +1105,5 @@ Linked files (154):
 
 ## Reference / Unclassified
 
-1066 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
+1070 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
 Use the broad browsing maps for those files; do not treat this fallback as an authority tier.

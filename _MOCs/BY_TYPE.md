@@ -403,7 +403,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (23 docs, 294 code)
+## Runtime and ops (23 docs, 295 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -523,6 +523,8 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
 - [code] [[nova_backend/src/brief/__init__.py|src/brief]]
+- [code] [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
+  summary: Daily Awareness Brief — the on-open product surface.
 - [code] [[nova_backend/src/brief/daily_brief.py|daily_brief]]
   summary: Daily Brief synthesis module.
 - [code] [[nova_backend/src/brief/recommendations.py|recommendations]]
@@ -982,7 +984,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 82d1cdec13cd6db9fe2489e5f2c081e2f81c9d17673fa7faa06a351e254300a2
+  summary: Runtime Fingerprint: 17ce1d2d4b064383334830401e6c96ebc6e5edba41614a63205a412657c3aa2d
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -1008,7 +1010,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 599bf6ebe318559008fe3fec38c47a488ff1148c263e984dadba23056bc8baf1
+  summary: - runtimesurfacehash: 8e7a5d3a6301979504e956bfa96781f2681336514a6f66f522eeb0eb2a1426f4
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1020,7 +1022,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[nova_backend/src/archive_quarantine/phase35_execution/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase35_execution]]
   summary: ﻿# PHASE 3.5 EXECUTION QUARANTINE
 - [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
-  summary: 94a0f3f4c8e08d5f51f239e084dccf9f99219d9f6601562af483de0e78f18ee3
+  summary: 9a34425a877d7ed9d3c8bc60feebb069abdb1642e9655efb8a01a5906b96cfc3
 - [doc] [[nova_backend/src/requirements-optional-wakeword.txt|Compatibility shim for existing tooling paths.]]
   summary: -r ../requirements-optional-wakeword.txt
 - [doc] [[nova_backend/src/requirements.txt|Compatibility shim for existing workflow paths.]]
@@ -1085,7 +1087,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (11 docs, 436 code)
+## Tests (11 docs, 438 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1144,6 +1146,9 @@ concern is reflected across docs, code and tests.
   summary: def _response(prompt: str) -> str:
 - [code] [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
   summary: ApprovalLevel,
+- [code] [[nova_backend/tests/brief/__init__.py|tests/brief]]
+- [code] [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
+  summary: Tests for the Daily Awareness Brief module.
 - [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
@@ -2569,7 +2574,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (562 docs, 41 code)
+## Reference (563 docs, 41 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -3485,6 +3490,8 @@ concern is reflected across docs, code and tests.
   summary: Locked: 2026-05-26
 - [doc] [[docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH|Runtime Recovery And Health Truth Priority Lock - 2026-06-17]]
   summary: Status: proposed next product lane.
+- [doc] [[docs/status/PRODUCT_DIRECTION_DAILY_AWARENESS_2026-06-18|Nova Product Direction: Governed Daily Awareness Assistant]]
+  summary: Date: 2026-06-18
 - [doc] [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
   summary: Status: substantially reduced / visual proof blocked / closeout-ready
 - [doc] [[docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION|Proposed Priority Lock - Second Brain Foundation]]
