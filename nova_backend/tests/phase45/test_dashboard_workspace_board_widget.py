@@ -4,7 +4,6 @@ from pathlib import Path
 
 from tests._dashboard_bundle import load_dashboard_runtime_js
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
@@ -19,7 +18,7 @@ def test_dashboard_renders_workspace_board_and_structure_map():
     assert "function renderWorkspaceBoardPage()" in source
     assert "populateThreadDetailSurface(\"workspace-thread-detail\", data);" in source
     assert 'setActivePage("workspace")' in source
-    assert 'label: "Workspace board"' in source
+    assert 'id="btn-settings-open-workspace"' in INDEX_PATH.read_text(encoding="utf-8")
     assert "workspace.operational_context" in source
     assert "snapshot.operational_context" not in source
 
