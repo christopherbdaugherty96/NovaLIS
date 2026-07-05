@@ -30,18 +30,19 @@ window.NOVA_DASHBOARD_CONFIG = {
     settings: "Settings",
   },
   PRIMARY_NAV_ITEMS: [
-    { page: "chat", label: "Chat" },
     { page: "home", label: "Home" },
+    { page: "chat", label: "Chat" },
     { page: "goals", label: "Goals" },
     { page: "news", label: "News" },
-    { page: "trust", label: "Activity" },
     { page: "settings", label: "Settings" },
   ],
-  SECONDARY_NAV_ITEMS: [
+  SECONDARY_NAV_ITEMS: [],
+  ADVANCED_NAV_ITEMS: [
+    { page: "trust", label: "Activity & Receipts", summary: "Receipts, blocked actions, runtime health, and proof." },
     { page: "agent", label: "Agent" },
+    { page: "policy", label: "Rules" },
     { page: "workspace", label: "Workspace" },
     { page: "memory", label: "Memory" },
-    { page: "policy", label: "Rules" },
     { page: "intro", label: "Intro" },
   ],
   MORNING_FALLBACK_TIMEOUT_MS: 4500,
@@ -112,11 +113,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     settings: [
       { id: "settings_voice", label: "Voice status", command: "voice status", switchToPage: "chat" },
       { id: "settings_voice_check", label: "Voice check", command: "voice check", switchToPage: "chat" },
-      { id: "settings_agent", label: "Agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
       { id: "settings_connections", label: "Connections", command: "connection status", stayOnPage: true },
-      { id: "settings_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
-      { id: "settings_policies", label: "Rules", command: "policy overview", switchToPage: "policy", stayOnPage: true },
-      { id: "settings_intro", label: "Introduction", switchToPage: "intro", command: "workspace home", stayOnPage: true },
     ],
   },
   COMMAND_SUGGESTIONS: [
