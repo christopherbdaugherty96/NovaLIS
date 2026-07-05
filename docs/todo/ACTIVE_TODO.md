@@ -1,39 +1,35 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
+Last reviewed: 2026-07-05 (master roadmap consolidation)
 
 ---
 
 ## Current Active Task
 
 ```text
-Runtime recovery and health truth priority lock: ACTIVE (2026-06-17).
-  Product signal: Nova can look alive while the local runtime is not actually
-  responding. The user can see UI/buttons/pages while status says CONNECTING,
-  chat is stuck, Trust can imply Normal, and local APIs time out.
-  Highest-value next question:
-    When Nova stalls, does the user know what happened and what to do?
-  Current answer: not reliably.
+UX simplification and discoverability lane: ACTIVE (2026-07-02 lock).
+  The 2026-06-17 runtime recovery lock is COMPLETE/superseded - its
+  P1 (health truth + recovery) landed via PR #258; its P2-P5 were
+  absorbed into the UX lane.
   Lock:
-    docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md
-  Allowed future implementation scope:
-    canonical health truth
-    runtime timeout/degraded/unavailable status modeling
-    stuck-response detection and user-facing recovery copy
-    chat/action timeout recovery affordances
-    Trust explanation of product failures, not only governed receipts
-    tests proving stale/timeout health cannot be shown as Normal
-    tests proving no execution authority is added
-  Not authorized:
-    Plan My Week, model presets, more agents, more providers, broad dashboard
-    redesign, advanced navigation cleanup, broad empty-state simplification,
-    Second Brain implementation, browser/computer-use expansion, OpenClaw
-    expansion, scheduler/background loops, external writes, Shopify writes,
-    Gmail/calendar writes, autonomous workflow execution, capability_locks.json
-    changes, or capability expansion.
+    docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md
+  Ordering authority for everything beyond this lane:
+    docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md
+  Lane state:
+    PR 2 (#261 Daily Brief unification): MERGED 2026-07-02.
+    PR 3 (#262 quick-action reduction): MERGED 2026-07-05.
+    PR 4 (navigation collapse behind Settings -> Advanced): next code action.
+    PR 5 (labels + Home), PR 6 (usability ratchets): queued.
+  Riding alongside (roadmap Lane B insert candidates):
+    B1 pytest-timeout install (test-stall diagnosis)
+    B2 ledger hardening start (rotation, hash chain, relocate)
+  Not authorized (unchanged, per lock + 2026-06-18 boundary):
+    capability expansion, Shopify writes, posting, external writes,
+    browser/computer-use expansion, OpenClaw expansion, scheduler/
+    background loops, capability_locks.json changes, autonomous
+    workflow execution.
 
-Second Brain Slice 1 priority lock remains ACCEPTED but is deferred behind
-the active runtime recovery lane.
+Second Brain Slice 1 lock remains ACCEPTED, deferred (roadmap H13).
 
 Historical context follows:
 
