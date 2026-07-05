@@ -132,10 +132,14 @@ Current active task:
 UX simplification and discoverability lane — ACTIVE (2026-07-02 lock).
 
 Done: Daily Brief unification (PR #261), quick-action reduction
-(PR #262 / UX lane PR 3).
+(PR #262 / UX lane PR 3), navigation collapse (PR #264 / UX lane
+PR 4 - default nav is now Home, Chat, Goals, News, Settings, with
+internal surfaces behind Settings -> Advanced), plus riders:
+pytest-timeout guard (B1) and ledger health diagnostic (B2 start).
 
-Next: PR 4 navigation collapse (secondary surfaces behind
-Settings -> Advanced), then labels/Home, then usability ratchets.
+Next: C1 Auralis Today (roadmap Lane C) - spec lands as a design
+doc first, then the morning-value surface. PR 5 (labels + Home)
+and PR 6 (usability ratchets) complete the UX lane after.
 
 Ordering authority for everything after this lane:
 docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md
