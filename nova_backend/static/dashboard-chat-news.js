@@ -4172,13 +4172,7 @@ function injectHeaderMenus() {
     { label: "Home", page: "home" },
     { label: "Goals", page: "goals" },
     { label: "News", page: "news" },
-    { label: "Activity & Receipts", page: "trust" },
     { label: "Settings", page: "settings" },
-    { label: "Agent", page: "agent" },
-    { label: "Workspace", page: "workspace" },
-    { label: "Memory", page: "memory" },
-    { label: "Rules", page: "policy" },
-    { label: "Intro", page: "intro" },
   ].forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -4228,14 +4222,10 @@ function injectHeaderMenus() {
   const actionsGrid = document.createElement("div");
   actionsGrid.className = "header-menu-grid";
   [
-    { label: "System status", command: "system status", page: "chat" },
-    { label: "Trust center", page: "trust", fn: () => setActivePage("trust") },
-    { label: "Workspace board", page: "workspace", fn: () => setActivePage("workspace") },
+    { label: "Daily brief", command: "daily brief", page: "chat" },
     { label: "Explain this", command: "explain this", page: "chat" },
-    { label: "Memory overview", command: "memory overview", page: "memory" },
+    { label: "Research a topic", command: "research latest technology news", page: "chat" },
     { label: "Show schedules", command: "show schedules", page: "chat" },
-    { label: "Pattern status", command: "pattern status", page: "chat" },
-    { label: "Review patterns", fn: openPatternReview },
     { label: "Today's news", command: "today's news", page: "chat" },
   ].forEach((item) => {
     const btn = document.createElement("button");
@@ -4552,6 +4542,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const settingsOpenAgentBtn = $("btn-settings-open-agent");
   if (settingsOpenAgentBtn) settingsOpenAgentBtn.addEventListener("click", () => setActivePage("agent"));
+
+  const settingsOpenRulesBtn = $("btn-settings-open-rules");
+  if (settingsOpenRulesBtn) settingsOpenRulesBtn.addEventListener("click", () => setActivePage("policy"));
+
+  const settingsOpenWorkspaceBtn = $("btn-settings-open-workspace");
+  if (settingsOpenWorkspaceBtn) settingsOpenWorkspaceBtn.addEventListener("click", () => setActivePage("workspace"));
+
+  const settingsOpenMemoryBtn = $("btn-settings-open-memory");
+  if (settingsOpenMemoryBtn) settingsOpenMemoryBtn.addEventListener("click", () => setActivePage("memory"));
 
   const settingsOpenConnectionsBtn = $("btn-settings-open-connections");
   if (settingsOpenConnectionsBtn) settingsOpenConnectionsBtn.addEventListener("click", () => {
