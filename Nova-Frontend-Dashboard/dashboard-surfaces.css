@@ -578,6 +578,32 @@ button.workspace-spotlight-card.active {
   color: #c6dcfb;
 }
 
+.settings-advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.settings-advanced-card {
+  display: grid;
+  gap: 6px;
+  min-height: 86px;
+  padding: 12px;
+  text-align: left;
+}
+
+.settings-advanced-card span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e4f1ff;
+}
+
+.settings-advanced-card small {
+  font-size: 0.72rem;
+  line-height: 1.38;
+  color: #c6dcfb;
+}
+
 .workspace-spotlight-title {
   font-size: 0.8rem;
   font-weight: 700;

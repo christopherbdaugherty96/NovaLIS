@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_HTML = ROOT / "nova_backend" / "static" / "index.html"
 CONFIG_JS = ROOT / "nova_backend" / "static" / "dashboard-config.js"
@@ -27,9 +26,23 @@ def extract_script_srcs(html: str) -> list[str]:
 
 
 def extract_primary_nav_pages(js: str) -> list[str]:
-    match = re.search(r"PRIMARY_NAV_ITEMS:\s*\[(.*?)\],\s*MORNING_FALLBACK_TIMEOUT_MS", js, re.S)
+    match = re.search(r"PRIMARY_NAV_ITEMS:\s*\[(.*?)\],\s*SECONDARY_NAV_ITEMS", js, re.S)
     if not match:
         raise AssertionError("Could not locate PRIMARY_NAV_ITEMS in dashboard-config.js")
+    return re.findall(r'page:\s*"([^"]+)"', match.group(1))
+
+
+def extract_primary_nav_block(js: str) -> str:
+    match = re.search(r"PRIMARY_NAV_ITEMS:\s*\[(.*?)\],\s*SECONDARY_NAV_ITEMS", js, re.S)
+    if not match:
+        raise AssertionError("Could not locate PRIMARY_NAV_ITEMS in dashboard-config.js")
+    return match.group(1)
+
+
+def extract_advanced_nav_pages(js: str) -> list[str]:
+    match = re.search(r"ADVANCED_NAV_ITEMS:\s*\[(.*?)\],\s*MORNING_FALLBACK_TIMEOUT_MS", js, re.S)
+    if not match:
+        raise AssertionError("Could not locate ADVANCED_NAV_ITEMS in dashboard-config.js")
     return re.findall(r'page:\s*"([^"]+)"', match.group(1))
 
 
@@ -58,6 +71,8 @@ def main() -> None:
     page_sections = extract_page_sections(html)
     script_srcs = extract_script_srcs(html)
     nav_pages = extract_primary_nav_pages(config_js)
+    primary_nav_block = extract_primary_nav_block(config_js)
+    advanced_pages = extract_advanced_nav_pages(config_js)
     lookups = extract_dom_lookups(all_static_js)
     switch_targets = extract_quick_action_switch_targets(config_js)
 
@@ -73,15 +88,29 @@ def main() -> None:
         "trust",
         "settings",
     }
+    expected_primary_pages = {"home", "chat", "goals", "news", "settings"}
+    expected_advanced_pages = expected_pages - expected_primary_pages
 
     missing_pages = expected_pages - page_sections
     if missing_pages:
         raise AssertionError(f"Missing page sections in index.html: {sorted(missing_pages)}")
 
-    if set(nav_pages) != expected_pages:
+    if set(nav_pages) != expected_primary_pages:
         raise AssertionError(
-            f"Primary nav pages do not match expected pages. Found={sorted(set(nav_pages))}"
+            f"Primary nav pages do not match collapsed primary pages. Found={sorted(set(nav_pages))}"
         )
+
+    if set(advanced_pages) != expected_advanced_pages:
+        raise AssertionError(
+            f"Advanced nav pages do not match internal pages. Found={sorted(set(advanced_pages))}"
+        )
+
+    if "secondary-nav-btn" in all_static_js:
+        raise AssertionError("Secondary nav buttons are still injected in the default navigation.")
+
+    for internal_label in ("Agent", "Rules", "Activity & Receipts"):
+        if re.search(rf'label:\s*"{re.escape(internal_label)}"', primary_nav_block):
+            raise AssertionError(f"{internal_label} is still default primary navigation.")
 
     invalid_switch_targets = switch_targets - expected_pages
     if invalid_switch_targets:
@@ -105,6 +134,9 @@ def main() -> None:
         "btn-trust-center-workspace",
         "btn-settings-open-home",
         "btn-settings-open-intro",
+        "btn-settings-open-rules",
+        "btn-settings-open-workspace",
+        "btn-settings-open-memory",
         "btn-settings-open-trust",
         "btn-settings-open-agent",
         "btn-workspace-board-threads",
@@ -159,6 +191,9 @@ def main() -> None:
         "btn-settings-open-intro": 'setActivePage("intro")',
         "btn-settings-open-trust": 'setActivePage("trust")',
         "btn-settings-open-agent": 'setActivePage("agent")',
+        "btn-settings-open-rules": 'setActivePage("policy")',
+        "btn-settings-open-workspace": 'setActivePage("workspace")',
+        "btn-settings-open-memory": 'setActivePage("memory")',
         "btn-workspace-board-threads": 'injectUserText("show threads", "text")',
     }
     for button_id, snippet in required_behavior_snippets.items():
