@@ -12,7 +12,12 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 Nova is intended to evolve into:
 
 ```text
-A governed operational coordination platform.
+A Jarvis-style personal butler with governed execution:
+a personal butler at the interface layer,
+a governed runtime at the execution layer.
+
+Jarvis is product voice, not execution authority.
+Intelligence proposes. Nova governs. You decide.
 ```
 
 The long-term direction has two connected domains:
@@ -21,6 +26,9 @@ The long-term direction has two connected domains:
 1. Everyday home / voice / local assistant platform
 2. Creator-business operational coordination platform
 ```
+
+Canonical ordering authority for all future work:
+- [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md)
 
 Canonical future-product summary:
 - [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
@@ -121,18 +129,26 @@ For the consolidated roadmap and positioning update, use [Repo Sync And Roadmap 
 Current active task:
 
 ```text
-Approval-gate certification lane — COMPLETE / closed (2026-05-19).
+UX simplification and discoverability lane — ACTIVE (2026-07-02 lock).
 
-Current active workstream:
-Everyday live-session reliability hardening.
+Done: Daily Brief unification (PR #261), quick-action reduction
+(PR #262 / UX lane PR 3).
 
-Next:
-Rerun the exact same 20-persona live-user simulation after PR #207 and compare exact metrics against the PR #206 baseline.
+Next: PR 4 navigation collapse (secondary surfaces behind
+Settings -> Advanced), then labels/Home, then usability ratchets.
 
-Do not expand capabilities or start Shopify/website workflows yet.
+Ordering authority for everything after this lane:
+docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md
+
+Do not expand capabilities. No Shopify writes, no posting,
+no broad agent execution (2026-06-18 boundary).
 ```
 
 ## Future Directions
+
+Ordering authority: [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md).
+The documents below remain design references; the master roadmap decides sequence.
+
 - [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
