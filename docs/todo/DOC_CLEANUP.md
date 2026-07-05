@@ -1,6 +1,6 @@
 # Doc Cleanup — Nova
 
-**Updated:** 2026-04-28
+**Updated:** 2026-07-05
 **Purpose:** Documentation maintenance tasks. Not implementation work.
 
 ---
@@ -31,6 +31,50 @@ to each.
 No root-level pointer tells new readers which 5 docs to read first.
 Fix: create `docs/CANONICAL.md` — 10 lines listing the 5 authoritative
 sources with one-line descriptions.
+
+### Post-PR-4 docs review queue
+
+Four follow-up docs passes on 2026-07-05 found no sequence-changing plan
+outside `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`. The next work remains
+C1 Auralis Today after the post-PR-4 current-truth sync lands.
+
+Keep these tidy items together in the docs cleanup PR unless a smaller PR is
+clearly safer:
+
+- Add roadmap pointers to `docs/INDEX.md`, `docs/FULL_DOCUMENTATION_MAP.md`,
+  `docs/future/README.md`, and `docs/todo/README.md`.
+- Update or retire stale `docs/todo/SHOPIFY_SETUP_TODO.md`; it still describes
+  Cap 65 P5 as blocked even though current repo truth says Cap 65 is locked
+  read-only.
+- Delete or deprecation-banner `docs/design/ui_backend_contract.md`; it is
+  boilerplate example API content, not a real UI/backend contract.
+- Banner or rename `docs/Audit BackLog(active)/New-Audit-and-Issues.md` as
+  stale audit input. Some findings are obsolete, but still-valid robustness
+  items include monolith risk, frontend modularity, env docs, CSP/security
+  headers, and docs hygiene.
+- Cite `docs/planning/NOVA_JOB_WORKFLOW_PLAN.md` and
+  `docs/product/AURALIS_INTERFACE_PLAN.md` as future Nova Jobs / Auralis job
+  surface substrate.
+- Cite connector/security references under the relevant horizon items:
+  `docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28.md`,
+  `docs/future/NOVA_CONNECTOR_RISK_CLASSIFICATION_TABLE_2026-04-28.md`, and
+  `docs/future/NOVA_CONNECTOR_REGISTRY_PLAN_2026-04-27.md`.
+- Cite `docs/nova-conversation-response-contract.md` as acceptance-criteria
+  input for PR 5/6 and Lane D response-quality work.
+- Cite `docs/simulations/APPROVAL_GATE_WORKFLOW_SIMULATIONS.md` and
+  `docs/simulations/ECOSYSTEM_SIMULATION_MATRIX.md` as approval lifecycle and
+  proof-ratchet substrate.
+- Add Free-First Principle to the master roadmap doctrine list, sourced from
+  `docs/design/DESIGN_AUTHORITY.md`.
+- Add B2/H2/D15 substrate citations found during review:
+  `docs/design/Phase 10/Firewall & Ledger Specification.txt`,
+  `docs/design/Phase 10/# Autonomy Tiers & Evolution.txt`,
+  `docs/design/MEMORY_SYSTEM_REFERENCE.md`,
+  `docs/design/brain/PERSONAL_PERSONALITY_LAYER.md`, and
+  `docs/brain/BRAIN_TRACE_UI_SPEC.md`.
+- Refresh product/reference docs that still name old top-level pages such as
+  Agent, Activity, Rules, Workspace, or Trust without the current
+  Settings -> Advanced relationship.
 
 ---
 
