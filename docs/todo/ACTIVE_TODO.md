@@ -18,11 +18,18 @@ UX simplification and discoverability lane: ACTIVE (2026-07-02 lock).
   Lane state:
     PR 2 (#261 Daily Brief unification): MERGED 2026-07-02.
     PR 3 (#262 quick-action reduction): MERGED 2026-07-05.
-    PR 4 (navigation collapse behind Settings -> Advanced): next code action.
+    PR 4 (#264 navigation collapse behind Settings -> Advanced):
+      MERGED 2026-07-05, including riders B1 (pytest-timeout
+      guard) and B2-start (ledger health diagnostic - reports
+      475 MB, rotation + relocation recommended).
     PR 5 (labels + Home), PR 6 (usability ratchets): queued.
-  Riding alongside (roadmap Lane B insert candidates):
-    B1 pytest-timeout install (test-stall diagnosis)
-    B2 ledger hardening start (rotation, hash chain, relocate)
+  Next code action:
+    C1 Auralis Today (roadmap Lane C) - commit the converged spec
+    into the repo as C1's design doc, then implement
+    build_auralis_today_section() with connector extensions and
+    memory seeds.
+  Lane B remainder (queued): B2 rotation/hash-chain/relocation,
+    B3 backup + restore drill, B4 async provider probes.
   Not authorized (unchanged, per lock + 2026-06-18 boundary):
     capability expansion, Shopify writes, posting, external writes,
     browser/computer-use expansion, OpenClaw expansion, scheduler/

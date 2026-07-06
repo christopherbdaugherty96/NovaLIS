@@ -21,8 +21,9 @@ For exact runtime facts, use:
 ## Current Priorities
 
 ```text
-1. UX simplification lane (2026-07-02 lock): PR 3 merged,
-   PR 4 navigation collapse next.
+1. C1 Auralis Today (roadmap Lane C): spec design doc, then the
+   morning-value surface. UX lane PR 3 (#262) and PR 4 (#264) are
+   MERGED; PR 5/6 queued after C1.
 2. Owner NOW gate (see master roadmap): Instagram conversion fixes,
    Meta verification, filming, OpenClaw token rotation,
    Auralis-Digital repo privacy migration.
@@ -34,17 +35,16 @@ For exact runtime facts, use:
 ## Current Blockers
 
 ```text
-Test suite pre-existing stall at 85-91% remains a verification
-friction item. New clue (2026-07-05): pytest config references a
-timeout option but pytest-timeout is not installed, so hangs are
-unbounded. Fix queued as roadmap item B1.
+Test suite pre-existing stall at 85-91%: the B1 pytest-timeout
+guard landed via PR #264 (timeout = 180s enforced), so the next
+full-suite run converts the silent hang into a named failing test.
+Root-cause fix still pending (B1 remainder).
 ```
 
 ## Decisions Needed
 
 ```text
-1. Land the master roadmap + refreshed front-door docs as the A1
-   docs PR.
+1. Machine side: none - C1 starts on go.
 2. Owner: choose Auralis-Digital hosting migration path
    (Netlify/Cloudflare from private repo vs repo split vs GitHub
    Pro) - the business playbook is currently public.
@@ -55,9 +55,8 @@ unbounded. Fix queued as roadmap item B1.
 ```text
 1. Owner NOW items (Instagram, verification, filming, rotation,
    security migration - see master roadmap NOW gate).
-2. A1: land roadmap docs PR.
-3. A2: PR 4 navigation collapse (+ pytest-timeout and ledger
-   hardening start riding along, roadmap B1-B2).
+2. DONE: A1 landed (#262 + #263). A2+B1+B2-start landed (#264).
+3. C1: commit Auralis Today spec as design doc, then implement.
 4. Continue Morning Brief friction logging.
 5. Keep Second Brain implementation deferred (roadmap H13).
 ```
@@ -76,19 +75,14 @@ docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md
 (supersedes the 2026-06-17 runtime recovery lock, absorbed P2-P5)
 ```
 
-## Active Branch: codex/a1-roadmap-front-door-docs
+## Branch State
 
 ```text
-PR #262 merged 2026-07-05:
-  5f8a924 - ux: reduce visible quick actions to high-value outcome
-            tasks (UX lane PR 3)
-  a1b54a8 - docs: regenerate runtime docs after quick-action reduction
-
-This A1 docs PR includes:
-  - README.md refresh (butler north star, current task, roadmap link)
-  - docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md (lands as the A1
-    docs-only PR)
-  - this file + docs/todo/ACTIVE_TODO.md refresh (A1 docs PR)
+main is current; no active feature branch. Next branch will be C1
+(Auralis Today spec + implementation).
+Remote branches: main + 4 unmerged review candidates
+(second-brain-slice1-activation is worth keeping - roadmap H13;
+the other three are likely superseded, owner review pending).
 ```
 
 ## Recent Landed Stack (since 2026-06-17)
@@ -100,6 +94,10 @@ PR #258 - Startup health stabilization (2026-07-02).
 PR #259 - UX simplification priority lock doc (2026-07-02).
 PR #260 - Daily Awareness Brief surface (2026-07-02).
 PR #261 - Daily Brief unification and routing (2026-07-02).
+PR #262 - UX PR 3: quick-action reduction (2026-07-05).
+PR #263 - A1: master roadmap + front-door truth sync (2026-07-05).
+PR #264 - UX PR 4: navigation collapse + B1 pytest-timeout guard
+          + B2-start ledger health diagnostic (2026-07-05).
 ```
 
 ## Earlier Landed Stack (2026-06-14 to 2026-06-16)
