@@ -3431,6 +3431,25 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     except Exception:
                         _aw_shopify = None
 
+                # Auralis Today (C1): assemble the business decision surface from the
+                # read-only Shopify snapshot plus governed-memory seeds (thread "auralis").
+                # Only supplied when seeds or a snapshot exist, so absent config leaves the
+                # default composition untouched. Read-only; no writes, no new authority.
+                _aw_auralis: dict | None = None
+                try:
+                    from src.brief.auralis_seeds import build_auralis_inputs_from_memory
+                    from src.memory.governed_memory_store import GovernedMemoryStore
+
+                    _auralis_items = GovernedMemoryStore().list_items(
+                        thread_name="auralis", limit=100
+                    )
+                    if _auralis_items or _aw_shopify:
+                        _aw_auralis = build_auralis_inputs_from_memory(
+                            _auralis_items, shopify_snapshot=_aw_shopify
+                        )
+                except Exception:
+                    _aw_auralis = None
+
                 _awareness = compose_awareness_brief(
                     weather_data=_aw_weather,
                     news_items=_aw_news_items,
@@ -3439,6 +3458,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_state=session_state,
                     shopify_snapshot=_aw_shopify,
                     recent_receipts=_aw_receipts,
+                    auralis_inputs=_aw_auralis,
                 )
                 _aw_dict = _awareness.to_dict()
                 _log_ledger_event(
