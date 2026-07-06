@@ -291,8 +291,9 @@ def compose_awareness_brief(
     session_state: dict[str, Any] | None = None,
     shopify_snapshot: dict[str, Any] | None = None,
     recent_receipts: list[dict[str, Any]] | None = None,
+    auralis_inputs: dict[str, Any] | None = None,
 ) -> AwarenessBrief:
-    sections = (
+    sections: list[AwarenessSection] = [
         build_weather_section(weather_data),
         build_news_section(news_items, news_categories),
         build_calendar_section(calendar_data),
@@ -300,10 +301,16 @@ def compose_awareness_brief(
         build_shopify_section(shopify_snapshot),
         build_printify_section(),
         build_changes_section(recent_receipts),
-    )
+    ]
+    # Auralis Today (C1) is appended only when business inputs are supplied, so the default
+    # awareness composition and its section-count contract are unchanged.
+    if auralis_inputs is not None:
+        from src.brief.auralis_today import build_auralis_today_section
+
+        sections.append(build_auralis_today_section(auralis_inputs))
     return AwarenessBrief(
         date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         timestamp_utc=datetime.now(timezone.utc).isoformat(),
-        sections=sections,
+        sections=tuple(sections),
         greeting=_time_greeting(),
     )
