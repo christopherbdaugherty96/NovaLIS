@@ -3384,7 +3384,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {"awareness brief", "daily awareness", "awareness"}:
+            from src.conversation.awareness_brief_handler import is_awareness_brief_request
+
+            if is_awareness_brief_request(lowered):
                 from src.brief.awareness_brief import compose_awareness_brief
 
                 _aw_weather: dict | None = None
