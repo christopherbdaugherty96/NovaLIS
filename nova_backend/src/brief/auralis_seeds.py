@@ -25,7 +25,7 @@ def _tags(item: dict[str, Any]) -> set[str]:
 
 
 def _text(item: dict[str, Any], *keys: str) -> str:
-    for key in keys:
+    for key in (*keys, "body", "content_raw", "content_display"):
         val = str(item.get(key) or "").strip()
         if val:
             return val
@@ -53,7 +53,7 @@ def build_auralis_inputs_from_memory(
         tier = str(item.get("tier") or "").strip().lower()
 
         if "promotion_queue" in tags:
-            promotion_queue = _parse_promotion_list(_text(item, "content", "title"))
+            promotion_queue = _parse_promotion_list(_text(item, "content", "body", "content_raw", "title"))
             continue
 
         ownership = next((t for t in _OWNERSHIP_TAGS if t in tags), "")
@@ -62,12 +62,12 @@ def build_auralis_inputs_from_memory(
                 "content": _text(item, "title", "content"),
                 "ownership": ownership,
                 "gates_revenue": "gates_revenue" in tags,
-                "smallest_step": _text(item, "content", "title"),
+                "smallest_step": _text(item, "content", "body", "content_raw", "title"),
             })
             continue
 
         if tier == "locked" or "decision" in tags:
-            decisions.append({"content": _text(item, "content", "title"), "tier": "locked"})
+            decisions.append({"content": _text(item, "content", "body", "content_raw", "title"), "tier": "locked"})
 
     # Deterministic ordering independent of memory's updated_at sort:
     # gating actions first, then by ownership rank, then by content.

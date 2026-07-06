@@ -61,6 +61,22 @@ def test_seeds_feed_a_renderable_section():
     assert "Verify" in best  # gating blocker wins deterministically
 
 
+def test_store_shaped_items_use_body_for_smallest_step():
+    items = [
+        {
+            "title": "Auralis-Digital repo exposure",
+            "body": "migrate hosting, then flip repo private",
+            "tier": "active",
+            "tags": ["needs_chris", "gates_revenue"],
+            "links": {"project_thread_name": "auralis", "project_thread_key": "auralis"},
+        }
+    ]
+    inputs = build_auralis_inputs_from_memory(items)
+    section = build_auralis_today_section(inputs)
+    best = next(i for i in section.items if i.startswith("Best move:"))
+    assert "migrate hosting, then flip repo private" in best
+
+
 def test_empty_memory_yields_no_fabrication():
     inputs = build_auralis_inputs_from_memory([], shopify_snapshot=None)
     section = build_auralis_today_section(inputs)
