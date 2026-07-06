@@ -79,7 +79,7 @@ def test_promotion_queue_order_is_respected():
 def test_best_move_includes_why():
     section = build_auralis_today_section(_complete_inputs())
     best = next(i for i in section.items if i.startswith("Best move:"))
-    assert "—" in best  # reason clause present
+    assert " - " in best  # reason clause present (ASCII-safe separator)
 
 
 # --- Criterion 4: explicit "not enough", never fabricates ---
