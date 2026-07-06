@@ -67,6 +67,13 @@ If a trusted input is unavailable (e.g. Shopify not reachable), C1 states so exp
 affected line and **does not invent a recommendation**: e.g. `Revenue: not enough to
 recommend today (Shopify unavailable).` A missing input never produces a fabricated best move.
 
+**Input status (internal, makes the honesty rule testable).** The builder computes one of:
+`inputs_complete` (all trusted inputs present) / `inputs_partial` (some present, some missing —
+degrade the affected lines, still recommend from what is present) / `not_enough_trusted_inputs`
+(no trusted revenue/queue signal — the best-move line becomes an explicit "not enough to
+recommend today", never a fabricated action). Exposed on the section result for tests; may be
+surfaced subtly in UI but is not a prominent metric.
+
 ## Memory seeds (no schema change)
 
 Seeds map onto the existing `GovernedMemoryStore` schema (per
@@ -95,10 +102,18 @@ Meta/TikTok/Google connectors; product-readiness scoring engine; content CRM; Op
 Telegram delivery (that is C3, gated on token rotation + scheduler repair); Friday Risk Loop
 (C4); any new page. C1 is one section in the existing Daily Brief.
 
-## Build order
+## Build order (as built)
 
-1. This design doc (fixes the trusted input set). ← current commit
-2. Connector extensions: order tags, discountCodes, publication counts (read-only).
-3. `build_auralis_today_section(...)` + deterministic best-move + degradation.
-4. Memory seeds (locked decisions, owner-action queue, promotion queue).
-5. Tests for all five acceptance criteria + determinism-across-reruns.
+1. This design doc (fixes the trusted input set). ✓
+2. `build_auralis_today_section(...)` + `auralis_today_input_status` — deterministic
+   best-move + honest degradation. ✓ (built first: fully verifiable, encodes all criteria)
+3. Governed-memory seed loader (`auralis_seeds.py`) — locked decisions, owner-action queue,
+   promotion queue; deterministic ordering. ✓
+4. Conditional wiring into `compose_awareness_brief` + session-handler on-open path. ✓
+   (renders when seeds or a snapshot exist; default composition unchanged at 7 sections)
+5. Connector enrichment (`shopify_auralis_enrichment.py`) — pure tested parsers for order
+   split / WELCOME10 / channels. ✓ **Live GraphQL round-trip gated on Cap 65 P5
+   (owner-paused): no network call added to the on-open path; the section degrades honestly
+   until P5 is unpaused, at which point a thin fetch feeds `parse_enrichment`.**
+6. Tests: all five acceptance criteria + determinism-across-reruns + non-authorizing shape +
+   seed classification + enrichment parsing. ✓ (27 C1 tests; 225 green incl. regression)
