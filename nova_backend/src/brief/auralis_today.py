@@ -117,7 +117,7 @@ def _revenue_line(shopify: Any) -> str:
     top = _clean(shopify.get("top_margin_product"), limit=40)
     if top:
         extras.append(f"top margin: {top}")
-    tail = (" · " + " · ".join(extras)) if extras else ""
+    tail = (" | " + " | ".join(extras)) if extras else ""
     return f"Revenue: {seg}{tail}."
 
 
@@ -148,10 +148,10 @@ def _best_move(
     """Deterministic. Blocker-that-gates-revenue wins; else top of the promotion queue."""
     if blocker:
         step = _clean(blocker.get("smallest_step") or blocker.get("content"), limit=120)
-        return f"Best move: {step} — it gates revenue and only you can do it."
+        return f"Best move: {step} - it gates revenue and only you can do it."
     if promotion_queue:
         top = _clean(promotion_queue[0], limit=80)
-        return f"Best move: promote {top} — top of the promotion queue, channels ready."
+        return f"Best move: promote {top} - top of the promotion queue, channels ready."
     return f"Best move: {_NO_RECOMMENDATION}."
 
 
