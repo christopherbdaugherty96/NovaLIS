@@ -74,7 +74,48 @@ clearly safer:
   `docs/brain/BRAIN_TRACE_UI_SPEC.md`.
 - Refresh product/reference docs that still name old top-level pages such as
   Agent, Activity, Rules, Workspace, or Trust without the current
-  Settings -> Advanced relationship.
+  Settings -> Advanced relationship. Specific stale line:
+  `docs/product/WHAT_WORKS_TODAY.md` lists the pre-PR-4 page set and omits
+  Goals; `docs/product/KNOWN_LIMITATIONS.md` says "Trust page" without the
+  Settings -> Advanced location.
+
+### Claude review-pass additions (2026-07-05)
+
+Delta from the four-pass docs review not already listed above. Fold into the
+same tidy PR:
+
+- Delete repo-root `branches_safe_to_delete.txt` — all seven listed branches
+  were already deleted; the file is fully stale.
+- Archive the three April-dated audit strays at `docs/` root:
+  `AUDIT_ACTION_PLAN_2026-04-28.md`, `SANITY_AUDIT_2026-04-28.md`,
+  `SECOND_PASS_OVERVIEW_2026-04-28.md`; and the two orphaned capability
+  spec `.txt` files at `docs/` root (Governed Web Intelligence / Governed
+  Webpage Launch).
+- Fold the two archives *inside* `docs/design/` (`archive/` and
+  `archive(phase 4)/`) into top-level `docs/archive/`.
+- Fold only genuinely empty/orphan singleton folders (`integrations/` empty,
+  `architecture/` one README) into `reference/`. Do NOT fold folders now
+  cited as substrate above (`planning/`, `simulations/`, `security/`,
+  `business/`).
+- Move `docs/tools/check_quarantine.ps1` to `scripts/` (a script misfiled
+  under docs).
+- Delete the empty `docs/archive/phase 3/NovaLIS-Governance(older)/
+  OLD_VISION.md_files/` directory. Security note: the JWT-bearing HTML export
+  is fully gone from the working tree; combined with the clean gitleaks
+  history scan, that exposure is closed end to end.
+- Proof systems: do NOT merge `PROOFS/`, `demo_proof/`, and
+  `capability_verification/` — different genres. Add one cross-linking
+  paragraph to each README instead.
+- Naming reconciliation (record, don't "fix"): `PROOFS/Trust-Panel/` has a
+  `trust_panel_mvp_live_2026-05-14.png` while runtime gaps list "Trust Panel
+  not implemented." Both true — the trust *page* MVP was proven; the full
+  Trust *Panel* concept (Phase 4.5) remains open. Not a discrepancy.
+- Memory-store truth for B7 / C1 (from
+  `docs/design/MEMORY_SYSTEM_REFERENCE.md`): `NovaSelfMemoryStore` has dead
+  writes and `quick_corrections` has no consumer. Do not build C1 seeds on
+  either; B7 schema work should revive or formally retire them. C1 seeds map
+  onto the existing `GovernedMemoryStore` schema (lock tier + tags), no
+  schema change needed.
 
 ---
 
