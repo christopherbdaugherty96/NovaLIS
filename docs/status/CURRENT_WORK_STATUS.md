@@ -1,6 +1,10 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
+Last reviewed: 2026-07-06 (Phase 3 entry — build lanes complete, verification done)
+
+Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
+`../capability_verification/CAPABILITY_INVENTORY.md` (what works), `DAILY_COMMAND_CENTER.md`
+(where we are), `../future/NOVA_MASTER_ROADMAP_2026-07-05.md` (order).
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -19,22 +23,28 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-Phase: Runtime recovery and health truth priority lock (2026-06-17).
+PHASE 3 - Can Nova become a habit? (2026-07-06)
 
-Current active lane:
-  Runtime recovery and health truth.
+Engineering and verification are COMPLETE. The only input that moves the project now is
+OBSERVED DAILY USE. Do not build, verify, or define more until observed behavior proves a gap.
 
-Product signal:
-  Nova can look alive while the local runtime is not actually responding.
-  A deeper browser/computer-use pass observed visible UI, visible buttons,
-  CONNECTING status, stuck chat, and local API timeouts in the same user
-  experience. That is now the highest-value trust gap.
+Shipped this cycle (all merged): UX lane (#261/#262/#264), C1 Auralis Today (#266/#267/#268,
+seeded + frozen), docs (#263/#269/#270/#271). Live verification on fresh main: weather / news /
+calendar / routing / C1 PASS; Gmail / Tasks / Reminders / Traffic NOT IMPLEMENTED.
 
-Current objective:
-  Scope a focused recovery lane before broader UX cleanup or new capability
-  work. When Nova stalls, the user must know what happened, whether anything
-  ran, whether anything left the device, whether Nova is healthy, and what to
-  do next.
+Active work = OBSERVATION: Chris opens Nova each morning first; Claude watches and reports
+where behavior diverges from what Nova assumed. Success = Nova eliminates ONE uncertainty
+before Chris reaches for another app.
+
+Owner-only NOW gate: Auralis-Digital hosting migration + privacy flip, Instagram, filming,
+Meta verification, OpenClaw token rotation.
+```
+
+<!-- Historical lock below retained for continuity. -->
+
+```text
+[Superseded 2026-06-17 lane] Runtime recovery and health truth priority lock.
+  P1 (health truth + recovery) landed via PR #258; absorbed into the completed UX lane.
 
 Priority lock:
   docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md

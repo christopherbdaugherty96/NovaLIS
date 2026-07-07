@@ -1,11 +1,12 @@
 # Daily Command Center
 
 Status: manual continuity surface.
-Last reviewed: 2026-07-05.
-Source: master roadmap consolidation and pre-PR-4 audit sync.
+Last reviewed: 2026-07-06 (Phase 3 entry — build lanes complete, verification done).
+Source: post-C1 live verification + documentation closure.
 
-Ordering authority for all current and future work:
-`docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`
+Product definition: `docs/product/PRODUCT_DEFINITION.md`
+Ordering authority: `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`
+What works (verified): `docs/capability_verification/CAPABILITY_INVENTORY.md`
 
 This note is a human-facing command surface for current repo/vault
 orientation. It is not generated runtime truth and it does not
@@ -18,18 +19,21 @@ For exact runtime facts, use:
 - actual code
 - receipts and logs
 
-## Current Priorities
+## Current Phase: 3 — Can Nova become a habit?
+
+Build lanes are COMPLETE. Engineering and verification are no longer the question. The only
+input that moves the project now is OBSERVED DAILY USE.
 
 ```text
-1. C1 Auralis Today (roadmap Lane C): spec design doc, then the
-   morning-value surface. UX lane PR 3 (#262) and PR 4 (#264) are
-   MERGED; PR 5/6 queued after C1.
-2. Owner NOW gate (see master roadmap): Instagram conversion fixes,
-   Meta verification, filming, OpenClaw token rotation,
-   Auralis-Digital repo privacy migration.
-3. Preserve visible user trust when Nova stalls or degrades.
-4. Preserve the Obsidian authority boundary.
-5. Keep all four certified capabilities locked.
+1. OBSERVATION (Claude's role now = observe, not build): Chris opens Nova each morning; Claude
+   watches the real session and reports where behavior diverges from what Nova assumed.
+   Metrics: followed / quality / time-to-decision / reason-ignored / surprise / FIRST
+   UNANSWERED QUESTION. Single success metric: did Nova eliminate ONE uncertainty before Chris
+   reached for another app?
+2. Owner NOW gate (only Chris can do): Auralis-Digital repo hosting migration + privacy flip,
+   Instagram bio/link/filming, Meta verification, OpenClaw token rotation.
+3. Do NOT build/verify/define more until observed use proves a gap. Evidence earns the build.
+4. Preserve governance boundaries; keep certified capabilities locked.
 ```
 
 ## Current Blockers
@@ -44,45 +48,35 @@ Root-cause fix still pending (B1 remainder).
 ## Decisions Needed
 
 ```text
-1. Machine side: none - C1 starts on go.
-2. Owner: choose Auralis-Digital hosting migration path
-   (Netlify/Cloudflare from private repo vs repo split vs GitHub
-   Pro) - the business playbook is currently public.
+1. Machine side: NONE. Build lanes complete; next input is observed use, not a decision.
+2. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
+   repo vs repo split vs GitHub Pro) - the business playbook is currently public.
 ```
 
 ## This Week
 
 ```text
-1. Owner NOW items (Instagram, verification, filming, rotation,
-   security migration - see master roadmap NOW gate).
-2. DONE: A1 landed (#262 + #263). A2+B1+B2-start landed (#264).
-3. C1: commit Auralis Today spec as design doc, then implement.
-4. Continue Morning Brief friction logging.
-5. Keep Second Brain implementation deferred (roadmap H13).
+1. Chris opens Nova each morning FIRST and logs the observation metrics (Phase 3).
+2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
+3. Nothing to build/verify/define unless observed use surfaces a real gap.
 ```
 
-## Chosen Next Lane
+## Morning coverage (what Nova reliably does today, verified 2026-07-06)
 
 ```text
-UX simplification and discoverability (PR 3 -> PR 4 -> PR 5 -> PR 6),
-then Auralis Today (roadmap Lane C).
-```
-
-Priority lock:
-
-```text
-docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md
-(supersedes the 2026-06-17 runtime recovery lock, absorbed P2-P5)
+Weather  OK  |  News  OK  |  Calendar  OK  |  Business/C1  OK
+Email  NOT IMPLEMENTED  |  Reminders  NOT IMPLEMENTED  |  Traffic  NOT IMPLEMENTED
+~3 of Chris's ~5-6 morning checks. Gap-fill order (only when evidence pulls it):
+Google Tasks -> Gmail -> Traffic. Full detail: CAPABILITY_INVENTORY.md.
 ```
 
 ## Branch State
 
 ```text
-main is current; no active feature branch. Next branch will be C1
-(Auralis Today spec + implementation).
-Remote branches: main + 4 unmerged review candidates
-(second-brain-slice1-activation is worth keeping - roadmap H13;
-the other three are likely superseded, owner review pending).
+main is current; no active feature branch. All build lanes merged (#262-#270).
+Next work is observation, not a branch.
+Remote review candidates: second-brain-slice1-activation (keep - roadmap H13);
+others likely superseded (owner review pending).
 ```
 
 ## Recent Landed Stack (since 2026-06-17)
