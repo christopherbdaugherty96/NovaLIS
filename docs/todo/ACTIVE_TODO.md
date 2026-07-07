@@ -1,40 +1,39 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-07-05 (master roadmap consolidation)
+Last reviewed: 2026-07-06 (Phase 3 entry)
 
 ---
 
 ## Current Active Task
 
 ```text
-UX simplification and discoverability lane: ACTIVE (2026-07-02 lock).
-  The 2026-06-17 runtime recovery lock is COMPLETE/superseded - its
-  P1 (health truth + recovery) landed via PR #258; its P2-P5 were
-  absorbed into the UX lane.
-  Lock:
-    docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md
-  Ordering authority for everything beyond this lane:
-    docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md
-  Lane state:
-    PR 2 (#261 Daily Brief unification): MERGED 2026-07-02.
-    PR 3 (#262 quick-action reduction): MERGED 2026-07-05.
-    PR 4 (#264 navigation collapse behind Settings -> Advanced):
-      MERGED 2026-07-05, including riders B1 (pytest-timeout
-      guard) and B2-start (ledger health diagnostic - reports
-      475 MB, rotation + relocation recommended).
-    PR 5 (labels + Home), PR 6 (usability ratchets): queued.
-  Next code action:
-    C1 Auralis Today (roadmap Lane C) - commit the converged spec
-    into the repo as C1's design doc, then implement
-    build_auralis_today_section() with connector extensions and
-    memory seeds.
-  Lane B remainder (queued): B2 rotation/hash-chain/relocation,
-    B3 backup + restore drill, B4 async provider probes.
-  Not authorized (unchanged, per lock + 2026-06-18 boundary):
-    capability expansion, Shopify writes, posting, external writes,
-    browser/computer-use expansion, OpenClaw expansion, scheduler/
-    background loops, capability_locks.json changes, autonomous
-    workflow execution.
+PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEFINITION.md)
+
+  Engineering + verification are COMPLETE. The only input that moves the project now is
+  OBSERVED DAILY USE. Do NOT build, verify, or define more until observed behavior proves a
+  real gap. Evidence earns the build.
+
+  Build lanes shipped this cycle (all merged):
+    UX lane: #261 brief unification, #262 quick-actions, #264 nav collapse (+B1 pytest-timeout,
+      +B2-start ledger health). PR 5/6 (labels/Home, ratchets) DEFERRED - lower priority than
+      observation.
+    C1 Auralis Today: #266 built, #267 seed-loader fix, #268 dogfood-phrase routing. Seeded,
+      frozen validation baseline.
+    Docs: #263 roadmap, #269 user-sim results, #270 Capability Inventory,
+      #271 Product Definition + Release Checklist.
+    Live verification (fresh main, 2026-07-06): weather/news/calendar/routing/C1 all PASS;
+      Gmail/Tasks/Reminders/Traffic NOT IMPLEMENTED. QA Rule #1 adopted.
+
+  Active work = OBSERVATION: Chris opens Nova each morning first; Claude watches and reports
+  where behavior diverges from what Nova assumed. Metrics incl. "first unanswered question";
+  success = eliminate ONE uncertainty before reaching for another app.
+
+  Gap-fill order (only when evidence pulls it): Google Tasks -> Gmail -> Traffic. Awareness
+  Item engine only after those.
+
+  Not authorized (unchanged, 2026-06-18 boundary): capability expansion, Shopify writes,
+  posting, external writes, browser/OpenClaw expansion, scheduler/background loops,
+  capability_locks.json changes, autonomous execution.
 
 Second Brain Slice 1 lock remains ACCEPTED, deferred (roadmap H13).
 
