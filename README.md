@@ -129,17 +129,18 @@ For the consolidated roadmap and positioning update, use [Repo Sync And Roadmap 
 Current active task:
 
 ```text
-UX simplification and discoverability lane — ACTIVE (2026-07-02 lock).
+PHASE 3 — Can Nova become a habit? (2026-07-06)
 
-Done: Daily Brief unification (PR #261), quick-action reduction
-(PR #262 / UX lane PR 3), navigation collapse (PR #264 / UX lane
-PR 4 - default nav is now Home, Chat, Goals, News, Settings, with
-internal surfaces behind Settings -> Advanced), plus riders:
-pytest-timeout guard (B1) and ledger health diagnostic (B2 start).
+Engineering and verification are complete. Build lanes shipped: UX
+simplification (#261/#262/#264), C1 Auralis Today decision surface
+(#266/#267/#268, seeded + frozen), and documentation (#263/#269/#270/
+#271). Live verification on fresh main: weather / news / calendar /
+routing / C1 all PASS; email / reminders / traffic NOT IMPLEMENTED.
 
-Next: C1 Auralis Today (roadmap Lane C) - spec lands as a design
-doc first, then the morning-value surface. PR 5 (labels + Home)
-and PR 6 (usability ratchets) complete the UX lane after.
+The only input that moves the project now is OBSERVED DAILY USE, not
+more building. See docs/product/PRODUCT_DEFINITION.md (mission +
+purpose), docs/capability_verification/CAPABILITY_INVENTORY.md (what
+works), and docs/status/DAILY_COMMAND_CENTER.md (where we are).
 
 Ordering authority for everything after this lane:
 docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md
