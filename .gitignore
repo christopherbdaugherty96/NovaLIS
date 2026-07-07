@@ -79,3 +79,4 @@ dist/
 
 # Generated simulation trial artifacts
 nova_backend/tests/simulation/reports/
+Google/
