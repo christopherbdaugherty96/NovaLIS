@@ -1,8 +1,36 @@
 # Daily Command Center
 
 Status: manual continuity surface.
-Last reviewed: 2026-07-06 (Phase 3 entry — build lanes complete, verification done).
-Source: post-C1 live verification + documentation closure.
+Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins).
+Source: pre-observation live verification + product-identity convergence.
+
+## 2026-07-07 session (latest — read this first)
+
+```text
+Phase 3 formally CLOSED: engineering FROZEN, only critical bugs may be fixed, behavior generates
+the roadmap. Tag phase-3-complete on main (963f1d8; all lanes #262-#272 merged).
+
+Pre-observation LIVE VERIFICATION ran on fresh main (QA Rule #1). Report + evidence:
+  PR #273 -> docs/capability_verification/LIVE_VERIFICATION_2026-07-07.md.
+  Verdict: READY FOR OBSERVATION. Weather/news/calendar/brief/arithmetic/search/email-degrade
+  PASS live; email-inbox/tasks/traffic NOT IMPLEMENTED. Governance intact (27 caps, no writes).
+  Headline finding: the model-VERSION LOCK fired on fresh start (stale trust fingerprint) and
+  blocked LLM inference until an owner-authorized "confirm model update" cleared it (hash
+  rewritten, MODEL_UPDATED ledger event); it gates the LLM only, deterministic surfaces work
+  under it, and it won't re-trigger unless model/prompt/wrapper changes. Freeform LLM chat
+  times out on 8GB CPU (#227) - non-blocking for mornings.
+
+Product IDENTITY converged (PR #274 -> docs/product/PRODUCT_DEFINITION.md): Nova = an awareness
+  engine; objective function "help me make the next better decision"; governance is
+  infrastructure (visible: Awareness->Conversation->Capabilities + hidden Decision Engine);
+  three trust classes Fact/Reasoning/Inference + core principle "never present inference as
+  fact"; awareness tiers Passive->Contextual->Predictive. Theory is CONVERGED - next input is a
+  logged morning, not more refinement.
+
+GATE: no new build until >=7 mornings are logged (collect before analyzing; trend, not n=1).
+Owner to merge #273 + #274. Open decision: gitignore src/models/current_model_hash.txt (local
+trust state, left modified-uncommitted after the unlock) vs keep tracked.
+```
 
 Product definition: `docs/product/PRODUCT_DEFINITION.md`
 Ordering authority: `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`

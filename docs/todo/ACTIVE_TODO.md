@@ -1,6 +1,7 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-07-06 (Phase 3 entry)
+Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). Latest state + this session's
+verification (PR #273) and identity convergence (PR #274): see docs/status/DAILY_COMMAND_CENTER.md.
 
 ---
 
