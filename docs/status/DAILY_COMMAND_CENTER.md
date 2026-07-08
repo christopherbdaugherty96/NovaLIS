@@ -28,8 +28,10 @@ Product IDENTITY converged (PR #274 -> docs/product/PRODUCT_DEFINITION.md): Nova
   logged morning, not more refinement.
 
 GATE: no new build until >=7 mornings are logged (collect before analyzing; trend, not n=1).
-Owner to merge #273 + #274. Open decision: gitignore src/models/current_model_hash.txt (local
-trust state, left modified-uncommitted after the unlock) vs keep tracked.
+PR #273 and PR #274 are merged. Main now contains the live verification report and converged
+product identity. Next input is observed morning use. Resolved: src/models/current_model_hash.txt
+is now untracked (local machine trust state, not repo truth) — a fresh checkout/other machine
+still needs its own "confirm model update", which is governance working correctly.
 ```
 
 Product definition: `docs/product/PRODUCT_DEFINITION.md`
