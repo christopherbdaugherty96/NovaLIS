@@ -1365,13 +1365,18 @@ button.workspace-spotlight-card.active {
   flex-wrap: wrap;
 }
 
+/* UX solidity pass (Phase 3): demote the eyebrow to a quiet overline so each
+   card reads as ONE clear header (the h3) with a small category label above it,
+   instead of two competing headers. Element kept; visual weight only. */
 .home-launch-kicker,
 .memory-page-kicker {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8fc8ff;
+  color: #7e97b8;
+  opacity: 0.8;
+  margin-bottom: 3px;
 }
 
 #home-launch-summary,

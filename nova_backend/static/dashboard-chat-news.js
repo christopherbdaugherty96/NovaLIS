@@ -3856,6 +3856,11 @@ function showFirstRunGuide(force = false) {
 }
 
 function showFirstRunGuideIfNeeded() {
+  // UX solidity pass (Phase 3): the intro page already presents the first-run
+  // welcome + guided setup, so don't stack the welcome modal on top of it.
+  // The modal stays fully reachable via the "First steps" menu and the
+  // "Show help" action (both call showFirstRunGuide(true)). Nothing removed.
+  if (typeof getInitialPage === "function" && getInitialPage() === "intro") return;
   showFirstRunGuide(false);
 }
 
