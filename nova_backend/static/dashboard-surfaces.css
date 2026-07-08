@@ -3,7 +3,7 @@
 .page-home {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
   align-content: start;
 }
 
@@ -59,7 +59,7 @@
 }
 
 .home-launch-widget {
-  grid-column: span 5;
+  grid-column: span 6;
   display: grid;
   gap: 10px;
   border: 1px solid rgba(143, 218, 255, 0.26);
@@ -71,7 +71,7 @@
 }
 
 .workspace-home-widget {
-  grid-column: span 7;
+  grid-column: span 6;
   display: grid;
   gap: 12px;
   order: 1;
