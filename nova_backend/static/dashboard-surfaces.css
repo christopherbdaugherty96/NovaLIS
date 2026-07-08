@@ -11,6 +11,53 @@
   min-width: 0;
 }
 
+#header-connection-chip.header-connection-chip {
+  gap: 6px;
+  min-height: 24px;
+  padding: 4px 8px;
+  border-color: rgba(168, 201, 242, 0.16);
+  background: rgba(7, 18, 36, 0.42);
+  color: rgba(216, 231, 250, 0.72);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+}
+
+#header-connection-chip.header-connection-chip .status-dot {
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 3px rgba(154, 180, 218, 0.08);
+}
+
+#header-connection-chip.header-connection-chip.status-connected {
+  border-color: rgba(107, 224, 154, 0.18);
+  color: rgba(217, 255, 242, 0.74);
+}
+
+#header-connection-chip.header-connection-chip.status-connected .status-dot {
+  box-shadow: 0 0 0 3px rgba(107, 224, 154, 0.08);
+}
+
+#header-connection-chip.header-connection-chip.status-connecting,
+#header-connection-chip.header-connection-chip.status-reconnecting {
+  border-color: rgba(143, 218, 255, 0.18);
+  color: rgba(220, 242, 255, 0.74);
+}
+
+#header-connection-chip.header-connection-chip.status-connecting .status-dot,
+#header-connection-chip.header-connection-chip.status-reconnecting .status-dot {
+  box-shadow: 0 0 0 3px rgba(143, 218, 255, 0.08);
+}
+
+#header-connection-chip.header-connection-chip.status-degraded {
+  border-color: rgba(255, 210, 123, 0.2);
+  color: rgba(255, 234, 190, 0.78);
+}
+
+#header-connection-chip.header-connection-chip.status-degraded .status-dot {
+  box-shadow: 0 0 0 3px rgba(255, 210, 123, 0.08);
+}
+
 .home-launch-widget {
   grid-column: span 5;
   display: grid;
@@ -1388,7 +1435,12 @@ button.workspace-spotlight-card.active {
   color: #dcecff;
 }
 
-.home-launch-actions,
+.home-launch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
 .personal-layer-actions,
 .memory-page-actions {
   display: flex;
@@ -1396,18 +1448,24 @@ button.workspace-spotlight-card.active {
   gap: 8px;
 }
 
-.home-launch-action-primary {
-  box-shadow: 0 6px 14px rgba(31, 106, 168, 0.16);
+.home-launch-actions .assistant-action-btn {
+  border-color: rgba(168, 201, 242, 0.16);
+  background: rgba(12, 26, 43, 0.38);
+  color: rgba(220, 236, 255, 0.78);
 }
 
-.home-launch-actions .assistant-action-btn,
 #intro-first-success-grid .assistant-action-btn,
 .workspace-board-actions-toolbar .assistant-action-btn {
   border-color: rgba(168, 201, 242, 0.16);
   background: linear-gradient(180deg, rgba(106, 177, 255, 0.09) 0%, rgba(106, 177, 255, 0.03) 100%);
 }
 
-.home-launch-actions .assistant-action-btn:hover,
+.home-launch-actions .assistant-action-btn:hover {
+  border-color: rgba(168, 201, 242, 0.26);
+  background: rgba(20, 43, 68, 0.54);
+  color: #eef5ff;
+}
+
 #intro-first-success-grid .assistant-action-btn:hover,
 .workspace-board-actions-toolbar .assistant-action-btn:hover {
   border-color: rgba(168, 201, 242, 0.28);
@@ -1415,13 +1473,15 @@ button.workspace-spotlight-card.active {
 }
 
 .home-launch-actions .home-launch-action-primary {
-  border-color: rgba(143, 218, 255, 0.24);
-  background: linear-gradient(180deg, rgba(143, 218, 255, 0.12) 0%, rgba(143, 218, 255, 0.05) 100%);
+  border-color: rgba(143, 218, 255, 0.34);
+  background: linear-gradient(180deg, rgba(143, 218, 255, 0.2) 0%, rgba(83, 154, 222, 0.1) 100%);
+  color: #f4fbff;
+  box-shadow: 0 7px 16px rgba(31, 106, 168, 0.18);
 }
 
 .home-launch-actions .home-launch-action-primary:hover {
-  border-color: rgba(143, 218, 255, 0.34);
-  background: linear-gradient(180deg, rgba(143, 218, 255, 0.16) 0%, rgba(143, 218, 255, 0.07) 100%);
+  border-color: rgba(143, 218, 255, 0.46);
+  background: linear-gradient(180deg, rgba(143, 218, 255, 0.26) 0%, rgba(83, 154, 222, 0.14) 100%);
 }
 
 .page-settings .workspace-board-actions-toolbar {

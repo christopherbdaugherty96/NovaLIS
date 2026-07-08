@@ -1918,9 +1918,9 @@ function renderHomeLaunchWidget() {
   getHomeLaunchActions(starter.items).forEach((item, index) => {
     const button = document.createElement("button");
     button.type = "button";
-    if (item.emphasis || index === 0) {
-      button.className = index === 0 ? "assistant-action-btn home-launch-action-primary" : "assistant-action-btn";
-    }
+    button.className = index === 0
+      ? "assistant-action-btn home-launch-action-primary"
+      : "assistant-action-btn";
     button.textContent = item.label;
     button.addEventListener("click", item.action);
     actionsHost.appendChild(button);
