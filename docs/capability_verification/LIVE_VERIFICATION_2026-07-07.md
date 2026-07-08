@@ -85,6 +85,10 @@ None that block observation. The morning-critical deterministic surfaces work li
 4. Calendar "tomorrow" query echoes "today" copy; calendar connected but no near-term events
    (a "walk the dog" item added earlier may be a Task, not an Event).
 5. Cold-start event-loop stall after any LLM activation (see above).
+6. src/models/current_model_hash.txt is git-TRACKED but is machine-local trust state (the
+   model-digest fingerprint differs per install). The owner-authorized unlock rewrote it, so
+   it now sits modified-uncommitted. Open decision: gitignore it (treat as local state) vs keep
+   it tracked (shared baseline). Left uncommitted pending that decision.
 ```
 
 ## Missing capabilities (stated plainly)

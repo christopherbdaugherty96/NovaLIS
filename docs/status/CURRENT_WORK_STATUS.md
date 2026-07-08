@@ -1,6 +1,8 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-06 (Phase 3 entry — build lanes complete, verification done)
+Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). This session's live verification
+(PR #273) and product-identity convergence (PR #274) are summarized in
+docs/status/DAILY_COMMAND_CENTER.md (read the "2026-07-07 session" block first).
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
 `../capability_verification/CAPABILITY_INVENTORY.md` (what works), `DAILY_COMMAND_CENTER.md`
