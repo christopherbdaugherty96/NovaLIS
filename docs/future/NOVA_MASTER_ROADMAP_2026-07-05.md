@@ -528,6 +528,10 @@ docs/future/ai_ecosystem_operating_model/ (docs-only coordination
 Their content remains valid as design reference. Nothing is deleted; it is de-prioritized
 until referenced from a lane above.
 
+For a classification of the uncited `docs/future/` docs (active / roadmap-lane / horizon /
+design-history / superseded / owner-paused / fixture), see `docs/future/FUTURE_DOCS_MAP.md`. That
+map records status only; it does not promote anything into a lane.
+
 Alignment notes (2026-07-05 archive deep-dive):
 
 - This document's authority rules agree with docs/future/README.md
