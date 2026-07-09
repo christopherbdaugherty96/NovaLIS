@@ -25,7 +25,7 @@ This file exists to preserve deep discoverability while keeping `docs/INDEX.md` 
 
 ## Project Signals
 - ../CHANGELOG.md
-- SANITY_AUDIT_2026-04-28.md
+- archive/audits-2026-04/SANITY_AUDIT_2026-04-28.md (historical)
 
 ## Roadmap
 - ../4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md

@@ -8,9 +8,14 @@ These files are:
 - not current roadmap authority
 
 Use instead:
+- `docs/CANONICAL/00_INDEX.md` — living truth index (start here)
 - `docs/design/README.md`
 - `docs/design/DESIGN_AUTHORITY.md`
 - the relevant active phase folder under `docs/design/Phase */`
+
+> Location note: this design-local archive is retained in place by decision of
+> `docs/design/Phase 6/NOVA_DOCS_ALIGNMENT_AND_ARCHIVE_AUDIT_2026-04-02.md`. Whether to fold it
+> into top-level `docs/archive/` is an open question tracked in `docs/todo/DOC_CLEANUP.md`.
 
 Rules:
 1. Keep canonical active docs in phase folders.
