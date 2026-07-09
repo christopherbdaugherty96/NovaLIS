@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 126
+Paired tests: 130
 
 - [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
     - tests → [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
@@ -37,12 +37,20 @@ Paired tests: 126
     - tests → [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
 - [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
     - tests → [[nova_backend/src/brain/task_understanding.py|task_understanding]]
+- [[nova_backend/tests/brief/test_auralis_seeds.py|test_auralis_seeds]]
+    - tests → [[nova_backend/src/brief/auralis_seeds.py|auralis_seeds]]
+- [[nova_backend/tests/brief/test_auralis_today.py|test_auralis_today]]
+    - tests → [[nova_backend/src/brief/auralis_today.py|auralis_today]]
 - [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
     - tests → [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
     - tests → [[nova_backend/src/brief/daily_brief.py|daily_brief]]
+- [[nova_backend/tests/connectors/test_shopify_auralis_enrichment.py|test_shopify_auralis_enrichment]]
+    - tests → [[nova_backend/src/connectors/shopify_auralis_enrichment.py|shopify_auralis_enrichment]]
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
     - tests → [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
+- [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
+    - tests → [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
     - tests → [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
