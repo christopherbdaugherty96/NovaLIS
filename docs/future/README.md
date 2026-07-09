@@ -14,6 +14,16 @@ Use these sources in order of authority:
 4. Future planning docs
 5. Historical archives
 
+## Ordering authority and how to read this folder
+
+- The ordering authority for what comes next is
+  `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (lanes A–D + Horizon H1–H31). The older
+  `ROADMAP.md` is **superseded for ordering** and kept only as reference.
+- **A doc in this folder is reference until a lane in the July roadmap pulls it in.** Being
+  filed here is not a promise, a release plan, or an active priority.
+- To tell whether a given doc is active, parked, superseded, a fixture, or design history, use
+  **`FUTURE_DOCS_MAP.md`** — it classifies the orphaned docs and names each one's intended home.
+
 ## Important Clarification (2026-05-03)
 
 Some concepts described in this folder now have **implemented subsets**.
@@ -35,7 +45,8 @@ The implemented system is a **partial realization** of these ideas, not full com
 
 - `NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md` - future Nova/Auralis operating-model and measurement-spine direction.
 
-- `ROADMAP.md` — primary future direction and phased expansion path.
+- `ROADMAP.md` — historical phased expansion path; **superseded for ordering** by
+  `NOVA_MASTER_ROADMAP_2026-07-05.md`.
 - `NOVA_AGENT_STACK_RECOMMENDATIONS.md` — future governed agent-stack architecture direction.
 
 ## Brain, Memory, Learning, Routine, and Agent Stack Planning
