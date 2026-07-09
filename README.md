@@ -40,19 +40,27 @@ See:
 - [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
 
 ## Start Here
-1. [Start Here](START_HERE.md)
-2. [Quickstart](QUICKSTART.md)
-3. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
-4. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-5. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
-6. [Nova Brain](docs/brain.md)
-7. [Brain Architecture Package](docs/brain/README.md)
-8. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
+1. [Run Nova](RUN_NOVA.md)
+2. [Runtime Truth](RUNTIME_TRUTH.md)
+3. [Governance Proof](GOVERNANCE_PROOF.md)
+4. [Start Here](START_HERE.md)
+5. [Quickstart](QUICKSTART.md)
+6. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
+7. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
+8. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
 9. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 11. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
-12. [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
-13. [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
+
+## Proof First
+
+Run the executable proof check:
+
+```bash
+python scripts/prove_runtime_truth.py
+```
+
+This checks the app import, local dashboard route, `/phase-status`, `/ws`, capability registry loading, and a Governor confirmation block for Cap 64. It is a smoke proof, not a claim that Nova is a finished product.
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
