@@ -47,7 +47,17 @@ receipts, "why am I recommending this", and the approval moment before any actio
 - Phase 3 — Can Nova become a habit? **Current.** The input now is observed daily use, not more
   building.
 
-> Note: `PRODUCT_DEFINITION.md` uses product-level phase framing (1–3). The generated runtime
-> doc uses an engineering phase matrix (3.5–9) for the execution spine. These are two different
-> numbering schemes for two different things; they are not in conflict. See
-> [02_RUNTIME_TRUTH.md](02_RUNTIME_TRUTH.md).
+> **Four taxonomies — do not cross-read them.** Nova is described in four different numbering
+> schemes:
+>
+> 1. **Product phases 1–3** — `PRODUCT_DEFINITION.md` (current: Phase 3, habit).
+> 2. **Generated runtime phases 3.5–9** — [02_RUNTIME_TRUTH.md](02_RUNTIME_TRUTH.md) /
+>    `current_runtime/CURRENT_RUNTIME_STATE.md`. Authoritative for what is real.
+> 3. **Historical design phases 3.5–11** — `docs/design/` (engineering lineage; past Phase 8 these
+>    do NOT equal runtime meaning, and there is no runtime Phase 10/11).
+> 4. **Roadmap lanes A–D + Horizon H1–H31** — `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`, the
+>    active ordering authority for what is next (no phase numbers).
+>
+> They are not in conflict *if kept distinct*: read (2) for what is real, (4) for what is next, and
+> treat (3) as design history. See [07_ROADMAP_TRUTH.md](07_ROADMAP_TRUTH.md) and
+> `docs/design/README.md` Taxonomy Note.

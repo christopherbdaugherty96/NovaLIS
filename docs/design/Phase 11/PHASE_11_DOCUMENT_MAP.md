@@ -1,7 +1,13 @@
 # Phase 11 Document Map
 
 Status:
+- HORIZON / backlog reference (not an active ordering map)
 - future operator-model and long-range product-expansion backlog
+
+> Taxonomy note: this is design history, not the current execution order. There is no runtime
+> "Phase 11". The orb / household / butler-presence / business-lane packets below now live in the
+> roadmap Horizon (H1–H31) in `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`, graduated
+> deliberately via the promotion ladder. See `docs/design/README.md` Taxonomy Note.
 
 ## Purpose
 
