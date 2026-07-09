@@ -1,7 +1,12 @@
 # Phase 10 Document Map
 Updated: 2026-04-05
-Status: Current design map
+Status: HORIZON / backlog reference (not an active ordering map)
 Purpose: Separate long-horizon reviewable learning direction from older speculative Phase-10 text
+
+> Taxonomy note: this is design history, not the current execution order. There is no runtime
+> "Phase 10". The autonomy / mutation-control theory below now lives in the roadmap Horizon
+> (H1–H31) in `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`, which graduates such items
+> deliberately via the promotion ladder. See `docs/design/README.md` Taxonomy Note.
 
 ## Relocated Long-Horizon Theory Packets (moved here on 2026-04-05)
 - `docs/design/Phase 10/# Autonomy Tiers & Evolution.txt`

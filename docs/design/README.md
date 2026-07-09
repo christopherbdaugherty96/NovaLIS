@@ -36,9 +36,28 @@ Everything else should live inside:
 - `archive/`
 - `archive(phase 4)/`
 
+## Taxonomy Note — design phase numbers are historical lineage
+
+Nova is described in four different numbering schemes. They are NOT the same and must not be
+cross-read:
+
+1. **Product phases 1–3** — `docs/product/PRODUCT_DEFINITION.md` (current: Phase 3, "can Nova
+   become a habit").
+2. **Generated runtime phases 3.5–9** — `docs/current_runtime/CURRENT_RUNTIME_STATE.md` (what is
+   COMPLETE / ACTIVE in code). Authoritative for what is real.
+3. **Design phases 3.5–11** — this folder. HISTORICAL engineering lineage of design intent. Past
+   Phase 8 these numbers no longer match runtime meaning: runtime "Phase 9" is a bounded OpenClaw
+   slice, while design "Phase 9/10/11" is aspirational, and there is no runtime Phase 10 or 11.
+4. **Roadmap lanes A–D + Horizon H1–H31** — `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`. The
+   ACTIVE ordering authority for what comes next; it does not use phase numbers.
+
+Rule: for what is **real**, read (2); for what is **next**, read (4). Treat the phase folders
+below as design history and reference, not as the current execution order. The "Current Phase
+Layout" heading is retained for navigation, not as a claim that these phases are the live plan.
+
 ## Current Phase Layout
 
-Current high-value roadmap additions:
+Historical / design-history roadmap additions (superseded for ordering by the July 2026 roadmap):
 - `docs/design/Phase 4.5/NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14.md` - friction audit and remediation order for everyday human usage
 
 ### 2026-04-02 Session Design Docs (now in phase folders)
@@ -47,7 +66,7 @@ Current high-value roadmap additions:
 - `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md` - current frontend cleanup and usability roadmap
 - `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md` - current usability-next-steps roadmap
 - `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md` - current usability-next-steps roadmap
-- `docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02.md` — master prioritized backlog P0–P3
+- `docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02.md` — April 2026 prioritized backlog P0–P3 (historical; superseded for ordering by `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`)
 - `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` — intelligence tiers, provider routing
 - `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` — profile setup, connection cards
 - `docs/design/phase 5/NOVA_MEMORY_TIERS_DESIGN.md` — rolling + permanent memory tiers
