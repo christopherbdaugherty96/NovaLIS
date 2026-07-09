@@ -298,7 +298,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[docs/archive/phase 3/brain_server_Phase3.py|brain_server_Phase3 - archive/phase 3]]
   summary: NovaLIS Brain Server — Phase 3 (Authoritative Governor)
 - [doc] [[docs/archive/phase 3/nova_tree_Phase3.txt|nova_tree_Phase3]]
-  summary: ��F o l d e r   P A T H   l i s t i n g 
+  summary: Folder PATH listing
 - [code] [[docs/archive/phase 3/NovaLIS-Governance(older)/OLD_VISION.md_files/root-c07b4afz.css|root-c07b4afz - NovaLIS-Governance(older)/OLD_VISION.md_files]]
   summary: ! tailwindcss v4.1.13 | MIT License | https://tailwindcss.com */
 - [code] [[docs/archive/phase 3/NovaLIS-Governance(older)/OLD_VISION.md_files/silk-hq-lutwos9z.css|silk-hq-lutwos9z - NovaLIS-Governance(older)/OLD_VISION.md_files]]
@@ -308,7 +308,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/archive/phase 3/NovaLIS-Governance(older)/README_GOVERNANCE|README_GOVERNANCE - phase 3/NovaLIS-Governance(older)]]
   summary: \# NovaLIS Governance Vault
 - [doc] [[docs/archive/phase 3/Phase3_Tree.txt|Phase3_Tree]]
-  summary:  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -...
+  summary: -------------------------------------------------------------------------------
 - [doc] [[docs/archive/phase 3/PHASE_3_LOCK|🔒 PHASE-3 GOVERNOR ENFORCEMENT — FINAL LOCK - archive/phase 3]]
   summary: Phase: 3
 - [doc] [[docs/archive/phase 3/readmeolder.txt|readmeolder]]
@@ -662,7 +662,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/demo_proof/2026-04-28_user_test/USER_TEST_REPORT|Nova User Test Report - 2026-04-28]]
   summary: This was a hands-on proof-capture and friction-finding pass on christopherbdaugherty96/NovaLIS.
 - [code] [[docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm|nova_user_test_demo_flow]]
-  summary: Eߣ�B��B��B�B�B��webmB��B��S�g    �vM�t�M��S��I�fS���M��S��T�kS���M��S��T�gS��)M��S��
 - [doc] [[docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT|Conversation + Search Proof Pass]]
   summary: Date: 2026-04-29
 - [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_smoke_after_final_fixes.json|live_smoke_after_final_fixes]]
@@ -1959,11 +1958,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt|dashboard_stale_degraded_rendering_pytest_results]]
   summary: Command:
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
+  summary: ................................................................. [100%]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
+  summary: ........................................................................ [ 96%]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+  summary: .................... [100%]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_blocker_fix_probe.json|ui_blocker_fix_probe]]
   summary: started_at_epoch": 1778127520.0930412,
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_followup_probe.json|ui_followup_probe]]
@@ -2061,11 +2060,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json|websocket_web_news_probe_corrected]]
   summary: id": "news",
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
+  summary: ................................................................. [100%]
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
+  summary: ........................................................................ [ 96%]
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+  summary: .................... [100%]
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_payload.json|stale_provider_credibility_payload]]
   summary: proof_scope": "stale/provider/credibility deterministic search evidence fixtures; no live network or authority expansion",
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt|stale_provider_credibility_pytest_results]]
