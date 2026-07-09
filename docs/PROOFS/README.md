@@ -22,7 +22,13 @@ historical. Titles are not enough — check the date in the file.
 - `Phase-4.2/PHASE_4_2_PROOF_PACKET_INDEX.md`
 - `Phase-4.5/PHASE_4_5_PROOF_PACKET_INDEX.md`
 - `Phase-5/PHASE_5_PROOF_PACKET_INDEX.md`
+- `Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 - `Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`
+- `Phase-8/PHASE_8_PROOF_PACKET_INDEX.md`
+
+Feature/library proof indexes:
+
+- `Web-News-Reporting/PROOF_LIBRARY_INDEX.md`
 
 ## Latest cross-phase verification
 
