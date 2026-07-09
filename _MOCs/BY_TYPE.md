@@ -2521,11 +2521,11 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt|dashboard_stale_degraded_rendering_pytest_results]]
   summary: Command:
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
+  summary: ................................................................. [100%]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
+  summary: ........................................................................ [ 96%]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+  summary: .................... [100%]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt|ui_malformed_rapid_click_pytest_results]]
   summary: Command:
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt|browser_use_visual_capture_recovery_attempt]]
@@ -2607,11 +2607,11 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/TOPIC_MAP_STORY_TRACKER_PROOF_2026-05-07|Topic Map + Story Tracker Proof - 2026-05-07]]
   summary: Status: pass / fixture hardening still needed
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
+  summary: ................................................................. [100%]
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
+  summary: ........................................................................ [ 96%]
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
-  summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+  summary: .................... [100%]
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt|stale_provider_credibility_pytest_results]]
   summary: Command:
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_pytest_results.txt|stress_fixture_pytest_results]]
@@ -2648,7 +2648,6 @@ concern is reflected across docs, code and tests.
 - [code] [[docs/business/website_llc/website_llc_landing_page.html|website_llc_landing_page]]
   summary: <!DOCTYPE html>
 - [code] [[docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm|nova_user_test_demo_flow]]
-  summary: Eߣ�B��B��B�B�B��webmB��B��S�g    �vM�t�M��S��I�fS���M��S��T�kS���M��S��T�gS��)M��S��
 - [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_smoke_after_final_fixes.json|live_smoke_after_final_fixes]]
   summary: case": "normal_no_web_smoke_after_meta_fix",
 - [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_smoke_after_meta_fix.json|live_smoke_after_meta_fix]]
@@ -4009,11 +4008,11 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/archive/phase 3.5/🔒 NOVA PHASE 4 ROADMAP - COMPLETE, H.txt|🔒 NOVA PHASE 4 ROADMAP - COMPLETE, H]] - Phase 3.5
   summary: 🔒 NOVA PHASE ROADMAP - COMPLETE, HARDENED, CANONICAL v3.5
 - [doc] [[docs/archive/phase 3/nova_tree_Phase3.txt|nova_tree_Phase3]] - Phase 3
-  summary: ��F o l d e r   P A T H   l i s t i n g 
+  summary: Folder PATH listing
 - [doc] [[docs/archive/phase 3/NovaLIS-Governance(older)/README_GOVERNANCE|README_GOVERNANCE - phase 3/NovaLIS-Governance(older)]] - Phase 3
   summary: \# NovaLIS Governance Vault
 - [doc] [[docs/archive/phase 3/Phase3_Tree.txt|Phase3_Tree]] - Phase 3
-  summary:  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -...
+  summary: -------------------------------------------------------------------------------
 - [doc] [[docs/archive/phase 3/PHASE_3_LOCK|🔒 PHASE-3 GOVERNOR ENFORCEMENT — FINAL LOCK - archive/phase 3]] - Phase 3
   summary: Phase: 3
 - [doc] [[docs/archive/phase 3/readmeolder.txt|readmeolder]] - Phase 3
