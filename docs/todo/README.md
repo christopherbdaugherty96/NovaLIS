@@ -22,6 +22,9 @@ This folder holds actionable task lists only. No wishlists, no design docs, no s
 - strategic direction → `docs/future/`
 - quality standards → `docs/future/`
 - future feature design → `docs/future/`
-- active sprint detail → `4-15-26 NEW ROADMAP/Now.md`
-- strategy and tier roadmap → `4-15-26 NEW ROADMAP/MasterRoadMap.md`
-- deferred work → `4-15-26 NEW ROADMAP/BackLog.md`
+- ordering / what comes next → `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (lanes A–D +
+  Horizon; the current ordering authority)
+- status of future docs (active / parked / superseded) → `docs/future/FUTURE_DOCS_MAP.md`
+
+> The old `4-15-26 NEW ROADMAP/` directory is superseded for ordering by the July 2026 master
+> roadmap and is retained only as archive reference.
