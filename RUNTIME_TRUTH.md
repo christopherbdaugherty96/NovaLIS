@@ -2,6 +2,8 @@
 
 This page is the human-readable map of what Nova does today.
 
+Canonical truth navigation lives at `docs/CANONICAL/00_INDEX.md`; the runtime-specific canonical map is `docs/CANONICAL/02_RUNTIME_TRUTH.md`.
+
 For exact generated runtime state, use:
 
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`

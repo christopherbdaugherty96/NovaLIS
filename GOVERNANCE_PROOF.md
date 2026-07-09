@@ -2,6 +2,8 @@
 
 Nova's governance claim should be checked in code, not trusted from prose.
 
+Canonical truth navigation lives at `docs/CANONICAL/00_INDEX.md`; the governance-specific canonical map is `docs/CANONICAL/03_GOVERNANCE_TRUTH.md`.
+
 ## Main Runtime Paths
 
 | Purpose | Path |
