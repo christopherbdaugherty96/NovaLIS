@@ -10,6 +10,7 @@ These files are:
 Do not use this folder as the starting point for Nova's active design direction.
 
 Use instead:
+- `docs/CANONICAL/00_INDEX.md` — living truth index (start here)
 - `docs/design/README.md`
 - `docs/design/DESIGN_AUTHORITY.md`
 - the relevant active phase folder under `docs/design/Phase */`
