@@ -1,12 +1,19 @@
 # Phase 9 Document Map
 Updated: 2026-04-07
-Status: Current design map
+Status: HISTORICAL design map (superseded for ordering by the July 2026 roadmap)
 Purpose: Separate the governed-node roadmap from older autonomy and mutation theory artifacts
+
+> Taxonomy note: design "Phase 9" is engineering lineage, not the current execution order, and is
+> NOT the same as runtime Phase 9. Runtime Phase 9 is a specific bounded OpenClaw intelligence
+> layer (see `docs/current_runtime/CURRENT_RUNTIME_STATE.md`); the node / sovereignty scope below
+> is aspirational design history. For what comes next, the authority is the roadmap lanes / Horizon
+> in `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`. See `docs/design/README.md` Taxonomy Note.
 
 ## 2026-04-02 Planning Additions
 
 - `docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02.md`
-  Current prioritized P0–P3 backlog. The single most current planning reference.
+  Historical Phase 9 planning reference (April 2026). SUPERSEDED for ordering by
+  `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`; do not treat it as the current plan.
   Covers intelligence tiers, profile setup, memory tiers, automations, and trading.
 
 - `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
@@ -23,7 +30,8 @@ Purpose: Separate the governed-node roadmap from older autonomy and mutation the
 ## Canonical Phase-9 Planning Core
 - `docs/design/Phase 9/PHASE_9_GOVERNED_NODE_PLAN.md`
 
-This is the current Phase-9 planning core for Nova as a governed node and sovereignty platform.
+This remains the historical governed-node planning core for Nova as a governed node and
+sovereignty platform. It is design history, not the current plan (see the taxonomy note above).
 It now also carries the bounded future concept of governed capability growth, where Nova may coordinate proposed capability additions under explicit human approval without gaining self-expansion authority.
 
 ## Same-Folder Companion Vision Packets
