@@ -28,11 +28,12 @@ This file exists to preserve deep discoverability while keeping `docs/INDEX.md` 
 - archive/audits-2026-04/SANITY_AUDIT_2026-04-28.md (historical)
 
 ## Roadmap
-- ../4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md
-- ../4-15-26 NEW ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md
+- future/NOVA_MASTER_ROADMAP_2026-07-05.md (current ordering authority — lanes A–D + Horizon)
+- future/FUTURE_DOCS_MAP.md (status of every future doc: active / parked / superseded)
+- (superseded) ../4-15-26 NEW ROADMAP/ — April 2026 roadmap surfaces, archive reference only
 
 ## Audits
-- audits/
+- audits/ (dated review evidence, not runtime truth — see audits/README.md)
 
 ## Archive
 - archive/
