@@ -10,6 +10,7 @@ Source files are never modified.
 """
 from __future__ import annotations
 
+import codecs
 import json
 import re
 import subprocess
@@ -472,14 +473,33 @@ def _extract_summary(head: str, kind: str, max_len: int = 140) -> str:
     return ""
 
 
+def _read_head(path: Path, limit: int = 2400) -> str:
+    """Read the start of a file for title/topic/summary extraction.
+
+    Some raw evidence files (PowerShell `>` redirects) are UTF-16 with a BOM;
+    decoding those as UTF-8 would pass the interleaved NUL bytes straight into
+    the generated markdown, so honor a UTF-16 BOM. Other NUL-containing files
+    (e.g. media with an unlisted asset suffix) are binary: skip them entirely
+    rather than emit mojibake.
+    """
+    try:
+        raw = path.read_bytes()
+    except OSError:
+        return ""
+    if raw[:2] in (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE):
+        return raw.decode("utf-16", errors="replace").replace("\x00", "")[:limit]
+    # Only the first `limit` chars can reach the output; UTF-8 chars are at
+    # most 4 bytes, so a NUL past limit * 4 bytes could never be emitted.
+    if b"\x00" in raw[: limit * 4]:
+        return ""
+    return raw.decode("utf-8", errors="replace")[:limit]
+
+
 def scan_notes() -> list[NoteRef]:
     notes: list[NoteRef] = []
     for path in _iter_source_files():
         rel = path.relative_to(REPO_ROOT)
-        try:
-            head = path.read_text(encoding="utf-8", errors="replace")[:2400]
-        except OSError:
-            head = ""
+        head = _read_head(path)
         phase = _extract_phase(rel)
         category, kind = _classify(rel, phase)
         notes.append(
