@@ -1,5 +1,14 @@
 # Shopify Setup TODO
 
+> **Reference checklist — verify lock status before relying on the "not locked" claim below.**
+> This doc predates later status updates and its "P5 blocked / not locked" lines are now
+> **inconsistent across living docs**: `docs/status/CURRENT_WORK_STATUS.md` records Cap 65 as
+> *certified and locked (2026-05-22, read-only)*, while `docs/product/WHAT_WORKS_TODAY.md` still
+> lists the Cap 65 live lock as *blocked on credentials*. Do not treat this setup file as the
+> authority on lock state — confirm current capability truth via
+> [`../CANONICAL/04_CAPABILITY_TRUTH.md`](../CANONICAL/04_CAPABILITY_TRUTH.md). The dev-store
+> setup steps below remain useful for anyone connecting Shopify credentials.
+
 Status: active setup checklist for Cap 65 live signoff
 Scope: read-only Shopify intelligence reporting only
 Authority boundary: no write scopes, no mutations, no live-store operator behavior until separately designed, tested, and approved

@@ -13,24 +13,39 @@
 Fix: fill in PGP key or remove placeholder; add "We aim to respond within
 14 days."
 
-### Phase 4.5 status conflict
+### Phase 4.5 status conflict — NEEDS HUMAN DECISION
 
-- `NovaLIS-Governance/STATUS.md` shows Phase 4.5 = **ACTIVE**
-- `docs/current_runtime/CURRENT_RUNTIME_STATE.md` shows Phase 4.5 = **PARTIAL**
+- `NovaLIS-Governance/STATUS.md` (repo root, outside `docs/`) shows Phase 4.5 = **ACTIVE**
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md` (generated) shows Phase 4.5 = **PARTIAL**
 
-Verify which is correct; update the stale doc.
+Not auto-fixed: the stale file is outside `docs/` and is runtime-adjacent governance state that
+Codex may edit. Generated runtime truth (PARTIAL) is authoritative; someone with runtime context
+should reconcile `NovaLIS-Governance/STATUS.md`.
 
-### Archive folder headers
+### Cap 65 lock status conflict — NEEDS HUMAN DECISION (found 2026-07-08)
 
-Docs in `docs/archive/` are not clearly marked as non-authoritative.
-Fix: add `> ARCHIVED — do not use for implementation decisions.` header
-to each.
+Living docs disagree on whether Cap 65 is locked:
+- `docs/status/CURRENT_WORK_STATUS.md` — "certified and locked (2026-05-22), read-only" (x4).
+- `docs/product/WHAT_WORKS_TODAY.md` line 84 — "Cap 65 live lock: Blocked on credentials".
+- `docs/todo/SHOPIFY_SETUP_TODO.md` — "not locked until P5 live signoff passes".
 
-### Canonical reading-order doc
+Generated runtime truth shows Cap 65 ACTIVE but does not encode lock state (active ≠ locked), so
+it cannot resolve this. A neutral banner was added to `SHOPIFY_SETUP_TODO.md`; the underlying
+capability-truth reconciliation needs a human call and must not be guessed.
 
-No root-level pointer tells new readers which 5 docs to read first.
-Fix: create `docs/CANONICAL.md` — 10 lines listing the 5 authoritative
-sources with one-line descriptions.
+### Archive folder headers — DONE (2026-07-08)
+
+Solved at folder level rather than per-file: `docs/archive/README.md` declares the whole tree
+non-authoritative, and the two `docs/design/archive*` folders carry their own banners plus a
+CANONICAL pointer. Per-file headers on all 39 legacy files were intentionally not added — a
+folder README covers it (see cleanup rule D).
+
+### Canonical reading-order doc — DONE (2026-07-08)
+
+Superseded by a richer solution: `docs/CANONICAL/` now holds an index plus seven truth
+files (project / runtime / governance / capability / frontend-backend / test-proof / roadmap)
+and an archive policy, each pointing to real source docs and tests. `docs/INDEX.md` links to
+`docs/CANONICAL/00_INDEX.md`.
 
 ### Post-PR-4 docs review queue
 
@@ -84,25 +99,34 @@ clearly safer:
 Delta from the four-pass docs review not already listed above. Fold into the
 same tidy PR:
 
-- Delete repo-root `branches_safe_to_delete.txt` — all seven listed branches
-  were already deleted; the file is fully stale.
-- Archive the three April-dated audit strays at `docs/` root:
-  `AUDIT_ACTION_PLAN_2026-04-28.md`, `SANITY_AUDIT_2026-04-28.md`,
-  `SECOND_PASS_OVERVIEW_2026-04-28.md`; and the two orphaned capability
-  spec `.txt` files at `docs/` root (Governed Web Intelligence / Governed
-  Webpage Launch).
-- Fold the two archives *inside* `docs/design/` (`archive/` and
-  `archive(phase 4)/`) into top-level `docs/archive/`.
-- Fold only genuinely empty/orphan singleton folders (`integrations/` empty,
-  `architecture/` one README) into `reference/`. Do NOT fold folders now
-  cited as substrate above (`planning/`, `simulations/`, `security/`,
-  `business/`).
-- Move `docs/tools/check_quarantine.ps1` to `scripts/` (a script misfiled
-  under docs).
-- Delete the empty `docs/archive/phase 3/NovaLIS-Governance(older)/
-  OLD_VISION.md_files/` directory. Security note: the JWT-bearing HTML export
-  is fully gone from the working tree; combined with the clean gitleaks
-  history scan, that exposure is closed end to end.
+- NEEDS HUMAN DECISION. `branches_safe_to_delete.txt` is at the repo root (outside `docs/`) and
+  deleting it is a non-docs file removal — left for a human to delete. Content does appear fully
+  stale (the listed branches are gone).
+- DONE (2026-07-08). Archived the three April-dated audit strays at `docs/`
+  root to `docs/archive/audits-2026-04/`
+  (`AUDIT_ACTION_PLAN_2026-04-28.md`, `SANITY_AUDIT_2026-04-28.md`,
+  `SECOND_PASS_OVERVIEW_2026-04-28.md`) and the two orphaned capability spec
+  `.txt` files to `docs/archive/` (Governed Web Intelligence / Governed
+  Webpage Launch). `FULL_DOCUMENTATION_MAP.md` reference updated.
+- NEEDS HUMAN DECISION (2026-07-08). Folding the two `docs/design/archive*`
+  folders into top-level `docs/archive/` conflicts with the Phase 6 archive
+  audit, which ratified keeping them in place, and would rot ~14
+  cross-references across 7 design docs. Instead, both folders now carry
+  archived banners + a CANONICAL pointer, and `docs/archive/README.md` notes
+  their existence. Physical fold deferred to a human call.
+- SUPERSEDED / false premise (2026-07-08). `docs/integrations/` is NOT empty
+  (contains `youtubelis/`) and `docs/architecture/` is cited as a doc layer by
+  `docs/README.md` and `docs/future/repo_improvement_action_plan.md`. Do not
+  fold either. Left in place.
+- DONE (2026-07-08). Moved `docs/tools/check_quarantine.ps1` to
+  `scripts/check_quarantine.ps1`. (`docs/tools/youtubelis.md` stays — it is a
+  real doc, not a misfiled script.)
+- SUPERSEDED / false premise (2026-07-08). The
+  `docs/archive/phase 3/NovaLIS-Governance(older)/OLD_VISION.md_files/`
+  directory is NOT empty — it holds three stray `.css` export assets. Deleting
+  a non-empty directory is beyond an exact-duplicate removal, so it is left for
+  a human. The security-sensitive JWT HTML is confirmed already gone; only
+  harmless CSS remains.
 - Proof systems: do NOT merge `PROOFS/`, `demo_proof/`, and
   `capability_verification/` — different genres. Add one cross-linking
   paragraph to each README instead.

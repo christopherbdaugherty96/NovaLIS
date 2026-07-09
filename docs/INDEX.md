@@ -3,6 +3,9 @@
 Use this page to find the right document quickly.
 Generated runtime truth files are the authority for exact live status.
 
+For a truth-first overview — project / runtime / governance / capability / code / proof /
+roadmap / archive — start at [CANONICAL/00_INDEX.md](CANONICAL/00_INDEX.md).
+
 ---
 
 ## Start Here
