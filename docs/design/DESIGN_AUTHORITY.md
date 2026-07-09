@@ -48,7 +48,16 @@ Authoritative Runtime Sources:
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/PROOFS/` (verified runtime proof artifacts)
 
-Canonical Design Sets:
+Taxonomy note (design phase numbers are historical lineage):
+- These design "phases" are engineering lineage, not the current execution order.
+- What is real = generated runtime phases in `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.
+- What is next = roadmap lanes A–D + Horizon H1–H31 in
+  `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (the active ordering authority; no phase numbers).
+- Past Phase 8, design phase numbers do NOT equal runtime phase numbers (runtime "Phase 9" is a
+  bounded OpenClaw slice; there is no runtime Phase 10 or 11). See `docs/design/README.md`
+  Taxonomy Note.
+
+Canonical Design Sets (historical design lineage, not active ordering):
 - Phase 3.5: `docs/design/Phase 3.5/`
 - Phase 4: `docs/design/Phase 4/`
 - Phase 4.2: `docs/design/Phase 4.2/`
