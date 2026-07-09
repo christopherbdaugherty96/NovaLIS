@@ -407,11 +407,15 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 
-## `brief` (4 files)
+## `brief` (6 files)
 
 ### Files
 
 - [[nova_backend/src/brief/__init__.py|src/brief]]
+- [[nova_backend/src/brief/auralis_seeds.py|auralis_seeds]]
+    - Auralis Today — governed-memory seed loader (pure, read-only).
+- [[nova_backend/src/brief/auralis_today.py|auralis_today]]
+    - Auralis Today — C1 business decision surface for the Daily Awareness Brief.
 - [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
     - Daily Awareness Brief — the on-open product surface.
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
@@ -429,15 +433,22 @@ _Read-only Brain scaffolding._
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
+- [[nova_backend/tests/brief/test_auralis_seeds.py|test_auralis_seeds]]
+- [[nova_backend/tests/brief/test_auralis_today.py|test_auralis_today]]
 - [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
+- [[nova_backend/tests/brief/test_awareness_brief_auralis_wiring.py|test_awareness_brief_auralis_wiring]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+- [[nova_backend/tests/connectors/test_shopify_auralis_enrichment.py|test_shopify_auralis_enrichment]]
 - [[nova_backend/tests/test_deepseek_hard_budget.py|test_deepseek_hard_budget]]
 - [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
 - [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
+- [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
 
 ### Tests
 
+- [[nova_backend/tests/brief/test_auralis_seeds.py|test_auralis_seeds]]
+- [[nova_backend/tests/brief/test_auralis_today.py|test_auralis_today]]
 - [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
 
@@ -532,7 +543,7 @@ _CognitiveMode,_
 
 - [[nova_backend/tests/phase45/test_connections_store.py|test_connections_store]]
 
-## `connectors` (4 files)
+## `connectors` (5 files)
 
 ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 
@@ -543,6 +554,8 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
     - Email Connector — interface stub for inbox_check (Phase 8+).
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
     - CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
+- [[nova_backend/src/connectors/shopify_auralis_enrichment.py|shopify_auralis_enrichment]]
+    - Auralis Today (C1) — read-only Shopify enrichment parsers.
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
     - Shopify Connector - governed Shopify Admin API integration.
 
@@ -560,12 +573,14 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p5_live_proof.py|test_p5_live_proof]]
+- [[nova_backend/tests/connectors/test_shopify_auralis_enrichment.py|test_shopify_auralis_enrichment]]
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 - [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
 - [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
 
 ### Tests
 
+- [[nova_backend/tests/connectors/test_shopify_auralis_enrichment.py|test_shopify_auralis_enrichment]]
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 
 ## `context` (5 files)
@@ -595,13 +610,15 @@ ___all__ = ["ContextSnapshotService"]_
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 
-## `conversation` (23 files)
+## `conversation` (24 files)
 
 _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 
 ### Files
 
 - [[nova_backend/src/conversation/__init__.py|src/conversation]]
+- [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
+    - Awareness Brief trigger matching.
 - [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
     - Deterministic clarification prompt bank for conversational UX polish.
 - [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
@@ -687,14 +704,15 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
 - [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
+- [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
-- [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
-- [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
-- _…and 39 more_
+- [[nova_backend/tests/conversation/test_daily_brief_semantic_contract.py|test_daily_brief_semantic_contract]]
+- _…and 42 more_
 
 ### Tests
 
+- [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_conversation_router.py|test_conversation_router]]
@@ -981,7 +999,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
-- _…and 80 more_
+- _…and 82 more_
 
 ### Tests
 
@@ -1015,12 +1033,14 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 
 - [[nova_backend/tests/identity/test_nova_self_awareness.py|test_nova_self_awareness]]
 
-## `ledger` (3 files)
+## `ledger` (4 files)
 
 ### Files
 
 - [[nova_backend/src/ledger/event_types.py|event_types]]
     - Canonical ledger event taxonomy for Phase-4 runtime.
+- [[nova_backend/src/ledger/health.py|health]]
+    - Read-only ledger health checks for rotation/relocation planning.
 - [[nova_backend/src/ledger/reader.py|reader]]
     - class LedgerAnalyzer:
 - [[nova_backend/src/ledger/writer.py|writer]]
@@ -1048,7 +1068,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 - [[nova_backend/src/llm/llm_manager.py|llm_manager]]
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
-- _…and 14 more_
+- _…and 16 more_
 
 ## `llm` (6 files)
 
@@ -1129,6 +1149,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]]
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
 - [[nova_backend/tests/test_memory_api.py|test_memory_api]]
+- [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
 
 ### Tests
 
@@ -1735,7 +1756,7 @@ _NovaLIS Backend Package_
 - [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
-- _…and 6 more_
+- _…and 7 more_
 
 ### Tests
 
@@ -2043,9 +2064,11 @@ _Websocket session runtime modules._
 - [[nova_backend/src/agents/contradiction.py|contradiction]]
 - [[nova_backend/src/agents/deep_audit.py|deep_audit]]
 - [[nova_backend/src/agents/memory.py|memory - src/agents]]
+- [[nova_backend/src/brief/auralis_seeds.py|auralis_seeds]]
 - [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
+- [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
 - [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
@@ -2063,6 +2086,7 @@ _Websocket session runtime modules._
 
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/utils/path_resolver.py|path_resolver]]
+- [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
 - [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 - [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
@@ -2071,6 +2095,7 @@ _Websocket session runtime modules._
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
 - [[nova_backend/tests/websocket/test_session_layer_pipeline.py|test_session_layer_pipeline]]
+- [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
 
 ## `working_context` (11 files)
 

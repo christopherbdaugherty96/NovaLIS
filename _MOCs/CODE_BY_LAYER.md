@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (305)
+## Backend runtime (310)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -132,6 +132,10 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
 - [[nova_backend/src/brief/__init__.py|src/brief]]
+- [[nova_backend/src/brief/auralis_seeds.py|auralis_seeds]]
+  summary: Auralis Today — governed-memory seed loader (pure, read-only).
+- [[nova_backend/src/brief/auralis_today.py|auralis_today]]
+  summary: Auralis Today — C1 business decision surface for the Daily Awareness Brief.
 - [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
   summary: Daily Awareness Brief — the on-open product surface.
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
@@ -174,6 +178,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Email Connector — interface stub for inbox_check (Phase 8+).
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
   summary: CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
+- [[nova_backend/src/connectors/shopify_auralis_enrichment.py|shopify_auralis_enrichment]]
+  summary: Auralis Today (C1) — read-only Shopify enrichment parsers.
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
   summary: Shopify Connector - governed Shopify Admin API integration.
 - [[nova_backend/src/context/__init__.py|src/context]]
@@ -188,6 +194,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def get_system_context() -> dict[str, str]:
 - [[nova_backend/src/conversation/__init__.py|src/conversation]]
   summary: Conversation-layer helpers for cognitive escalation (Phase-4.2 staging).
+- [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
+  summary: Awareness Brief trigger matching.
 - [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
   summary: Deterministic clarification prompt bank for conversational UX polish.
 - [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
@@ -316,6 +324,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Nova self-awareness context builder.
 - [[nova_backend/src/ledger/event_types.py|event_types]]
   summary: Canonical ledger event taxonomy for Phase-4 runtime.
+- [[nova_backend/src/ledger/health.py|health]]
+  summary: Read-only ledger health checks for rotation/relocation planning.
 - [[nova_backend/src/ledger/reader.py|reader]]
   summary: class LedgerAnalyzer:
 - [[nova_backend/src/ledger/writer.py|writer]]
@@ -611,7 +621,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (439)
+## Tests and verification (449)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -671,8 +681,14 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
   summary: ApprovalLevel,
 - [[nova_backend/tests/brief/__init__.py|tests/brief]]
+- [[nova_backend/tests/brief/test_auralis_seeds.py|test_auralis_seeds]]
+  summary: C1 Auralis Today — governed-memory seed loader tests (pure, no store coupling).
+- [[nova_backend/tests/brief/test_auralis_today.py|test_auralis_today]]
+  summary: C1 Auralis Today — acceptance tests.
 - [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
   summary: Tests for the Daily Awareness Brief module.
+- [[nova_backend/tests/brief/test_awareness_brief_auralis_wiring.py|test_awareness_brief_auralis_wiring]]
+  summary: C1 wiring — Auralis Today appears in the brief only when inputs are supplied.
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [[nova_backend/tests/certification/__init__.py|tests/certification]]
@@ -722,9 +738,14 @@ Use this to orient yourself before diving into a specific module.
   summary: Capability Lock Regression Guard
 - [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
   summary: Suite-wide test isolation fixtures.
+- [[nova_backend/tests/connectors/__init__.py|tests/connectors]]
+- [[nova_backend/tests/connectors/test_shopify_auralis_enrichment.py|test_shopify_auralis_enrichment]]
+  summary: C1 Shopify enrichment parsers — tested against mock GraphQL fragments (no network).
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
   summary: def test_http_shopify_connector_uses_configured_api_version():
 - [[nova_backend/tests/conversation/__init__.py|tests/conversation]]
+- [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
+  summary: @pytest.mark.parametrize(
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -733,6 +754,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_conversation_personality_agent_softens_known_cancel_message():
 - [[nova_backend/tests/conversation/test_conversation_router.py|test_conversation_router]]
   summary: ﻿from src.conversation.conversation_router import ConversationRouter
+- [[nova_backend/tests/conversation/test_daily_brief_semantic_contract.py|test_daily_brief_semantic_contract]]
+  summary: Semantic contract: one user-facing Daily Brief.
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
   summary: @pytest.fixture(autouse=True)
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
@@ -913,6 +936,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/identity/__init__.py|tests/identity]]
 - [[nova_backend/tests/identity/test_nova_self_awareness.py|test_nova_self_awareness]]
   summary: Tests for Nova self-awareness context builder.
+- [[nova_backend/tests/ledger/test_ledger_health.py|test_ledger_health]]
+  summary: def test_inspect_ledger_health_recommends_rotation_when_threshold_exceeded(tmp_path):
 - [[nova_backend/tests/memory/__init__.py|tests/memory]]
 - [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
   summary: Tests for the MemorySkill memory loop.
@@ -1068,6 +1093,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/phase45/test_dashboard_intelligence_brief_widget.py|test_dashboard_intelligence_brief_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_memory_widget.py|test_dashboard_memory_widget]]
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [[nova_backend/tests/phase45/test_dashboard_navigation_collapse.py|test_dashboard_navigation_collapse]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_news_header_weather_widget.py|test_dashboard_news_header_weather_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -1420,6 +1447,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Tests for PR #249 -- Provider Budget Status Accuracy.
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
   summary: Tests for Provider Status Visibility (PR #246).
+- [[nova_backend/tests/test_pytest_timeout_config.py|test_pytest_timeout_config]]
+  summary: def test_pytest_timeout_dependency_matches_configured_timeout():
 - [[nova_backend/tests/test_registry_fail_closed.py|test_registry_fail_closed]]
   summary: def _capability_entry(
 - [[nova_backend/tests/test_registry_phase_alignment.py|test_registry_phase_alignment]]
@@ -1536,7 +1565,7 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (20)
+## Scripts and automations (23)
 
 - [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -1560,6 +1589,10 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [[scripts/check_frontend_navigation_smoke.py|check_frontend_navigation_smoke]]
   summary: ROOT = Path(__file__).resolve().parent.parent
+- [[scripts/check_ledger_health.py|check_ledger_health]]
+  summary: ROOT = Path(__file__).resolve().parent.parent
+- [[scripts/check_quarantine.ps1|check_quarantine]]
+  summary: ﻿Write-Host "=== Legacy Brain Isolation Check ===" -ForegroundColor Cyan
 - [[scripts/check_runtime_doc_drift.py|check_runtime_doc_drift]]
   summary: ROOT = Path(__file__).resolve().parents[1]
 - [[scripts/fetch_models.py|fetch_models]]
@@ -1572,6 +1605,8 @@ Use this to orient yourself before diving into a specific module.
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
 - [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
+- [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
+  summary: Read-only breadth simulation for Nova user acceptance.
 - [[scripts/start_daemon.py|start_daemon]]
   summary: Start (or verify) the Nova backend as a background process.
 - [[scripts/stop_daemon.py|stop_daemon]]
