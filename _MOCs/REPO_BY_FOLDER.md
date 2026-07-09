@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1057)
+## docs (1079)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -151,6 +151,12 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Document ID: NOVA-TRUTH-COPILOT-AUDIT-v2.0
 - [doc] [[docs/archive/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
   summary: Audio conversion proof
+- [doc] [[docs/archive/audits-2026-04/AUDIT_ACTION_PLAN_2026-04-28|Audit Action Plan — 2026-04-28]]
+  summary: Convert the latest full repo audit into a grounded improvement plan.
+- [doc] [[docs/archive/audits-2026-04/SANITY_AUDIT_2026-04-28|Final Sanity Audit — 2026-04-28]]
+  summary: A repo-wide documentation clarity pass was completed.
+- [doc] [[docs/archive/audits-2026-04/SECOND_PASS_OVERVIEW_2026-04-28|Second Pass Overview — 2026-04-28]]
+  summary: - Ideas moved from chat into repo memory
 - [doc] [[docs/archive/authority expansion.txt|🔓 PHASE-4 ADMISSION GATE — CONSTITUTIONAL CHECKLIST - docs/archive]]
   summary: Perfect. Below is everything you asked for, delivered cleanly and verbatim, with no scope creep and no Phase-3.5 reopening.
 - [doc] [[docs/archive/canon_pointer_README|Canon Pointer]]
@@ -163,6 +169,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Version: 1.0
 - [doc] [[docs/archive/Engineering Session Status|NovaLIS — Engineering Session Status]]
   summary: Date: 2026-02-23
+- [doc] [[docs/archive/Governed Web Intelligence (Capability 16 + 48 Integration).txt|Governed Web Intelligence (Capability 16 + 48 Integration)]]
+  summary: To implement the capabilities described in the two specification documents, you will need to update or create several files in your codebase...
+- [doc] [[docs/archive/Governed Webpage Launch Capability Specification.txt|📘 NOVA — Governed Webpage Launch Capability Specification]]
+  summary: This document defines how Nova may open web pages in a governed, explicit, and non-autonomous manner.
 - [code] [[docs/archive/governor_mediation.py|governor_mediation - docs/archive]]
   summary: NOVALIS GOVERNOR MEDIATION LAYER
 - [code] [[docs/archive/governor_mediator.py|governor_mediator - docs/archive]]
@@ -379,6 +389,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: PresenceDoctrine.md v1
 - [doc] [[docs/archive/phase 4/VERBATIM, READY TO COMMIT.txt|🔓 PHASE-4 ADMISSION GATE — CONSTITUTIONAL CHECKLIST - archive/phase 4]]
   summary: 1️⃣ Drop-in File (VERBATIM, READY TO COMMIT)
+- [doc] [[docs/archive/README|docs/archive — Historical material]]
+  summary: For current truth, start at [../CANONICAL/00INDEX.md](../CANONICAL/00INDEX.md). The
 - [doc] [[docs/archive/README_GOVERNANCE|README_GOVERNANCE - docs/archive]]
   summary: \# NovaLIS Governance Vault
 - [doc] [[docs/archive/roadmap_pre_execution_review_2026-04-15.txt|roadmap_pre_execution_review_2026-04-15]]
@@ -391,8 +403,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: @layer base{:where([data-silk~=b0]:not([data-silk~=g0])){--silk-defaults:initial;position:var(--silk-defaults,relative)}:where([data-silk~=g...
 - [code] [[docs/archive/table-components-gjyj5koo.css|table-components-gjyj5koo - docs/archive]]
   summary: .TyagGW_tableContainer{--thread-content-width:min(calc(100cqw - 2*var(--thread-content-margin,0)),var(--thread-content-max-width));--thread-...
-- [doc] [[docs/AUDIT_ACTION_PLAN_2026-04-28|Audit Action Plan — 2026-04-28]]
-  summary: Convert the latest full repo audit into a grounded improvement plan.
 - [doc] [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
   summary: Date: 2026-04-24
 - [doc] [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
@@ -447,12 +457,16 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status update after PR #158 and 2026-05-12 runtime-doc confirmation:
 - [doc] [[docs/audits/PERSONALITY_GATE_WRAPPING_LIVE_VALIDATION_2026-06-05|Personality Gate Wrapping Live Validation - 2026-06-05]]
   summary: Status: COMPLETE
+- [doc] [[docs/audits/README|docs/audits — Dated review evidence]]
+  summary: This folder holds dated audit and review passes — repo alignment audits, live-simulation
 - [doc] [[docs/audits/SECOND_PASS_REVIEW_2026-05-12|Nova — Brutally Grounded Second-Pass Review]]
   summary: Date: 2026-05-12
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
 - [doc] [[docs/audits/UI_SIMPLIFICATION_AUDIT_2026-05-26|UI Simplification Audit — 2026-05-26]]
   summary: Audit of Nova dashboard before the product clarity slice.
+- [doc] [[docs/audits/USER_SIMULATION_RESULTS_2026-07-06|User Simulation Results - 2026-07-06]]
+  summary: Read-only, free breadth/QA simulation of Nova after PR #268 and C1 memory seeding. No capabilities were executed; deterministic route functi...
 - [doc] [[docs/brain|Nova Brain]]
   summary: This document is the canonical overview of Nova's Brain architecture.
 - [doc] [[docs/brain/AUTHORITY_PLANE|Authority Plane]]
@@ -479,6 +493,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This folder contains the detailed Brain architecture package.
 - [doc] [[docs/brain/TASK_ENVIRONMENT_ROUTER|Task Environment Router]]
   summary: The Task Environment Router is the missing middle layer between conversation and execution.
+- [doc] [[docs/business/README|docs/business — Business-execution reference (not Nova runtime)]]
+  summary: This folder holds business-execution materials for the owner's Website LLC / Auralis
 - [code] [[docs/business/website_llc/demo_hub/about-christopher.html|about-christopher]]
   summary: <!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Christo...
 - [code] [[docs/business/website_llc/demo_hub/index.html|index - website_llc/demo_hub]]
@@ -491,6 +507,24 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: <!DOCTYPE html>
 - [doc] [[docs/business/website_llc/WEBSITE_LLC_REVENUE_ASSETS_2026-04-23|Website LLC Revenue Assets (2026-04-23)]]
   summary: Simple assets that help turn outreach into conversations and conversations into paying clients.
+- [doc] [[docs/CANONICAL/00_INDEX|Nova Canonical Truth — Index]]
+  summary: Last assembled: 2026-07-08.
+- [doc] [[docs/CANONICAL/01_PROJECT_TRUTH|01 — Project Truth (what Nova is intended to be)]]
+  summary: Status: current. This is intent and product definition, not a claim about what runs today.
+- [doc] [[docs/CANONICAL/02_RUNTIME_TRUTH|02 — Runtime Truth (what works now)]]
+  summary: Status: runtime-backed. Every claim here defers to the generated runtime doc, which is
+- [doc] [[docs/CANONICAL/03_GOVERNANCE_TRUTH|03 — Governance Truth (what is enforced in code)]]
+  summary: Status: runtime-backed. The governance spine is the strongest, most-tested part of the
+- [doc] [[docs/CANONICAL/04_CAPABILITY_TRUTH|04 — Capability Truth (what exists, its state, its maturity)]]
+  summary: Status: mixed — runtime-backed for enablement, current for maturity/lock state. Enablement
+- [doc] [[docs/CANONICAL/05_FRONTEND_BACKEND_TRUTH|05 — Frontend / Backend Truth (how the code is laid out)]]
+  summary: Status: current. Structural orientation, maintained by hand. The authoritative navigation
+- [doc] [[docs/CANONICAL/06_TEST_AND_PROOF_TRUTH|06 — Test and Proof Truth (what evidence exists)]]
+  summary: Status: mixed. Tests are runtime-backed; proof packets are dated artifacts whose currency
+- [doc] [[docs/CANONICAL/07_ROADMAP_TRUTH|07 — Roadmap Truth (what is next)]]
+  summary: Status: current. Ordering is hand-maintained. This file points to the single ordering
+- [doc] [[docs/CANONICAL/08_ARCHIVE_POLICY|08 — Archive Policy (what is historical)]]
+  summary: Status: current. This is the policy for how historical material is treated across the docs
 - [doc] [[docs/capability_verification/APPROVAL_GATE_CERTIFICATION_MATRIX_2026-05-18|Approval Gate Certification Matrix — 2026-05-18]]
   summary: Status:
 - [doc] [[docs/capability_verification/basic_conversation_understanding_2026-04-22|Basic Conversation and Understanding Verification - 2026-04-22]]
@@ -503,6 +537,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Live WebSocket and automated verification for governedwebsearch.
 - [doc] [[docs/capability_verification/capability_gap_map_2026-04-23|Capability Gap Map - 2026-04-23]]
   summary: - Local branch: main
+- [doc] [[docs/capability_verification/CAPABILITY_INVENTORY|Nova Capability Inventory]]
+  summary: Canonical truth source. Future verification UPDATES this file — do not create scattered
 - [doc] [[docs/capability_verification/FRAMEWORK|Nova — Capability Verification Framework]]
   summary: Updated: 2026-04-17
 - [doc] [[docs/capability_verification/live_checklists/cap_16_governed_web_search|Live Test Checklist — Cap 16: governed_web_search]]
@@ -565,10 +601,14 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Basic live dashboard smoke test using Playwright against local runtime at http://127.0.0.1:8000.
 - [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
   summary: Live dashboard testing against the served app at http://127.0.0.1:8000/, using ordinary user-style prompts:
+- [doc] [[docs/capability_verification/LIVE_VERIFICATION_2026-07-07|Live Verification Report — 2026-07-07]]
+  summary: Pre-observation verification pass. Real live test of the running backend on current main.
 - [doc] [[docs/capability_verification/LOCAL_CAPABILITY_SIGNOFF_MATRIX_TEMPLATE|Local Capability Signoff Matrix Template]]
   summary: Date: 2026-04-28
 - [doc] [[docs/capability_verification/news_headlines_simulation_2026-04-22|News and Headlines Verification - 2026-04-22]]
   summary: Live WebSocket and automated verification for Nova's news surfaces:
+- [doc] [[docs/capability_verification/README|docs/capability_verification — Live verification]]
+  summary: This folder holds live pass/fail checks against a running build — the strongest "does it
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/claude_prompts/CLAUDE_NOVA_EXPANSION_PROMPT|Claude Nova Expansion Prompt]]
@@ -580,7 +620,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: efe9eff9854175db5caa18c42c9751c020bc32b4cd718bea6a278519701b74d5
+  summary: Runtime Fingerprint: de827e49149e4247297f813d6dbe8469b606076a4aa68f7ace64e60dd84686b3
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -606,7 +646,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: e967ec5583a25d1a5aa9d1a2287b7754c7fe317bdba6aaf016c066fd44ee4e3b
+  summary: - runtimesurfacehash: f6037e2e654f955d4585439ffca1c1c5818ba02ebbf7d765b0a9dfca377d061d
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -683,6 +723,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: PASS — Stage 3 memory loop implemented and proven, 2026-05-02.
 - [doc] [[docs/demo_proof/daily_operating_baseline/SEARCH_FEEDBACK_PROOF|Search Feedback Proof]]
   summary: Status: PASS — re-verified 2026-05-02 against main at f82cc9c.
+- [doc] [[docs/demo_proof/README|docs/demo_proof — Demo / walkthrough evidence]]
+  summary: This folder holds captured runs of user-facing flows — daily brief, conversation + search,
 - [doc] [[docs/design/archive(phase 4)/# FINAL CORRECTED COMPREHENSIVE PHA.txt|**FINAL CORRECTED COMPREHENSIVE PHASE-4 GOVERNANCE ENFORCEMENT PACKAGE**]]
   summary: After addressing the final blockers, here is the complete, ready-to-deploy governance package:
 - [doc] [[docs/design/archive(phase 4)/# NOVA PHASE 4 CONSTITUTIONALLY AUD.txt|NOVA PHASE 4: CONSTITUTIONALLY AUDITED FINAL SPECIFICATION]]
@@ -745,6 +787,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: ﻿# DEPRECATED DOCUMENT
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/UI_FRAMEWORK.md.txt|UI_FRAMEWORK.md]]
   summary: ﻿# DEPRECATED PLACEHOLDER
+- [doc] [[docs/design/AURALIS_TODAY_C1_DESIGN|Auralis Today — C1 Design]]
+  summary: Status: design-only (not runtime authorised until implemented, tested, and reflected in
 - [doc] [[docs/design/brain/AGENT_FEED_CONTRACT|Agent Feed Contract]]
   summary: Status: future brain/system interface contract / not implemented
 - [doc] [[docs/design/brain/PERSONAL_PERSONALITY_LAYER|Personal Personality Layer - design/brain]]
@@ -1120,71 +1164,71 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: What NovaLIS Is (Truth):
 - [doc] [[docs/future/active_screen_command_layer/README|Active Screen Command Layer]]
   summary: Status: future design plan / not shipped runtime capability
-- [doc] [[docs/Future/ai_ecosystem_operating_model/ACTIVE_PRIORITY|Active Priority - Future/ai_ecosystem_operating_model]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/ACTIVE_PRIORITY|Active Priority - future/ai_ecosystem_operating_model]]
   summary: Status: Draft operating-model file
-- [doc] [[docs/Future/ai_ecosystem_operating_model/AI_ECOSYSTEM_OPERATING_RULES|AI Ecosystem Operating Rules]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/AI_ECOSYSTEM_OPERATING_RULES|AI Ecosystem Operating Rules]]
   summary: Status: Draft
-- [doc] [[docs/Future/ai_ecosystem_operating_model/CURRENT_TRUTH|Current Truth]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/CURRENT_TRUTH|Current Truth]]
   summary: Status: Draft current-truth summary for this operating-model package
-- [doc] [[docs/Future/ai_ecosystem_operating_model/FINAL_IMPLEMENTATION_SUMMARY_2026-06-08|Final Implementation Summary - 2026-06-08]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/FINAL_IMPLEMENTATION_SUMMARY_2026-06-08|Final Implementation Summary - 2026-06-08]]
   summary: Status: Draft final report
-- [doc] [[docs/Future/ai_ecosystem_operating_model/FINDINGS_REPORT_2026-06-08|Findings Report - 2026-06-08]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/FINDINGS_REPORT_2026-06-08|Findings Report - 2026-06-08]]
   summary: Status: Draft findings report
-- [doc] [[docs/Future/ai_ecosystem_operating_model/IMPROVEMENT_RECOMMENDATIONS|Improvement Recommendations]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/IMPROVEMENT_RECOMMENDATIONS|Improvement Recommendations]]
   summary: Status: Draft
-- [doc] [[docs/Future/ai_ecosystem_operating_model/README|AI Ecosystem Operating Model]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/README|AI Ecosystem Operating Model]]
   summary: Status: Draft operating package
-- [doc] [[docs/Future/ai_ecosystem_operating_model/RISK_REPORT_2026-06-08|Risk Report - 2026-06-08]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/RISK_REPORT_2026-06-08|Risk Report - 2026-06-08]]
   summary: Status: Draft risk report
-- [doc] [[docs/Future/ai_ecosystem_operating_model/VALIDATION_PROCEDURES|Validation Procedures]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/VALIDATION_PROCEDURES|Validation Procedures]]
   summary: Status: Draft validation procedure
-- [doc] [[docs/Future/ai_ecosystem_operating_model/VALIDATION_REPORT_2026-06-08|Validation Report - 2026-06-08]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/VALIDATION_REPORT_2026-06-08|Validation Report - 2026-06-08]]
   summary: Status: Draft validation report
-- [doc] [[docs/Future/ai_ecosystem_operating_model/VAULT_STRUCTURE|Vault Structure]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/VAULT_STRUCTURE|Vault Structure]]
   summary: Status: Draft template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/00_HOME/HOME|Home]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/00_HOME/HOME|Home]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/01_CURRENT_PRIORITY/ACTIVE_PRIORITY|Active Priority - vault_template/01_CURRENT_PRIORITY]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/01_CURRENT_PRIORITY/ACTIVE_PRIORITY|Active Priority - vault_template/01_CURRENT_PRIORITY]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Active Priority|Nova Active Priority]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Active Priority|Nova Active Priority]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Current Runtime Truth|Nova Current Runtime Truth]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Current Runtime Truth|Nova Current Runtime Truth]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Decision Log|Nova Decision Log]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Decision Log|Nova Decision Log]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Deferred Work|Nova Deferred Work]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Deferred Work|Nova Deferred Work]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Governance Boundaries|Nova Governance Boundaries]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Governance Boundaries|Nova Governance Boundaries]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Known Risks|Nova Known Risks]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Known Risks|Nova Known Risks]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Session Handoff|Nova Session Handoff]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Session Handoff|Nova Session Handoff]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Vision|Nova Vision]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Vision|Nova Vision]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/AI Work Queue|AI Work Queue]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/AI Work Queue|AI Work Queue]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Auralis Digital Master Context|Auralis Digital Master Context]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Auralis Digital Master Context|Auralis Digital Master Context]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Business Operations Backlog|Business Operations Backlog]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Business Operations Backlog|Business Operations Backlog]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Lucid Creations Master Context|Lucid Creations Master Context]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Lucid Creations Master Context|Lucid Creations Master Context]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Printify Product Pipeline|Printify Product Pipeline]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Printify Product Pipeline|Printify Product Pipeline]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/RJ Print Master Context|RJ Print Master Context]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/RJ Print Master Context|RJ Print Master Context]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Shopify Commerce Plan|Shopify Commerce Plan]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Shopify Commerce Plan|Shopify Commerce Plan]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/04_DECISIONS/Decision Log|Decision Log]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/04_DECISIONS/Decision Log|Decision Log]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/05_AI_HANDOFFS/Session Handoff|Session Handoff]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/05_AI_HANDOFFS/Session Handoff|Session Handoff]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/06_OUTPUT_REVIEW/Output Review Queue|Output Review Queue]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/06_OUTPUT_REVIEW/Output Review Queue|Output Review Queue]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/07_ROADMAPS/Roadmap Index|Roadmap Index]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/07_ROADMAPS/Roadmap Index|Roadmap Index]]
   summary: Status: Template
-- [doc] [[docs/Future/ai_ecosystem_operating_model/vault_template/08_ARCHIVE/Archive Index|Archive Index]]
+- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/08_ARCHIVE/Archive Index|Archive Index]]
   summary: Status: Template
 - [doc] [[docs/future/ARCHITECTURAL_POSITIONING|Nova Architectural Positioning]]
   summary: Status: Reference — kept current
@@ -1240,10 +1284,12 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: future workflow design / not implemented
 - [doc] [[docs/future/EXTERNAL_LANDSCAPE_NOTES_2026-04-20|External Landscape Notes]]
   summary: Status: Time-sensitive external comparison
-- [doc] [[docs/Future/FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22|Portfolio Operating Model (2026-04-22)]]
+- [doc] [[docs/future/FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22|Portfolio Operating Model (2026-04-22)]]
   summary: This document is a long-term portfolio reference only.
 - [doc] [[docs/future/FUTURE_AGENT_ARCHITECTURE_BACKLOG|Future Agent Architecture Backlog]]
   summary: Status: future planning backlog.
+- [doc] [[docs/future/FUTURE_DOCS_MAP|Future Docs Map]]
+  summary: Purpose: let a reviewer tell, at a glance, what each docs/future/ doc is — active, parked,
 - [doc] [[docs/future/GOOGLE_CONNECT_EMAIL_OAUTH_FUTURE_2026-04-22|TODO — Google Connect / Email OAuth Integration (2026-04-22)]]
   summary: Allow users to connect a Google account inside Nova through a familiar sign-in flow instead of manual setup.
 - [doc] [[docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP|Google Connector Implementation Roadmap]]
@@ -1316,7 +1362,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_GOOGLE_CONNECTOR_MODEL|Nova Google Connector Model]]
   summary: This document defines the recommended Google integration path for Nova.
-- [doc] [[docs/Future/NOVA_GOVERNED_AUTONOMY_DIRECTION_2026-05-11|Nova Governed Autonomy — Direction Record]]
+- [doc] [[docs/future/NOVA_GOVERNED_AUTONOMY_DIRECTION_2026-05-11|Nova Governed Autonomy — Direction Record]]
   summary: Date: 2026-05-11
 - [doc] [[docs/future/NOVA_GOVERNED_LEARNING_PLAN|Nova Governed Learning Plan]]
   summary: Date: 2026-04-27
@@ -1326,6 +1372,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_MARKET_POSITION|Nova Market Position]]
   summary: Status: Reference — kept current
+- [doc] [[docs/future/NOVA_MASTER_ROADMAP_2026-07-05|Nova Master Roadmap - 2026-07-05 (Final)]]
+  summary: Status: canonical ordering document — the single source of truth for what comes next and in
 - [doc] [[docs/future/NOVA_MCP_GOVERNED_CONNECTOR_PLAN_2026-04-27|Nova MCP Governed Connector Plan]]
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP|Nova Media Engine Safe Implementation Roadmap]]
@@ -1390,23 +1438,23 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Document version: 1.1
 - [doc] [[docs/future/PERSONAL_PERSONALITY_LAYER|Personal Personality Layer - docs/future]]
   summary: Status: future architecture plan / not shipped runtime capability
-- [doc] [[docs/Future/PERSONALITY_IMPLEMENTATION_PLAN_AUDIT|Implementation Plan — Governance Audit]]
+- [doc] [[docs/future/PERSONALITY_IMPLEMENTATION_PLAN_AUDIT|Implementation Plan — Governance Audit]]
   summary: Status: governance audit of implementation plan
-- [doc] [[docs/Future/PERSONALITY_LAYER_ARCHITECTURE|Nova Personality Layer — Architecture & Governance Review]]
+- [doc] [[docs/future/PERSONALITY_LAYER_ARCHITECTURE|Nova Personality Layer — Architecture & Governance Review]]
   summary: Status: design review (no code, no runtime changes)
-- [doc] [[docs/Future/PERSONALITY_LAYER_DESIGN_PROMPT|Personality Layer Design — Session Prompt]]
+- [doc] [[docs/future/PERSONALITY_LAYER_DESIGN_PROMPT|Personality Layer Design — Session Prompt]]
   summary: Status: prompt template for future design session
-- [doc] [[docs/Future/PERSONALITY_LAYER_GOVERNANCE_AUDIT|Personality Layer Architecture — Governance Audit]]
+- [doc] [[docs/future/PERSONALITY_LAYER_GOVERNANCE_AUDIT|Personality Layer Architecture — Governance Audit]]
   summary: Status: governance audit (no code, no runtime changes)
-- [doc] [[docs/Future/PERSONALITY_LAYER_GOVERNANCE_AUDIT_v2|Personality Layer Architecture — Governance Audit v2]]
+- [doc] [[docs/future/PERSONALITY_LAYER_GOVERNANCE_AUDIT_v2|Personality Layer Architecture — Governance Audit v2]]
   summary: Status: re-audit after patching (no code, no runtime changes)
-- [doc] [[docs/Future/PERSONALITY_LAYER_IMPLEMENTATION_PLAN|Nova Personality Layer — Implementation Plan]]
+- [doc] [[docs/future/PERSONALITY_LAYER_IMPLEMENTATION_PLAN|Nova Personality Layer — Implementation Plan]]
   summary: Status: implementation planning (no code, no runtime changes)
-- [doc] [[docs/Future/PERSONALITY_LIVE_WIRING_DESIGN_SCOPE|Personality Live Wiring — Design Scope]]
+- [doc] [[docs/future/PERSONALITY_LIVE_WIRING_DESIGN_SCOPE|Personality Live Wiring — Design Scope]]
   summary: Status: design (no code, no runtime changes)
-- [doc] [[docs/Future/PERSONALITY_PHASE_3_DESIGN_SCOPE|Phase 3 Personality — Design Scope]]
+- [doc] [[docs/future/PERSONALITY_PHASE_3_DESIGN_SCOPE|Phase 3 Personality — Design Scope]]
   summary: Status: design (no code, no runtime changes)
-- [doc] [[docs/Future/PHASE_2_DESIGN_SCOPE|Phase 2 — Design Scope]]
+- [doc] [[docs/future/PHASE_2_DESIGN_SCOPE|Phase 2 — Design Scope]]
   summary: Status: design (no code, no runtime changes)
 - [doc] [[docs/future/PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22|Website LLC — Primary First Revenue Engine]]
   summary: Website LLC is the first and main revenue engine in the portfolio.
@@ -1418,7 +1466,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: planning guardrail / future scope control
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
   summary: NovaLIS has evolved into a serious governance-first AI platform with unusually strong internal discipline: runtime truth docs, testing rigor...
-- [doc] [[docs/Future/RJ_PRINT_GOVERNED_PRODUCTION_TICKET_PLAN|RJ Print — Governed Production Ticket System (Phase 1)]]
+- [doc] [[docs/future/RJ_PRINT_GOVERNED_PRODUCTION_TICKET_PLAN|RJ Print — Governed Production Ticket System (Phase 1)]]
   summary: Status: future / product design; not implemented runtime truth
 - [doc] [[docs/future/ROADMAP|Nova Roadmap]]
   summary: Status: planning roadmap. Runtime truth still comes from code and generated runtime docs.
@@ -1430,10 +1478,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Question: when should i ask for help?
 - [doc] [[docs/future/TRACE_AND_OBSERVABILITY_SPEC|Trace and Observability Specification]]
   summary: Status: planning.
-- [doc] [[docs/Governed Web Intelligence (Capability 16 + 48 Integration.txt|Governed Web Intelligence (Capability 16 + 48 Integration]]
-  summary: To implement the capabilities described in the two specification documents, you will need to update or create several files in your codebase...
-- [doc] [[docs/Governed Webpage Launch Capability Specification.txt|📘 NOVA — Governed Webpage Launch Capability Specification]]
-  summary: This document defines how Nova may open web pages in a governed, explicit, and non-autonomous manner.
 - [doc] [[docs/INDEX|NovaLIS Documentation Index]]
   summary: Use this page to find the right document quickly.
 - [doc] [[docs/integrations/youtubelis/README|YouTubeLIS Integration Concept]]
@@ -1448,6 +1492,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: COMPLETE
 - [doc] [[docs/milestones/PHASE_3_PERSONALITY_COMPLETION_REPORT|Phase 3 Personality Layer — Completion Report]]
   summary: Status: COMPLETE
+- [doc] [[docs/milestones/README|docs/milestones — Dated completion reports]]
+  summary: This folder holds dated milestone / completion reports for the personality layer (Phase 1–3
 - [doc] [[docs/nova-conversation-response-contract|Nova Conversation Response Contract]]
   summary: Branch: docs/nova-conversation-response-contract
 - [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
@@ -1491,6 +1537,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: A demo should not only function.
 - [doc] [[docs/product/previews/DEMO_SHOWCASE_ASSETS_2026-04-23|Demo Showcase Assets (2026-04-23)]]
   summary: Do not try to show everything.
+- [doc] [[docs/product/PRODUCT_DEFINITION|Nova Product Definition]]
+  summary: Canonical product definition — the "why" and "what" behind the architecture. Stable; changes
 - [doc] [[docs/product/PRODUCT_LEGIBILITY|Product Legibility]]
   summary: Nova has entered a new priority phase:
 - [doc] [[docs/product/PROOF_CAPTURE_CHECKLIST|Proof Capture Checklist]]
@@ -1871,8 +1919,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Updated: 2026-04-05
 - [doc] [[docs/PROOFS/Phase-8/PHASE_8_SYSTEM_MAP_AND_METERED_OPENAI_TASK_REPORT_RUNTIME_SLICE_2026-03-27|Phase 8 Proof - System Map and Metered OpenAI Task-Report Slice]]
   summary: Updated: 2026-03-27
-- [doc] [[docs/PROOFS/README|README]]
-  summary: ﻿# Proofs Pointer
+- [doc] [[docs/PROOFS/README|docs/PROOFS — Implementation proof packets]]
+  summary: This folder holds implementation and verification evidence — proof that a boundary, gate, or
 - [asset] [[docs/PROOFS/Trust-Panel/trust_panel_mvp_live_2026-05-14.png|trust_panel_mvp_live_2026-05-14.png]]
 - [doc] [[docs/PROOFS/Trust-Panel/TRUST_PANEL_MVP_PROOF_2026-05-14|Trust Panel MVP Proof]]
   summary: Date: 2026-05-14
@@ -2122,10 +2170,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: Authoritative high-level runtime map
 - [doc] [[docs/reference/VERIFIED_REPOSITORY_REVIEW_2026-04-20|Verified Repository And Active-Doc Review]]
   summary: Status: Verified repository truth only
-- [doc] [[docs/SANITY_AUDIT_2026-04-28|Final Sanity Audit — 2026-04-28]]
-  summary: A repo-wide documentation clarity pass was completed.
-- [doc] [[docs/SECOND_PASS_OVERVIEW_2026-04-28|Second Pass Overview — 2026-04-28]]
-  summary: - Ideas moved from chat into repo memory
+- [doc] [[docs/RELEASE_CHECKLIST|Nova Release Checklist]]
+  summary: Process document — what must happen before a release. Changes slowly. Distinct from the
 - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
   summary: Date: 2026-04-28
 - [doc] [[docs/simulations/APPROVAL_GATE_WORKFLOW_SIMULATIONS|Approval-Gate Workflow Simulations]]
@@ -2153,7 +2199,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
+  summary: Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). This session's live verification
 - [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
   summary: Status: manual continuity surface.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
@@ -2231,17 +2277,15 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Last reviewed: 2026-06-17 (runtime recovery and health truth lock)
+  summary: Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). Latest state + this session's
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
-  summary: Updated: 2026-04-28
+  summary: Updated: 2026-07-05
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
   summary: This folder holds actionable task lists only. No wishlists, no design docs, no strategy.
 - [doc] [[docs/todo/SHOPIFY_SETUP_TODO|Shopify Setup TODO]]
   summary: Status: active setup checklist for Cap 65 live signoff
 - [doc] [[docs/todo/TECH_DEBT|Technical Debt — Nova]]
   summary: Updated: 2026-04-28
-- [code] [[docs/tools/check_quarantine.ps1|check_quarantine]]
-  summary: ﻿Write-Host "=== Legacy Brain Isolation Check ===" -ForegroundColor Cyan
 - [doc] [[docs/tools/youtubelis|YouTubeLIS Tool Folder]]
   summary: YouTubeLIS lives at tools/youtubelis/.
 - [doc] [[docs/WORKFLOW_AI_TOOLING|AI Tooling Workflow]]
@@ -2502,7 +2546,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (773)
+## nova_backend (787)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2633,6 +2677,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
 - [code] [[nova_backend/src/brief/__init__.py|src/brief]]
+- [code] [[nova_backend/src/brief/auralis_seeds.py|auralis_seeds]]
+  summary: Auralis Today — governed-memory seed loader (pure, read-only).
+- [code] [[nova_backend/src/brief/auralis_today.py|auralis_today]]
+  summary: Auralis Today — C1 business decision surface for the Daily Awareness Brief.
 - [code] [[nova_backend/src/brief/awareness_brief.py|awareness_brief]]
   summary: Daily Awareness Brief — the on-open product surface.
 - [code] [[nova_backend/src/brief/daily_brief.py|daily_brief]]
@@ -2675,6 +2723,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Email Connector — interface stub for inbox_check (Phase 8+).
 - [code] [[nova_backend/src/connectors/package_registry.py|package_registry]]
   summary: CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
+- [code] [[nova_backend/src/connectors/shopify_auralis_enrichment.py|shopify_auralis_enrichment]]
+  summary: Auralis Today (C1) — read-only Shopify enrichment parsers.
 - [code] [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
   summary: Shopify Connector - governed Shopify Admin API integration.
 - [code] [[nova_backend/src/context/__init__.py|src/context]]
@@ -2689,6 +2739,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def get_system_context() -> dict[str, str]:
 - [code] [[nova_backend/src/conversation/__init__.py|src/conversation]]
   summary: Conversation-layer helpers for cognitive escalation (Phase-4.2 staging).
+- [code] [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
+  summary: Awareness Brief trigger matching.
 - [code] [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
   summary: Deterministic clarification prompt bank for conversational UX polish.
 - [code] [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
@@ -2817,6 +2869,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Nova self-awareness context builder.
 - [code] [[nova_backend/src/ledger/event_types.py|event_types]]
   summary: Canonical ledger event taxonomy for Phase-4 runtime.
+- [code] [[nova_backend/src/ledger/health.py|health]]
+  summary: Read-only ledger health checks for rotation/relocation planning.
 - [code] [[nova_backend/src/ledger/reader.py|reader]]
   summary: class LedgerAnalyzer:
 - [code] [[nova_backend/src/ledger/writer.py|writer]]
@@ -2843,8 +2897,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Phase-3.5 Staged Governed Memory — Quick Corrections
 - [code] [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
   summary: Persistent user memory store — preferences, personal details, and observed patterns.
-- [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
-  summary: 9a34425a877d7ed9d3c8bc60feebb069abdb1642e9655efb8a01a5906b96cfc3
 - [code] [[nova_backend/src/nova_config.py|nova_config]]
   summary: NovaLIS Core Configuration (Phase 1)
 - [code] [[nova_backend/src/nova_protocol.py|nova_protocol]]
@@ -3206,8 +3258,14 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
   summary: ApprovalLevel,
 - [code] [[nova_backend/tests/brief/__init__.py|tests/brief]]
+- [code] [[nova_backend/tests/brief/test_auralis_seeds.py|test_auralis_seeds]]
+  summary: C1 Auralis Today — governed-memory seed loader tests (pure, no store coupling).
+- [code] [[nova_backend/tests/brief/test_auralis_today.py|test_auralis_today]]
+  summary: C1 Auralis Today — acceptance tests.
 - [code] [[nova_backend/tests/brief/test_awareness_brief.py|test_awareness_brief]]
   summary: Tests for the Daily Awareness Brief module.
+- [code] [[nova_backend/tests/brief/test_awareness_brief_auralis_wiring.py|test_awareness_brief_auralis_wiring]]
+  summary: C1 wiring — Auralis Today appears in the brief only when inputs are supplied.
 - [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
   summary: Tests for the Daily Brief synthesis module.
 - [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
@@ -3257,9 +3315,14 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Capability Lock Regression Guard
 - [code] [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
   summary: Suite-wide test isolation fixtures.
+- [code] [[nova_backend/tests/connectors/__init__.py|tests/connectors]]
+- [code] [[nova_backend/tests/connectors/test_shopify_auralis_enrichment.py|test_shopify_auralis_enrichment]]
+  summary: C1 Shopify enrichment parsers — tested against mock GraphQL fragments (no network).
 - [code] [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
   summary: def test_http_shopify_connector_uses_configured_api_version():
 - [code] [[nova_backend/tests/conversation/__init__.py|tests/conversation]]
+- [code] [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
+  summary: @pytest.mark.parametrize(
 - [code] [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [code] [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -3268,6 +3331,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def test_conversation_personality_agent_softens_known_cancel_message():
 - [code] [[nova_backend/tests/conversation/test_conversation_router.py|test_conversation_router]]
   summary: ﻿from src.conversation.conversation_router import ConversationRouter
+- [code] [[nova_backend/tests/conversation/test_daily_brief_semantic_contract.py|test_daily_brief_semantic_contract]]
+  summary: Semantic contract: one user-facing Daily Brief.
 - [code] [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
   summary: @pytest.fixture(autouse=True)
 - [code] [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
@@ -3460,6 +3525,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/identity/__init__.py|tests/identity]]
 - [code] [[nova_backend/tests/identity/test_nova_self_awareness.py|test_nova_self_awareness]]
   summary: Tests for Nova self-awareness context builder.
+- [code] [[nova_backend/tests/ledger/test_ledger_health.py|test_ledger_health]]
+  summary: def test_inspect_ledger_health_recommends_rotation_when_threshold_exceeded(tmp_path):
 - [code] [[nova_backend/tests/memory/__init__.py|tests/memory]]
 - [code] [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
   summary: Tests for the MemorySkill memory loop.
@@ -3615,6 +3682,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[nova_backend/tests/phase45/test_dashboard_intelligence_brief_widget.py|test_dashboard_intelligence_brief_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_memory_widget.py|test_dashboard_memory_widget]]
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
+- [code] [[nova_backend/tests/phase45/test_dashboard_navigation_collapse.py|test_dashboard_navigation_collapse]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_dashboard_news_header_weather_widget.py|test_dashboard_news_header_weather_widget]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -3967,6 +4036,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Tests for PR #249 -- Provider Budget Status Accuracy.
 - [code] [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
   summary: Tests for Provider Status Visibility (PR #246).
+- [code] [[nova_backend/tests/test_pytest_timeout_config.py|test_pytest_timeout_config]]
+  summary: def test_pytest_timeout_dependency_matches_configured_timeout():
 - [code] [[nova_backend/tests/test_registry_fail_closed.py|test_registry_fail_closed]]
   summary: def _capability_entry(
 - [code] [[nova_backend/tests/test_registry_phase_alignment.py|test_registry_phase_alignment]]
@@ -4073,7 +4144,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 
-## scripts (12)
+## scripts (15)
 
 - [code] [[scripts/certify_capability.py|certify_capability]]
   summary: certify_capability.py — Capability Verification CLI
@@ -4081,6 +4152,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [code] [[scripts/check_frontend_navigation_smoke.py|check_frontend_navigation_smoke]]
   summary: ROOT = Path(__file__).resolve().parent.parent
+- [code] [[scripts/check_ledger_health.py|check_ledger_health]]
+  summary: ROOT = Path(__file__).resolve().parent.parent
+- [code] [[scripts/check_quarantine.ps1|check_quarantine]]
+  summary: ﻿Write-Host "=== Legacy Brain Isolation Check ===" -ForegroundColor Cyan
 - [code] [[scripts/check_runtime_doc_drift.py|check_runtime_doc_drift]]
   summary: ROOT = Path(__file__).resolve().parents[1]
 - [code] [[scripts/fetch_models.py|fetch_models]]
@@ -4093,6 +4168,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
 - [code] [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
+- [code] [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
+  summary: Read-only breadth simulation for Nova user acceptance.
 - [code] [[scripts/start_daemon.py|start_daemon]]
   summary: Start (or verify) the Nova backend as a background process.
 - [code] [[scripts/stop_daemon.py|stop_daemon]]
