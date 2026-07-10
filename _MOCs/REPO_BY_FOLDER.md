@@ -16,7 +16,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[.agent_context/brain_loop|Brain Loop Context]]
   summary: Nova's proposed Brain loop is:
 - [doc] [[.agent_context/current_priority|Current Priority]]
-  summary: Current active lane:
+  summary: Current active product state:
 - [doc] [[.agent_context/environments|Environment Context]]
   summary: Nova's Brain should reason about environments before execution.
 - [doc] [[.agent_context/governance|Governance Context]]
@@ -139,7 +139,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (1079)
+## docs (1082)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -610,7 +610,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/capability_verification/README|docs/capability_verification — Live verification]]
   summary: This folder holds live pass/fail checks against a running build — the strongest "does it
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
-  summary: Updated: 2026-04-28
+  summary: Updated: 2026-07-09 (synced to python scripts/certifycapability.py status: 4/27 locked — Cap 16, 22, 64, 65)
 - [doc] [[docs/claude_prompts/CLAUDE_NOVA_EXPANSION_PROMPT|Claude Nova Expansion Prompt]]
   summary: Use this prompt when improving NovaLIS in future sessions.
 - [doc] [[docs/claude_prompts/README|Claude Prompts]]
@@ -620,7 +620,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: de827e49149e4247297f813d6dbe8469b606076a4aa68f7ace64e60dd84686b3
+  summary: Runtime Fingerprint: b1a769d6c948668f4660a06023cd01e4d3f37655ddc817fff76b936d12f15d9b
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -646,7 +646,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: f6037e2e654f955d4585439ffca1c1c5818ba02ebbf7d765b0a9dfca377d061d
+  summary: - runtimesurfacehash: d43c3abcc0a698adffa99a1ec105dbcaae5f1cac0701de57c1f96ed67c9b624d
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1495,6 +1495,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This folder holds dated milestone / completion reports for the personality layer (Phase 1–3
 - [doc] [[docs/nova-conversation-response-contract|Nova Conversation Response Contract]]
   summary: Branch: docs/nova-conversation-response-contract
+- [doc] [[docs/observation/MORNING_LOG_TEMPLATE|Morning Log — YYYY-MM-DD]]
+  summary: Short honest answers. "Nothing" and "n/a" are valid answers. -->
+- [doc] [[docs/observation/README|docs/observation — Morning observation logs]]
+  summary: Status: ACTIVE — this is the current phase's primary evidence stream.
 - [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
   summary: Status: planning document
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
@@ -1505,7 +1509,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/product/CAPABILITY_MATURITY|Capability Maturity Model]]
   summary: Use this model to describe capabilities more honestly than a simple enabled/disabled state.
 - [doc] [[docs/product/CAPABILITY_SIGNOFF_MATRIX|Capability Signoff Matrix]]
-  summary: Last reviewed: 2026-04-28
+  summary: Last reviewed: 2026-07-09 (synced to python scripts/certifycapability.py status: 4/27 locked — Cap 16, 22, 64, 65)
 - [doc] [[docs/product/COHERENCE_AUDIT_2026-04-28|Nova Coherence Audit — 2026-04-28]]
   summary: Scope: Full repo — docs, design plans, future-vision files, memory/conversation model,
 - [doc] [[docs/product/CONVERSATION_AND_MEMORY_MODEL|Conversation and Memory Model]]
@@ -1525,7 +1529,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE|Governed Workflow Workspace Architecture]]
   summary: Status: product / architecture planning note; not generated runtime truth
 - [doc] [[docs/product/KNOWN_LIMITATIONS|Known Limitations]]
-  summary: Last reviewed: 2026-04-29
+  summary: Last reviewed: 2026-07-09 (capability lock claims synced to python scripts/certifycapability.py status)
 - [doc] [[docs/product/NOVA_OPERATING_MODEL|Nova Operating Model]]
   summary: Governed AI for daily life and small-business workflows.
 - [doc] [[docs/product/NOVA_PRODUCTIZATION_PLAN_2026-04-28|Nova Productization Plan]]
@@ -1567,7 +1571,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/product/visual_proof|NovaLIS Visual Proof]]
   summary: These screenshots show real Nova UI surfaces from a running local instance.
 - [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
-  summary: Last reviewed: 2026-05-04
+  summary: Last reviewed: 2026-07-09 (capability lock rows synced to python scripts/certifycapability.py status)
 - [doc] [[docs/product/WHY_NOVA|Why Nova]]
   summary: Nova exists because useful AI should not require unchecked authority.
 - [doc] [[docs/PROOFS/Cap-16/SEARCH_WIDGET_WS_LIVE_PROOF_2026-05-14|Cap 16 Search Widget WebSocket Live Proof]]
@@ -1602,6 +1606,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Phase 3.5 Constitutional Baseline Generator
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
   summary: Governor Bypass Proof Document
+- [doc] [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
+  summary: Status: MAP ONLY — this document classifies existing evidence. It moves, renames, and deletes
 - [doc] [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCK.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]]
   summary: clean, minimal, authoritative ENVIRONMENTLOCK.md you can paste directly into:
 - [doc] [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCKphase3.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]]
@@ -2160,7 +2166,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/reference/HUMAN_GUIDES/CURRENT_STAGE_GUIDE|Current Stage Guide — Stages 3, 4, 5, and 6]]
   summary: Updated: 2026-05-03
 - [doc] [[docs/reference/HUMAN_GUIDES/README|Nova Human Guides]]
-  summary: Updated: 2026-05-02
+  summary: Updated: 2026-07-09 (demoted to historical/explanatory)
 - [doc] [[docs/reference/inactive/README|Inactive Reference Packets]]
   summary: Updated: 2026-04-12
 - [doc] [[docs/reference/INTRODUCTION|Introduction To Nova]]
@@ -2282,7 +2288,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
   summary: This folder holds actionable task lists only. No wishlists, no design docs, no strategy.
 - [doc] [[docs/todo/SHOPIFY_SETUP_TODO|Shopify Setup TODO]]
-  summary: Status: active setup checklist for Cap 65 live signoff
+  summary: Status: historical setup checklist (Cap 65 live signoff completed and locked 2026-05-22)
 - [doc] [[docs/todo/TECH_DEBT|Technical Debt — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/tools/youtubelis|YouTubeLIS Tool Folder]]
@@ -2545,7 +2551,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (787)
+## nova_backend (788)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -3993,6 +3999,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def test_volume_media_brightness_parsing():
 - [code] [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
   summary: def test_parse_speak_that_invocation():
+- [code] [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
+  summary: Truthful-outcome reporting tests (PR: fix/truthful-outcome-reporting).
 - [code] [[nova_backend/tests/test_landing_page.py|test_landing_page]]
   summary: def test_landing_page_route_returns_product_preview():
 - [code] [[nova_backend/tests/test_ledger_event_allowlist.py|test_ledger_event_allowlist]]
@@ -4143,7 +4151,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 
-## scripts (15)
+## scripts (16)
 
 - [code] [[scripts/certify_capability.py|certify_capability]]
   summary: certify_capability.py — Capability Verification CLI
@@ -4165,6 +4173,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [code] [[scripts/phase35_gates.ps1|phase35_gates]]
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
+- [code] [[scripts/prove_runtime_truth.py|prove_runtime_truth]]
+  summary: Structural runtime smoke proof for Nova.
 - [code] [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
 - [code] [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
@@ -4184,7 +4194,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 ## START_HERE.md (1)
 
 - [doc] [[START_HERE|Start Here - .]]
-  summary: Last reviewed: 2026-05-03
+  summary: Last reviewed: 2026-07-09
 
 ## start_nova.bat (1)
 
