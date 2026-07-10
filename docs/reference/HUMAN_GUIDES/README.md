@@ -1,28 +1,26 @@
 # Nova Human Guides
-Updated: 2026-05-02
-Status: Explanatory guide set
+Updated: 2026-07-09 (demoted to historical/explanatory)
+Status: Historical/explanatory guide set — May 2026 stage frame
 
-## What These Documents Are
-Plain-language explanations of Nova.
+> **These guides explain Nova in plain language but describe the May 2026 state** (Stage 3/4/5
+> sprint, pre-simplification UI topology, pre-observation phase framing). They remain useful for
+> understanding concepts; do not use them for current status, current priorities, or current UI
+> layout.
 
-## Source of Truth
-If these guides conflict with runtime docs, runtime docs win.
+## Source of Truth — read these FIRST
 
-Use:
-- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
-- `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (authority ordering)
+2. `docs/status/DAILY_COMMAND_CENTER.md` — where the project is right now
+3. `docs/capability_verification/CAPABILITY_INVENTORY.md` — what verifiably works
+4. `docs/current_runtime/CURRENT_RUNTIME_STATE.md` — generated runtime truth
 
-## Current Stage Note
+If these guides conflict with any of the above, the above win.
+
+## Historical Stage Note
 These guides were last aligned to the Stage 3 / 4 / 5 implementation sprint (2026-05-02).
-
-For the current implementation stage in plain language, start with:
-- `CURRENT_STAGE_GUIDE.md` (this folder) — what Stages 3–5 mean in human terms
-
-For the authoritative status, see:
-- `docs/status/CURRENT_WORK_STATUS.md`
-- `docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02.md`
-- `docs/todo/ACTIVE_TODO.md`
+`CURRENT_STAGE_GUIDE.md` and `docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02.md` describe that
+May stage frame — treat both as historical, not current status. The current product state is
+the Phase 3 observation period.
 
 ## Start Here
 1. `01_START_HERE.md`

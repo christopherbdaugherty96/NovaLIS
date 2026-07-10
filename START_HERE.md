@@ -1,12 +1,26 @@
 # Start Here
 
-Last reviewed: 2026-05-03
+Last reviewed: 2026-07-09
 
 This is the shortest human path through NovaLIS.
 
 Nova is a governance-first local AI system. It is designed to separate intelligence from execution so useful actions can stay bounded, visible, and reviewable.
 
-Nova is currently an alpha build for technical users and early adopters. It is not a finished consumer product.
+Nova is currently an alpha build for technical users and early adopters. It is not a finished consumer product. The current product state is the Phase 3 observation period (see [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md)).
+
+---
+
+## Current Truth First
+
+Before the fast path below, know where truth lives (authority order):
+
+1. [Canonical Truth Index](docs/CANONICAL/00_INDEX.md) — how to read repo truth
+2. [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md) — where the project is right now
+3. [Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md) — what verifiably works
+4. [Product Definition](docs/product/PRODUCT_DEFINITION.md) — identity, mission, phases
+5. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) — generated runtime truth
+
+If any doc below conflicts with these, these win.
 
 ---
 
