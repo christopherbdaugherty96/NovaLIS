@@ -163,6 +163,30 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 57
 
+    # Possessive-day phrasings must stay deterministic (previously leaked to web search).
+    for phrase in (
+        "what's on today's calendar?",
+        "whats on todays calendar",
+        "what is on today's calendar",
+        "what's on tomorrow's calendar",
+        "what's on the calendar",
+        "what's on the calendar today",
+        "what's on my calendar this week",
+        "what's on my schedule this week",
+    ):
+        inv = GovernorMediator.parse_governed_invocation(phrase)
+        assert isinstance(inv, Invocation), phrase
+        assert inv.capability_id == 57, phrase
+
+    # Similar shapes without calendar/schedule words must not match Cap 57.
+    for phrase in (
+        "what's on netflix tonight",
+        "what's on the menu",
+        "search the web for calendar apps",
+    ):
+        inv = GovernorMediator.parse_governed_invocation(phrase)
+        assert not (isinstance(inv, Invocation) and inv.capability_id == 57), phrase
+
     inv = GovernorMediator.parse_governed_invocation("take a screenshot")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 58
