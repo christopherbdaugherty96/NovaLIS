@@ -77,8 +77,7 @@ It does not unpause any paused product scope. It does not expand Shopify, OpenCl
 
 In particular:
 
-- Cap 65 remains read-only Shopify reporting/intelligence.
-- Shopify P5 live signoff remains paused until the owner explicitly unpauses it.
+- Cap 65 remains read-only Shopify reporting/intelligence (P1-P5 locked 2026-05-22; locked = bounded, not expandable).
 - Shopify write/operator capabilities remain future-only.
 - The Brain planning preview may describe a possible future environment or task envelope, but that description is not permission to execute.
 - A Run Preview is continuity state, not authorization state.

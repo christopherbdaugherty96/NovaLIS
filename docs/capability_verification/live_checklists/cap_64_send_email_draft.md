@@ -1,9 +1,13 @@
 # Live Test Checklist — Cap 64: send_email_draft
 Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
 
+> **SUPERSEDED — Cap 64 completed P5 and LOCKED 2026-05-20** (113 tests, live mailto proof:
+> PR #196/#198; verify with `python scripts/certify_capability.py status`). This checklist is
+> preserved as the historical procedure record. Do not treat the status block below as current.
+
 ---
 
-## Current Status — 2026-04-28
+## Status at time of writing — 2026-04-28 (historical)
 
 **P5: READY FOR HUMAN LIVE TEST — not complete, not locked.**
 
