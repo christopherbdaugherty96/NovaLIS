@@ -21,9 +21,46 @@ _model_status_cache: dict[str, object] = {}
 _model_status_cache_ts: float = 0.0
 _MODEL_STATUS_CACHE_TTL: float = 10.0
 _model_status_cache_lock = threading.Lock()
+_LEDGER_TAIL_SCAN_LINES = 1000
 
 
 class OSDiagnosticsExecutor:
+    @staticmethod
+    def _read_ledger_tail_lines(path: Path, line_limit: int = _LEDGER_TAIL_SCAN_LINES) -> list[str]:
+        """Read a bounded ledger tail without loading the full append-only file."""
+        return [line for _, line in OSDiagnosticsExecutor._read_ledger_tail_records(path, line_limit)]
+
+    @staticmethod
+    def _read_ledger_tail_records(
+        path: Path,
+        line_limit: int = _LEDGER_TAIL_SCAN_LINES,
+    ) -> list[tuple[int, str]]:
+        """Read bounded ledger tail records with byte offsets for audit references."""
+        if line_limit <= 0:
+            return []
+        chunk_size = 1024 * 8
+        line_parts: list[bytes] = []
+        buffer_start = 0
+        with path.open("rb") as handle:
+            handle.seek(0, 2)
+            remaining = handle.tell()
+            buffer = b""
+            while remaining > 0 and len(line_parts) <= line_limit:
+                read_size = min(chunk_size, remaining)
+                remaining -= read_size
+                handle.seek(remaining)
+                buffer = handle.read(read_size) + buffer
+                buffer_start = remaining
+                line_parts = buffer.splitlines(keepends=True)
+
+        records: list[tuple[int, str]] = []
+        offset = buffer_start
+        for part in line_parts:
+            text = part.rstrip(b"\r\n").decode("utf-8", errors="replace")
+            records.append((offset, text))
+            offset += len(part)
+        return records[-line_limit:] if len(records) > line_limit else records
+
     @staticmethod
     def _voice_status_details() -> tuple[str, str]:
         try:
@@ -294,10 +331,10 @@ class OSDiagnosticsExecutor:
                 for item in enabled_entries
                 if item.get("id") is not None
             }
-            raw_lines = path.read_text(encoding="utf-8").splitlines()
+            raw_records = OSDiagnosticsExecutor._read_ledger_tail_records(path)
             items: list[dict[str, str]] = []
 
-            for line_number, raw_line in reversed(list(enumerate(raw_lines, start=1))):
+            for byte_offset, raw_line in reversed(raw_records):
                 line = raw_line.strip()
                 if not line:
                     continue
@@ -305,7 +342,7 @@ class OSDiagnosticsExecutor:
                     entry = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                entry["_ledger_line"] = line_number
+                entry["_ledger_offset"] = byte_offset
                 item = OSDiagnosticsExecutor._recent_activity_item(entry, capability_lookup)
                 if not item:
                     continue
@@ -507,6 +544,14 @@ class OSDiagnosticsExecutor:
                 resolved = int(line_number)
                 if resolved > 0:
                     return f"L{resolved}"
+        except Exception:
+            pass
+        byte_offset = entry.get("_ledger_offset")
+        try:
+            if byte_offset is not None:
+                resolved = int(byte_offset)
+                if resolved >= 0:
+                    return f"B{resolved}"
         except Exception:
             pass
         return ""
@@ -714,24 +759,23 @@ class OSDiagnosticsExecutor:
             entries_today = 0
             last_event = "None"
 
-            with path.open("r", encoding="utf-8") as handle:
-                for raw_line in handle:
-                    line = raw_line.strip()
-                    if not line:
-                        continue
-                    try:
-                        entry = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-                    event_type = str(entry.get("event_type") or "").strip() or "UNKNOWN"
-                    last_event = event_type
-                    raw_ts = str(entry.get("timestamp_utc") or "").strip()
-                    try:
-                        timestamp = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
-                    except ValueError:
-                        continue
-                    if timestamp.astimezone(timezone.utc).date() == today:
-                        entries_today += 1
+            for raw_line in OSDiagnosticsExecutor._read_ledger_tail_lines(path):
+                line = raw_line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                event_type = str(entry.get("event_type") or "").strip() or "UNKNOWN"
+                last_event = event_type
+                raw_ts = str(entry.get("timestamp_utc") or "").strip()
+                try:
+                    timestamp = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+                except ValueError:
+                    continue
+                if timestamp.astimezone(timezone.utc).date() == today:
+                    entries_today += 1
 
             return "ok", entries_today, last_event
         except Exception:
@@ -813,8 +857,7 @@ class OSDiagnosticsExecutor:
 
             path = Path(LEDGER_PATH)
             if path.exists():
-                raw_lines = path.read_text(encoding="utf-8").splitlines()
-                for raw_line in reversed(raw_lines):
+                for raw_line in reversed(OSDiagnosticsExecutor._read_ledger_tail_lines(path)):
                     line = raw_line.strip()
                     if not line:
                         continue
