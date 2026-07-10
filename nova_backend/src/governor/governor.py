@@ -382,12 +382,12 @@ class Governor:
                     completion_metadata,
                 )
             except LedgerWriteFailed:
-                # The action outcome stands, but its completion receipt did not
-                # persist. Report completed_degraded rather than a clean success
-                # so audit-integrity failure is never hidden. Do NOT rewrite the
-                # effect into failure or refusal — it may already have happened.
+                # The completion receipt did not persist. Flag audit degradation
+                # without ever contradicting the executor outcome: a successful
+                # effect becomes completed_degraded (never a clean success), and a
+                # failed/refused result keeps its original status and reason.
                 result.mark_audit_degraded(
-                    "Action outcome succeeded but its completion receipt failed to persist."
+                    "Completion receipt failed to persist; action outcome unchanged."
                 )
 
             return result

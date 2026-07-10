@@ -620,7 +620,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 94fe9289b98e65096133e6dea8e873fadba8b06fa59bc8987be2e16842678138
+  summary: Runtime Fingerprint: b1a769d6c948668f4660a06023cd01e4d3f37655ddc817fff76b936d12f15d9b
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -646,7 +646,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: f7556180c17abc8f8c4e4952ca2ac65ea603fac247053c9d4e21bb640f291f93
+  summary: - runtimesurfacehash: d43c3abcc0a698adffa99a1ec105dbcaae5f1cac0701de57c1f96ed67c9b624d
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -2551,7 +2551,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (787)
+## nova_backend (788)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -3999,6 +3999,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def test_volume_media_brightness_parsing():
 - [code] [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
   summary: def test_parse_speak_that_invocation():
+- [code] [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
+  summary: Truthful-outcome reporting tests (PR: fix/truthful-outcome-reporting).
 - [code] [[nova_backend/tests/test_landing_page.py|test_landing_page]]
   summary: def test_landing_page_route_returns_product_preview():
 - [code] [[nova_backend/tests/test_ledger_event_allowlist.py|test_ledger_event_allowlist]]

@@ -621,7 +621,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (449)
+## Tests and verification (450)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1405,6 +1405,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_volume_media_brightness_parsing():
 - [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
   summary: def test_parse_speak_that_invocation():
+- [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
+  summary: Truthful-outcome reporting tests (PR: fix/truthful-outcome-reporting).
 - [[nova_backend/tests/test_landing_page.py|test_landing_page]]
   summary: def test_landing_page_route_returns_product_preview():
 - [[nova_backend/tests/test_ledger_event_allowlist.py|test_ledger_event_allowlist]]
