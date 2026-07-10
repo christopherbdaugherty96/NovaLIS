@@ -10,13 +10,15 @@ roadmap / archive — start at [CANONICAL/00_INDEX.md](CANONICAL/00_INDEX.md).
 
 ## Start Here
 
-Current truth first (authority order):
+Current truth first (recommended reading order):
 
 - [Canonical Truth Index](CANONICAL/00_INDEX.md) — how to read repo truth
 - [Daily Command Center](status/DAILY_COMMAND_CENTER.md) — where the project is right now
 - [Capability Inventory](capability_verification/CAPABILITY_INVENTORY.md) — what verifiably works
 - [Product Definition](product/PRODUCT_DEFINITION.md) — identity, mission, phases
 - [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md) — generated runtime truth
+
+For runtime-existence claims, generated runtime docs win; CANONICAL explains how to resolve conflicts.
 
 Then onboarding and reference:
 

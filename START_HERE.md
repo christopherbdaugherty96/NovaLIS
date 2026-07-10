@@ -12,7 +12,7 @@ Nova is currently an alpha build for technical users and early adopters. It is n
 
 ## Current Truth First
 
-Before the fast path below, know where truth lives (authority order):
+Before the fast path below, use this recommended reading order:
 
 1. [Canonical Truth Index](docs/CANONICAL/00_INDEX.md) — how to read repo truth
 2. [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md) — where the project is right now
@@ -20,7 +20,8 @@ Before the fast path below, know where truth lives (authority order):
 4. [Product Definition](docs/product/PRODUCT_DEFINITION.md) — identity, mission, phases
 5. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) — generated runtime truth
 
-If any doc below conflicts with these, these win.
+If any doc below conflicts with these, resolve by CANONICAL truth rules; for runtime-existence
+claims, generated runtime docs win.
 
 ---
 

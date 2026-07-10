@@ -28,9 +28,10 @@ Nova's strongest differentiator is: governed local-first execution with visible 
 
 ## Active Direction
 
-Read these documents before starting any task, in this order:
+Read these documents before starting any task, in this order (a reading order, not an
+authority ranking — for runtime-existence claims, generated runtime docs win):
 
-1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (authority ordering)
+1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (defines the authority model)
 2. `docs/status/DAILY_COMMAND_CENTER.md` — where the project is right now
 3. `.agent_context/current_priority.md` — active state and safety boundaries
 4. `docs/capability_verification/CAPABILITY_INVENTORY.md` — what verifiably works

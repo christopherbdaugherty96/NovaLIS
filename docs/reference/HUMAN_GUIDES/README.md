@@ -9,12 +9,13 @@ Status: Historical/explanatory guide set — May 2026 stage frame
 
 ## Source of Truth — read these FIRST
 
-1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (authority ordering)
+1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (defines the authority model)
 2. `docs/status/DAILY_COMMAND_CENTER.md` — where the project is right now
 3. `docs/capability_verification/CAPABILITY_INVENTORY.md` — what verifiably works
 4. `docs/current_runtime/CURRENT_RUNTIME_STATE.md` — generated runtime truth
 
-If these guides conflict with any of the above, the above win.
+If these guides conflict with any of the above, the above win. For runtime-existence claims,
+generated runtime docs win; CANONICAL explains how to resolve conflicts.
 
 ## Historical Stage Note
 These guides were last aligned to the Stage 3 / 4 / 5 implementation sprint (2026-05-02).

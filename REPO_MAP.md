@@ -4,9 +4,9 @@ Purpose: clear navigation map for engineers, reviewers, and future collaborators
 
 ## Start Here
 
-If you are new to the project, use this order:
+If you are new to the project, use this recommended reading order to learn the authority model:
 
-1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (authority ordering)
+1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (defines the authority model)
 2. `docs/status/DAILY_COMMAND_CENTER.md` — where the project is right now
 3. `docs/capability_verification/CAPABILITY_INVENTORY.md` — what verifiably works
 4. `docs/product/PRODUCT_DEFINITION.md` — identity, mission, phases
@@ -14,8 +14,11 @@ If you are new to the project, use this order:
 6. `docs/reference/HUMAN_GUIDES/README.md` — plain-language explanation
    (historical/explanatory; aligned to the May 2026 stage frame)
 
+This is a reading order, not an authority ranking. For runtime-existence claims, generated
+runtime docs win; CANONICAL explains how to resolve conflicts.
+
 This sequence gives you:
-- the truth ordering first
+- the truth-reading rules first
 - the current state second
 - the runtime truth third
 - the human explanation as supporting reference
