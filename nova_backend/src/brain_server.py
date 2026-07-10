@@ -24,7 +24,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
-from fastapi import FastAPI, Request, WebSocket
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -3054,7 +3054,15 @@ app.include_router(build_settings_router(sys.modules[__name__]))
 # WebSocket Utilities
 # -------------------------------------------------
 async def ws_send(ws: WebSocket, payload: dict) -> None:
-    await ws.send_text(json.dumps(payload))
+    try:
+        await ws.send_text(json.dumps(payload))
+    except WebSocketDisconnect:
+        return
+    except RuntimeError as exc:
+        message = str(exc)
+        if "close message has been sent" in message or "websocket.close" in message.lower():
+            return
+        raise
 
 
 async def send_thread_map_widget(

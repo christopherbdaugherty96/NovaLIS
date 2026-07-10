@@ -4480,6 +4480,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
+    except RuntimeError as exc:
+        message = str(exc)
+        if "websocket is not connected" in message.lower():
+            log.info("WebSocket disconnected")
+        else:
+            log.exception("WS receive loop crashed - session will close")
     except Exception:
         log.exception("WS receive loop crashed — session will close")
     finally:
