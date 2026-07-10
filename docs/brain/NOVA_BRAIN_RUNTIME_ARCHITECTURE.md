@@ -155,7 +155,7 @@ Example:
   "task": "Prepare a morning brief",
   "relevant_preferences": ["prefers concise status first", "tracks AI news"],
   "active_projects": ["NovaLIS", "Auralis"],
-  "open_loops": ["Cap 16 search reliability", "Cap 64 P5 paused"],
+  "open_loops": ["Cap 16 search reliability", "morning observation logs"],
   "recent_receipts": [],
   "capability_limits": ["memory is not authority", "email is draft-only"]
 }

@@ -1,6 +1,6 @@
 # What Works Today
 
-Last reviewed: 2026-05-04
+Last reviewed: 2026-07-09 (capability lock rows synced to `python scripts/certify_capability.py status`)
 
 This page separates Nova's current surfaces by readiness level.
 
@@ -57,7 +57,7 @@ Latest proof packages:
 | Cost posture metadata | Implemented, visibility only | Registry capabilities carry `cost_posture` metadata and generated docs surface it. No runtime cost enforcement, quota blocking, or billing guard exists yet. |
 | Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, Brain runtime architecture, EnvironmentRequest schema, Task Clarifier, Task Understanding / Task Envelope planning scaffolds, planning-only RunManager, planning Run Preview, Search Evidence Synthesis, and a static Capability Contract catalog for Cap 16/63/64/65 exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live runtime contract lookup, Context Assembler, Intention Parser, Sandbox Boundary Enforcer, Persona Filter, Model Router, and project context engine remain future work. |
 | Screen capture / analysis | Experimental | Request-time capture exists, but the experience is still maturing. |
-| Email draft | Implemented, safety-limited, paused | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, call Gmail APIs, or send autonomously. Cap 64 live signoff is paused while conversation/search proof remains a priority. |
+| Email draft | Implemented, safety-limited, locked | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, call Gmail APIs, or send autonomously. Cap 64 is P1-P5 certification-locked (2026-05-20); locked = bounded, not expandable. |
 | OpenClaw execution surface | Advanced / constrained | A governed, constrained OpenClaw surface exists. Broad browser/computer-use expansion remains frozen until envelope issuance, real approval decisions, centralized execution guard, boundary detection, and receipts are complete. |
 | Action Receipts | Implemented, maturing UX | Visible receipt surface exists for governed-action outcomes. A fuller Trust Panel remains future work. |
 | Daily Brief MVP | Implemented, maturing UX | Deterministic on-demand session brief with session, memory, receipts, weather, calendar, email placeholder, continuity fields, and deterministic next-action recommendations. No execution authority, no LLM call, no background automation. Now wrapped in RoutineGraph v0 (Stage 6, PR #93). |
@@ -80,8 +80,8 @@ Latest proof packages:
 | One-click installer | Not implemented | Needed for broader adoption. |
 | Mainstream consumer onboarding | Not ready | Current setup expects a technical user. |
 | Broad autonomous execution | Intentionally limited | Not current product direction. |
-| Cap 64 live lock | Paused | Automated checks and confirmation-boundary proof are strong, but local mail-client live proof is intentionally paused until conversation/search proof is stronger. |
-| Cap 65 live lock | Blocked on credentials | Requires real Shopify credentials and read-only live proof before lock. |
+| Cap 64 live lock | Locked (2026-05-20) | P1-P5 passed, 113 tests. Remains local `mailto:` draft only — Nova never sends email autonomously. Locked = bounded, not expandable. |
+| Cap 65 live lock | Locked (2026-05-22) | P1-P5 passed with live credential-backed proof, 89 tests. Read-only Shopify intelligence only — no writes. Locked = bounded, not expandable. |
 
 ---
 

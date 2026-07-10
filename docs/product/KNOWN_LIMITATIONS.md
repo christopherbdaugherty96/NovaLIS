@@ -1,6 +1,6 @@
 # Known Limitations
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-07-09 (capability lock claims synced to `python scripts/certify_capability.py status`)
 
 This page exists to set honest expectations about Nova today.
 
@@ -20,12 +20,11 @@ This page exists to set honest expectations about Nova today.
 ## Current Gaps
 - Action Receipts and the Trust Receipts API exist, and the Trust page now renders receipts in the local-first proof pass. The full Trust Review Card / Trust Panel experience is still not complete.
 - Receipt rows can still be too technical when ledger payloads include capability IDs but not friendly capability names.
-- Cap 64 email draft still needs human P5 live signoff before lock. The latest proof reached the confirmation boundary; Nova opens a local draft only after confirmation and does not send email autonomously.
-- Cap 64 live signoff is paused while Cap 16 web-search answer quality and conversation coherence are the active sprint.
+- Cap 64 email draft is P1-P5 certification-locked (2026-05-20). Nova opens a local `mailto:` draft only after confirmation and does not send email autonomously. Locked = bounded, not expandable.
 - Current web searches can still hit CPU-budget friction. One live proof run returned `Execution exceeded allowed CPU budget`.
 - Follow-up coherence is improved but not finished; one Shopify follow-up drifted instead of answering the avoid/do-not-do question directly.
 - Weak search results now produce a low-evidence response, but answer quality still depends on search provider relevance.
-- Cap 65 Shopify intelligence still needs real credential-backed P5 live proof before lock; current Shopify support is read-only reporting.
+- Cap 65 Shopify intelligence is P1-P5 certification-locked (2026-05-22) with credential-backed live proof; Shopify support remains read-only reporting — no writes.
 - One-click installer is not finished.
 - Optional network/connector degradation, such as weather or news source issues, can make the UI look less healthy than the local runtime actually is.
 - The in-app Browser Use proof path was blocked in this environment by an invalid user-level `C:\Users\NovaUser\package.json`; Playwright screenshots were used as real proof captures instead.
