@@ -243,10 +243,24 @@ class ActionResult:
             "outcome_reason": str(self.outcome_reason or ""),
         }
 
+    def mark_audit_degraded(self, reason: str) -> "ActionResult":
+        """Record that the action outcome succeeded but audit persistence failed.
+
+        Preserves the original executor outcome (success, message, data) and only
+        changes the reported status to ``completed_degraded`` so a completed
+        external effect is never rewritten into failure or refusal, and is never
+        presented as an ordinary clean completion when its receipt did not persist.
+        """
+        self.status = "completed_degraded"
+        note = str(reason or "").strip()
+        if note:
+            self.outcome_reason = note
+        return self
+
     @staticmethod
     def _normalized_status(raw_status: str, *, success: bool) -> str:
         value = str(raw_status or "").strip().lower()
-        if value in {"completed", "failed", "refused"}:
+        if value in {"completed", "completed_degraded", "failed", "refused"}:
             return value
         return "completed" if success else "failed"
 
