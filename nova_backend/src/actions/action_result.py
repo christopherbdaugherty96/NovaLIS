@@ -49,6 +49,11 @@ class ActionResult:
     ledger_ref: Optional[str] = None
     outcome_reason: str = ""
 
+    # Audit-integrity metadata: set when a completion receipt fails to persist.
+    # Independent of the executor outcome so it can never contradict success/status.
+    audit_degraded: bool = False
+    audit_degraded_reason: str = ""
+
     def __post_init__(self) -> None:
         self.status = self._normalized_status(self.status, success=self.success)
         if not self.outcome_reason and not self.success:
@@ -241,20 +246,29 @@ class ActionResult:
             "capability_id": self.capability_id,
             "ledger_ref": str(self.ledger_ref or ""),
             "outcome_reason": str(self.outcome_reason or ""),
+            "audit_degraded": bool(self.audit_degraded),
+            "audit_degraded_reason": str(self.audit_degraded_reason or ""),
         }
 
     def mark_audit_degraded(self, reason: str) -> "ActionResult":
-        """Record that the action outcome succeeded but audit persistence failed.
+        """Record that the action's completion receipt failed to persist.
 
-        Preserves the original executor outcome (success, message, data) and only
-        changes the reported status to ``completed_degraded`` so a completed
-        external effect is never rewritten into failure or refusal, and is never
-        presented as an ordinary clean completion when its receipt did not persist.
+        Never contradicts the executor outcome:
+          - a SUCCESSFUL result becomes ``completed_degraded`` (the effect
+            happened but its receipt did not persist), so it is never presented
+            as an ordinary clean completion;
+          - a FAILED/REFUSED result keeps its original status and outcome_reason;
+            audit degradation is recorded only in the separate ``audit_degraded``
+            metadata, so a failure is never rewritten into a degraded success.
         """
-        self.status = "completed_degraded"
+        self.audit_degraded = True
         note = str(reason or "").strip()
         if note:
-            self.outcome_reason = note
+            self.audit_degraded_reason = note
+        if self.success:
+            self.status = "completed_degraded"
+            if note:
+                self.outcome_reason = note
         return self
 
     @staticmethod
