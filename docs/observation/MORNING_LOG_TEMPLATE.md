@@ -58,8 +58,8 @@ yes / no / no actions proposed
 
 -
 
-## 10. First unanswered question of the day
+## Optional: lingering question
 
-(What did I ask — of Nova or of myself — that Nova could not cover?)
+(Anything you asked — of Nova or yourself — that Nova couldn't cover. Skip freely.)
 
 -
