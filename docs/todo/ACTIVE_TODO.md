@@ -210,6 +210,12 @@ Next product input is >=7 real morning logs (docs/observation/), not
 another implementation lane.
 
 Deferred implementation lanes (accepted, reactivation requires morning evidence):
+  - Authorization integrity (correctness/security lane — first hardening lane after
+    observation; lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md):
+    Governor-owned single-use action-bound ApprovalGrant, no auth booleans in
+    capability params, timeout outcome_unknown state machine, effect/receipt
+    reconciliation, adversarial multi-session end-to-end tests. Runs on
+    correctness priority; does not preempt observation. LOCK ONLY, not started.
   - Runtime recovery and health truth
     (lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md):
     canonical health truth, timeout/degraded/unavailable status modeling,
