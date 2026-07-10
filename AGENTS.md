@@ -28,33 +28,34 @@ Nova's strongest differentiator is: governed local-first execution with visible 
 
 ## Active Direction
 
-Read these documents before starting any task:
+Read these documents before starting any task, in this order:
 
-- `.agent_context/current_priority.md` — active task and safety boundaries
-- `docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md` — post-audit
-  stabilization/productization sequencing
-- `docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md` — consolidated roadmap and
-  positioning update
+1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (authority ordering)
+2. `docs/status/DAILY_COMMAND_CENTER.md` — where the project is right now
+3. `.agent_context/current_priority.md` — active state and safety boundaries
+4. `docs/capability_verification/CAPABILITY_INVENTORY.md` — what verifiably works
+5. `docs/current_runtime/CURRENT_RUNTIME_STATE.md` — generated runtime truth
 
-Current priority order:
+Current active product state:
 
 ```text
-1. Approval gate wiring priority lock — scope the next execution-blocking lane cleanly
-2. Approval gate wiring — make approval flow genuinely execution-blocking after the reviewed lock exists
-3. Installer & bootstrap reliability
-4. Live workflow demonstrations
-5. CI stabilization
-6. Envelope execution completion
-7. Runtime cost enforcement
+Phase 3 observation period (since 2026-07-07).
+Engineering is frozen except for explicitly approved proof/truth-sync work
+and critical bugs.
+Next product input is >=7 real morning logs (docs/observation/), not another
+implementation lane.
+Runtime recovery remains historical/accepted context, deferred until
+observation evidence reactivates it.
 ```
 
 Not authorized without a separate reviewed priority lock:
 
 ```text
-UI simplification, Cap 64 P5, Google connector runtime work, Shopify writes,
-ElevenLabs implementation, OpenClaw expansion, browser/computer-use expansion,
-external writes, finance automation, social posting automation, autonomous workflow
-execution, multi-agent expansion, enterprise orchestration work.
+New implementation lanes, capability expansion, Google connector runtime work,
+Shopify writes, ElevenLabs implementation, OpenClaw expansion,
+browser/computer-use expansion, external writes, finance automation, social
+posting automation, autonomous workflow execution, multi-agent expansion,
+enterprise orchestration work.
 ```
 
 ---
@@ -62,35 +63,18 @@ execution, multi-agent expansion, enterprise orchestration work.
 ## Current Task Status
 
 ```text
-Runtime-doc regeneration — COMPLETE (2026-05-12).
-Second-pass review and roadmap sync — COMPLETE (2026-05-12).
-#141 live proof — COMPLETE (2026-05-14).
-Trust Panel MVP — COMPLETE / merged / live-proven (2026-05-15).
-Approval gate wiring priority lock — ACTIVE (2026-05-15).
-Next: review the lock, then implement approval gate wiring in a separate scoped branch.
+Phase 3 build lanes — COMPLETE (2026-07-07). Merged #262-#272, tagged
+  phase-3-complete. Live verification recorded in PR #273.
+Docs truth reconciliation — COMPLETE (2026-07-09). PRs #276-#283.
+Runtime proof harness — LANDED (2026-07-09, PR #284).
+  Run python scripts/prove_runtime_truth.py before every merge.
+Observation scaffold — LANDED (2026-07-09, PR #285).
+Current activity: log real mornings to docs/observation/YYYY-MM-DD.md.
+Do not select implementation work from any document dated before 2026-07-07
+  without checking docs/CANONICAL/07_ROADMAP_TRUTH.md first.
 ```
 
-Recent repo truth:
-
-```text
-PR #134 — Cap 16 governed_web_search certification locked.
-PR #144 — Everyday UX Friction workstream closed.
-PR #145 — Work Style Enforcement Lock merged.
-PR #146 — Creator-led Shopify/POD future model merged.
-PR #147 — Nova two-domain product direction merged.
-PR #148 — Piper-first voice direction merged.
-PR #149 — Current status / continuity synchronization merged.
-PR #150 — Audit-first safety boundary merged.
-PR #152 — Full repo/doc/code alignment audit artifacts merged.
-PR #153 — PASS4 OpenClaw freeform-goal inspection merged.
-PR #154 — OpenClaw PATCH A-D hardening merged.
-PR #156 — Search stopword cleanup merged.
-PR #157 — Post-audit continuity/status synchronization merged.
-PR #158 — Runtime-doc regeneration TODO tracking merged.
-PR #159 — Current priority/status synchronization merged.
-PR #167 — Trust Panel MVP receipt surface merged.
-PR #169 — Approval gate next-sequence correction merged.
-```
+For full merge-by-merge continuity, use `docs/status/CURRENT_WORK_STATUS.md`.
 
 Current grounded truth:
 
@@ -126,7 +110,8 @@ Read these before making brain/governance changes:
 - bypass GovernorMediator
 - treat memory as permission
 - claim conceptual docs are implemented runtime behavior
-- mark Cap 64 or Cap 65 complete without live proof
+- treat Cap 64/65 certification locks (both P1-P5 locked, 2026-05) as permission
+  to expand scope — locked means bounded, not expandable
 - add Shopify writes or email sending under existing read/draft capabilities
 
 ## Repo Truth Rule
