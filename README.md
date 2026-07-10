@@ -93,7 +93,8 @@ Current proof verdict:
 
 ```text
 Governance paths are now strongly evidenced for the current confirmation-bound scope.
-Everyday live-session reliability under concurrent load remains the active workstream.
+Everyday live-session reliability workstream closed 2026-05-19 (75% -> 97% pass, 0 timeouts).
+Current active state is the Phase 3 observation period (see Current active task below).
 Nova is not yet a finished consumer product.
 ```
 
@@ -107,10 +108,10 @@ Current grounded status:
 - bounded execution infrastructure exists
 - active runtime capabilities exist
 - active != certified != locked
-- Cap 16 web search is certification-locked
-- Cap 22 file-folder access is approval-gate certified for current scope, not P1-P5 locked
-- Cap 64 email draft is approval-gate certified for current scope and remains local mailto draft only
-- Cap 65 Shopify intelligence remains read-only, not Shopify writes
+- Cap 16 web search is P1-P5 certification-locked (2026-05-10)
+- Cap 22 file-folder access is P1-P5 certification-locked (2026-05-20)
+- Cap 64 email draft is P1-P5 certification-locked (2026-05-20) and remains local mailto draft only
+- Cap 65 Shopify intelligence is P1-P5 certification-locked (2026-05-22), read-only, not Shopify writes
 - OpenClaw exists as runtime code with bounded/manual-first execution surfaces
 - PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
 - PR #206 merged a real live-user simulation baseline
