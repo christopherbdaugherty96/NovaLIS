@@ -232,7 +232,7 @@ NEWS_RE = re.compile(
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
-    r"^\s*(?:calendar|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what do i have tomorrow|what(?:'s| is) on today|what(?:'s| is) on tomorrow|todays schedule|today's schedule|tomorrows schedule|tomorrow's schedule|todays calendar|today's calendar|tomorrows calendar|tomorrow's calendar|upcoming schedule|upcoming calendar|upcoming events|show upcoming events|coming up|what(?:'s| is) coming up|my upcoming schedule|this week|this week(?:'s)? schedule|this week(?:'s)? calendar|agenda (?:for )?today|agenda (?:for )?tomorrow|what(?:'s| is) on (?:my )?calendar(?: (?:today|tomorrow))?|what(?:'s| is) on (?:my )?schedule(?: (?:today|tomorrow))?)\s*$",
+    r"^\s*(?:calendar|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what do i have tomorrow|what(?:'s| is) on today|what(?:'s| is) on tomorrow|todays schedule|today's schedule|tomorrows schedule|tomorrow's schedule|todays calendar|today's calendar|tomorrows calendar|tomorrow's calendar|upcoming schedule|upcoming calendar|upcoming events|show upcoming events|coming up|what(?:'s| is) coming up|my upcoming schedule|this week|this week(?:'s)? schedule|this week(?:'s)? calendar|agenda (?:for )?today|agenda (?:for )?tomorrow|what(?:'?s| is) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) on (?:today'?s?|tomorrow'?s?) (?:calendar|schedule))\s*$",
     re.IGNORECASE,
 )
 SYSTEM_RE = re.compile(
