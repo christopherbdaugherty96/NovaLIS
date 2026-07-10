@@ -106,7 +106,7 @@ Rules:
 - Locks define reviewed scope; they are not execution authority by themselves.
 - Keep active, certified, and locked status distinct.
 
-Linked files (358):
+Linked files (359):
 
 - [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
 - [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
@@ -200,6 +200,7 @@ Linked files (358):
 - [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
 - [[docs/PROOFS/governance-tests/governance_baseline.py|governance_baseline - PROOFS/governance-tests]]
 - [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
+- [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
 - [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCK.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]]
 - [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCKphase3.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]]
 - [[docs/PROOFS/Operator-Journeys/CAP22_OPEN_FILE_FOLDER_OPERATOR_JOURNEY|Cap 22 Open File / Folder Operator Journey]]
@@ -1120,5 +1121,5 @@ Linked files (160):
 
 ## Reference / Unclassified
 
-1096 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
+1100 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
 Use the broad browsing maps for those files; do not treat this fallback as an authority tier.

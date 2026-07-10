@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (153)
+## governance (155)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -63,6 +63,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/test_governor_fail_closed.py|test_governor_fail_closed]]
 - [code] [[nova_backend/tests/test_governor_mediator_phase4_capabilities.py|test_governor_mediator_phase4_capabilities]]
 - [code] [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
+- [code] [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
 - [code] [[nova_backend/tests/simulation/test_governor_safety_simulation.py|test_governor_safety_simulation]]
 - [code] [[nova_backend/tests/governance/test_ledger_only_governor_logs_actions.py|test_ledger_only_governor_logs_actions]]
 - [code] [[nova_backend/tests/governance/test_legacy_bypass_surfaces_removed.py|test_legacy_bypass_surfaces_removed]]
@@ -117,6 +118,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/GOVERNANCE_MATRIX_TREE|GOVERNANCE_MATRIX_TREE]]
 - [doc] [[future/governed_desktop_runs/README|Governed Desktop Runs]]
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
+- [doc] [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
 - [doc] [[docs/PROOFS/Phase-4/Governor_Spine_Authority_Proof|Governor Spine Authority Proof]]
 - [doc] [[docs/PROOFS/phase 3.5-4/GOVERNOR_BYPASS_PROOF|GOVERNOR_BYPASS_PROOF]]
 - [doc] [[docs/PROOFS/Phase-4/GovernorMediator_Parser_Proof|GovernorMediator Parser Proof]]
@@ -577,7 +579,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (816)
+## testing (818)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -795,6 +797,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/test_governor_fail_closed.py|test_governor_fail_closed]]
 - [code] [[nova_backend/tests/test_governor_mediator_phase4_capabilities.py|test_governor_mediator_phase4_capabilities]]
 - [code] [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
+- [code] [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
 - [code] [[nova_backend/tests/simulation/test_governor_safety_simulation.py|test_governor_safety_simulation]]
 - [code] [[nova_backend/tests/phase45/test_health_check_cache_and_hydration.py|test_health_check_cache_and_hydration]]
 - [code] [[nova_backend/tests/adversarial/test_import_surface_integrity.py|test_import_surface_integrity]]
@@ -1142,6 +1145,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/governed_desktop_runs/TEST_PLAN|Governed Desktop Runs — Test Plan]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/GOVERNED_WEB_SEARCH_PROOF_2026-05-07|Governed Web Search Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
+- [doc] [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
 - [doc] [[docs/PROOFS/Phase-4/Governor_Spine_Authority_Proof|Governor Spine Authority Proof]]
 - [doc] [[docs/PROOFS/phase 3.5-4/GOVERNOR_BYPASS_PROOF|GOVERNOR_BYPASS_PROOF]]
 - [doc] [[docs/PROOFS/Phase-4/GovernorMediator_Parser_Proof|GovernorMediator Parser Proof]]

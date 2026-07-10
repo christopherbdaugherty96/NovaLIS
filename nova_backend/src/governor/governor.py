@@ -382,15 +382,26 @@ class Governor:
                     completion_metadata,
                 )
             except LedgerWriteFailed:
-                pass
+                # The completion receipt did not persist. Flag audit degradation
+                # without ever contradicting the executor outcome: a successful
+                # effect becomes completed_degraded (never a clean success), and a
+                # failed/refused result keeps its original status and reason.
+                result.mark_audit_degraded(
+                    "Completion receipt failed to persist; action outcome unchanged."
+                )
 
             return result
 
         except TimeoutError:
+            # The execution boundary stops waiting, but a worker thread that has
+            # already started cannot be force-cancelled — the effect may still
+            # complete. Report the honest state (outcome unknown), never "cancelled".
             return self._normalize_action_result(
                 ActionResult.refusal(
-                    "The request took too long and was cancelled.",
+                    "The request timed out; its final outcome could not be verified. "
+                    "Do not retry until the status is checked.",
                     request_id=req.request_id,
+                    outcome_reason="timed_out_outcome_unknown",
                 ),
                 capability_id=req.capability_id,
                 request_id=req.request_id,

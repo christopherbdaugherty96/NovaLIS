@@ -42,7 +42,7 @@ tests that pair by filename — so you can see the whole blast radius.
 - [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-- _…and 38 more_
+- _…and 39 more_
 
 ## `agents` (11 files)
 
@@ -406,6 +406,7 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
 - [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
+- [[scripts/prove_runtime_truth.py|prove_runtime_truth]]
 
 ## `brief` (6 files)
 
@@ -999,7 +1000,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
-- _…and 82 more_
+- _…and 84 more_
 
 ### Tests
 
@@ -1111,7 +1112,7 @@ _GOVERNED_ACTIONS_ENABLED as GOVERNED_ACTIONS_ENABLED,_
 - [[nova_backend/tests/governance/test_model_network_mediator_concurrency.py|test_model_network_mediator_concurrency]]
 - [[nova_backend/tests/governance/test_model_network_mediator_thread_safety.py|test_model_network_mediator_thread_safety]]
 - [[nova_backend/tests/governance/test_streaming_llm_fallback.py|test_streaming_llm_fallback]]
-- _…and 4 more_
+- _…and 5 more_
 
 ## `memory` (5 files)
 

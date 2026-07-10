@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "novalis"
-version = "0.4.0"
+# Keep in sync with the "Version 0.5 Alpha" identity in README.md.
+version = "0.5.0"
 description = "Nova — governed local assistant with memory and transparent execution."
 readme = "README.md"
 license = { file = "LICENSE" }

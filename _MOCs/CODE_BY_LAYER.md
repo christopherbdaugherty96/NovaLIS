@@ -621,7 +621,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (449)
+## Tests and verification (450)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1405,6 +1405,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_volume_media_brightness_parsing():
 - [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
   summary: def test_parse_speak_that_invocation():
+- [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
+  summary: Truthful-outcome reporting tests (PR: fix/truthful-outcome-reporting).
 - [[nova_backend/tests/test_landing_page.py|test_landing_page]]
   summary: def test_landing_page_route_returns_product_preview():
 - [[nova_backend/tests/test_ledger_event_allowlist.py|test_ledger_event_allowlist]]
@@ -1565,7 +1567,7 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (23)
+## Scripts and automations (24)
 
 - [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -1603,6 +1605,8 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [[scripts/phase35_gates.ps1|phase35_gates]]
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
+- [[scripts/prove_runtime_truth.py|prove_runtime_truth]]
+  summary: Structural runtime smoke proof for Nova.
 - [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
 - [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]

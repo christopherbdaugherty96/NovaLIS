@@ -1012,7 +1012,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: de827e49149e4247297f813d6dbe8469b606076a4aa68f7ace64e60dd84686b3
+  summary: Runtime Fingerprint: b1a769d6c948668f4660a06023cd01e4d3f37655ddc817fff76b936d12f15d9b
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -1038,7 +1038,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: f6037e2e654f955d4585439ffca1c1c5818ba02ebbf7d765b0a9dfca377d061d
+  summary: - runtimesurfacehash: d43c3abcc0a698adffa99a1ec105dbcaae5f1cac0701de57c1f96ed67c9b624d
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1113,7 +1113,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (11 docs, 449 code)
+## Tests (11 docs, 450 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1897,6 +1897,8 @@ concern is reflected across docs, code and tests.
   summary: def test_volume_media_brightness_parsing():
 - [code] [[nova_backend/tests/test_governor_mediator_tts.py|test_governor_mediator_tts]]
   summary: def test_parse_speak_that_invocation():
+- [code] [[nova_backend/tests/test_governor_outcome_truthfulness.py|test_governor_outcome_truthfulness]]
+  summary: Truthful-outcome reporting tests (PR: fix/truthful-outcome-reporting).
 - [code] [[nova_backend/tests/test_landing_page.py|test_landing_page]]
   summary: def test_landing_page_route_returns_product_preview():
 - [code] [[nova_backend/tests/test_ledger_event_allowlist.py|test_ledger_event_allowlist]]
@@ -2017,7 +2019,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[verification/README_verification|**README_verification.md** - verification]]
   summary: Purpose: Verify constitutional compliance without expanding capability
 
-## Scripts and tools (4 docs, 23 code)
+## Scripts and tools (4 docs, 24 code)
 
 - [code] [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -2055,6 +2057,8 @@ concern is reflected across docs, code and tests.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [code] [[scripts/phase35_gates.ps1|phase35_gates]] - Phase 35
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
+- [code] [[scripts/prove_runtime_truth.py|prove_runtime_truth]]
+  summary: Structural runtime smoke proof for Nova.
 - [code] [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
 - [code] [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
@@ -2107,7 +2111,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (237 docs, 24 code)
+## Proofs (238 docs, 24 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -2180,6 +2184,8 @@ concern is reflected across docs, code and tests.
   summary: Branch: proof/everyday-ux-friction-slice-1-verification
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
   summary: Governor Bypass Proof Document
+- [doc] [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
+  summary: Status: MAP ONLY — this document classifies existing evidence. It moves, renames, and deletes
 - [doc] [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCK.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]]
   summary: clean, minimal, authoritative ENVIRONMENTLOCK.md you can paste directly into:
 - [doc] [[docs/PROOFS/LOCKED/ENVIRONMENT_LOCKphase3.md.txt|ENVIRONMENT_LOCK.md - PROOFS/LOCKED]] - Phase 3
@@ -2627,7 +2633,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (571 docs, 41 code)
+## Reference (573 docs, 41 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2709,7 +2715,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[.agent_context/brain_loop|Brain Loop Context]]
   summary: Nova's proposed Brain loop is:
 - [doc] [[.agent_context/current_priority|Current Priority]]
-  summary: Current active lane:
+  summary: Current active product state:
 - [doc] [[.agent_context/environments|Environment Context]]
   summary: Nova's Brain should reason about environments before execution.
 - [doc] [[.agent_context/governance|Governance Context]]
@@ -2955,7 +2961,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/capability_verification/README|docs/capability_verification — Live verification]]
   summary: This folder holds live pass/fail checks against a running build — the strongest "does it
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
-  summary: Updated: 2026-04-28
+  summary: Updated: 2026-07-09 (synced to python scripts/certifycapability.py status: 4/27 locked — Cap 16, 22, 64, 65)
 - [doc] [[docs/claude_prompts/CLAUDE_NOVA_EXPANSION_PROMPT|Claude Nova Expansion Prompt]]
   summary: Use this prompt when improving NovaLIS in future sessions.
 - [doc] [[docs/claude_prompts/README|Claude Prompts]]
@@ -3348,6 +3354,10 @@ concern is reflected across docs, code and tests.
   summary: This folder holds dated milestone / completion reports for the personality layer (Phase 1–3
 - [doc] [[docs/nova-conversation-response-contract|Nova Conversation Response Contract]]
   summary: Branch: docs/nova-conversation-response-contract
+- [doc] [[docs/observation/MORNING_LOG_TEMPLATE|Morning Log — YYYY-MM-DD]]
+  summary: Short honest answers. "Nothing" and "n/a" are valid answers. -->
+- [doc] [[docs/observation/README|docs/observation — Morning observation logs]]
+  summary: Status: ACTIVE — this is the current phase's primary evidence stream.
 - [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
   summary: Status: planning document
 - [doc] [[docs/product/AURALIS_INTERFACE_PLAN|Auralis Interface Plan]]
@@ -3355,7 +3365,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/product/CAPABILITY_MATURITY|Capability Maturity Model]]
   summary: Use this model to describe capabilities more honestly than a simple enabled/disabled state.
 - [doc] [[docs/product/CAPABILITY_SIGNOFF_MATRIX|Capability Signoff Matrix]]
-  summary: Last reviewed: 2026-04-28
+  summary: Last reviewed: 2026-07-09 (synced to python scripts/certifycapability.py status: 4/27 locked — Cap 16, 22, 64, 65)
 - [doc] [[docs/product/COHERENCE_AUDIT_2026-04-28|Nova Coherence Audit — 2026-04-28]]
   summary: Scope: Full repo — docs, design plans, future-vision files, memory/conversation model,
 - [doc] [[docs/product/CONVERSATION_AND_MEMORY_MODEL|Conversation and Memory Model]]
@@ -3375,7 +3385,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE|Governed Workflow Workspace Architecture]]
   summary: Status: product / architecture planning note; not generated runtime truth
 - [doc] [[docs/product/KNOWN_LIMITATIONS|Known Limitations]]
-  summary: Last reviewed: 2026-04-29
+  summary: Last reviewed: 2026-07-09 (capability lock claims synced to python scripts/certifycapability.py status)
 - [doc] [[docs/product/NOVA_OPERATING_MODEL|Nova Operating Model]]
   summary: Governed AI for daily life and small-business workflows.
 - [doc] [[docs/product/NOVA_PRODUCTIZATION_PLAN_2026-04-28|Nova Productization Plan]]
@@ -3417,7 +3427,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/product/visual_proof|NovaLIS Visual Proof]]
   summary: These screenshots show real Nova UI surfaces from a running local instance.
 - [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
-  summary: Last reviewed: 2026-05-04
+  summary: Last reviewed: 2026-07-09 (capability lock rows synced to python scripts/certifycapability.py status)
 - [doc] [[docs/product/WHY_NOVA|Why Nova]]
   summary: Nova exists because useful AI should not require unchecked authority.
 - [doc] [[docs/README|NovaLIS Docs]]
@@ -3493,7 +3503,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/reference/HUMAN_GUIDES/CURRENT_STAGE_GUIDE|Current Stage Guide — Stages 3, 4, 5, and 6]]
   summary: Updated: 2026-05-03
 - [doc] [[docs/reference/HUMAN_GUIDES/README|Nova Human Guides]]
-  summary: Updated: 2026-05-02
+  summary: Updated: 2026-07-09 (demoted to historical/explanatory)
 - [doc] [[docs/reference/inactive/README|Inactive Reference Packets]]
   summary: Updated: 2026-04-12
 - [doc] [[docs/reference/INTRODUCTION|Introduction To Nova]]
@@ -3607,7 +3617,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
   summary: This folder holds actionable task lists only. No wishlists, no design docs, no strategy.
 - [doc] [[docs/todo/SHOPIFY_SETUP_TODO|Shopify Setup TODO]]
-  summary: Status: active setup checklist for Cap 65 live signoff
+  summary: Status: historical setup checklist (Cap 65 live signoff completed and locked 2026-05-22)
 - [doc] [[docs/todo/TECH_DEBT|Technical Debt — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/WORKFLOW_AI_TOOLING|AI Tooling Workflow]]
@@ -3819,7 +3829,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[SECURITY|SECURITY]]
   summary: ﻿# Security Policy
 - [doc] [[START_HERE|Start Here - .]]
-  summary: Last reviewed: 2026-05-03
+  summary: Last reviewed: 2026-07-09
 - [doc] [[TODO|Nova TODO]]
   summary: Updated: 2026-04-28
 - [doc] [[tools/youtubelis/docs/CONTENT_STRATEGY|Content Strategy (YouTubeLIS)]]
