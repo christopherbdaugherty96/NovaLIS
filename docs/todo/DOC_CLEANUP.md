@@ -22,16 +22,14 @@ Not auto-fixed: the stale file is outside `docs/` and is runtime-adjacent govern
 Codex may edit. Generated runtime truth (PARTIAL) is authoritative; someone with runtime context
 should reconcile `NovaLIS-Governance/STATUS.md`.
 
-### Cap 65 lock status conflict — NEEDS HUMAN DECISION (found 2026-07-08)
+### Cap 65 lock status conflict — RESOLVED BY EVIDENCE (2026-07-09)
 
-Living docs disagree on whether Cap 65 is locked:
-- `docs/status/CURRENT_WORK_STATUS.md` — "certified and locked (2026-05-22), read-only" (x4).
-- `docs/product/WHAT_WORKS_TODAY.md` line 84 — "Cap 65 live lock: Blocked on credentials".
-- `docs/todo/SHOPIFY_SETUP_TODO.md` — "not locked until P5 live signoff passes".
-
-Generated runtime truth shows Cap 65 ACTIVE but does not encode lock state (active ≠ locked), so
-it cannot resolve this. A neutral banner was added to `SHOPIFY_SETUP_TODO.md`; the underlying
-capability-truth reconciliation needs a human call and must not be guessed.
+The disagreement was never two competing truths: mechanical lock truth
+(`nova_backend/src/config/capability_locks.json` + `python scripts/certify_capability.py status`)
+records Cap 65 as P1-P5 LOCKED (2026-05-22, read-only), matching `CURRENT_WORK_STATUS.md`.
+The dissenting docs (`WHAT_WORKS_TODAY.md` reviewed 2026-05-04, `SHOPIFY_SETUP_TODO.md`)
+simply predated the lock. No human call was needed — the certify script answers it.
+Both stale docs synced in the 2026-07-09 capability lock-truth sync PR.
 
 ### Archive folder headers — DONE (2026-07-08)
 
@@ -58,9 +56,8 @@ clearly safer:
 
 - Add roadmap pointers to `docs/INDEX.md`, `docs/FULL_DOCUMENTATION_MAP.md`,
   `docs/future/README.md`, and `docs/todo/README.md`.
-- Update or retire stale `docs/todo/SHOPIFY_SETUP_TODO.md`; it still describes
-  Cap 65 P5 as blocked even though current repo truth says Cap 65 is locked
-  read-only.
+- ~~Update or retire stale `docs/todo/SHOPIFY_SETUP_TODO.md`~~ — DONE 2026-07-09:
+  superseded banner states Cap 65 locked; file kept as historical setup procedure.
 - Delete or deprecation-banner `docs/design/ui_backend_contract.md`; it is
   boilerplate example API content, not a real UI/backend contract.
 - Banner or rename `docs/Audit BackLog(active)/New-Audit-and-Issues.md` as
