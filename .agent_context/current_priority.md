@@ -1,8 +1,55 @@
 # Current Priority
 
-## Runtime Recovery And Health Truth - 2026-06-17
+## Phase 3 Observation Period - 2026-07-09
 
-Current active lane:
+Current active product state:
+
+```text
+Phase 3 observation period.
+Engineering is frozen except for explicitly approved proof/truth-sync work
+and critical bugs.
+Next product input is >=7 real morning logs, not another implementation lane.
+Runtime recovery remains historical/accepted context, deferred until
+observation evidence reactivates it.
+```
+
+What agents should do:
+
+```text
+1. Read docs/CANONICAL/00_INDEX.md for truth ordering.
+2. Read docs/status/DAILY_COMMAND_CENTER.md for where the project is.
+3. Do NOT select implementation work from this file's historical sections
+   or from any pre-2026-07-07 priority/status doc.
+4. Verify capability lock truth mechanically:
+   python scripts/certify_capability.py status
+   (Cap 16, 22, 64, 65 = LOCK as of 2026-07-09.)
+5. Verify runtime truth mechanically:
+   python scripts/prove_runtime_truth.py
+```
+
+Observation protocol: `docs/observation/README.md`. Roadmap ordering authority:
+`docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` via
+`docs/CANONICAL/07_ROADMAP_TRUTH.md`.
+
+Deferred (accepted, not cancelled — reactivation requires morning evidence):
+
+```text
+Runtime recovery and health truth lane
+  (lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md)
+Second Brain Slice 1 implementation
+  (lock: docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1.md)
+```
+
+---
+
+# HISTORICAL CONTEXT BELOW — superseded 2026-07-09
+
+Everything below this line is preserved history. It describes lanes and
+priorities as they stood before Phase 3 closed. Do not select work from it.
+
+## Runtime Recovery And Health Truth - 2026-06-17 (superseded)
+
+Active lane at the time:
 
 ```text
 Runtime recovery and health truth.
