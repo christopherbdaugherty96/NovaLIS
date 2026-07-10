@@ -41,13 +41,15 @@ See:
 
 ## Start Here
 
-Current truth first (authority order):
+Current truth first (recommended reading order):
 
 1. [Canonical Truth Index](docs/CANONICAL/00_INDEX.md) — how to read repo truth
 2. [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md) — where the project is right now
 3. [Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md) — what verifiably works
 4. [Product Definition](docs/product/PRODUCT_DEFINITION.md) — identity, mission, phases
 5. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) — generated runtime truth
+
+For runtime-existence claims, generated runtime docs win; CANONICAL explains how to resolve conflicts.
 
 Then the human onboarding path:
 
