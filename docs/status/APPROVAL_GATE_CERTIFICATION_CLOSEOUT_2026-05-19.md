@@ -1,5 +1,10 @@
 # Approval Gate Certification Closeout — 2026-05-19
 
+> **Historical closeout — lock truth below is as of 2026-05-19 and is now superseded.**
+> Cap 22 and Cap 64 locked 2026-05-20; Cap 65 locked 2026-05-22. Current lock truth:
+> `python scripts/certify_capability.py status` (4/27 locked: 16, 22, 64, 65).
+> The certification decision itself stands; only the "not locked" snapshot lines are dated.
+
 Status:
 
 ```text

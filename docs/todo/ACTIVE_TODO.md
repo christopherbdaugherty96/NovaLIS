@@ -33,7 +33,8 @@ PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEF
   Item engine only after those.
 
   Not authorized (unchanged, 2026-06-18 boundary): capability expansion, Shopify writes,
-  posting, external writes, browser/OpenClaw expansion, scheduler/background loops,
+  posting, external writes, browser/OpenClaw expansion, scheduler/background-loop
+  expansion outside the existing explicit narrow governed scheduler carve-out,
   capability_locks.json changes, autonomous execution.
 
 Second Brain Slice 1 lock remains ACCEPTED, deferred (roadmap H13).
@@ -204,14 +205,18 @@ Second Brain Slice 1 priority lock is accepted.
 Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
-Next authorized implementation PR:
-  - Runtime recovery and health truth:
+Current active state: Phase 3 observation period (2026-07-07).
+Next product input is >=7 real morning logs (docs/observation/), not
+another implementation lane.
+
+Deferred implementation lanes (accepted, reactivation requires morning evidence):
+  - Runtime recovery and health truth
+    (lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md):
     canonical health truth, timeout/degraded/unavailable status modeling,
     stuck-response recovery affordances, Trust explanation of product failures,
     and tests proving stale/timeout health cannot be shown as Normal.
-
-Second Brain Slice 1 remains accepted but deferred:
-  - schema/parser/wikilink/vault lint/no-mutation tests only
+  - Second Brain Slice 1:
+    schema/parser/wikilink/vault lint/no-mutation tests only
 ```
 
 Important boundary:
