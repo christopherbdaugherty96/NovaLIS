@@ -1,6 +1,6 @@
 # Capability Signoff Matrix
 
-Last reviewed: 2026-04-28
+Last reviewed: 2026-07-09 (synced to `python scripts/certify_capability.py status`: 4/27 locked — Cap 16, 22, 64, 65)
 
 This is a human-facing snapshot of capability proof status.
 
@@ -30,8 +30,8 @@ Generated runtime docs remain the authority for exact active capability surface.
 
 | Capability | Current Status | Human Truth |
 |---|---|---|
-| Cap 64 — `send_email_draft` | P1–P4 passed; P5 ready for human | Opens a local `mailto:` draft after confirmation. Nova does not use SMTP, access an inbox, or send email autonomously. Human must review and send manually. |
-| Cap 65 — `shopify_intelligence_report` | P1–P4 passed; P5 blocked on credentials | Read-only Shopify reporting/intelligence. Requires `NOVA_SHOPIFY_SHOP_DOMAIN` and `NOVA_SHOPIFY_ACCESS_TOKEN`. No product/order/customer writes, fulfillment, refunds, or customer messaging. |
+| Cap 64 — `send_email_draft` | Locked (P1–P5 passed, 2026-05-20) | Opens a local `mailto:` draft after confirmation. Nova does not use SMTP, access an inbox, or send email autonomously. Human must review and send manually. Locked = bounded, not expandable. |
+| Cap 65 — `shopify_intelligence_report` | Locked (P1–P5 passed, 2026-05-22) | Read-only Shopify reporting/intelligence, live credential-backed proof recorded. No product/order/customer writes, fulfillment, refunds, or customer messaging. Locked = bounded, not expandable. |
 | Action Receipts / trust receipts | Implemented, maturing UX | Visible receipt surface and `/api/trust/receipts` exist. Fuller Trust Panel remains future work. |
 | Memory / continuity | Implemented, evolving UX | Supports continuity and reasoning context. Memory is not authority and cannot bypass governance. |
 | Scheduler / background loop | Gated / bounded where present | Must remain settings-controlled, permissioned, capped, and unable to bypass governance. Not broad hidden autonomy. |
@@ -40,20 +40,13 @@ Generated runtime docs remain the authority for exact active capability surface.
 
 ## Current Human Signoff Queue
 
-1. **Cap 64 P5 live signoff**
-   - Run Nova locally with a configured mail client.
-   - Follow `docs/capability_verification/live_checklists/cap_64_send_email_draft.md`.
-   - Confirm the local draft opens.
-   - Confirm no email is sent automatically.
-   - Confirm `EMAIL_DRAFT_CREATED` appears in trust receipts.
-   - Only then run live-signoff and lock commands.
+The queue is empty. Cap 64 and Cap 65 both completed P5 live signoff and locked
+(2026-05-20 and 2026-05-22; closeout: `docs/status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md`
+and Cap 65 evidence recorded in `docs/status/CURRENT_WORK_STATUS.md`).
 
-2. **Cap 65 P5 live signoff**
-   - Use a Shopify developer or test store first.
-   - Set `NOVA_SHOPIFY_SHOP_DOMAIN` and `NOVA_SHOPIFY_ACCESS_TOKEN` in the same shell that starts Nova.
-   - Follow `docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report.md`.
-   - Confirm read-only behavior.
-   - Only then run live-signoff and lock commands.
+The historical checklists remain at
+`docs/capability_verification/live_checklists/` as the procedure record. Re-running
+them requires a new P1-P5 lock decision — locks are not reopened casually.
 
 ---
 
@@ -61,10 +54,8 @@ Generated runtime docs remain the authority for exact active capability surface.
 
 Do not say:
 - Cap 64 sends email.
-- Cap 64 is P5 complete before human local proof.
-- Cap 64 is locked before certification proves it.
 - Cap 65 writes to Shopify.
-- Cap 65 is P5 complete without real credentials and live proof.
+- A lock authorizes scope expansion (locked = bounded, not expandable).
 - Action Receipts equal a complete Trust Panel.
 - Memory can authorize actions.
 - Scheduler equals broad autonomy.

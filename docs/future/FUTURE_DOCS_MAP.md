@@ -14,25 +14,14 @@ bridge**, not a promotion. Listing a doc here does not add it to any active lane
   `docs/future/` not referenced by the roadmap is design reference, de-prioritized until a lane
   pulls it in. This map records that status; it does not change it.
 
-## Known path issue — capital `docs/Future/` split
+## Path note — capital `docs/Future/` split (RESOLVED)
 
-The filenames in the tables below are written without a directory prefix. On Windows
-(case-insensitive) they all resolve inside one folder, but **the repo actually tracks some of
-them under capital `docs/Future/`** due to a pre-existing case split (introduced by commit
-`fd9ba33`). On a case-sensitive checkout (Linux / GitHub / CI) those live under `docs/Future/`,
-not `docs/future/`. Entries in this map currently tracked under capital `docs/Future/`:
-
-- `PERSONALITY_*` (all 8: ARCHITECTURE, DESIGN_PROMPT, GOVERNANCE_AUDIT, GOVERNANCE_AUDIT_v2,
-  IMPLEMENTATION_PLAN, IMPLEMENTATION_PLAN_AUDIT, LIVE_WIRING_DESIGN_SCOPE, PHASE_3_DESIGN_SCOPE)
-- `PHASE_2_DESIGN_SCOPE.md`
-- `RJ_PRINT_GOVERNED_PRODUCTION_TICKET_PLAN.md`
-- `NOVA_GOVERNED_AUTONOMY_DIRECTION_2026-05-11.md`
-- `FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22.md`
-- the entire `ai_ecosystem_operating_model/` tree
-
-Normalizing all 45 capital-`docs/Future/` paths to lowercase is a separate, tracked cleanup pass
-(it is not done here). Until then, treat a bare filename in this map as "in the future tree,
-possibly under `docs/Future/`."
+A pre-existing case split (introduced by commit `fd9ba33`) once tracked 45 of these files under
+capital `docs/Future/` — invisible on Windows, two directories on case-sensitive checkouts.
+**Resolved by PR #281 (2026-07-09, merge `152e366e`): all 45 paths normalized to lowercase.**
+Every bare filename in this map now lives under `docs/future/`. (Historical docs and evidence
+snapshots may still mention the old capital path; those references are history, not current
+layout.)
 
 ## Status legend
 
