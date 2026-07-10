@@ -648,7 +648,7 @@ Status:
 merged — PR #192
 ```
 
-Result:
+Result (status as of PR #192; Cap 64 later locked 2026-05-20):
 
 ```text
 added docs/PROOFS/Operator-Journeys/CAP64_EMAIL_DRAFT_OPERATOR_JOURNEY.md
@@ -991,16 +991,21 @@ Current sequence:
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Next lane is Runtime recovery and health truth.
-10. This priority lock does not implement that lane.
-11. The future implementation PR scope is canonical health truth,
+9. Current active state is the Phase 3 observation period (2026-07-07).
+   Next product input is >=7 real morning logs (docs/observation/), not
+   another implementation lane.
+10. Runtime recovery and health truth remains accepted/deferred pending
+    morning evidence (lock:
+    docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md).
+    Its scope, when reactivated, is canonical health truth,
     timeout/degraded/unavailable status modeling, stuck-response recovery,
     Trust explanation of product failures, and tests proving stale/timeout
     health cannot be shown as Normal.
-12. Second Brain Slice 1 remains accepted but deferred behind recovery.
-13. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
-    execution integration, scheduler, OpenClaw integration, or capability
-    expansion.
+11. Second Brain Slice 1 remains accepted but deferred behind observation.
+12. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
+    execution integration, OpenClaw integration, or capability expansion.
+    No scheduler/background-loop expansion outside the existing explicit
+    narrow governed scheduler carve-out.
 
 Historical May 26 sequence:
 

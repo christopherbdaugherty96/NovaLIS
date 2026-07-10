@@ -182,7 +182,7 @@ GovernorMediator changes
 Shopify writes or commerce mutation
 OpenClaw integration or expansion
 browser/computer-use expansion
-scheduler or background loops
+scheduler/background-loop expansion outside the existing explicit narrow governed carve-out
 external writes
 memory promotion
 Second Brain implementation (deferred behind active lane)

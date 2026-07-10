@@ -40,19 +40,26 @@ See:
 - [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
 
 ## Start Here
-1. [Start Here](START_HERE.md)
-2. [Quickstart](QUICKSTART.md)
-3. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
-4. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-5. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
-6. [Nova Brain](docs/brain.md)
-7. [Brain Architecture Package](docs/brain/README.md)
-8. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
-9. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
-11. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
-12. [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
-13. [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
+
+Current truth first (authority order):
+
+1. [Canonical Truth Index](docs/CANONICAL/00_INDEX.md) — how to read repo truth
+2. [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md) — where the project is right now
+3. [Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md) — what verifiably works
+4. [Product Definition](docs/product/PRODUCT_DEFINITION.md) — identity, mission, phases
+5. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) — generated runtime truth
+
+Then the human onboarding path:
+
+6. [Start Here](START_HERE.md)
+7. [Quickstart](QUICKSTART.md)
+8. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
+9. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
+10. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
+11. [Nova Brain](docs/brain.md)
+12. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
+13. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+14. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
@@ -123,9 +130,9 @@ For exact generated runtime truth, use [Current Runtime State](docs/current_runt
 
 For current human-readable work continuity, including the current active task, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
 
-For the post-audit stabilization/productization sequence, use [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md).
-
-For the consolidated roadmap and positioning update, use [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
+Historical sequencing references (May 2026; superseded by the master roadmap for ordering):
+[Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
+[Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
 
 Current active task:
 
