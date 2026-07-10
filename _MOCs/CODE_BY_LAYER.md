@@ -1565,7 +1565,7 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (23)
+## Scripts and automations (24)
 
 - [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -1603,6 +1603,8 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [[scripts/phase35_gates.ps1|phase35_gates]]
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
+- [[scripts/prove_runtime_truth.py|prove_runtime_truth]]
+  summary: Structural runtime smoke proof for Nova.
 - [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
 - [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]

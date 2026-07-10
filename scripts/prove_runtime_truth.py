@@ -1,3 +1,18 @@
+"""Structural runtime smoke proof for Nova.
+
+SCOPE — what this proves: the backend app imports, core HTTP routes and the /ws
+WebSocket accept connections, the capability registry loads, selected capability
+properties are present, the Governor refuses a confirm-risk capability without a
+confirmation flag and refuses an unknown capability, and model status is readable.
+
+NOT PROVEN here (do not read a PASS as comprehensive runtime truth): that a prompt
+yields a valid response, that inference or deterministic routing works, that the
+model lock prevents inference, that confirmation authorizes only the intended
+bounded effect, that receipts/ledger events persist, that live providers return
+usable results, or that the Daily Brief is meaningful. Those need dedicated proofs.
+
+This is a structural smoke proof, not an authorization-integrity or end-to-end proof.
+"""
 from __future__ import annotations
 
 import json
@@ -5,7 +20,6 @@ import logging
 import sys
 from pathlib import Path
 from typing import Callable
-
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "nova_backend"
@@ -48,6 +62,7 @@ class ProofRun:
         self.fail(f"{message}{suffix}")
 
     def finish(self) -> int:
+        print("SCOPE: structural runtime smoke proof only — not comprehensive runtime truth")
         if self.failures:
             print(f"SUMMARY: FAIL ({len(self.failures)} failure(s))")
             return 1
@@ -59,6 +74,7 @@ def main() -> int:
     proof = ProofRun()
     logging.disable(logging.CRITICAL)
     _ensure_import_path()
+    print("Nova structural runtime smoke proof (see module docstring for scope and non-goals)")
 
     def import_app():
         from src.brain_server import app

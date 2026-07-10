@@ -26,8 +26,12 @@ Per `docs/todo/DOC_CLEANUP.md`, these are **not merged** — they are different 
 
 - `nova_backend/tests/` holds runtime, governance, phase, and regression coverage — this is the
   strongest continuously-checked evidence.
-- Root smoke proof command: `python scripts/prove_runtime_truth.py` checks app import, local routes,
-  `/ws`, capability registry loading, and Governor confirmation blocking.
+- Root **structural runtime smoke proof**: `python scripts/prove_runtime_truth.py` checks app
+  import, local routes, `/ws`, capability registry loading, and Governor confirmation/unknown-
+  capability blocking. It is a structural smoke proof only — a PASS is NOT comprehensive runtime
+  truth and does NOT prove response validity, inference, model-lock enforcement, receipt
+  persistence, live providers, or authorization integrity. See the script docstring for full
+  non-goals.
 - Approval-gate certification (Cap 22 / Cap 64) closeout:
   [`../status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md`](../status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md).
 

@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (153)
+## governance (154)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -117,6 +117,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/GOVERNANCE_MATRIX_TREE|GOVERNANCE_MATRIX_TREE]]
 - [doc] [[future/governed_desktop_runs/README|Governed Desktop Runs]]
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
+- [doc] [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
 - [doc] [[docs/PROOFS/Phase-4/Governor_Spine_Authority_Proof|Governor Spine Authority Proof]]
 - [doc] [[docs/PROOFS/phase 3.5-4/GOVERNOR_BYPASS_PROOF|GOVERNOR_BYPASS_PROOF]]
 - [doc] [[docs/PROOFS/Phase-4/GovernorMediator_Parser_Proof|GovernorMediator Parser Proof]]
@@ -577,7 +578,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (816)
+## testing (817)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -1142,6 +1143,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/governed_desktop_runs/TEST_PLAN|Governed Desktop Runs — Test Plan]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/GOVERNED_WEB_SEARCH_PROOF_2026-05-07|Governed Web Search Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
+- [doc] [[docs/PROOFS/GOVERNOR_BYPASS_EVIDENCE_MAP|Governor Bypass — Evidence Map]]
 - [doc] [[docs/PROOFS/Phase-4/Governor_Spine_Authority_Proof|Governor Spine Authority Proof]]
 - [doc] [[docs/PROOFS/phase 3.5-4/GOVERNOR_BYPASS_PROOF|GOVERNOR_BYPASS_PROOF]]
 - [doc] [[docs/PROOFS/Phase-4/GovernorMediator_Parser_Proof|GovernorMediator Parser Proof]]
