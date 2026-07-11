@@ -24,12 +24,13 @@ The Phase-3 observation period generates roadmap candidates from real behavior. 
 as they surface; none is authorized to build except via the stated gate.
 
 ```text
-LANDED (truth-critical repairs, freeze-exempt, owner-approved):
-  #294  Observation Step 0 — morning-log template + single launch procedure + config truth
-        (runtime reads Windows User-scope env, not nova_backend/.env).
-  #295  Truthful availability under dashboard refresh — fixed false "not configured" labels for
-        news + weather (news 180s cache vs cap-56 rate-limit exhaustion; weather widget-envelope
-        unwrap; honest "temporarily unavailable" language; news no longer blames Brave).
+LANDED (freeze-exempt, owner-approved):
+  #294  Observation Step 0 (documentation + protocol) — morning-log template + single launch
+        procedure + config truth (runtime reads Windows User-scope env, not nova_backend/.env).
+  #295  Truth-critical repair — Truthful availability under dashboard refresh: fixed false
+        "not configured" labels for news + weather (news 180s cache vs cap-56 rate-limit
+        exhaustion; weather widget-envelope unwrap; honest "temporarily unavailable" language;
+        news no longer blames Brave).
 
 DEFINED, NOT FIRED (owner HOLD until >=1 completed morning after #295):
   "Grounded follow-up conversation over brief items" — route discussion-shaped follow-ups

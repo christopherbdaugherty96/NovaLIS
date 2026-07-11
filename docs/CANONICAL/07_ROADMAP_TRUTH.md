@@ -32,10 +32,11 @@ observed daily use, not more building.** Success metric: Nova eliminates one unc
 the user reaches for another app. The **evidence rule** gates new work: build only what observed
 behavior proves is missing.
 
-**Observation underway (2026-07-11):** Step 0 landed (PR #294) and Morning 1 is in progress. Two
-truth-critical repairs were taken under explicit owner approval without lifting the freeze:
-PR #294 (config truth + morning template) and PR #295 (truthful availability — false
-"not configured" labels for news/weather fixed). A conversation-grounding trace found the LLM
+**Observation underway (2026-07-11):** Step 0 documentation/protocol landed in PR #294
+(morning-log template + single launch procedure + config truth) and Morning 1 is in progress.
+One truth-critical repair landed in PR #295 (truthful availability — false "not configured"
+labels for news/weather fixed), taken under explicit owner approval without lifting the freeze.
+A conversation-grounding trace found the LLM
 does not receive brief facts, so the next candidate lane — **"Grounded follow-up conversation
 over brief items"** — is DEFINED BUT HELD until at least one completed morning after #295; it is
 also the prerequisite before any local-vs-cloud (DeepSeek) model-quality test is meaningful. See

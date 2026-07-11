@@ -54,7 +54,7 @@ AUTOMATION      ██░░░░░░░░  20%   read-only only, by design
 | C1 / Auralis Today | ✅ | ✅ | ✅ | Medium (today) |
 | Awareness brief + dogfood routing (#268) | ✅ | ✅ | ✅ | High |
 | **Weather** (Visual Crossing) | ✅ | ✅ | ✅⁴ | High |
-| **News** (RSS feeds) | ✅ | ✅ | ✅¹⁴ | High |
+| **News** (RSS feeds) | ✅ | ✅ | ✅¹ ⁵ | High |
 | **Calendar** (local .ics) | ✅ | ✅ | ✅ | High |
 | Arithmetic / deterministic commands | ✅ | ✅ | ✅ | Low |
 | Web search / research | ✅ | ❌² | 🟡 | Medium |
@@ -74,7 +74,7 @@ not config: the brief read a top-level `connected` flag but the weather widget n
 `data`, so a working forecast always rendered "not configured". The brief now unwraps the
 envelope; a genuine missing key still reads truthfully; a failed/rate-limited fetch reads
 "temporarily unavailable" (never "not configured / add API key").
-⁴ᴺ News false "not configured / check Brave" label FIXED (PR #295, 2026-07-11). Root cause:
+⁵ News false "not configured / check Brave" label FIXED (PR #295, 2026-07-11). Root cause:
 one news request fans out to ~26 governed network calls (cap 56); the ~70s dashboard refresh
 re-spent them and exhausted the 50/min rate limit, so later fetches returned empty and were
 mislabeled. A 180s result cache collapses repeated refreshes onto one fetch; empty results now
