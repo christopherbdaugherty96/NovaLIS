@@ -2535,10 +2535,12 @@ function clearWebSocketReconnectTimer() {
 }
 
 function scheduleWebSocketReconnect(delayMs = 250) {
+  if (document.hidden) return;
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
   if (wsReconnectTimer) return;
   wsReconnectTimer = setTimeout(() => {
     wsReconnectTimer = null;
+    if (document.hidden) return;
     connectWebSocket();
   }, delayMs);
 }
@@ -2559,6 +2561,30 @@ function flushQueuedUserMessages() {
   pending.forEach((payload) => {
     safeWSSend(payload);
   });
+}
+
+// Client keepalive: send a lightweight ping well within the server's WS idle
+// timeout (NOVA_WS_IDLE_TIMEOUT_SECONDS, default 60s) so a healthy, visible
+// dashboard is never force-closed and forced to reconnect + re-hydrate. That
+// reconnect+hydration churn is what raced and dropped real user prompts. Only a
+// visible tab is kept alive; a backgrounded tab is allowed to idle-close and
+// reconnects on refocus. Pings are never queued — a stale ping has no value.
+const WS_KEEPALIVE_INTERVAL_MS = 25000;
+let wsKeepaliveTimer = null;
+function startWsKeepalive() {
+  stopWsKeepalive();
+  wsKeepaliveTimer = setInterval(() => {
+    if (document.hidden) return;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try { ws.send(JSON.stringify({ type: "ping" })); } catch (_) {}
+    }
+  }, WS_KEEPALIVE_INTERVAL_MS);
+}
+function stopWsKeepalive() {
+  if (wsKeepaliveTimer) {
+    clearInterval(wsKeepaliveTimer);
+    wsKeepaliveTimer = null;
+  }
 }
 
 function queueStartupHydration(delayMs, task) {
@@ -2657,6 +2683,7 @@ function connectWebSocket() {
   ws.onopen = () => {
     clearStartupHydrationTimers();
     flushQueuedUserMessages();
+    startWsKeepalive();
     if (typeof probeRuntimeHealthOnce === "function") probeRuntimeHealthOnce();
     renderHeaderStatus(activePageState);
     renderIntroPage();
@@ -2864,6 +2891,7 @@ function connectWebSocket() {
     }
     clearStartupHydrationTimers();
     stopWidgetAutoRefresh();
+    stopWsKeepalive();
     if (typeof applyCanonicalRuntimeHealth === "function") {
       applyCanonicalRuntimeHealth({ source: "websocket_close" });
     }
@@ -4301,7 +4329,10 @@ window.addEventListener("DOMContentLoaded", () => {
   setupConnectionCardHandlers();
   startMorningFallbackTimer();
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) hydrateDashboardWidgets();
+    if (!document.hidden) {
+      scheduleWebSocketReconnect(0);
+      hydrateDashboardWidgets();
+    }
   });
   window.addEventListener("focus", hydrateDashboardWidgets);
   window.addEventListener("beforeunload", () => stopLiveHelpSession("", false));
