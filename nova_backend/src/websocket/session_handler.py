@@ -944,6 +944,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if invocation_source not in {"voice", "text", "ui", "news_surface", "deepseek_button", "openclaw_bridge"}:
                 invocation_source = "voice" if channel == "voice" else "text"
 
+            if msg_type == "ping":
+                # Lightweight client keepalive. Simply receiving it (above) has already
+                # reset the idle-timeout window, which is the whole point: a quietly-open
+                # dashboard must not be force-closed every idle-timeout and then re-run its
+                # full reconnect + hydration storm, which races and drops real user prompts.
+                # Do not process or respond.
+                continue
+
             if msg_type == "get_thought":
                 message_id = (msg.get("message_id") or "").strip()
                 thought_data = thought_store.get(session_id, message_id) if message_id else None
