@@ -2,8 +2,8 @@ import asyncio
 from pathlib import Path
 from unittest.mock import patch
 
-from src.skills.general_chat import GeneralChatSkill
 from src.personality.tone_profile_store import ToneProfileStore
+from src.skills.general_chat import GeneralChatSkill
 
 
 def test_general_chat_depth_hint_detection():
@@ -153,6 +153,70 @@ def test_general_chat_builds_bounded_conversational_prompt_with_session_context(
     assert "Active options: 1. Use a GPU | 2. Stay CPU-only" in captured["prompt"]
     assert "Latest recommendation: Use a GPU if you care about practical local model speed." in captured["prompt"]
     assert captured["session_id"] == "sess-1"
+
+
+def test_general_chat_blocks_fetch_shaped_weather_but_allows_weather_discussion():
+    skill = GeneralChatSkill()
+
+    assert skill.can_handle("weather") is False
+    assert skill.can_handle("what's the weather?") is False
+    assert skill.can_handle("how should I think about today's weather?") is True
+
+
+def test_general_chat_prompt_injects_sourced_brief_facts_for_followups():
+    skill = GeneralChatSkill()
+    prompt = skill._build_conversational_prompt(
+        "Will it rain later?",
+        context=[],
+        session_state={
+            "brief_weather": {
+                "type": "weather",
+                "data": {
+                    "summary": "72 degrees F and Partially cloudy in Ann Arbor.",
+                    "status": "ok",
+                    "provider": "Visual Crossing",
+                    "forecast": {"today": "87F/63F, Partially cloudy"},
+                },
+            },
+            "active_brief_item": "weather",
+        },
+    )
+
+    assert "Grounded brief facts for this follow-up" in prompt
+    assert "Weather [source: Visual Crossing/weather widget; status: sourced]" in prompt
+    assert "72 degrees F" in prompt
+    assert "The loaded source does not say" in prompt
+    assert "Inference:" in prompt
+
+
+def test_general_chat_prompt_does_not_inject_brief_facts_for_unrelated_domain_prompts():
+    skill = GeneralChatSkill()
+    session_state = {
+        "brief_weather": {
+            "type": "weather",
+            "data": {
+                "summary": "72 degrees F and Partially cloudy in Ann Arbor.",
+                "status": "ok",
+                "provider": "Visual Crossing",
+            },
+        },
+        "news_cache": [{"title": "Loaded headline", "source": "NPR"}],
+        "brief_calendar": {
+            "type": "calendar",
+            "summary": "Two events today.",
+            "events": [{"title": "Meeting", "date": "2026-07-11", "time": "2:00 PM"}],
+        },
+        "last_calendar_events": [{"title": "Meeting", "date": "2026-07-11", "time": "2:00 PM"}],
+        "active_brief_item": "weather",
+    }
+
+    for query in (
+        "Should I create a weather-themed product?",
+        "Why does my news-themed advertisement look bad?",
+        "What do you think of my calendar logo?",
+    ):
+        prompt = skill._build_conversational_prompt(query, context=[], session_state=session_state)
+        assert "Grounded brief facts for this follow-up" not in prompt
 
 
 def test_general_chat_emits_structured_conversation_context_for_option_thread():
