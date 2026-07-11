@@ -1,10 +1,50 @@
 # Daily Command Center
 
 Status: manual continuity surface.
-Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins).
-Source: pre-observation live verification + product-identity convergence.
+Last reviewed: 2026-07-11 (observation underway; two truth-fix lanes merged).
+Source: observation Step 0 + runtime truth-defect repairs + conversation-grounding trace.
 
-## 2026-07-07 session (latest — read this first)
+## 2026-07-11 session (latest — read this first)
+
+```text
+OBSERVATION UNDERWAY. Engineering freeze holds; only truth-critical repairs taken, each with
+explicit owner approval. Next product input is still a completed morning, not a PR.
+
+STEP 0 — observation readiness (PR #294 merged): ratified morning-log template
+(docs/observation/MORNING_LOG_TEMPLATE.md) + single launch procedure. Config truth established:
+the runtime does NOT load nova_backend/.env — Windows User-scope env vars are the operative
+source (OLLAMA_MODEL=gemma2:2b, NOVA_CALENDAR_ICS_PATH); .env is a documented mirror only.
+Calendar is wired end-to-end (a daily 6:00 AM scheduled task re-exports the .ics; it currently
+holds no upcoming events, so "Nothing on your calendar today" is TRUE). Morning 1 in progress
+(docs/observation/MORNING_01_2026-07-11.md — Chris completes the experiential fields).
+
+TRUTH-FIX LANE (PR #295 merged — "Truthful availability under dashboard refresh"): fixed the
+false "not configured" labels for news and weather. THREE findings: (1) the news skill fans out
+to ~26 governed network calls per request; the ~70s dashboard refresh re-spent them and blew the
+mediator's 50/min rate limit, so later fetches returned empty and were mislabeled "not
+configured / check Brave" — fixed with a 180s news result cache. (2) STRUCTURAL BUG: the brief
+read a top-level `connected` flag but the weather widget nests it under `data`, so a WORKING
+forecast always rendered "not configured" regardless of rate-limiting — fixed by unwrapping the
+envelope. (3) Labels now truthful: empty/rate-limited => "temporarily unavailable", never "not
+configured", and news no longer blames Brave (Brave is web search, not the news source).
+Verified live (warm server): repeated briefs show weather=ok + news=ok. GH Actions still
+billing-gated; local-verification standard used (same as #292/#293).
+
+CONVERSATION-GROUNDING TRACE (read-only, no code changed): the conversation LLM does NOT receive
+news/weather facts. GeneralChatSkill.can_handle excludes "news"/"weather"/"forecast"/"headlines"
+(routes them to widgets, never the LLM), and the prompt assembly never reads
+session_state["news_cache"]/weather. So "converse about the news" does not exist yet; a weak
+conversation would be PLUMBING evidence, not model evidence. => The DeepSeek-vs-gemma2:2b
+model-quality test is INVALID until grounding lands.
+
+NEXT LANE, DEFINED NOT FIRED: "Grounded follow-up conversation over brief items" (route
+discussion-shaped follow-ups to chat + inject sourced brief facts + keep unsupported claims
+tagged not laundered). Owner ruling: HOLD until >=1 completed morning after #295 — don't move
+the observation baseline again before capturing a finished day. Lane spec lives in project
+memory + the master roadmap candidate list.
+```
+
+## 2026-07-07 session
 
 ```text
 Phase 3 formally CLOSED: engineering FROZEN, only critical bugs may be fixed, behavior generates
