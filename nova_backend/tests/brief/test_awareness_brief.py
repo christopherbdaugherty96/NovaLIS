@@ -69,16 +69,53 @@ class TestWeatherSection:
         })
         assert any("Alert" in item for item in s.items)
 
+    def test_configured_but_failed_is_unavailable_not_not_configured(self):
+        # Key present, fetch failed/rate-limited: must NOT tell the user to add a
+        # key they already have.
+        s = build_weather_section({"connected": False, "status": "unavailable"}, configured=True)
+        assert s.status == "unavailable"
+        assert "temporarily unavailable" in s.items[0].lower()
+        assert "api key" not in s.items[0].lower()
+
+    def test_not_configured_only_when_key_absent(self):
+        s = build_weather_section({"connected": False}, configured=False)
+        assert s.status == "not_configured"
+        assert "api key" in s.items[0].lower()
+
+    def test_infers_unavailable_from_widget_status_without_flag(self):
+        # Even without the explicit flag, a widget status of "unavailable" must not
+        # degrade into "not configured".
+        s = build_weather_section({"connected": False, "status": "unavailable"})
+        assert s.status == "unavailable"
+        assert "api key" not in s.items[0].lower()
+
+    def test_unwraps_widget_envelope_with_nested_data(self):
+        # The brief passes the skill's widget envelope; a working forecast nested
+        # under "data" must render as available, not "not configured".
+        s = build_weather_section(
+            {"type": "weather", "data": {"connected": True, "summary": "76°F and Clear"}},
+            configured=True,
+        )
+        assert s.status == "ok"
+        assert s.available is True
+        assert "76°F" in s.items[0]
+
 
 class TestNewsSection:
-    def test_not_configured_when_none(self):
+    def test_temporarily_unavailable_when_none(self):
+        # News is RSS-sourced (no key), so an empty result is a transient
+        # availability issue, never a misconfiguration, and must not blame Brave.
         s = build_news_section(None)
-        assert s.status == "not_configured"
-        assert "Settings" in s.items[0]
+        assert s.status == "unavailable"
+        assert "temporarily unavailable" in s.items[0].lower()
+        assert "not configured" not in s.items[0].lower()
+        assert "brave" not in s.items[0].lower()
 
-    def test_not_configured_when_empty(self):
+    def test_temporarily_unavailable_when_empty(self):
         s = build_news_section([])
-        assert s.status == "not_configured"
+        assert s.status == "unavailable"
+        assert "not configured" not in s.items[0].lower()
+        assert "brave" not in s.items[0].lower()
 
     def test_ok_with_items(self):
         items = [{"title": "Tech news headline"}]
@@ -197,7 +234,7 @@ class TestComposeAwarenessBrief:
         d = brief.to_dict()
         assert d["available_count"] == 0
         for section in d["sections"]:
-            assert section["status"] in {"not_configured", "not_available", "empty"}
+            assert section["status"] in {"not_configured", "not_available", "empty", "unavailable"}
             assert len(section["items"]) > 0
 
     def test_partial_data(self):

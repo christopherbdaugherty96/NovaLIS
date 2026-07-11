@@ -8,13 +8,36 @@ from __future__ import annotations
 
 import asyncio
 import re
+import threading
+import time
 from collections import Counter
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from src.base_skill import BaseSkill, SkillResult
 from src.governor.network_mediator import NetworkMediator
 from src.tools.news_fallback import fallback_headline
 from src.tools.rss_fetch import fetch_rss_headlines
+
+# ---------------------------------------------------------------------------
+# Short-lived result cache.
+#
+# A single news call fans out to ~26 governed network requests (cap 56). The
+# dashboard re-requests the brief roughly every 70s, so without caching the
+# repeated fetches exhaust the mediator's per-minute rate limit and every later
+# fetch returns empty — which the UI then mislabels as "not configured". A short
+# TTL keeps the brief fresh while collapsing repeated refreshes onto one fetch.
+# Only successful fetches are cached, so a transient failure retries next time.
+# ---------------------------------------------------------------------------
+NEWS_CACHE_TTL_SECONDS = 180.0
+_result_cache: dict[str, tuple[float, str, dict]] = {}
+_result_cache_lock = threading.Lock()
+
+
+def reset_news_result_cache() -> None:
+    """Clear the cache. Used by test isolation; safe at runtime."""
+    with _result_cache_lock:
+        _result_cache.clear()
 
 
 class NewsSkill(BaseSkill):
@@ -168,6 +191,10 @@ class NewsSkill(BaseSkill):
         return categories
 
     async def handle(self, query: str) -> SkillResult:
+        cached = self._cached_result()
+        if cached is not None:
+            return cached
+
         semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_FEEDS)
         items = await self._fetch_many(self.SOURCES, semaphore=semaphore)
         categories = await self._fetch_category_groups(semaphore=semaphore)
@@ -200,13 +227,45 @@ class NewsSkill(BaseSkill):
             "status": status,
             "source_count": source_count,
             "category_count": category_count,
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+            "cache_ttl_seconds": NEWS_CACHE_TTL_SECONDS,
         }
+
+        # Cache only real fetches (never a transient failure), so repeated brief
+        # refreshes within the window reuse this instead of re-spending cap 56.
+        if items:
+            with _result_cache_lock:
+                _result_cache[self._CACHE_KEY] = (
+                    time.time() + NEWS_CACHE_TTL_SECONDS,
+                    message,
+                    dict(widget),
+                )
 
         return SkillResult(
             success=True,
             message=message,
             data={},
             widget_data=widget,
+            skill=self.name,
+        )
+
+    _CACHE_KEY = "news"
+
+    def _cached_result(self) -> Optional[SkillResult]:
+        with _result_cache_lock:
+            entry = _result_cache.get(self._CACHE_KEY)
+        if not entry:
+            return None
+        expiry, message, widget = entry
+        if expiry <= time.time():
+            return None
+        cached_widget = dict(widget)
+        cached_widget["served_from_cache"] = True
+        return SkillResult(
+            success=True,
+            message=message,
+            data={},
+            widget_data=cached_widget,
             skill=self.name,
         )
 

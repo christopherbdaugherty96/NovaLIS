@@ -78,8 +78,41 @@ def _time_greeting() -> str:
     return "Good evening"
 
 
-def build_weather_section(weather_data: dict[str, Any] | None) -> AwarenessSection:
+def build_weather_section(
+    weather_data: dict[str, Any] | None,
+    *,
+    configured: bool | None = None,
+) -> AwarenessSection:
+    # The weather skill emits a widget envelope {"type":"weather","data":{...}} whose
+    # connected/status/summary live under "data". Accept that envelope as well as the
+    # flat payload so a working fetch is not misread as unavailable. (This nesting
+    # mismatch was the structural cause of a working forecast rendering as
+    # "not configured" in the brief.)
+    if (
+        isinstance(weather_data, dict)
+        and weather_data.get("type") == "weather"
+        and isinstance(weather_data.get("data"), dict)
+    ):
+        weather_data = weather_data["data"]
     if not isinstance(weather_data, dict) or not weather_data.get("connected"):
+        # No live data. Tell the truth about WHY: a missing key ("not configured",
+        # actionable) is different from a fetch that failed or was rate-limited
+        # ("temporarily unavailable", not actionable). Never advise adding a key
+        # that is already present. `configured` (from the env) wins; otherwise fall
+        # back to the skill's own status signal on the widget.
+        status_signal = str(weather_data.get("status") or "") if isinstance(weather_data, dict) else ""
+        if configured is None:
+            is_configured = status_signal == "unavailable"
+        else:
+            is_configured = bool(configured)
+        if is_configured:
+            return AwarenessSection(
+                key="weather",
+                title="Weather",
+                items=("Weather is temporarily unavailable — refreshing. Try again shortly.",),
+                status="unavailable",
+                source="weather",
+            )
         return AwarenessSection(
             key="weather",
             title="Weather",
@@ -111,10 +144,14 @@ def build_news_section(
     categories: dict[str, Any] | None = None,
 ) -> AwarenessSection:
     if not news_items:
+        # News is sourced from public RSS feeds — there is no key to configure, so
+        # an empty result is always a transient availability issue, never a
+        # misconfiguration. Do not name Brave (that is the web-search provider,
+        # not the news source) and never say "not configured".
         return AwarenessSection(
             key="news", title="News",
-            items=("News not available. Check your Brave Search connection in Settings.",),
-            status="not_configured", source="news",
+            items=("News is temporarily unavailable — refreshing. Try again shortly.",),
+            status="unavailable", source="news",
         )
     items: list[str] = []
     if isinstance(categories, dict) and categories:
@@ -285,6 +322,7 @@ def build_changes_section(recent_receipts: list[dict[str, Any]] | None) -> Aware
 def compose_awareness_brief(
     *,
     weather_data: dict[str, Any] | None = None,
+    weather_configured: bool | None = None,
     news_items: list[dict[str, Any]] | None = None,
     news_categories: dict[str, Any] | None = None,
     calendar_data: dict[str, Any] | None = None,
@@ -294,7 +332,7 @@ def compose_awareness_brief(
     auralis_inputs: dict[str, Any] | None = None,
 ) -> AwarenessBrief:
     sections: list[AwarenessSection] = [
-        build_weather_section(weather_data),
+        build_weather_section(weather_data, configured=weather_configured),
         build_news_section(news_items, news_categories),
         build_calendar_section(calendar_data),
         build_project_section(session_state),
