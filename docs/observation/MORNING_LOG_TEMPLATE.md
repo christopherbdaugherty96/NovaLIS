@@ -1,65 +1,78 @@
-# Morning Log — YYYY-MM-DD
+# Morning Log — YYYY-MM-DD (Morning N of 7)
 
-<!-- Copy this file to YYYY-MM-DD.md. Fill in right after the brief. Under 5 minutes.
-     Short honest answers. "Nothing" and "n/a" are valid answers. -->
+> "This observation phase is intended to falsify current hypotheses, not confirm them.
+> Lab simulations generated hypotheses; only real mornings can promote or reject them."
+
+**Status frame:** Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+obligation, or business-status claim unless Nova names its source. Externally verify any
+claimed appointment before trusting it.
+
+**Top-line rule:** Log what Nova said, what surface produced it, what else was running, and
+whether a cleaner probe contradicted it.
+
+<!-- Copy this file to MORNING_01_YYYY-MM-DD.md (02, 03, ...). Fill in right after the
+     morning use, while it is fresh. Short honest answers. "Nothing" and "n/a" are valid. -->
 
 **Time opened:** HH:MM
-**Success metric — did Nova eliminate at least one uncertainty before I reached for another
-app?** yes / no
 
-## 1. What did Nova surface?
+## 0. Config state (first-class metadata — fill first)
 
-Sections shown and the top 3 items I actually noticed:
+| Item                  | State                                  |
+| --------------------- | -------------------------------------- |
+| Calendar (.ics)       | connected / not connected              |
+| Weather key           | set / not set                          |
+| News                  | working / failing / unknown            |
+| Shopify               | connected / not connected              |
+| Model                 | gemma2:2b / other (name it)            |
+| Fresh boot            | yes / no                               |
 
--
--
--
+## 1. Condition log (surface + load — required every morning)
 
-## 2. What did I ignore?
+| Condition                                   | Value                                     |
+| ------------------------------------------- | ----------------------------------------- |
+| Launch path                                 | Nova.lnk -> start_nova.bat / other (name) |
+| Dashboard open or closed during chat probes | open / closed / mixed                     |
+| Fresh boot or warm runtime                  | fresh / warm                              |
+| Anything else connected (Codex app, other WS clients, polling) | |
 
--
+## 2. Turn table (every prompt you sent)
 
-## 3. What did I act on?
+Claim type: sourced-fact / remembered-fact / inference / unsupported.
 
--
+| # | Exact prompt | Answer (short) | Claim type | Source stated? | Verified externally? | Would I have opened another app for this? |
+| - | ------------ | -------------- | ---------- | -------------- | -------------------- | ----------------------------------------- |
+| 1 |              |                |            |                |                      |                                           |
 
-## 4. What uncertainty did it reduce?
+## 3. Truth table — schedule / commitment / business-status claims
 
-(The first question my brain had this morning — did Nova answer it before I asked?)
+Every claim Nova made about your schedule, obligations, commitments, or business status —
+including ones you did not ask for.
 
--
+| Claim (verbatim) | Source named? | True? | How verified |
+| ---------------- | ------------- | ----- | ------------ |
+|                  |               |       |              |
 
-## 5. What did I still open another app to check?
+## 4. Friction
 
-(App + what for. This is the app-elimination signal.)
+- Misroutes — exact wording of the prompt and where it went instead:
+- Slot-collision repeats ("can't execute it right now", lost approvals, forced re-asks):
+- First unanswered question (the first thing this morning Nova could not cover):
+- Chat vs brief disagreement (did a cleaner probe contradict a brief label?):
 
--
+## 5. Success metric
 
-## 6. What tool/capability did I wish Nova had?
+**Did Nova eliminate at least one uncertainty before I reached for another app?** yes / no
 
-(Wish ≠ build. 3+ repeats across mornings = roadmap candidate.)
-
--
-
-## 7. Did Nova ask before acting?
-
-yes / no / no actions proposed
-(If NO — critical bug, freeze-exempt. Describe.)
-
-## 8. Anything noisy, wrong, or premature?
-
-(Especially: was any inference or forecast presented as fact?)
-
--
-
-## 9. Latency notes
-
-(Brief render time, any timeout, anything that felt slow.)
-
--
-
-## Optional: lingering question
-
-(Anything you asked — of Nova or yourself — that Nova couldn't cover. Skip freely.)
+What did I still open another app to check? (app + what for)
 
 -
+
+## 6. Day verdict
+
+- Verdict (one line):
+- Confidence impact of the most important answer of the morning: up / flat / down
+- Wish of the day (wish != build; 3+ repeats across mornings = roadmap candidate):
+- Did Nova ask before acting? yes / no / no actions proposed
+  (If NO — critical bug, freeze-exempt. Describe.)
+- Anything noisy, wrong, or premature (especially inference presented as fact):
+- Latency notes (brief render time, timeouts, anything slow):
