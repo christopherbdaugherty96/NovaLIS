@@ -249,6 +249,10 @@ class NewsSkill(BaseSkill):
             skill=self.name,
         )
 
+    # A single key is valid only because handle() ignores `query` and always
+    # fetches the same SOURCES + CATEGORY_GROUPS. If news ever becomes query- or
+    # category-specific, this key MUST include that dimension, or callers will be
+    # served results for the wrong query.
     _CACHE_KEY = "news"
 
     def _cached_result(self) -> Optional[SkillResult]:
