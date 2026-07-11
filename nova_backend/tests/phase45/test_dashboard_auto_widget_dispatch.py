@@ -1,12 +1,31 @@
 from __future__ import annotations
 
+import os
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
+import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CHAT_NEWS_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard-chat-news.js"
 FRONTEND_CHAT_NEWS_PATH = PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-chat-news.js"
+
+
+def _extract_js_function(source: str, name: str) -> str:
+    start = source.index(f"function {name}")
+    brace_start = source.index("{", start)
+    depth = 0
+    for idx in range(brace_start, len(source)):
+        char = source[idx]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return source[start : idx + 1]
+    raise AssertionError(f"Could not extract function {name}")
 
 
 def test_websocket_open_hydrates_dashboard_widgets():
@@ -32,6 +51,69 @@ def test_dashboard_stops_auto_refresh_on_socket_close():
     assert match is not None
     body = match.group("body")
     assert "stopWidgetAutoRefresh()" in body
+
+
+def test_dashboard_keepalive_prevents_idle_reconnect_hydration_loop():
+    backend_source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    frontend_source = FRONTEND_CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    for source in (backend_source, frontend_source):
+        assert "const WS_KEEPALIVE_INTERVAL_MS = 25000;" in source
+        assert "function startWsKeepalive()" in source
+        assert 'ws.send(JSON.stringify({ type: "ping" }))' in source
+
+        open_match = re.search(r"ws\.onopen\s*=\s*\(\)\s*=>\s*\{(?P<body>.*?)\};", source, flags=re.DOTALL)
+        assert open_match is not None
+        assert "startWsKeepalive();" in open_match.group("body")
+
+        close_match = re.search(r"ws\.onclose\s*=\s*\(\)\s*=>\s*\{(?P<body>.*?)\};", source, flags=re.DOTALL)
+        assert close_match is not None
+        assert "stopWsKeepalive();" in close_match.group("body")
+
+
+def test_dashboard_hidden_tabs_do_not_schedule_reconnect_loop():
+    backend_source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    frontend_source = FRONTEND_CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    node = os.environ.get("NODE_EXE") or shutil.which("node")
+    if not node:
+        pytest.skip("Node.js is required for the dashboard reconnect behavior regression")
+
+    for source in (backend_source, frontend_source):
+        reconnect_function = _extract_js_function(source, "scheduleWebSocketReconnect")
+        assert 'document.addEventListener("visibilitychange", () => {' in source
+        assert "scheduleWebSocketReconnect(0);" in source
+
+        script = f"""
+const WebSocket = {{ CONNECTING: 0, OPEN: 1 }};
+let ws = null;
+let wsReconnectTimer = null;
+let document = {{ hidden: true }};
+let connectCalls = 0;
+let scheduled = [];
+function connectWebSocket() {{ connectCalls += 1; }}
+function setTimeout(fn, delayMs) {{
+  scheduled.push({{ fn, delayMs }});
+  return scheduled.length;
+}}
+function clearTimeout(_) {{}}
+{reconnect_function}
+
+scheduleWebSocketReconnect(1200);
+if (scheduled.length !== 0) throw new Error("hidden tab scheduled reconnect");
+
+document.hidden = false;
+scheduleWebSocketReconnect(1200);
+if (scheduled.length !== 1) throw new Error("visible tab did not schedule reconnect once");
+scheduled[0].fn();
+if (connectCalls !== 1) throw new Error("visible reconnect did not connect once");
+
+scheduleWebSocketReconnect(1200);
+if (scheduled.length !== 2) throw new Error("second visible reconnect did not schedule");
+document.hidden = true;
+scheduled[1].fn();
+if (connectCalls !== 1) throw new Error("hidden timeout callback connected");
+"""
+        subprocess.run([node, "-e", script], check=True)
 
 
 def test_dashboard_hydration_dispatch_includes_ui_invocation_source():
