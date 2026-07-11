@@ -10,6 +10,11 @@ from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
+from src.conversation.brief_followup_grounding import (
+    answer_grounded_brief_followup,
+    is_discussion_shaped_brief_followup,
+    store_brief_widget,
+)
 from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
 
@@ -1197,17 +1202,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_id,
                 )
                 if news_result is None:
+                    fallback_news_widget = {
+                        "type": "news",
+                        "items": [],
+                        "summary": "News is currently unavailable.",
+                        "categories": {},
+                    }
                     if not silent_widget_refresh:
                         await send_chat_message(ws, _personality_failure_message("News capability is temporarily unavailable"), tone_domain="daily")
-                    await ws_send(
-                        ws,
-                        {
-                            "type": "news",
-                            "items": [],
-                            "summary": "News is currently unavailable.",
-                            "categories": {},
-                        },
-                    )
+                    store_brief_widget(session_state, "news", fallback_news_widget, set_focus=not silent_widget_refresh)
+                    await ws_send(ws, fallback_news_widget)
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
@@ -1228,22 +1232,19 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         await send_chat_message(ws, message, tone_domain="daily")
                     if isinstance(news_widget, dict) and news_widget.get("type") == "news":
                         items = list(news_widget.get("items") or [])
-                        categories = dict(news_widget.get("categories") or {})
-                        session_state["news_cache"] = items
-                        session_state["news_categories"] = categories
+                        store_brief_widget(session_state, "news", news_widget, set_focus=not silent_widget_refresh)
                         session_state["last_sources"] = _extract_sources_from_results(items)
                         session_state["last_source_links"] = _extract_source_links(items)
                         await ws_send(ws, news_widget)
                     else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "news",
-                                "items": [],
-                                "summary": "News is currently unavailable.",
-                                "categories": {},
-                            },
-                        )
+                        fallback_news_widget = {
+                            "type": "news",
+                            "items": [],
+                            "summary": "News is currently unavailable.",
+                            "categories": {},
+                        }
+                        store_brief_widget(session_state, "news", fallback_news_widget, set_focus=not silent_widget_refresh)
+                        await ws_send(ws, fallback_news_widget)
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}),
                         "News update",
@@ -1252,17 +1253,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if not silent_widget_refresh:
                         await send_chat_message(ws, _personality_failure_message("News capability is temporarily unavailable"), tone_domain="daily")
                     if isinstance(news_widget, dict) and news_widget.get("type") == "news":
+                        store_brief_widget(session_state, "news", news_widget, set_focus=not silent_widget_refresh)
                         await ws_send(ws, news_widget)
                     else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "news",
-                                "items": [],
-                                "summary": "News is currently unavailable.",
-                                "categories": {},
-                            },
-                        )
+                        fallback_news_widget = {
+                            "type": "news",
+                            "items": [],
+                            "summary": "News is currently unavailable.",
+                            "categories": {},
+                        }
+                        store_brief_widget(session_state, "news", fallback_news_widget, set_focus=not silent_widget_refresh)
+                        await ws_send(ws, fallback_news_widget)
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
@@ -1282,22 +1283,21 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_id,
                 )
                 if weather_result is None:
+                    fallback_weather_widget = {
+                        "type": "weather",
+                        "data": {
+                            "summary": "Weather is currently unavailable.",
+                            "temperature": None,
+                            "condition": "Unavailable",
+                            "location": "Local",
+                            "forecast": "",
+                            "alerts": [],
+                        },
+                    }
                     if not silent_widget_refresh:
                         await send_chat_message(ws, _personality_failure_message("Weather capability is temporarily unavailable"), tone_domain="daily")
-                    await ws_send(
-                        ws,
-                        {
-                            "type": "weather",
-                            "data": {
-                                "summary": "Weather is currently unavailable.",
-                                "temperature": None,
-                                "condition": "Unavailable",
-                                "location": "Local",
-                                "forecast": "",
-                                "alerts": [],
-                            },
-                        },
-                    )
+                    store_brief_widget(session_state, "weather", fallback_weather_widget, set_focus=not silent_widget_refresh)
+                    await ws_send(ws, fallback_weather_widget)
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
@@ -1317,22 +1317,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state["last_response"] = message
                         await send_chat_message(ws, message, tone_domain="daily")
                     if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
+                        store_brief_widget(session_state, "weather", weather_widget, set_focus=not silent_widget_refresh)
                         await ws_send(ws, weather_widget)
                     else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "weather",
-                                "data": {
-                                    "summary": message,
-                                    "temperature": None,
-                                    "condition": "",
-                                    "location": "Local",
-                                    "forecast": "",
-                                    "alerts": [],
-                                },
+                        fallback_weather_widget = {
+                            "type": "weather",
+                            "data": {
+                                "summary": message,
+                                "temperature": None,
+                                "condition": "",
+                                "location": "Local",
+                                "forecast": "",
+                                "alerts": [],
                             },
-                        )
+                        }
+                        store_brief_widget(session_state, "weather", fallback_weather_widget, set_focus=not silent_widget_refresh)
+                        await ws_send(ws, fallback_weather_widget)
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}),
                         "Weather update",
@@ -1341,22 +1341,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if not silent_widget_refresh:
                         await send_chat_message(ws, _personality_failure_message("Weather capability is temporarily unavailable"), tone_domain="daily")
                     if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
+                        store_brief_widget(session_state, "weather", weather_widget, set_focus=not silent_widget_refresh)
                         await ws_send(ws, weather_widget)
                     else:
-                        await ws_send(
-                            ws,
-                            {
-                                "type": "weather",
-                                "data": {
-                                    "summary": "Weather is currently unavailable.",
-                                    "temperature": None,
-                                    "condition": "Unavailable",
-                                    "location": "Local",
-                                    "forecast": "",
-                                    "alerts": [],
-                                },
+                        fallback_weather_widget = {
+                            "type": "weather",
+                            "data": {
+                                "summary": "Weather is currently unavailable.",
+                                "temperature": None,
+                                "condition": "Unavailable",
+                                "location": "Local",
+                                "forecast": "",
+                                "alerts": [],
                             },
-                        )
+                        }
+                        store_brief_widget(session_state, "weather", fallback_weather_widget, set_focus=not silent_widget_refresh)
+                        await ws_send(ws, fallback_weather_widget)
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
@@ -2467,20 +2467,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state["last_response"] = message
                         await send_chat_message(ws, message, tone_domain="daily")
                     if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
+                        store_brief_widget(session_state, "calendar", calendar_widget, set_focus=not silent_widget_refresh)
                         await send_widget_message(ws, "calendar", message, calendar_widget)
-                        session_state["last_calendar_summary"] = str(calendar_widget.get("summary") or "")
-                        session_state["last_calendar_events"] = list(calendar_widget.get("events") or [])
                     else:
+                        fallback_calendar_widget = {"type": "calendar", "summary": message, "events": []}
+                        store_brief_widget(session_state, "calendar", fallback_calendar_widget, set_focus=not silent_widget_refresh)
                         await send_widget_message(
                             ws,
                             "calendar",
                             message,
-                            {"type": "calendar", "summary": message, "events": []},
+                            fallback_calendar_widget,
                         )
                 else:
                     if not silent_widget_refresh:
                         await send_chat_message(ws, _personality_failure_message("Calendar capability is temporarily unavailable"), tone_domain="daily")
                     if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
+                        store_brief_widget(session_state, "calendar", calendar_widget, set_focus=not silent_widget_refresh)
                         await send_widget_message(
                             ws,
                             "calendar",
@@ -2488,11 +2490,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             calendar_widget,
                         )
                     else:
+                        fallback_calendar_widget = {"type": "calendar", "summary": "Unavailable.", "events": []}
+                        store_brief_widget(session_state, "calendar", fallback_calendar_widget, set_focus=not silent_widget_refresh)
                         await send_widget_message(
                             ws,
                             "calendar",
                             "Calendar is currently unavailable.",
-                            {"type": "calendar", "summary": "Unavailable.", "events": []},
+                            fallback_calendar_widget,
                         )
                 await send_chat_done(ws)
                 continue
@@ -3409,6 +3413,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     w_widget = _aw_w.data.get("widget")
                     if isinstance(w_widget, dict):
                         _aw_weather = w_widget
+                        store_brief_widget(session_state, "weather", w_widget)
                         await ws_send(ws, w_widget)
 
                 _, _aw_n = await invoke_governed_text_command(governor, "news", session_id)
@@ -3417,8 +3422,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if isinstance(n_widget, dict):
                         _aw_news_items = list(n_widget.get("items") or [])
                         _aw_news_cats = dict(n_widget.get("categories") or {})
-                        session_state["news_cache"] = _aw_news_items
-                        session_state["news_categories"] = _aw_news_cats
+                        store_brief_widget(session_state, "news", n_widget)
                         await ws_send(ws, n_widget)
 
                 _, _aw_c = await invoke_governed_text_command(governor, "calendar", session_id)
@@ -3426,6 +3430,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     c_widget = _aw_c.data.get("widget")
                     if isinstance(c_widget, dict):
                         _aw_calendar = c_widget
+                        store_brief_widget(session_state, "calendar", c_widget)
 
                 from src.connectors.shopify_connector import get_shopify_connector
                 _shop_conn = get_shopify_connector()
@@ -3483,6 +3488,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 await ws_send(ws, _aw_dict)
                 if not silent_widget_refresh:
+                    session_state["active_brief_item"] = "awareness_brief"
                     available = _awareness.to_dict()["available_count"]
                     total = _awareness.to_dict()["total_count"]
                     await send_chat_message(
@@ -3514,6 +3520,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if isinstance(weather_result.data, dict):
                         widget = weather_result.data.get("widget")
                         if isinstance(widget, dict):
+                            store_brief_widget(session_state, "weather", widget)
                             await ws_send(ws, widget)
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}),
@@ -3531,8 +3538,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if isinstance(news_widget, dict):
                         news_summary = str(news_widget.get("summary") or news_summary)
                         items = list(news_widget.get("items") or [])
-                        session_state["news_cache"] = items
-                        session_state["news_categories"] = dict(news_widget.get("categories") or {})
+                        store_brief_widget(session_state, "news", news_widget)
                         session_state["last_sources"] = _extract_sources_from_results(items)
                         session_state["last_source_links"] = _extract_source_links(items)
                         await ws_send(ws, news_widget)
@@ -3583,8 +3589,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             or calendar_result.message
                             or calendar_line
                         )
-                        session_state["last_calendar_summary"] = calendar_line
-                        session_state["last_calendar_events"] = list(calendar_widget.get("events") or [])
+                        store_brief_widget(session_state, "calendar", calendar_widget)
                         await send_widget_message(
                             ws,
                             "calendar",
@@ -3667,6 +3672,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
+            grounded_brief_followup = is_discussion_shaped_brief_followup(mediated_text, session_state)
             governed_parse_text = (
                 raw_text
                 if re.match(
@@ -3683,7 +3689,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
 
             # --- Phase 4 governed invocation detection ---
-            inv_result = GovernorMediator.parse_governed_invocation(governed_parse_text, session_id=session_id)
+            inv_result = None if grounded_brief_followup else GovernorMediator.parse_governed_invocation(
+                governed_parse_text,
+                session_id=session_id,
+            )
             if inv_result is None and lowered in {"more", "tell me more", "more please"}:
                 try:
                     last_story_index = int(session_state.get("last_news_story_index") or 0)
@@ -4229,6 +4238,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     and "widget" in action_payload
                     and (action_result.success or capability_id in {55, 56, 57})
                 ):
+                    if capability_id == 55 and isinstance(action_payload["widget"], dict):
+                        store_brief_widget(session_state, "weather", action_payload["widget"], set_focus=not suppress_silent_chat)
+                    elif capability_id == 56 and isinstance(action_payload["widget"], dict):
+                        store_brief_widget(session_state, "news", action_payload["widget"], set_focus=not suppress_silent_chat)
+                    elif capability_id == 57 and isinstance(action_payload["widget"], dict):
+                        store_brief_widget(session_state, "calendar", action_payload["widget"], set_focus=not suppress_silent_chat)
                     await ws_send(ws, action_payload["widget"])
                 elif capability_id == 32 and action_result.success and isinstance(action_payload, dict):
                     await ws_send(ws, {"type": "system", "data": action_payload, "summary": action_message})
@@ -4277,6 +4292,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 _maybe_auto_speak_for_voice_turn(session_state, _meta_response)
                 session_state["turn_count"] += 1
                 continue
+
+            if grounded_brief_followup:
+                grounded_answer = answer_grounded_brief_followup(mediated_text, session_state)
+                if grounded_answer:
+                    session_state["last_response"] = grounded_answer
+                    await send_chat_message(ws, grounded_answer, tone_domain="daily")
+                    await send_chat_done(ws)
+                    _maybe_auto_speak_for_voice_turn(session_state, grounded_answer)
+                    new_turn = [
+                        {"role": "user", "content": mediated_text},
+                        {"role": "assistant", "content": grounded_answer},
+                    ]
+                    session_context.extend(new_turn)
+                    context_limit = 40 if session_state.get("presence_mode") else 20
+                    session_context = session_context[-context_limit:]
+                    session_state["turn_count"] += 1
+                    continue
 
             # --- Bounded advisory general-chat fallback ---
             if not silent_widget_refresh:
@@ -4382,23 +4414,21 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         if widget_data.get("type") == "news":
                             items = list(widget_data.get("items") or [])
                             categories = dict(widget_data.get("categories") or {})
-                            session_state["news_cache"] = items
-                            session_state["news_categories"] = categories
+                            store_brief_widget(session_state, "news", widget_data)
                             session_state["last_sources"] = _extract_sources_from_results(items)
                             session_state["last_source_links"] = _extract_source_links(items)
                         await ws_send(ws, widget_data)
                 elif skill_name == "news" and isinstance(widget_data, dict):
                     items = widget_data.get("items", [])
-                    session_state["news_cache"] = list(items)
-                    session_state["news_categories"] = dict(widget_data.get("categories") or {})
+                    store_brief_widget(session_state, "news", widget_data, set_focus=True)
                     session_state["last_sources"] = _extract_sources_from_results(list(items))
                     session_state["last_source_links"] = _extract_source_links(list(items))
                     await send_widget_message(ws, "news", message, widget_data)
                 elif skill_name == "weather" and isinstance(widget_data, dict):
+                    store_brief_widget(session_state, "weather", widget_data, set_focus=True)
                     await send_widget_message(ws, "weather", message, widget_data)
                 elif skill_name == "calendar" and isinstance(widget_data, dict):
-                    session_state["last_calendar_summary"] = str(widget_data.get("summary") or "")
-                    session_state["last_calendar_events"] = list(widget_data.get("events") or [])
+                    store_brief_widget(session_state, "calendar", widget_data, set_focus=True)
                     await send_widget_message(ws, "calendar", message, widget_data)
                 else:
                     await send_chat_message(
