@@ -3,7 +3,9 @@
 **Canonical truth source.** Future verification UPDATES this file — do not create scattered
 verification docs. Every "Live Verified" row is backed by observed evidence, not code reading.
 
-Last verified: **2026-07-06** against fresh `main` (see QA Rule #1 below).
+Last verified: **2026-07-11** against fresh `main` (see QA Rule #1 below). 2026-07-11 update:
+the brief's false "not configured" labels for news/weather were fixed (PR #295 — see the News
+and Weather footnotes and the General-chat grounding note below).
 
 ---
 
@@ -51,8 +53,8 @@ AUTOMATION      ██░░░░░░░░  20%   read-only only, by design
 | Governed memory (+ seed loading) | ✅ | ✅ | ✅ | High |
 | C1 / Auralis Today | ✅ | ✅ | ✅ | Medium (today) |
 | Awareness brief + dogfood routing (#268) | ✅ | ✅ | ✅ | High |
-| **Weather** (Visual Crossing) | ✅ | ✅ | ✅ | High |
-| **News** (22 RSS feeds) | ✅ | ✅ | ✅¹ | High |
+| **Weather** (Visual Crossing) | ✅ | ✅ | ✅⁴ | High |
+| **News** (RSS feeds) | ✅ | ✅ | ✅¹ ⁵ | High |
 | **Calendar** (local .ics) | ✅ | ✅ | ✅ | High |
 | Arithmetic / deterministic commands | ✅ | ✅ | ✅ | Low |
 | Web search / research | ✅ | ❌² | 🟡 | Medium |
@@ -63,11 +65,27 @@ AUTOMATION      ██░░░░░░░░  20%   read-only only, by design
 | **Traffic** | ❌ | — | — | High |
 | Package tracking | ❌ | — | — | Low |
 
-¹ News works; 2 of 22 feeds are dead (Reuters HTTP 401 — killed public RSS). Live feeds
-(BBC/NPR/TechCrunch) return real headlines; dead feeds silently drop. Recommend pruning dead
-feeds + adding per-feed health logging. Not a blocker.
+¹ News works; the dead Reuters feed (HTTP 401 — killed public RSS) silently drops. Live feeds
+(BBC/NPR/TechCrunch) return real headlines. Recommend per-feed health logging. Not a blocker.
 ² Web-search code routes correctly but no Brave API key is configured → cannot execute live.
 ³ General chat returns answers but is slow (>30s to first token on gemma2:2b).
+⁴ Weather false "not configured" label FIXED (PR #295, 2026-07-11). Root cause was structural,
+not config: the brief read a top-level `connected` flag but the weather widget nests it under
+`data`, so a working forecast always rendered "not configured". The brief now unwraps the
+envelope; a genuine missing key still reads truthfully; a failed/rate-limited fetch reads
+"temporarily unavailable" (never "not configured / add API key").
+⁵ News false "not configured / check Brave" label FIXED (PR #295, 2026-07-11). Root cause:
+one news request fans out to ~26 governed network calls (cap 56); the ~70s dashboard refresh
+re-spent them and exhausted the 50/min rate limit, so later fetches returned empty and were
+mislabeled. A 180s result cache collapses repeated refreshes onto one fetch; empty results now
+read "temporarily unavailable" and never blame Brave (Brave = web search, not the news source).
+
+**Conversation grounding (2026-07-11 trace, read-only):** the conversation LLM does NOT receive
+news/weather facts — `GeneralChatSkill.can_handle` excludes those keywords (routes to widgets,
+never the model) and the prompt never reads `session_state["news_cache"]`/weather. So Nova can
+show news/weather but cannot yet *discuss* them; "converse about the news" is a defined-not-fired
+lane ("Grounded follow-up conversation over brief items"), held until ≥1 completed morning after
+#295. Any local-vs-cloud model-quality comparison is invalid until that grounding lands.
 
 ---
 

@@ -24,13 +24,23 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-07-07)
+## The current gate (as of 2026-07-11)
 
 Phase 3 — "Can Nova become a habit?" — is the current product phase. Per
 `CURRENT_WORK_STATUS.md` and the product definition, **the input that moves the project now is
 observed daily use, not more building.** Success metric: Nova eliminates one uncertainty before
 the user reaches for another app. The **evidence rule** gates new work: build only what observed
 behavior proves is missing.
+
+**Observation underway (2026-07-11):** Step 0 documentation/protocol landed in PR #294
+(morning-log template + single launch procedure + config truth) and Morning 1 is in progress.
+One truth-critical repair landed in PR #295 (truthful availability — false "not configured"
+labels for news/weather fixed), taken under explicit owner approval without lifting the freeze.
+A conversation-grounding trace found the LLM
+does not receive brief facts, so the next candidate lane — **"Grounded follow-up conversation
+over brief items"** — is DEFINED BUT HELD until at least one completed morning after #295; it is
+also the prerequisite before any local-vs-cloud (DeepSeek) model-quality test is meaningful. See
+the master roadmap candidate list and `docs/status/DAILY_COMMAND_CENTER.md` (2026-07-11 block).
 
 ## Queued, not active (needs a separate reviewed priority lock)
 
