@@ -17,21 +17,24 @@ whether a cleaner probe contradicted it.
 
 ## 0. Config state (first-class metadata — fill first)
 
-| Item                  | State                                  |
-| --------------------- | -------------------------------------- |
-| Calendar (.ics)       | connected / not connected              |
-| Weather key           | set / not set                          |
-| News                  | working / failing / unknown            |
-| Shopify               | connected / not connected              |
-| Model                 | gemma2:2b / other (name it)            |
-| Fresh boot            | yes / no                               |
+| Item                  | State                                                        |
+| --------------------- | ------------------------------------------------------------ |
+| Calendar (.ics)       | connected_current_with_events / connected_current_but_empty / connected_export_suspect / not_connected |
+| Weather key           | set / not set                                                |
+| News                  | working / failing / unknown                                  |
+| Shopify               | connected / not connected                                    |
+| Model                 | gemma2:2b / other (name it)                                  |
+| Fresh boot            | yes / no                                                     |
+
+`connected_export_suspect` = the .ics is missing events that exist in the source calendar
+(compare Google Calendar against the 6:00 AM export before choosing this).
 
 ## 1. Condition log (surface + load — required every morning)
 
 | Condition                                   | Value                                     |
 | ------------------------------------------- | ----------------------------------------- |
 | Launch path                                 | Nova.lnk -> start_nova.bat / other (name) |
-| Dashboard open or closed during chat probes | open / closed / mixed                     |
+| Dashboard timing relative to chat probes    | closed / auto_opened_at_launch / opened_before_chat / opened_during_chat / opened_after_chat (list all that apply, in order) |
 | Fresh boot or warm runtime                  | fresh / warm                              |
 | Anything else connected (Codex app, other WS clients, polling) | |
 
