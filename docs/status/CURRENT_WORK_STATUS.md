@@ -1,8 +1,8 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). This session's live verification
-(PR #273) and product-identity convergence (PR #274) are summarized in
-docs/status/DAILY_COMMAND_CENTER.md (read the "2026-07-07 session" block first).
+Last reviewed: 2026-07-11 (observation underway; PR #294 Step 0 + PR #295 truthful-availability
+fix merged). Read the "2026-07-11 session" block in docs/status/DAILY_COMMAND_CENTER.md first;
+the 2026-07-07 block (live verification PR #273, product-identity PR #274) remains below it.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
 `../capability_verification/CAPABILITY_INVENTORY.md` (what works), `DAILY_COMMAND_CENTER.md`
@@ -25,18 +25,34 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-PHASE 3 - Can Nova become a habit? (2026-07-06)
+PHASE 3 - Can Nova become a habit? OBSERVATION UNDERWAY (updated 2026-07-11)
 
-Engineering and verification are COMPLETE. The only input that moves the project now is
-OBSERVED DAILY USE. Do not build, verify, or define more until observed behavior proves a gap.
+The input that moves the project is OBSERVED DAILY USE. Engineering freeze holds; only
+truth-critical repairs are taken, each with explicit owner approval. Next input = a completed
+morning, not a PR.
 
-Shipped this cycle (all merged): UX lane (#261/#262/#264), C1 Auralis Today (#266/#267/#268,
-seeded + frozen), docs (#263/#269/#270/#271). Live verification on fresh main: weather / news /
-calendar / routing / C1 PASS; Gmail / Tasks / Reminders / Traffic NOT IMPLEMENTED.
+Merged this cycle:
+  #294 - Observation Step 0: ratified morning-log template + single launch procedure. Config
+         truth: runtime reads Windows User-scope env, NOT nova_backend/.env (mirror only).
+         Calendar wired end-to-end via a daily 6:00 AM .ics re-export (no upcoming events yet).
+  #295 - "Truthful availability under dashboard refresh" (truth-defect freeze exception): fixed
+         false "not configured" labels for news + weather. News 180s cache stops the ~70s
+         dashboard refresh exhausting the cap-56 50/min rate limit; weather widget-envelope
+         unwrap fixes a structural mislabel (a working forecast rendered "not configured");
+         empty/rate-limited now reads "temporarily unavailable", news no longer blames Brave.
 
-Active work = OBSERVATION: Chris opens Nova each morning first; Claude watches and reports
-where behavior diverges from what Nova assumed. Success = Nova eliminates ONE uncertainty
-before Chris reaches for another app.
+Findings (2026-07-11):
+  - False-unavailability root cause = rate-limit exhaustion + a structural envelope-read bug,
+    not missing config (both fixed in #295).
+  - Conversation-grounding trace (read-only): the LLM does NOT receive news/weather facts, so
+    "converse about the news" does not exist yet and a weak conversation would be plumbing
+    evidence, not model evidence. DeepSeek-vs-gemma2:2b test is invalid until grounding lands.
+
+Defined NOT fired: "Grounded follow-up conversation over brief items" — HELD until >=1 completed
+  morning after #295 (don't move the observation baseline again). Spec in memory + master roadmap.
+
+Morning 1 in progress: docs/observation/MORNING_01_2026-07-11.md (Chris completes the
+  experiential fields; Claude pre-filled only verified config/condition metadata).
 
 Owner-only NOW gate: Auralis-Digital hosting migration + privacy flip, Instagram, filming,
 Meta verification, OpenClaw token rotation.

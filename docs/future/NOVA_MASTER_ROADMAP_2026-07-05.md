@@ -18,6 +18,33 @@ Authority rules:
    document wins. When they disagree on scope, the lane lock wins.
 ```
 
+## Observation-driven candidates (added 2026-07-11)
+
+The Phase-3 observation period generates roadmap candidates from real behavior. Recorded here
+as they surface; none is authorized to build except via the stated gate.
+
+```text
+LANDED (truth-critical repairs, freeze-exempt, owner-approved):
+  #294  Observation Step 0 — morning-log template + single launch procedure + config truth
+        (runtime reads Windows User-scope env, not nova_backend/.env).
+  #295  Truthful availability under dashboard refresh — fixed false "not configured" labels for
+        news + weather (news 180s cache vs cap-56 rate-limit exhaustion; weather widget-envelope
+        unwrap; honest "temporarily unavailable" language; news no longer blames Brave).
+
+DEFINED, NOT FIRED (owner HOLD until >=1 completed morning after #295):
+  "Grounded follow-up conversation over brief items" — route discussion-shaped follow-ups
+  ("what do you think about that?") to the conversation lane instead of the widget; inject the
+  sourced brief facts (news/weather/calendar) already in session_state into the LLM context;
+  keep unsupported claims tagged, not laundered (the P0 hallucination boundary). This lane is
+  the PREREQUISITE before any local-vs-cloud (DeepSeek) model-quality test is meaningful — a
+  2026-07-11 read-only trace confirmed the conversation LLM currently receives no brief facts,
+  so a weak conversation would be plumbing evidence, not model evidence. Full spec: project
+  memory "grounded-conversation-lane" + docs/status/DAILY_COMMAND_CENTER.md (2026-07-11 block).
+
+STILL PARKED behind evidence: model preset / governed cloud-conversation brain (DeepSeek),
+gated on the grounded-conversation lane producing a genuine model-quality signal.
+```
+
 ## North Star
 
 ```text
