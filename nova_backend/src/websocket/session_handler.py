@@ -3454,6 +3454,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
                 _awareness = compose_awareness_brief(
                     weather_data=_aw_weather,
+                    weather_configured=bool(os.getenv("WEATHER_API_KEY", "").strip()),
                     news_items=_aw_news_items,
                     news_categories=_aw_news_cats,
                     calendar_data=_aw_calendar,
