@@ -28,3 +28,16 @@ def _reset_model_status_cache():
     with mod._model_status_cache_lock:
         mod._model_status_cache = {}
         mod._model_status_cache_ts = 0.0
+
+
+@pytest.fixture(autouse=True)
+def _reset_news_result_cache():
+    """The news skill keeps a module-level short-lived result cache (added to stop
+    the dashboard refresh from exhausting the network rate limit). Tests that
+    monkeypatch the RSS fetch expect ``handle()`` to actually fetch, so a cache
+    warmed by an earlier test would return stale results. Reset around every test."""
+    from src.skills import news as news_mod
+
+    news_mod.reset_news_result_cache()
+    yield
+    news_mod.reset_news_result_cache()
