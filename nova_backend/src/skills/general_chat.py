@@ -9,6 +9,10 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional, Tuple
 
+from src.conversation.brief_followup_grounding import (
+    build_grounded_brief_context,
+    is_fetch_shaped_brief_request,
+)
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
@@ -381,10 +385,9 @@ class GeneralChatSkill(BaseSkill):
             return False
 
         tokens = q.split()
-        if any(
-            token in {"weather", "forecast", "news", "headlines", "time", "date", "system", "status"}
-            for token in tokens
-        ):
+        if is_fetch_shaped_brief_request(q):
+            return False
+        if any(token in {"time", "date", "system", "status"} for token in tokens):
             return False
         return True
 
@@ -900,6 +903,9 @@ class GeneralChatSkill(BaseSkill):
         )
         if reference_hint:
             hints.append(reference_hint)
+        grounded_brief_context = build_grounded_brief_context(normalized_query, state)
+        if grounded_brief_context:
+            hints.append(grounded_brief_context)
 
         summary_data = dict(state.get("general_chat_summary") or {})
         older_entries = context_entries[:-self._MAX_CONTEXT_TURNS]

@@ -1,0 +1,324 @@
+from __future__ import annotations
+
+from src.conversation.brief_followup_grounding import (
+    answer_grounded_brief_followup,
+    build_grounded_brief_context,
+    is_discussion_shaped_brief_followup,
+    is_fetch_shaped_brief_request,
+    store_brief_widget,
+)
+
+
+def test_fetch_shaped_weather_stays_deterministic():
+    assert is_fetch_shaped_brief_request("weather") is True
+    assert is_fetch_shaped_brief_request("what's the weather?") is True
+    assert is_discussion_shaped_brief_followup(
+        "weather",
+        {"brief_weather": {"type": "weather", "data": {"summary": "72F"}}},
+    ) is False
+
+
+def test_weather_followup_uses_sourced_weather_fact_block():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "weather",
+        {
+            "type": "weather",
+            "data": {
+                "summary": "72 degrees F and Partially cloudy in Ann Arbor.",
+                "status": "ok",
+                "provider": "Visual Crossing",
+                "forecast": {"today": "87F/63F, Partially cloudy"},
+            },
+        },
+    )
+
+    assert is_discussion_shaped_brief_followup("Will it rain later?", state) is True
+    block = build_grounded_brief_context("Will it rain later?", state)
+
+    assert "Weather [source: Visual Crossing/weather widget; status: sourced]" in block
+    assert "72 degrees F" in block
+    assert "Use only these sourced facts" in block
+    assert "The loaded source does not say" in block
+    assert "Do not infer a yes/no answer" in block
+
+    answer = answer_grounded_brief_followup("Will it rain later?", state)
+    assert "The loaded source does not say whether it will rain later" in answer
+    assert "cloud cover alone" in answer
+
+
+def test_second_news_story_selects_second_loaded_headline():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "First headline", "source": "NPR", "summary": "First summary"},
+                {"title": "Second headline", "source": "BBC News", "summary": "Second summary"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    assert is_discussion_shaped_brief_followup("Tell me more about the second story.", state) is True
+    block = build_grounded_brief_context("Tell me more about the second story.", state)
+
+    assert "Second headline" in block
+    assert "BBC News" in block
+    assert "First headline" not in block
+
+    answer = answer_grounded_brief_followup("Tell me more about the second story.", state)
+    assert "Second headline" in answer
+    assert "First headline" not in answer
+    assert "should not add unstated facts" in answer
+
+
+def test_news_followup_stays_attached_to_selected_story():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "First headline", "source": "NPR", "summary": "First summary"},
+                {"title": "Second headline", "source": "BBC News", "summary": "Second summary"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    first_answer = answer_grounded_brief_followup("Tell me more about the second story.", state)
+    second_answer = answer_grounded_brief_followup("Why does that matter?", state)
+
+    assert "Second headline" in first_answer
+    assert "Second headline" in second_answer
+    assert "First headline" not in second_answer
+    assert state["active_news_story_index"] == 1
+
+
+def test_unrelated_prompts_are_not_captured_after_brief_loads():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "weather",
+        {
+            "type": "weather",
+            "data": {"summary": "72 degrees F and Partially cloudy in Ann Arbor."},
+        },
+    )
+    state["active_brief_item"] = "weather"
+
+    assert is_discussion_shaped_brief_followup("write a product description", state) is False
+    assert is_discussion_shaped_brief_followup("Tell me a story", state) is False
+    assert is_discussion_shaped_brief_followup("What is the status of my order?", state) is False
+    assert is_discussion_shaped_brief_followup("What events caused the recession?", state) is False
+    assert build_grounded_brief_context("write a product description", state) == ""
+
+
+def test_explicit_domain_unrelated_prompts_are_not_captured():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "weather",
+        {
+            "type": "weather",
+            "data": {"summary": "72 degrees F and Partially cloudy in Ann Arbor."},
+        },
+    )
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [{"title": "Loaded headline", "source": "NPR"}],
+        },
+    )
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "Two events today.",
+            "events": [{"title": "Meeting", "date": "2026-07-11", "time": "2:00 PM"}],
+        },
+    )
+    state["active_brief_item"] = "weather"
+
+    assert is_discussion_shaped_brief_followup("write a weather-themed product description", state) is False
+    assert is_discussion_shaped_brief_followup("write a news-themed advertisement", state) is False
+    assert is_discussion_shaped_brief_followup("create a calendar event", state) is False
+    assert is_discussion_shaped_brief_followup("Should I create a weather-themed product?", state) is False
+    assert is_discussion_shaped_brief_followup("Why does my news-themed advertisement look bad?", state) is False
+    assert is_discussion_shaped_brief_followup("What do you think of my calendar logo?", state) is False
+
+
+def test_background_widget_refresh_does_not_change_conversation_focus():
+    state: dict = {"active_brief_item": "news"}
+
+    store_brief_widget(
+        state,
+        "weather",
+        {
+            "type": "weather",
+            "data": {"summary": "72 degrees F and Partially cloudy in Ann Arbor."},
+        },
+    )
+
+    assert state["active_brief_item"] == "news"
+
+
+def test_negative_rain_wording_is_not_inverted():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "weather",
+        {
+            "type": "weather",
+            "data": {
+                "summary": "No rain expected today.",
+                "status": "ok",
+                "provider": "Visual Crossing",
+                "precip_probability": 0,
+            },
+        },
+        set_focus=True,
+    )
+
+    answer = answer_grounded_brief_followup("Will it rain later?", state)
+
+    assert "does not indicate rain" in answer
+    assert "rain is possible" not in answer
+
+
+def test_news_selection_clears_when_refresh_replaces_story_identity():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "First headline", "source": "NPR", "url": "https://example.test/1"},
+                {"title": "Second headline", "source": "BBC News", "url": "https://example.test/2"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    answer_grounded_brief_followup("Tell me more about the second story.", state)
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "Different first", "source": "NPR", "url": "https://example.test/a"},
+                {"title": "Different second", "source": "BBC News", "url": "https://example.test/b"},
+            ],
+        },
+    )
+
+    assert "active_news_story_id" not in state
+    answer = answer_grounded_brief_followup("Why does that matter?", state)
+    assert "Different second" not in answer
+    assert "selected headline" in answer
+
+
+def test_calendar_followup_uses_ics_event_context():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "Two events today.",
+            "events": [{"summary": "Dentist", "start": "2026-07-11T14:00:00"}],
+        },
+        set_focus=True,
+    )
+
+    answer_grounded_brief_followup("Tell me more about the first event.", state)
+
+    assert is_discussion_shaped_brief_followup("What do I have after that?", state) is True
+    block = build_grounded_brief_context("What do I have after that?", state)
+
+    assert "Calendar [source: local .ics/calendar widget; status: sourced]" in block
+    assert "Dentist" in block
+
+
+def test_unqualified_after_that_requires_selected_calendar_event():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "Two events today.",
+            "events": [
+                {"title": "Zebra Meeting", "date": "2026-07-11", "time": "2:00 PM"},
+                {"title": "Alpha Meeting", "date": "2026-07-11", "time": "3:00 PM"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    assert is_discussion_shaped_brief_followup(
+        "I finished the product description. What should I do after that?",
+        state,
+    ) is False
+
+    answer_grounded_brief_followup("Tell me more about the first event.", state)
+
+    assert is_discussion_shaped_brief_followup("What do I have after that?", state) is True
+
+
+def test_calendar_after_that_returns_next_sorted_event():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "Two events today.",
+            "events": [
+                {"summary": "Second event", "start": "2026-07-11T15:00:00"},
+                {"summary": "First event", "start": "2026-07-11T14:00:00"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    selected = answer_grounded_brief_followup("Tell me more about the first event.", state)
+    next_event = answer_grounded_brief_followup("What do I have after that?", state)
+
+    assert "First event" in selected
+    assert "Second event" in next_event
+    assert "First event" not in next_event
+
+
+def test_calendar_after_that_uses_real_calendar_skill_event_shape():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "Two events today.",
+            "events": [
+                {"title": "Zebra Meeting", "date": "2026-07-11", "time": "2:00 PM", "day_label": "Saturday"},
+                {"title": "Alpha Meeting", "date": "2026-07-11", "time": "3:00 PM", "day_label": "Saturday"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    selected = answer_grounded_brief_followup("Tell me more about the first event.", state)
+    next_event = answer_grounded_brief_followup("What do I have after that?", state)
+
+    assert "Zebra Meeting" in selected
+    assert "Alpha Meeting" in next_event
+    assert "Zebra Meeting" not in next_event
