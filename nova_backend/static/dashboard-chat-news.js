@@ -2322,6 +2322,30 @@ function injectUserText(text, channel = "text") {
   }
 }
 
+// Turns the user pressed Stop on. Late frames for these turn_ids are ignored
+// everywhere, so an abandoned turn's output can never render or overwrite a later
+// turn. Honest-abandon semantics: we stop waiting and never claim a hard kill.
+const abandonedTurns = new Set();
+const ABANDON_STATUS_MESSAGE =
+  "Stopped waiting. If work had already started, the final outcome could not be verified.";
+
+function stopCurrentTurn() {
+  if (!manualTurnInFlight || !activeManualTurnId) return;
+  const abandonedId = activeManualTurnId;
+  abandonedTurns.add(abandonedId);
+  if (abandonedTurns.size > 64) {
+    abandonedTurns.delete(abandonedTurns.values().next().value);
+  }
+  // Best-effort signal so the backend records the abandonment and never treats this
+  // control message as a prompt. Not queued — a stale cancel has no value. We do NOT
+  // claim the worker was killed; a turn already blocked mid-execution keeps running.
+  safeWSSend({ type: "cancel", turn_id: abandonedId });
+  appendChatMessage("assistant", ABANDON_STATUS_MESSAGE, null, "Stopped");
+  clearActiveManualTurn("Stopped", "You stopped waiting for the current request.");
+  startWidgetAutoRefresh();
+  if (typeof probeRuntimeHealthOnce === "function") probeRuntimeHealthOnce();
+}
+
 function requestInlineAssistantAction(text, statusText = "", invocationSource = "ui_surface") {
   const clean = String(text || "").trim();
   if (!clean) return false;
@@ -2698,6 +2722,11 @@ function connectWebSocket() {
     let msg;
     try { msg = JSON.parse(e.data); }
     catch { return; }
+
+    // Drop any late frame belonging to a turn the user pressed Stop on, regardless of
+    // current in-flight state, so an abandoned turn can never render or overwrite a
+    // later turn's output.
+    if (msg && msg.turn_id && abandonedTurns.has(msg.turn_id)) return;
 
     if (widgetMessageMatchesActiveManualTurn(msg)) manualTurnAssistantSeen = true;
 
@@ -3633,6 +3662,12 @@ function setChatComposerBusy(isBusy) {
       ? "Nova is still working. Wait for this response to finish before sending another message."
       : "Send message (Enter)";
   }
+  const stopBtn = $("stop-btn");
+  if (stopBtn) {
+    // Stop is offered only while a turn is in flight, so the user always has a way
+    // out of a slow / stuck / unavailable request without refreshing or restarting.
+    stopBtn.style.display = busy ? "" : "none";
+  }
 }
 
 function setupPrimaryChatControls() {
@@ -3640,6 +3675,12 @@ function setupPrimaryChatControls() {
   if (sendBtn && sendBtn.dataset.bound !== "1") {
     sendBtn.dataset.bound = "1";
     sendBtn.addEventListener("click", sendChat);
+  }
+
+  const stopBtn = $("stop-btn");
+  if (stopBtn && stopBtn.dataset.bound !== "1") {
+    stopBtn.dataset.bound = "1";
+    stopBtn.addEventListener("click", stopCurrentTurn);
   }
 
   const deepSeekBtn = $("deepseek-btn");

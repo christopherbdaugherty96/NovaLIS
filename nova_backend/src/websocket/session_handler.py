@@ -16,6 +16,7 @@ from src.conversation.brief_followup_grounding import (
     schedule_commitment_guard,
     store_brief_widget,
 )
+from src.websocket.turn_abandon import mark_turn_abandoned
 from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
 
@@ -956,6 +957,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 # dashboard must not be force-closed every idle-timeout and then re-run its
                 # full reconnect + hydration storm, which races and drops real user prompts.
                 # Do not process or respond.
+                continue
+
+            if msg_type in ("cancel", "abandon"):
+                # The client pressed Stop and has abandoned an in-flight turn. We do NOT
+                # claim to have killed the worker: the session loop runs one turn at a
+                # time, so a turn already blocked mid-execution cannot be force-cancelled
+                # here (the client stops waiting and ignores that turn's late frames by
+                # turn_id). Record the abandonment so this control message is never treated
+                # as a prompt and so nothing writes a "successful answer" for it. Truthful
+                # status is shown client-side (ABANDON_STATUS_MESSAGE); no response needed.
+                mark_turn_abandoned(session_state, msg.get("turn_id"))
                 continue
 
             if msg_type == "get_thought":
