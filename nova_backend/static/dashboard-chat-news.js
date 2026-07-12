@@ -2330,20 +2330,41 @@ const ABANDON_STATUS_MESSAGE =
   "Stopped waiting. If work had already started, the final outcome could not be verified.";
 
 function stopCurrentTurn() {
-  if (!manualTurnInFlight || !activeManualTurnId) return;
-  const abandonedId = activeManualTurnId;
-  abandonedTurns.add(abandonedId);
-  if (abandonedTurns.size > 64) {
-    abandonedTurns.delete(abandonedTurns.values().next().value);
+  // Fires for any in-flight request (manual turn OR inline assistant action), so the
+  // Stop button is never a no-op while it is shown.
+  if (!waitingForAssistant && !manualTurnInFlight) return;
+  if (activeManualTurnId) {
+    abandonedTurns.add(activeManualTurnId);
+    if (abandonedTurns.size > 64) {
+      abandonedTurns.delete(abandonedTurns.values().next().value);
+    }
+    // Best-effort signal so the backend records the abandonment and never treats this
+    // control message as a prompt. We do NOT claim a kill; a blocked turn keeps running.
+    safeWSSend({ type: "cancel", turn_id: activeManualTurnId });
   }
-  // Best-effort signal so the backend records the abandonment and never treats this
-  // control message as a prompt. Not queued — a stale cancel has no value. We do NOT
-  // claim the worker was killed; a turn already blocked mid-execution keeps running.
-  safeWSSend({ type: "cancel", turn_id: abandonedId });
   appendChatMessage("assistant", ABANDON_STATUS_MESSAGE, null, "Stopped");
   clearActiveManualTurn("Stopped", "You stopped waiting for the current request.");
-  startWidgetAutoRefresh();
-  if (typeof probeRuntimeHealthOnce === "function") probeRuntimeHealthOnce();
+  // Reconnect-on-stop. The current socket processes one turn at a time, so it stays
+  // blocked on the abandoned turn and cannot accept the next prompt until that turn
+  // returns. Abandon this socket and open a fresh, responsive one so the next prompt
+  // actually works without a page refresh or restart. The old turn keeps running
+  // server-side; its late frames land on the now-closed socket (and are ignored by
+  // the abandonedTurns guard), so they can never render or overwrite the next turn.
+  reconnectForStop();
+}
+
+function reconnectForStop() {
+  const oldWs = ws;
+  ws = null;
+  if (oldWs) {
+    // Detach handlers so the abandoned socket's close does not schedule a duplicate
+    // reconnect and its late frames are never delivered to the client.
+    try { oldWs.onclose = null; oldWs.onerror = null; oldWs.onmessage = null; } catch (_) {}
+    try { oldWs.close(); } catch (_) {}
+  }
+  stopWsKeepalive();
+  clearWebSocketReconnectTimer();
+  connectWebSocket();
 }
 
 function requestInlineAssistantAction(text, statusText = "", invocationSource = "ui_surface") {

@@ -86,13 +86,23 @@ class TestFrontendStopWiring:
         assert "clearActiveManualTurn" in js
         assert "abandonedTurns.has(msg.turn_id)) return" in js
         # sends the cancel signal, shows honest status, never claims a kill
-        assert '{ type: "cancel", turn_id: abandonedId }' in js
+        assert '{ type: "cancel", turn_id: activeManualTurnId }' in js
         assert "final outcome could not be verified" in js
         assert "killed" not in ABANDON_STATUS_MESSAGE.lower()
+
+    def test_stop_reconnects_so_next_prompt_works(self):
+        # The single socket stays blocked on the abandoned turn; Stop must open a fresh
+        # socket so the next prompt actually runs (not just clear the UI).
+        js = SERVED_JS.read_text(encoding="utf-8")
+        assert "function reconnectForStop()" in js
+        assert "reconnectForStop()" in js  # called from stopCurrentTurn
+        assert "connectWebSocket()" in js  # a fresh socket is opened
+        # not a no-op for inline (non-manual) in-flight requests
+        assert "if (!waitingForAssistant && !manualTurnInFlight) return;" in js
 
     def test_mirror_matches_served_for_stop(self):
         for served, mirror in ((SERVED_JS, MIRROR_JS), (SERVED_HTML, MIRROR_HTML)):
             s = served.read_text(encoding="utf-8")
             m = mirror.read_text(encoding="utf-8")
-            for token in ("stop-btn", "stopCurrentTurn", "abandonedTurns"):
+            for token in ("stop-btn", "stopCurrentTurn", "abandonedTurns", "reconnectForStop"):
                 assert (token in s) == (token in m), f"{token} mirror drift"
