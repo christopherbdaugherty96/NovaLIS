@@ -2322,6 +2322,51 @@ function injectUserText(text, channel = "text") {
   }
 }
 
+// Turns the user pressed Stop on. Late frames for these turn_ids are ignored
+// everywhere, so an abandoned turn's output can never render or overwrite a later
+// turn. Honest-abandon semantics: we stop waiting and never claim a hard kill.
+const abandonedTurns = new Set();
+const ABANDON_STATUS_MESSAGE =
+  "Stopped waiting. If work had already started, the final outcome could not be verified.";
+
+function stopCurrentTurn() {
+  // Fires for any in-flight request (manual turn OR inline assistant action), so the
+  // Stop button is never a no-op while it is shown.
+  if (!waitingForAssistant && !manualTurnInFlight) return;
+  if (activeManualTurnId) {
+    abandonedTurns.add(activeManualTurnId);
+    if (abandonedTurns.size > 64) {
+      abandonedTurns.delete(abandonedTurns.values().next().value);
+    }
+    // Best-effort signal so the backend records the abandonment and never treats this
+    // control message as a prompt. We do NOT claim a kill; a blocked turn keeps running.
+    safeWSSend({ type: "cancel", turn_id: activeManualTurnId });
+  }
+  appendChatMessage("assistant", ABANDON_STATUS_MESSAGE, null, "Stopped");
+  clearActiveManualTurn("Stopped", "You stopped waiting for the current request.");
+  // Reconnect-on-stop. The current socket processes one turn at a time, so it stays
+  // blocked on the abandoned turn and cannot accept the next prompt until that turn
+  // returns. Abandon this socket and open a fresh, responsive one so the next prompt
+  // actually works without a page refresh or restart. The old turn keeps running
+  // server-side; its late frames land on the now-closed socket (and are ignored by
+  // the abandonedTurns guard), so they can never render or overwrite the next turn.
+  reconnectForStop();
+}
+
+function reconnectForStop() {
+  const oldWs = ws;
+  ws = null;
+  if (oldWs) {
+    // Detach handlers so the abandoned socket's close does not schedule a duplicate
+    // reconnect and its late frames are never delivered to the client.
+    try { oldWs.onclose = null; oldWs.onerror = null; oldWs.onmessage = null; } catch (_) {}
+    try { oldWs.close(); } catch (_) {}
+  }
+  stopWsKeepalive();
+  clearWebSocketReconnectTimer();
+  connectWebSocket();
+}
+
 function requestInlineAssistantAction(text, statusText = "", invocationSource = "ui_surface") {
   const clean = String(text || "").trim();
   if (!clean) return false;
@@ -2698,6 +2743,11 @@ function connectWebSocket() {
     let msg;
     try { msg = JSON.parse(e.data); }
     catch { return; }
+
+    // Drop any late frame belonging to a turn the user pressed Stop on, regardless of
+    // current in-flight state, so an abandoned turn can never render or overwrite a
+    // later turn's output.
+    if (msg && msg.turn_id && abandonedTurns.has(msg.turn_id)) return;
 
     if (widgetMessageMatchesActiveManualTurn(msg)) manualTurnAssistantSeen = true;
 
@@ -3633,6 +3683,12 @@ function setChatComposerBusy(isBusy) {
       ? "Nova is still working. Wait for this response to finish before sending another message."
       : "Send message (Enter)";
   }
+  const stopBtn = $("stop-btn");
+  if (stopBtn) {
+    // Stop is offered only while a turn is in flight, so the user always has a way
+    // out of a slow / stuck / unavailable request without refreshing or restarting.
+    stopBtn.style.display = busy ? "" : "none";
+  }
 }
 
 function setupPrimaryChatControls() {
@@ -3640,6 +3696,12 @@ function setupPrimaryChatControls() {
   if (sendBtn && sendBtn.dataset.bound !== "1") {
     sendBtn.dataset.bound = "1";
     sendBtn.addEventListener("click", sendChat);
+  }
+
+  const stopBtn = $("stop-btn");
+  if (stopBtn && stopBtn.dataset.bound !== "1") {
+    stopBtn.dataset.bound = "1";
+    stopBtn.addEventListener("click", stopCurrentTurn);
   }
 
   const deepSeekBtn = $("deepseek-btn");
