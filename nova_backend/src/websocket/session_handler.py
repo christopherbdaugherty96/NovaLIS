@@ -13,6 +13,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from src.conversation.brief_followup_grounding import (
     answer_grounded_brief_followup,
     is_discussion_shaped_brief_followup,
+    schedule_commitment_guard,
     store_brief_widget,
 )
 from src.openclaw.run_state_machine import run_event_hub
@@ -4309,6 +4310,27 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_context = session_context[-context_limit:]
                     session_state["turn_count"] += 1
                     continue
+
+            # --- Fallback truth guard (schedule / calendar / commitments) ---
+            # Never let the local model improvise schedule facts. If the user asks
+            # about meetings / appointments / their calendar and no sourced calendar
+            # context is loaded, refuse safely instead of falling through to the
+            # advisory model, which otherwise fabricates commitments.
+            _schedule_guard_answer = schedule_commitment_guard(mediated_text, session_state)
+            if _schedule_guard_answer:
+                session_state["last_response"] = _schedule_guard_answer
+                await send_chat_message(ws, _schedule_guard_answer, tone_domain="daily")
+                await send_chat_done(ws)
+                _maybe_auto_speak_for_voice_turn(session_state, _schedule_guard_answer)
+                new_turn = [
+                    {"role": "user", "content": mediated_text},
+                    {"role": "assistant", "content": _schedule_guard_answer},
+                ]
+                session_context.extend(new_turn)
+                context_limit = 40 if session_state.get("presence_mode") else 20
+                session_context = session_context[-context_limit:]
+                session_state["turn_count"] += 1
+                continue
 
             # --- Bounded advisory general-chat fallback ---
             if not silent_widget_refresh:
