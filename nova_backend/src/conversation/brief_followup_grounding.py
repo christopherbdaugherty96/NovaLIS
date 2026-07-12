@@ -33,6 +33,21 @@ FETCH_SHAPES = (
     re.compile(r"^\s*(?:latest|current|today'?s)\s+(?:news|headlines|weather|forecast)\s*\??\s*$", re.I),
 )
 
+# "top/lead/main story" is a natural news reference the ordinal path missed.
+TOP_STORY_RE = re.compile(r"\b(?:top|lead|main|biggest)\s+(?:story|stories|headline|headlines)\b", re.I)
+
+# Schedule / calendar / commitment questions. Kept specific to avoid over-capturing
+# ordinary chat: explicit schedule nouns, "am I free/busy", or "what do I have <when>".
+_SCHEDULE_WORDS_RE = re.compile(
+    r"\b(?:meetings?|appointments?|agenda|scheduled?|calendar|commitments?|obligations?)\b", re.I
+)
+_SCHEDULE_HAVE_RE = re.compile(
+    r"\bwhat(?:'s| is| do i have| have i got| am i doing)\b[^?]*"
+    r"\b(?:today|tomorrow|tonight|this\s+week|this\s+morning|this\s+afternoon|this\s+evening|weekend)\b",
+    re.I,
+)
+_SCHEDULE_FREE_RE = re.compile(r"\bam i (?:free|busy|available|booked)\b", re.I)
+
 ORDINALS = {
     "first": 0,
     "1st": 0,
@@ -50,6 +65,35 @@ ORDINALS = {
 def is_fetch_shaped_brief_request(text: str) -> bool:
     clean = str(text or "").strip()
     return bool(clean and any(pattern.match(clean) for pattern in FETCH_SHAPES))
+
+
+def is_schedule_commitment_question(text: str) -> bool:
+    """True when the user is asking about their schedule, calendar, meetings,
+    appointments, or commitments."""
+    t = str(text or "")
+    return bool(
+        _SCHEDULE_WORDS_RE.search(t)
+        or _SCHEDULE_HAVE_RE.search(t)
+        or _SCHEDULE_FREE_RE.search(t)
+    )
+
+
+def schedule_commitment_guard(text: str, session_state: dict[str, Any] | None) -> str:
+    """Fallback truth guard. When the user asks about their schedule/commitments and
+    NO sourced calendar context is loaded, return a safe refusal so the local model
+    never improvises meetings, appointments, or obligations that were never sourced.
+    Returns "" when the question is not schedule-shaped or calendar facts are loaded
+    (in which case grounded routing answers it truthfully)."""
+    state = session_state or {}
+    if not is_schedule_commitment_question(text):
+        return ""
+    if _has_grounding_for("calendar", state):
+        return ""
+    return (
+        "I don't have your calendar loaded right now, so I can't tell you what's on "
+        "your schedule — and I won't guess. Ask me to check your calendar and I'll "
+        "pull up what's actually there."
+    )
 
 
 def is_discussion_shaped_brief_followup(text: str, session_state: dict[str, Any] | None) -> bool:
@@ -195,6 +239,8 @@ def _select_explicit_item_key(lowered: str, state: dict[str, Any]) -> str:
         return "weather"
     if _contains_any_word(lowered, ("news", "headline", "headlines", "article")):
         return "news"
+    if TOP_STORY_RE.search(lowered):
+        return "news"
     if _ordinal_index(lowered) is not None and _contains_any_word(lowered, ("story", "stories")):
         return "news"
     if _contains_any_word(lowered, ("calendar", "schedule", "agenda")):
@@ -233,6 +279,8 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
         )
     if key == "news":
         if _ordinal_index(lowered) is not None and _contains_any_word(lowered, ("story", "stories", "headline", "headlines")):
+            return True
+        if TOP_STORY_RE.search(lowered):
             return True
         return bool(state.get("active_news_story")) and _has_reference_shape(lowered)
     if key == "calendar":

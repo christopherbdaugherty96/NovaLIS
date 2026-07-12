@@ -5,8 +5,67 @@ from src.conversation.brief_followup_grounding import (
     build_grounded_brief_context,
     is_discussion_shaped_brief_followup,
     is_fetch_shaped_brief_request,
+    is_schedule_commitment_question,
+    schedule_commitment_guard,
     store_brief_widget,
 )
+
+
+def _news_state() -> dict:
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "Alvarez wins in extra innings", "source": "NPR", "summary": "Walk-off."},
+                {"title": "Budget vote delayed", "source": "BBC News", "summary": "Recess called."},
+            ],
+        },
+        set_focus=True,
+    )
+    return state
+
+
+class TestSlice2CoverageAndGuard:
+    # --- Audit failure 1: "top story" follow-up after news must ground to loaded news ---
+    def test_top_story_followup_grounds_to_loaded_news(self):
+        state = _news_state()
+        assert is_discussion_shaped_brief_followup(
+            "what do you think about the top story?", state
+        ) is True
+        answer = answer_grounded_brief_followup("what do you think about the top story?", state)
+        assert "Alvarez wins in extra innings" in answer
+
+    # --- Audit failure 2: schedule question with NO loaded calendar must refuse safely ---
+    def test_meetings_question_without_calendar_refuses_safely(self):
+        assert is_schedule_commitment_question("what meetings do I have tomorrow?") is True
+        guard = schedule_commitment_guard("what meetings do I have tomorrow?", {})
+        assert guard  # non-empty refusal
+        assert "don't have your calendar loaded" in guard.lower()
+        assert "won't guess" in guard.lower()
+
+    def test_what_do_i_have_tomorrow_without_calendar_refuses(self):
+        guard = schedule_commitment_guard("what do I have tomorrow?", {})
+        assert guard and "calendar" in guard.lower()
+
+    # --- Guard yields to grounded routing when calendar IS loaded ---
+    def test_schedule_guard_defers_when_calendar_loaded(self):
+        state: dict = {}
+        store_brief_widget(
+            state,
+            "calendar",
+            {"type": "calendar", "summary": "Nothing on your calendar today.", "events": []},
+            set_focus=True,
+        )
+        assert schedule_commitment_guard("what meetings do I have tomorrow?", state) == ""
+
+    # --- Not over-captured: ordinary unrelated chat is neither schedule nor grounded ---
+    def test_ordinary_prompt_is_not_overcaptured(self):
+        assert is_schedule_commitment_question("what's a good book to read?") is False
+        assert schedule_commitment_guard("what's a good book to read?", {}) == ""
+        assert is_discussion_shaped_brief_followup("what's a good book to read?", _news_state()) is False
 
 
 def test_fetch_shaped_weather_stays_deterministic():
