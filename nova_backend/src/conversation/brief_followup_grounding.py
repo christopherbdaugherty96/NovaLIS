@@ -79,16 +79,30 @@ def is_schedule_commitment_question(text: str) -> bool:
 
 
 def schedule_commitment_guard(text: str, session_state: dict[str, Any] | None) -> str:
-    """Fallback truth guard. When the user asks about their schedule/commitments and
-    NO sourced calendar context is loaded, return a safe refusal so the local model
-    never improvises meetings, appointments, or obligations that were never sourced.
-    Returns "" when the question is not schedule-shaped or calendar facts are loaded
-    (in which case grounded routing answers it truthfully)."""
+    """Fallback truth guard for schedule/calendar/commitment questions. Hard backstop:
+    a schedule question that reaches the general-chat fallback (i.e. grounded routing did
+    not already answer it) must NEVER be handed to the local model, which otherwise
+    fabricates commitments. Returns "" only for non-schedule questions.
+
+    - Calendar loaded: answer deterministically from the sourced calendar facts (never the
+      model), including the honest "nothing scheduled" case.
+    - Calendar not loaded: refuse safely and say Nova won't guess.
+    """
     state = session_state or {}
     if not is_schedule_commitment_question(text):
         return ""
     if _has_grounding_for("calendar", state):
-        return ""
+        lines = _calendar_lines(state)
+        if lines:
+            return (
+                "Sourced calendar facts:\n" + "\n".join(lines)
+                + "\n\nThat is what the loaded calendar shows. I won't add commitments "
+                "that aren't in it."
+            )
+        return (
+            "Your calendar is loaded and shows nothing scheduled. I won't invent "
+            "meetings or appointments that aren't there."
+        )
     return (
         "I don't have your calendar loaded right now, so I can't tell you what's on "
         "your schedule — and I won't guess. Ask me to check your calendar and I'll "

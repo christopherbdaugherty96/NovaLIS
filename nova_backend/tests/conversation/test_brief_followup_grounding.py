@@ -51,7 +51,8 @@ class TestSlice2CoverageAndGuard:
         assert guard and "calendar" in guard.lower()
 
     # --- Guard yields to grounded routing when calendar IS loaded ---
-    def test_schedule_guard_defers_when_calendar_loaded(self):
+    # --- Loaded-but-empty calendar: answer deterministically from the source, never fabricate ---
+    def test_schedule_guard_answers_from_loaded_empty_calendar_not_model(self):
         state: dict = {}
         store_brief_widget(
             state,
@@ -59,7 +60,27 @@ class TestSlice2CoverageAndGuard:
             {"type": "calendar", "summary": "Nothing on your calendar today.", "events": []},
             set_focus=True,
         )
-        assert schedule_commitment_guard("what meetings do I have tomorrow?", state) == ""
+        answer = schedule_commitment_guard("what meetings do I have tomorrow?", state)
+        assert answer  # never an empty yield that would let the model fabricate
+        assert "Nothing on your calendar today" in answer
+        assert "won't add commitments" in answer.lower()
+
+    # --- Loaded calendar with events: the guard surfaces the sourced events, not the model ---
+    def test_schedule_guard_lists_loaded_calendar_events(self):
+        state: dict = {}
+        store_brief_widget(
+            state,
+            "calendar",
+            {
+                "type": "calendar",
+                "summary": "One event today.",
+                "events": [{"title": "Dentist", "start": "2026-07-12T14:00"}],
+            },
+            set_focus=True,
+        )
+        answer = schedule_commitment_guard("do I have any appointments?", state)
+        assert "Sourced calendar facts" in answer
+        assert "Dentist" in answer
 
     # --- Not over-captured: ordinary unrelated chat is neither schedule nor grounded ---
     def test_ordinary_prompt_is_not_overcaptured(self):
