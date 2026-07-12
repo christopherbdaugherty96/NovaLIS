@@ -38,15 +38,18 @@ TOP_STORY_RE = re.compile(r"\b(?:top|lead|main|biggest)\s+(?:story|stories|headl
 
 # Schedule / calendar / commitment questions. Kept specific to avoid over-capturing
 # ordinary chat: explicit schedule nouns, "am I free/busy", or "what do I have <when>".
-_SCHEDULE_WORDS_RE = re.compile(
-    r"\b(?:meetings?|appointments?|agenda|scheduled?|calendar|commitments?|obligations?)\b", re.I
-)
-_SCHEDULE_HAVE_RE = re.compile(
-    r"\bwhat(?:'s| is| do i have| have i got| am i doing)\b[^?]*"
-    r"\b(?:today|tomorrow|tonight|this\s+week|this\s+morning|this\s+afternoon|this\s+evening|weekend)\b",
+# Schedule / calendar / commitment QUESTIONS only. Deliberately does not match a
+# bare mention of "calendar"/"meeting" (which would over-capture "my calendar logo"
+# or "create a calendar event"); it requires an interrogative schedule shape.
+_SCHEDULE_Q_RE = re.compile(
+    r"\bdo i have\b[^?]*\b(?:meetings?|appointments?|events?|plans?)\b"
+    r"|\bwhat\s+(?:meetings?|appointments?)\b"
+    r"|\bwhat(?:'s| is)\s+(?:on\s+)?(?:my|the)\s+(?:calendar|schedule|agenda|plate)\b"
+    r"|\bwhat(?:'s| is| do i have| have i got| am i doing)\b[^?]*"
+    r"\b(?:today|tomorrow|tonight|this\s+week|this\s+morning|this\s+afternoon|this\s+evening|weekend)\b"
+    r"|\bam i (?:free|busy|available|booked)\b",
     re.I,
 )
-_SCHEDULE_FREE_RE = re.compile(r"\bam i (?:free|busy|available|booked)\b", re.I)
 
 ORDINALS = {
     "first": 0,
@@ -70,12 +73,7 @@ def is_fetch_shaped_brief_request(text: str) -> bool:
 def is_schedule_commitment_question(text: str) -> bool:
     """True when the user is asking about their schedule, calendar, meetings,
     appointments, or commitments."""
-    t = str(text or "")
-    return bool(
-        _SCHEDULE_WORDS_RE.search(t)
-        or _SCHEDULE_HAVE_RE.search(t)
-        or _SCHEDULE_FREE_RE.search(t)
-    )
+    return bool(_SCHEDULE_Q_RE.search(str(text or "")))
 
 
 def schedule_commitment_guard(text: str, session_state: dict[str, Any] | None) -> str:

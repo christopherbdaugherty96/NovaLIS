@@ -88,6 +88,27 @@ class TestSlice2CoverageAndGuard:
         assert schedule_commitment_guard("what's a good book to read?", {}) == ""
         assert is_discussion_shaped_brief_followup("what's a good book to read?", _news_state()) is False
 
+    # --- Review point 3: bare schedule words must not over-capture non-schedule prompts ---
+    def test_schedule_guard_does_not_overcapture_domain_word_prompts(self):
+        for prompt in (
+            "what do you think of my calendar logo?",
+            "create a calendar event",
+            "write a news-themed advertisement",
+            "design a meeting agenda template",
+        ):
+            assert is_schedule_commitment_question(prompt) is False, prompt
+            assert schedule_commitment_guard(prompt, {}) == "", prompt
+
+    def test_schedule_question_shapes_are_detected(self):
+        for prompt in (
+            "what meetings do I have tomorrow?",
+            "do I have any appointments?",
+            "what's on my calendar today?",
+            "what's my schedule?",
+            "am I free tomorrow?",
+        ):
+            assert is_schedule_commitment_question(prompt) is True, prompt
+
 
 def test_fetch_shaped_weather_stays_deterministic():
     assert is_fetch_shaped_brief_request("weather") is True
