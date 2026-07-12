@@ -1,10 +1,42 @@
 # Daily Command Center
 
-Status: manual continuity surface.
-Last reviewed: 2026-07-11 (observation underway; two truth-fix lanes merged).
-Source: observation Step 0 + runtime truth-defect repairs + conversation-grounding trace.
+## 2026-07-11 late session (latest - read this first)
 
-## 2026-07-11 session (latest — read this first)
+```text
+SLICE 1 CLOSED (PR #297 merged): input reliability fixed. Root cause: visible dashboard
+connections were idling out at the server's 60s boundary while the client refreshed much later,
+causing reconnect/hydration loops and dropped prompts. Fix: visible-tab keepalive ping, server
+ping no-op, hidden-tab reconnect suppression, refocus reconnect-once behavior. Post-merge smoke
+from main: visible socket survived beyond the idle boundary and accepted a real prompt; hidden
+tabs no longer reconnect-loop. Validation server stopped after smoke.
+
+SLICE 2 CLOSED (PR #298 merged at main 65ce2826): grounded conversation over brief items is
+implemented. Fetch prompts stay deterministic; follow-up prompts over loaded brief facts are
+answered from structured session state before the LLM path, with source boundaries and "loaded
+source does not say" behavior. Covered surfaces: news selected story, weather rain follow-up,
+calendar selected-event "after that", runtime/brief grounding helpers. Guardrails: background
+refresh does not steal focus; unrelated weather/news/calendar wording is not routed or injected
+into GeneralChat prompts; selected news identity survives refresh by stable story identity or is
+cleared; calendar uses real CalendarSkill event shape (title/date/time/day_label).
+
+POST-MERGE #298 SMOKE (fresh main, isolated port 8010, OLLAMA_MODEL=gemma2:2b, temporary .ics):
+  news -> select second story -> "Why does that matter?" stayed on story 2.
+  weather -> "Will it rain later?" answered from sourced weather facts and did not invent rain.
+  calendar -> select first event -> "What do I have after that?" returned the next event.
+  unrelated prompt "Should I create a weather-themed product?" used normal GeneralChat, with no
+    grounded brief facts injected.
+  Server stopped afterward; ports 8000/8010 free.
+
+CURRENT STATE: observation resumes with the repaired brief + grounded follow-up path. DeepSeek /
+cloud conversation remains parked; the next model-quality input must come from actual use of the
+grounded path, not from a plumbing-confounded test.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-07-11 (observation underway; Slice 1 + Slice 2 closed).
+Source: observation Step 0 + truth-defect repairs + grounded follow-up implementation.
+
+## 2026-07-11 earlier session (historical context)
 
 ```text
 OBSERVATION UNDERWAY. Engineering freeze holds; only truth-critical repairs taken, each with
@@ -30,18 +62,16 @@ configured", and news no longer blames Brave (Brave is web search, not the news 
 Verified live (warm server): repeated briefs show weather=ok + news=ok. GH Actions still
 billing-gated; local-verification standard used (same as #292/#293).
 
-CONVERSATION-GROUNDING TRACE (read-only, no code changed): the conversation LLM does NOT receive
-news/weather facts. GeneralChatSkill.can_handle excludes "news"/"weather"/"forecast"/"headlines"
-(routes them to widgets, never the LLM), and the prompt assembly never reads
-session_state["news_cache"]/weather. So "converse about the news" does not exist yet; a weak
-conversation would be PLUMBING evidence, not model evidence. => The DeepSeek-vs-gemma2:2b
-model-quality test is INVALID until grounding lands.
+CONVERSATION-GROUNDING TRACE AT THAT TIME (read-only, no code changed): the conversation LLM did NOT receive
+news/weather facts. GeneralChatSkill.can_handle excluded "news"/"weather"/"forecast"/"headlines"
+(routes them to widgets, never the LLM), and the prompt assembly did not read
+session_state["news_cache"]/weather. That made "converse about the news" plumbing work, not model
+work. PR #298 later closed that gap (see latest block); DeepSeek/model-quality testing remains
+parked until observed use of the grounded path justifies it.
 
-NEXT LANE, DEFINED NOT FIRED: "Grounded follow-up conversation over brief items" (route
-discussion-shaped follow-ups to chat + inject sourced brief facts + keep unsupported claims
-tagged not laundered). Owner ruling: HOLD until >=1 completed morning after #295 — don't move
-the observation baseline again before capturing a finished day. Lane spec lives in project
-memory + the master roadmap candidate list.
+NEXT LANE AT THAT TIME: "Grounded follow-up conversation over brief items" was defined but held.
+It later fired after observation showed Nova felt like a status panel instead of something Chris
+could talk with; implementation landed in PR #298 (see latest block).
 ```
 
 ## 2026-07-07 session

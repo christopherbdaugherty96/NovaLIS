@@ -31,19 +31,28 @@ LANDED (freeze-exempt, owner-approved):
         "not configured" labels for news + weather (news 180s cache vs cap-56 rate-limit
         exhaustion; weather widget-envelope unwrap; honest "temporarily unavailable" language;
         news no longer blames Brave).
+  #297  Input reliability repair - dashboard websocket idle/reconnect loop fixed with visible
+        keepalive, server ping no-op, hidden-tab reconnect suppression, and refocus reconnect
+        once. Post-merge smoke from main passed.
+  #298  Grounded follow-up conversation over brief items - fetch prompts stay deterministic;
+        follow-ups over loaded news/weather/calendar/runtime brief facts answer from structured
+        sourced session state before LLM fallback. Guardrails prevent unsupported fact
+        laundering, background focus theft, unrelated prompt routing, GeneralChat prompt
+        contamination, news refresh identity drift, and calendar event-order drift. Post-merge
+        smoke from main passed.
 
-DEFINED, NOT FIRED (owner HOLD until >=1 completed morning after #295):
+HISTORICAL SPEC (implemented by PR #298; retained for scope context):
   "Grounded follow-up conversation over brief items" — route discussion-shaped follow-ups
   ("what do you think about that?") to the conversation lane instead of the widget; inject the
   sourced brief facts (news/weather/calendar) already in session_state into the LLM context;
-  keep unsupported claims tagged, not laundered (the P0 hallucination boundary). This lane is
-  the PREREQUISITE before any local-vs-cloud (DeepSeek) model-quality test is meaningful — a
-  2026-07-11 read-only trace confirmed the conversation LLM currently receives no brief facts,
-  so a weak conversation would be plumbing evidence, not model evidence. Full spec: project
+  keep unsupported claims tagged, not laundered (the P0 hallucination boundary). This lane was
+  the prerequisite before any local-vs-cloud (DeepSeek) model-quality test was meaningful: a
+  pre-#298 read-only trace confirmed the conversation LLM received no brief facts, so a weak
+  conversation would have been plumbing evidence, not model evidence.
   memory "grounded-conversation-lane" + docs/status/DAILY_COMMAND_CENTER.md (2026-07-11 block).
 
 STILL PARKED behind evidence: model preset / governed cloud-conversation brain (DeepSeek),
-gated on the grounded-conversation lane producing a genuine model-quality signal.
+gated on observed use of the grounded follow-up path producing a genuine model-quality signal.
 ```
 
 ## North Star
