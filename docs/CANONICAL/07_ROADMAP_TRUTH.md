@@ -32,15 +32,23 @@ observed daily use, not more building.** Success metric: Nova eliminates one unc
 the user reaches for another app. The **evidence rule** gates new work: build only what observed
 behavior proves is missing.
 
-**Observation underway (2026-07-11):** Step 0 documentation/protocol landed in PR #294
+**Earlier 2026-07-11 observation state:** Step 0 documentation/protocol landed in PR #294
 (morning-log template + single launch procedure + config truth) and Morning 1 is in progress.
 One truth-critical repair landed in PR #295 (truthful availability — false "not configured"
 labels for news/weather fixed), taken under explicit owner approval without lifting the freeze.
-A conversation-grounding trace found the LLM
-does not receive brief facts, so the next candidate lane — **"Grounded follow-up conversation
+A conversation-grounding trace found that, at that time, the LLM
+did not receive brief facts, so the next candidate lane — **"Grounded follow-up conversation
 over brief items"** — is DEFINED BUT HELD until at least one completed morning after #295; it is
 also the prerequisite before any local-vs-cloud (DeepSeek) model-quality test is meaningful. See
 the master roadmap candidate list and `docs/status/DAILY_COMMAND_CENTER.md` (2026-07-11 block).
+
+**Later 2026-07-11 update:** the grounded follow-up lane fired and landed in PR #298 after
+Morning 1/Morning 2 evidence showed Nova still felt like a status panel rather than something
+Chris could discuss the brief with. PR #297 also closed the input-reliability slice. Post-merge
+#298 smoke from fresh main passed for news selected-story carry-forward, weather no-invention,
+calendar selected-event "after that", and unrelated prompt isolation. DeepSeek/cloud
+conversation remains parked until observed use of the grounded path proves a genuine
+model-quality gap.
 
 ## Queued, not active (needs a separate reviewed priority lock)
 

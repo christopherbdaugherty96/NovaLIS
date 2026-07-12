@@ -9,6 +9,25 @@ and Weather footnotes and the General-chat grounding note below).
 
 ---
 
+## 2026-07-11 Current Update
+
+```text
+PR #295 fixed false "not configured" labels for news/weather.
+PR #297 fixed dashboard websocket input reliability.
+PR #298 landed grounded follow-up conversation over brief items and passed post-merge smoke:
+  news selected-story carry-forward;
+  weather no-invention rain follow-up;
+  calendar selected-event "after that";
+  unrelated weather-themed prompt stayed on normal GeneralChat path with no grounded facts
+  injected.
+
+General chat remains yellow for CPU model latency/quality, not because brief grounding is absent.
+DeepSeek/cloud conversation remains parked until observed use of the grounded path proves a
+genuine model-quality gap.
+```
+
+---
+
 ## QA Rule #1 (permanent)
 
 > Before any live verification, confirm the running process matches current `main`.
@@ -80,12 +99,12 @@ re-spent them and exhausted the 50/min rate limit, so later fetches returned emp
 mislabeled. A 180s result cache collapses repeated refreshes onto one fetch; empty results now
 read "temporarily unavailable" and never blame Brave (Brave = web search, not the news source).
 
-**Conversation grounding (2026-07-11 trace, read-only):** the conversation LLM does NOT receive
-news/weather facts — `GeneralChatSkill.can_handle` excludes those keywords (routes to widgets,
-never the model) and the prompt never reads `session_state["news_cache"]`/weather. So Nova can
-show news/weather but cannot yet *discuss* them; "converse about the news" is a defined-not-fired
-lane ("Grounded follow-up conversation over brief items"), held until ≥1 completed morning after
-#295. Any local-vs-cloud model-quality comparison is invalid until that grounding lands.
+**Conversation grounding (PR #298, 2026-07-11):** grounded follow-ups over brief items are now
+implemented. Fetch-shaped prompts still route to deterministic widgets; follow-ups over loaded
+news/weather/calendar facts answer from structured sourced session state before the LLM path.
+Post-merge smoke from fresh main passed for selected news story carry-forward, weather
+no-invention, calendar selected-event "after that", and unrelated prompt isolation. Any
+local-vs-cloud model-quality comparison should now use this grounded path as the test surface.
 
 ---
 

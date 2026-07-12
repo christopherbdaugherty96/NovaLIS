@@ -1,8 +1,9 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-11 (observation underway; PR #294 Step 0 + PR #295 truthful-availability
-fix merged). Read the "2026-07-11 session" block in docs/status/DAILY_COMMAND_CENTER.md first;
-the 2026-07-07 block (live verification PR #273, product-identity PR #274) remains below it.
+Last reviewed: 2026-07-11 (observation underway; Slice 1 input reliability + Slice 2 grounded
+brief follow-ups merged and post-merge smoked). Read the latest 2026-07-11 block in
+docs/status/DAILY_COMMAND_CENTER.md first; the 2026-07-07 block (live verification PR #273,
+product-identity PR #274) remains below it.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
 `../capability_verification/CAPABILITY_INVENTORY.md` (what works), `DAILY_COMMAND_CENTER.md`
@@ -40,19 +41,29 @@ Merged this cycle:
          dashboard refresh exhausting the cap-56 50/min rate limit; weather widget-envelope
          unwrap fixes a structural mislabel (a working forecast rendered "not configured");
          empty/rate-limited now reads "temporarily unavailable", news no longer blames Brave.
+  #297 - Slice 1 input reliability: fixed dashboard websocket idle/reconnect behavior with
+         visible-tab keepalive, server ping no-op, hidden-tab reconnect suppression, and
+         refocus reconnect-once behavior. Post-merge smoke from main passed.
+  #298 - Slice 2 grounded conversation over brief items: deterministic fetch prompts remain
+         deterministic; follow-ups over loaded news/weather/calendar/runtime brief items answer
+         from structured sourced state before the LLM path. Guardrails prevent unsupported fact
+         laundering, background focus theft, unrelated prompt routing, and GeneralChat prompt
+         contamination. Post-merge smoke from main passed.
 
 Findings (2026-07-11):
   - False-unavailability root cause = rate-limit exhaustion + a structural envelope-read bug,
     not missing config (both fixed in #295).
-  - Conversation-grounding trace (read-only): the LLM does NOT receive news/weather facts, so
-    "converse about the news" does not exist yet and a weak conversation would be plumbing
-    evidence, not model evidence. DeepSeek-vs-gemma2:2b test is invalid until grounding lands.
+  - Conversation-grounding trace (read-only) found the LLM did not receive news/weather facts;
+    Slice 2 (#298) fixed the product path by answering grounded follow-ups from loaded sourced
+    brief state before LLM fallback. DeepSeek-vs-gemma2:2b remains parked until observed use of
+    the grounded path produces a genuine model-quality signal.
 
-Defined NOT fired: "Grounded follow-up conversation over brief items" — HELD until >=1 completed
-  morning after #295 (don't move the observation baseline again). Spec in memory + master roadmap.
+Closed: "Grounded follow-up conversation over brief items" landed in PR #298 and passed
+  post-merge smoke on fresh main (news selected-story carry-forward, weather no-invention,
+  calendar selected-event after-that, unrelated prompt normal GeneralChat path).
 
-Morning 1 in progress: docs/observation/MORNING_01_2026-07-11.md (Chris completes the
-  experiential fields; Claude pre-filled only verified config/condition metadata).
+Morning logs remain Chris-owned artifacts: docs/observation/MORNING_01_2026-07-11.md and
+  docs/observation/MORNING_02_2026-07-11.md are untracked local observation drafts.
 
 Owner-only NOW gate: Auralis-Digital hosting migration + privacy flip, Instagram, filming,
 Meta verification, OpenClaw token rotation.
