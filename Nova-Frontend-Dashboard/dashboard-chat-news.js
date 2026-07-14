@@ -2922,6 +2922,19 @@ function connectWebSocket() {
         if (manualTurnInFlight) manualTurnAssistantSeen = true;
         appendStreamChunk(msg.text || "", msg.turn_id || "");
         break;
+      case "status":
+        // Backend progress/liveness frame (e.g. status:"thinking", phase:"llm_inference")
+        // sent before advisory-model tokens stream. It is not a result and not a failure,
+        // so it must never append a chat message. Previously this fell through to
+        // renderUnsupportedWidgetEvent and misrendered as a hard
+        // "connection status / nothing executed" failure while inference was actually running.
+        if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
+        {
+          const statusHint = String((msg && msg.message) || "").trim();
+          if (statusHint) setLoadingHint(statusHint);
+        }
+        setThinkingBar(true);
+        break;
       case "error":
         clearActiveManualTurn("Failed", translateError(msg.code, msg.message));
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
