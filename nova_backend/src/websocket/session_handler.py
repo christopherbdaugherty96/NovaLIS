@@ -16,6 +16,7 @@ from src.conversation.brief_followup_grounding import (
     schedule_commitment_guard,
     store_brief_widget,
 )
+from src.conversation.brief_intent_resolver import resolve_brief_intent
 from src.websocket.turn_abandon import mark_turn_abandoned
 from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
@@ -1195,6 +1196,44 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if _arithmetic_answer is not None:
                 await _complete_immediate_turn(_arithmetic_answer)
                 continue
+
+            # ── Brief-phrasing intent normalization (deterministic, non-authorizing) ──
+            # Widen recognition of common morning phrasing for already-supported brief
+            # capabilities (weather / news / calendar) without a model and without new
+            # authority. See docs/future/NOVA_BRIEF_PHRASING_INTENT_LANE_PLAN.md.
+            #   high   → normalize the routing keys to the canonical command and fall
+            #            through to the existing governed branch. The semantic text
+            #            (`text` / mediated_text) and working-context (logged above) are
+            #            left untouched, so receipts and memory keep the real utterance.
+            #   medium → ask which brief domain was meant; run nothing.
+            #   low    → change nothing; the existing cascade handles it.
+            brief_intent = resolve_brief_intent(
+                command_text,
+                news_context_loaded=bool(session_state.get("news_cache")),
+            )
+            if brief_intent.confidence == "medium":
+                await _complete_immediate_turn(
+                    brief_intent.clarification,
+                    remember_response=False,
+                    tone_domain="daily",
+                )
+                continue
+            if brief_intent.confidence == "high":
+                if brief_intent.capability == "news" and session_state.get("news_cache"):
+                    # Prefer the already-loaded headline context over a fresh fetch.
+                    await _complete_immediate_turn(
+                        render_headline_summary_from_cache(session_state.get("news_cache")),
+                        suggested_actions=[
+                            {"label": "Refresh news", "command": "news"},
+                            {"label": "Show sources", "command": "sources"},
+                        ],
+                        remember_response=False,
+                        tone_domain="daily",
+                    )
+                    continue
+                command_text = brief_intent.canonical
+                command_lowered = brief_intent.canonical
+                lowered = brief_intent.canonical
 
             if is_headline_summary_request(command_text):
                 await _complete_immediate_turn(
