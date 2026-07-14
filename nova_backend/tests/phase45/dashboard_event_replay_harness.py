@@ -147,14 +147,22 @@ class DashboardEventReplayHarness:
         if msg_type in MANUAL_TURN_WIDGET_TYPES:
             return "handled"
 
+        if msg_type == "status":
+            # Backend progress/liveness frame (status:"thinking", phase:"llm_inference").
+            # It is not a result and not a failure: update the thinking indicator only,
+            # never append a failure message. This mirrors the frontend `case "status"`.
+            if self._is_stale_manual_event(msg):
+                self.ignored_events.append(msg)
+                return "ignored"
+            hint = str(msg.get("message") or "").strip()
+            if hint:
+                self.loading_hint = hint
+            self.thinking_bar = True
+            return "progress"
+
         self.unsupported_events.append(msg)
-        reason = (
-            UNSUPPORTED_REQUEST_HINT
-            if msg_type == "unknown"
-            else STATUS_UNAVAILABLE_HINT if msg_type == "status" else UNSUPPORTED_REQUEST_HINT
-        )
         self._append_assistant(
-            reason,
+            UNSUPPORTED_REQUEST_HINT,
             "Request not run",
         )
         return "unsupported"
