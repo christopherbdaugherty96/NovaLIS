@@ -8,6 +8,7 @@ MANUAL_TURN_WIDGET_TYPES = {
     "weather",
     "news",
     "news_summary",
+    "news_synthesis_ready",
     "intelligence_brief",
     "search",
     "calendar",
