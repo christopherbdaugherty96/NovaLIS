@@ -395,6 +395,13 @@ def test_news_intelligence_parsing():
     assert inv.params["left_story_id"] == 1
     assert inv.params["right_story_id"] == 3
 
+    inv = GovernorMediator.parse_governed_invocation("compare story 1 and story 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 50
+    assert inv.params["action"] == "compare_clusters"
+    assert inv.params["left_story_id"] == 1
+    assert inv.params["right_story_id"] == 2
+
     inv = GovernorMediator.parse_governed_invocation("compare headlines 1 and 3")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 49

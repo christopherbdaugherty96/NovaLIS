@@ -819,7 +819,8 @@ def test_ready_update_preserves_failed_clusters_as_placeholders(tmp_path):
     assert payload["brief_clusters"][0]["placeholder"] is False
     assert payload["brief_clusters"][1]["placeholder"] is True
     assert payload["brief_clusters"][1]["synthesis_status"] == "failed"
-    assert "could not be synthesized asynchronously" in payload["message"]
+    assert payload["message"] == "Synthesis ready - 1 of 2 clusters is source-grounded; 1 remains placeholder."
+    assert "could not be synthesized asynchronously" in payload["brief_report"]
 
 
 def test_brief_async_fill_populates_cache_and_emits_ready_update(monkeypatch, tmp_path):
@@ -883,7 +884,8 @@ def test_brief_async_fill_populates_cache_and_emits_ready_update(monkeypatch, tm
     assert cached["model_label"] == "gemma2:2b"
     assert len(ready_events) == 1
     assert ready_events[0]["type"] == "news_synthesis_ready"
-    assert "Source pages say chip vendors" in ready_events[0]["message"]
+    assert ready_events[0]["message"] == "Synthesis ready - all 1 cluster is source-grounded."
+    assert "Source pages say chip vendors" in ready_events[0]["brief_report"]
     assert ready_events[0]["data"]["placeholder_cluster_count"] == 0
     assert ready_events[0]["data"]["synthesis_status"] == "ready"
 

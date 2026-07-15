@@ -354,7 +354,7 @@ EXPAND_STORY_INDEX_RE = re.compile(
     re.IGNORECASE,
 )
 COMPARE_STORY_INDEX_RE = re.compile(
-    r"^\s*compare(?:\s+story)?\s+(?P<left>\d{1,2})\s+(?:and|vs)\s+(?P<right>\d{1,2})\s*$",
+    r"^\s*compare(?:\s+story)?\s+(?P<left>\d{1,2})\s+(?:and|vs)\s+(?:story\s+)?(?P<right>\d{1,2})\s*$",
     re.IGNORECASE,
 )
 COMPARE_HEADLINE_INDEX_RE = re.compile(

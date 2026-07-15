@@ -814,9 +814,27 @@ class NewsIntelligenceExecutor:
             report = (
                 f"{report}\n\nNote: {placeholder_clusters} topic cluster(s) could not be synthesized asynchronously and remain placeholders."
             )
+        source_grounded_clusters = len(rendered_clusters) - placeholder_clusters
+        total_word = "cluster" if len(rendered_clusters) == 1 else "clusters"
+        grounded_verb = "is" if source_grounded_clusters == 1 else "are"
+        if placeholder_clusters:
+            placeholder_word = "placeholder" if placeholder_clusters == 1 else "placeholders"
+            remain_word = "remains" if placeholder_clusters == 1 else "remain"
+            ready_message = (
+                "Synthesis ready - "
+                f"{source_grounded_clusters} of {len(rendered_clusters)} {total_word} {grounded_verb} source-grounded; "
+                f"{placeholder_clusters} {remain_word} {placeholder_word}."
+            )
+        else:
+            all_verb = "is" if len(rendered_clusters) == 1 else "are"
+            ready_message = (
+                "Synthesis ready - "
+                f"all {len(rendered_clusters)} {total_word} {all_verb} source-grounded."
+            )
         return {
             "type": "news_synthesis_ready",
-            "message": report.strip(),
+            "message": ready_message,
+            "brief_report": report.strip(),
             "data": {
                 "headline_count": headline_count,
                 "source_pages_read": source_pages_read,
