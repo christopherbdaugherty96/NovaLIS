@@ -106,7 +106,7 @@ Rules:
 - Locks define reviewed scope; they are not execution authority by themselves.
 - Keep active, certified, and locked status distinct.
 
-Linked files (359):
+Linked files (360):
 
 - [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
 - [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
@@ -459,6 +459,7 @@ Linked files (359):
 - [[docs/status/PRIORITY_LOCK_2026-05-26_SECOND_BRAIN_SLICE_1|Priority Lock - 2026-05-26 Second Brain Slice 1]]
 - [[docs/status/PRIORITY_LOCK_2026-05-26_UI_SIMPLIFICATION|UI Simplification Priority Lock — Product Clarity Slice]]
 - [[docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH|Runtime Recovery And Health Truth Priority Lock - 2026-06-17]]
+- [[docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY|Authorization Integrity Priority Lock - 2026-07-10]]
 - [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
 - [[docs/status/PROPOSED_PRIORITY_LOCK_2026-05-18_SECOND_BRAIN_FOUNDATION|Proposed Priority Lock - Second Brain Foundation]]
 - [[docs/status/RECENT_WORKSTREAM_CLOSEOUT_2026-06-17|Recent Workstream Closeout - 2026-06-17]]
@@ -484,7 +485,7 @@ Rules:
 - Planning docs do not authorize new capabilities, writes, or integrations.
 - Do not treat future designs as current truth without code, tests, and current status.
 
-Linked files (453):
+Linked files (454):
 
 - [[docs/design/AURALIS_TODAY_C1_DESIGN|Auralis Today — C1 Design]]
 - [[docs/design/brain/AGENT_FEED_CONTRACT|Agent Feed Contract]]
@@ -752,6 +753,7 @@ Linked files (453):
 - [[docs/future/NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18|Nova / Auralis Big Picture Operating Model - 2026-05-18]]
 - [[docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE|Nova x Auralis Digital Website Engine]]
 - [[docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN|Nova Background Reasoning, Not Background Automation Plan]]
+- [[docs/future/NOVA_BRIEF_PHRASING_INTENT_LANE_PLAN|Nova Brief-Phrasing Intent Lane — Plan]]
 - [[docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT|Nova Coherence, Memory, And Background Reasoning Alignment Map]]
 - [[docs/future/NOVA_CONNECTOR_REGISTRY_PLAN_2026-04-27|Nova Connector Registry Plan]]
 - [[docs/future/NOVA_CONNECTOR_RISK_CLASSIFICATION_TABLE_2026-04-28|Nova Connector Risk Classification Table]]
@@ -1121,5 +1123,5 @@ Linked files (160):
 
 ## Reference / Unclassified
 
-1100 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
+1119 scanned files are reference, code, assets, or otherwise outside the truth-rank tiers above.
 Use the broad browsing maps for those files; do not treat this fallback as an authority tier.
