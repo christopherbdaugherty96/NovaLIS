@@ -5,7 +5,6 @@ from pathlib import Path
 from nova_backend.tests.phase45.dashboard_event_replay_harness import (
     BUSY_TURN_HINT,
     QUEUED_RECONNECT_HINT,
-    STATUS_UNAVAILABLE_HINT,
     TURN_TIMEOUT_HINT,
     UNSUPPORTED_REQUEST_HINT,
     DashboardEventReplayHarness,
@@ -158,13 +157,31 @@ def test_replay_unsupported_event_is_visible_non_action_state():
     assert replay.assistant_messages[0].text == UNSUPPORTED_REQUEST_HINT
 
 
-def test_replay_status_event_gets_connection_status_translation():
+def test_replay_status_event_updates_thinking_without_failure_message():
+    # Regression: a backend progress frame (status:"thinking") must not be rendered as a
+    # hard "connection status / nothing executed" failure while inference is running.
+    # See docs/observation/MORNING_03_2026-07-14.md mechanism addendum.
     replay = DashboardEventReplayHarness()
+    replay.primary_send("how should i stay cool?", now=8100)
+    active_turn = replay.active_manual_turn_id
 
-    assert replay.handle_ws_message({"type": "status"}, now=8100) == "unsupported"
+    result = replay.handle_ws_message(
+        {
+            "type": "status",
+            "status": "thinking",
+            "message": "Thinking...",
+            "phase": "llm_inference",
+            "turn_id": active_turn,
+        },
+        now=8101,
+    )
 
-    assert replay.assistant_messages[0].confidence == "Request not run"
-    assert replay.assistant_messages[0].text == STATUS_UNAVAILABLE_HINT
+    assert result == "progress"
+    assert replay.assistant_messages == []
+    assert replay.unsupported_events == []
+    assert replay.manual_turn_in_flight is True
+    assert replay.loading_hint == "Thinking..."
+    assert replay.thinking_bar is True
 
 
 def test_replay_queued_reconnect_copy_says_nothing_has_run():
