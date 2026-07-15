@@ -479,6 +479,287 @@ def test_brief_confidence_degrades_when_any_cluster_is_placeholder():
     assert "Confidence: Medium-High" not in report
 
 
+def test_news_synthesis_fingerprint_ignores_volatile_time_text():
+    from src.executors.news_synthesis_cache import cluster_fingerprint
+
+    base_cluster = {
+        "title": "Global Security",
+        "items": [
+            {
+                "title": "Ceasefire talks resume",
+                "source": "Reuters",
+                "url": "https://example.com/story?utm_source=rss",
+                "text": "Updated 3 minutes ago. Reuters reports talks resumed after a mediator proposal.",
+            },
+            {
+                "title": "Ceasefire talks resume",
+                "source": "AP",
+                "url": "https://ap.example/story#comments",
+                "text": "Live updates 10:04 AM. AP reports talks resumed after a mediator proposal.",
+            },
+        ],
+    }
+    equivalent_cluster = {
+        "title": "Global Security",
+        "items": [
+            {
+                "title": "Ceasefire talks resume",
+                "source": "AP",
+                "url": "https://ap.example/story#latest",
+                "text": "Updated 11 minutes ago. AP reports talks resumed after a mediator proposal.",
+            },
+            {
+                "title": "Ceasefire talks resume",
+                "source": "Reuters",
+                "url": "https://example.com/story?utm_campaign=feed",
+                "text": "LIVE UPDATE 10:33 ET. Reuters reports talks resumed after a mediator proposal.",
+            },
+        ],
+    }
+
+    assert cluster_fingerprint(base_cluster) == cluster_fingerprint(equivalent_cluster)
+
+
+def test_news_synthesis_fingerprint_changes_for_material_article_change():
+    from src.executors.news_synthesis_cache import cluster_fingerprint
+
+    first = {
+        "title": "Global Security",
+        "items": [
+            {
+                "title": "Ceasefire talks resume",
+                "source": "Reuters",
+                "url": "https://example.com/story",
+                "text": "Reuters reports talks resumed after a mediator proposal.",
+            }
+        ],
+    }
+    changed = {
+        "title": "Global Security",
+        "items": [
+            {
+                "title": "Ceasefire talks collapse",
+                "source": "Reuters",
+                "url": "https://example.com/story",
+                "text": "Reuters reports talks collapsed after the mediator proposal failed.",
+            }
+        ],
+    }
+
+    assert cluster_fingerprint(first) != cluster_fingerprint(changed)
+
+
+def test_news_synthesis_cache_reads_and_writes_atomically(tmp_path):
+    from src.executors.news_synthesis_cache import NewsSynthesisCache, cluster_fingerprint
+
+    cache = NewsSynthesisCache(tmp_path / "news_synthesis_cache.json")
+    cluster = {
+        "title": "Technology",
+        "items": [
+            {
+                "title": "AI chip roadmap expands",
+                "source": "ABC News",
+                "url": "https://abc.example/a",
+                "text": "Chip vendors expanded long-term AI roadmaps.",
+            }
+        ],
+    }
+    fingerprint = cluster_fingerprint(cluster)
+
+    assert cache.get(cluster) is None
+    cache.put(
+        cluster,
+        summary="Chip vendors expanded long-term AI roadmaps.",
+        implication="Capacity planning may shift.",
+        model_label="gemma2:2b",
+        sources=["ABC News"],
+    )
+
+    cached = cache.get(cluster)
+    assert cached is not None
+    assert cached["cluster_fingerprint"] == fingerprint
+    assert cached["summary"] == "Chip vendors expanded long-term AI roadmaps."
+    assert cached["implication"] == "Capacity planning may shift."
+    assert cached["status"] == "fresh"
+
+
+def test_news_synthesis_cache_rejects_stale_records(tmp_path):
+    import json
+
+    from src.executors.news_synthesis_cache import NewsSynthesisCache, cluster_fingerprint
+
+    cache_path = tmp_path / "news_synthesis_cache.json"
+    cache = NewsSynthesisCache(cache_path, fresh_ttl_seconds=1)
+    cluster = {
+        "title": "Technology",
+        "items": [
+            {
+                "title": "AI chip roadmap expands",
+                "source": "ABC News",
+                "url": "https://abc.example/a",
+                "text": "Chip vendors expanded long-term AI roadmaps.",
+            }
+        ],
+    }
+    cache.put(
+        cluster,
+        summary="Chip vendors expanded long-term AI roadmaps.",
+        implication="Capacity planning may shift.",
+    )
+    state = json.loads(cache_path.read_text(encoding="utf-8"))
+    state["clusters"][cluster_fingerprint(cluster)]["synthesized_at"] = "2000-01-01T00:00:00+00:00"
+    cache_path.write_text(json.dumps(state), encoding="utf-8")
+
+    assert cache.get(cluster) is None
+
+
+def test_brief_uses_cached_source_synthesis_without_calling_llm(monkeypatch, tmp_path):
+    from src.executors import news_intelligence_executor as mod
+    from src.executors.news_synthesis_cache import NewsSynthesisCache
+
+    def _fail_generate(*args, **kwargs):
+        raise AssertionError("cached source synthesis should avoid LLM calls")
+
+    monkeypatch.setattr(mod, "generate_chat", _fail_generate)
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            return {
+                "status_code": 200,
+                "text": f"<html><body><p>Source detail for {url} says chip vendors expanded AI roadmaps.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "AI chip roadmap", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "AI export policy", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    executor = mod.NewsIntelligenceExecutor(
+        network=_FakeNetwork(),
+        synthesis_cache=NewsSynthesisCache(tmp_path / "news_synthesis_cache.json"),
+    )
+    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    cluster = executor._cluster_packets(packets)[0]
+    executor.synthesis_cache.put(
+        cluster,
+        summary="Cached synthesis says AI chip roadmaps and export policy are moving together.",
+        implication="Watch supply planning and policy exposure.",
+        model_label="gemma2:2b",
+        sources=cluster.get("sources", []),
+    )
+
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+
+    assert result.success is True
+    assert "Cached synthesis says AI chip roadmaps" in result.message
+    assert "Confidence: Low" not in result.message
+    assert result.data["widget"]["data"]["cached_cluster_count"] == 1
+    assert result.data["widget"]["data"]["placeholder_cluster_count"] == 0
+    assert result.data["brief_clusters"][0]["placeholder"] is False
+    assert result.data["brief_clusters"][0]["synthesis_status"] == "fresh"
+
+
+def test_brief_keeps_honest_placeholder_when_cache_misses(monkeypatch, tmp_path):
+    from src.executors import news_intelligence_executor as mod
+    from src.executors.news_synthesis_cache import NewsSynthesisCache
+
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "")
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            return {
+                "status_code": 200,
+                "text": f"<html><body><p>Source detail for {url}.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "AI chip roadmap", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "AI export policy", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    executor = mod.NewsIntelligenceExecutor(
+        network=_FakeNetwork(),
+        synthesis_cache=NewsSynthesisCache(tmp_path / "news_synthesis_cache.json"),
+    )
+
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+
+    assert result.success is True
+    assert "[Fallback]" in result.message
+    assert "Confidence: Low" in result.message
+    assert result.data["widget"]["data"]["cached_cluster_count"] == 0
+    assert result.data["widget"]["data"]["placeholder_cluster_count"] >= 1
+
+
+def test_brief_stores_successful_source_synthesis_in_cache(monkeypatch, tmp_path):
+    from src.executors import news_intelligence_executor as mod
+    from src.executors.news_synthesis_cache import NewsSynthesisCache
+
+    monkeypatch.setattr(mod, "model_status_snapshot", lambda: {"active_model": "gemma2:2b"})
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: (
+            "Summary\n"
+            "Source pages say chip vendors expanded roadmaps while export policy tightened.\n\n"
+            "Implication\n"
+            "Watch supply planning and policy exposure together."
+        ),
+    )
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            return {
+                "status_code": 200,
+                "text": f"<html><body><p>Source detail for {url} says chip vendors expanded AI roadmaps.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "AI chip roadmap", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "AI export policy", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    cache = NewsSynthesisCache(tmp_path / "news_synthesis_cache.json")
+    executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork(), synthesis_cache=cache)
+
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    cluster = executor._cluster_packets(packets)[0]
+    cached = cache.get(cluster)
+
+    assert result.success is True
+    assert cached is not None
+    assert cached["summary"].startswith("Source pages say chip vendors")
+    assert cached["implication"] == "Watch supply planning and policy exposure together."
+    assert cached["model_label"] == "gemma2:2b"
+
+
+def test_brief_does_not_store_placeholder_synthesis_in_cache(monkeypatch, tmp_path):
+    from src.executors import news_intelligence_executor as mod
+    from src.executors.news_synthesis_cache import NewsSynthesisCache
+
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "")
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            return {
+                "status_code": 200,
+                "text": f"<html><body><p>Source detail for {url}.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "AI chip roadmap", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "AI export policy", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    cache = NewsSynthesisCache(tmp_path / "news_synthesis_cache.json")
+    executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork(), synthesis_cache=cache)
+
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    cluster = executor._cluster_packets(packets)[0]
+
+    assert result.success is True
+    assert result.data["widget"]["data"]["placeholder_cluster_count"] >= 1
+    assert cache.get(cluster) is None
+
+
 def test_brief_followup_actions_expand_compare_track():
     from src.executors import news_intelligence_executor as mod
 
