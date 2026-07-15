@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from src.actions.action_result import ActionResult
+from src.executors.news_synthesis_async import ASYNC_SYNTHESIS_TIMEOUT_SECONDS, news_synthesis_fill_queue
 from src.executors.news_synthesis_cache import NewsSynthesisCache
 from src.llm.llm_gateway import generate_chat, model_status_snapshot
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
@@ -94,10 +95,12 @@ class NewsIntelligenceExecutor:
         network: Any | None = None,
         *,
         synthesis_cache: NewsSynthesisCache | None = None,
+        synthesis_fill_queue: Any | None = None,
     ) -> None:
         self.renderer = IntelligenceBriefRenderer()
         self.network = network
         self.synthesis_cache = synthesis_cache or NewsSynthesisCache()
+        self.synthesis_fill_queue = synthesis_fill_queue or news_synthesis_fill_queue
 
     @staticmethod
     def _speakable_preview(text: str, *, limit: int = 220) -> str:
@@ -646,11 +649,20 @@ class NewsIntelligenceExecutor:
                 return self._cluster_fallback(cluster)
             return "", ""
 
-        summary_match = re.search(r"Summary\s*(.+?)(?:\n\s*Implication|\Z)", raw, flags=re.IGNORECASE | re.DOTALL)
-        implication_match = re.search(r"Implication\s*(.+)$", raw, flags=re.IGNORECASE | re.DOTALL)
+        heading = r"(?:\*\*)?\s*{label}\s*(?:\*\*)?\s*:?\s*"
+        summary_match = re.search(
+            heading.format(label="Summary") + r"(.+?)(?:\n\s*" + heading.format(label="Implication") + r"|\Z)",
+            raw,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        implication_match = re.search(
+            heading.format(label="Implication") + r"(.+)$",
+            raw,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
 
-        summary = (summary_match.group(1).strip() if summary_match else "").strip(" -:\n")
-        implication = (implication_match.group(1).strip() if implication_match else "").strip(" -:\n")
+        summary = (summary_match.group(1).strip() if summary_match else "").strip(" -*_:\n")
+        implication = (implication_match.group(1).strip() if implication_match else "").strip(" -*_:\n")
 
         if not summary or not implication:
             if not use_fallback:
@@ -716,6 +728,154 @@ class NewsIntelligenceExecutor:
         if placeholder_count:
             return "Medium-Low"
         return "Medium-High" if source_count >= 4 else "Medium"
+
+    def _synthesize_cluster_for_cache(
+        self,
+        cluster: dict[str, Any],
+        *,
+        request_id: str,
+        session_id: str | None,
+        timeout_seconds: float = ASYNC_SYNTHESIS_TIMEOUT_SECONDS,
+    ) -> dict[str, Any] | None:
+        analysis = self._llm_or_fallback(
+            self._cluster_prompt(cluster),
+            "",
+            request_id=request_id,
+            session_id=session_id,
+            timeout_seconds=timeout_seconds,
+            max_tokens=380,
+        )
+        summary, implication = self._parse_summary_and_implication(
+            analysis,
+            cluster,
+            use_fallback=False,
+        )
+        if not summary or not implication:
+            return None
+        return self.synthesis_cache.put(
+            cluster,
+            summary=summary,
+            implication=implication,
+            model_label=self._active_model_label(),
+            sources=cluster.get("sources", []),
+        )
+
+    def _render_cached_brief_update(
+        self,
+        clusters: list[dict[str, Any]],
+        *,
+        headline_count: int,
+        source_pages_read: int,
+    ) -> dict[str, Any] | None:
+        rendered_clusters: list[dict[str, Any]] = []
+        placeholder_clusters = 0
+        for cluster in clusters:
+            cached = self.synthesis_cache.get(cluster)
+            if cached is None:
+                summary, implication = self._cluster_fallback(cluster)
+                is_placeholder = True
+                status = "failed"
+                synthesized_at = ""
+                model_label = ""
+            else:
+                summary = str(cached.get("summary") or "").strip()
+                implication = str(cached.get("implication") or "").strip()
+                if not summary or not implication:
+                    summary, implication = self._cluster_fallback(cluster)
+                    is_placeholder = True
+                    status = "failed"
+                    synthesized_at = ""
+                    model_label = ""
+                else:
+                    is_placeholder = False
+                    status = str(cached.get("status") or "fresh")
+                    synthesized_at = str(cached.get("synthesized_at") or "")
+                    model_label = str(cached.get("model_label") or "")
+            if is_placeholder:
+                placeholder_clusters += 1
+            rendered_clusters.append(
+                {
+                    "id": len(rendered_clusters) + 1,
+                    "title": cluster.get("title", "General Developments"),
+                    "summary": summary,
+                    "implication": implication,
+                    "sources": cluster.get("sources", []),
+                    "items": cluster.get("items", []),
+                    "placeholder": is_placeholder,
+                    "synthesis_status": status,
+                    "synthesized_at": synthesized_at,
+                    "model_label": model_label,
+                }
+            )
+        if not rendered_clusters:
+            return None
+        report, all_sources = self._render_daily_brief_v2(rendered_clusters)
+        if placeholder_clusters:
+            report = (
+                f"{report}\n\nNote: {placeholder_clusters} topic cluster(s) could not be synthesized asynchronously and remain placeholders."
+            )
+        return {
+            "type": "news_synthesis_ready",
+            "message": report.strip(),
+            "data": {
+                "headline_count": headline_count,
+                "source_pages_read": source_pages_read,
+                "cluster_count": len(rendered_clusters),
+                "placeholder_cluster_count": placeholder_clusters,
+                "omitted_cluster_count": 0,
+                "cached_cluster_count": len(rendered_clusters) - placeholder_clusters,
+                "pending_synthesis_cluster_count": 0,
+                "synthesis_status": "partial" if placeholder_clusters else "ready",
+            },
+            "brief_clusters": rendered_clusters,
+            "sources": all_sources,
+        }
+
+    def _enqueue_async_synthesis_fill(
+        self,
+        clusters: list[dict[str, Any]],
+        *,
+        request_id: str,
+        session_id: str | None,
+        headline_count: int,
+        source_pages_read: int,
+        on_ready: Any = None,
+        should_pause: Any = None,
+    ) -> dict[str, Any]:
+        pending = [cluster for cluster in clusters if isinstance(cluster, dict) and self.synthesis_cache.get(cluster) is None]
+        if not pending:
+            return {"queued": 0, "paused": False}
+
+        def _worker(cluster: dict[str, Any]) -> dict[str, Any] | None:
+            return self._synthesize_cluster_for_cache(
+                cluster,
+                request_id=f"{request_id}:async-cluster:{cluster.get('title', 'general')}",
+                session_id=session_id,
+            )
+
+        def _ready(_records: list[dict[str, Any]]) -> None:
+            if not callable(on_ready):
+                return
+            payload = self._render_cached_brief_update(
+                clusters,
+                headline_count=headline_count,
+                source_pages_read=source_pages_read,
+            )
+            if payload:
+                on_ready(payload)
+
+        result = self.synthesis_fill_queue.enqueue(
+            pending,
+            worker=_worker,
+            on_ready=_ready,
+            should_pause=should_pause if callable(should_pause) else None,
+        )
+        return {
+            "queued": result.queued,
+            "paused": result.paused,
+            "skipped_active": result.skipped_active,
+            "skipped_failed_cooldown": result.skipped_failed_cooldown,
+        }
 
     def _expand_cluster(self, clusters: list[dict[str, Any]], story_id: int) -> ActionResult:
         idx = int(story_id) - 1
@@ -1417,13 +1577,18 @@ class NewsIntelligenceExecutor:
                 omitted_clusters = 0
                 placeholder_clusters = 0
                 cached_clusters = 0
+                stale_cached_clusters = 0
+                pending_synthesis_clusters: list[dict[str, Any]] = []
                 for cluster in clusters:
-                    cached = self.synthesis_cache.get(cluster)
+                    cached = self.synthesis_cache.get(cluster, allow_stale=True)
                     if cached is not None:
                         summary = str(cached.get("summary") or "").strip()
                         implication = str(cached.get("implication") or "").strip()
                         is_placeholder = False
                         cached_clusters += 1
+                        if str(cached.get("status") or "") == "stale":
+                            stale_cached_clusters += 1
+                            pending_synthesis_clusters.append(cluster)
                     else:
                         if (self._remaining_seconds(deadline) or 0.0) <= 0.05:
                             analysis = ""
@@ -1451,6 +1616,8 @@ class NewsIntelligenceExecutor:
                                 model_label=self._active_model_label(),
                                 sources=cluster.get("sources", []),
                             )
+                        else:
+                            pending_synthesis_clusters.append(cluster)
                     if not summary or not implication:
                         omitted_clusters += 1
                         continue
@@ -1477,6 +1644,15 @@ class NewsIntelligenceExecutor:
                         "so this is a quicker headline-only brief. You can retry with today's news or narrow the topic."
                     )
                 else:
+                    fill_status = self._enqueue_async_synthesis_fill(
+                        pending_synthesis_clusters,
+                        request_id=request.request_id,
+                        session_id=session_id,
+                        headline_count=len(source),
+                        source_pages_read=len(packets),
+                        on_ready=(request.params or {}).get("synthesis_ready_callback"),
+                        should_pause=(request.params or {}).get("foreground_model_busy_callback"),
+                    )
                     report, all_sources = self._render_daily_brief_v2(rendered_clusters)
                     if placeholder_clusters:
                         report = (
@@ -1496,10 +1672,14 @@ class NewsIntelligenceExecutor:
                                 "placeholder_cluster_count": placeholder_clusters,
                                 "omitted_cluster_count": omitted_clusters,
                                 "cached_cluster_count": cached_clusters,
+                                "stale_cached_cluster_count": stale_cached_clusters,
+                                "pending_synthesis_cluster_count": int(fill_status.get("queued") or 0),
+                                "synthesis_status": "paused" if fill_status.get("paused") else ("pending" if fill_status.get("queued") else "ready"),
                             },
                         },
                         "brief_clusters": rendered_clusters,
                         "sources": all_sources,
+                        "synthesis_fill": fill_status,
                     }
                     return self._ok_result(
                         report.strip(),

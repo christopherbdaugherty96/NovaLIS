@@ -600,7 +600,9 @@ function buildStructuredReportFromBrief(brief = {}) {
 }
 
 function parseDailyBriefV2(text) {
-  const raw = String(text || "").trim();
+  let raw = String(text || "").trim();
+  const briefStart = raw.indexOf("NOVA DAILY INTELLIGENCE BRIEF");
+  if (briefStart > 0) raw = raw.slice(briefStart).trim();
   if (!raw.startsWith("NOVA DAILY INTELLIGENCE BRIEF")) return null;
 
   const lines = raw.split(/\r?\n/).map((line) => line.trim());
@@ -669,6 +671,8 @@ function normalizeBriefWidgetData(data = {}) {
     clusterCount: toCount(data.cluster_count),
     placeholderClusterCount: toCount(data.placeholder_cluster_count),
     omittedClusterCount: toCount(data.omitted_cluster_count),
+    staleCachedClusterCount: toCount(data.stale_cached_cluster_count),
+    pendingSynthesisClusterCount: toCount(data.pending_synthesis_cluster_count),
   };
 }
 
@@ -725,7 +729,12 @@ function renderIntelligenceBriefWidget(data = {}) {
     noteText = "Story cards below reflect the latest brief captured in chat.";
     pageSummaryText = "Latest source-grounded brief is ready.";
 
-    if (state.placeholderClusterCount > 0) {
+    if (state.pendingSynthesisClusterCount > 0) {
+      badgeText = "Pending";
+      summaryText = `${summaryText} ${state.pendingSynthesisClusterCount} cluster(s) are being synthesized in the background.`;
+      noteText = "Nova returned the brief quickly and is filling source-grounded synthesis for cached reuse.";
+      pageSummaryText = "Latest source-grounded brief is pending richer synthesis.";
+    } else if (state.placeholderClusterCount > 0) {
       badgeText = "Degraded";
       summaryText = `${summaryText} ${state.placeholderClusterCount} cluster(s) are placeholder summaries.`;
       noteText = "Placeholder summaries appear when source-grounded synthesis is unavailable, but source coverage is still shown.";
@@ -734,6 +743,10 @@ function renderIntelligenceBriefWidget(data = {}) {
       badgeText = "Partial";
       noteText = `${state.omittedClusterCount} topic cluster(s) were omitted due to incomplete source-grounded synthesis.`;
       pageSummaryText = "Latest source-grounded brief is partial because some topic clusters were omitted.";
+    } else if (state.staleCachedClusterCount > 0) {
+      badgeText = "Stale";
+      noteText = `${state.staleCachedClusterCount} cached topic cluster(s) are usable but being refreshed.`;
+      pageSummaryText = "Latest source-grounded brief is using stale cached synthesis while Nova refreshes it.";
     }
   }
 
@@ -748,6 +761,7 @@ function renderIntelligenceBriefWidget(data = {}) {
     ["Clusters", state.clusterCount],
     ["Placeholder", state.placeholderClusterCount],
     ["Omitted", state.omittedClusterCount],
+    ["Pending", state.pendingSynthesisClusterCount],
   ].forEach(([label, value]) => {
     stats.appendChild(createBriefStat(label, value));
   });
@@ -755,8 +769,10 @@ function renderIntelligenceBriefWidget(data = {}) {
 
 function getBriefGroundingLabel() {
   if (latestBriefWidgetState.sourcePagesRead > 0) {
+    if (latestBriefWidgetState.pendingSynthesisClusterCount > 0) return "Pending";
     if (latestBriefWidgetState.placeholderClusterCount > 0) return "Degraded";
     if (latestBriefWidgetState.omittedClusterCount > 0) return "Partial";
+    if (latestBriefWidgetState.staleCachedClusterCount > 0) return "Stale";
     return "Grounded";
   }
   return "Headline only";
@@ -2771,6 +2787,12 @@ function connectWebSocket() {
         break;
       case "intelligence_brief":
         renderIntelligenceBriefWidget(msg.data || {});
+        break;
+      case "news_synthesis_ready":
+        renderIntelligenceBriefWidget(msg.data || {});
+        if (!manualTurnInFlight) {
+          appendChatMessage("assistant", msg.message || "News synthesis is ready.", null, "Synthesis ready");
+        }
         break;
       case "search":
         renderSearchWidget(msg.data);

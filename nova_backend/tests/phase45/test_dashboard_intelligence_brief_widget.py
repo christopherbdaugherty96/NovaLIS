@@ -15,8 +15,11 @@ def test_dashboard_handles_structured_intelligence_brief_widget_messages():
     assert "let latestBriefWidgetState" in source
     assert "function renderIntelligenceBriefWidget(data = {})" in source
     assert 'case "intelligence_brief":' in source
+    assert 'case "news_synthesis_ready":' in source
     assert "renderIntelligenceBriefWidget(msg.data || {});" in source
+    assert 'appendChatMessage("assistant", msg.message || "News synthesis is ready.", null, "Synthesis ready");' in source
     assert '"placeholder_cluster_count"' in source or "placeholderClusterCount" in source
+    assert '"pending_synthesis_cluster_count"' in source or "pendingSynthesisClusterCount" in source
     assert '"omitted_cluster_count"' in source or "omittedClusterCount" in source
     assert "updateNewsSummary(summaryText);" in source
 
