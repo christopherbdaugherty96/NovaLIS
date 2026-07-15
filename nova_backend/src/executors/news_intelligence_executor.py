@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from src.actions.action_result import ActionResult
-from src.llm.llm_gateway import generate_chat
+from src.executors.news_synthesis_cache import NewsSynthesisCache
+from src.llm.llm_gateway import generate_chat, model_status_snapshot
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 from src.utils.content_extractor import extract_text_from_html
 
@@ -88,9 +89,15 @@ HEADLINE_TERM_NORMALIZATION = {
 
 class NewsIntelligenceExecutor:
     """Governed analysis over user-selected news headlines (invocation-bound)."""
-    def __init__(self, network: Any | None = None) -> None:
+    def __init__(
+        self,
+        network: Any | None = None,
+        *,
+        synthesis_cache: NewsSynthesisCache | None = None,
+    ) -> None:
         self.renderer = IntelligenceBriefRenderer()
         self.network = network
+        self.synthesis_cache = synthesis_cache or NewsSynthesisCache()
 
     @staticmethod
     def _speakable_preview(text: str, *, limit: int = 220) -> str:
@@ -1409,28 +1416,44 @@ class NewsIntelligenceExecutor:
                 rendered_clusters: list[dict[str, Any]] = []
                 omitted_clusters = 0
                 placeholder_clusters = 0
+                cached_clusters = 0
                 for cluster in clusters:
-                    if (self._remaining_seconds(deadline) or 0.0) <= 0.05:
-                        analysis = ""
+                    cached = self.synthesis_cache.get(cluster)
+                    if cached is not None:
+                        summary = str(cached.get("summary") or "").strip()
+                        implication = str(cached.get("implication") or "").strip()
+                        is_placeholder = False
+                        cached_clusters += 1
                     else:
-                        analysis = self._llm_or_fallback(
-                            self._cluster_prompt(cluster),
-                            "",
-                            request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
-                            session_id=session_id,
-                            timeout_seconds=self._bounded_timeout(deadline, CLUSTER_ANALYSIS_TIMEOUT_SECONDS),
-                            max_tokens=380,
+                        if (self._remaining_seconds(deadline) or 0.0) <= 0.05:
+                            analysis = ""
+                        else:
+                            analysis = self._llm_or_fallback(
+                                self._cluster_prompt(cluster),
+                                "",
+                                request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
+                                session_id=session_id,
+                                timeout_seconds=self._bounded_timeout(deadline, CLUSTER_ANALYSIS_TIMEOUT_SECONDS),
+                                max_tokens=380,
+                            )
+                        fallback_summary, fallback_implication = self._cluster_fallback(cluster)
+                        summary, implication = self._parse_summary_and_implication(
+                            analysis,
+                            cluster,
+                            use_fallback=True,
                         )
-                    fallback_summary, fallback_implication = self._cluster_fallback(cluster)
-                    summary, implication = self._parse_summary_and_implication(
-                        analysis,
-                        cluster,
-                        use_fallback=True,
-                    )
+                        is_placeholder = summary == fallback_summary or implication == fallback_implication
+                        if not is_placeholder:
+                            self.synthesis_cache.put(
+                                cluster,
+                                summary=summary,
+                                implication=implication,
+                                model_label=self._active_model_label(),
+                                sources=cluster.get("sources", []),
+                            )
                     if not summary or not implication:
                         omitted_clusters += 1
                         continue
-                    is_placeholder = summary == fallback_summary or implication == fallback_implication
                     if is_placeholder:
                         placeholder_clusters += 1
                     rendered_clusters.append(
@@ -1442,6 +1465,9 @@ class NewsIntelligenceExecutor:
                             "sources": cluster.get("sources", []),
                             "items": cluster.get("items", []),
                             "placeholder": is_placeholder,
+                            "synthesis_status": str((cached or {}).get("status") or ("placeholder" if is_placeholder else "fresh")),
+                            "synthesized_at": str((cached or {}).get("synthesized_at") or ""),
+                            "model_label": str((cached or {}).get("model_label") or ""),
                         }
                     )
 
@@ -1469,6 +1495,7 @@ class NewsIntelligenceExecutor:
                                 "cluster_count": len(rendered_clusters),
                                 "placeholder_cluster_count": placeholder_clusters,
                                 "omitted_cluster_count": omitted_clusters,
+                                "cached_cluster_count": cached_clusters,
                             },
                         },
                         "brief_clusters": rendered_clusters,
@@ -1556,3 +1583,11 @@ class NewsIntelligenceExecutor:
             request_id=request.request_id,
             speakable_text=f"Topic memory map ready with {len(topic_map)} topic{'s' if len(topic_map) != 1 else ''}.",
         )
+
+    @staticmethod
+    def _active_model_label() -> str:
+        try:
+            snapshot = model_status_snapshot()
+        except Exception:
+            return ""
+        return str(dict(snapshot or {}).get("active_model") or "").strip()
