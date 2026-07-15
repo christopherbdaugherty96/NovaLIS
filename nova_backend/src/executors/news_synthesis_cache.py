@@ -13,6 +13,7 @@ from src.utils.persistent_state import runtime_path, shared_path_lock, write_jso
 
 SCHEMA_VERSION = "1.0"
 DEFAULT_FRESH_TTL_SECONDS = 30 * 60
+DEFAULT_STALE_USABLE_TTL_SECONDS = 2 * 60 * 60
 
 _TRACKING_QUERY_PREFIXES = ("utm_",)
 _TRACKING_QUERY_KEYS = {"fbclid", "gclid", "mc_cid", "mc_eid"}
@@ -104,14 +105,16 @@ class NewsSynthesisCache:
         path: str | Path | None = None,
         *,
         fresh_ttl_seconds: int = DEFAULT_FRESH_TTL_SECONDS,
+        stale_usable_ttl_seconds: int = DEFAULT_STALE_USABLE_TTL_SECONDS,
     ) -> None:
         default_path = runtime_path(__file__, "data", "nova_state", "news_synthesis_cache.json")
         self._path = Path(path) if path else default_path
         self._fresh_ttl_seconds = max(1, int(fresh_ttl_seconds))
+        self._stale_usable_ttl_seconds = max(self._fresh_ttl_seconds, int(stale_usable_ttl_seconds))
         self._lock = shared_path_lock(self._path)
         self._path.parent.mkdir(parents=True, exist_ok=True)
 
-    def get(self, cluster: dict[str, Any]) -> dict[str, Any] | None:
+    def get(self, cluster: dict[str, Any], *, allow_stale: bool = False) -> dict[str, Any] | None:
         fingerprint = cluster_fingerprint(cluster)
         with self._lock:
             state = self._read_state()
@@ -122,14 +125,15 @@ class NewsSynthesisCache:
         if synthesized_at is None:
             return None
         age_seconds = max(0.0, (datetime.now(timezone.utc) - synthesized_at).total_seconds())
-        if age_seconds > self._fresh_ttl_seconds:
+        max_age = self._stale_usable_ttl_seconds if allow_stale else self._fresh_ttl_seconds
+        if age_seconds > max_age:
             return None
         summary = str(record.get("summary") or "").strip()
         implication = str(record.get("implication") or "").strip()
         if not summary or not implication:
             return None
         record["cluster_fingerprint"] = fingerprint
-        record["status"] = "fresh"
+        record["status"] = "fresh" if age_seconds <= self._fresh_ttl_seconds else "stale"
         record["age_seconds"] = int(age_seconds)
         return record
 

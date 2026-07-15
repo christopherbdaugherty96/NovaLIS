@@ -3851,6 +3851,27 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         params["story_index"] = resolved_story_index
                     if capability_id == 50:
                         params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
+                        if params.get("read_sources"):
+                            _synthesis_loop = asyncio.get_running_loop()
+
+                            def _on_news_synthesis_ready(payload: dict) -> None:
+                                if not isinstance(payload, dict):
+                                    return
+                                future = asyncio.run_coroutine_threadsafe(ws_send(ws, payload), _synthesis_loop)
+
+                                def _consume_ready_send_result(done_future: Any) -> None:
+                                    try:
+                                        done_future.result()
+                                    except Exception:
+                                        log.debug("News synthesis ready event was not delivered", exc_info=True)
+
+                                future.add_done_callback(_consume_ready_send_result)
+
+                            params.setdefault("synthesis_ready_callback", _on_news_synthesis_ready)
+                            params.setdefault(
+                                "foreground_model_busy_callback",
+                                lambda: bool(session_state.get("foreground_model_busy")),
+                            )
                 if capability_id == 17:
                     source_index = params.get("source_index")
                     if source_index is not None:
@@ -4451,15 +4472,19 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     _stream_loop,
                 )
 
-            skill_result = await run_general_chat_fallback(
-                mediated_text,
-                general_chat_skill=general_chat_skill,
-                session_state=session_state,
-                session_context=session_context,
-                project_threads=project_threads,
-                select_relevant_memory_context=_select_relevant_memory_context,
-                on_chunk=_on_advisory_chunk,
-            )
+            session_state["foreground_model_busy"] = True
+            try:
+                skill_result = await run_general_chat_fallback(
+                    mediated_text,
+                    general_chat_skill=general_chat_skill,
+                    session_state=session_state,
+                    session_context=session_context,
+                    project_threads=project_threads,
+                    select_relevant_memory_context=_select_relevant_memory_context,
+                    on_chunk=_on_advisory_chunk,
+                )
+            finally:
+                session_state["foreground_model_busy"] = False
 
             if skill_result:
                 skill_name = getattr(skill_result, "skill", "") or ""
