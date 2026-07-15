@@ -3341,6 +3341,7 @@ async def send_chat_message(
     confidence: Optional[str] = None,
     suggested_actions: Optional[list[dict[str, str]]] = None,
     trust_review_card: Optional[dict[str, Any]] = None,
+    usage_meta: Optional[dict[str, Any]] = None,
     apply_personality: bool = True,
     tone_domain: str = "general",
 ) -> str:
@@ -3361,14 +3362,22 @@ async def send_chat_message(
         payload["suggested_actions"] = suggested_actions
     if isinstance(trust_review_card, dict) and trust_review_card:
         payload["trust_review_card"] = trust_review_card
+    if isinstance(usage_meta, dict) and usage_meta:
+        payload["usage_meta"] = usage_meta
     await ws_send(ws, payload)
     return presented
 
-async def send_chat_done(ws: WebSocket, turn_id: Optional[str] = None) -> None:
+async def send_chat_done(
+    ws: WebSocket,
+    turn_id: Optional[str] = None,
+    usage_meta: Optional[dict[str, Any]] = None,
+) -> None:
     payload = {"type": "chat_done"}
     resolved_turn_id = str(turn_id or _current_ws_turn_id.get() or "").strip()
     if resolved_turn_id:
         payload["turn_id"] = resolved_turn_id
+    if isinstance(usage_meta, dict) and usage_meta:
+        payload["usage_meta"] = usage_meta
     await ws_send(ws, payload)
 
 async def send_widget_message(

@@ -1286,7 +1286,7 @@ function appendStreamChunk(text, turnId) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function finalizeStreamBubble(turnId) {
+function finalizeStreamBubble(turnId, usageMeta = null) {
   const key = turnId || "__default__";
   const entry = _streamBubbles.get(key);
   if (!entry) return;
@@ -1319,6 +1319,7 @@ function finalizeStreamBubble(turnId) {
   }
 
   appendTrustStrip(entry.div, fullText, "");
+  appendUsageStrip(entry.div, usageMeta);
   addMessageUtilities(entry.div, fullText);
   appendAssistantActions(entry.div, fullText, null);
 }
@@ -2859,7 +2860,7 @@ function connectWebSocket() {
           msg.message_id || null,
           msg.confidence || "",
           msg.suggested_actions || null,
-          null,
+          msg.usage_meta || null,
           msg.trust_review_card || null
         );
         break;
@@ -2887,7 +2888,7 @@ function connectWebSocket() {
         break;
       case "chat_done":
         if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
-        finalizeStreamBubble(msg.turn_id || "");
+        finalizeStreamBubble(msg.turn_id || "", msg.usage_meta || null);
         if (manualTurnInFlight && !manualTurnAssistantSeen) {
           if (Date.now() - manualTurnStartedAt < 60000) break;
           clearActiveManualTurn("Completed", "Nova ended the turn without a visible assistant message.");
