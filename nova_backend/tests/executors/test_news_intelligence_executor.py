@@ -438,6 +438,8 @@ def test_brief_uses_cluster_fallback_when_source_synthesis_is_unavailable(monkey
     assert result.success is True
     assert "NOVA DAILY INTELLIGENCE BRIEF" in result.message
     assert "[Fallback]" in result.message
+    assert "Confidence: Low" in result.message
+    assert "Confidence: Medium-High" not in result.message
     assert "placeholder source-grounded summaries" in result.message
     assert isinstance(result.data, dict)
     assert isinstance(result.data.get("brief_clusters"), list)
@@ -448,6 +450,33 @@ def test_brief_uses_cluster_fallback_when_source_synthesis_is_unavailable(monkey
     )
     assert result.data["widget"]["data"]["placeholder_cluster_count"] >= 1
     assert result.data["widget"]["data"]["omitted_cluster_count"] == 0
+
+
+def test_brief_confidence_degrades_when_any_cluster_is_placeholder():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    executor = NewsIntelligenceExecutor()
+    report, _ = executor._render_daily_brief_v2(
+        [
+            {
+                "title": "Technology",
+                "summary": "AI infrastructure competition is intensifying.",
+                "implication": "Capacity planning may shift.",
+                "sources": ["ABC News", "BBC News"],
+                "placeholder": False,
+            },
+            {
+                "title": "Global Security",
+                "summary": "[Fallback] I could not complete a source-grounded synthesis for this cluster.",
+                "implication": "Treat this as a placeholder and review the linked source pages directly.",
+                "sources": ["Reuters", "AP"],
+                "placeholder": True,
+            },
+        ]
+    )
+
+    assert "Confidence: Medium-Low" in report
+    assert "Confidence: Medium-High" not in report
 
 
 def test_brief_followup_actions_expand_compare_track():
