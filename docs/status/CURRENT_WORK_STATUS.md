@@ -1,9 +1,8 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-11 (observation underway; Slice 1 input reliability + Slice 2 grounded
-brief follow-ups merged and post-merge smoked). Read the latest 2026-07-11 block in
-docs/status/DAILY_COMMAND_CENTER.md first; the 2026-07-07 block (live verification PR #273,
-product-identity PR #274) remains below it.
+Last reviewed: 2026-07-15 (Morning 5 logged; PR #302-#307 merged; grounded brief conversation
+lane active with Slice 0 landed). Read the latest 2026-07-15 block in
+docs/status/DAILY_COMMAND_CENTER.md first; older July blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
 `../capability_verification/CAPABILITY_INVENTORY.md` (what works), `DAILY_COMMAND_CENTER.md`
@@ -26,47 +25,48 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-PHASE 3 - Can Nova become a habit? OBSERVATION UNDERWAY (updated 2026-07-11)
+PHASE 3 - Can Nova become a habit? OBSERVATION UNDERWAY (updated 2026-07-15)
 
 The input that moves the project is OBSERVED DAILY USE. Engineering freeze holds; only
-truth-critical repairs are taken, each with explicit owner approval. Next input = a completed
-morning, not a PR.
+truth-critical, observation-backed, explicitly approved repairs are taken. Broad capability
+expansion, provider/model switching, and autonomous work remain parked.
 
-Merged this cycle:
-  #294 - Observation Step 0: ratified morning-log template + single launch procedure. Config
-         truth: runtime reads Windows User-scope env, NOT nova_backend/.env (mirror only).
-         Calendar wired end-to-end via a daily 6:00 AM .ics re-export (no upcoming events yet).
-  #295 - "Truthful availability under dashboard refresh" (truth-defect freeze exception): fixed
-         false "not configured" labels for news + weather. News 180s cache stops the ~70s
-         dashboard refresh exhausting the cap-56 50/min rate limit; weather widget-envelope
-         unwrap fixes a structural mislabel (a working forecast rendered "not configured");
-         empty/rate-limited now reads "temporarily unavailable", news no longer blames Brave.
-  #297 - Slice 1 input reliability: fixed dashboard websocket idle/reconnect behavior with
-         visible-tab keepalive, server ping no-op, hidden-tab reconnect suppression, and
-         refocus reconnect-once behavior. Post-merge smoke from main passed.
-  #298 - Slice 2 grounded conversation over brief items: deterministic fetch prompts remain
-         deterministic; follow-ups over loaded news/weather/calendar/runtime brief items answer
-         from structured sourced state before the LLM path. Guardrails prevent unsupported fact
-         laundering, background focus theft, unrelated prompt routing, and GeneralChat prompt
-         contamination. Post-merge smoke from main passed.
+Merged since the last status block:
+  #302 - brief-phrasing intent recognition, status-frame truth fix, Gotcha-loop fix,
+         Morning 1-3 logs.
+  #303 - news confidence degradation for placeholder/all-fallback briefs.
+  #304 - local usage visibility for advisory turns (model + estimated visible tokens,
+         local-only/non-metered).
+  #305 - async news synthesis plan + cache/read-through Slice 1.
+  #306 - async news synthesis Slice 2. Live quality gate: gemma2:2b produced useful grounded
+         synthesis with background time; the model-gate remains parked.
+  #307 - grounded-brief-conversation Slice 0: compare repeated-word phrasing fixed and
+         news_synthesis_ready chat copy made concise while preserving the widget brief.
 
-Findings (2026-07-11):
-  - False-unavailability root cause = rate-limit exhaustion + a structural envelope-read bug,
-    not missing config (both fixed in #295).
-  - Conversation-grounding trace (read-only) found the LLM did not receive news/weather facts;
-    Slice 2 (#298) fixed the product path by answering grounded follow-ups from loaded sourced
-    brief state before LLM fallback. DeepSeek-vs-gemma2:2b remains parked until observed use of
-    the grounded path produces a genuine model-quality signal.
+Morning 5:
+  docs/observation/MORNING_05_2026-07-15.md is logged as a warm-cache daily-use probe.
+  It validated the async synthesis bet for content usefulness (mostly source-grounded brief,
+  honest Medium-Low confidence) and confirmed the old interaction failures stayed dead
+  (no Gotcha loop, no false connection-status failure, no Stop-required stall).
 
-Closed: "Grounded follow-up conversation over brief items" landed in PR #298 and passed
-  post-merge smoke on fresh main (news selected-story carry-forward, weather no-invention,
-  calendar selected-event after-that, unrelated prompt normal GeneralChat path).
+Current active product lane:
+  docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15.md records the plan. The lane is
+  active because Morning 5 reconfirmed the gap: grounded when reached, fabricated or irrelevant
+  when missed, and stale facts when follow-ups read broad/raw state instead of the rendered
+  Cap 50 brief clusters.
 
-Morning logs remain Chris-owned artifacts: docs/observation/MORNING_01_2026-07-11.md and
-  docs/observation/MORNING_02_2026-07-11.md are untracked local observation drafts.
+Next safe build if explicitly approved:
+  Slice 1 - deterministic routing, rendered-brief fact unification, and active-surface/stable-story
+  identity mapping over rendered Cap 50 brief clusters. No model, no contract change. It should
+  route "show me <category> news" to governed news/category handling, make follow-up facts match
+  the brief on screen, and make numeric story commands resolve against the active visible surface.
 
-Owner-only NOW gate: Auralis-Digital hosting migration + privacy flip, Instagram, filming,
-Meta verification, OpenClaw token rotation.
+Still gated:
+  Slice 2 - echo-only -> constrained grounded generation. Requires hallucination-negative tests,
+  an interactive latency budget, and owner sign-off on fallback shape/within-facts strictness.
+
+Owner-only NOW gate remains outside Nova implementation: Auralis-Digital hosting migration +
+privacy flip, Instagram, filming, Meta verification, OpenClaw token rotation.
 ```
 
 <!-- Historical lock below retained for continuity. -->

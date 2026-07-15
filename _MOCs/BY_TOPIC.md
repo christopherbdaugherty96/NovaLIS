@@ -317,7 +317,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt|🔊 NOVA — GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION]]
 - [doc] [[docs/archive/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
 
-## memory (84)
+## memory (83)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -364,7 +364,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
 - [doc] [[docs/product/CONVERSATION_AND_MEMORY_MODEL|Conversation and Memory Model]]
 - [doc] [[docs/demo_proof/daily_operating_baseline/CONVERSATION_CONTINUITY_PROOF|Conversation Continuity Proof]]
-- [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
 - [doc] [[docs/audits/ISSUE_214_DETERMINISTIC_CONTINUITY_INVESTIGATION_2026-05-23|Issue #214 — Deterministic Continuity Investigation]]
 - [doc] [[docs/capability_verification/live_checklists/cap_51_topic_memory_map|Live Test Checklist — Cap 51: topic_memory_map]]
 - [doc] [[docs/capability_verification/live_checklists/cap_61_memory_governance|Live Test Checklist — Cap 61: memory_governance]]
@@ -404,7 +403,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/audits/USER_SIMULATION_RESULTS_2026-07-06|User Simulation Results - 2026-07-06]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (107)
+## ux (108)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
@@ -471,6 +470,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_dashboard_workspace_board_widget.py|test_dashboard_workspace_board_widget]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_workspace_home_widget.py|test_dashboard_workspace_home_widget]]
 - [code] [[nova_backend/tests/phase42/test_phase42_dashboard_report_interaction.py|test_phase42_dashboard_report_interaction]]
+- [code] [[nova_backend/tests/test_truthful_availability.py|test_truthful_availability]]
 - [code] [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
 - [code] [[nova_workspace/story_tracker/tracked_topics.json|tracked_topics]]
 - [code] [[nova_backend/src/api/workspace_api.py|workspace_api]]
@@ -579,7 +579,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[future/brain/second_brain/implementation_blueprint/05_context_bridge|Slice 5 - Context Bridge]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (818)
+## testing (824)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -595,6 +595,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/simulation/scenarios/bad_prompt_empty_intent.json|bad_prompt_empty_intent]]
 - [code] [[nova_backend/tests/simulation/scenarios/bad_prompt_overloaded_request.json|bad_prompt_overloaded_request]]
 - [code] [[nova_backend/tests/simulation/scenarios/bad_prompt_prompt_injection.json|bad_prompt_prompt_injection]]
+- [code] [[nova_backend/src/conversation/brief_intent_resolver.py|brief_intent_resolver]]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_diagnostics.json|browser_use_visual_capture_diagnostics]]
 - [code] [[nova_backend/tests/simulation/scenarios/cancellation_briefing.json|cancellation_briefing]]
 - [code] [[nova_backend/tests/simulation/scenarios/cancellation_local_action.json|cancellation_local_action]]
@@ -697,6 +698,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_brain_server_tone_commands.py|test_brain_server_tone_commands]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_website_preview.py|test_brain_server_website_preview]]
+- [code] [[nova_backend/tests/conversation/test_brief_followup_grounding.py|test_brief_followup_grounding]]
+- [code] [[nova_backend/tests/conversation/test_brief_intent_resolver.py|test_brief_intent_resolver]]
 - [code] [[nova_backend/tests/personality/test_briefing_composer.py|test_briefing_composer]]
 - [code] [[nova_backend/tests/test_calendar_skill.py|test_calendar_skill]]
 - [code] [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
@@ -982,6 +985,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [code] [[nova_backend/tests/rendering/test_speech_formatter.py|test_speech_formatter]]
 - [code] [[nova_backend/tests/governance/test_startup_script_contract.py|test_startup_script_contract]]
+- [code] [[nova_backend/tests/phase45/test_stop_cancel_abandon.py|test_stop_cancel_abandon]]
 - [code] [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
 - [code] [[nova_backend/tests/governance/test_streaming_llm_fallback.py|test_streaming_llm_fallback]]
 - [code] [[nova_backend/tests/openclaw/test_strict_preflight.py|test_strict_preflight]]
@@ -1004,6 +1008,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_tool_registry.py|test_tool_registry]]
 - [code] [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
 - [code] [[nova_backend/tests/personality/test_trust_presenter.py|test_trust_presenter]]
+- [code] [[nova_backend/tests/test_truthful_availability.py|test_truthful_availability]]
 - [code] [[nova_backend/tests/rendering/test_tts_engine.py|test_tts_engine]]
 - [code] [[nova_backend/tests/executors/test_tts_executor.py|test_tts_executor]]
 - [code] [[nova_backend/tests/governance/test_tts_invocation_bound.py|test_tts_invocation_bound]]
@@ -1023,7 +1028,9 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
 - [code] [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
 - [code] [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
+- [code] [[nova_backend/tests/phase45/test_websocket_keepalive_contract.py|test_websocket_keepalive_contract]]
 - [code] [[nova_backend/tests/test_websocket_local_guard.py|test_websocket_local_guard]]
+- [code] [[nova_backend/tests/test_websocket_send_guard.py|test_websocket_send_guard]]
 - [code] [[nova_backend/tests/governance/test_working_context_non_persistent.py|test_working_context_non_persistent]]
 - [code] [[nova_backend/tests/phase45/test_working_context_store.py|test_working_context_store - tests/phase45]]
 - [code] [[nova_backend/tests/phase5/test_working_context_store.py|test_working_context_store - tests/phase5]]
@@ -1204,7 +1211,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/audits/NOVA_BASIC_WORKFLOW_VERIFICATION_2026-05-17|Nova Basic Workflow Verification - 2026-05-17]]
 - [doc] [[docs/capability_verification/CAPABILITY_INVENTORY|Nova Capability Inventory]]
 - [doc] [[docs/PROOFS/Phase-5/NOVA_CONSOLIDATED_CANONICAL_STATE_2026-03-09|Nova Consolidated Canonical State]]
-- [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT|Nova Demo Script - 2026-04-28 User Test]]
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/NOVA PHASE 3.5 SEAL ARTIFACT.txt|NOVA PHASE 3.5 SEAL ARTIFACT - unlock-decisions/phase 3.5]]
 - [doc] [[docs/PROOFS/UNLOCK/phase 3.5/NOVA PHASE 3.5 SEAL ARTIFACT.txt|NOVA PHASE 3.5 SEAL ARTIFACT - UNLOCK/phase 3.5]]

@@ -444,6 +444,7 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/test_deepseek_log_only_budget.py|test_deepseek_log_only_budget]]
 - [[nova_backend/tests/test_provider_status_accuracy.py|test_provider_status_accuracy]]
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
+- [[nova_backend/tests/test_truthful_availability.py|test_truthful_availability]]
 - [[scripts/simulate_user_acceptance_2026_07_06.py|simulate_user_acceptance_2026_07_06]]
 
 ### Tests
@@ -611,7 +612,7 @@ ___all__ = ["ContextSnapshotService"]_
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 
-## `conversation` (24 files)
+## `conversation` (26 files)
 
 _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 
@@ -620,6 +621,10 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/conversation/__init__.py|src/conversation]]
 - [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
     - Awareness Brief trigger matching.
+- [[nova_backend/src/conversation/brief_followup_grounding.py|brief_followup_grounding]]
+    - DISCUSSION_MARKERS = (
+- [[nova_backend/src/conversation/brief_intent_resolver.py|brief_intent_resolver]]
+    - Deterministic brief-phrasing intent resolver.
 - [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
     - Deterministic clarification prompt bank for conversational UX polish.
 - [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
@@ -662,8 +667,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
     - WEB_OPEN_CONFIRM_YES = {
 - [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
     - Conversation-facing Task Understanding preview helpers.
-- [[nova_backend/src/conversation/thought_store.py|thought_store]]
-    - class ThoughtStore:
+- _…and 1 more_
 
 ### Imports from
 
@@ -706,14 +710,16 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
 - [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
 - [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
+- [[nova_backend/tests/conversation/test_brief_followup_grounding.py|test_brief_followup_grounding]]
+- [[nova_backend/tests/conversation/test_brief_intent_resolver.py|test_brief_intent_resolver]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
-- [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
-- [[nova_backend/tests/conversation/test_daily_brief_semantic_contract.py|test_daily_brief_semantic_contract]]
-- _…and 42 more_
+- _…and 44 more_
 
 ### Tests
 
 - [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
+- [[nova_backend/tests/conversation/test_brief_followup_grounding.py|test_brief_followup_grounding]]
+- [[nova_backend/tests/conversation/test_brief_intent_resolver.py|test_brief_intent_resolver]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_conversation_router.py|test_conversation_router]]
@@ -748,7 +754,7 @@ _Debug utilities package._
 
 - [[nova_backend/tests/simulation/conversation_simulator.py|conversation_simulator]]
 
-## `executors` (23 files)
+## `executors` (25 files)
 
 ### Files
 
@@ -771,6 +777,10 @@ _Debug utilities package._
     - validate_rendered_report_text,
 - [[nova_backend/src/executors/news_intelligence_executor.py|news_intelligence_executor]]
     - MAX_HEADLINES_PER_SUMMARY = 3
+- [[nova_backend/src/executors/news_synthesis_async.py|news_synthesis_async]]
+    - log = logging.getLogger(__name__)
+- [[nova_backend/src/executors/news_synthesis_cache.py|news_synthesis_cache]]
+    - SCHEMA_VERSION = "1.0
 - [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
     - PRESET_FOLDERS = {
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
@@ -838,6 +848,7 @@ _Debug utilities package._
 - [[nova_backend/src/tasks/notification_schedule_store.py|notification_schedule_store]]
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]]
+- [[nova_backend/src/utils/persistent_state.py|persistent_state]]
 - [[nova_backend/src/utils/web_target_planner.py|web_target_planner - src/utils]]
 - [[nova_backend/src/validation/pipeline.py|pipeline]]
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
@@ -1720,6 +1731,7 @@ _NovaLIS Backend Package_
 ### Imports from
 
 - [[nova_backend/src/base_skill.py|base_skill]]
+- [[nova_backend/src/conversation/brief_followup_grounding.py|brief_followup_grounding]]
 - [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/conversation/deepseek_safety_wrapper.py|deepseek_safety_wrapper]]
@@ -1749,6 +1761,7 @@ _NovaLIS Backend Package_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
 - [[nova_backend/src/skill_registry.py|skill_registry]]
+- [[nova_backend/tests/conftest.py|conftest - nova_backend/tests]]
 - [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
 - [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
 - [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
@@ -1756,8 +1769,7 @@ _NovaLIS Backend Package_
 - [[nova_backend/tests/conversation/test_session_conversation_context.py|test_session_conversation_context]]
 - [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
-- [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
-- _…and 7 more_
+- _…and 9 more_
 
 ### Tests
 
@@ -1966,6 +1978,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/connections/connections_store.py|connections_store]]
 - [[nova_backend/src/executors/news_intelligence_executor.py|news_intelligence_executor]]
+- [[nova_backend/src/executors/news_synthesis_cache.py|news_synthesis_cache]]
 - [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
 - [[nova_backend/src/executors/webpage_launch_executor.py|webpage_launch_executor]]
 - [[nova_backend/src/governor/web_target_planner.py|web_target_planner - src/governor]]
@@ -1974,8 +1987,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
-- [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
-- _…and 18 more_
+- _…and 19 more_
 
 ### Tests
 
@@ -2044,7 +2056,7 @@ _Voice-layer helpers for Tier-B conversational responsiveness._
 - [[nova_backend/tests/conversation/test_voice_agent.py|test_voice_agent]]
 - [[nova_backend/tests/rendering/test_tts_engine.py|test_tts_engine]]
 
-## `websocket` (3 files)
+## `websocket` (4 files)
 
 _Websocket session runtime modules._
 
@@ -2054,7 +2066,9 @@ _Websocket session runtime modules._
 - [[nova_backend/src/websocket/intent_patterns.py|intent_patterns]]
     - Intent recognition patterns for the Nova brain server session loop.
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
-    - _HEADLINE_SUMMARY_RE = re.compile(
+    - answer_grounded_brief_followup,
+- [[nova_backend/src/websocket/turn_abandon.py|turn_abandon]]
+    - Abandon (Stop) support for in-flight WebSocket turns.
 
 ### Imports from
 
@@ -2070,6 +2084,8 @@ _Websocket session runtime modules._
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
+- [[nova_backend/src/conversation/brief_followup_grounding.py|brief_followup_grounding]]
+- [[nova_backend/src/conversation/brief_intent_resolver.py|brief_intent_resolver]]
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
 - [[nova_backend/src/conversation/morning_brief_handler.py|morning_brief_handler]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
@@ -2081,6 +2097,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/personality/interface_agent.py|interface_agent]]
 - [[nova_backend/src/personality/mode_detection.py|mode_detection]]
 - [[nova_backend/src/usage/provider_status.py|provider_status]]
+- [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
 - [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]
 
 ### Imported by
@@ -2092,6 +2109,8 @@ _Websocket session runtime modules._
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 - [[nova_backend/tests/governance/test_approval_gate_wiring.py|test_approval_gate_wiring]]
 - [[nova_backend/tests/governance/test_deterministic_routing_gaps.py|test_deterministic_routing_gaps]]
+- [[nova_backend/tests/phase45/test_brain_server_trust_status.py|test_brain_server_trust_status]]
+- [[nova_backend/tests/phase45/test_stop_cancel_abandon.py|test_stop_cancel_abandon]]
 - [[nova_backend/tests/test_first_user_intent_clarity.py|test_first_user_intent_clarity]]
 - [[nova_backend/tests/test_provider_status_visibility.py|test_provider_status_visibility]]
 - [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
