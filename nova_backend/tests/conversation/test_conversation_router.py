@@ -72,6 +72,27 @@ def test_router_resolves_reference_with_context():
     assert "downloads" in out.resolved_text.lower()
 
 
+def test_router_resolves_object_reference_without_last_response():
+    out = ConversationRouter.route("open that folder", {"last_object": "downloads", "last_response": ""})
+    assert out.needs_clarification is False
+    assert out.continuation_detected is False
+    assert "downloads" in out.resolved_text.lower()
+
+
+def test_router_does_not_turn_short_commands_into_empty_continuations():
+    state = {"last_object": "downloads", "last_response": ""}
+
+    for prompt in ["weather", "news", "whats the weather"]:
+        out = ConversationRouter.route(prompt, state)
+        assert out.continuation_detected is False, prompt
+        assert out.clarification_prompt != "What should I continue from?", prompt
+
+
+def test_router_does_not_emit_continue_from_prompt_for_object_only_state():
+    out = ConversationRouter.route("tell me more", {"last_object": "downloads", "last_response": ""})
+    assert out.clarification_prompt != "What should I continue from?"
+
+
 def test_router_direct_question_mode_no_escalation():
     out = ConversationRouter.route("what is a gpu?")
     assert out.mode.value == "direct"

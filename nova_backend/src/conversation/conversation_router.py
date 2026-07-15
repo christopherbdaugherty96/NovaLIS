@@ -214,9 +214,6 @@ class ConversationRouter:
         if cls._looks_overloaded(lowered) and not needs_clarification:
             needs_clarification = True
             clarification = "That includes a few different actions. Which one should I do first?"
-        if continuation_detected and not state.get("last_response"):
-            needs_clarification = True
-            clarification = "What should I continue from?"
         if mode == ConversationMode.UNKNOWN and not needs_clarification:
             tokens = [tok for tok in lowered.split() if tok]
             if len(tokens) <= 3:
@@ -349,8 +346,11 @@ class ConversationRouter:
             return False
         if cls.SESSION_CONTEXT_RE.search(lowered):
             return False
-        has_context = bool(state.get("last_response")) or bool(state.get("last_object"))
-        if not has_context:
+        # Continuation means "continue the prior answer", so require an actual
+        # prior response. Object context is handled separately by explicit
+        # reference resolution (for example, "open that folder") and must not
+        # turn every short command into a follow-up after reconnect hydration.
+        if not str(state.get("last_response") or "").strip():
             return False
         if any(re.search(rf"(?<!\w){re.escape(marker)}(?!\w)", lowered) for marker in cls.FOLLOWUP_MARKERS):
             return True
