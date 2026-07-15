@@ -46,6 +46,7 @@ class ReplayMessage:
     role: str
     text: str
     confidence: str = ""
+    usage_meta: dict[str, Any] | None = None
 
 
 @dataclass
@@ -75,6 +76,7 @@ class DashboardEventReplayHarness:
     user_messages: list[str] = field(default_factory=list)
     ignored_events: list[dict[str, Any]] = field(default_factory=list)
     unsupported_events: list[dict[str, Any]] = field(default_factory=list)
+    stream_bubbles: dict[str, ReplayMessage] = field(default_factory=dict)
 
     def primary_send(self, text: str, *, now: int) -> bool:
         clean = str(text or "").strip()
@@ -122,13 +124,37 @@ class DashboardEventReplayHarness:
                 return "ignored"
             if self.manual_turn_in_flight:
                 self.manual_turn_assistant_seen = True
-            self._append_assistant(str(msg.get("message") or ""), str(msg.get("confidence") or ""))
+            self._append_assistant(
+                str(msg.get("message") or ""),
+                str(msg.get("confidence") or ""),
+                usage_meta=dict(msg.get("usage_meta") or {}) if isinstance(msg.get("usage_meta"), dict) else None,
+            )
             return "handled"
+
+        if msg_type == "chat_stream":
+            if self._is_stale_manual_event(msg):
+                self.ignored_events.append(msg)
+                return "ignored"
+            if self.manual_turn_in_flight:
+                self.manual_turn_assistant_seen = True
+            key = str(msg.get("turn_id") or "__default__")
+            existing = self.stream_bubbles.get(key)
+            if existing is None:
+                existing = ReplayMessage(role="assistant", text="")
+                self.stream_bubbles[key] = existing
+            existing.text += str(msg.get("text") or "")
+            return "streaming"
 
         if msg_type == "chat_done":
             if self._is_stale_manual_event(msg):
                 self.ignored_events.append(msg)
                 return "ignored"
+            key = str(msg.get("turn_id") or "__default__")
+            stream = self.stream_bubbles.pop(key, None)
+            if stream is not None:
+                if isinstance(msg.get("usage_meta"), dict):
+                    stream.usage_meta = dict(msg.get("usage_meta") or {})
+                self.assistant_messages.append(stream)
             if self.manual_turn_in_flight and not self.manual_turn_assistant_seen:
                 if now - self.manual_turn_started_at < 60000:
                     self.ignored_events.append(msg)
@@ -196,14 +222,21 @@ class DashboardEventReplayHarness:
         self.loading_hint = ""
         self.thinking_bar = False
 
-    def _append_assistant(self, text: str, confidence: str = "") -> bool:
+    def _append_assistant(
+        self,
+        text: str,
+        confidence: str = "",
+        usage_meta: dict[str, Any] | None = None,
+    ) -> bool:
         clean = str(text or "")
         turn_key = f"{self.active_manual_turn_id}:{clean.strip()}" if self.active_manual_turn_id else ""
         if turn_key and turn_key == self.last_assistant_turn_key:
             return False
         if turn_key:
             self.last_assistant_turn_key = turn_key
-        self.assistant_messages.append(ReplayMessage(role="assistant", text=clean, confidence=confidence))
+        self.assistant_messages.append(
+            ReplayMessage(role="assistant", text=clean, confidence=confidence, usage_meta=usage_meta)
+        )
         return True
 
     def _is_stale_manual_event(self, msg: dict[str, Any]) -> bool:

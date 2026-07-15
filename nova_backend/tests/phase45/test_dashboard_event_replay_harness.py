@@ -78,6 +78,62 @@ def test_replay_dedupes_repeated_assistant_text_within_manual_turn():
     assert [item.text for item in replay.assistant_messages] == ["same answer"]
 
 
+def test_replay_preserves_usage_meta_on_chat_message():
+    replay = DashboardEventReplayHarness()
+    replay.primary_send("explain this", now=3500)
+    active_turn = replay.active_manual_turn_id
+    usage_meta = {
+        "route": "local_model",
+        "route_label": "Local model",
+        "model_label": "gemma2:2b",
+        "estimated_total_tokens": 42,
+        "metered": False,
+        "local_only": True,
+    }
+
+    assert replay.handle_ws_message(
+        {
+            "type": "chat",
+            "turn_id": active_turn,
+            "message": "current turn",
+            "usage_meta": usage_meta,
+        },
+        now=3501,
+    ) == "handled"
+
+    assert replay.assistant_messages[-1].usage_meta == usage_meta
+
+
+def test_replay_attaches_usage_meta_from_chat_done_to_streamed_answer():
+    replay = DashboardEventReplayHarness()
+    replay.primary_send("explain this", now=3600)
+    active_turn = replay.active_manual_turn_id
+    usage_meta = {
+        "route": "local_model",
+        "route_label": "Local model",
+        "model_label": "gemma2:2b",
+        "estimated_total_tokens": 42,
+        "metered": False,
+        "local_only": True,
+    }
+
+    assert replay.handle_ws_message(
+        {"type": "chat_stream", "turn_id": active_turn, "text": "Hello"},
+        now=3601,
+    ) == "streaming"
+    assert replay.handle_ws_message(
+        {"type": "chat_stream", "turn_id": active_turn, "text": " there"},
+        now=3602,
+    ) == "streaming"
+    assert replay.handle_ws_message(
+        {"type": "chat_done", "turn_id": active_turn, "usage_meta": usage_meta},
+        now=3603,
+    ) == "handled"
+
+    assert replay.assistant_messages[-1].text == "Hello there"
+    assert replay.assistant_messages[-1].usage_meta == usage_meta
+
+
 def test_replay_widget_response_can_complete_manual_turn_without_chat_message():
     replay = DashboardEventReplayHarness()
     replay.primary_send("weather", now=4000)
@@ -216,6 +272,8 @@ def test_dashboard_event_replay_harness_is_anchored_to_source_contracts():
         "clearActiveManualTurn(\"Timed Out\"",
         "Nothing new was confirmed.",
         "Retry after checking status",
+        "msg.usage_meta || null,",
+        "finalizeStreamBubble(msg.turn_id || \"\", msg.usage_meta || null)",
     ):
         assert expected in source
 
