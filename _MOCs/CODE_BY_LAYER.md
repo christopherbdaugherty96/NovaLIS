@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (310)
+## Backend runtime (315)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -196,6 +196,10 @@ Use this to orient yourself before diving into a specific module.
   summary: Conversation-layer helpers for cognitive escalation (Phase-4.2 staging).
 - [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
   summary: Awareness Brief trigger matching.
+- [[nova_backend/src/conversation/brief_followup_grounding.py|brief_followup_grounding]]
+  summary: DISCUSSION_MARKERS = (
+- [[nova_backend/src/conversation/brief_intent_resolver.py|brief_intent_resolver]]
+  summary: Deterministic brief-phrasing intent resolver.
 - [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
   summary: Deterministic clarification prompt bank for conversational UX polish.
 - [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
@@ -263,6 +267,10 @@ Use this to orient yourself before diving into a specific module.
   summary: validate_rendered_report_text,
 - [[nova_backend/src/executors/news_intelligence_executor.py|news_intelligence_executor]]
   summary: MAX_HEADLINES_PER_SUMMARY = 3
+- [[nova_backend/src/executors/news_synthesis_async.py|news_synthesis_async]]
+  summary: log = logging.getLogger(__name__)
+- [[nova_backend/src/executors/news_synthesis_cache.py|news_synthesis_cache]]
+  summary: SCHEMA_VERSION = "1.0
 - [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
   summary: PRESET_FOLDERS = {
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
@@ -597,7 +605,9 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/websocket/intent_patterns.py|intent_patterns]]
   summary: Intent recognition patterns for the Nova brain server session loop.
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
-  summary: _HEADLINE_SUMMARY_RE = re.compile(
+  summary: answer_grounded_brief_followup,
+- [[nova_backend/src/websocket/turn_abandon.py|turn_abandon]]
+  summary: Abandon (Stop) support for in-flight WebSocket turns.
 - [[nova_backend/src/working_context/__init__.py|src/working_context]]
   summary: build_operational_context_widget,
 - [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -621,7 +631,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (450)
+## Tests and verification (456)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -746,6 +756,10 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/conversation/__init__.py|tests/conversation]]
 - [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
   summary: @pytest.mark.parametrize(
+- [[nova_backend/tests/conversation/test_brief_followup_grounding.py|test_brief_followup_grounding]]
+  summary: answer_grounded_brief_followup,
+- [[nova_backend/tests/conversation/test_brief_intent_resolver.py|test_brief_intent_resolver]]
+  summary: Tests for the deterministic brief-phrasing intent resolver.
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -845,7 +859,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
   summary: def test_open_folder_executor_opens_explicit_existing_path(monkeypatch, tmp_path: Path):
 - [[nova_backend/tests/executors/test_os_diagnostics_openclaw_agent.py|test_os_diagnostics_openclaw_agent]]
-  summary: def test_connection_status_details_include_openclaw_home_agent():
+  summary: def test_ledger_status_uses_bounded_tail_reader(tmp_path, monkeypatch):
 - [[nova_backend/tests/executors/test_response_verification_executor.py|test_response_verification_executor]]
   summary: ﻿from __future__ import annotations
 - [[nova_backend/tests/executors/test_screen_analysis_executor.py|test_screen_analysis_executor]]
@@ -1154,6 +1168,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_http_timeout_beats_trust_normal():
 - [[nova_backend/tests/phase45/test_screen_capture_executor.py|test_screen_capture_executor]]
   summary: def _request(params: dict):
+- [[nova_backend/tests/phase45/test_stop_cancel_abandon.py|test_stop_cancel_abandon]]
+  summary: Regressions for the Stop/Cancel (honest abandon) lane.
 - [[nova_backend/tests/phase45/test_system_status_reporting_contract.py|test_system_status_reporting_contract]]
   summary: pytestmark = pytest.mark.slow
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
@@ -1162,6 +1178,8 @@ Use this to orient yourself before diving into a specific module.
   summary: ---------------------------------------------------------------------------
 - [[nova_backend/tests/phase45/test_vision_analyzer.py|test_vision_analyzer]]
   summary: def test_vision_analyzer_interprets_missing_python_module_error():
+- [[nova_backend/tests/phase45/test_websocket_keepalive_contract.py|test_websocket_keepalive_contract]]
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_working_context_store.py|test_working_context_store - tests/phase45]]
   summary: class _FakeLedger:
 - [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]]
@@ -1477,12 +1495,16 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_is_allowed_path_accepts_home_subpath():
 - [[nova_backend/tests/test_tierb_conversation.py|test_tierb_conversation]]
   summary: def test_heuristics_exposes_tierb_signals():
+- [[nova_backend/tests/test_truthful_availability.py|test_truthful_availability]]
+  summary: Regression tests for the "Truthful availability under dashboard refresh" lane.
 - [[nova_backend/tests/test_weather_service.py|test_weather_service]]
   summary: def test_weather_service_returns_forecast_and_alerts(monkeypatch):
 - [[nova_backend/tests/test_weather_skill.py|test_weather_skill]]
   summary: def test_weather_skill_widget_contains_forecast_and_alerts(monkeypatch):
 - [[nova_backend/tests/test_websocket_local_guard.py|test_websocket_local_guard]]
   summary: def test_websocket_rejects_non_local_host_and_origin():
+- [[nova_backend/tests/test_websocket_send_guard.py|test_websocket_send_guard]]
+  summary: class _ClosedWebSocket:
 - [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
   summary: def test_root_route_returns_index_html():
 - [[nova_backend/tests/trust/__init__.py|tests/trust]]
@@ -1616,7 +1638,7 @@ Use this to orient yourself before diving into a specific module.
 - [[scripts/stop_daemon.py|stop_daemon]]
   summary: Stop the Nova backend background process safely.
 - [[scripts/verify_windows.ps1|verify_windows]]
-  summary: verify_windows.ps1 — Local Windows verification script
+  summary: verify_windows.ps1 - Local Windows verification script
 
 ## Governance companion repo (8)
 

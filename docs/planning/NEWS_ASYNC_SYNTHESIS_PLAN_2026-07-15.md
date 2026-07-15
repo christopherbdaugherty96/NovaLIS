@@ -1,8 +1,24 @@
-# News Async Synthesis Plan (Draft)
+# News Async Synthesis Plan
 
 Date: 2026-07-15
 
-Status: draft plan only. No implementation is authorized by this document.
+Status: **IMPLEMENTED. Slices 1 and 2 shipped.** No implementation beyond the named slices is
+authorized by this document.
+
+Current shipped state:
+
+- Slice 1 (cache data model + read-through) — SHIPPED, PR #305 (main `e1236933`): `NewsSynthesisCache`
+  with volatile-text/tracking-URL-normalized cluster fingerprints, atomic writes, fresh-hit skips
+  the LLM, miss keeps the honest placeholder path, opportunistic put on successful synchronous
+  synthesis.
+- Slice 2 (user-triggered async fill) — SHIPPED, PR #306 (main `923e306c`): single-worker fill
+  queue, foreground-model pause guard, 30m fresh / 2h stale, `news_synthesis_ready` push (widget
+  refresh always, chat post gated on no active turn). Live quality gate: `gemma2:2b` produced usable
+  grounded synthesis for 2/3 clusters given 45s — **model-gate probe negative, gate stays parked.**
+- Slice 3 (freshness disclosure) — largely already landed as Pending/Stale/Partial states +
+  `synthesized_at`/`model_label`; only a tightening pass remains if the presentation is unclear.
+
+The original draft text is retained below for the design record.
 
 ## Problem
 
@@ -193,7 +209,7 @@ Add a report note whenever cached synthesis is used:
 
 ## Minimal Implementation Slices
 
-### Slice 1: Cache Data Model + Read-Through Rendering
+### Slice 1: Cache Data Model + Read-Through Rendering — SHIPPED (PR #305)
 
 - Add a small cache module for cluster fingerprints and cached synthesis records.
 - Add tests for fingerprint stability and invalidation when URL/excerpt changes.
@@ -206,7 +222,7 @@ Exit criteria:
 - cache misses remain honest placeholders
 - confidence behavior remains truthful
 
-### Slice 2: User-Triggered Async Fill
+### Slice 2: User-Triggered Async Fill — SHIPPED (PR #306; live quality gate passed, 2/3 clusters)
 
 - After a brief/news request, enqueue synthesis for cache misses.
 - Run locally with strict concurrency and timeout bounds.
@@ -286,17 +302,23 @@ Optional live smoke:
 - wait for synthesis completion
 - ask again and confirm real synthesized clusters appear with freshness note
 
-## Open Decisions
+## Decision Outcomes
 
-1. Fresh TTL: proposed 30 minutes. Needs owner sign-off.
-2. Stale-but-usable TTL: proposed 4 hours. Needs owner sign-off.
-3. Persistence: first slice should persist to runtime cache; purely in-memory would be simpler but less useful after restart.
-4. First-open warming: does the dashboard's automatic open-brief count as a session trigger? Recommendation: yes.
-5. Update mechanism: should the dashboard receive a follow-up "synthesis ready" event, or should the first slice wait until the next user request? Recommendation: push/update for first-open warming, next-request-only only if explicitly accepted as a smaller but weaker product slice.
-6. Scope: should this apply only to Cap 50 intelligence briefs, or also headline/category summaries? Recommendation: Cap 50 first.
+1. Fresh TTL: shipped as 30 minutes.
+2. Stale-but-usable TTL: shipped as 2 hours for news, shortened from the draft's 4-hour proposal.
+3. Persistence: shipped as a local runtime cache with atomic writes, not a tracked doc artifact.
+4. First-open warming: shipped as session-triggered work; the dashboard/open brief may enqueue synthesis
+   because the user opened the session and Nova is already rendering the brief.
+5. Update mechanism: shipped as `news_synthesis_ready`; the widget refreshes from structured data and
+   chat copy is gated/concise.
+6. Scope: shipped for Cap 50 intelligence briefs first. Category-summary relevance remains a separate
+   open bug/path.
 
 ## Recommendation
 
-Build Slice 1 first as proof that the brief can render cached synthesis honestly. Before Slice 2, decide the first-open warming/update behavior and add foreground-inference contention protection.
+Slices 1 and 2 are shipped. The lane proved the important product bet: async/background time makes
+the local model useful for source-grounded brief synthesis, so the model-gate remains parked. The
+remaining work is a small Slice 3 tightening pass only if Morning use shows the freshness/pending/
+partial presentation is unclear.
 
-Do not alter the model choice, paid provider policy, or synchronous timeout budget in this lane.
+Do not alter the model choice, paid provider policy, or synchronous timeout budget from this plan.

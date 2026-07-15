@@ -22,6 +22,8 @@ Read-only truth report of detectable bypass indicators from allowlisted runtime 
 - nova_backend/src/executors/memory_governance_executor.py
 - nova_backend/src/executors/multi_source_reporting_executor.py
 - nova_backend/src/executors/news_intelligence_executor.py
+- nova_backend/src/executors/news_synthesis_async.py
+- nova_backend/src/executors/news_synthesis_cache.py
 - nova_backend/src/executors/open_folder_executor.py
 - nova_backend/src/executors/openclaw_execute_executor.py
 - nova_backend/src/executors/os_diagnostics_executor.py

@@ -421,7 +421,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 300 code)
+## Runtime and ops (22 docs, 305 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -605,6 +605,10 @@ concern is reflected across docs, code and tests.
   summary: Conversation-layer helpers for cognitive escalation (Phase-4.2 staging).
 - [code] [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
   summary: Awareness Brief trigger matching.
+- [code] [[nova_backend/src/conversation/brief_followup_grounding.py|brief_followup_grounding]]
+  summary: DISCUSSION_MARKERS = (
+- [code] [[nova_backend/src/conversation/brief_intent_resolver.py|brief_intent_resolver]]
+  summary: Deterministic brief-phrasing intent resolver.
 - [code] [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
   summary: Deterministic clarification prompt bank for conversational UX polish.
 - [code] [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
@@ -672,6 +676,10 @@ concern is reflected across docs, code and tests.
   summary: validate_rendered_report_text,
 - [code] [[nova_backend/src/executors/news_intelligence_executor.py|news_intelligence_executor]]
   summary: MAX_HEADLINES_PER_SUMMARY = 3
+- [code] [[nova_backend/src/executors/news_synthesis_async.py|news_synthesis_async]]
+  summary: log = logging.getLogger(__name__)
+- [code] [[nova_backend/src/executors/news_synthesis_cache.py|news_synthesis_cache]]
+  summary: SCHEMA_VERSION = "1.0
 - [code] [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
   summary: PRESET_FOLDERS = {
 - [code] [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
@@ -982,7 +990,9 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/websocket/intent_patterns.py|intent_patterns]]
   summary: Intent recognition patterns for the Nova brain server session loop.
 - [code] [[nova_backend/src/websocket/session_handler.py|session_handler]]
-  summary: _HEADLINE_SUMMARY_RE = re.compile(
+  summary: answer_grounded_brief_followup,
+- [code] [[nova_backend/src/websocket/turn_abandon.py|turn_abandon]]
+  summary: Abandon (Stop) support for in-flight WebSocket turns.
 - [code] [[nova_backend/src/working_context/__init__.py|src/working_context]]
   summary: build_operational_context_widget,
 - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -1012,7 +1022,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: b1a769d6c948668f4660a06023cd01e4d3f37655ddc817fff76b936d12f15d9b
+  summary: Runtime Fingerprint: 0ffd1cc81a0f9dcd5ce1d8c9d390aac25b0f94c7131d90b812d250604491105b
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -1038,7 +1048,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: d43c3abcc0a698adffa99a1ec105dbcaae5f1cac0701de57c1f96ed67c9b624d
+  summary: - runtimesurfacehash: bc7c7562688b611f38ccc7c7f5ab873b09f314e33f414f595b4a7e22ac922c18
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1113,7 +1123,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (11 docs, 450 code)
+## Tests (11 docs, 456 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1238,6 +1248,10 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/conversation/__init__.py|tests/conversation]]
 - [code] [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
   summary: @pytest.mark.parametrize(
+- [code] [[nova_backend/tests/conversation/test_brief_followup_grounding.py|test_brief_followup_grounding]]
+  summary: answer_grounded_brief_followup,
+- [code] [[nova_backend/tests/conversation/test_brief_intent_resolver.py|test_brief_intent_resolver]]
+  summary: Tests for the deterministic brief-phrasing intent resolver.
 - [code] [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [code] [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -1337,7 +1351,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
   summary: def test_open_folder_executor_opens_explicit_existing_path(monkeypatch, tmp_path: Path):
 - [code] [[nova_backend/tests/executors/test_os_diagnostics_openclaw_agent.py|test_os_diagnostics_openclaw_agent]]
-  summary: def test_connection_status_details_include_openclaw_home_agent():
+  summary: def test_ledger_status_uses_bounded_tail_reader(tmp_path, monkeypatch):
 - [code] [[nova_backend/tests/executors/test_response_verification_executor.py|test_response_verification_executor]]
   summary: ﻿from __future__ import annotations
 - [code] [[nova_backend/tests/executors/test_screen_analysis_executor.py|test_screen_analysis_executor]]
@@ -1646,6 +1660,8 @@ concern is reflected across docs, code and tests.
   summary: def test_http_timeout_beats_trust_normal():
 - [code] [[nova_backend/tests/phase45/test_screen_capture_executor.py|test_screen_capture_executor]] - Phase 45
   summary: def _request(params: dict):
+- [code] [[nova_backend/tests/phase45/test_stop_cancel_abandon.py|test_stop_cancel_abandon]] - Phase 45
+  summary: Regressions for the Stop/Cancel (honest abandon) lane.
 - [code] [[nova_backend/tests/phase45/test_system_status_reporting_contract.py|test_system_status_reporting_contract]] - Phase 45
   summary: pytestmark = pytest.mark.slow
 - [code] [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]] - Phase 45
@@ -1654,6 +1670,8 @@ concern is reflected across docs, code and tests.
   summary: ---------------------------------------------------------------------------
 - [code] [[nova_backend/tests/phase45/test_vision_analyzer.py|test_vision_analyzer]] - Phase 45
   summary: def test_vision_analyzer_interprets_missing_python_module_error():
+- [code] [[nova_backend/tests/phase45/test_websocket_keepalive_contract.py|test_websocket_keepalive_contract]] - Phase 45
+  summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/tests/phase45/test_working_context_store.py|test_working_context_store - tests/phase45]] - Phase 45
   summary: class _FakeLedger:
 - [code] [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]] - Phase 5
@@ -1969,12 +1987,16 @@ concern is reflected across docs, code and tests.
   summary: def test_is_allowed_path_accepts_home_subpath():
 - [code] [[nova_backend/tests/test_tierb_conversation.py|test_tierb_conversation]]
   summary: def test_heuristics_exposes_tierb_signals():
+- [code] [[nova_backend/tests/test_truthful_availability.py|test_truthful_availability]]
+  summary: Regression tests for the "Truthful availability under dashboard refresh" lane.
 - [code] [[nova_backend/tests/test_weather_service.py|test_weather_service]]
   summary: def test_weather_service_returns_forecast_and_alerts(monkeypatch):
 - [code] [[nova_backend/tests/test_weather_skill.py|test_weather_skill]]
   summary: def test_weather_skill_widget_contains_forecast_and_alerts(monkeypatch):
 - [code] [[nova_backend/tests/test_websocket_local_guard.py|test_websocket_local_guard]]
   summary: def test_websocket_rejects_non_local_host_and_origin():
+- [code] [[nova_backend/tests/test_websocket_send_guard.py|test_websocket_send_guard]]
+  summary: class _ClosedWebSocket:
 - [code] [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
   summary: def test_root_route_returns_index_html():
 - [code] [[nova_backend/tests/trust/__init__.py|tests/trust]]
@@ -2068,7 +2090,7 @@ concern is reflected across docs, code and tests.
 - [code] [[scripts/stop_daemon.py|stop_daemon]]
   summary: Stop the Nova backend background process safely.
 - [code] [[scripts/verify_windows.ps1|verify_windows]]
-  summary: verify_windows.ps1 — Local Windows verification script
+  summary: verify_windows.ps1 - Local Windows verification script
 - [doc] [[automations/README|Automations]]
   summary: This folder tracks project-owned automation definitions that should live in GitHub and stay reviewable with the rest of Nova.
 - [doc] [[automations/weekly-engineering-summary/memory|memory - automations/weekly-engineering-summary]]
@@ -2633,7 +2655,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (573 docs, 41 code)
+## Reference (583 docs, 41 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -3194,6 +3216,8 @@ concern is reflected across docs, code and tests.
   summary: Status: future concept / business application
 - [doc] [[docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN|Nova Background Reasoning, Not Background Automation Plan]]
   summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_BRIEF_PHRASING_INTENT_LANE_PLAN|Nova Brief-Phrasing Intent Lane — Plan]]
+  summary: Date: 2026-07-14
 - [doc] [[docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT|Nova Coherence, Memory, And Background Reasoning Alignment Map]]
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_CONNECTOR_REGISTRY_PLAN_2026-04-27|Nova Connector Registry Plan]]
@@ -3354,10 +3378,26 @@ concern is reflected across docs, code and tests.
   summary: This folder holds dated milestone / completion reports for the personality layer (Phase 1–3
 - [doc] [[docs/nova-conversation-response-contract|Nova Conversation Response Contract]]
   summary: Branch: docs/nova-conversation-response-contract
-- [doc] [[docs/observation/MORNING_LOG_TEMPLATE|Morning Log — YYYY-MM-DD]]
-  summary: Short honest answers. "Nothing" and "n/a" are valid answers. -->
-- [doc] [[docs/observation/README|docs/observation — Morning observation logs]]
-  summary: Status: ACTIVE — this is the current phase's primary evidence stream.
+- [doc] [[docs/observation/MORNING_01_2026-07-11|Morning Log — 2026-07-11 (Morning 1 of 7)]]
+  summary: Status frame: Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+- [doc] [[docs/observation/MORNING_02_2026-07-11|Morning Log - 2026-07-11 (Morning 2 of 7)]]
+  summary: Status frame: Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+- [doc] [[docs/observation/MORNING_03_2026-07-14|Morning Log - 2026-07-14 (Morning 3 of 7)]]
+  summary: Status frame: Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+- [doc] [[docs/observation/MORNING_04_2026-07-15|Morning Log - 2026-07-15 (Morning 4 of 7)]]
+  summary: Status frame: Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+- [doc] [[docs/observation/MORNING_04_SYNTHESIS_TRACE_2026-07-15|Morning 4 — News Synthesis Fallback Trace (findings note)]]
+  summary: Companion to MORNING042026-07-15.md. Read-only code trace of Morning 4's #1 trust issue: the
+- [doc] [[docs/observation/MORNING_05_2026-07-15|Morning Log - 2026-07-15 (Morning 5 of 7)]]
+  summary: Status frame: Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+- [doc] [[docs/observation/MORNING_LOG_TEMPLATE|Morning Log — YYYY-MM-DD (Morning N of 7)]]
+  summary: Status frame: Nova is OBSERVATION-READY, NOT RELIANCE-READY. Do not act on any schedule,
+- [doc] [[docs/observation/README|docs/observation - Morning observation logs]]
+  summary: Status: ACTIVE - this is the current phase's primary evidence stream.
+- [doc] [[docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15|Grounded Brief Conversation Plan]]
+  summary: Date: 2026-07-15
+- [doc] [[docs/planning/NEWS_ASYNC_SYNTHESIS_PLAN_2026-07-15|News Async Synthesis Plan]]
+  summary: Date: 2026-07-15
 - [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
   summary: Status: planning document
 - [doc] [[docs/product/AURALIS_INTERFACE_PLAN|Auralis Interface Plan]]
@@ -3541,9 +3581,9 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/BASELINE_CI_UNBLOCK_RECONCILIATION_2026-06-08|Baseline CI Unblock Reconciliation - 2026-06-08]]
   summary: Status: baseline CI hygiene only.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). This session's live verification
+  summary: Last reviewed: 2026-07-15 (Morning 5 logged; PR #302-#307 merged; grounded brief conversation
 - [doc] [[docs/status/DAILY_COMMAND_CENTER|Daily Command Center]]
-  summary: Status: manual continuity surface.
+  summary: MORNING 5 LOGGED AND GROUNDED-BRIEF-CONVERSATION LANE FIRED.
 - [doc] [[docs/status/FINAL_BASELINE_SUMMARY_2026-05-23|NovaLIS Final Baseline Summary — 2026-05-23]]
   summary: This is a human-maintained status summary. It is not generated runtime truth.
 - [doc] [[docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12|Five-Pass Stability And Operational Roadmap]]
@@ -3566,6 +3606,8 @@ concern is reflected across docs, code and tests.
   summary: Locked: 2026-05-26
 - [doc] [[docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH|Runtime Recovery And Health Truth Priority Lock - 2026-06-17]]
   summary: Status: proposed next product lane.
+- [doc] [[docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY|Authorization Integrity Priority Lock - 2026-07-10]]
+  summary: Status: LOCK ONLY. No implementation code. Explicitly POST-OBSERVATION —
 - [doc] [[docs/status/PRODUCT_DIRECTION_DAILY_AWARENESS_2026-06-18|Nova Product Direction: Governed Daily Awareness Assistant]]
   summary: Date: 2026-06-18
 - [doc] [[docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09|Proof Infrastructure Closeout Review - 2026-05-09]]
