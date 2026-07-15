@@ -17,6 +17,8 @@ from src.conversation.brief_followup_grounding import (
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
+from src.llm.llm_gateway import model_status_snapshot
+from src.usage.provider_usage_store import _estimate_tokens
 from src.websocket.turn_abandon import mark_turn_abandoned
 from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
@@ -37,6 +39,40 @@ _QUOTED_CONTENT_REQUEST_RE = re.compile(
     re.IGNORECASE,
 )
 _ACTIVE_WS_SESSIONS: list[dict[str, Any]] = []
+
+
+def local_chat_usage_meta(user_text: str, response_text: str) -> dict[str, Any]:
+    """Build display-only local usage metadata for a completed advisory turn."""
+    try:
+        model_status = model_status_snapshot()
+    except Exception:
+        model_status = {}
+    model_label = str(model_status.get("active_model") or "Local model").strip() or "Local model"
+    input_tokens = _estimate_tokens(user_text)
+    output_tokens = _estimate_tokens(response_text)
+    total_tokens = input_tokens + output_tokens
+    return {
+        "route": "local_model",
+        "route_label": "Local model",
+        "provider_label": "Local",
+        "model_label": model_label,
+        "metered": False,
+        "local_only": True,
+        "measurement_label": "Estimated tokens",
+        "estimated_input_tokens": input_tokens,
+        "estimated_output_tokens": output_tokens,
+        "estimated_total_tokens": total_tokens,
+        "exact_input_tokens": 0,
+        "exact_output_tokens": 0,
+        "exact_total_tokens": 0,
+        "estimated_cost_usd": 0.0,
+        "budget_state": "not_metered",
+        "budget_state_label": "Local only",
+        "summary": (
+            f"Local model {model_label}. "
+            f"About {total_tokens:,} estimated visible-turn tokens. No metered provider used."
+        ),
+    }
 
 
 def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) -> str:
@@ -4450,6 +4486,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["last_response"] = message
                 if skill_name == "general_chat" and isinstance(result_data.get("conversation_context"), dict):
                     session_state["conversation_context"] = dict(result_data.get("conversation_context") or {})
+                advisory_usage_meta = (
+                    local_chat_usage_meta(mediated_text, message)
+                    if skill_name == "general_chat"
+                    else None
+                )
 
                 escalation = result_data.get("escalation", {})
                 if escalation.get("ask_user"):
@@ -4467,8 +4508,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             if skill_name == "general_chat"
                             else None
                         ),
+                        usage_meta=advisory_usage_meta,
                     )
-                    await send_chat_done(ws)
+                    await send_chat_done(ws, usage_meta=advisory_usage_meta)
                     _maybe_auto_speak_for_voice_turn(
                         session_state,
                         str(result_data.get("speakable_text") or message or "").strip(),
@@ -4514,6 +4556,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             if skill_name == "general_chat"
                             else None
                         ),
+                        usage_meta=advisory_usage_meta,
                     )
 
                 if skill_name in {"weather", "news"}:
@@ -4542,7 +4585,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                 await send_trust_status(ws, session_state["trust_status"])
 
-                await send_chat_done(ws)
+                await send_chat_done(ws, usage_meta=advisory_usage_meta)
 
                 # Auto-speak for voice input
                 if (session_state.get("last_input_channel") == "voice"

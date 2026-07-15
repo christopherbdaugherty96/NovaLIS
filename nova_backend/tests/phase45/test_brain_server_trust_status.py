@@ -115,3 +115,65 @@ def test_send_chat_message_can_include_display_only_trust_review_card(monkeypatc
     assert message["type"] == "chat"
     assert message["trust_review_card"] == card
     assert "suggested_actions" not in message
+
+
+def test_send_chat_message_can_include_usage_meta(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.conversation_personality_agent,
+        "present",
+        lambda text, domain="general": text,
+    )
+    usage_meta = {
+        "route": "local_model",
+        "route_label": "Local model",
+        "model_label": "gemma2:2b",
+        "metered": False,
+        "local_only": True,
+        "estimated_total_tokens": 42,
+    }
+
+    ws = _WebSocket()
+    asyncio.run(brain_server.send_chat_message(ws, "ok", usage_meta=usage_meta))
+
+    message = ws.sent_messages[-1]
+    assert message["type"] == "chat"
+    assert message["usage_meta"] == usage_meta
+
+
+def test_send_chat_done_can_include_usage_meta():
+    usage_meta = {
+        "route": "local_model",
+        "route_label": "Local model",
+        "model_label": "gemma2:2b",
+        "metered": False,
+        "local_only": True,
+        "estimated_total_tokens": 42,
+    }
+
+    ws = _WebSocket()
+    asyncio.run(brain_server.send_chat_done(ws, usage_meta=usage_meta))
+
+    message = ws.sent_messages[-1]
+    assert message["type"] == "chat_done"
+    assert message["usage_meta"] == usage_meta
+
+
+def test_local_chat_usage_meta_is_display_only_local_estimate(monkeypatch):
+    from src.websocket import session_handler
+
+    monkeypatch.setattr(
+        session_handler,
+        "model_status_snapshot",
+        lambda: {"active_model": "gemma2:2b"},
+    )
+
+    usage_meta = session_handler.local_chat_usage_meta("hello", "there")
+
+    assert usage_meta["route"] == "local_model"
+    assert usage_meta["model_label"] == "gemma2:2b"
+    assert usage_meta["metered"] is False
+    assert usage_meta["local_only"] is True
+    assert usage_meta["exact_total_tokens"] == 0
+    assert usage_meta["estimated_total_tokens"] > 0
+    assert usage_meta["budget_state_label"] == "Local only"
+    assert "No metered provider used" in usage_meta["summary"]
