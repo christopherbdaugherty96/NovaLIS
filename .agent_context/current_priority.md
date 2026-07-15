@@ -1,16 +1,43 @@
 # Current Priority
 
-## Phase 3 Observation Period - 2026-07-09
+## Phase 3 Observation Period - 2026-07-15
 
 Current active product state:
 
 ```text
 Phase 3 observation period.
 Engineering is frozen except for explicitly approved proof/truth-sync work
-and critical bugs.
-Next product input is >=7 real morning logs, not another implementation lane.
+and critical bugs, plus observation-backed trust repairs approved by the owner.
+Next product input remains real morning use. Do not select broad implementation
+lanes from roadmap/history without fresh observation evidence and owner approval.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
+```
+
+Current session truth:
+
+```text
+PR #302-#307 landed from Morning 1-5 evidence:
+  brief-phrasing intent recognition
+  status-frame truth fix
+  Gotcha-loop fix
+  news confidence degradation
+  local model/token usage visibility
+  async news synthesis cache/read-through + background fill
+  grounded-brief-conversation Slice 0 correctness
+
+Morning 5 is logged at docs/observation/MORNING_05_2026-07-15.md.
+It validated async synthesis as useful in warm-cache daily use and fired the
+grounded brief conversation lane.
+
+Active plan:
+  docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15.md
+
+Slice 0 is landed. Slice 1 may be built only with explicit owner approval:
+deterministic routing + rendered-brief fact unification +
+active-surface/stable-story identity mapping, no model, no contract change.
+Slice 2's constrained generation boundary is NOT authorized by this file; it
+requires hallucination-negative tests and separate sign-off.
 ```
 
 What agents should do:

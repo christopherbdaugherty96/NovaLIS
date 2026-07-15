@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 130
+Paired tests: 132
 
 - [[nova_backend/tests/brain/second_brain/test_frontmatter_parser.py|test_frontmatter_parser]]
     - tests → [[nova_backend/src/brain/second_brain/frontmatter_parser.py|frontmatter_parser]]
@@ -51,6 +51,10 @@ Paired tests: 130
     - tests → [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/tests/conversation/test_awareness_brief_handler.py|test_awareness_brief_handler]]
     - tests → [[nova_backend/src/conversation/awareness_brief_handler.py|awareness_brief_handler]]
+- [[nova_backend/tests/conversation/test_brief_followup_grounding.py|test_brief_followup_grounding]]
+    - tests → [[nova_backend/src/conversation/brief_followup_grounding.py|brief_followup_grounding]]
+- [[nova_backend/tests/conversation/test_brief_intent_resolver.py|test_brief_intent_resolver]]
+    - tests → [[nova_backend/src/conversation/brief_intent_resolver.py|brief_intent_resolver]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
     - tests → [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]

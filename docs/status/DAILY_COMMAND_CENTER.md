@@ -1,6 +1,50 @@
 # Daily Command Center
 
-## 2026-07-11 late session (latest - read this first)
+## 2026-07-15 session (latest - read this first)
+
+```text
+MORNING 5 LOGGED AND GROUNDED-BRIEF-CONVERSATION LANE FIRED.
+
+Main is at 842ae9ee after PR #307. The July 15 sequence merged the evidence-backed
+interaction/content repairs that came out of Mornings 1-5:
+
+  #302 - brief-phrasing intent recognition, status-frame truth fix, Gotcha-loop fix,
+         and Morning 1-3 observation logs.
+  #303 - news confidence degradation: placeholder/all-fallback briefs no longer claim
+         Medium-High confidence.
+  #304 - local usage visibility: local advisory turns disclose model + estimated tokens
+         without touching paid-budget accounting.
+  #305 - async news synthesis plan + Slice 1 cache/read-through path.
+  #306 - async news synthesis Slice 2. Live quality gate showed gemma2:2b can produce
+         useful grounded synthesis when given background time; the model-gate remains parked.
+  #307 - grounded-brief-conversation Slice 0: natural repeated-word compare phrasing now
+         reaches Cap 50 compare, and news_synthesis_ready chat copy is concise while the
+         widget keeps the full brief.
+
+Morning 5 (docs/observation/MORNING_05_2026-07-15.md) is a warm-cache daily-use probe, not
+a cold-cache first-open timing test. It validated the async synthesis bet: the brief moved from
+Morning 4's all-placeholder output to mostly source-grounded synthesis with honest Medium-Low
+confidence. The old interaction failures did not recur: no Gotcha loop, no false connection-status
+failure, no Stop-required stall.
+
+Morning 5 also fired the next lane: grounded conversation over the synthesized brief. Weak turns
+now cluster around follow-ups over the loaded brief, not basic routing/recovery. The current plan is
+docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15.md. Slice 0 is landed. The safe next
+build, if explicitly approved, is Slice 1: deterministic routing, rendered-brief fact unification,
+and active-surface/stable-story identity mapping over the rendered Cap 50 brief clusters, with no
+model and no contract change. Slice 2 is the later
+echo-only -> constrained-generation boundary and still requires its hallucination-negative tests.
+
+Observation remains the product input. Do not reopen broad capability expansion, provider/model
+switching, or autonomous work from this status note. The model-gate remains parked unless a future
+live grounded-followup probe earns it.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-07-15 (Morning 5 logged; PR #302-#307 merged; grounded brief conversation active).
+Source: Morning 5 observation + PR #302-#307 + generated runtime docs.
+
+## 2026-07-11 late session (historical context)
 
 ```text
 SLICE 1 CLOSED (PR #297 merged): input reliability fixed. Root cause: visible dashboard
