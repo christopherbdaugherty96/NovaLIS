@@ -687,7 +687,7 @@ class NewsIntelligenceExecutor:
         lines.extend(
             [
                 "",
-                f"Confidence: {'Medium-High' if len(all_sources) >= 4 else 'Medium'}",
+                f"Confidence: {self._brief_confidence_label(clusters, len(all_sources))}",
                 f"Sources used: {len(all_sources)}",
                 f"Coverage: {', '.join(coverage) if coverage else 'General'}",
             ]
@@ -699,6 +699,16 @@ class NewsIntelligenceExecutor:
             if first_summary:
                 lead = first_summary
         return self._prepend_bottom_line(report, lead), all_sources
+
+    def _brief_confidence_label(self, clusters: list[dict[str, Any]], source_count: int) -> str:
+        if not clusters:
+            return "Low"
+        placeholder_count = sum(1 for cluster in clusters if cluster.get("placeholder"))
+        if placeholder_count == len(clusters):
+            return "Low"
+        if placeholder_count:
+            return "Medium-Low"
+        return "Medium-High" if source_count >= 4 else "Medium"
 
     def _expand_cluster(self, clusters: list[dict[str, Any]], story_id: int) -> ActionResult:
         idx = int(story_id) - 1
@@ -1420,7 +1430,8 @@ class NewsIntelligenceExecutor:
                     if not summary or not implication:
                         omitted_clusters += 1
                         continue
-                    if summary == fallback_summary or implication == fallback_implication:
+                    is_placeholder = summary == fallback_summary or implication == fallback_implication
+                    if is_placeholder:
                         placeholder_clusters += 1
                     rendered_clusters.append(
                         {
@@ -1430,6 +1441,7 @@ class NewsIntelligenceExecutor:
                             "implication": implication,
                             "sources": cluster.get("sources", []),
                             "items": cluster.get("items", []),
+                            "placeholder": is_placeholder,
                         }
                     )
 
