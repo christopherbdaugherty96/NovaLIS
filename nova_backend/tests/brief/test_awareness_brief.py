@@ -245,6 +245,26 @@ class TestComposeAwarenessBrief:
         d = brief.to_dict()
         assert d["available_count"] == 2
 
+    def test_unavailable_source_remains_visible_in_rendered_brief(self):
+        brief = compose_awareness_brief(
+            weather_data={
+                "type": "weather",
+                "data": {
+                    "connected": False,
+                    "status": "unavailable",
+                    "summary": "Weather is unavailable right now.",
+                },
+            },
+            weather_configured=True,
+        )
+
+        rendered_sections = brief.to_dict()["sections"]
+        weather = next(section for section in rendered_sections if section["key"] == "weather")
+
+        assert weather["status"] == "unavailable"
+        assert weather["items"]
+        assert "unavailable" in weather["items"][0].lower()
+
     def test_no_write_operations(self):
         """The awareness brief module must be read-only."""
         import ast
