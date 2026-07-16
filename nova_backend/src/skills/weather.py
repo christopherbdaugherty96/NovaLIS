@@ -92,7 +92,7 @@ class WeatherSkill(BaseSkill):
                 setup_hint = ""
             timestamp = datetime.now().strftime("%I:%M %p").lstrip("0")
             return SkillResult(
-                success=True,
+                success=False,
                 message=message,
                 data={
                     "connected": connected,

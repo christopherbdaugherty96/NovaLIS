@@ -242,7 +242,7 @@ class NewsSkill(BaseSkill):
                 )
 
         return SkillResult(
-            success=True,
+            success=bool(items),
             message=message,
             data={},
             widget_data=widget,

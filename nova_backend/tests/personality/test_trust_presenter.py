@@ -129,6 +129,23 @@ class TestReceiptPreservation:
             or "email" in combined
         )
 
+    def test_failed_awareness_receipt_is_not_described_as_successful(self, profile):
+        from src.personality.trust_presenter import TrustPresenter
+
+        receipt = {
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 55,
+            "capability_name": "weather_snapshot",
+            "authority_class": "read_only",
+            "success": False,
+        }
+        desc = TrustPresenter().describe_receipt(receipt, profile=profile)
+        combined = f"{desc.get('summary', '')} {desc.get('detail', '')}".lower()
+
+        assert "completed successfully" not in combined
+        assert "did not complete" in combined
+        assert "incomplete" in combined
+
 
 # ---------------------------------------------------------------------------
 # Boundary explanation

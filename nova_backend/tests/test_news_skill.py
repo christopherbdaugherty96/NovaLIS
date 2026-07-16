@@ -164,7 +164,7 @@ def test_news_skill_reports_unavailable_when_feeds_return_nothing(monkeypatch):
 
     result = asyncio.run(NewsSkill().handle("news"))
 
-    assert result.success is True
+    assert result.success is False
     assert "couldn't pull fresh headlines" in result.message.lower()
     widget = result.widget_data or {}
     assert widget["status"] == "unavailable"
