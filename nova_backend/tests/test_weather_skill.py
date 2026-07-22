@@ -59,9 +59,23 @@ def test_weather_skill_returns_setup_hint_when_provider_not_configured(monkeypat
     monkeypatch.setattr(WeatherService, "get_current_weather", fake_weather)
     result = asyncio.run(WeatherSkill().handle("weather"))
 
-    assert result.success is True
+    assert result.success is False
     assert "no provider key is configured" in result.message.lower()
     widget_data = (result.widget_data or {}).get("data") or {}
     assert widget_data["status"] == "not_configured"
     assert widget_data["connected"] is False
     assert "WEATHER_API_KEY" in widget_data["setup_hint"]
+
+
+def test_weather_skill_reports_fetch_failure_as_unsuccessful(monkeypatch):
+    async def fake_weather(self):
+        raise RuntimeError("provider timed out")
+
+    monkeypatch.setattr(WeatherService, "get_current_weather", fake_weather)
+    result = asyncio.run(WeatherSkill().handle("weather"))
+
+    assert result.success is False
+    assert result.message == "Weather is unavailable right now."
+    widget_data = (result.widget_data or {}).get("data") or {}
+    assert widget_data["status"] == "unavailable"
+    assert widget_data["connected"] is False

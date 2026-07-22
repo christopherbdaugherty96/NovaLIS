@@ -233,7 +233,7 @@ class CalendarSkill(BaseSkill):
             summary = "Not connected."
             setup_hint = "Add a local .ics file in Settings -> Connections to enable schedule-aware answers and briefs."
             return SkillResult(
-                success=True,
+                success=False,
                 message="Calendar is ready when you are. Add a local .ics file in Settings to get schedule-aware answers and briefs.",
                 data={"connected": False, "events": [], "setup_hint": setup_hint, "source_label": ""},
                 widget_data=self._widget_payload(
@@ -253,7 +253,7 @@ class CalendarSkill(BaseSkill):
             events = self._read_events_for_range(path, start_date, end_date)
         except Exception:
             return SkillResult(
-                success=True,
+                success=False,
                 message="Calendar data is currently unavailable.",
                 data={"connected": True, "events": [], "source_label": path.name, "setup_hint": ""},
                 widget_data=self._widget_payload(
