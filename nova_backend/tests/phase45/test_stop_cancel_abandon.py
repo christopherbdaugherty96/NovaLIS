@@ -100,6 +100,22 @@ class TestFrontendStopWiring:
         # not a no-op for inline (non-manual) in-flight requests
         assert "if (!waitingForAssistant && !manualTurnInFlight) return;" in js
 
+    def test_automatic_timeout_reconnects_so_next_prompt_is_isolated(self):
+        js = SERVED_JS.read_text(encoding="utf-8")
+        timeout_start = js.index("function scheduleManualTurnTimeout(turnId)")
+        timeout_end = js.index("function injectUserText", timeout_start)
+        timeout_block = js[timeout_start:timeout_end]
+
+        assert "abandonedTurns.add(turnId)" in timeout_block
+        assert 'safeWSSend({ type: "cancel", turn_id: turnId })' in timeout_block
+        assert "reconnectForStop()" in timeout_block
+        assert "clearActiveManualTurn" in timeout_block
+
+        abandon_idx = timeout_block.index("abandonedTurns.add(turnId)")
+        clear_idx = timeout_block.index("clearActiveManualTurn")
+        reconnect_idx = timeout_block.index("reconnectForStop()")
+        assert abandon_idx < clear_idx < reconnect_idx
+
     def test_mirror_matches_served_for_stop(self):
         for served, mirror in ((SERVED_JS, MIRROR_JS), (SERVED_HTML, MIRROR_HTML)):
             s = served.read_text(encoding="utf-8")
