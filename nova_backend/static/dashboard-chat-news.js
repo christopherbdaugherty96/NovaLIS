@@ -2279,6 +2279,15 @@ function scheduleManualTurnTimeout(turnId) {
   clearManualTurnTimeout();
   manualTurnTimeoutTimer = setTimeout(() => {
     if (!manualTurnInFlight || activeManualTurnId !== turnId) return;
+    // The backend processes one turn at a time per socket. A UI timeout must
+    // therefore abandon the blocked socket before enabling another prompt;
+    // otherwise the next deterministic request queues behind the still-running
+    // model turn. This is honest abandon, not a claim that work was killed.
+    abandonedTurns.add(turnId);
+    if (abandonedTurns.size > 64) {
+      abandonedTurns.delete(abandonedTurns.values().next().value);
+    }
+    safeWSSend({ type: "cancel", turn_id: turnId });
     const message = [
       "Nova is taking longer than expected.",
       "Your request may not have completed.",
@@ -2287,6 +2296,7 @@ function scheduleManualTurnTimeout(turnId) {
     ].join(" ");
     appendChatMessage("assistant", message, null, "Timed out");
     clearActiveManualTurn("Timed Out", "The active turn timed out before Nova confirmed completion.");
+    reconnectForStop();
     startWidgetAutoRefresh();
     if (typeof probeRuntimeHealthOnce === "function") probeRuntimeHealthOnce();
     if (workflowFocusState.awaitingResponse) {
