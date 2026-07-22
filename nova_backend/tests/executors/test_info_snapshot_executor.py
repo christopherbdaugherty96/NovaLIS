@@ -52,6 +52,34 @@ def test_weather_snapshot_executor_failure_includes_fallback_widget(monkeypatch)
     assert "unavailable" in str(result.data["widget"]["data"]["summary"]).lower()
 
 
+def test_weather_snapshot_executor_failure_preserves_skill_widget(monkeypatch):
+    widget = {
+        "type": "weather",
+        "data": {
+            "summary": "Weather is available, but no provider key is configured yet.",
+            "status": "not_configured",
+            "connected": False,
+            "setup_hint": "Add WEATHER_API_KEY to enable live weather.",
+        },
+    }
+
+    async def fake_handle(self, query: str):
+        del self, query
+        return SkillResult(
+            success=False,
+            message=widget["data"]["summary"],
+            widget_data=widget,
+            skill="weather",
+        )
+
+    monkeypatch.setattr("src.skills.weather.WeatherSkill.handle", fake_handle)
+    result = WeatherSnapshotExecutor().execute(ActionRequest(capability_id=55, params={}))
+
+    assert result.success is False
+    assert result.external_effect is False
+    assert result.data["widget"] == widget
+
+
 def test_news_snapshot_executor_success(monkeypatch):
     async def fake_handle(self, query: str):
         del self
@@ -79,6 +107,32 @@ def test_news_snapshot_executor_success(monkeypatch):
     assert result.data["follow_up_prompts"]
 
 
+def test_news_snapshot_executor_failure_preserves_skill_widget(monkeypatch):
+    widget = {
+        "type": "news",
+        "items": [],
+        "summary": "News unavailable right now.",
+        "categories": {},
+        "status": "unavailable",
+    }
+
+    async def fake_handle(self, query: str):
+        del self, query
+        return SkillResult(
+            success=False,
+            message="I couldn't pull fresh headlines right now.",
+            widget_data=widget,
+            skill="news",
+        )
+
+    monkeypatch.setattr("src.skills.news.NewsSkill.handle", fake_handle)
+    result = NewsSnapshotExecutor().execute(ActionRequest(capability_id=56, params={}))
+
+    assert result.success is False
+    assert result.external_effect is False
+    assert result.data["widget"] == widget
+
+
 def test_calendar_snapshot_executor_success(monkeypatch):
     async def fake_handle(self, query: str):
         del self
@@ -103,3 +157,30 @@ def test_calendar_snapshot_executor_success(monkeypatch):
     assert result.data["widget"]["events"][0]["title"] == "Standup"
     assert "Upcoming events loaded: 1" in result.message
     assert result.data["follow_up_prompts"]
+
+
+def test_calendar_snapshot_executor_failure_preserves_skill_widget(monkeypatch):
+    widget = {
+        "type": "calendar",
+        "summary": "Not connected.",
+        "events": [],
+        "connected": False,
+        "status": "not_connected",
+        "setup_hint": "Add a local .ics file in Settings.",
+    }
+
+    async def fake_handle(self, query: str):
+        del self, query
+        return SkillResult(
+            success=False,
+            message="Calendar is ready when you are.",
+            widget_data=widget,
+            skill="calendar",
+        )
+
+    monkeypatch.setattr("src.skills.calendar.CalendarSkill.handle", fake_handle)
+    result = CalendarSnapshotExecutor().execute(ActionRequest(capability_id=57, params={}))
+
+    assert result.success is False
+    assert result.external_effect is False
+    assert result.data["widget"] == widget

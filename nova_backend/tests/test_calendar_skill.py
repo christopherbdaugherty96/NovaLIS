@@ -9,13 +9,45 @@ def test_calendar_skill_reports_not_connected_when_path_missing(monkeypatch):
     skill = CalendarSkill()
     result = asyncio.run(skill.handle("calendar"))
 
-    assert result.success is True
+    assert result.success is False
     assert result.skill == "calendar"
     assert "calendar is ready when you are" in result.message.lower()
     widget = result.widget_data or {}
     assert widget.get("summary") == "Not connected."
     assert widget.get("status") == "not_connected"
     assert ".ics file" in widget.get("setup_hint", "")
+
+
+def test_calendar_skill_reports_read_failure_as_unsuccessful(monkeypatch, tmp_path):
+    ics_path = tmp_path / "calendar.ics"
+    ics_path.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR\n", encoding="utf-8")
+    monkeypatch.setenv("NOVA_CALENDAR_ICS_PATH", str(ics_path))
+
+    def fail_read(self, path, start_date, end_date):
+        raise OSError("calendar source unavailable")
+
+    monkeypatch.setattr(CalendarSkill, "_read_events_for_range", fail_read)
+    result = asyncio.run(CalendarSkill().handle("calendar"))
+
+    assert result.success is False
+    assert result.message == "Calendar data is currently unavailable."
+    widget = result.widget_data or {}
+    assert widget["status"] == "unavailable"
+    assert widget["connected"] is True
+
+
+def test_calendar_skill_valid_empty_day_remains_successful(monkeypatch, tmp_path):
+    ics_path = tmp_path / "calendar.ics"
+    ics_path.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR\n", encoding="utf-8")
+    monkeypatch.setenv("NOVA_CALENDAR_ICS_PATH", str(ics_path))
+
+    result = asyncio.run(CalendarSkill().handle("calendar"))
+
+    assert result.success is True
+    assert result.message == "You're clear today. Nothing is scheduled on your calendar."
+    widget = result.widget_data or {}
+    assert widget["status"] == "ok"
+    assert widget["events"] == []
 
 
 def test_calendar_skill_reads_todays_events(monkeypatch, tmp_path):
