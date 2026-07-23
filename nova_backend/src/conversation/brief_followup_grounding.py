@@ -25,6 +25,13 @@ DISCUSSION_MARKERS = (
     "third story",
     "headline",
     "headlines",
+    "what matters",
+    "what stands out",
+    "keep an eye on",
+    "what should i watch",
+    "complete",
+    "partial",
+    "done",
 )
 
 FETCH_SHAPES = (
@@ -180,7 +187,7 @@ def answer_grounded_brief_followup(text: str, session_state: dict[str, Any] | No
     if key == "runtime":
         return _answer_runtime_followup(state)
     if key == "awareness_brief":
-        return _answer_awareness_followup(state)
+        return _answer_awareness_followup(str(text or ""), state)
     return ""
 
 
@@ -215,12 +222,73 @@ def store_brief_widget(
             session_state["active_brief_item"] = "calendar"
 
 
+def store_active_news_surface(
+    session_state: dict[str, Any],
+    surface_type: str,
+    stories: list[Any],
+    *,
+    category_key: str = "",
+) -> None:
+    """Record the exact visible news collection used by numeric follow-ups.
+
+    The surface is conversation state only. It does not authorize or execute
+    anything; it prevents a later story number from silently resolving against
+    an older collection.
+    """
+    if not isinstance(session_state, dict):
+        return
+    rows = [dict(story or {}) for story in stories if isinstance(story, dict)]
+    identities = [_story_identity(row) for row in rows]
+    version_seed = "\n".join([str(surface_type or ""), str(category_key or ""), *identities])
+    session_state["active_news_surface"] = {
+        "surface_type": str(surface_type or "news").strip() or "news",
+        "surface_id": sha256(version_seed.encode("utf-8")).hexdigest(),
+        "category_key": str(category_key or "").strip().lower(),
+        "stories": rows,
+        "index_to_story": {index: identity for index, identity in enumerate(identities, start=1)},
+    }
+    session_state["active_brief_item"] = "news"
+    _validate_active_news_story(session_state, rows)
+
+
+def active_news_surface_clusters(session_state: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Return the active surface in the cluster shape Cap 50 already accepts."""
+    state = session_state or {}
+    surface = state.get("active_news_surface")
+    if not isinstance(surface, dict):
+        return list(state.get("last_brief_clusters") or [])
+    rows = list(surface.get("stories") or [])
+    if str(surface.get("surface_type") or "") == "brief":
+        return [dict(row or {}) for row in rows if isinstance(row, dict)]
+    clusters: list[dict[str, Any]] = []
+    for index, item in enumerate(rows, start=1):
+        row = dict(item or {})
+        title = _clip(row.get("title") or row.get("headline"))
+        if not title:
+            continue
+        source = _clip(row.get("source") or row.get("publisher") or row.get("domain"), 80)
+        clusters.append(
+            {
+                "id": index,
+                "title": title,
+                "summary": _clip(row.get("summary") or row.get("description")),
+                "implication": "",
+                "sources": [source] if source else [],
+                "items": [row],
+                "placeholder": False,
+                "synthesis_status": "headline",
+            }
+        )
+    return clusters
+
+
 def _has_grounding(state: dict[str, Any]) -> bool:
     return any(
         (
             state.get("brief_weather"),
             state.get("news_cache"),
             state.get("news_categories"),
+            state.get("last_brief_clusters"),
             state.get("brief_calendar"),
             state.get("last_calendar_events"),
             state.get("trust_status"),
@@ -232,13 +300,13 @@ def _has_grounding_for(key: str, state: dict[str, Any]) -> bool:
     if key == "weather":
         return bool(state.get("brief_weather"))
     if key == "news":
-        return bool(state.get("news_cache") or state.get("news_categories"))
+        return bool(state.get("news_cache") or state.get("news_categories") or state.get("last_brief_clusters"))
     if key == "calendar":
         return bool(state.get("brief_calendar") or state.get("last_calendar_events"))
     if key == "runtime":
         return bool(state.get("trust_status"))
     if key == "awareness_brief":
-        return _has_grounding(state)
+        return bool(state.get("last_brief_clusters")) or _has_grounding(state)
     return False
 
 
@@ -247,6 +315,26 @@ def _select_item_key(lowered: str, state: dict[str, Any]) -> str:
 
 
 def _select_explicit_item_key(lowered: str, state: dict[str, Any]) -> str:
+    overview_markers = (
+        "what matters most",
+        "what stands out",
+        "what should i watch",
+        "keep an eye on",
+    )
+    active_surface = state.get("active_news_surface")
+    if (
+        isinstance(active_surface, dict)
+        and active_surface.get("surface_type") != "brief"
+        and any(marker in lowered for marker in overview_markers)
+    ):
+        return "news"
+    if state.get("last_brief_clusters") and any(
+        marker in lowered
+        for marker in overview_markers
+    ):
+        return "awareness_brief"
+    if state.get("active_news_surface") and any(marker in lowered for marker in overview_markers):
+        return "news"
     if _contains_any_word(lowered, ("weather", "forecast", "rain", "raining", "temperature", "outside")):
         return "weather"
     if _contains_any_word(lowered, ("news", "headline", "headlines", "article")):
@@ -290,6 +378,11 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
             or re.search(r"\bwill\s+it\b", lowered) is not None
         )
     if key == "news":
+        if state.get("active_news_surface") and any(
+            marker in lowered
+            for marker in ("what matters most", "what stands out", "what should i watch", "keep an eye on")
+        ):
+            return True
         if _ordinal_index(lowered) is not None and _contains_any_word(lowered, ("story", "stories", "headline", "headlines")):
             return True
         if TOP_STORY_RE.search(lowered):
@@ -307,7 +400,20 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
             or re.search(r"\bconnection\s+status\b", lowered) is not None
         ) and any(marker in lowered for marker in ("what caused", "why", "cause", "mean", "meaning", "that warning"))
     if key == "awareness_brief":
-        return _has_reference_shape(lowered) or any(marker in lowered for marker in ("why does", "what matters", "what changed"))
+        return _has_reference_shape(lowered) or any(
+            marker in lowered
+            for marker in (
+                "why does",
+                "what matters",
+                "what stands out",
+                "what changed",
+                "what should i watch",
+                "keep an eye on",
+                "complete",
+                "partial",
+                "done",
+            )
+        )
     return False
 
 
@@ -372,7 +478,12 @@ def _weather_data(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def _news_lines(query: str, state: dict[str, Any]) -> list[str]:
-    items = list(state.get("news_cache") or [])
+    surface = state.get("active_news_surface")
+    items = (
+        list(surface.get("stories") or [])
+        if isinstance(surface, dict) and surface.get("stories")
+        else list(state.get("news_cache") or [])
+    )
     target = _ordinal_index(query)
     if target is None and _is_vague_followup(query):
         active_story = state.get("active_news_story")
@@ -519,7 +630,12 @@ def _validate_active_news_story(state: dict[str, Any], items: list[Any]) -> None
 
 
 def _remember_active_news_story(state: dict[str, Any], index: int) -> dict[str, Any] | None:
-    items = list(state.get("news_cache") or [])
+    surface = state.get("active_news_surface")
+    items = (
+        list(surface.get("stories") or [])
+        if isinstance(surface, dict) and surface.get("stories")
+        else list(state.get("news_cache") or [])
+    )
     if index < 0 or index >= len(items):
         return None
     row = dict(items[index] or {})
@@ -630,6 +746,7 @@ def _answer_weather_followup(lowered: str, state: dict[str, Any]) -> str:
 
 
 def _answer_news_followup(query: str, state: dict[str, Any]) -> str:
+    lowered = str(query or "").lower()
     target = _ordinal_index(query)
     if target is not None:
         selected = _remember_active_news_story(state, target)
@@ -642,6 +759,14 @@ def _answer_news_followup(query: str, state: dict[str, Any]) -> str:
     lines = _news_lines(query, state)
     if not lines:
         return "I do not have loaded headline facts to answer from yet."
+    if any(marker in lowered for marker in ("what matters most", "what stands out")):
+        return (
+            "What matters most on the active news surface:\n"
+            + lines[0]
+            + "\n\nThis is a deterministic ranking of the visible sourced items; I am not adding outside facts."
+        )
+    if any(marker in lowered for marker in ("what should i watch", "keep an eye on")):
+        return "What to watch on the active news surface:\n" + "\n".join(lines[:3])
     if target is not None:
         return (
             "Sourced headline from the loaded news state:\n"
@@ -692,12 +817,53 @@ def _answer_runtime_followup(state: dict[str, Any]) -> str:
     return "Sourced runtime facts:\n" + "\n".join(lines) + "\n\nIf the cause is not explicit above, the loaded source does not say."
 
 
-def _answer_awareness_followup(state: dict[str, Any]) -> str:
-    parts = []
-    for builder in (_weather_lines, lambda s: _news_lines("", s), _calendar_lines, _runtime_lines):
-        lines = builder(state)
-        if lines:
-            parts.extend(lines[:3])
-    if not parts:
-        return "I do not have loaded brief facts to answer from yet."
-    return "Sourced brief facts:\n" + "\n".join(parts[:8]) + "\n\nInference: I can connect these cautiously, but I should not add facts beyond the loaded brief."
+def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
+    clusters = [dict(row or {}) for row in list(state.get("last_brief_clusters") or []) if isinstance(row, dict)]
+    if not clusters:
+        return "I do not have a rendered intelligence brief to answer from yet."
+
+    lowered = str(query or "").lower()
+    placeholders = [
+        cluster
+        for cluster in clusters
+        if cluster.get("placeholder")
+        or str(cluster.get("synthesis_status") or "").lower() in {"placeholder", "pending", "paused"}
+    ]
+    if any(term in lowered for term in ("complete", "partial", "done")):
+        if placeholders:
+            return (
+                f"The rendered brief is partial: {len(placeholders)} of {len(clusters)} "
+                "topic clusters still use fallback or pending synthesis."
+            )
+        return f"The rendered brief is complete: all {len(clusters)} topic clusters have sourced synthesis."
+
+    def render_cluster(cluster: dict[str, Any], *, include_implication: bool = True) -> str:
+        title = _clip(cluster.get("title") or "Untitled topic")
+        summary = _clip(cluster.get("summary"))
+        implication = _clip(cluster.get("implication"))
+        if cluster in placeholders:
+            items = list(cluster.get("items") or [])
+            fallback_title = _clip((items[0] or {}).get("title")) if items and isinstance(items[0], dict) else ""
+            summary = summary or fallback_title or "Synthesis is unavailable for this topic."
+        line = f"- {title}"
+        if summary:
+            line += f": {summary}"
+        if include_implication and implication:
+            line += f" Why it matters: {implication}"
+        return line
+
+    if any(term in lowered for term in ("what matters", "what stands out")):
+        lead = next((cluster for cluster in clusters if cluster not in placeholders), clusters[0])
+        return (
+            "What matters most in the rendered brief:\n"
+            + render_cluster(lead)
+            + ("\n\nThe brief is still partial, so this ranking uses only the visible sourced material." if placeholders else "")
+        )
+
+    if any(term in lowered for term in ("what should i watch", "keep an eye on")):
+        selected = [cluster for cluster in clusters if _clip(cluster.get("implication"))][:3] or clusters[:2]
+        return "What to watch from the rendered brief:\n" + "\n".join(
+            render_cluster(cluster) for cluster in selected
+        )
+
+    return "Current rendered brief:\n" + "\n".join(render_cluster(cluster, include_implication=False) for cluster in clusters[:3])

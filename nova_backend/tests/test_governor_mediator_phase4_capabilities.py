@@ -372,6 +372,19 @@ def test_news_intelligence_parsing():
     assert inv.params["selection"] == "category"
     assert inv.params["category_key"] == "global"
 
+    for phrase, expected_category in (
+        ("show me global security news", "global"),
+        ("give me international headlines", "global"),
+        ("show me political news", "politics"),
+    ):
+        inv = GovernorMediator.parse_governed_invocation(phrase)
+        assert isinstance(inv, Invocation)
+        assert inv.capability_id == 49
+        assert inv.params["selection"] == "category"
+        assert inv.params["category_key"] == expected_category
+
+    assert GovernorMediator.parse_governed_invocation("show me my company news") is None
+
     inv = GovernorMediator.parse_governed_invocation("summarize today's news")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 50

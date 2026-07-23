@@ -289,6 +289,10 @@ SOURCE_NEWS_SUMMARY_RE = re.compile(
     r"^\s*(?:summarize|summary(?:\s+of)?|details?|give me details)\s+(?P<source>.+?)\s+news\s*$",
     re.IGNORECASE,
 )
+SHOW_CATEGORY_NEWS_RE = re.compile(
+    r"^\s*(?:show|give)\s+me\s+(?P<category>.+?)\s+(?:news|headlines?)\s*$",
+    re.IGNORECASE,
+)
 GENERIC_NEWS_SUMMARY_RE = re.compile(
     r"^\s*(?:summarize|summary(?:\s+of)?|details?|give me details)\s+"
     r"(?:(?:the|latest|recent|today'?s|current)\s+)*news"
@@ -914,6 +918,15 @@ class GovernorMediator:
 
         if NEWS_RE.match(t):
             return _invocation_if_enabled(56, {})
+
+        category_news = SHOW_CATEGORY_NEWS_RE.match(t)
+        if category_news:
+            category_key = _match_news_category(category_news.group("category") or "")
+            if category_key:
+                return _invocation_if_enabled(
+                    49,
+                    {"selection": "category", "category_key": category_key},
+                )
 
         if CALENDAR_RE.match(t):
             return _invocation_if_enabled(57, {})
