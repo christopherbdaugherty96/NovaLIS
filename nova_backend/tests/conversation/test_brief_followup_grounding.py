@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from src.conversation.brief_followup_grounding import (
+    active_news_surface_clusters,
     answer_grounded_brief_followup,
     build_grounded_brief_context,
     is_discussion_shaped_brief_followup,
     is_fetch_shaped_brief_request,
     is_schedule_commitment_question,
     schedule_commitment_guard,
+    store_active_news_surface,
     store_brief_widget,
 )
 
@@ -423,3 +425,102 @@ def test_calendar_after_that_uses_real_calendar_skill_event_shape():
     assert "Zebra Meeting" in selected
     assert "Alpha Meeting" in next_event
     assert "Zebra Meeting" not in next_event
+
+
+def _rendered_brief_state(*, placeholder: bool = False) -> dict:
+    clusters = [
+        {
+            "id": 1,
+            "title": "Global Security",
+            "summary": "Regional tensions increased after new strikes.",
+            "implication": "Watch for changes to shipping and energy risk.",
+            "sources": ["BBC News", "NPR"],
+            "items": [{"title": "Security story", "source": "BBC News"}],
+            "placeholder": placeholder,
+            "synthesis_status": "placeholder" if placeholder else "fresh",
+        },
+        {
+            "id": 2,
+            "title": "Technology",
+            "summary": "Chip investment continued.",
+            "implication": "Capacity plans remain the key signal.",
+            "sources": ["TechCrunch"],
+            "items": [{"title": "Chip story", "source": "TechCrunch"}],
+            "placeholder": False,
+            "synthesis_status": "fresh",
+        },
+    ]
+    state = {"last_brief_clusters": clusters}
+    store_active_news_surface(state, "brief", clusters)
+    return state
+
+
+def test_what_matters_uses_rendered_clusters_not_broad_dashboard_facts():
+    state = _rendered_brief_state()
+    state["brief_weather"] = {"data": {"summary": "Unrelated weather"}}
+    state["last_calendar_summary"] = "Unrelated calendar"
+
+    assert is_discussion_shaped_brief_followup("What matters most?", state) is True
+    answer = answer_grounded_brief_followup("What matters most?", state)
+
+    assert "Global Security" in answer
+    assert "Regional tensions increased" in answer
+    assert "Unrelated weather" not in answer
+    assert "Unrelated calendar" not in answer
+    assert "Sourced brief facts" not in answer
+
+
+def test_rendered_brief_completeness_reports_partial_deterministically():
+    state = _rendered_brief_state(placeholder=True)
+
+    assert is_discussion_shaped_brief_followup("Is this brief complete or partial?", state) is True
+    answer = answer_grounded_brief_followup("Is this brief complete or partial?", state)
+
+    assert "partial" in answer.lower()
+    assert "1 of 2" in answer
+
+
+def test_active_category_surface_replaces_old_brief_for_numeric_commands():
+    state = _rendered_brief_state()
+    category_items = [
+        {"title": "First category story", "source": "NPR", "summary": "First category summary"},
+        {"title": "Second category story", "source": "BBC News", "summary": "Second category summary"},
+    ]
+
+    store_active_news_surface(state, "category", category_items, category_key="global")
+    clusters = active_news_surface_clusters(state)
+    answer = answer_grounded_brief_followup("Tell me more about the second story.", state)
+
+    assert clusters[1]["title"] == "Second category story"
+    assert "Second category story" in answer
+    assert "Technology" not in answer
+
+
+def test_what_matters_after_category_uses_active_category_not_old_brief():
+    state = _rendered_brief_state()
+    category_items = [
+        {"title": "Active category lead", "source": "NPR", "summary": "Visible lead summary"},
+        {"title": "Active category second", "source": "BBC News", "summary": "Visible second summary"},
+    ]
+    store_active_news_surface(state, "category", category_items, category_key="global")
+
+    assert is_discussion_shaped_brief_followup("What matters most?", state) is True
+    answer = answer_grounded_brief_followup("What matters most?", state)
+
+    assert "Active category lead" in answer
+    assert "Global Security" not in answer
+    assert "deterministic ranking" in answer
+
+
+def test_active_surface_identity_is_stable_for_same_story_collection():
+    state: dict = {}
+    items = [
+        {"title": "Story A", "source": "NPR", "url": "https://example.test/a"},
+        {"title": "Story B", "source": "BBC News", "url": "https://example.test/b"},
+    ]
+    store_active_news_surface(state, "category", items, category_key="global")
+    first_surface_id = state["active_news_surface"]["surface_id"]
+    store_active_news_surface(state, "category", list(items), category_key="global")
+
+    assert state["active_news_surface"]["surface_id"] == first_surface_id
+    assert state["active_news_surface"]["index_to_story"][2] == "url:https://example.test/b"

@@ -11,17 +11,19 @@ from typing import Any
 from fastapi import WebSocket, WebSocketDisconnect
 
 from src.conversation.brief_followup_grounding import (
+    active_news_surface_clusters,
     answer_grounded_brief_followup,
     is_discussion_shaped_brief_followup,
     schedule_commitment_guard,
+    store_active_news_surface,
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
 from src.llm.llm_gateway import model_status_snapshot
-from src.usage.provider_usage_store import _estimate_tokens
-from src.websocket.turn_abandon import mark_turn_abandoned
 from src.openclaw.run_state_machine import run_event_hub
+from src.usage.provider_usage_store import _estimate_tokens
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
+from src.websocket.turn_abandon import mark_turn_abandoned
 
 _HEADLINE_SUMMARY_RE = re.compile(
     r"\b(?:summari[sz]e|summary).{0,50}\b(?:all\s+)?(?:headlines?|news)\b"
@@ -33,6 +35,27 @@ _UNTRUSTED_COMMAND_TEXT_RE = re.compile(
     r"call open_file|actionrequest|bypass governor|cap\s*63|openclaw_execute)\b",
     re.IGNORECASE,
 )
+
+
+def _brief_message_confidence(message: str) -> str:
+    match = re.search(
+        r"(?im)^\s*Confidence:\s*(?P<label>[A-Za-z][A-Za-z-]*)\s*$",
+        str(message or ""),
+    )
+    return match.group("label") if match else ""
+
+
+def _apply_news_synthesis_ready_state(
+    session_state: dict[str, Any],
+    payload: dict[str, Any],
+) -> None:
+    clusters = payload.get("brief_clusters")
+    if not isinstance(clusters, list):
+        return
+    session_state["last_brief_clusters"] = clusters
+    active_surface = session_state.get("active_news_surface")
+    if not isinstance(active_surface, dict) or active_surface.get("surface_type") == "brief":
+        store_active_news_surface(session_state, "brief", clusters)
 _QUOTED_CONTENT_REQUEST_RE = re.compile(
     r"\b(?:summari[sz]e|analy[sz]e|explain|review)\b.{0,80}"
     r"\b(?:article|text|content|search result|result|snippet|quote|quoted)\b",
@@ -565,6 +588,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "last_news_story_index": None,
         "topic_memory_map": {},
         "last_brief_clusters": [],
+        "active_news_surface": {},
         "pending_web_open": None,
         "pending_governed_confirm": None,
         "pending_interpret_confirm": None,
@@ -3850,14 +3874,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             continue
                         params["story_index"] = resolved_story_index
                     if capability_id == 50:
-                        params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
+                        if str(params.get("action") or "").strip():
+                            params["brief_clusters"] = active_news_surface_clusters(session_state)
+                        else:
+                            params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
                         if params.get("read_sources"):
                             _synthesis_loop = asyncio.get_running_loop()
+
+                            async def _deliver_news_synthesis_ready(payload: dict) -> None:
+                                _apply_news_synthesis_ready_state(session_state, payload)
+                                await ws_send(ws, payload)
 
                             def _on_news_synthesis_ready(payload: dict) -> None:
                                 if not isinstance(payload, dict):
                                     return
-                                future = asyncio.run_coroutine_threadsafe(ws_send(ws, payload), _synthesis_loop)
+                                future = asyncio.run_coroutine_threadsafe(
+                                    _deliver_news_synthesis_ready(payload),
+                                    _synthesis_loop,
+                                )
 
                                 def _consume_ready_send_result(done_future: Any) -> None:
                                     try:
@@ -4031,6 +4065,40 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state["news_categories"] = dict(widget.get("categories") or {})
                         session_state["last_sources"] = _extract_sources_from_results(items)
                         session_state["last_source_links"] = _extract_source_links(items)
+                    if (
+                        capability_id == 49
+                        and action_result.success
+                        and isinstance(widget, dict)
+                        and widget.get("type") == "news_summary"
+                    ):
+                        widget_data = widget.get("data") if isinstance(widget.get("data"), dict) else {}
+                        selection = str(widget_data.get("selection") or params.get("selection") or "summary").strip()
+                        category_key = str(widget_data.get("category_key") or params.get("category_key") or "").strip()
+                        selected_items: list[dict[str, Any]] = []
+                        if selection == "category":
+                            category_bucket = dict(session_state.get("news_categories") or {}).get(category_key)
+                            if isinstance(category_bucket, dict):
+                                selected_items = [
+                                    dict(item or {})
+                                    for item in list(category_bucket.get("items") or [])
+                                    if isinstance(item, dict)
+                                ]
+                        else:
+                            for value in list(widget_data.get("indices") or []):
+                                try:
+                                    item_index = int(value) - 1
+                                except (TypeError, ValueError):
+                                    continue
+                                news_items = list(session_state.get("news_cache") or [])
+                                if 0 <= item_index < len(news_items) and isinstance(news_items[item_index], dict):
+                                    selected_items.append(dict(news_items[item_index]))
+                        if selected_items:
+                            store_active_news_surface(
+                                session_state,
+                                "category" if selection == "category" else "headline_summary",
+                                selected_items,
+                                category_key=category_key,
+                            )
                     if isinstance(widget, dict) and widget.get("type") == "calendar":
                         session_state["last_calendar_summary"] = str(widget.get("summary") or "")
                         session_state["last_calendar_events"] = list(widget.get("events") or [])
@@ -4081,6 +4149,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     brief_clusters = action_payload.get("brief_clusters")
                     if isinstance(brief_clusters, list):
                         session_state["last_brief_clusters"] = brief_clusters
+                        if capability_id == 50 and not str(params.get("action") or "").strip():
+                            store_active_news_surface(session_state, "brief", brief_clusters)
                         flattened_links: list[dict[str, str]] = []
                         for cluster in brief_clusters:
                             if not isinstance(cluster, dict):
@@ -4227,6 +4297,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"label": "Show topic map", "command": "show topic map"},
                         {"label": "Today's brief", "command": "today's news"},
                     ]
+                if capability_id == 50 and action_result.success:
+                    message_confidence = _brief_message_confidence(action_message) or message_confidence
                 if capability_id in {49, 50} and not action_result.success and not message_suggestions:
                     message_suggestions = [
                         {"label": "Refresh headlines", "command": "today's news"},
