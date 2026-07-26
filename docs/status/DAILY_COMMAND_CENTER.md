@@ -27,9 +27,13 @@ NEXT INPUT: one targeted post-#312 morning for additional real-use / product-acc
 input. PR #312 is already verified on fresh main (the closeout restarted from clean main and
 confirmed the full category -> second-story -> "what matters most" workflow), so this morning
 is continued real use, NOT that verification. After it the owner selects the next
-evidence-ranked PRODUCT-USABILITY lane. Candidates, none authorized here:
-connection-truth/source-label repair, runtime-fingerprint generator reconciliation,
-Google Tasks read-only, Gmail read-only, Traffic.
+evidence-ranked PRODUCT-USABILITY lane. Two distinct lists feed that choice (none authorized
+here):
+  Synthesis-ranked secondary repairs (each a separate decision): connection-truth/source-label
+    repair; runtime-generator (fingerprint) reconciliation; corruption-safe loading stays PARKED
+    unless an actual corruption/loading failure is observed.
+  Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+The post-#312 morning determines whether any product gap is selected.
 
 FIRST POST-OBSERVATION HARDENING LANE (parallel, do not lose): authorization integrity
 (lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md). Sequencing steps 1-2
@@ -235,11 +239,13 @@ input that moves the project now is OBSERVED DAILY USE.
 ## Current Blockers
 
 ```text
-Test suite: an 85-91% full-suite stall was recorded in earlier status notes.
-The B1 pytest-timeout guard (PR #264, 180s enforced) should convert any silent
-hang into a named failing test. This stall has NOT been reproduced on current
-main; treat it as an unverified historical claim until a fresh
-`python -m pytest -vv` run confirms or clears it. No confirmed active blocker.
+Test suite (B1 - UNRESOLVED): an 85-91% full-suite stall was recorded in earlier
+status notes and has NOT been retested on current main. Per the master roadmap,
+B1 remains unresolved pending a fresh `python -m pytest -vv` run, which must
+either (a) pass and clear B1, or (b) identify a named timeout/failure for repair.
+Do not treat B1 as cleared or inactive until that run happens. The pytest-timeout
+guard (PR #264, 180s enforced) is expected to convert a silent hang into a named
+failing test.
 ```
 
 ## Decisions Needed

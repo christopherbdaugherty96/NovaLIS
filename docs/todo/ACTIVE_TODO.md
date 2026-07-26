@@ -10,9 +10,11 @@ PR #312). Latest state: see the 2026-07-23 block in docs/status/DAILY_COMMAND_CE
 ```text
 PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEFINITION.md)
 
-  Engineering + verification are COMPLETE. The only input that moves the project now is
-  OBSERVED DAILY USE. Do NOT build, verify, or define more until observed behavior proves a
-  real gap. Evidence earns the build.
+  Engineering + verification are COMPLETE. For product-usability and capability-expansion
+  lanes, observed daily use is the input that earns new work: do not start those until observed
+  behavior proves a real gap. Separately, the authorization-integrity priority lock is now
+  activatable as the first post-observation hardening lane (correctness/security); it does not
+  require another morning to justify it, but this truth-sync does not start that lane.
 
   Build lanes shipped this cycle (all merged):
     UX lane: #261 brief unification, #262 quick-actions, #264 nav collapse (+B1 pytest-timeout,

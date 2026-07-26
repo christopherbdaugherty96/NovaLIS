@@ -41,9 +41,14 @@ pending. No additional seven-morning or open-ended observation gate is required.
 
 The next input is ONE targeted post-#312 morning for additional real-use / product-acceptance
 input (not a re-verification of #312); after it the owner selects the next evidence-ranked
-**product-usability** lane. Candidate order recorded in the synthesis (none authorized here):
-connection-truth/source-label repair, runtime-fingerprint generator reconciliation, then
-Google Tasks -> Gmail -> Traffic by observed need.
+**product-usability** lane. Two distinct lists feed that choice (none authorized here):
+
+- Synthesis-ranked secondary repairs (each a separate decision): connection-truth /
+  source-label repair; runtime-generator (fingerprint) reconciliation; corruption-safe loading
+  remains PARKED unless an actual corruption/loading failure is observed.
+- Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+
+The post-#312 morning determines whether any product gap is selected.
 
 Per the authorization-integrity lock
 (`../status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md`), **authorization integrity is
