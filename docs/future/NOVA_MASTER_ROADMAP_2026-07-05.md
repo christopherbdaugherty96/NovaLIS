@@ -18,13 +18,30 @@ Authority rules:
    document wins. When they disagree on scope, the lane lock wins.
 ```
 
-## Observation-driven candidates (added 2026-07-11)
+## Observation-driven candidates (added 2026-07-11; seven-morning threshold closed 2026-07-22)
 
 The Phase-3 observation period generates roadmap candidates from real behavior. Recorded here
 as they surface; none is authorized to build except via the stated gate.
 
 ```text
+SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
+  Mornings 1-7 logged and synthesized in
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
+  threshold complete and named grounded brief/category routing the rank-1 defect. No additional
+  seven-morning or open-ended observation gate is required. Next input is ONE targeted fresh-main
+  post-#312 verification morning, then owner selection of the next evidence-backed lane.
+  Recorded candidate order (none authorized here): connection-truth/source-label repair,
+  runtime-fingerprint generator reconciliation, then Google Tasks -> Gmail -> Traffic by need.
+
 LANDED (freeze-exempt, owner-approved):
+  #311  Timeout containment - isolate turns after a response timeout so a timed-out model turn
+        no longer blocks the next deterministic request (Morning 6-7 evidence).
+  #312  Grounded brief/category routing (synthesis rank-1 defect), merged 2026-07-23 -
+        "show me <category> news" reaches governed Cap 49; brief/story follow-ups bind to the
+        rendered Cap 50 clusters / active surface; numeric story commands resolve against a
+        stable active-surface map; one confidence value feeds body + Trust; deterministic
+        source-bounded fallback preserved. 205 focused tests, prove_runtime_truth PASS, live
+        branch verification. This shipped the scope earlier called "Slice 1"; lane now CLOSED.
   #294  Observation Step 0 (documentation + protocol) — morning-log template + single launch
         procedure + config truth (runtime reads Windows User-scope env, not nova_backend/.env).
   #295  Truth-critical repair — Truthful availability under dashboard refresh: fixed false

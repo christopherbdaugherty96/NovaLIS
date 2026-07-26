@@ -1,6 +1,43 @@
 # Daily Command Center
 
-## 2026-07-15 session (latest - read this first)
+## 2026-07-23 session (latest - read this first)
+
+```text
+SEVEN-MORNING THRESHOLD COMPLETE. GROUNDED ROUTING SHIPPED (PR #312).
+
+Main is at c3856473 (PR #312 + the grounded-routing verification closeout). The seven
+mornings (docs/observation/MORNING_01..07) are logged and synthesized in
+docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md, which declared the evidence
+threshold COMPLETE and named grounded brief/category routing the rank-1 defect.
+
+Landed since the 2026-07-15 block:
+  #311 - isolate turns after a response timeout (Morning 6-7 cross-turn containment).
+  #312 - ground news routing to the active brief surface (merged 2026-07-23):
+         category prompts reach governed Cap 49; brief/story follow-ups bind to the
+         rendered Cap 50 clusters / active surface; numeric story commands resolve
+         against a stable active-surface map; one confidence value feeds body + Trust;
+         deterministic source-bounded fallback preserved. 205 focused tests,
+         prove_runtime_truth PASS, live branch verification in the PR body.
+
+This CLOSES the lane the 2026-07-15 block listed as the next Slice-1 build. It is now
+COMPLETE, not pending. No additional seven-morning or open-ended observation gate remains.
+
+NEXT INPUT: one targeted fresh-main post-#312 verification morning (verify the shipped
+grounded-routing path; do not restart evidence collection). After that verification the
+owner selects the next evidence-backed defect or missing daily capability. Candidates,
+none authorized here: connection-truth/source-label repair, runtime-fingerprint generator
+reconciliation, Google Tasks read-only, Gmail read-only, Traffic.
+
+This is a documentation truth-sync. It authorizes no new capability, connector, external
+write, scheduler expansion, OpenClaw expansion, or autonomous execution.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-07-23 (seven-morning synthesis complete; PR #311-#312 merged;
+grounded routing shipped and branch-verified).
+Source: seven-morning synthesis + PR #311/#312 + generated runtime docs.
+
+## 2026-07-15 session (historical context)
 
 ```text
 MORNING 5 LOGGED AND GROUNDED-BRIEF-CONVERSATION LANE FIRED.
@@ -165,6 +202,11 @@ For exact runtime facts, use:
 
 ## Current Phase: 3 — Can Nova become a habit?
 
+> Superseded by the 2026-07-23 block at the top: the seven-morning collection is COMPLETE
+> and grounded routing shipped (PR #312). The framing below (open-ended morning collection)
+> is retained as the 2026-07-07 phase record. The current input is ONE post-#312
+> verification morning, then owner lane selection — not continued open-ended collection.
+
 Build lanes are COMPLETE. Engineering and verification are no longer the question. The only
 input that moves the project now is OBSERVED DAILY USE.
 
@@ -183,10 +225,11 @@ input that moves the project now is OBSERVED DAILY USE.
 ## Current Blockers
 
 ```text
-Test suite pre-existing stall at 85-91%: the B1 pytest-timeout
-guard landed via PR #264 (timeout = 180s enforced), so the next
-full-suite run converts the silent hang into a named failing test.
-Root-cause fix still pending (B1 remainder).
+Test suite: an 85-91% full-suite stall was recorded in earlier status notes.
+The B1 pytest-timeout guard (PR #264, 180s enforced) should convert any silent
+hang into a named failing test. This stall has NOT been reproduced on current
+main; treat it as an unverified historical claim until a fresh
+`python -m pytest -vv` run confirms or clears it. No confirmed active blocker.
 ```
 
 ## Decisions Needed
@@ -205,7 +248,7 @@ Root-cause fix still pending (B1 remainder).
 3. Nothing to build/verify/define unless observed use surfaces a real gap.
 ```
 
-## Morning coverage (what Nova reliably does today, verified 2026-07-06)
+## Morning coverage (what Nova reliably does today, confirmed through Morning 7, 2026-07-22)
 
 ```text
 Weather  OK  |  News  OK  |  Calendar  OK  |  Business/C1  OK

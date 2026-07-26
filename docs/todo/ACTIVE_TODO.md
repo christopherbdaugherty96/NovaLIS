@@ -1,7 +1,7 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). Latest state + this session's
-verification (PR #273) and identity convergence (PR #274): see docs/status/DAILY_COMMAND_CENTER.md.
+Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; grounded routing shipped via
+PR #312). Latest state: see the 2026-07-23 block in docs/status/DAILY_COMMAND_CENTER.md.
 
 ---
 
@@ -25,12 +25,18 @@ PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEF
     Live verification (fresh main, 2026-07-06): weather/news/calendar/routing/C1 all PASS;
       Gmail/Tasks/Reminders/Traffic NOT IMPLEMENTED. QA Rule #1 adopted.
 
-  Active work = OBSERVATION: Chris opens Nova each morning first; Claude watches and reports
-  where behavior diverges from what Nova assumed. Metrics incl. "first unanswered question";
-  success = eliminate ONE uncertainty before reaching for another app.
+  SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis). Mornings 1-7 are logged and
+  synthesized (docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md). Its rank-1 defect —
+  grounded brief/category routing — shipped via PR #312 (merged 2026-07-23) after PR #311
+  timeout containment. That lane is COMPLETE, not pending.
+
+  Active work = ONE targeted fresh-main post-#312 verification morning (verify the shipped
+  grounded-routing path; do not restart open-ended collection). After that verification the
+  owner selects the next evidence-backed defect or missing daily capability. Success metric
+  unchanged: eliminate ONE uncertainty before reaching for another app.
 
   Gap-fill order (only when evidence pulls it): Google Tasks -> Gmail -> Traffic. Awareness
-  Item engine only after those.
+  Item engine only after those. This TODO authorizes none of them.
 
   Not authorized (unchanged, 2026-06-18 boundary): capability expansion, Shopify writes,
   posting, external writes, browser/OpenClaw expansion, scheduler/background-loop
@@ -205,9 +211,11 @@ Second Brain Slice 1 priority lock is accepted.
 Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
-Current active state: Phase 3 observation period (2026-07-07).
-Next product input is >=7 real morning logs (docs/observation/), not
-another implementation lane.
+Current active state: Phase 3 observation — seven-morning threshold COMPLETE (2026-07-22).
+Grounded brief/category routing shipped via PR #312 (2026-07-23). No additional
+seven-morning or open-ended observation gate is required. Next product input is ONE
+targeted fresh-main post-#312 verification morning, then owner lane selection — not
+another implementation lane started from this file.
 
 Deferred implementation lanes (accepted, reactivation requires morning evidence):
   - Authorization integrity (correctness/security lane — first hardening lane after

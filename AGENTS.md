@@ -40,11 +40,16 @@ authority ranking — for runtime-existence claims, generated runtime docs win):
 Current active product state:
 
 ```text
-Phase 3 observation period (since 2026-07-07).
-Engineering is frozen except for explicitly approved proof/truth-sync work
+Phase 3 observation: SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis).
+Engineering remains frozen except for explicitly approved proof/truth-sync work
 and critical bugs.
-Next product input is >=7 real morning logs (docs/observation/), not another
-implementation lane.
+The seven-morning gate is CLOSED. Its rank-1 defect — grounded brief/category
+routing — was repaired and merged as PR #312 (2026-07-23).
+No additional seven-morning or open-ended observation gate is required.
+Next product input is ONE targeted fresh-main post-#312 verification morning,
+not another implementation lane. After that verification the owner selects the
+next evidence-backed defect or missing daily capability.
+This truth-sync authorizes no new capability (see the not-authorized block below).
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -70,7 +75,13 @@ Docs truth reconciliation — COMPLETE (2026-07-09). PRs #276-#283.
 Runtime proof harness — LANDED (2026-07-09, PR #284).
   Run python scripts/prove_runtime_truth.py before every merge.
 Observation scaffold — LANDED (2026-07-09, PR #285).
-Current activity: log real mornings to docs/observation/YYYY-MM-DD.md.
+Seven mornings logged and synthesized — COMPLETE (2026-07-22,
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md).
+Grounded brief/category routing (synthesis rank-1 defect) — COMPLETE
+  (PR #312, merged 2026-07-23; 205 focused tests, runtime proof PASS).
+Timeout containment (Morning 6-7 cross-turn blocking) — COMPLETE (PR #311).
+Current activity: run one fresh-main post-#312 verification morning, then the
+  owner selects the next evidence-backed lane.
 Do not select implementation work from any document dated before 2026-07-07
   without checking docs/CANONICAL/07_ROADMAP_TRUTH.md first.
 ```

@@ -1,7 +1,7 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-15 (Morning 5 logged; PR #302-#307 merged; grounded brief conversation
-lane active with Slice 0 landed). Read the latest 2026-07-15 block in
+Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; PR #311-#312 merged; grounded
+brief/category routing lane shipped and branch-verified). Read the latest 2026-07-23 block in
 docs/status/DAILY_COMMAND_CENTER.md first; older July blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
@@ -25,41 +25,39 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-PHASE 3 - Can Nova become a habit? OBSERVATION UNDERWAY (updated 2026-07-15)
+PHASE 3 - Can Nova become a habit? SEVEN-MORNING THRESHOLD COMPLETE (updated 2026-07-23)
 
 The input that moves the project is OBSERVED DAILY USE. Engineering freeze holds; only
 truth-critical, observation-backed, explicitly approved repairs are taken. Broad capability
 expansion, provider/model switching, and autonomous work remain parked.
 
+Seven-morning observation is COMPLETE:
+  docs/observation/MORNING_01..07 are logged and synthesized in
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
+  threshold complete, named grounded brief/category routing the rank-1 defect, and required no
+  further open-ended morning cycle to justify that first lane.
+
 Merged since the last status block:
-  #302 - brief-phrasing intent recognition, status-frame truth fix, Gotcha-loop fix,
-         Morning 1-3 logs.
-  #303 - news confidence degradation for placeholder/all-fallback briefs.
-  #304 - local usage visibility for advisory turns (model + estimated visible tokens,
-         local-only/non-metered).
-  #305 - async news synthesis plan + cache/read-through Slice 1.
-  #306 - async news synthesis Slice 2. Live quality gate: gemma2:2b produced useful grounded
-         synthesis with background time; the model-gate remains parked.
-  #307 - grounded-brief-conversation Slice 0: compare repeated-word phrasing fixed and
-         news_synthesis_ready chat copy made concise while preserving the widget brief.
+  #302-#307 - Morning 1-5 interaction/content repairs (brief-phrasing recognition, status-frame
+         truth, Gotcha-loop, news confidence degradation, local usage visibility, async news
+         synthesis cache/read-through + Slice 2, grounded-brief Slice 0).
+  #311 - isolate turns after a response timeout (Morning 6-7 cross-turn containment).
+  #312 - ground news routing to the active brief surface (merged 2026-07-23): "show me
+         <category> news" reaches governed Cap 49; brief/story follow-ups bind to the rendered
+         Cap 50 clusters / active surface; numeric story commands resolve against a stable
+         active-surface map; one confidence value feeds body and Trust strip; deterministic
+         source-bounded fallback preserved. Validation: 205 focused tests, Ruff PASS,
+         prove_runtime_truth PASS, live branch verification in the PR body.
 
-Morning 5:
-  docs/observation/MORNING_05_2026-07-15.md is logged as a warm-cache daily-use probe.
-  It validated the async synthesis bet for content usefulness (mostly source-grounded brief,
-  honest Medium-Low confidence) and confirmed the old interaction failures stayed dead
-  (no Gotcha loop, no false connection-status failure, no Stop-required stall).
+The grounded brief/category routing lane is COMPLETE. It shipped exactly the scope previously
+described as "Slice 1"; that lane is now closed, not pending.
 
-Current active product lane:
-  docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15.md records the plan. The lane is
-  active because Morning 5 reconfirmed the gap: grounded when reached, fabricated or irrelevant
-  when missed, and stale facts when follow-ups read broad/raw state instead of the rendered
-  Cap 50 brief clusters.
-
-Next safe build if explicitly approved:
-  Slice 1 - deterministic routing, rendered-brief fact unification, and active-surface/stable-story
-  identity mapping over rendered Cap 50 brief clusters. No model, no contract change. It should
-  route "show me <category> news" to governed news/category handling, make follow-up facts match
-  the brief on screen, and make numeric story commands resolve against the active visible surface.
+Next product input:
+  ONE targeted fresh-main post-#312 verification morning (verify the shipped grounded-routing
+  path; do not restart evidence collection). After that verification the owner selects the next
+  evidence-backed defect or missing daily capability. Candidates recorded in the synthesis
+  (none authorized here): connection-truth/source-label repair, runtime-fingerprint generator
+  reconciliation, then Google Tasks -> Gmail -> Traffic by observed need.
 
 Still gated:
   Slice 2 - echo-only -> constrained grounded generation. Requires hallucination-negative tests,
@@ -1018,9 +1016,12 @@ Current sequence:
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Current active state is the Phase 3 observation period (2026-07-07).
-   Next product input is >=7 real morning logs (docs/observation/), not
-   another implementation lane.
+9. Current active state is Phase 3 observation, seven-morning threshold
+   COMPLETE (2026-07-22 synthesis); grounded brief/category routing shipped
+   via PR #312 (2026-07-23). No additional seven-morning or open-ended
+   observation gate is required. Next product input is ONE targeted
+   fresh-main post-#312 verification morning, then owner lane selection —
+   not another implementation lane.
 10. Runtime recovery and health truth remains accepted/deferred pending
     morning evidence (lock:
     docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md).
