@@ -18,7 +18,7 @@ Landed since the 2026-07-15 block:
          against a stable active-surface map; one confidence value feeds body + Trust;
          deterministic source-bounded fallback preserved. 205 focused tests,
          prove_runtime_truth PASS, live branch verification (PR body) + fresh-main
-         verification (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+         verification (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
 
 This CLOSES the lane the 2026-07-15 block listed as the next Slice-1 build. It is now
 COMPLETE, not pending. No additional seven-morning or open-ended observation gate remains.

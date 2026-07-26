@@ -31,7 +31,7 @@ PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEF
   timeout containment. That lane is COMPLETE, not pending.
 
   Active work = ONE targeted post-#312 real-use / product-acceptance morning. PR #312 is
-  already verified on fresh main (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
+  already verified on fresh main (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
   so this morning is continued real use, not that verification. After it the owner selects the
   next evidence-ranked product-usability lane; authorization integrity (below) is the parallel
   first post-observation hardening lane. Success metric unchanged: eliminate ONE uncertainty
@@ -215,7 +215,7 @@ and is not authorized.
 
 Current active state: Phase 3 observation — seven-morning threshold COMPLETE (2026-07-22).
 Grounded brief/category routing shipped via PR #312 (2026-07-23), verified on fresh main
-(docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No additional seven-morning
+(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No additional seven-morning
 or open-ended observation gate is required. Next product input is ONE targeted post-#312
 real-use/product-acceptance morning (not a re-verification of #312), then owner selection of
 the next evidence-ranked product-usability lane. Authorization integrity is the parallel first

@@ -10,7 +10,7 @@ Engineering is frozen except for explicitly approved proof/truth-sync work
 and critical bugs, plus observation-backed trust repairs approved by the owner.
 The seven-morning gate is CLOSED. No additional seven-morning or open-ended
 observation gate is required. PR #312 is verified on fresh `main`
-(docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
 Next product input is ONE targeted post-#312 morning for additional real-use /
 product-acceptance input (not a re-verification of #312), then the owner selects
 the next evidence-ranked product-usability lane. Authorization integrity is the
@@ -42,7 +42,7 @@ The grounded brief/category routing lane is COMPLETE:
     deterministic, source-bounded fallback preserved.
     Validation: 205 focused tests, Ruff PASS, prove_runtime_truth PASS,
     live branch verification in the PR body, plus fresh-main verification in
-    docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
+    docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
   This shipped exactly the scope previously described as "Slice 1"; that lane
   is now closed, not pending.
 

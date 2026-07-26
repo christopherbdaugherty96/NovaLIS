@@ -31,7 +31,7 @@ SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
   seven-morning or open-ended observation gate is required.
   Next PRODUCT input is ONE targeted post-#312 morning for additional real-use/product-acceptance
   input (PR #312 is already verified on fresh main per
-  docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
+  docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
   then owner selection of the next evidence-ranked product-usability lane. Recorded candidate
   order (none authorized here): connection-truth/source-label repair, runtime-fingerprint
   generator reconciliation, then Google Tasks -> Gmail -> Traffic by need.
@@ -50,7 +50,7 @@ LANDED (freeze-exempt, owner-approved):
         stable active-surface map; one confidence value feeds body + Trust; deterministic
         source-bounded fallback preserved. 205 focused tests, prove_runtime_truth PASS, live
         branch verification plus fresh-main verification
-        (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). This shipped the scope
+        (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). This shipped the scope
         earlier called "Slice 1"; lane now CLOSED.
   #294  Observation Step 0 (documentation + protocol) — morning-log template + single launch
         procedure + config truth (runtime reads Windows User-scope env, not nova_backend/.env).

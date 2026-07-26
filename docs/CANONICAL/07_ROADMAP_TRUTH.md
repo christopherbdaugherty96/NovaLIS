@@ -36,7 +36,7 @@ behavior proves is missing.
 `../observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md`, which declared the evidence threshold
 complete and named grounded brief/category routing the rank-1 defect. That lane shipped via
 **PR #312** (merged 2026-07-23), after **PR #311** timeout containment, and is verified on fresh
-`main` (`../observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md`). It is COMPLETE, not
+`main` (`../status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md`). It is COMPLETE, not
 pending. No additional seven-morning or open-ended observation gate is required.
 
 The next input is ONE targeted post-#312 morning for additional real-use / product-acceptance
