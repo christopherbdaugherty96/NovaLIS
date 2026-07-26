@@ -17,16 +17,25 @@ Landed since the 2026-07-15 block:
          rendered Cap 50 clusters / active surface; numeric story commands resolve
          against a stable active-surface map; one confidence value feeds body + Trust;
          deterministic source-bounded fallback preserved. 205 focused tests,
-         prove_runtime_truth PASS, live branch verification in the PR body.
+         prove_runtime_truth PASS, live branch verification (PR body) + fresh-main
+         verification (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
 
 This CLOSES the lane the 2026-07-15 block listed as the next Slice-1 build. It is now
 COMPLETE, not pending. No additional seven-morning or open-ended observation gate remains.
 
-NEXT INPUT: one targeted fresh-main post-#312 verification morning (verify the shipped
-grounded-routing path; do not restart evidence collection). After that verification the
-owner selects the next evidence-backed defect or missing daily capability. Candidates,
-none authorized here: connection-truth/source-label repair, runtime-fingerprint generator
-reconciliation, Google Tasks read-only, Gmail read-only, Traffic.
+NEXT INPUT: one targeted post-#312 morning for additional real-use / product-acceptance
+input. PR #312 is already verified on fresh main (the closeout restarted from clean main and
+confirmed the full category -> second-story -> "what matters most" workflow), so this morning
+is continued real use, NOT that verification. After it the owner selects the next
+evidence-ranked PRODUCT-USABILITY lane. Candidates, none authorized here:
+connection-truth/source-label repair, runtime-fingerprint generator reconciliation,
+Google Tasks read-only, Gmail read-only, Traffic.
+
+FIRST POST-OBSERVATION HARDENING LANE (parallel, do not lose): authorization integrity
+(lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md). Sequencing steps 1-2
+are satisfied (seven mornings COMPLETE; #312 closed the evidence-ranked product bottleneck),
+so it is activatable in parallel priority with the top product lane, superseded only by a
+higher-severity correctness/governance defect. LOCK ONLY; this truth-sync does not start it.
 
 This is a documentation truth-sync. It authorizes no new capability, connector, external
 write, scheduler expansion, OpenClaw expansion, or autonomous execution.
@@ -34,8 +43,8 @@ write, scheduler expansion, OpenClaw expansion, or autonomous execution.
 
 Status: manual continuity surface.
 Last reviewed: 2026-07-23 (seven-morning synthesis complete; PR #311-#312 merged;
-grounded routing shipped and branch-verified).
-Source: seven-morning synthesis + PR #311/#312 + generated runtime docs.
+grounded routing shipped and fresh-main verified).
+Source: seven-morning synthesis + PR #311/#312 + closeout + generated runtime docs.
 
 ## 2026-07-15 session (historical context)
 
@@ -205,7 +214,8 @@ For exact runtime facts, use:
 > Superseded by the 2026-07-23 block at the top: the seven-morning collection is COMPLETE
 > and grounded routing shipped (PR #312). The framing below (open-ended morning collection)
 > is retained as the 2026-07-07 phase record. The current input is ONE post-#312
-> verification morning, then owner lane selection — not continued open-ended collection.
+> real-use/product-acceptance morning (#312 is already fresh-main verified), then owner
+> lane selection — not continued open-ended collection.
 
 Build lanes are COMPLETE. Engineering and verification are no longer the question. The only
 input that moves the project now is OBSERVED DAILY USE.

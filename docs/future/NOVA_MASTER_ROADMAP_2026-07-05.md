@@ -28,10 +28,18 @@ SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
   Mornings 1-7 logged and synthesized in
   docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
   threshold complete and named grounded brief/category routing the rank-1 defect. No additional
-  seven-morning or open-ended observation gate is required. Next input is ONE targeted fresh-main
-  post-#312 verification morning, then owner selection of the next evidence-backed lane.
-  Recorded candidate order (none authorized here): connection-truth/source-label repair,
-  runtime-fingerprint generator reconciliation, then Google Tasks -> Gmail -> Traffic by need.
+  seven-morning or open-ended observation gate is required.
+  Next PRODUCT input is ONE targeted post-#312 morning for additional real-use/product-acceptance
+  input (PR #312 is already verified on fresh main per
+  docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
+  then owner selection of the next evidence-ranked product-usability lane. Recorded candidate
+  order (none authorized here): connection-truth/source-label repair, runtime-fingerprint
+  generator reconciliation, then Google Tasks -> Gmail -> Traffic by need.
+  HARDENING lane, in parallel (do not lose): authorization integrity is the FIRST
+  post-observation hardening lane per
+  docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md. Its sequencing steps 1-2 are
+  satisfied, so it is activatable in parallel priority with the top product lane and is superseded
+  only by a higher-severity correctness/governance defect. LOCK ONLY; not started here.
 
 LANDED (freeze-exempt, owner-approved):
   #311  Timeout containment - isolate turns after a response timeout so a timed-out model turn
@@ -41,7 +49,9 @@ LANDED (freeze-exempt, owner-approved):
         rendered Cap 50 clusters / active surface; numeric story commands resolve against a
         stable active-surface map; one confidence value feeds body + Trust; deterministic
         source-bounded fallback preserved. 205 focused tests, prove_runtime_truth PASS, live
-        branch verification. This shipped the scope earlier called "Slice 1"; lane now CLOSED.
+        branch verification plus fresh-main verification
+        (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). This shipped the scope
+        earlier called "Slice 1"; lane now CLOSED.
   #294  Observation Step 0 (documentation + protocol) — morning-log template + single launch
         procedure + config truth (runtime reads Windows User-scope env, not nova_backend/.env).
   #295  Truth-critical repair — Truthful availability under dashboard refresh: fixed false

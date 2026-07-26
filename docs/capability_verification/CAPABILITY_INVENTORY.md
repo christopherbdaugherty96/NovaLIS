@@ -5,7 +5,8 @@ verification docs. Every "Live Verified" row is backed by observed evidence, not
 
 Last verified: **2026-07-11** against fresh `main` (see QA Rule #1 below). Latest status update
 **2026-07-23** (grounded routing shipped; capability set unchanged — no new capability, connector,
-or authority). A fresh-main post-#312 verification morning is the outstanding live re-check.
+or authority). PR #312 is verified on fresh main (see the 2026-07-23 update below); a future
+morning provides additional real-use/product-acceptance input, not a re-verification of #312.
 
 ---
 
@@ -23,9 +24,12 @@ Grounded brief/category routing — the synthesis rank-1 defect — shipped via 
 No capability was added, expanded, or unlocked. The registry, capability count, and the four
 certification locks (Cap 16/22/64/65) are unchanged.
 
-Live-verification status: PR #312 recorded branch-level live verification; the rows below remain
-"Live Verified 2026-07-11" until a fresh-main post-#312 verification morning re-confirms them
-under QA Rule #1. Email/Reminders/Traffic remain NOT IMPLEMENTED. Nothing here authorizes
+Live-verification status: PR #312's grounded brief/category routing is verified on fresh `main`
+(docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md: restarted from clean main; the
+full category -> second-story -> "what matters most" follow-up workflow, [Fallback] marking, and
+a healthy interface were confirmed). The rows below keep their "Live Verified 2026-07-11" date; a
+future morning is additional real-use/product-acceptance input, not the missing verification of
+#312. Email/Reminders/Traffic remain NOT IMPLEMENTED. Nothing here authorizes
 Google Tasks, Gmail, Traffic, new connectors, external writes, or autonomous execution.
 ```
 
