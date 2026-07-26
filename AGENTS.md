@@ -45,7 +45,7 @@ Engineering remains frozen except for explicitly approved proof/truth-sync work
 and critical bugs.
 The seven-morning gate is CLOSED. Its rank-1 defect — grounded brief/category
 routing — was repaired, merged as PR #312 (2026-07-23), and verified on fresh
-`main` (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+`main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
 No additional seven-morning or open-ended observation gate is required.
 Next product input is ONE targeted post-#312 morning for additional real-use /
 product-acceptance input (NOT a re-verification of #312), then the owner selects

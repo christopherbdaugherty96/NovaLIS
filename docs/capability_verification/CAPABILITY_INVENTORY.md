@@ -25,7 +25,7 @@ No capability was added, expanded, or unlocked. The registry, capability count, 
 certification locks (Cap 16/22/64/65) are unchanged.
 
 Live-verification status: PR #312's grounded brief/category routing is verified on fresh `main`
-(docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md: restarted from clean main; the
+(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md: restarted from clean main; the
 full category -> second-story -> "what matters most" follow-up workflow, [Fallback] marking, and
 a healthy interface were confirmed). The rows below keep their "Live Verified 2026-07-11" date; a
 future morning is additional real-use/product-acceptance input, not the missing verification of

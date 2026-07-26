@@ -48,14 +48,14 @@ Merged since the last status block:
          active-surface map; one confidence value feeds body and Trust strip; deterministic
          source-bounded fallback preserved. Validation: 205 focused tests, Ruff PASS,
          prove_runtime_truth PASS, live branch verification in the PR body, plus fresh-main
-         verification in docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
+         verification in docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
 
 The grounded brief/category routing lane is COMPLETE. It shipped exactly the scope previously
 described as "Slice 1"; that lane is now closed, not pending.
 
 Next product input:
   ONE targeted post-#312 morning for additional real-use / product-acceptance input. PR #312 is
-  already verified on fresh `main` (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
+  already verified on fresh `main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
   so this morning is continued real use, not that verification. After it the owner selects the
   next evidence-ranked PRODUCT-USABILITY lane. Candidates (none authorized here):
   connection-truth/source-label repair, runtime-fingerprint generator reconciliation, then
@@ -1028,7 +1028,7 @@ Current sequence:
 9. Current active state is Phase 3 observation, seven-morning threshold
    COMPLETE (2026-07-22 synthesis); grounded brief/category routing shipped
    via PR #312 (2026-07-23) and verified on fresh main
-   (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No
+   (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No
    additional seven-morning or open-ended observation gate is required. Next
    product input is ONE targeted post-#312 real-use/product-acceptance morning
    (not a re-verification of #312), then owner selection of the next
