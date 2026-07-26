@@ -32,9 +32,13 @@ SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
   Next PRODUCT input is ONE targeted post-#312 morning for additional real-use/product-acceptance
   input (PR #312 is already verified on fresh main per
   docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
-  then owner selection of the next evidence-ranked product-usability lane. Recorded candidate
-  order (none authorized here): connection-truth/source-label repair, runtime-fingerprint
-  generator reconciliation, then Google Tasks -> Gmail -> Traffic by need.
+  then owner selection of the next evidence-ranked product-usability lane. Two distinct lists
+  feed that choice (none authorized here):
+    Synthesis-ranked secondary repairs (each a separate decision): connection-truth/source-label
+      repair; runtime-generator (fingerprint) reconciliation; corruption-safe loading stays
+      PARKED unless an actual corruption/loading failure is observed.
+    Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+  The post-#312 morning determines whether any product gap is selected.
   HARDENING lane, in parallel (do not lose): authorization integrity is the FIRST
   post-observation hardening lane per
   docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md. Its sequencing steps 1-2 are
