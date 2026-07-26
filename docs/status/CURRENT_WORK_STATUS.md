@@ -1,7 +1,7 @@
 # Nova Current Work Status
 
 Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; PR #311-#312 merged; grounded
-brief/category routing lane shipped and branch-verified). Read the latest 2026-07-23 block in
+brief/category routing lane shipped and fresh-main verified). Read the latest 2026-07-23 block in
 docs/status/DAILY_COMMAND_CENTER.md first; older July blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
@@ -47,17 +47,26 @@ Merged since the last status block:
          Cap 50 clusters / active surface; numeric story commands resolve against a stable
          active-surface map; one confidence value feeds body and Trust strip; deterministic
          source-bounded fallback preserved. Validation: 205 focused tests, Ruff PASS,
-         prove_runtime_truth PASS, live branch verification in the PR body.
+         prove_runtime_truth PASS, live branch verification in the PR body, plus fresh-main
+         verification in docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
 
 The grounded brief/category routing lane is COMPLETE. It shipped exactly the scope previously
 described as "Slice 1"; that lane is now closed, not pending.
 
 Next product input:
-  ONE targeted fresh-main post-#312 verification morning (verify the shipped grounded-routing
-  path; do not restart evidence collection). After that verification the owner selects the next
-  evidence-backed defect or missing daily capability. Candidates recorded in the synthesis
-  (none authorized here): connection-truth/source-label repair, runtime-fingerprint generator
-  reconciliation, then Google Tasks -> Gmail -> Traffic by observed need.
+  ONE targeted post-#312 morning for additional real-use / product-acceptance input. PR #312 is
+  already verified on fresh `main` (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
+  so this morning is continued real use, not that verification. After it the owner selects the
+  next evidence-ranked PRODUCT-USABILITY lane. Candidates (none authorized here):
+  connection-truth/source-label repair, runtime-fingerprint generator reconciliation, then
+  Google Tasks -> Gmail -> Traffic by observed need.
+
+First post-observation hardening lane (parallel, do not lose):
+  Authorization integrity (lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md)
+  is the FIRST hardening lane after observation. Sequencing steps 1-2 are now satisfied (seven
+  mornings COMPLETE; PR #312 closed the evidence-ranked product bottleneck), so it is activatable
+  in parallel priority with the top product lane, superseded only by a higher-severity
+  correctness/governance defect. LOCK ONLY; this truth-sync does not start it.
 
 Still gated:
   Slice 2 - echo-only -> constrained grounded generation. Requires hallucination-negative tests,
@@ -1018,10 +1027,14 @@ Current sequence:
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
 9. Current active state is Phase 3 observation, seven-morning threshold
    COMPLETE (2026-07-22 synthesis); grounded brief/category routing shipped
-   via PR #312 (2026-07-23). No additional seven-morning or open-ended
-   observation gate is required. Next product input is ONE targeted
-   fresh-main post-#312 verification morning, then owner lane selection —
-   not another implementation lane.
+   via PR #312 (2026-07-23) and verified on fresh main
+   (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No
+   additional seven-morning or open-ended observation gate is required. Next
+   product input is ONE targeted post-#312 real-use/product-acceptance morning
+   (not a re-verification of #312), then owner selection of the next
+   evidence-ranked product lane. Authorization integrity
+   (docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md) is the
+   first post-observation hardening lane, activatable in parallel priority.
 10. Runtime recovery and health truth remains accepted/deferred pending
     morning evidence (lock:
     docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md).

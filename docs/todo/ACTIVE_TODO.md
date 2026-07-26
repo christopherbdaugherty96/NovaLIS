@@ -30,10 +30,12 @@ PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEF
   grounded brief/category routing — shipped via PR #312 (merged 2026-07-23) after PR #311
   timeout containment. That lane is COMPLETE, not pending.
 
-  Active work = ONE targeted fresh-main post-#312 verification morning (verify the shipped
-  grounded-routing path; do not restart open-ended collection). After that verification the
-  owner selects the next evidence-backed defect or missing daily capability. Success metric
-  unchanged: eliminate ONE uncertainty before reaching for another app.
+  Active work = ONE targeted post-#312 real-use / product-acceptance morning. PR #312 is
+  already verified on fresh main (docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
+  so this morning is continued real use, not that verification. After it the owner selects the
+  next evidence-ranked product-usability lane; authorization integrity (below) is the parallel
+  first post-observation hardening lane. Success metric unchanged: eliminate ONE uncertainty
+  before reaching for another app.
 
   Gap-fill order (only when evidence pulls it): Google Tasks -> Gmail -> Traffic. Awareness
   Item engine only after those. This TODO authorizes none of them.
@@ -212,18 +214,25 @@ Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
 Current active state: Phase 3 observation — seven-morning threshold COMPLETE (2026-07-22).
-Grounded brief/category routing shipped via PR #312 (2026-07-23). No additional
-seven-morning or open-ended observation gate is required. Next product input is ONE
-targeted fresh-main post-#312 verification morning, then owner lane selection — not
-another implementation lane started from this file.
+Grounded brief/category routing shipped via PR #312 (2026-07-23), verified on fresh main
+(docs/observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No additional seven-morning
+or open-ended observation gate is required. Next product input is ONE targeted post-#312
+real-use/product-acceptance morning (not a re-verification of #312), then owner selection of
+the next evidence-ranked product-usability lane. Authorization integrity is the parallel first
+post-observation hardening lane (see Deferred lanes below). This file starts no lane.
 
-Deferred implementation lanes (accepted, reactivation requires morning evidence):
-  - Authorization integrity (correctness/security lane — first hardening lane after
-    observation; lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md):
+Deferred implementation lanes (accepted; runtime-recovery and Second Brain reactivate on
+morning evidence, authorization integrity is activatable now — see each entry):
+  - Authorization integrity (correctness/security lane — FIRST post-observation hardening
+    lane; lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md):
     Governor-owned single-use action-bound ApprovalGrant, no auth booleans in
     capability params, timeout outcome_unknown state machine, effect/receipt
-    reconciliation, adversarial multi-session end-to-end tests. Runs on
-    correctness priority; does not preempt observation. LOCK ONLY, not started.
+    reconciliation, adversarial multi-session end-to-end tests. Runs on correctness
+    priority and does NOT require morning evidence to justify it. With observation
+    complete and PR #312 landed (sequencing steps 1-2 met) it is ACTIVATABLE in parallel
+    priority with the top product lane, superseded only by a higher-severity governance
+    defect. Still LOCK ONLY / not started — activation is a separate owner decision, not
+    this file.
   - Runtime recovery and health truth
     (lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md):
     canonical health truth, timeout/degraded/unavailable status modeling,

@@ -35,12 +35,23 @@ behavior proves is missing.
 **Seven-morning threshold COMPLETE (2026-07-22).** Mornings 1-7 are logged and synthesized in
 `../observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md`, which declared the evidence threshold
 complete and named grounded brief/category routing the rank-1 defect. That lane shipped via
-**PR #312** (merged 2026-07-23), after **PR #311** timeout containment. It is COMPLETE, not
-pending. No additional seven-morning or open-ended observation gate is required. The next input
-is ONE targeted fresh-main post-#312 verification morning; after that verification the owner
-selects the next evidence-backed defect or missing daily capability. The synthesis records the
-candidate order (none authorized here): connection-truth/source-label repair, runtime-fingerprint
-generator reconciliation, then Google Tasks -> Gmail -> Traffic by observed need.
+**PR #312** (merged 2026-07-23), after **PR #311** timeout containment, and is verified on fresh
+`main` (`../observation/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md`). It is COMPLETE, not
+pending. No additional seven-morning or open-ended observation gate is required.
+
+The next input is ONE targeted post-#312 morning for additional real-use / product-acceptance
+input (not a re-verification of #312); after it the owner selects the next evidence-ranked
+**product-usability** lane. Candidate order recorded in the synthesis (none authorized here):
+connection-truth/source-label repair, runtime-fingerprint generator reconciliation, then
+Google Tasks -> Gmail -> Traffic by observed need.
+
+Per the authorization-integrity lock
+(`../status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md`), **authorization integrity is
+the first post-observation hardening lane**: a correctness/security lane that runs in parallel
+priority with the top-ranked product lane, does not require a morning to justify it, and is
+superseded only by a higher-severity correctness/governance defect. Its sequencing steps 1-2
+(seven mornings; evidence-ranked product bottleneck) are now satisfied, so it is activatable.
+This file records ordering only and authorizes nothing.
 
 **Earlier 2026-07-11 observation state:** Step 0 documentation/protocol landed in PR #294
 (morning-log template + single launch procedure + config truth) and Morning 1 is in progress.
