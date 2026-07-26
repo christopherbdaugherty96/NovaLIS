@@ -3,9 +3,31 @@
 **Canonical truth source.** Future verification UPDATES this file — do not create scattered
 verification docs. Every "Live Verified" row is backed by observed evidence, not code reading.
 
-Last verified: **2026-07-11** against fresh `main` (see QA Rule #1 below). 2026-07-11 update:
-the brief's false "not configured" labels for news/weather were fixed (PR #295 — see the News
-and Weather footnotes and the General-chat grounding note below).
+Last verified: **2026-07-11** against fresh `main` (see QA Rule #1 below). Latest status update
+**2026-07-23** (grounded routing shipped; capability set unchanged — no new capability, connector,
+or authority). A fresh-main post-#312 verification morning is the outstanding live re-check.
+
+---
+
+## 2026-07-23 Current Update
+
+```text
+SEVEN-MORNING THRESHOLD COMPLETE (docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md).
+Grounded brief/category routing — the synthesis rank-1 defect — shipped via PR #312 (merged
+2026-07-23) after PR #311 timeout containment:
+  category prompts reach governed Cap 49;
+  brief/story follow-ups bind to the rendered Cap 50 clusters / active surface;
+  numeric story commands resolve against a stable active-surface map;
+  one confidence value feeds response body and the Trust strip;
+  deterministic, source-bounded fallback preserved.
+No capability was added, expanded, or unlocked. The registry, capability count, and the four
+certification locks (Cap 16/22/64/65) are unchanged.
+
+Live-verification status: PR #312 recorded branch-level live verification; the rows below remain
+"Live Verified 2026-07-11" until a fresh-main post-#312 verification morning re-confirms them
+under QA Rule #1. Email/Reminders/Traffic remain NOT IMPLEMENTED. Nothing here authorizes
+Google Tasks, Gmail, Traffic, new connectors, external writes, or autonomous execution.
+```
 
 ---
 

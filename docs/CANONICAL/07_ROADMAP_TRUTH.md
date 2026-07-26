@@ -24,13 +24,23 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-07-11)
+## The current gate (as of 2026-07-23)
 
 Phase 3 — "Can Nova become a habit?" — is the current product phase. Per
 `CURRENT_WORK_STATUS.md` and the product definition, **the input that moves the project now is
 observed daily use, not more building.** Success metric: Nova eliminates one uncertainty before
 the user reaches for another app. The **evidence rule** gates new work: build only what observed
 behavior proves is missing.
+
+**Seven-morning threshold COMPLETE (2026-07-22).** Mornings 1-7 are logged and synthesized in
+`../observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md`, which declared the evidence threshold
+complete and named grounded brief/category routing the rank-1 defect. That lane shipped via
+**PR #312** (merged 2026-07-23), after **PR #311** timeout containment. It is COMPLETE, not
+pending. No additional seven-morning or open-ended observation gate is required. The next input
+is ONE targeted fresh-main post-#312 verification morning; after that verification the owner
+selects the next evidence-backed defect or missing daily capability. The synthesis records the
+candidate order (none authorized here): connection-truth/source-label repair, runtime-fingerprint
+generator reconciliation, then Google Tasks -> Gmail -> Traffic by observed need.
 
 **Earlier 2026-07-11 observation state:** Step 0 documentation/protocol landed in PR #294
 (morning-log template + single launch procedure + config truth) and Morning 1 is in progress.
