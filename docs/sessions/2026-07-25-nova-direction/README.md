@@ -189,6 +189,15 @@ Awareness
 
 ## 5. Highest-Leverage Improvement Order
 
+> **2026-07-25 session proposal — NOT current execution ordering (post-#314).** The priorities
+> below (including "Priority 1 — Reliability and recovery" and the Priority 4 personal-capability
+> sequence) are this session's recommendations, not the active plan. Current canonical execution
+> order lives in `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` "Ordering Summary": NOW = one
+> post-#312 real-use morning + a fresh full-suite run for the unresolved B1 stall; then the owner
+> selects the next product-usability lane; authorization integrity is the first activatable
+> hardening lane (parallel priority); broad reliability/recovery is the LATER B3-B11 band. Read
+> this section as session input, not the active sequence.
+
 ### Priority 1 — Reliability and recovery
 
 Nova should remain usable when:
@@ -560,7 +569,7 @@ EMAIL_SEND_CONFIRMED
 EMAIL_ARCHIVE_CONFIRMED
 ```
 
-The first implementation should include only read and preparation capabilities.
+The first implementation should include read-only capabilities only. Preparation capabilities begin in Phase 6.
 
 ### Privacy rules
 
