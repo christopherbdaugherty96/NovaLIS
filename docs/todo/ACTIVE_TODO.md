@@ -282,13 +282,19 @@ background task loops
 ## Final Operational Direction
 
 ```text
-Goal Card persistence is complete end to end (design doc +
-PR #231 backend + PR #232 frontend wiring). UI simplification
-is complete (PR #233). Dashboard clarity improved without
-authority expansion. Goal Cards remain display-only. No
-execution, no scheduler, no GovernorMediator changes. Second
-Brain Slice 1 priority lock is accepted (PR #234) but deferred
-behind the active runtime recovery and health truth lock. Next
-implementation PR is limited to recovery clarity and canonical
-health truth without new execution authority.
+Goal Card persistence and UI simplification are complete. Goal Cards
+remain display-only. Second Brain Slice 1 and runtime recovery remain
+accepted but deferred.
+
+The seven-morning observation threshold is complete, and PR #312
+closed the evidence-ranked grounded-routing bottleneck.
+
+Next product input is one post-#312 real-use/product-acceptance morning,
+followed by owner selection of the next evidence-ranked product lane.
+
+Authorization integrity is the first activatable post-observation
+hardening lane, in parallel priority with the selected product lane.
+It remains LOCK ONLY and requires a separate owner activation decision.
+
+This TODO authorizes no implementation lane.
 ```
