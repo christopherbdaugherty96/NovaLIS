@@ -181,7 +181,10 @@ Reliability:
 
 - Expired OAuth produces a clear reconnect state.
 - Partial results remain usable and visibly degraded.
-- Repeated reads do not duplicate stored items or receipts.
+- Repeated reads do not duplicate persisted message or thread records.
+- Every search or thread-read invocation emits its own receipt; cache reuse or
+  stored-item deduplication must not suppress `GMAIL_SEARCH_PERFORMED` or
+  `GMAIL_THREAD_READ` (receipts defined in `docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md`).
 - Timeouts do not poison the next request.
 
 Authority:
