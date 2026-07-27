@@ -59,9 +59,13 @@ Next product input:
   so this morning is continued real use, not that verification. After it the owner selects the
   next evidence-ranked PRODUCT-USABILITY lane. Two distinct lists feed that choice (none
   authorized here):
-    Synthesis-ranked secondary repairs (each a separate decision): connection-truth/source-label
-      repair; runtime-generator (fingerprint) reconciliation; corruption-safe loading stays
-      PARKED unless an actual corruption/loading failure is observed.
+    Synthesis-ranked secondary repairs (each a separate decision):
+      - connection-truth/source-label repair;
+      - runtime-generator (fingerprint) reconciliation;
+      - business-context freshness/tense repair: stale past-dated memory-derived status
+        (e.g. "Watch: July 9...") must not present as current; separately authorize; no
+        business action or external write;
+      - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
     Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
   The post-#312 morning determines whether any product gap is selected.
 
