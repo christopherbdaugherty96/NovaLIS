@@ -216,6 +216,16 @@ Authority:
 
 ## Broader Improvement Order Preserved From Session
 
+> Session proposal, NOT current execution ordering. This is the 2026-07-25 session's long-horizon
+> improvement wishlist. Current canonical execution order (post-#314) lives in
+> `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` "Ordering Summary" and differs: **NOW** = one
+> post-#312 real-use morning + a fresh full-suite run for the unresolved B1 stall; **HARDENING** =
+> authorization integrity as the first activatable lane (parallel priority, separate owner
+> activation); broad reliability/recovery work (backup/restore, async probes, degraded/latency
+> contracts, monolith ratchet, schema versions, break-glass, receipt privacy, idempotency, local
+> auth) is the **LATER** B3-B11 band; corruption-safe loading stays **PARKED** unless evidence
+> activates it. Read the list below as session intent, not the active sequence.
+
 ```text
 1. Reliability and recovery
 2. Startup and interaction latency
