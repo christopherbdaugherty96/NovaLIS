@@ -255,17 +255,23 @@ failing test.
 ## Decisions Needed
 
 ```text
-1. Machine side: NONE. Build lanes complete; next input is observed use, not a decision.
-2. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
+1. Owner activation: authorization integrity is the first activatable post-observation
+   hardening lane (LOCK ONLY). Starting it needs a separate owner decision; this truth-sync
+   does not start it.
+2. Owner: pick the next evidence-ranked product lane after the post-#312 morning.
+3. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
    repo vs repo split vs GitHub Pro) - the business playbook is currently public.
 ```
 
 ## This Week
 
 ```text
-1. Chris opens Nova each morning FIRST and logs the observation metrics (Phase 3).
-2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
-3. Nothing to build/verify/define unless observed use surfaces a real gap.
+1. One post-#312 real-use/product-acceptance morning (verify shipped grounded routing in
+   daily use; not a re-verification of #312).
+2. Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
+3. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
+4. No new product/capability lane until observed use surfaces a real gap; authorization
+   integrity may be activated in parallel by a separate owner decision.
 ```
 
 ## Morning coverage (what Nova reliably does today, confirmed through Morning 7, 2026-07-22)
@@ -280,8 +286,11 @@ Google Tasks -> Gmail -> Traffic. Full detail: CAPABILITY_INVENTORY.md.
 ## Branch State
 
 ```text
-main is current; no active feature branch. All build lanes merged (#262-#270).
-Next work is observation, not a branch.
+main includes PR #311 (timeout containment) and PR #312 (grounded routing); tip at
+c3856473 (grounded-routing verification closeout).
+Active branch: docs/sync-post-pr312-current-truth (PR #314, this documentation truth-sync;
+open, not merged).
+PR #313 (2026-07-25 direction-session docs) open; handled after #314 merges.
 Remote review candidates: second-brain-slice1-activation (keep - roadmap H13);
 others likely superseded (owner review pending).
 ```

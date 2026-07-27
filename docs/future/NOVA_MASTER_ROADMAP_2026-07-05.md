@@ -562,22 +562,44 @@ No horizon item skips stages. Usefulness is not implementation.
 ## Ordering Summary (one screen)
 
 ```text
-NOW    owner: Instagram 1-4, verification, filming, token rotation,
-       small batch, July 9 check, Auralis-Digital security migration,
-       GitHub bio
-A1     PR #262 merged; land this roadmap (docs-only PR) + refresh
-       stale front-door docs
-A2+B1+B2   PR 4 session: nav collapse + pytest-timeout + ledger start
-C1     Auralis Today v1 (locked spec, committed to repo)
-A3-A4  labels, Home, ratchets
-B3-B11 backup+restore drill, async probes, degraded/latency
-       contracts, monolith ratchet, schema versions, break-glass,
-       receipt privacy, idempotency, local auth
-C2-C4  friction aging -> pager (post-rotation + scheduler repair)
-       -> Friday loop
-D1-D15 coherence layer, ordered
-H1-H31 horizon, graduated deliberately via the promotion ladder -
-       never as scope creep
+DONE (this cycle)
+  A1  front-door/roadmap truth-sync (PR #263, refreshed by PR #314 post-#312).
+  A2+B2  PR 4 navigation collapse + ledger start (PR #264). B1 pytest-timeout
+         guard landed; the full-suite stall itself remains UNRESOLVED (see below).
+  C1  Auralis Today v1 shipped, frozen baseline.
+  Seven-morning observation (Mornings 1-7 + 2026-07-22 synthesis); PR #311 timeout
+    containment; PR #312 grounded brief/category routing closed the evidence-ranked
+    product bottleneck and is verified on fresh main.
+
+OWNER (parallel, outside Nova implementation)
+  Instagram 1-4, verification, filming, token rotation, small batch,
+  Auralis-Digital security migration, GitHub bio.
+
+NOW
+  One post-#312 real-use/product-acceptance morning.
+  Fresh full-suite run for unresolved B1 (must pass and clear, or name a failure).
+
+PRODUCT
+  Owner selects the next evidence-ranked product lane.
+
+HARDENING
+  Authorization integrity is the first activatable post-observation hardening lane;
+  separate owner activation required; runs in parallel with the selected product lane.
+
+PARKED / SEPARATE DECISIONS
+  Connection-truth repair.
+  Runtime-generator reconciliation.
+  Business-context freshness/tense.
+  Corruption-safe loading remains parked unless an actual failure is observed.
+  Tasks -> Gmail -> Traffic is a separate standing gap-fill list (NOT synthesis-ranked).
+
+LATER (unchanged horizon ordering)
+  A3-A4  labels, Home, ratchets.
+  B3-B11 backup+restore drill, async probes, degraded/latency contracts, monolith
+         ratchet, schema versions, break-glass, receipt privacy, idempotency, local auth.
+  C2-C4  friction aging -> pager (post-rotation + scheduler repair) -> Friday loop.
+  D1-D15 coherence layer, ordered.
+  H1-H31 horizon, graduated deliberately via the promotion ladder - never as scope creep.
 ```
 
 ## Supersession Note
@@ -608,11 +630,13 @@ Alignment notes (2026-07-05 archive deep-dive):
 
 - This document's authority rules agree with docs/future/README.md
   (code > generated truth > active locks > future docs > archive).
-- docs/todo/ACTIVE_TODO.md still names the superseded 2026-06-17
-  runtime recovery lock as active; docs/status/DAILY_COMMAND_CENTER.md
-  is also stale. The A1 docs-only PR refreshes BOTH to point at
-  this document and the UX lane. Keep generated runtime doc
-  modifications separate unless intentionally included.
+- [HISTORICAL 2026-07-05; SUPERSEDED] At the time, docs/todo/ACTIVE_TODO.md still
+  named the superseded 2026-06-17 runtime recovery lock as active and
+  docs/status/DAILY_COMMAND_CENTER.md was stale; the planned A1 docs-only PR was to
+  refresh both. This is now addressed by the post-#312 truth-sync (PR #314), which
+  points both at current post-#312 truth (seven-morning threshold complete;
+  authorization integrity as first activatable hardening lane). Keep generated
+  runtime doc modifications separate unless intentionally included.
 - docs/todo/TECH_DEBT.md agent_scheduler repair is a named gate on C3.
 - The Auralis web-design/client-intake doc family is a second
   business (client services), parked as H12, not contradicted.
