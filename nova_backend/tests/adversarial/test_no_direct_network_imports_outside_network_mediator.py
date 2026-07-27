@@ -37,6 +37,10 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     # provider_status.py uses urllib.request only for a localhost Ollama health probe
     # (http://localhost:11434/api/tags). No external network calls — local-only check.
     SRC_ROOT / "usage" / "provider_status.py",
+    # news_synthesis_cache.py uses urllib.parse only to normalize URLs into stable cache
+    # keys (parse_qsl/urlencode/urlsplit/urlunsplit). It makes no outbound network calls —
+    # urllib.parse is a standard-library string parser, not a network client.
+    SRC_ROOT / "executors" / "news_synthesis_cache.py",
 }
 
 
