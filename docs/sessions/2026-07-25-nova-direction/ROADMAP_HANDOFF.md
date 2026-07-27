@@ -14,11 +14,24 @@ Ordering authority:
 
 - `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`
 
-Active work truth:
+Current-state truth (read these first for where the project actually is):
+
+- `docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md` — seven-morning gate COMPLETE.
+- `docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md` — PR #312 grounded brief/category
+  routing lane closed and fresh-main verified.
+
+Active-work continuity files (refreshed to post-#312 truth by PR #314 — do not read any
+pre-#314 revision as current):
 
 - `docs/todo/ACTIVE_TODO.md`
 - `docs/status/DAILY_COMMAND_CENTER.md`
 - `docs/status/CURRENT_WORK_STATUS.md`
+
+Note: this handoff was written 2026-07-25, before PR #314 landed. Where it describes observation
+or grounded routing as "active", defer to the synthesis, the closeout, and the post-#312
+continuity files above — the seven-morning threshold is complete and the grounded brief/category
+routing lane is closed. Next input is one post-#312 real-use morning, then owner lane selection;
+authorization integrity is the first activatable hardening lane.
 
 Existing email design sources:
 
@@ -28,7 +41,7 @@ Existing email design sources:
 
 Session record:
 
-- `2026-07-25_NOVA_DIRECTION_SESSION/README.md`
+- `docs/sessions/2026-07-25-nova-direction/README.md`
 
 ---
 
@@ -143,37 +156,61 @@ Do not combine these into one broad email capability.
 
 ---
 
-## First-Lane Acceptance Requirements
+## Phased Acceptance Requirements
 
-### Account safety
+Each gate is assigned to the phase where its corresponding surface first exists (phases per the
+session README, section 6 "Implementation sequence"). A gate is not required before its surface
+exists; do NOT pull a later phase's scope (multi-account, role separation, drafting) into
+Phase 1 to satisfy a check.
 
-- Every item retains `account_id`.
+### Phase 1 — One Gmail account, read-only
+
+Account / provenance:
+
+- Every item retains `account_id` (tagged even with a single account).
 - Account identity is visible in every email result.
-- Permissions granted to one account do not apply to another.
-- Personal, employment, and business roles remain separate.
-- Wrong-account draft selection is blocked.
 
-### Privacy
+Privacy:
 
 - OAuth tokens never enter repository files, prompts, memory, logs, or receipts.
 - Sensitive email defaults to local-only or ask-first provider routing.
-- Cross-account reasoning context is not silently promoted into long-term memory.
+- Email reasoning context is not silently promoted into long-term memory.
 - Every inferred relationship exposes source evidence and confidence.
 
-### Reliability
+Reliability:
 
-- One failing mailbox does not break the other accounts.
 - Expired OAuth produces a clear reconnect state.
 - Partial results remain usable and visibly degraded.
 - Repeated reads do not duplicate stored items or receipts.
 - Timeouts do not poison the next request.
 
-### Authority
+Authority:
 
-- Read access does not authorize drafting.
-- Drafting does not authorize sending.
+- Read access does not authorize drafting (no draft surface exists in this phase).
 - Memory does not authorize account access or external effects.
 - No background monitoring unless a separate approved routine exists.
+
+### Phase 2 — Multiple Gmail identities
+
+- Permissions granted to one account do not apply to another.
+- One failing mailbox does not break the other accounts.
+- Cross-account reasoning context is not silently promoted into long-term memory.
+
+### Phase 3 — Personal/work/business separation and wrong-account blocking
+
+- Personal, employment, and business roles remain separate.
+- Cross-identity actions are blocked; Nova never silently acts as the wrong identity.
+
+### Phase 6 — Prepared drafts with source-linked review
+
+- Wrong-account draft selection is blocked.
+- Drafting does not authorize sending.
+- Read access does not authorize drafting (re-verified now that a draft surface exists).
+
+### Phase 7 — Confirmed sending
+
+- Sending is gated on idempotency, recipient, identity, attachment, failure-recovery, and
+  receipt tests (see README section 6, Phase 7).
 
 ---
 
