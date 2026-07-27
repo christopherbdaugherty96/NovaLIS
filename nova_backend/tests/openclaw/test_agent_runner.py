@@ -1,5 +1,4 @@
 import pytest
-
 from src.openclaw.agent_runner import OpenClawAgentRunner, RunCancelledError
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 
@@ -127,6 +126,11 @@ async def test_agent_runner_builds_read_only_project_snapshot(monkeypatch, tmp_p
         return {"text": "should not be used"}
 
     monkeypatch.setattr(runner, "_summarize_with_metered_openai", _fake_openai)
+    # Force the deterministic fallback so the assertion below does not depend on a live
+    # local model. When Ollama is running, _summarize_with_local_model returns free-form
+    # narrative that never contains the literal snapshot markers; faking it to return ""
+    # makes the test hermetic and keeps the route at deterministic_fallback.
+    monkeypatch.setattr(runner, "_summarize_with_local_model", lambda *_args, **_kwargs: "")
 
     result = await runner.run_template("project_snapshot", triggered_by="test")
 
