@@ -27,10 +27,12 @@ Its own authority rules:
 ## The current gate (as of 2026-07-23)
 
 Phase 3 — "Can Nova become a habit?" — is the current product phase. Per
-`CURRENT_WORK_STATUS.md` and the product definition, **the input that moves the project now is
-observed daily use, not more building.** Success metric: Nova eliminates one uncertainty before
-the user reaches for another app. The **evidence rule** gates new work: build only what observed
-behavior proves is missing.
+`CURRENT_WORK_STATUS.md` and the product definition, **observed daily use gates product-usability
+and capability-expansion work** — build only what observed behavior proves is missing. Success
+metric: Nova eliminates one uncertainty before the user reaches for another app. This evidence
+rule scopes product/capability lanes; it does NOT gate the hardening track: authorization
+integrity is the separately reviewed first hardening lane, which does not require another morning
+to justify it (this truth-sync does not start it).
 
 **Seven-morning threshold COMPLETE (2026-07-22).** Mornings 1-7 are logged and synthesized in
 `../observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md`, which declared the evidence threshold

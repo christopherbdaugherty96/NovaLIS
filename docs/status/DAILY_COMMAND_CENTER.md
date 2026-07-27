@@ -371,7 +371,7 @@ browser/computer-use expansion
 scheduler/background-loop expansion outside the existing explicit narrow governed carve-out
 external writes
 memory promotion
-Second Brain implementation (deferred behind active lane)
+Second Brain implementation (deferred; no active implementation lane — requires separate owner activation / reviewed priority)
 Plan My Week
 model presets
 more agents

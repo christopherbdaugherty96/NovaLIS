@@ -27,9 +27,12 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ```text
 PHASE 3 - Can Nova become a habit? SEVEN-MORNING THRESHOLD COMPLETE (updated 2026-07-23)
 
-The input that moves the project is OBSERVED DAILY USE. Engineering freeze holds; only
-truth-critical, observation-backed, explicitly approved repairs are taken. Broad capability
-expansion, provider/model switching, and autonomous work remain parked.
+For product-usability and capability-expansion work, the input that moves the project is
+OBSERVED DAILY USE. Engineering freeze holds; only truth-critical, observation-backed, explicitly
+approved repairs are taken. Broad capability expansion, provider/model switching, and autonomous
+work remain parked. Separately, authorization integrity is the first activatable post-observation
+hardening lane and does not require another morning to justify it (this truth-sync does not start
+it).
 
 Seven-morning observation is COMPLETE:
   docs/observation/MORNING_01..07 are logged and synthesized in
@@ -143,7 +146,7 @@ Stable outcome:
   Third-pass route-protection audit item closed.
   No active blocker remains from this sequence.
 
-Current active lane:
+Active lane at that time (2026-06 stack, superseded):
   Second Brain Slice 1 foundation activation.
 
 Historical objective at that time:
@@ -931,11 +934,15 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Open Carried-Forward Follow-Ups
 
-Active follow-ups:
+Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
-(none)
+- Run one post-#312 real-use/product-acceptance morning.
+- Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
+- Owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
 ```
+
+No active *implementation* follow-up issue is open; the three above are operational.
 
 Open planning / future trackers (not active workstreams):
 
@@ -952,7 +959,9 @@ Open planning / future trackers (not active workstreams):
 Open hardening review:
 
 ```text
-(none)
+Authorization integrity is the first activatable post-observation hardening lane
+(lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md). LOCK ONLY;
+activation is a separate owner decision. This is a queued hardening lane, not "none".
 ```
 
 Recently closed:
@@ -1050,7 +1059,9 @@ Current sequence:
     timeout/degraded/unavailable status modeling, stuck-response recovery,
     Trust explanation of product failures, and tests proving stale/timeout
     health cannot be shown as Normal.
-11. Second Brain Slice 1 remains accepted but deferred behind observation.
+11. Second Brain Slice 1 remains accepted but deferred; the seven-morning observation
+    threshold is complete, so it is no longer gated on observation — activation is a
+    separate reviewed-priority decision, behind the authorization-integrity hardening lane.
 12. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
     execution integration, OpenClaw integration, or capability expansion.
     No scheduler/background-loop expansion outside the existing explicit
