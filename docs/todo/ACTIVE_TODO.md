@@ -127,9 +127,11 @@ Cap 65 P5 live proof — complete and locked (2026-05-22).
 
 ## Current Open Issues
 
-There are currently no active implementation follow-up issues.
+There are no active *implementation* follow-up issues. Operational follow-ups are current,
+though: one post-#312 real-use/product-acceptance morning, a fresh full-suite run to resolve B1,
+and the owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
 
-Open issues are planning/future/backlog only:
+Open GitHub *issues* are planning/future/backlog only:
 
 ```text
 #67  — planning/future: agent workspaces + Google email/calendar coordination
@@ -262,7 +264,7 @@ more providers
 bigger dashboard redesign
 advanced navigation cleanup
 broad empty-state simplification
-Second Brain implementation while the recovery lock is active
+Second Brain implementation without a separate reviewed-priority activation (runtime recovery is deferred, not active)
 Goal Card execution or click-to-run
 Shopify writes
 Printify automation

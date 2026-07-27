@@ -180,7 +180,7 @@ ENDGAME      a personal operating system that feels like Jarvis and
    order #1001 as family in Shopify admin, proof email to pillow
    customer, phone storefront walkthrough ("can I see the art?"),
    Depth hoodie L-only decision.
-6. Scheduled: July 9 Google Merchant review check.
+6. Scheduled (2026-07-05 owner item; the July 9 date is now past): Google Merchant review check.
 7. SECURITY: Auralis-Digital repo is PUBLIC with the business
    playbook readable (profit table, margins, operating rhythm,
    internal/) because free-plan GitHub Pages serves the site from
@@ -194,17 +194,28 @@ ENDGAME      a personal operating system that feels like Jarvis and
    link once hosting is settled.
 ```
 
-## Lane A - UX Simplification (active lane)
+## Lane A-D detailed bodies (2026-07-05) — RETAINED REFERENCE, not current status
+
+> **Supersession boundary.** The detailed Lane A/B/C/D bodies below were written on
+> 2026-07-05, before the Phase-3 observation cycle. They are retained as backlog / reference
+> material for per-lane scope and sequencing. They DO NOT describe current status and DO NOT
+> override the top "Observation-driven candidates" block or the "Ordering Summary (one screen)"
+> — both of which carry current post-#312 truth (seven-morning threshold complete; #311/#312
+> merged; next input = one post-#312 morning; authorization integrity = first activatable
+> hardening lane). Where a body below says a lane is "active", "next", "not yet built", or
+> "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (this
+> truth-sync), A2+B2 (PR #264), C1 (Auralis Today, shipped/frozen).
+
+## Lane A - UX Simplification (2026-07-05 lane body — see supersession boundary above)
 
 Scope authority: `docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md`.
 
 ```text
 A1. UX PR 3 merged as PR #262 (quick-action reduction, branch
     ux/quick-action-reduction, commits 5f8a924 and a1b54a8).
-    Land this roadmap as a docs-only PR next, along
-    with the refreshed README.md (updated 2026-07-05: butler north
-    star, current active task, roadmap as ordering authority) and
-    the two stale front-door docs (see Supersession Note).
+    [DONE] Landing this roadmap as a docs-only PR + refreshing the stale
+    front-door docs was the A1 task; complete via PR #263 and the
+    post-#312 front-door/status refresh in PR #314.
 A2. PR 4 - navigation collapse: move Agent, Rules, Activity, and
     status/debug surfaces behind Settings -> Advanced. Includes
     cross-page quick-action chip cleanup and frontend mirror sync.
@@ -269,7 +280,7 @@ ledger integrity (B2), break-glass (B8), restore drills (B3),
 idempotency keys (B10), shadow mode (H1).
 ```
 
-## Lane C - Auralis Awareness (after A2 lands)
+## Lane C - Auralis Awareness (2026-07-05 lane body — C1 has since shipped; see boundary above)
 
 Scope authority: converged spec in Claude memory (auralis-awareness-direction) — one data
 spine, three deliveries. Do not re-derive the plan. When Lane C opens, commit the spec into
