@@ -18,6 +18,25 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
+def _block_external_browser_launches(monkeypatch: pytest.MonkeyPatch):
+    """Prevent automated tests from opening the user's real browser.
+
+    The webpage-launch executor performs a real OS browser launch via
+    ``webbrowser.open`` (src/executors/webpage_launch_executor.py). Executor
+    unit tests fake it, but a higher-level simulation path was feeding a
+    synthetic search result (``https://abcnews.go.com/story-a``, from
+    tests/simulation/conftest.py) into the real executor without mocking the
+    launch, so running the full suite opened a browser window (and a 404) on the
+    desktop — a leaked external desktop effect confirmed in the ledger.
+
+    Block it suite-wide by default. Tests that specifically prove browser-launch
+    behavior override this with their own ``monkeypatch`` in the test body, which
+    applies after this autouse fixture.
+    """
+    monkeypatch.setattr("webbrowser.open", lambda *_args, **_kwargs: True)
+
+
+@pytest.fixture(autouse=True)
 def _reset_model_status_cache():
     from src.executors import os_diagnostics_executor as mod
 
