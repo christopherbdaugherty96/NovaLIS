@@ -40,11 +40,22 @@ authority ranking — for runtime-existence claims, generated runtime docs win):
 Current active product state:
 
 ```text
-Phase 3 observation period (since 2026-07-07).
-Engineering is frozen except for explicitly approved proof/truth-sync work
+Phase 3 observation: SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis).
+Engineering remains frozen except for explicitly approved proof/truth-sync work
 and critical bugs.
-Next product input is >=7 real morning logs (docs/observation/), not another
-implementation lane.
+The seven-morning gate is CLOSED. Its rank-1 defect — grounded brief/category
+routing — was repaired, merged as PR #312 (2026-07-23), and verified on fresh
+`main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+No additional seven-morning or open-ended observation gate is required.
+Next product input is ONE targeted post-#312 morning for additional real-use /
+product-acceptance input (NOT a re-verification of #312), then the owner selects
+the next evidence-ranked product-usability lane.
+Authorization integrity is the FIRST post-observation hardening lane (lock:
+docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md); its sequencing
+steps 1-2 are now satisfied, so it is activatable in parallel priority with the
+top product lane, superseded only by a higher-severity correctness/governance
+defect. This truth-sync authorizes no new capability and starts no lane (see the
+not-authorized block below).
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -70,7 +81,14 @@ Docs truth reconciliation — COMPLETE (2026-07-09). PRs #276-#283.
 Runtime proof harness — LANDED (2026-07-09, PR #284).
   Run python scripts/prove_runtime_truth.py before every merge.
 Observation scaffold — LANDED (2026-07-09, PR #285).
-Current activity: log real mornings to docs/observation/YYYY-MM-DD.md.
+Seven mornings logged and synthesized — COMPLETE (2026-07-22,
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md).
+Grounded brief/category routing (synthesis rank-1 defect) — COMPLETE
+  (PR #312, merged 2026-07-23; 205 focused tests, runtime proof PASS).
+Timeout containment (Morning 6-7 cross-turn blocking) — COMPLETE (PR #311).
+Current activity: run one post-#312 real-use/product-acceptance morning (#312 is
+  already fresh-main verified), then the owner selects the next evidence-ranked
+  product lane; authorization integrity is the parallel first hardening lane.
 Do not select implementation work from any document dated before 2026-07-07
   without checking docs/CANONICAL/07_ROADMAP_TRUTH.md first.
 ```

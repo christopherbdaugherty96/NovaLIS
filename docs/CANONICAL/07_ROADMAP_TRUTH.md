@@ -24,13 +24,45 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-07-11)
+## The current gate (as of 2026-07-23)
 
 Phase 3 — "Can Nova become a habit?" — is the current product phase. Per
-`CURRENT_WORK_STATUS.md` and the product definition, **the input that moves the project now is
-observed daily use, not more building.** Success metric: Nova eliminates one uncertainty before
-the user reaches for another app. The **evidence rule** gates new work: build only what observed
-behavior proves is missing.
+`CURRENT_WORK_STATUS.md` and the product definition, **observed daily use gates product-usability
+and capability-expansion work** — build only what observed behavior proves is missing. Success
+metric: Nova eliminates one uncertainty before the user reaches for another app. This evidence
+rule scopes product/capability lanes; it does NOT gate the hardening track: authorization
+integrity is the separately reviewed first hardening lane, which does not require another morning
+to justify it (this truth-sync does not start it).
+
+**Seven-morning threshold COMPLETE (2026-07-22).** Mornings 1-7 are logged and synthesized in
+`../observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md`, which declared the evidence threshold
+complete and named grounded brief/category routing the rank-1 defect. That lane shipped via
+**PR #312** (merged 2026-07-23), after **PR #311** timeout containment, and is verified on fresh
+`main` (`../status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md`). It is COMPLETE, not
+pending. No additional seven-morning or open-ended observation gate is required.
+
+The next input is ONE targeted post-#312 morning for additional real-use / product-acceptance
+input (not a re-verification of #312); after it the owner selects the next evidence-ranked
+**product-usability** lane. Two distinct lists feed that choice (none authorized here):
+
+- Synthesis-ranked secondary repairs (each a separate decision):
+  - connection-truth / source-label repair;
+  - runtime-generator (fingerprint) reconciliation;
+  - business-context freshness/tense repair: stale past-dated memory-derived status
+    (e.g. `Watch: July 9...`) must not present as current; separately authorize; no
+    business action or external write;
+  - corruption-safe loading remains PARKED unless an actual corruption/loading failure is observed.
+- Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+
+The post-#312 morning determines whether any product gap is selected.
+
+Per the authorization-integrity lock
+(`../status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md`), **authorization integrity is
+the first post-observation hardening lane**: a correctness/security lane that runs in parallel
+priority with the top-ranked product lane, does not require a morning to justify it, and is
+superseded only by a higher-severity correctness/governance defect. Its sequencing steps 1-2
+(seven mornings; evidence-ranked product bottleneck) are now satisfied, so it is activatable.
+This file records ordering only and authorizes nothing.
 
 **Earlier 2026-07-11 observation state:** Step 0 documentation/protocol landed in PR #294
 (morning-log template + single launch procedure + config truth) and Morning 1 is in progress.

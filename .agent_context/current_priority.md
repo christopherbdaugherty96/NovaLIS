@@ -1,15 +1,24 @@
 # Current Priority
 
-## Phase 3 Observation Period - 2026-07-15
+## Phase 3 Observation - Seven-Morning Threshold COMPLETE - 2026-07-23
 
 Current active product state:
 
 ```text
-Phase 3 observation period.
+Phase 3 observation: SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis).
 Engineering is frozen except for explicitly approved proof/truth-sync work
 and critical bugs, plus observation-backed trust repairs approved by the owner.
-Next product input remains real morning use. Do not select broad implementation
-lanes from roadmap/history without fresh observation evidence and owner approval.
+The seven-morning gate is CLOSED. No additional seven-morning or open-ended
+observation gate is required. PR #312 is verified on fresh `main`
+(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+Next product input is ONE targeted post-#312 morning for additional real-use /
+product-acceptance input (not a re-verification of #312), then the owner selects
+the next evidence-ranked product-usability lane. Authorization integrity is the
+FIRST post-observation hardening lane (lock:
+docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md), now activatable
+in parallel priority with the top product lane and superseded only by a
+higher-severity correctness/governance defect. Do not select broad implementation
+lanes from roadmap/history without owner approval; this file starts none.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -17,27 +26,29 @@ observation evidence reactivates it.
 Current session truth:
 
 ```text
-PR #302-#307 landed from Morning 1-5 evidence:
-  brief-phrasing intent recognition
-  status-frame truth fix
-  Gotcha-loop fix
-  news confidence degradation
-  local model/token usage visibility
-  async news synthesis cache/read-through + background fill
-  grounded-brief-conversation Slice 0 correctness
+Seven mornings (docs/observation/MORNING_01..07) are logged and synthesized:
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md
+The synthesis ruled the evidence threshold complete, named grounded brief/
+category routing as the rank-1 defect, and required no further open-ended
+morning cycle to justify that first lane.
 
-Morning 5 is logged at docs/observation/MORNING_05_2026-07-15.md.
-It validated async synthesis as useful in warm-cache daily use and fired the
-grounded brief conversation lane.
+The grounded brief/category routing lane is COMPLETE:
+  PR #311 - isolate turns after a response timeout (Morning 6-7 containment).
+  PR #312 - ground news routing to the active brief surface (merged 2026-07-23):
+    "show me <category> news" reaches governed Cap 49;
+    brief/story follow-ups bind to the rendered Cap 50 clusters / active surface;
+    numeric story commands resolve against a stable active-surface map;
+    one confidence value feeds body and Trust strip;
+    deterministic, source-bounded fallback preserved.
+    Validation: 205 focused tests, Ruff PASS, prove_runtime_truth PASS,
+    live branch verification in the PR body, plus fresh-main verification in
+    docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
+  This shipped exactly the scope previously described as "Slice 1"; that lane
+  is now closed, not pending.
 
-Active plan:
-  docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15.md
-
-Slice 0 is landed. Slice 1 may be built only with explicit owner approval:
-deterministic routing + rendered-brief fact unification +
-active-surface/stable-story identity mapping, no model, no contract change.
-Slice 2's constrained generation boundary is NOT authorized by this file; it
-requires hallucination-negative tests and separate sign-off.
+This truth-sync authorizes no new capability. Slice 2 (constrained grounded
+generation) remains NOT authorized; it requires hallucination-negative tests
+and separate owner sign-off.
 ```
 
 What agents should do:
