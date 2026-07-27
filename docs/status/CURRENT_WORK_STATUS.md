@@ -1,7 +1,7 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-15 (Morning 5 logged; PR #302-#307 merged; grounded brief conversation
-lane active with Slice 0 landed). Read the latest 2026-07-15 block in
+Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; PR #311-#312 merged; grounded
+brief/category routing lane shipped and fresh-main verified). Read the latest 2026-07-23 block in
 docs/status/DAILY_COMMAND_CENTER.md first; older July blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
@@ -25,41 +25,59 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-PHASE 3 - Can Nova become a habit? OBSERVATION UNDERWAY (updated 2026-07-15)
+PHASE 3 - Can Nova become a habit? SEVEN-MORNING THRESHOLD COMPLETE (updated 2026-07-23)
 
-The input that moves the project is OBSERVED DAILY USE. Engineering freeze holds; only
-truth-critical, observation-backed, explicitly approved repairs are taken. Broad capability
-expansion, provider/model switching, and autonomous work remain parked.
+For product-usability and capability-expansion work, the input that moves the project is
+OBSERVED DAILY USE. Engineering freeze holds; only truth-critical, observation-backed, explicitly
+approved repairs are taken. Broad capability expansion, provider/model switching, and autonomous
+work remain parked. Separately, authorization integrity is the first activatable post-observation
+hardening lane and does not require another morning to justify it (this truth-sync does not start
+it).
+
+Seven-morning observation is COMPLETE:
+  docs/observation/MORNING_01..07 are logged and synthesized in
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
+  threshold complete, named grounded brief/category routing the rank-1 defect, and required no
+  further open-ended morning cycle to justify that first lane.
 
 Merged since the last status block:
-  #302 - brief-phrasing intent recognition, status-frame truth fix, Gotcha-loop fix,
-         Morning 1-3 logs.
-  #303 - news confidence degradation for placeholder/all-fallback briefs.
-  #304 - local usage visibility for advisory turns (model + estimated visible tokens,
-         local-only/non-metered).
-  #305 - async news synthesis plan + cache/read-through Slice 1.
-  #306 - async news synthesis Slice 2. Live quality gate: gemma2:2b produced useful grounded
-         synthesis with background time; the model-gate remains parked.
-  #307 - grounded-brief-conversation Slice 0: compare repeated-word phrasing fixed and
-         news_synthesis_ready chat copy made concise while preserving the widget brief.
+  #302-#307 - Morning 1-5 interaction/content repairs (brief-phrasing recognition, status-frame
+         truth, Gotcha-loop, news confidence degradation, local usage visibility, async news
+         synthesis cache/read-through + Slice 2, grounded-brief Slice 0).
+  #311 - isolate turns after a response timeout (Morning 6-7 cross-turn containment).
+  #312 - ground news routing to the active brief surface (merged 2026-07-23): "show me
+         <category> news" reaches governed Cap 49; brief/story follow-ups bind to the rendered
+         Cap 50 clusters / active surface; numeric story commands resolve against a stable
+         active-surface map; one confidence value feeds body and Trust strip; deterministic
+         source-bounded fallback preserved. Validation: 205 focused tests, Ruff PASS,
+         prove_runtime_truth PASS, live branch verification in the PR body, plus fresh-main
+         verification in docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
 
-Morning 5:
-  docs/observation/MORNING_05_2026-07-15.md is logged as a warm-cache daily-use probe.
-  It validated the async synthesis bet for content usefulness (mostly source-grounded brief,
-  honest Medium-Low confidence) and confirmed the old interaction failures stayed dead
-  (no Gotcha loop, no false connection-status failure, no Stop-required stall).
+The grounded brief/category routing lane is COMPLETE. It shipped exactly the scope previously
+described as "Slice 1"; that lane is now closed, not pending.
 
-Current active product lane:
-  docs/planning/GROUNDED_BRIEF_CONVERSATION_PLAN_2026-07-15.md records the plan. The lane is
-  active because Morning 5 reconfirmed the gap: grounded when reached, fabricated or irrelevant
-  when missed, and stale facts when follow-ups read broad/raw state instead of the rendered
-  Cap 50 brief clusters.
+Next product input:
+  ONE targeted post-#312 morning for additional real-use / product-acceptance input. PR #312 is
+  already verified on fresh `main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
+  so this morning is continued real use, not that verification. After it the owner selects the
+  next evidence-ranked PRODUCT-USABILITY lane. Two distinct lists feed that choice (none
+  authorized here):
+    Synthesis-ranked secondary repairs (each a separate decision):
+      - connection-truth/source-label repair;
+      - runtime-generator (fingerprint) reconciliation;
+      - business-context freshness/tense repair: stale past-dated memory-derived status
+        (e.g. "Watch: July 9...") must not present as current; separately authorize; no
+        business action or external write;
+      - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
+    Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+  The post-#312 morning determines whether any product gap is selected.
 
-Next safe build if explicitly approved:
-  Slice 1 - deterministic routing, rendered-brief fact unification, and active-surface/stable-story
-  identity mapping over rendered Cap 50 brief clusters. No model, no contract change. It should
-  route "show me <category> news" to governed news/category handling, make follow-up facts match
-  the brief on screen, and make numeric story commands resolve against the active visible surface.
+First post-observation hardening lane (parallel, do not lose):
+  Authorization integrity (lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md)
+  is the FIRST hardening lane after observation. Sequencing steps 1-2 are now satisfied (seven
+  mornings COMPLETE; PR #312 closed the evidence-ranked product bottleneck), so it is activatable
+  in parallel priority with the top product lane, superseded only by a higher-severity
+  correctness/governance defect. LOCK ONLY; this truth-sync does not start it.
 
 Still gated:
   Slice 2 - echo-only -> constrained grounded generation. Requires hallucination-negative tests,
@@ -128,7 +146,7 @@ Stable outcome:
   Third-pass route-protection audit item closed.
   No active blocker remains from this sequence.
 
-Current active lane:
+Active lane at that time (2026-06 stack, superseded):
   Second Brain Slice 1 foundation activation.
 
 Historical objective at that time:
@@ -916,11 +934,15 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 
 ## Open Carried-Forward Follow-Ups
 
-Active follow-ups:
+Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
-(none)
+- Run one post-#312 real-use/product-acceptance morning.
+- Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
+- Owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
 ```
+
+No active *implementation* follow-up issue is open; the three above are operational.
 
 Open planning / future trackers (not active workstreams):
 
@@ -937,7 +959,9 @@ Open planning / future trackers (not active workstreams):
 Open hardening review:
 
 ```text
-(none)
+Authorization integrity is the first activatable post-observation hardening lane
+(lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md). LOCK ONLY;
+activation is a separate owner decision. This is a queued hardening lane, not "none".
 ```
 
 Recently closed:
@@ -1018,9 +1042,16 @@ Current sequence:
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Current active state is the Phase 3 observation period (2026-07-07).
-   Next product input is >=7 real morning logs (docs/observation/), not
-   another implementation lane.
+9. Current active state is Phase 3 observation, seven-morning threshold
+   COMPLETE (2026-07-22 synthesis); grounded brief/category routing shipped
+   via PR #312 (2026-07-23) and verified on fresh main
+   (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No
+   additional seven-morning or open-ended observation gate is required. Next
+   product input is ONE targeted post-#312 real-use/product-acceptance morning
+   (not a re-verification of #312), then owner selection of the next
+   evidence-ranked product lane. Authorization integrity
+   (docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md) is the
+   first post-observation hardening lane, activatable in parallel priority.
 10. Runtime recovery and health truth remains accepted/deferred pending
     morning evidence (lock:
     docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md).
@@ -1028,7 +1059,9 @@ Current sequence:
     timeout/degraded/unavailable status modeling, stuck-response recovery,
     Trust explanation of product failures, and tests proving stale/timeout
     health cannot be shown as Normal.
-11. Second Brain Slice 1 remains accepted but deferred behind observation.
+11. Second Brain Slice 1 remains accepted but deferred; the seven-morning observation
+    threshold is complete, so it is no longer gated on observation — activation is a
+    separate reviewed-priority decision, behind the authorization-integrity hardening lane.
 12. No vector DB, MCP, dashboard graph, memory promotion, proposal writes,
     execution integration, OpenClaw integration, or capability expansion.
     No scheduler/background-loop expansion outside the existing explicit

@@ -18,13 +18,48 @@ Authority rules:
    document wins. When they disagree on scope, the lane lock wins.
 ```
 
-## Observation-driven candidates (added 2026-07-11)
+## Observation-driven candidates (added 2026-07-11; seven-morning threshold closed 2026-07-22)
 
 The Phase-3 observation period generates roadmap candidates from real behavior. Recorded here
 as they surface; none is authorized to build except via the stated gate.
 
 ```text
+SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
+  Mornings 1-7 logged and synthesized in
+  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
+  threshold complete and named grounded brief/category routing the rank-1 defect. No additional
+  seven-morning or open-ended observation gate is required.
+  Next PRODUCT input is ONE targeted post-#312 morning for additional real-use/product-acceptance
+  input (PR #312 is already verified on fresh main per
+  docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
+  then owner selection of the next evidence-ranked product-usability lane. Two distinct lists
+  feed that choice (none authorized here):
+    Synthesis-ranked secondary repairs (each a separate decision):
+      - connection-truth/source-label repair;
+      - runtime-generator (fingerprint) reconciliation;
+      - business-context freshness/tense repair: stale past-dated memory-derived status
+        (e.g. "Watch: July 9...") must not present as current; separately authorize; no
+        business action or external write;
+      - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
+    Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+  The post-#312 morning determines whether any product gap is selected.
+  HARDENING lane, in parallel (do not lose): authorization integrity is the FIRST
+  post-observation hardening lane per
+  docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md. Its sequencing steps 1-2 are
+  satisfied, so it is activatable in parallel priority with the top product lane and is superseded
+  only by a higher-severity correctness/governance defect. LOCK ONLY; not started here.
+
 LANDED (freeze-exempt, owner-approved):
+  #311  Timeout containment - isolate turns after a response timeout so a timed-out model turn
+        no longer blocks the next deterministic request (Morning 6-7 evidence).
+  #312  Grounded brief/category routing (synthesis rank-1 defect), merged 2026-07-23 -
+        "show me <category> news" reaches governed Cap 49; brief/story follow-ups bind to the
+        rendered Cap 50 clusters / active surface; numeric story commands resolve against a
+        stable active-surface map; one confidence value feeds body + Trust; deterministic
+        source-bounded fallback preserved. 205 focused tests, prove_runtime_truth PASS, live
+        branch verification plus fresh-main verification
+        (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). This shipped the scope
+        earlier called "Slice 1"; lane now CLOSED.
   #294  Observation Step 0 (documentation + protocol) — morning-log template + single launch
         procedure + config truth (runtime reads Windows User-scope env, not nova_backend/.env).
   #295  Truth-critical repair — Truthful availability under dashboard refresh: fixed false
@@ -145,7 +180,7 @@ ENDGAME      a personal operating system that feels like Jarvis and
    order #1001 as family in Shopify admin, proof email to pillow
    customer, phone storefront walkthrough ("can I see the art?"),
    Depth hoodie L-only decision.
-6. Scheduled: July 9 Google Merchant review check.
+6. Scheduled (2026-07-05 owner item; the July 9 date is now past): Google Merchant review check.
 7. SECURITY: Auralis-Digital repo is PUBLIC with the business
    playbook readable (profit table, margins, operating rhythm,
    internal/) because free-plan GitHub Pages serves the site from
@@ -159,17 +194,28 @@ ENDGAME      a personal operating system that feels like Jarvis and
    link once hosting is settled.
 ```
 
-## Lane A - UX Simplification (active lane)
+## Lane A-D detailed bodies (2026-07-05) — RETAINED REFERENCE, not current status
+
+> **Supersession boundary.** The detailed Lane A/B/C/D bodies below were written on
+> 2026-07-05, before the Phase-3 observation cycle. They are retained as backlog / reference
+> material for per-lane scope and sequencing. They DO NOT describe current status and DO NOT
+> override the top "Observation-driven candidates" block or the "Ordering Summary (one screen)"
+> — both of which carry current post-#312 truth (seven-morning threshold complete; #311/#312
+> merged; next input = one post-#312 morning; authorization integrity = first activatable
+> hardening lane). Where a body below says a lane is "active", "next", "not yet built", or
+> "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (this
+> truth-sync), A2+B2 (PR #264), C1 (Auralis Today, shipped/frozen).
+
+## Lane A - UX Simplification (2026-07-05 lane body — see supersession boundary above)
 
 Scope authority: `docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md`.
 
 ```text
 A1. UX PR 3 merged as PR #262 (quick-action reduction, branch
     ux/quick-action-reduction, commits 5f8a924 and a1b54a8).
-    Land this roadmap as a docs-only PR next, along
-    with the refreshed README.md (updated 2026-07-05: butler north
-    star, current active task, roadmap as ordering authority) and
-    the two stale front-door docs (see Supersession Note).
+    [DONE] Landing this roadmap as a docs-only PR + refreshing the stale
+    front-door docs was the A1 task; complete via PR #263 and the
+    post-#312 front-door/status refresh in PR #314.
 A2. PR 4 - navigation collapse: move Agent, Rules, Activity, and
     status/debug surfaces behind Settings -> Advanced. Includes
     cross-page quick-action chip cleanup and frontend mirror sync.
@@ -234,7 +280,7 @@ ledger integrity (B2), break-glass (B8), restore drills (B3),
 idempotency keys (B10), shadow mode (H1).
 ```
 
-## Lane C - Auralis Awareness (after A2 lands)
+## Lane C - Auralis Awareness (2026-07-05 lane body — C1 has since shipped; see boundary above)
 
 Scope authority: converged spec in Claude memory (auralis-awareness-direction) — one data
 spine, three deliveries. Do not re-derive the plan. When Lane C opens, commit the spec into
@@ -527,22 +573,44 @@ No horizon item skips stages. Usefulness is not implementation.
 ## Ordering Summary (one screen)
 
 ```text
-NOW    owner: Instagram 1-4, verification, filming, token rotation,
-       small batch, July 9 check, Auralis-Digital security migration,
-       GitHub bio
-A1     PR #262 merged; land this roadmap (docs-only PR) + refresh
-       stale front-door docs
-A2+B1+B2   PR 4 session: nav collapse + pytest-timeout + ledger start
-C1     Auralis Today v1 (locked spec, committed to repo)
-A3-A4  labels, Home, ratchets
-B3-B11 backup+restore drill, async probes, degraded/latency
-       contracts, monolith ratchet, schema versions, break-glass,
-       receipt privacy, idempotency, local auth
-C2-C4  friction aging -> pager (post-rotation + scheduler repair)
-       -> Friday loop
-D1-D15 coherence layer, ordered
-H1-H31 horizon, graduated deliberately via the promotion ladder -
-       never as scope creep
+DONE (this cycle)
+  A1  front-door/roadmap truth-sync (PR #263, refreshed by PR #314 post-#312).
+  A2+B2  PR 4 navigation collapse + ledger start (PR #264). B1 pytest-timeout
+         guard landed; the full-suite stall itself remains UNRESOLVED (see below).
+  C1  Auralis Today v1 shipped, frozen baseline.
+  Seven-morning observation (Mornings 1-7 + 2026-07-22 synthesis); PR #311 timeout
+    containment; PR #312 grounded brief/category routing closed the evidence-ranked
+    product bottleneck and is verified on fresh main.
+
+OWNER (parallel, outside Nova implementation)
+  Instagram 1-4, verification, filming, token rotation, small batch,
+  Auralis-Digital security migration, GitHub bio.
+
+NOW
+  One post-#312 real-use/product-acceptance morning.
+  Fresh full-suite run for unresolved B1 (must pass and clear, or name a failure).
+
+PRODUCT
+  Owner selects the next evidence-ranked product lane.
+
+HARDENING
+  Authorization integrity is the first activatable post-observation hardening lane;
+  separate owner activation required; runs in parallel with the selected product lane.
+
+PARKED / SEPARATE DECISIONS
+  Connection-truth repair.
+  Runtime-generator reconciliation.
+  Business-context freshness/tense.
+  Corruption-safe loading remains parked unless an actual failure is observed.
+  Tasks -> Gmail -> Traffic is a separate standing gap-fill list (NOT synthesis-ranked).
+
+LATER (unchanged horizon ordering)
+  A3-A4  labels, Home, ratchets.
+  B3-B11 backup+restore drill, async probes, degraded/latency contracts, monolith
+         ratchet, schema versions, break-glass, receipt privacy, idempotency, local auth.
+  C2-C4  friction aging -> pager (post-rotation + scheduler repair) -> Friday loop.
+  D1-D15 coherence layer, ordered.
+  H1-H31 horizon, graduated deliberately via the promotion ladder - never as scope creep.
 ```
 
 ## Supersession Note
@@ -573,11 +641,13 @@ Alignment notes (2026-07-05 archive deep-dive):
 
 - This document's authority rules agree with docs/future/README.md
   (code > generated truth > active locks > future docs > archive).
-- docs/todo/ACTIVE_TODO.md still names the superseded 2026-06-17
-  runtime recovery lock as active; docs/status/DAILY_COMMAND_CENTER.md
-  is also stale. The A1 docs-only PR refreshes BOTH to point at
-  this document and the UX lane. Keep generated runtime doc
-  modifications separate unless intentionally included.
+- [HISTORICAL 2026-07-05; SUPERSEDED] At the time, docs/todo/ACTIVE_TODO.md still
+  named the superseded 2026-06-17 runtime recovery lock as active and
+  docs/status/DAILY_COMMAND_CENTER.md was stale; the planned A1 docs-only PR was to
+  refresh both. This is now addressed by the post-#312 truth-sync (PR #314), which
+  points both at current post-#312 truth (seven-morning threshold complete;
+  authorization integrity as first activatable hardening lane). Keep generated
+  runtime doc modifications separate unless intentionally included.
 - docs/todo/TECH_DEBT.md agent_scheduler repair is a named gate on C3.
 - The Auralis web-design/client-intake doc family is a second
   business (client services), parked as H12, not contradicted.

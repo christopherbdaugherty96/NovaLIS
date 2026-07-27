@@ -1,6 +1,60 @@
 # Daily Command Center
 
-## 2026-07-15 session (latest - read this first)
+## 2026-07-23 session (latest - read this first)
+
+```text
+SEVEN-MORNING THRESHOLD COMPLETE. GROUNDED ROUTING SHIPPED (PR #312).
+
+Main is at c3856473 (PR #312 + the grounded-routing verification closeout). The seven
+mornings (docs/observation/MORNING_01..07) are logged and synthesized in
+docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md, which declared the evidence
+threshold COMPLETE and named grounded brief/category routing the rank-1 defect.
+
+Landed since the 2026-07-15 block:
+  #311 - isolate turns after a response timeout (Morning 6-7 cross-turn containment).
+  #312 - ground news routing to the active brief surface (merged 2026-07-23):
+         category prompts reach governed Cap 49; brief/story follow-ups bind to the
+         rendered Cap 50 clusters / active surface; numeric story commands resolve
+         against a stable active-surface map; one confidence value feeds body + Trust;
+         deterministic source-bounded fallback preserved. 205 focused tests,
+         prove_runtime_truth PASS, live branch verification (PR body) + fresh-main
+         verification (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+
+This CLOSES the lane the 2026-07-15 block listed as the next Slice-1 build. It is now
+COMPLETE, not pending. No additional seven-morning or open-ended observation gate remains.
+
+NEXT INPUT: one targeted post-#312 morning for additional real-use / product-acceptance
+input. PR #312 is already verified on fresh main (the closeout restarted from clean main and
+confirmed the full category -> second-story -> "what matters most" workflow), so this morning
+is continued real use, NOT that verification. After it the owner selects the next
+evidence-ranked PRODUCT-USABILITY lane. Two distinct lists feed that choice (none authorized
+here):
+  Synthesis-ranked secondary repairs (each a separate decision):
+    - connection-truth/source-label repair;
+    - runtime-generator (fingerprint) reconciliation;
+    - business-context freshness/tense repair: stale past-dated memory-derived status
+      (e.g. "Watch: July 9...") must not present as current; separately authorize; no
+      business action or external write;
+    - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
+  Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+The post-#312 morning determines whether any product gap is selected.
+
+FIRST POST-OBSERVATION HARDENING LANE (parallel, do not lose): authorization integrity
+(lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md). Sequencing steps 1-2
+are satisfied (seven mornings COMPLETE; #312 closed the evidence-ranked product bottleneck),
+so it is activatable in parallel priority with the top product lane, superseded only by a
+higher-severity correctness/governance defect. LOCK ONLY; this truth-sync does not start it.
+
+This is a documentation truth-sync. It authorizes no new capability, connector, external
+write, scheduler expansion, OpenClaw expansion, or autonomous execution.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-07-23 (seven-morning synthesis complete; PR #311-#312 merged;
+grounded routing shipped and fresh-main verified).
+Source: seven-morning synthesis + PR #311/#312 + closeout + generated runtime docs.
+
+## 2026-07-15 session (historical context)
 
 ```text
 MORNING 5 LOGGED AND GROUNDED-BRIEF-CONVERSATION LANE FIRED.
@@ -165,6 +219,12 @@ For exact runtime facts, use:
 
 ## Current Phase: 3 — Can Nova become a habit?
 
+> Superseded by the 2026-07-23 block at the top: the seven-morning collection is COMPLETE
+> and grounded routing shipped (PR #312). The framing below (open-ended morning collection)
+> is retained as the 2026-07-07 phase record. The current input is ONE post-#312
+> real-use/product-acceptance morning (#312 is already fresh-main verified), then owner
+> lane selection — not continued open-ended collection.
+
 Build lanes are COMPLETE. Engineering and verification are no longer the question. The only
 input that moves the project now is OBSERVED DAILY USE.
 
@@ -183,29 +243,38 @@ input that moves the project now is OBSERVED DAILY USE.
 ## Current Blockers
 
 ```text
-Test suite pre-existing stall at 85-91%: the B1 pytest-timeout
-guard landed via PR #264 (timeout = 180s enforced), so the next
-full-suite run converts the silent hang into a named failing test.
-Root-cause fix still pending (B1 remainder).
+Test suite (B1 - UNRESOLVED): an 85-91% full-suite stall was recorded in earlier
+status notes and has NOT been retested on current main. Per the master roadmap,
+B1 remains unresolved pending a fresh `python -m pytest -vv` run, which must
+either (a) pass and clear B1, or (b) identify a named timeout/failure for repair.
+Do not treat B1 as cleared or inactive until that run happens. The pytest-timeout
+guard (PR #264, 180s enforced) is expected to convert a silent hang into a named
+failing test.
 ```
 
 ## Decisions Needed
 
 ```text
-1. Machine side: NONE. Build lanes complete; next input is observed use, not a decision.
-2. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
+1. Owner activation: authorization integrity is the first activatable post-observation
+   hardening lane (LOCK ONLY). Starting it needs a separate owner decision; this truth-sync
+   does not start it.
+2. Owner: pick the next evidence-ranked product lane after the post-#312 morning.
+3. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
    repo vs repo split vs GitHub Pro) - the business playbook is currently public.
 ```
 
 ## This Week
 
 ```text
-1. Chris opens Nova each morning FIRST and logs the observation metrics (Phase 3).
-2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
-3. Nothing to build/verify/define unless observed use surfaces a real gap.
+1. One post-#312 real-use/product-acceptance morning (verify shipped grounded routing in
+   daily use; not a re-verification of #312).
+2. Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
+3. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
+4. No new product/capability lane until observed use surfaces a real gap; authorization
+   integrity may be activated in parallel by a separate owner decision.
 ```
 
-## Morning coverage (what Nova reliably does today, verified 2026-07-06)
+## Morning coverage (what Nova reliably does today, confirmed through Morning 7, 2026-07-22)
 
 ```text
 Weather  OK  |  News  OK  |  Calendar  OK  |  Business/C1  OK
@@ -217,8 +286,11 @@ Google Tasks -> Gmail -> Traffic. Full detail: CAPABILITY_INVENTORY.md.
 ## Branch State
 
 ```text
-main is current; no active feature branch. All build lanes merged (#262-#270).
-Next work is observation, not a branch.
+main includes PR #311 (timeout containment) and PR #312 (grounded routing); tip at
+c3856473 (grounded-routing verification closeout).
+Active branch: docs/sync-post-pr312-current-truth (PR #314, this documentation truth-sync;
+open, not merged).
+PR #313 (2026-07-25 direction-session docs) open; handled after #314 merges.
 Remote review candidates: second-brain-slice1-activation (keep - roadmap H13);
 others likely superseded (owner review pending).
 ```
@@ -299,7 +371,7 @@ browser/computer-use expansion
 scheduler/background-loop expansion outside the existing explicit narrow governed carve-out
 external writes
 memory promotion
-Second Brain implementation (deferred behind active lane)
+Second Brain implementation (deferred; no active implementation lane — requires separate owner activation / reviewed priority)
 Plan My Week
 model presets
 more agents

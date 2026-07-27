@@ -1,7 +1,7 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-07-07 (Phase 3 CLOSED — observation begins). Latest state + this session's
-verification (PR #273) and identity convergence (PR #274): see docs/status/DAILY_COMMAND_CENTER.md.
+Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; grounded routing shipped via
+PR #312). Latest state: see the 2026-07-23 block in docs/status/DAILY_COMMAND_CENTER.md.
 
 ---
 
@@ -10,9 +10,11 @@ verification (PR #273) and identity convergence (PR #274): see docs/status/DAILY
 ```text
 PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEFINITION.md)
 
-  Engineering + verification are COMPLETE. The only input that moves the project now is
-  OBSERVED DAILY USE. Do NOT build, verify, or define more until observed behavior proves a
-  real gap. Evidence earns the build.
+  Engineering + verification are COMPLETE. For product-usability and capability-expansion
+  lanes, observed daily use is the input that earns new work: do not start those until observed
+  behavior proves a real gap. Separately, the authorization-integrity priority lock is now
+  activatable as the first post-observation hardening lane (correctness/security); it does not
+  require another morning to justify it, but this truth-sync does not start that lane.
 
   Build lanes shipped this cycle (all merged):
     UX lane: #261 brief unification, #262 quick-actions, #264 nav collapse (+B1 pytest-timeout,
@@ -25,12 +27,20 @@ PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEF
     Live verification (fresh main, 2026-07-06): weather/news/calendar/routing/C1 all PASS;
       Gmail/Tasks/Reminders/Traffic NOT IMPLEMENTED. QA Rule #1 adopted.
 
-  Active work = OBSERVATION: Chris opens Nova each morning first; Claude watches and reports
-  where behavior diverges from what Nova assumed. Metrics incl. "first unanswered question";
-  success = eliminate ONE uncertainty before reaching for another app.
+  SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis). Mornings 1-7 are logged and
+  synthesized (docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md). Its rank-1 defect —
+  grounded brief/category routing — shipped via PR #312 (merged 2026-07-23) after PR #311
+  timeout containment. That lane is COMPLETE, not pending.
+
+  Active work = ONE targeted post-#312 real-use / product-acceptance morning. PR #312 is
+  already verified on fresh main (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
+  so this morning is continued real use, not that verification. After it the owner selects the
+  next evidence-ranked product-usability lane; authorization integrity (below) is the parallel
+  first post-observation hardening lane. Success metric unchanged: eliminate ONE uncertainty
+  before reaching for another app.
 
   Gap-fill order (only when evidence pulls it): Google Tasks -> Gmail -> Traffic. Awareness
-  Item engine only after those.
+  Item engine only after those. This TODO authorizes none of them.
 
   Not authorized (unchanged, 2026-06-18 boundary): capability expansion, Shopify writes,
   posting, external writes, browser/OpenClaw expansion, scheduler/background-loop
@@ -117,9 +127,11 @@ Cap 65 P5 live proof — complete and locked (2026-05-22).
 
 ## Current Open Issues
 
-There are currently no active implementation follow-up issues.
+There are no active *implementation* follow-up issues. Operational follow-ups are current,
+though: one post-#312 real-use/product-acceptance morning, a fresh full-suite run to resolve B1,
+and the owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
 
-Open issues are planning/future/backlog only:
+Open GitHub *issues* are planning/future/backlog only:
 
 ```text
 #67  — planning/future: agent workspaces + Google email/calendar coordination
@@ -205,17 +217,26 @@ Second Brain Slice 1 priority lock is accepted.
 Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
-Current active state: Phase 3 observation period (2026-07-07).
-Next product input is >=7 real morning logs (docs/observation/), not
-another implementation lane.
+Current active state: Phase 3 observation — seven-morning threshold COMPLETE (2026-07-22).
+Grounded brief/category routing shipped via PR #312 (2026-07-23), verified on fresh main
+(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No additional seven-morning
+or open-ended observation gate is required. Next product input is ONE targeted post-#312
+real-use/product-acceptance morning (not a re-verification of #312), then owner selection of
+the next evidence-ranked product-usability lane. Authorization integrity is the parallel first
+post-observation hardening lane (see Deferred lanes below). This file starts no lane.
 
-Deferred implementation lanes (accepted, reactivation requires morning evidence):
-  - Authorization integrity (correctness/security lane — first hardening lane after
-    observation; lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md):
+Deferred implementation lanes (accepted; runtime-recovery and Second Brain reactivate on
+morning evidence, authorization integrity is activatable now — see each entry):
+  - Authorization integrity (correctness/security lane — FIRST post-observation hardening
+    lane; lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md):
     Governor-owned single-use action-bound ApprovalGrant, no auth booleans in
     capability params, timeout outcome_unknown state machine, effect/receipt
-    reconciliation, adversarial multi-session end-to-end tests. Runs on
-    correctness priority; does not preempt observation. LOCK ONLY, not started.
+    reconciliation, adversarial multi-session end-to-end tests. Runs on correctness
+    priority and does NOT require morning evidence to justify it. With observation
+    complete and PR #312 landed (sequencing steps 1-2 met) it is ACTIVATABLE in parallel
+    priority with the top product lane, superseded only by a higher-severity governance
+    defect. Still LOCK ONLY / not started — activation is a separate owner decision, not
+    this file.
   - Runtime recovery and health truth
     (lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md):
     canonical health truth, timeout/degraded/unavailable status modeling,
@@ -243,7 +264,7 @@ more providers
 bigger dashboard redesign
 advanced navigation cleanup
 broad empty-state simplification
-Second Brain implementation while the recovery lock is active
+Second Brain implementation without a separate reviewed-priority activation (runtime recovery is deferred, not active)
 Goal Card execution or click-to-run
 Shopify writes
 Printify automation
@@ -263,13 +284,19 @@ background task loops
 ## Final Operational Direction
 
 ```text
-Goal Card persistence is complete end to end (design doc +
-PR #231 backend + PR #232 frontend wiring). UI simplification
-is complete (PR #233). Dashboard clarity improved without
-authority expansion. Goal Cards remain display-only. No
-execution, no scheduler, no GovernorMediator changes. Second
-Brain Slice 1 priority lock is accepted (PR #234) but deferred
-behind the active runtime recovery and health truth lock. Next
-implementation PR is limited to recovery clarity and canonical
-health truth without new execution authority.
+Goal Card persistence and UI simplification are complete. Goal Cards
+remain display-only. Second Brain Slice 1 and runtime recovery remain
+accepted but deferred.
+
+The seven-morning observation threshold is complete, and PR #312
+closed the evidence-ranked grounded-routing bottleneck.
+
+Next product input is one post-#312 real-use/product-acceptance morning,
+followed by owner selection of the next evidence-ranked product lane.
+
+Authorization integrity is the first activatable post-observation
+hardening lane, in parallel priority with the selected product lane.
+It remains LOCK ONLY and requires a separate owner activation decision.
+
+This TODO authorizes no implementation lane.
 ```
