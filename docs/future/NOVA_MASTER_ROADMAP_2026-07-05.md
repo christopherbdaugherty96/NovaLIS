@@ -34,9 +34,13 @@ SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
   docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
   then owner selection of the next evidence-ranked product-usability lane. Two distinct lists
   feed that choice (none authorized here):
-    Synthesis-ranked secondary repairs (each a separate decision): connection-truth/source-label
-      repair; runtime-generator (fingerprint) reconciliation; corruption-safe loading stays
-      PARKED unless an actual corruption/loading failure is observed.
+    Synthesis-ranked secondary repairs (each a separate decision):
+      - connection-truth/source-label repair;
+      - runtime-generator (fingerprint) reconciliation;
+      - business-context freshness/tense repair: stale past-dated memory-derived status
+        (e.g. "Watch: July 9...") must not present as current; separately authorize; no
+        business action or external write;
+      - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
     Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
   The post-#312 morning determines whether any product gap is selected.
   HARDENING lane, in parallel (do not lose): authorization integrity is the FIRST
