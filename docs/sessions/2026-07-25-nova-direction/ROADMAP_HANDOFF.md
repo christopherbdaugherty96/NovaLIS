@@ -1,0 +1,273 @@
+# Nova Roadmap Handoff — 2026-07-25
+
+## Purpose
+
+This file converts the 2026-07-25 strategy session into a concise roadmap handoff.
+
+It does not authorize implementation. It identifies where the session decisions should be incorporated when the owner next approves a documentation or implementation lane.
+
+---
+
+## Canonical Files
+
+Ordering authority:
+
+- `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`
+
+Current-state truth (read these first for where the project actually is):
+
+- `docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md` — seven-morning gate COMPLETE.
+- `docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md` — PR #312 grounded brief/category
+  routing lane closed and fresh-main verified.
+
+Active-work continuity files (refreshed to post-#312 truth by PR #314 — do not read any
+pre-#314 revision as current):
+
+- `docs/todo/ACTIVE_TODO.md`
+- `docs/status/DAILY_COMMAND_CENTER.md`
+- `docs/status/CURRENT_WORK_STATUS.md`
+
+Note: this handoff was written 2026-07-25, before PR #314 landed. Where it describes observation
+or grounded routing as "active", defer to the synthesis, the closeout, and the post-#312
+continuity files above — the seven-morning threshold is complete and the grounded brief/category
+routing lane is closed. Next input is one post-#312 real-use morning, then owner lane selection;
+authorization integrity is the first activatable hardening lane.
+
+Existing email design sources:
+
+- `docs/future/EMAIL_COORDINATION_BOARD.md`
+- `docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md`
+- `docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN.md`
+
+Session record:
+
+- `docs/sessions/2026-07-25-nova-direction/README.md`
+
+---
+
+## Roadmap Candidate To Add
+
+### Multi-Account Email Awareness
+
+```text
+Unified read-only awareness across separately governed personal,
+employment, and business email identities.
+
+Gmail read-only first.
+Multiple Gmail identities second.
+Microsoft 365/Outlook later.
+Generic IMAP only if evidence justifies it.
+
+Every message, thread, summary, action, and draft retains source account.
+Permissions remain per account.
+Wrong-account drafting or sending is blocked.
+Sensitive content follows visible local-only or ask-first routing.
+Cross-account awareness does not automatically become long-term memory.
+```
+
+Status:
+
+```text
+Observation-driven future candidate.
+Not authorized for implementation by this file.
+```
+
+---
+
+## Recommended Active TODO Wording
+
+Current conceptual order:
+
+```text
+Google Tasks -> Gmail -> Traffic
+```
+
+Recommended clarified order:
+
+```text
+Google Tasks / Reminders
+-> Multi-Account Email Awareness
+   - one Gmail account, read-only
+   - multiple Gmail identities
+   - personal/work/business role separation
+   - unified awareness with permanent provenance
+   - prepared drafts only after read path is proven
+-> Traffic / leave-time awareness
+```
+
+---
+
+## Dedicated Design Document To Create Before Implementation
+
+Proposed path:
+
+`docs/future/NOVA_MULTI_ACCOUNT_EMAIL_AWARENESS_PLAN.md`
+
+Required sections:
+
+- account registry schema;
+- account-role taxonomy;
+- per-account OAuth scopes;
+- provider adapter contract;
+- normalized message and thread schemas;
+- account-level permission policy;
+- unified awareness output;
+- cross-account entity correlation;
+- wrong-account blocking;
+- privacy and sensitive-data routing;
+- memory promotion rules;
+- receipts and provenance;
+- degraded behavior;
+- capability contracts;
+- negative/adversarial tests;
+- phased acceptance gates.
+
+---
+
+## Capability Sequence
+
+Read and awareness:
+
+```text
+EMAIL_ACCOUNT_CONNECT
+EMAIL_ACCOUNT_LIST
+EMAIL_MESSAGE_SEARCH
+EMAIL_THREAD_READ
+EMAIL_AWARENESS_SUMMARY
+EMAIL_CROSS_ACCOUNT_CORRELATE
+```
+
+Preparation:
+
+```text
+EMAIL_DRAFT_PREPARE
+EMAIL_DRAFT_REVIEW
+```
+
+Later independently governed effects:
+
+```text
+EMAIL_SEND_CONFIRMED
+EMAIL_ARCHIVE_CONFIRMED
+EMAIL_LABEL_MODIFY_CONFIRMED
+```
+
+Do not combine these into one broad email capability.
+
+---
+
+## Phased Acceptance Requirements
+
+Each gate is assigned to the phase where its corresponding surface first exists (phases per the
+session README, section 6 "Implementation sequence"). A gate is not required before its surface
+exists; do NOT pull a later phase's scope (multi-account, role separation, drafting) into
+Phase 1 to satisfy a check.
+
+### Phase 1 — One Gmail account, read-only
+
+Account / provenance:
+
+- Every item retains `account_id` (tagged even with a single account).
+- Account identity is visible in every email result.
+
+Privacy:
+
+- OAuth tokens never enter repository files, prompts, memory, logs, or receipts.
+- Sensitive email defaults to local-only or ask-first provider routing.
+- Email reasoning context is not silently promoted into long-term memory.
+- Every inferred relationship exposes source evidence and confidence.
+
+Reliability:
+
+- Expired OAuth produces a clear reconnect state.
+- Partial results remain usable and visibly degraded.
+- Repeated reads do not duplicate persisted message or thread records.
+- Every search or thread-read invocation emits its own receipt; cache reuse or
+  stored-item deduplication must not suppress `GMAIL_SEARCH_PERFORMED` or
+  `GMAIL_THREAD_READ` (receipts defined in `docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md`).
+- Timeouts do not poison the next request.
+
+Authority:
+
+- Read access does not authorize drafting (no draft surface exists in this phase).
+- Memory does not authorize account access or external effects.
+- No background monitoring unless a separate approved routine exists.
+
+### Phase 2 — Multiple Gmail identities
+
+- Permissions granted to one account do not apply to another.
+- One failing mailbox does not break the other accounts.
+- Cross-account reasoning context is not silently promoted into long-term memory.
+
+### Phase 3 — Personal/work/business separation and wrong-account blocking
+
+- Personal, employment, and business roles remain separate.
+- Cross-identity actions are blocked; Nova never silently acts as the wrong identity.
+
+### Phase 6 — Prepared drafts with source-linked review
+
+- Wrong-account draft selection is blocked.
+- Drafting does not authorize sending.
+- Read access does not authorize drafting (re-verified now that a draft surface exists).
+
+### Phase 7 — Confirmed sending
+
+- Sending is gated on idempotency, recipient, identity, attachment, failure-recovery, and
+  receipt tests (see README section 6, Phase 7).
+
+---
+
+## Broader Improvement Order Preserved From Session
+
+> Session proposal, NOT current execution ordering. This is the 2026-07-25 session's long-horizon
+> improvement wishlist. Current canonical execution order (post-#314) lives in
+> `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` "Ordering Summary" and differs: **NOW** = one
+> post-#312 real-use morning + a fresh full-suite run for the unresolved B1 stall; **HARDENING** =
+> authorization integrity as the first activatable lane (parallel priority, separate owner
+> activation); broad reliability/recovery work (backup/restore, async probes, degraded/latency
+> contracts, monolith ratchet, schema versions, break-glass, receipt privacy, idempotency, local
+> auth) is the **LATER** B3-B11 band; corruption-safe loading stays **PARKED** unless evidence
+> activates it. Read the list below as session intent, not the active sequence.
+
+```text
+1. Reliability and recovery
+2. Startup and interaction latency
+3. One calm daily operating surface
+4. Tasks and reminders
+5. Multi-account email awareness
+6. Traffic and leave-time awareness
+7. Structured world model
+8. Prepared-action and approval inbox
+9. Shadow mode
+10. Cross-platform installation
+11. Narrow earned autonomy
+```
+
+---
+
+## Do Not Prioritize Ahead of This
+
+- more agents for their own sake;
+- more model providers without measured need;
+- broad OpenClaw execution;
+- autonomous email sending;
+- autonomous social posting;
+- browser/computer-use expansion;
+- larger technical dashboard;
+- vector database without a defined retrieval problem;
+- silent memory promotion;
+- silent cloud routing of sensitive data;
+- new roadmap documents that compete with the canonical master roadmap.
+
+---
+
+## Definition To Preserve
+
+```text
+Nova is an awareness and governed orchestration platform.
+It is not merely an API wrapper.
+OpenClaw is an internal bounded subsystem, not Nova's authority layer.
+
+Nova becomes more powerful by becoming more reliable, context-aware,
+prepared, measurable, and useful — not simply by acquiring more tools.
+```
