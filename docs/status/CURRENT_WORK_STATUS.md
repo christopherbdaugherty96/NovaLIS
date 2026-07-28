@@ -938,8 +938,10 @@ Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
 - Run one post-#312 real-use/product-acceptance morning.
-- Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
 - Owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
+
+B1 full-suite stall: CLEARED 2026-07-27 - full suite passed on merged main (3799 passed,
+exit 0, no stall/timeout); #315 (desktop-effect isolation) + #316 (test hermeticity) landed.
 ```
 
 No active *implementation* follow-up issue is open; the three above are operational.
