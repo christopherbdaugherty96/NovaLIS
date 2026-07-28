@@ -243,13 +243,14 @@ input that moves the project now is OBSERVED DAILY USE.
 ## Current Blockers
 
 ```text
-Test suite (B1 - UNRESOLVED): an 85-91% full-suite stall was recorded in earlier
-status notes and has NOT been retested on current main. Per the master roadmap,
-B1 remains unresolved pending a fresh `python -m pytest -vv` run, which must
-either (a) pass and clear B1, or (b) identify a named timeout/failure for repair.
-Do not treat B1 as cleared or inactive until that run happens. The pytest-timeout
-guard (PR #264, 180s enforced) is expected to convert a silent hang into a named
-failing test.
+Test suite (B1 - CLEARED 2026-07-27): the full suite passed on a fresh checkout of
+merged main (#315 70dd64bd + #316 14b3a296): 3799 passed in 6:46, exit 0, no pytest
+timeout. The historical 85-91% silent stall did NOT reproduce - the suite completes
+normally through that zone. Two isolation/hermeticity issues surfaced and were fixed:
+the desktop side-effect leak (browser/email-client launch during tests) in #315, and
+three test-hermeticity failures (urllib.parse allow-list, deterministic agent-runner
+snapshot, barrier-based concurrency test) in #316. The pytest-timeout guard (PR #264,
+180s enforced) remains in place. No remaining test-suite blocker.
 ```
 
 ## Decisions Needed
@@ -268,7 +269,8 @@ failing test.
 ```text
 1. One post-#312 real-use/product-acceptance morning (verify shipped grounded routing in
    daily use; not a re-verification of #312).
-2. Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
+2. [DONE 2026-07-27] B1 CLEARED: full suite passed on merged main (3799, exit 0, no
+   stall/timeout); #315 + #316 landed.
 3. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
 4. No new product/capability lane until observed use surfaces a real gap; authorization
    integrity may be activated in parallel by a separate owner decision.
