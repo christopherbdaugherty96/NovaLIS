@@ -243,14 +243,18 @@ input that moves the project now is OBSERVED DAILY USE.
 ## Current Blockers
 
 ```text
-Test suite (B1 - CLEARED 2026-07-27): the full suite passed on a fresh checkout of
-merged main (#315 70dd64bd + #316 14b3a296): 3799 passed in 6:46, exit 0, no pytest
-timeout. The historical 85-91% silent stall did NOT reproduce - the suite completes
-normally through that zone. Two isolation/hermeticity issues surfaced and were fixed:
-the desktop side-effect leak (browser/email-client launch during tests) in #315, and
-three test-hermeticity failures (urllib.parse allow-list, deterministic agent-runner
-snapshot, barrier-based concurrency test) in #316. The pytest-timeout guard (PR #264,
-180s enforced) remains in place. No remaining test-suite blocker.
+(none)
+```
+
+## Recently Cleared
+
+```text
+B1 test-suite stall - CLEARED 2026-07-27. Full suite passed on a fresh checkout of merged
+main (#315 70dd64bd + #316 14b3a296): 3799 passed in 6:46, exit 0, no pytest timeout; the
+historical 85-91% silent stall did not reproduce. Fixed en route: the desktop side-effect
+leak (browser/email-client launch during tests) in #315, and three test-hermeticity failures
+(urllib.parse allow-list, deterministic agent-runner snapshot, barrier-based concurrency
+test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 ```
 
 ## Decisions Needed
@@ -269,10 +273,8 @@ snapshot, barrier-based concurrency test) in #316. The pytest-timeout guard (PR 
 ```text
 1. One post-#312 real-use/product-acceptance morning (verify shipped grounded routing in
    daily use; not a re-verification of #312).
-2. [DONE 2026-07-27] B1 CLEARED: full suite passed on merged main (3799, exit 0, no
-   stall/timeout); #315 + #316 landed.
-3. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
-4. No new product/capability lane until observed use surfaces a real gap; authorization
+2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
+3. No new product/capability lane until observed use surfaces a real gap; authorization
    integrity may be activated in parallel by a separate owner decision.
 ```
 
