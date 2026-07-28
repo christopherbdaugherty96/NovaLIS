@@ -222,6 +222,43 @@ def store_brief_widget(
             session_state["active_brief_item"] = "calendar"
 
 
+def store_awareness_brief_surface(
+    session_state: dict[str, Any],
+    awareness_payload: dict[str, Any],
+    *,
+    set_focus: bool = False,
+) -> None:
+    """Store the rendered Awareness Brief without touching Cap 50 cluster state."""
+    if not isinstance(session_state, dict) or not isinstance(awareness_payload, dict):
+        return
+    clusters: list[dict[str, Any]] = []
+    for section in list(awareness_payload.get("sections") or []):
+        if not isinstance(section, dict):
+            continue
+        items = [
+            str(item or "").strip()
+            for item in list(section.get("items") or [])
+            if str(item or "").strip()
+        ]
+        status = str(section.get("status") or "").strip().lower()
+        clusters.append(
+            {
+                "key": str(section.get("key") or "").strip(),
+                "title": str(section.get("title") or "").strip(),
+                "summary": items[0] if items else "",
+                "items": items,
+                "implication": "",
+                "source": str(section.get("source") or "").strip(),
+                "status": status,
+                "placeholder": status != "ok" or not items,
+                "synthesis_status": "sourced" if status == "ok" and items else (status or "unavailable"),
+            }
+        )
+    session_state["awareness_brief_clusters"] = clusters
+    if set_focus:
+        session_state["active_brief_item"] = "awareness_brief"
+
+
 def store_active_news_surface(
     session_state: dict[str, Any],
     surface_type: str,
@@ -289,6 +326,7 @@ def _has_grounding(state: dict[str, Any]) -> bool:
             state.get("news_cache"),
             state.get("news_categories"),
             state.get("last_brief_clusters"),
+            state.get("awareness_brief_clusters"),
             state.get("brief_calendar"),
             state.get("last_calendar_events"),
             state.get("trust_status"),
@@ -306,7 +344,10 @@ def _has_grounding_for(key: str, state: dict[str, Any]) -> bool:
     if key == "runtime":
         return bool(state.get("trust_status"))
     if key == "awareness_brief":
-        return bool(state.get("last_brief_clusters")) or _has_grounding(state)
+        return bool(
+            state.get("awareness_brief_clusters")
+            or state.get("last_brief_clusters")
+        ) or _has_grounding(state)
     return False
 
 
@@ -322,8 +363,16 @@ def _select_explicit_item_key(lowered: str, state: dict[str, Any]) -> str:
         "keep an eye on",
     )
     active_surface = state.get("active_news_surface")
+    active_key = str(state.get("active_brief_item") or "").strip()
     if (
-        isinstance(active_surface, dict)
+        active_key == "awareness_brief"
+        and state.get("awareness_brief_clusters")
+        and any(marker in lowered for marker in overview_markers)
+    ):
+        return "awareness_brief"
+    if (
+        active_key == "news"
+        and isinstance(active_surface, dict)
         and active_surface.get("surface_type") != "brief"
         and any(marker in lowered for marker in overview_markers)
     ):
@@ -818,8 +867,16 @@ def _answer_runtime_followup(state: dict[str, Any]) -> str:
 
 
 def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
-    clusters = [dict(row or {}) for row in list(state.get("last_brief_clusters") or []) if isinstance(row, dict)]
+    awareness_clusters = list(state.get("awareness_brief_clusters") or [])
+    use_awareness_surface = (
+        str(state.get("active_brief_item") or "").strip() == "awareness_brief"
+        and "awareness_brief_clusters" in state
+    )
+    cluster_source = awareness_clusters if use_awareness_surface else list(state.get("last_brief_clusters") or [])
+    clusters = [dict(row or {}) for row in cluster_source if isinstance(row, dict)]
     if not clusters:
+        if use_awareness_surface:
+            return "The rendered Awareness Brief does not contain enough live information to identify a lead item."
         return "I do not have a rendered intelligence brief to answer from yet."
 
     lowered = str(query or "").lower()
@@ -837,6 +894,9 @@ def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
             )
         return f"The rendered brief is complete: all {len(clusters)} topic clusters have sourced synthesis."
 
+    if use_awareness_surface and len(placeholders) == len(clusters):
+        return "The rendered Awareness Brief does not contain enough live information to identify a lead item."
+
     def render_cluster(cluster: dict[str, Any], *, include_implication: bool = True) -> str:
         title = _clip(cluster.get("title") or "Untitled topic")
         summary = _clip(cluster.get("summary"))
@@ -850,7 +910,24 @@ def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
             line += f": {summary}"
         if include_implication and implication:
             line += f" Why it matters: {implication}"
+        if use_awareness_surface:
+            source = _clip(cluster.get("source"), 80)
+            status = _clip(cluster.get("status"), 40)
+            labels = []
+            if source:
+                labels.append(f"source: {source}")
+            if status:
+                labels.append(f"status: {status}")
+            if labels:
+                line += f" [{'; '.join(labels)}]"
         return line
+
+    if use_awareness_surface and any(
+        term in lowered
+        for term in ("what matters", "what stands out", "what should i watch", "keep an eye on")
+    ):
+        lead = next(cluster for cluster in clusters if cluster not in placeholders)
+        return "Lead sourced item from the rendered Awareness Brief:\n" + render_cluster(lead)
 
     if any(term in lowered for term in ("what matters", "what stands out")):
         lead = next((cluster for cluster in clusters if cluster not in placeholders), clusters[0])

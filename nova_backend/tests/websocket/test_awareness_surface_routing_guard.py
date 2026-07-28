@@ -31,6 +31,36 @@ def _disable_unrelated_routes(monkeypatch) -> None:
         "src.connectors.shopify_connector.get_shopify_connector",
         lambda: None,
     )
+
+
+class _SourcedAwarenessBrief:
+    greeting = "Good morning"
+
+    def to_dict(self) -> dict:
+        return {
+            "type": "awareness_brief",
+            "greeting": self.greeting,
+            "sections": [
+                {
+                    "key": "weather",
+                    "title": "Weather",
+                    "items": ["Distinctive sourced fact: rain starts after 3 PM."],
+                    "status": "ok",
+                    "source": "weather",
+                },
+                {
+                    "key": "news",
+                    "title": "News",
+                    "items": ["Secondary sourced fact."],
+                    "status": "ok",
+                    "source": "news",
+                },
+            ],
+            "available_count": 2,
+            "total_count": 2,
+        }
+
+
 def test_daily_awareness_request_routes_at_websocket_boundary_and_grounds_followup(monkeypatch):
     _disable_unrelated_routes(monkeypatch)
     monkeypatch.setattr(
@@ -44,15 +74,23 @@ def test_daily_awareness_request_routes_at_websocket_boundary_and_grounds_follow
         ]
     )
 
-    with patch(
-        "src.skills.general_chat.generate_chat",
-        side_effect=AssertionError("GeneralChat must not run for the brief or its follow-up"),
+    with (
+        patch(
+            "src.brief.awareness_brief.compose_awareness_brief",
+            return_value=_SourcedAwarenessBrief(),
+        ),
+        patch(
+            "src.skills.general_chat.generate_chat",
+            side_effect=AssertionError("GeneralChat must not run for the brief or its follow-up"),
+        ),
     ):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert any(message.get("type") == "awareness_brief" for message in ws.sent_messages)
     chat_messages = _chat_messages(ws)
     assert any("daily awareness brief is ready" in message.lower() for message in chat_messages)
+    assert any("Distinctive sourced fact: rain starts after 3 PM." in message for message in chat_messages)
+    assert any("source: weather" in message for message in chat_messages)
     assert not any("@auralis_digital" in message for message in chat_messages)
 
 

@@ -16,6 +16,7 @@ from src.conversation.brief_followup_grounding import (
     is_discussion_shaped_brief_followup,
     schedule_commitment_guard,
     store_active_news_surface,
+    store_awareness_brief_surface,
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
@@ -3593,6 +3594,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     auralis_inputs=_aw_auralis,
                 )
                 _aw_dict = _awareness.to_dict()
+                store_awareness_brief_surface(
+                    session_state,
+                    _aw_dict,
+                    set_focus=not silent_widget_refresh,
+                )
                 _log_ledger_event(
                     governor,
                     "AWARENESS_BRIEF_ASSEMBLED",
