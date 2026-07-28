@@ -41,7 +41,10 @@ Per `docs/todo/DOC_CLEANUP.md`, these are **not merged** — they are different 
 Panel not implemented." Both are true: the trust **page** MVP was proven; the full Trust
 **Panel** concept (Phase 4.5) remains open. Do not read this as a contradiction.
 
-## Known verification friction (unverified-clean)
+## Full-suite verification status
 
-The full test suite has historically stalled at high completion on constrained hardware; treat a
-green *targeted* run as the reliable signal and note when the full suite could not complete.
+[VERIFIED CLEAN 2026-07-27] The complete test suite passed on merged main after PRs #315 and
+#316: 3799 passed in 6:46, exit code 0, with no pytest timeout and no external browser or
+email-client launch. The historical high-completion stall did not reproduce. Targeted suites
+remain useful for bounded development checks, but are no longer a substitute for the full suite —
+which now completes. The 180-second pytest-timeout guard remains enabled.
