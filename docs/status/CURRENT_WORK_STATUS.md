@@ -938,11 +938,10 @@ Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
 - Run one post-#312 real-use/product-acceptance morning.
-- Fresh full-suite run to resolve B1 (pass and clear, or name a failure for repair).
 - Owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
 ```
 
-No active *implementation* follow-up issue is open; the three above are operational.
+No active *implementation* follow-up issue is open; the two above are operational.
 
 Open planning / future trackers (not active workstreams):
 
