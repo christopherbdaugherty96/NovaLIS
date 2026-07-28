@@ -193,10 +193,11 @@ Awareness
 > below (including "Priority 1 — Reliability and recovery" and the Priority 4 personal-capability
 > sequence) are this session's recommendations, not the active plan. Current canonical execution
 > order lives in `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` "Ordering Summary": NOW = one
-> post-#312 real-use morning + a fresh full-suite run for the unresolved B1 stall; then the owner
-> selects the next product-usability lane; authorization integrity is the first activatable
-> hardening lane (parallel priority); broad reliability/recovery is the LATER B3-B11 band. Read
-> this section as session input, not the active sequence.
+> post-#312 real-use morning (B1 was cleared 2026-07-27 by the merged-main `3799 passed` run, so
+> it is no longer a NOW item); then the owner selects the next product-usability lane;
+> authorization integrity is the first activatable hardening lane (parallel priority); broad
+> reliability/recovery is the LATER B3-B11 band. Read this section as session input, not the
+> active sequence.
 
 ### Priority 1 — Reliability and recovery
 
@@ -213,7 +214,7 @@ Nova should remain usable when:
 
 Required hardening direction:
 
-- complete the stalled test-suite investigation;
+- complete the stalled test-suite investigation — [RESOLVED 2026-07-27] full suite passed on merged main; B1 cleared;
 - rotate and compact the ledger;
 - add tamper-evident ledger verification;
 - add state backup plus automated restore drills;
