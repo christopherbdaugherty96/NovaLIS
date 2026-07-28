@@ -233,6 +233,9 @@ B1-B2 may ride with the PR 4 work session; the rest queue behind Lane A.
 B1. Test suite completion: install pytest-timeout (config already
     references it; plugin missing), convert the 85-91% stall into a
     named failing test, then fix it. Everything inherits this.
+    [RESOLVED 2026-07-27] pytest-timeout present; the 85-91% stall did not
+    reproduce on merged main; the isolation/hermeticity failures it masked were
+    fixed in #315 + #316; full suite green (3799 passed, exit 0).
 B2. Ledger hardening: rotation/compaction (file is ~475 MB), hash
     chaining for tamper evidence, `ledger verify` command, relocate
     out of src/data/.
@@ -576,7 +579,8 @@ No horizon item skips stages. Usefulness is not implementation.
 DONE (this cycle)
   A1  front-door/roadmap truth-sync (PR #263, refreshed by PR #314 post-#312).
   A2+B2  PR 4 navigation collapse + ledger start (PR #264). B1 pytest-timeout
-         guard landed; the full-suite stall itself remains UNRESOLVED (see below).
+         guard landed; the full-suite stall is now CLEARED (2026-07-27, #315+#316 -
+         3799 passed on merged main, no stall/timeout).
   C1  Auralis Today v1 shipped, frozen baseline.
   Seven-morning observation (Mornings 1-7 + 2026-07-22 synthesis); PR #311 timeout
     containment; PR #312 grounded brief/category routing closed the evidence-ranked
@@ -588,7 +592,6 @@ OWNER (parallel, outside Nova implementation)
 
 NOW
   One post-#312 real-use/product-acceptance morning.
-  Fresh full-suite run for unresolved B1 (must pass and clear, or name a failure).
 
 PRODUCT
   Owner selects the next evidence-ranked product lane.
