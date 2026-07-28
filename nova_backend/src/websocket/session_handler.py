@@ -3508,9 +3508,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            from src.conversation.awareness_brief_handler import is_awareness_brief_request
+            from src.conversation.awareness_brief_handler import (
+                SURFACE_AURALIS_TODAY,
+                classify_governed_surface_request,
+            )
 
-            if is_awareness_brief_request(lowered):
+            _awareness_request_kind = classify_governed_surface_request(lowered)
+            if _awareness_request_kind in {"awareness_brief", SURFACE_AURALIS_TODAY}:
                 from src.brief.awareness_brief import compose_awareness_brief
 
                 _aw_weather: dict | None = None
@@ -3601,6 +3605,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await ws_send(ws, _aw_dict)
                 if not silent_widget_refresh:
                     session_state["active_brief_item"] = "awareness_brief"
+                    if _awareness_request_kind == SURFACE_AURALIS_TODAY:
+                        if _aw_auralis is None:
+                            await send_chat_message(
+                                ws,
+                                "Auralis Today is part of your Daily Awareness Brief, but "
+                                "trusted Auralis inputs are not available right now. I won't "
+                                "invent business context.",
+                                tone_domain="daily",
+                            )
+                        else:
+                            await send_chat_message(
+                                ws,
+                                "Your Auralis Today section is ready in the Daily Awareness Brief.",
+                                tone_domain="daily",
+                            )
+                        await send_chat_done(ws)
+                        continue
                     available = _awareness.to_dict()["available_count"]
                     total = _awareness.to_dict()["total_count"]
                     await send_chat_message(
@@ -4546,6 +4567,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             session_state["foreground_model_busy"] = True
             try:
+                from src.conversation.awareness_brief_handler import (
+                    governed_surface_request_guard_response,
+                )
+
+                _surface_guard_response = governed_surface_request_guard_response(mediated_text)
+                if _surface_guard_response:
+                    await send_chat_message(ws, _surface_guard_response, tone_domain="daily")
+                    await send_chat_done(ws)
+                    continue
                 skill_result = await run_general_chat_fallback(
                     mediated_text,
                     general_chat_skill=general_chat_skill,
