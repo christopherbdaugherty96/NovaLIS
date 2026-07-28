@@ -592,7 +592,6 @@ OWNER (parallel, outside Nova implementation)
 
 NOW
   One post-#312 real-use/product-acceptance morning.
-  [DONE 2026-07-27] Full-suite run on merged main cleared B1: 3799 passed, exit 0, no stall.
 
 PRODUCT
   Owner selects the next evidence-ranked product lane.
