@@ -18,6 +18,20 @@ Authority rules:
    document wins. When they disagree on scope, the lane lock wins.
 ```
 
+## Long-Term Direction Compass (non-authorizing)
+
+`NOVA_AUTHORITY_AND_DECISION_OS_DIRECTION_2026-07-28.md` records the converged long-term
+product thesis: Nova as a local-first personal authority and decision operating system,
+organized as awareness -> decision intelligence -> Prepared Reality -> governed execution ->
+outcome learning. It also records the feature-warrant guardrail, the non-negotiable boundary
+that learning may improve proposals but never permissions, and the local-authority /
+governed-hybrid-compute interpretation of local-first.
+
+That document is a strategic compass, not an ordering or scope authority. It synthesizes
+existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
+This roadmap still determines ordering; lane locks still determine scope; owner decisions still
+activate work. The next product input and authorization-integrity position below are unchanged.
+
 ## Observation-driven candidates (added 2026-07-11; seven-morning threshold closed 2026-07-22)
 
 The Phase-3 observation period generates roadmap candidates from real behavior. Recorded here
