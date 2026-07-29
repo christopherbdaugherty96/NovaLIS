@@ -43,6 +43,10 @@ The implemented system is a **partial realization** of these ideas, not full com
 
 ## Canonical Future Direction
 
+- `NOVA_AUTHORITY_AND_DECISION_OS_DIRECTION_2026-07-28.md` - non-authorizing long-term
+  strategic compass for Nova as a local-first authority and decision operating system. The
+  master roadmap still controls ordering and lane locks still control scope.
+
 - `NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md` - future Nova/Auralis operating-model and measurement-spine direction.
 
 - `ROADMAP.md` — historical phased expansion path; **superseded for ordering** by
