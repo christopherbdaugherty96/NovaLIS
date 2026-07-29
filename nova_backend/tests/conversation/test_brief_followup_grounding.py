@@ -9,6 +9,7 @@ from src.conversation.brief_followup_grounding import (
     is_schedule_commitment_question,
     schedule_commitment_guard,
     store_active_news_surface,
+    store_awareness_brief_surface,
     store_brief_widget,
 )
 
@@ -510,6 +511,104 @@ def test_what_matters_after_category_uses_active_category_not_old_brief():
     assert "Active category lead" in answer
     assert "Global Security" not in answer
     assert "deterministic ranking" in answer
+
+
+def _awareness_payload() -> dict:
+    return {
+        "type": "awareness_brief",
+        "sections": [
+            {
+                "key": "weather",
+                "title": "Weather",
+                "items": ["Rain starts after 3 PM."],
+                "status": "ok",
+                "source": "weather",
+            },
+            {
+                "key": "news",
+                "title": "News",
+                "items": ["Markets await the rate decision."],
+                "status": "ok",
+                "source": "news",
+            },
+        ],
+    }
+
+
+def test_awareness_overview_phrasings_use_first_rendered_sourced_fact():
+    for phrase in (
+        "What matters most?",
+        "What stands out?",
+        "What should I watch?",
+        "Keep an eye on",
+    ):
+        state: dict = {}
+        store_awareness_brief_surface(state, _awareness_payload(), set_focus=True)
+
+        assert is_discussion_shaped_brief_followup(phrase, state) is True
+        answer = answer_grounded_brief_followup(phrase, state)
+
+        assert "Rain starts after 3 PM." in answer
+        assert "source: weather" in answer
+        assert "Markets await the rate decision." not in answer
+
+
+def test_awareness_overview_degrades_honestly_without_live_content():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        {
+            "sections": [
+                {
+                    "key": "weather",
+                    "title": "Weather",
+                    "items": ["Weather temporarily unavailable."],
+                    "status": "unavailable",
+                    "source": "weather",
+                }
+            ]
+        },
+        set_focus=True,
+    )
+
+    answer = answer_grounded_brief_followup("What matters most?", state)
+    assert "does not contain enough live information" in answer
+
+
+def test_awareness_storage_does_not_mutate_cap50_state_or_numeric_story_identity():
+    state = _rendered_brief_state()
+    original_clusters = list(state["last_brief_clusters"])
+    category_items = [
+        {"title": "First category story", "source": "NPR", "summary": "First summary"},
+        {"title": "Second category story", "source": "BBC News", "summary": "Second summary"},
+    ]
+    store_active_news_surface(state, "category", category_items, category_key="global")
+    original_surface = dict(state["active_news_surface"])
+
+    store_awareness_brief_surface(state, _awareness_payload(), set_focus=True)
+
+    assert state["last_brief_clusters"] == original_clusters
+    assert state["active_news_surface"] == original_surface
+    answer = answer_grounded_brief_followup("Tell me more about the second story.", state)
+    assert "Second category story" in answer
+
+
+def test_foreground_surface_controls_overview_precedence_and_silent_refresh_does_not_steal_it():
+    state = _rendered_brief_state()
+    category_items = [
+        {"title": "Active news lead", "source": "NPR", "summary": "News summary"},
+    ]
+    store_active_news_surface(state, "category", category_items, category_key="global")
+    store_awareness_brief_surface(state, _awareness_payload(), set_focus=False)
+
+    news_answer = answer_grounded_brief_followup("What matters most?", state)
+    assert "Active news lead" in news_answer
+    assert "Rain starts after 3 PM." not in news_answer
+
+    store_awareness_brief_surface(state, _awareness_payload(), set_focus=True)
+    awareness_answer = answer_grounded_brief_followup("What matters most?", state)
+    assert "Rain starts after 3 PM." in awareness_answer
+    assert "Active news lead" not in awareness_answer
 
 
 def test_active_surface_identity_is_stable_for_same_story_collection():
