@@ -1,12 +1,13 @@
 # Daily Command Center
 
-## 2026-07-23 session (latest - read this first)
+## 2026-07-28 session (latest - read this first)
 
 ```text
-SEVEN-MORNING THRESHOLD COMPLETE. GROUNDED ROUTING SHIPPED (PR #312).
+SEVEN-MORNING THRESHOLD COMPLETE. GROUNDED ROUTING SHIPPED. B1 CLEARED.
+POST-#312 SMOKE REPAIR LOOP CLOSED (#318 + #319).
 
-Main is at c3856473 (PR #312 + the grounded-routing verification closeout). The seven
-mornings (docs/observation/MORNING_01..07) are logged and synthesized in
+Main is at b6956d39 after PR #319. The seven mornings
+(docs/observation/MORNING_01..07) are logged and synthesized in
 docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md, which declared the evidence
 threshold COMPLETE and named grounded brief/category routing the rank-1 defect.
 
@@ -19,14 +20,37 @@ Landed since the 2026-07-15 block:
          deterministic source-bounded fallback preserved. 205 focused tests,
          prove_runtime_truth PASS, live branch verification (PR body) + fresh-main
          verification (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
+  #313 - preserve the 2026-07-25 Nova direction session.
+  #314 - synchronize canonical and continuity truth after PR #312.
+  #315 - block real browser/email-client launches suite-wide during tests.
+  #316 - make the remaining three failing suite tests hermetic.
+  #317 - record the clean merged-main full-suite result and clear B1:
+         3799 passed in 6:46, exit 0, no pytest timeout or external desktop launch.
+  #318 - guard governed-surface requests from GeneralChat (post-smoke trust repair): a
+         request-shaped reference to a named governed surface (Awareness Brief, Auralis Today)
+         routes there or returns bounded clarification; never free local-model generation.
+  #319 - ground awareness-brief overview questions ("What matters most?") deterministically
+         from a dedicated awareness-cluster state (Cap 50 untouched); positional sourced lead,
+         no model, source label.
+
+POST-#312 SMOKE LOOP (b6956d39): the first live post-#312 smoke (SMOKE_POST_312) found an
+Auralis hallucination + brief timeout/escape + a "what matters most" deflection. #318 fixed the
+trust-critical routing (hallucination + escape); #319 fixed the awareness-brief overview
+grounding. The post-merge live smoke (SMOKE_POST_MERGE_318, Resolution section) confirmed on
+fresh main that "what matters most" returns a concrete sourced fact with a source label (no
+model), Auralis stays honest, mentions stay in GeneralChat, and Cap 50 "second story" isolation
+holds. The primary awareness-brief flow is now grounded and trustworthy end to end.
 
 This CLOSES the lane the 2026-07-15 block listed as the next Slice-1 build. It is now
 COMPLETE, not pending. No additional seven-morning or open-ended observation gate remains.
 
 NEXT INPUT: one targeted post-#312 morning for additional real-use / product-acceptance
-input. PR #312 is already verified on fresh main (the closeout restarted from clean main and
-confirmed the full category -> second-story -> "what matters most" workflow), so this morning
-is continued real use, NOT that verification. After it the owner selects the next
+input. After #318/#319 the primary awareness-brief flow is grounded end to end, so this morning
+measures USEFULNESS, not routing defects. Run it against the ratified
+docs/observation/MORNING_LOG_TEMPLATE.md (plus the post-#312 acceptance questions); the filled
+record lands as a committed observation afterward. PR #312 is already verified on fresh
+main (the closeout confirmed the full category -> second-story -> "what matters most" workflow),
+so this morning is continued real use, NOT that verification. After it the owner selects the next
 evidence-ranked PRODUCT-USABILITY lane. Two distinct lists feed that choice (none authorized
 here):
   Synthesis-ranked secondary repairs (each a separate decision):
@@ -50,9 +74,10 @@ write, scheduler expansion, OpenClaw expansion, or autonomous execution.
 ```
 
 Status: manual continuity surface.
-Last reviewed: 2026-07-23 (seven-morning synthesis complete; PR #311-#312 merged;
-grounded routing shipped and fresh-main verified).
-Source: seven-morning synthesis + PR #311/#312 + closeout + generated runtime docs.
+Last reviewed: 2026-07-28 (PR #311-#319 landed; grounded routing verified; B1 cleared;
+post-#312 smoke repair loop #318/#319 closed and live-verified on merged main b6956d39).
+Source: seven-morning synthesis + PR #311-#317 + grounded-routing closeout +
+full-suite verification recorded by PR #317 + generated runtime docs.
 
 ## 2026-07-15 session (historical context)
 
