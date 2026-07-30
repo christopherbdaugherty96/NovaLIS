@@ -32,6 +32,10 @@ INPUTS_COMPLETE = "inputs_complete"
 INPUTS_PARTIAL = "inputs_partial"
 NOT_ENOUGH_TRUSTED_INPUTS = "not_enough_trusted_inputs"
 
+OWNER_BLOCKER_PREFIX = "Owner blocker:"
+BEST_MOVE_PREFIX = "Best move:"
+DECISION_ITEM_PREFIXES = (OWNER_BLOCKER_PREFIX, BEST_MOVE_PREFIX)
+
 _MAX_LEN = 160
 _NO_RECOMMENDATION = "not enough trusted inputs to recommend today"
 
@@ -136,8 +140,8 @@ def _top_blocker(owner_actions: list[dict[str, Any]]) -> dict[str, Any] | None:
 
 def _owner_blocker_line(blocker: dict[str, Any] | None) -> str:
     if not blocker:
-        return "Owner blocker: none gating revenue right now."
-    return f"Owner blocker: {_clean(blocker.get('content'), limit=120)}"
+        return f"{OWNER_BLOCKER_PREFIX} none gating revenue right now."
+    return f"{OWNER_BLOCKER_PREFIX} {_clean(blocker.get('content'), limit=120)}"
 
 
 def _best_move(
@@ -148,11 +152,11 @@ def _best_move(
     """Deterministic. Blocker-that-gates-revenue wins; else top of the promotion queue."""
     if blocker:
         step = _clean(blocker.get("smallest_step") or blocker.get("content"), limit=120)
-        return f"Best move: {step} - it gates revenue and only you can do it."
+        return f"{BEST_MOVE_PREFIX} {step} - it gates revenue and only you can do it."
     if promotion_queue:
         top = _clean(promotion_queue[0], limit=80)
-        return f"Best move: promote {top} - top of the promotion queue, channels ready."
-    return f"Best move: {_NO_RECOMMENDATION}."
+        return f"{BEST_MOVE_PREFIX} promote {top} - top of the promotion queue, channels ready."
+    return f"{BEST_MOVE_PREFIX} {_NO_RECOMMENDATION}."
 
 
 def _watch_line(owner_actions: list[dict[str, Any]]) -> str:
