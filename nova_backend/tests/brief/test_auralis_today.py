@@ -6,9 +6,12 @@ determinism-across-reruns and the non-authorizing contract.
 from __future__ import annotations
 
 from src.brief.auralis_today import (
+    BEST_MOVE_PREFIX,
+    DECISION_ITEM_PREFIXES,
     INPUTS_COMPLETE,
     INPUTS_PARTIAL,
     NOT_ENOUGH_TRUSTED_INPUTS,
+    OWNER_BLOCKER_PREFIX,
     auralis_today_input_status,
     build_auralis_today_section,
 )
@@ -55,6 +58,16 @@ def test_best_move_is_actionable_and_singular():
     best = next(i for i in section.items if i.startswith("Best move:"))
     # The revenue-gating blocker wins over the promotion queue.
     assert "Verify" in best
+
+
+def test_decision_label_contract_matches_composer_output():
+    section = build_auralis_today_section(_complete_inputs())
+
+    assert DECISION_ITEM_PREFIXES == (OWNER_BLOCKER_PREFIX, BEST_MOVE_PREFIX)
+    assert OWNER_BLOCKER_PREFIX == "Owner blocker:"
+    assert BEST_MOVE_PREFIX == "Best move:"
+    for prefix in DECISION_ITEM_PREFIXES:
+        assert sum(item.startswith(prefix) for item in section.items) == 1
 
 
 # --- Criterion 2: deterministic, same inputs -> same recommendation ---

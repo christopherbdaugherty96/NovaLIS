@@ -4,10 +4,9 @@ import asyncio
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.conversation.session_router import GateResult
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 pytestmark = pytest.mark.slow
 
@@ -61,6 +60,39 @@ class _SourcedAwarenessBrief:
         }
 
 
+class _DecisionAwarenessBrief:
+    greeting = "Good morning"
+
+    def to_dict(self) -> dict:
+        return {
+            "type": "awareness_brief",
+            "greeting": self.greeting,
+            "sections": [
+                {
+                    "key": "weather",
+                    "title": "Weather",
+                    "items": ["Distinctive weather fact."],
+                    "status": "ok",
+                    "source": "weather",
+                },
+                {
+                    "key": "auralis_today",
+                    "title": "Auralis Today",
+                    "items": [
+                        "Store live.",
+                        "Owner blocker: Meta business verification",
+                        "Best move: Open Meta Business Suite and click Verify account",
+                        "Watch: July 9 Google Merchant review",
+                    ],
+                    "status": "ok",
+                    "source": "auralis:inputs_partial",
+                },
+            ],
+            "available_count": 2,
+            "total_count": 2,
+        }
+
+
 def test_daily_awareness_request_routes_at_websocket_boundary_and_grounds_followup(monkeypatch):
     _disable_unrelated_routes(monkeypatch)
     monkeypatch.setattr(
@@ -92,6 +124,42 @@ def test_daily_awareness_request_routes_at_websocket_boundary_and_grounds_follow
     assert any("Distinctive sourced fact: rain starts after 3 PM." in message for message in chat_messages)
     assert any("source: weather" in message for message in chat_messages)
     assert not any("@auralis_digital" in message for message in chat_messages)
+
+
+def test_active_awareness_decision_followup_is_grounded_at_websocket_boundary(monkeypatch):
+    _disable_unrelated_routes(monkeypatch)
+    monkeypatch.setattr(
+        "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
+        lambda self, **kwargs: [],
+    )
+    ws = _ScriptedWebSocket(
+        [
+            "Give me my Daily Awareness Brief.",
+            "What decision requires my attention?",
+        ]
+    )
+
+    with (
+        patch(
+            "src.brief.awareness_brief.compose_awareness_brief",
+            return_value=_DecisionAwarenessBrief(),
+        ),
+        patch(
+            "src.skills.general_chat.generate_chat",
+            side_effect=AssertionError("GeneralChat must not run for the decision follow-up"),
+        ),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    decision_answer = next(
+        message for message in chat_messages if "Displayed Auralis Today decision items:" in message
+    )
+    assert "Owner blocker: Meta business verification" in decision_answer
+    assert "Best move: Open Meta Business Suite and click Verify account" in decision_answer
+    assert "Watch: July 9 Google Merchant review" not in decision_answer
+    assert "source: auralis:inputs_partial" in decision_answer
+    assert "not approval or permission to act" in decision_answer
 
 
 def test_auralis_today_request_routes_and_degrades_honestly_without_inputs(monkeypatch):

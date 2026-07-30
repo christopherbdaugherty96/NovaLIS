@@ -5,6 +5,8 @@ from datetime import datetime
 from hashlib import sha256
 from typing import Any
 
+from src.brief.auralis_today import DECISION_ITEM_PREFIXES
+
 DISCUSSION_MARKERS = (
     "tell me more",
     "more about",
@@ -42,6 +44,12 @@ FETCH_SHAPES = (
 
 # "top/lead/main story" is a natural news reference the ordinal path missed.
 TOP_STORY_RE = re.compile(r"\b(?:top|lead|main|biggest)\s+(?:story|stories|headline|headlines)\b", re.I)
+
+_AWARENESS_DECISION_FOLLOWUP_PATTERNS = (
+    re.compile(r"\b(?:what|which)\s+decision\s+(?:actually\s+)?(?:requires?|needs?)\s+my\s+attention\b", re.I),
+    re.compile(r"\bwhat\s+do\s+i\s+need\s+to\s+decide\b", re.I),
+    re.compile(r"\bis\s+there\s+a\s+decision\s+i\s+need\s+to\s+make\b", re.I),
+)
 
 # Schedule / calendar / commitment questions. Kept specific to avoid over-capturing
 # ordinary chat: explicit schedule nouns, "am I free/busy", or "what do I have <when>".
@@ -367,6 +375,12 @@ def _select_explicit_item_key(lowered: str, state: dict[str, Any]) -> str:
     if (
         active_key == "awareness_brief"
         and state.get("awareness_brief_clusters")
+        and _is_awareness_decision_followup(lowered)
+    ):
+        return "awareness_brief"
+    if (
+        active_key == "awareness_brief"
+        and state.get("awareness_brief_clusters")
         and any(marker in lowered for marker in overview_markers)
     ):
         return "awareness_brief"
@@ -415,6 +429,10 @@ def _contains_any_word(text: str, words: tuple[str, ...]) -> bool:
     return any(re.search(rf"\b{re.escape(word)}\b", text) for word in words)
 
 
+def _is_awareness_decision_followup(lowered: str) -> bool:
+    return any(pattern.search(lowered) for pattern in _AWARENESS_DECISION_FOLLOWUP_PATTERNS)
+
+
 def _has_discussion_shape(lowered: str) -> bool:
     return any(marker in lowered for marker in DISCUSSION_MARKERS) or _is_vague_followup(lowered)
 
@@ -449,7 +467,7 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
             or re.search(r"\bconnection\s+status\b", lowered) is not None
         ) and any(marker in lowered for marker in ("what caused", "why", "cause", "mean", "meaning", "that warning"))
     if key == "awareness_brief":
-        return _has_reference_shape(lowered) or any(
+        return _is_awareness_decision_followup(lowered) or _has_reference_shape(lowered) or any(
             marker in lowered
             for marker in (
                 "why does",
@@ -880,6 +898,9 @@ def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
         return "I do not have a rendered intelligence brief to answer from yet."
 
     lowered = str(query or "").lower()
+    if use_awareness_surface and _is_awareness_decision_followup(lowered):
+        return _answer_auralis_decision_followup(clusters)
+
     placeholders = [
         cluster
         for cluster in clusters
@@ -944,3 +965,50 @@ def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
         )
 
     return "Current rendered brief:\n" + "\n".join(render_cluster(cluster, include_implication=False) for cluster in clusters[:3])
+
+
+def _answer_auralis_decision_followup(clusters: list[dict[str, Any]]) -> str:
+    auralis = next(
+        (cluster for cluster in clusters if str(cluster.get("key") or "").strip() == "auralis_today"),
+        None,
+    )
+    if not auralis:
+        return "The rendered Awareness Brief does not include Auralis Today decision information."
+
+    source = _clip(auralis.get("source"), 80)
+    status = _clip(auralis.get("status"), 40).lower()
+    labels = []
+    if source:
+        labels.append(f"source: {source}")
+    if status:
+        labels.append(f"status: {status}")
+    label_text = f" [{'; '.join(labels)}]" if labels else ""
+
+    if auralis.get("placeholder") or status == "not_configured":
+        return (
+            "Auralis Today decision information is unavailable in the rendered Awareness Brief."
+            + label_text
+        )
+
+    items = [
+        str(item or "").strip()
+        for item in list(auralis.get("items") or [])
+        if str(item or "").strip()
+    ]
+    decision_lines = [
+        next((item for item in items if item.startswith(prefix)), "")
+        for prefix in DECISION_ITEM_PREFIXES
+    ]
+    if any(not line for line in decision_lines):
+        return (
+            "The rendered Auralis Today section does not contain the complete decision-label "
+            "contract I need to answer."
+            + label_text
+        )
+
+    return (
+        "Displayed Auralis Today decision items:\n"
+        + "\n".join(f"- {line}" for line in decision_lines)
+        + label_text
+        + "\n\nThese are displayed recommendations, not approval or permission to act."
+    )
