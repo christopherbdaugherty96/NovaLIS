@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 from src.conversation.brief_followup_grounding import (
     active_news_surface_clusters,
     answer_grounded_brief_followup,
@@ -535,6 +537,30 @@ def _awareness_payload() -> dict:
     }
 
 
+def _awareness_payload_with_auralis(
+    *,
+    owner_blocker: str = "Owner blocker: Meta business verification",
+    best_move: str = "Best move: Open Meta Business Suite and click Verify account",
+    status: str = "ok",
+) -> dict:
+    payload = _awareness_payload()
+    payload["sections"].append(
+        {
+            "key": "auralis_today",
+            "title": "Auralis Today",
+            "items": [
+                "Store status unavailable (Shopify not connected).",
+                owner_blocker,
+                best_move,
+                "Watch: July 9 Google Merchant review",
+            ],
+            "status": status,
+            "source": "auralis:inputs_partial",
+        }
+    )
+    return payload
+
+
 def test_awareness_overview_phrasings_use_first_rendered_sourced_fact():
     for phrase in (
         "What matters most?",
@@ -551,6 +577,112 @@ def test_awareness_overview_phrasings_use_first_rendered_sourced_fact():
         assert "Rain starts after 3 PM." in answer
         assert "source: weather" in answer
         assert "Markets await the rate decision." not in answer
+
+
+def test_active_awareness_decision_followup_returns_only_auralis_decision_contract():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        _awareness_payload_with_auralis(),
+        set_focus=True,
+    )
+    before = deepcopy(state)
+
+    assert is_discussion_shaped_brief_followup(
+        "What decision requires my attention?",
+        state,
+    ) is True
+    answer = answer_grounded_brief_followup(
+        "What decision requires my attention?",
+        state,
+    )
+
+    assert "Owner blocker: Meta business verification" in answer
+    assert "Best move: Open Meta Business Suite and click Verify account" in answer
+    assert "Watch: July 9 Google Merchant review" not in answer
+    assert "source: auralis:inputs_partial" in answer
+    assert "status: ok" in answer
+    assert "not approval or permission to act" in answer
+    assert state == before
+
+
+def test_active_awareness_decision_followup_surfaces_explicit_none_as_truth():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        _awareness_payload_with_auralis(
+            owner_blocker="Owner blocker: none gating revenue right now.",
+            best_move="Best move: promote hooded sherpas - top of the promotion queue, channels ready.",
+        ),
+        set_focus=True,
+    )
+
+    answer = answer_grounded_brief_followup("What do I need to decide?", state)
+
+    assert "Owner blocker: none gating revenue right now." in answer
+    assert "Best move: promote hooded sherpas" in answer
+    assert "unavailable" not in answer.lower()
+
+
+def test_active_awareness_decision_followup_degrades_for_unavailable_auralis():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        _awareness_payload_with_auralis(
+            owner_blocker="Not enough trusted inputs to recommend today.",
+            best_move="Connect Shopify (read-only) or seed owner-action/promotion items.",
+            status="not_configured",
+        ),
+        set_focus=True,
+    )
+
+    answer = answer_grounded_brief_followup(
+        "Is there a decision I need to make?",
+        state,
+    )
+
+    assert "decision information is unavailable" in answer
+    assert "status: not_configured" in answer
+    assert "Best move:" not in answer
+
+
+def test_decision_phrasing_outside_active_awareness_remains_general_chat():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        _awareness_payload_with_auralis(),
+        set_focus=False,
+    )
+
+    assert is_discussion_shaped_brief_followup(
+        "What decision requires my attention?",
+        state,
+    ) is False
+    assert answer_grounded_brief_followup(
+        "What decision requires my attention?",
+        state,
+    ) == ""
+
+
+def test_active_news_surface_keeps_decision_phrasing_out_of_awareness():
+    state = _rendered_brief_state()
+    store_awareness_brief_surface(
+        state,
+        _awareness_payload_with_auralis(),
+        set_focus=False,
+    )
+    store_active_news_surface(
+        state,
+        "category",
+        [{"title": "Active news lead", "source": "NPR"}],
+        category_key="global",
+    )
+
+    assert state["active_brief_item"] == "news"
+    assert is_discussion_shaped_brief_followup(
+        "What decision requires my attention?",
+        state,
+    ) is False
 
 
 def test_awareness_overview_degrades_honestly_without_live_content():
