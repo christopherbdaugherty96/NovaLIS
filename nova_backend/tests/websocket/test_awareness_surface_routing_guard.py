@@ -132,6 +132,10 @@ def test_active_awareness_decision_followup_is_grounded_at_websocket_boundary(mo
         "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
         lambda self, **kwargs: [],
     )
+    rendered_brief = _DecisionAwarenessBrief()
+    auralis_items = rendered_brief.to_dict()["sections"][1]["items"]
+    displayed_owner = next(item for item in auralis_items if item.startswith("Owner blocker:"))
+    displayed_best = next(item for item in auralis_items if item.startswith("Best move:"))
     ws = _ScriptedWebSocket(
         [
             "Give me my Daily Awareness Brief.",
@@ -142,7 +146,7 @@ def test_active_awareness_decision_followup_is_grounded_at_websocket_boundary(mo
     with (
         patch(
             "src.brief.awareness_brief.compose_awareness_brief",
-            return_value=_DecisionAwarenessBrief(),
+            return_value=rendered_brief,
         ),
         patch(
             "src.skills.general_chat.generate_chat",
@@ -155,11 +159,24 @@ def test_active_awareness_decision_followup_is_grounded_at_websocket_boundary(mo
     decision_answer = next(
         message for message in chat_messages if "Displayed Auralis Today decision items:" in message
     )
-    assert "Owner blocker: Meta business verification" in decision_answer
-    assert "Best move: Open Meta Business Suite and click Verify account" in decision_answer
+    lines = decision_answer.splitlines()
+    owner_lines = [line for line in lines if line.startswith("- Owner blocker:")]
+    best_lines = [line for line in lines if line.startswith("- Best move:")]
+    assert len(owner_lines) == 1
+    assert len(best_lines) == 1
+    assert owner_lines[0].removeprefix("- ") == displayed_owner
+    assert best_lines[0].removeprefix("- ") == displayed_best
+    assert "source:" not in owner_lines[0]
+    assert "status:" not in owner_lines[0]
+    assert "source:" not in best_lines[0]
+    assert "status:" not in best_lines[0]
+    assert "[source: auralis:inputs_partial; status: ok]" in lines
     assert "Watch: July 9 Google Merchant review" not in decision_answer
-    assert "source: auralis:inputs_partial" in decision_answer
-    assert "not approval or permission to act" in decision_answer
+    assert "These are displayed recommendations, not approval or permission to act." in lines
+    assert not any(
+        message.get("type") in {"confirmation", "confirmation_required", "action_result"}
+        for message in ws.sent_messages
+    )
 
 
 def test_auralis_today_request_routes_and_degrades_honestly_without_inputs(monkeypatch):
