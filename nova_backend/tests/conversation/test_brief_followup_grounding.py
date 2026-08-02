@@ -581,9 +581,13 @@ def test_awareness_overview_phrasings_use_first_rendered_sourced_fact():
 
 def test_active_awareness_decision_followup_returns_only_auralis_decision_contract():
     state: dict = {}
+    payload = _awareness_payload_with_auralis()
+    auralis_items = payload["sections"][-1]["items"]
+    displayed_owner = next(item for item in auralis_items if item.startswith("Owner blocker:"))
+    displayed_best = next(item for item in auralis_items if item.startswith("Best move:"))
     store_awareness_brief_surface(
         state,
-        _awareness_payload_with_auralis(),
+        payload,
         set_focus=True,
     )
     before = deepcopy(state)
@@ -597,30 +601,50 @@ def test_active_awareness_decision_followup_returns_only_auralis_decision_contra
         state,
     )
 
-    assert "Owner blocker: Meta business verification" in answer
-    assert "Best move: Open Meta Business Suite and click Verify account" in answer
+    lines = answer.splitlines()
+    owner_lines = [line for line in lines if line.startswith("- Owner blocker:")]
+    best_lines = [line for line in lines if line.startswith("- Best move:")]
+    provenance_lines = [line for line in lines if line.startswith("[source:")]
+
+    assert len(owner_lines) == 1
+    assert len(best_lines) == 1
+    assert owner_lines[0].removeprefix("- ") == displayed_owner
+    assert best_lines[0].removeprefix("- ") == displayed_best
+    assert "source:" not in owner_lines[0]
+    assert "status:" not in owner_lines[0]
+    assert "source:" not in best_lines[0]
+    assert "status:" not in best_lines[0]
+    assert provenance_lines == ["[source: auralis:inputs_partial; status: ok]"]
     assert "Watch: July 9 Google Merchant review" not in answer
-    assert "source: auralis:inputs_partial" in answer
-    assert "status: ok" in answer
-    assert "not approval or permission to act" in answer
+    assert "These are displayed recommendations, not approval or permission to act." in lines
     assert state == before
 
 
 def test_active_awareness_decision_followup_surfaces_explicit_none_as_truth():
     state: dict = {}
+    displayed_owner = "Owner blocker: none gating revenue right now."
+    displayed_best = "Best move: promote hooded sherpas - top of the promotion queue, channels ready."
     store_awareness_brief_surface(
         state,
         _awareness_payload_with_auralis(
-            owner_blocker="Owner blocker: none gating revenue right now.",
-            best_move="Best move: promote hooded sherpas - top of the promotion queue, channels ready.",
+            owner_blocker=displayed_owner,
+            best_move=displayed_best,
         ),
         set_focus=True,
     )
 
     answer = answer_grounded_brief_followup("What do I need to decide?", state)
 
-    assert "Owner blocker: none gating revenue right now." in answer
-    assert "Best move: promote hooded sherpas" in answer
+    lines = answer.splitlines()
+    owner_line = next(line for line in lines if line.startswith("- Owner blocker:"))
+    best_line = next(line for line in lines if line.startswith("- Best move:"))
+    assert owner_line.removeprefix("- ") == displayed_owner
+    assert best_line.removeprefix("- ") == displayed_best
+    assert "source:" not in owner_line
+    assert "status:" not in owner_line
+    assert "source:" not in best_line
+    assert "status:" not in best_line
+    assert "[source: auralis:inputs_partial; status: ok]" in lines
     assert "unavailable" not in answer.lower()
 
 

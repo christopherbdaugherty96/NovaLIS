@@ -1009,6 +1009,6 @@ def _answer_auralis_decision_followup(clusters: list[dict[str, Any]]) -> str:
     return (
         "Displayed Auralis Today decision items:\n"
         + "\n".join(f"- {line}" for line in decision_lines)
-        + label_text
+        + (f"\n\n{label_text.strip()}" if label_text else "")
         + "\n\nThese are displayed recommendations, not approval or permission to act."
     )
