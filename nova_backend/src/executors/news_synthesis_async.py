@@ -9,7 +9,6 @@ from typing import Any, Callable
 
 from src.executors.news_synthesis_cache import cluster_fingerprint
 
-
 log = logging.getLogger(__name__)
 
 ASYNC_SYNTHESIS_TIMEOUT_SECONDS = 45.0
