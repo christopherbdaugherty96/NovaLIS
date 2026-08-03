@@ -10,7 +10,6 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
-
 SCHEMA_VERSION = "1.0"
 DEFAULT_FRESH_TTL_SECONDS = 30 * 60
 DEFAULT_STALE_USABLE_TTL_SECONDS = 2 * 60 * 60

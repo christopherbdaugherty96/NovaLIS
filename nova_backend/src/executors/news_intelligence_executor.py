@@ -12,7 +12,10 @@ from pathlib import Path
 from typing import Any
 
 from src.actions.action_result import ActionResult
-from src.executors.news_synthesis_async import ASYNC_SYNTHESIS_TIMEOUT_SECONDS, news_synthesis_fill_queue
+from src.executors.news_synthesis_async import (
+    ASYNC_SYNTHESIS_TIMEOUT_SECONDS,
+    news_synthesis_fill_queue,
+)
 from src.executors.news_synthesis_cache import NewsSynthesisCache
 from src.llm.llm_gateway import generate_chat, model_status_snapshot
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
