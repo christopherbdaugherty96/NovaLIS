@@ -36,7 +36,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-
 BRIEF_CLARIFICATION = "Do you mean your calendar, the weather, or the news?"
 
 
