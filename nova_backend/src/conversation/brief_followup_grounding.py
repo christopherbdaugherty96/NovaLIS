@@ -373,8 +373,8 @@ def _select_explicit_item_key(lowered: str, state: dict[str, Any]) -> str:
     active_surface = state.get("active_news_surface")
     active_key = str(state.get("active_brief_item") or "").strip()
     if (
-        active_key == "awareness_brief"
-        and state.get("awareness_brief_clusters")
+        active_key in {"", "awareness_brief"}
+        and _has_auralis_decision_surface(state)
         and _is_awareness_decision_followup(lowered)
     ):
         return "awareness_brief"
@@ -431,6 +431,34 @@ def _contains_any_word(text: str, words: tuple[str, ...]) -> bool:
 
 def _is_awareness_decision_followup(lowered: str) -> bool:
     return any(pattern.search(lowered) for pattern in _AWARENESS_DECISION_FOLLOWUP_PATTERNS)
+
+
+def _has_auralis_decision_surface(state: dict[str, Any]) -> bool:
+    """Return whether the current Awareness payload can answer decision intent.
+
+    Silent widget hydration stores the rendered Awareness clusters without claiming
+    conversational focus.  Exact decision intent may consume that current surface
+    only while focus is empty (or already Awareness); callers enforce that boundary.
+    """
+    clusters = state.get("awareness_brief_clusters")
+    if not isinstance(clusters, list):
+        return False
+    auralis = next(
+        (
+            cluster
+            for cluster in clusters
+            if isinstance(cluster, dict)
+            and str(cluster.get("key") or "").strip() == "auralis_today"
+        ),
+        None,
+    )
+    if not isinstance(auralis, dict):
+        return False
+    status = str(auralis.get("status") or "").strip().lower()
+    if auralis.get("placeholder") or status == "not_configured":
+        return True
+    items = [str(item or "").strip() for item in list(auralis.get("items") or [])]
+    return all(any(item.startswith(prefix) for item in items) for prefix in DECISION_ITEM_PREFIXES)
 
 
 def _has_discussion_shape(lowered: str) -> bool:
@@ -886,8 +914,15 @@ def _answer_runtime_followup(state: dict[str, Any]) -> str:
 
 def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
     awareness_clusters = list(state.get("awareness_brief_clusters") or [])
+    lowered = str(query or "").lower()
+    active_key = str(state.get("active_brief_item") or "").strip()
+    empty_focus_decision = (
+        active_key == ""
+        and _is_awareness_decision_followup(lowered)
+        and _has_auralis_decision_surface(state)
+    )
     use_awareness_surface = (
-        str(state.get("active_brief_item") or "").strip() == "awareness_brief"
+        (active_key == "awareness_brief" or empty_focus_decision)
         and "awareness_brief_clusters" in state
     )
     cluster_source = awareness_clusters if use_awareness_surface else list(state.get("last_brief_clusters") or [])
@@ -897,7 +932,6 @@ def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
             return "The rendered Awareness Brief does not contain enough live information to identify a lead item."
         return "I do not have a rendered intelligence brief to answer from yet."
 
-    lowered = str(query or "").lower()
     if use_awareness_surface and _is_awareness_decision_followup(lowered):
         return _answer_auralis_decision_followup(clusters)
 
