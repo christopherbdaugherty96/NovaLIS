@@ -72,7 +72,7 @@ def test_non_confirm_capabilities_do_not_require_confirmation():
 
 
 # ---------------------------------------------------------------------------
-# Governor enforcement: confirm-risk caps are refused without confirmed=True
+# Governor enforcement: confirm-risk caps require Governor-owned grants
 # ---------------------------------------------------------------------------
 
 def test_governor_refuses_cap22_without_confirmation():
@@ -81,7 +81,7 @@ def test_governor_refuses_cap22_without_confirmation():
     gov = Governor()
     result = gov.handle_governed_invocation(22, {"target": "documents"})
     assert result.success is False
-    assert "requires confirmation" in result.message.lower()
+    assert result.data["approval_reason"] == "missing"
 
 
 def test_governor_refuses_cap64_without_confirmation():
@@ -92,35 +92,48 @@ def test_governor_refuses_cap64_without_confirmation():
         64, {"to": "test@example.com", "subject": "test"}
     )
     assert result.success is False
-    assert "requires confirmation" in result.message.lower()
+    assert result.data["approval_reason"] == "missing"
 
 
-def test_governor_passes_cap22_with_confirmation():
+def test_governor_passes_cap22_with_exact_grant():
     from src.governor.governor import Governor
 
     gov = Governor()
+    params = {"target": "documents"}
+    grant = gov.issue_approval_grant(
+        session_id="session-a", capability_id=22, params=params
+    )
     result = gov.handle_governed_invocation(
-        22, {"target": "documents", "confirmed": True}
+        22,
+        params,
+        session_id="session-a",
+        approval_id=grant.approval_id,
     )
     # Should not be a confirmation refusal - may fail for other reasons
     # (e.g. path validation) but the approval gate must not block.
     if not result.success:
-        assert "requires confirmation" not in result.message.lower(), (
-            "Cap 22 was refused for confirmation even with confirmed=True"
+        assert result.data.get("approval_reason") is None, (
+            "Cap 22 was refused despite an exact Governor-owned grant"
         )
 
 
-def test_governor_passes_cap64_with_confirmation():
+def test_governor_passes_cap64_with_exact_grant():
     from src.governor.governor import Governor
 
     gov = Governor()
+    params = {"to": "test@example.com", "subject": "test"}
+    grant = gov.issue_approval_grant(
+        session_id="session-a", capability_id=64, params=params
+    )
     result = gov.handle_governed_invocation(
         64,
-        {"to": "test@example.com", "subject": "test", "confirmed": True},
+        params,
+        session_id="session-a",
+        approval_id=grant.approval_id,
     )
     if not result.success:
-        assert "requires confirmation" not in result.message.lower(), (
-            "Cap 64 was refused for confirmation even with confirmed=True"
+        assert result.data.get("approval_reason") is None, (
+            "Cap 64 was refused despite an exact Governor-owned grant"
         )
 
 
@@ -132,7 +145,7 @@ def test_governor_refuses_confirmed_false():
         22, {"target": "documents", "confirmed": False}
     )
     assert result.success is False
-    assert "requires confirmation" in result.message.lower()
+    assert result.data["approval_reason"] == "caller_confirmation_metadata"
 
 
 def test_governor_refuses_confirmed_empty_string():
@@ -143,7 +156,7 @@ def test_governor_refuses_confirmed_empty_string():
         22, {"target": "documents", "confirmed": ""}
     )
     assert result.success is False
-    assert "requires confirmation" in result.message.lower()
+    assert result.data["approval_reason"] == "caller_confirmation_metadata"
 
 
 def test_pending_cap22_does_not_dispatch_or_log_action_attempted(monkeypatch):
@@ -160,7 +173,7 @@ def test_pending_cap22_does_not_dispatch_or_log_action_attempted(monkeypatch):
         result = Governor().handle_governed_invocation(22, {"target": "documents"})
 
     assert result.success is False
-    assert "requires confirmation" in result.message.lower()
+    assert result.data["approval_reason"] == "missing"
     assert "ACTION_ATTEMPTED" not in _event_types(ledger)
     assert "ACTION_COMPLETED" not in _event_types(ledger)
 
@@ -181,7 +194,7 @@ def test_pending_cap64_does_not_dispatch_or_log_action_attempted(monkeypatch):
         )
 
     assert result.success is False
-    assert "requires confirmation" in result.message.lower()
+    assert result.data["approval_reason"] == "missing"
     assert "ACTION_ATTEMPTED" not in _event_types(ledger)
     assert "ACTION_COMPLETED" not in _event_types(ledger)
 
@@ -198,8 +211,16 @@ def test_approved_cap22_runs_only_after_governor_attempt_ledger(monkeypatch):
         "src.system_control.system_control_executor.SystemControlExecutor.open_path",
         return_value=True,
     ):
-        result = Governor().handle_governed_invocation(
-            22, {"path": str(repo_root), "confirmed": True}
+        governor = Governor()
+        params = {"path": str(repo_root)}
+        grant = governor.issue_approval_grant(
+            session_id="session-a", capability_id=22, params=params
+        )
+        result = governor.handle_governed_invocation(
+            22,
+            params,
+            session_id="session-a",
+            approval_id=grant.approval_id,
         )
 
     assert result.success is True
@@ -221,14 +242,20 @@ def test_approved_cap64_runs_only_after_governor_attempt_ledger(monkeypatch):
             return_value=True,
         ),
     ):
-        result = Governor().handle_governed_invocation(
+        governor = Governor()
+        params = {
+            "to": "test@example.com",
+            "subject": "test",
+            "body_intent": "write a short test draft",
+        }
+        grant = governor.issue_approval_grant(
+            session_id="session-a", capability_id=64, params=params
+        )
+        result = governor.handle_governed_invocation(
             64,
-            {
-                "to": "test@example.com",
-                "subject": "test",
-                "body_intent": "write a short test draft",
-                "confirmed": True,
-            },
+            params,
+            session_id="session-a",
+            approval_id=grant.approval_id,
         )
 
     assert result.success is True
@@ -257,10 +284,10 @@ def test_low_risk_capability_not_blocked_by_confirmation_gate():
 # ---------------------------------------------------------------------------
 
 def test_confirmation_resolver_accepts_yes():
+    from src.conversation.session_router import SessionRouter
     from src.websocket.session_handler import (
         pending_confirmation_resolution_action,
     )
-    from src.conversation.session_router import SessionRouter
 
     assert pending_confirmation_resolution_action(SessionRouter, "yes") == "confirm"
     assert pending_confirmation_resolution_action(SessionRouter, "yeah") == "confirm"
@@ -269,10 +296,10 @@ def test_confirmation_resolver_accepts_yes():
 
 
 def test_confirmation_resolver_accepts_no():
+    from src.conversation.session_router import SessionRouter
     from src.websocket.session_handler import (
         pending_confirmation_resolution_action,
     )
-    from src.conversation.session_router import SessionRouter
 
     assert pending_confirmation_resolution_action(SessionRouter, "no") == "cancel"
     assert pending_confirmation_resolution_action(SessionRouter, "cancel") == "cancel"
@@ -280,10 +307,10 @@ def test_confirmation_resolver_accepts_no():
 
 
 def test_confirmation_resolver_rejects_ambiguous_input():
+    from src.conversation.session_router import SessionRouter
     from src.websocket.session_handler import (
         pending_confirmation_resolution_action,
     )
-    from src.conversation.session_router import SessionRouter
 
     result = pending_confirmation_resolution_action(
         SessionRouter, "tell me about the weather"
@@ -304,10 +331,7 @@ def test_session_handler_sets_pending_for_cap22():
         / "src" / "websocket" / "session_handler.py"
     )
     source = handler_path.read_text(encoding="utf-8")
-    assert re.search(
-        r'capability_id\s*==\s*22\s+and\s+not\s+params\.get\(\s*"confirmed"\s*\)',
-        source,
-    ), "Session handler must gate cap 22 on pending_governed_confirm"
+    assert re.search(r"capability_id\s*==\s*22\s*:", source)
 
 
 def test_session_handler_sets_pending_for_cap64():
@@ -317,23 +341,19 @@ def test_session_handler_sets_pending_for_cap64():
         / "src" / "websocket" / "session_handler.py"
     )
     source = handler_path.read_text(encoding="utf-8")
-    assert re.search(
-        r'capability_id\s*==\s*64\s+and\s+not\s+params\.get\(\s*"confirmed"\s*\)',
-        source,
-    ), "Session handler must gate cap 64 on pending_governed_confirm"
+    assert re.search(r"capability_id\s*==\s*64\s*:", source)
 
 
-def test_session_handler_pending_confirm_sets_confirmed_true():
-    """When user confirms, session handler must set confirmed=True in params."""
+def test_session_handler_pending_confirm_issues_and_passes_grant():
+    """A user confirmation must become Governor-owned authority, not a boolean."""
     handler_path = (
         Path(__file__).resolve().parents[2]
         / "src" / "websocket" / "session_handler.py"
     )
     source = handler_path.read_text(encoding="utf-8")
-    assert 'params["confirmed"] = True' in source, (
-        "Session handler must set confirmed=True before re-invoking "
-        "a confirmation-gated capability"
-    )
+    assert "governor.issue_approval_grant(" in source
+    assert "approval_id=grant.approval_id" in source
+    assert 'params["confirmed"] = True' not in source
 
 
 def test_session_handler_clears_pending_on_cancel():

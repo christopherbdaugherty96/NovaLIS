@@ -6,8 +6,7 @@ from unittest.mock import patch
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
-
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 
 class _RecordingLedger:
@@ -41,7 +40,7 @@ def test_cap22_deterministic_prompt_uses_personality_gate_wrapper(monkeypatch, t
     _install_plain_gate(monkeypatch)
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Opened.", request_id="should-not-run")
 
@@ -63,7 +62,7 @@ def test_cap64_deterministic_prompt_uses_personality_gate_wrapper(monkeypatch):
     _install_plain_gate(monkeypatch)
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Draft opened.", request_id="should-not-run")
 
@@ -86,8 +85,8 @@ def test_cap22_deterministic_yes_still_executes_same_path(monkeypatch, tmp_path)
     ledger = _RecordingLedger()
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**dict(params), "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened documents.", request_id="confirmed-cap22")
@@ -100,7 +99,8 @@ def test_cap22_deterministic_yes_still_executes_same_path(monkeypatch, tmp_path)
 
     assert len(calls) == 1
     assert calls[0][0] == 22
-    assert calls[0][1]["confirmed"] is True
+    assert "confirmed" not in calls[0][1]
+    assert calls[0][1]["_authority"]["approval_id"]
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
 
 
@@ -109,8 +109,8 @@ def test_cap64_deterministic_yes_still_executes_same_path(monkeypatch):
     ledger = _RecordingLedger()
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**dict(params), "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Draft opened.", request_id="confirmed-cap64")
@@ -123,7 +123,8 @@ def test_cap64_deterministic_yes_still_executes_same_path(monkeypatch):
 
     assert len(calls) == 1
     assert calls[0][0] == 64
-    assert calls[0][1]["confirmed"] is True
+    assert "confirmed" not in calls[0][1]
+    assert calls[0][1]["_authority"]["approval_id"]
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
 
 
@@ -131,7 +132,7 @@ def test_cap22_deterministic_no_still_cancels(monkeypatch, tmp_path):
     _install_plain_gate(monkeypatch)
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Opened.", request_id="should-not-run")
 
@@ -149,7 +150,7 @@ def test_cap64_deterministic_no_still_cancels(monkeypatch):
     _install_plain_gate(monkeypatch)
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Draft opened.", request_id="should-not-run")
 
@@ -167,7 +168,7 @@ def test_recipientless_cap64_clarification_does_not_create_pending_confirm(monke
     _install_plain_gate(monkeypatch)
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Draft opened.", request_id="should-not-run")
 
@@ -188,7 +189,7 @@ def test_bare_yes_after_recipientless_clarification_does_not_execute(monkeypatch
     _install_plain_gate(monkeypatch)
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Draft opened.", request_id="should-not-run")
 

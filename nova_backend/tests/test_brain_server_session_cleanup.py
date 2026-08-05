@@ -5,12 +5,10 @@ import json
 
 import pytest
 from fastapi import WebSocketDisconnect
-
 from src import brain_server
-from src.governor.governor_mediator import GovernorMediator
-from src.governor.governor_mediator import Invocation
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
+from src.governor.governor_mediator import GovernorMediator, Invocation
 
 
 class _DisconnectingWebSocket:
@@ -68,8 +66,8 @@ def test_open_file_folder_requires_confirmation_before_dispatch(monkeypatch):
             return Invocation(capability_id=22, params={"target": "documents"})
         return None
 
-    def _fake_handle(capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    def _fake_handle(capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**dict(params), "_authority": authority}))
         return ActionResult.ok("Opened.", request_id="req-confirm")
 
     monkeypatch.setattr(
@@ -98,7 +96,9 @@ def test_open_file_folder_requires_confirmation_before_dispatch(monkeypatch):
     assert calls, "Expected confirmed capability dispatch."
     cap_id, params = calls[0]
     assert cap_id == 22
-    assert params.get("confirmed") is True
+    assert "confirmed" not in params
+    assert params["_authority"]["session_id"]
+    assert params["_authority"]["approval_id"]
 
 
 def test_pending_file_folder_confirmation_yes_bypasses_normal_gates(monkeypatch):
@@ -109,7 +109,7 @@ def test_pending_file_folder_confirmation_yes_bypasses_normal_gates(monkeypatch)
             return Invocation(capability_id=22, params={"target": "documents"})
         return None
 
-    def _fake_handle(capability_id: int, params: dict):
+    def _fake_handle(capability_id: int, params: dict, **authority):
         calls.append((capability_id, dict(params)))
         return ActionResult.ok("Opened documents.", request_id="req-confirm-yes")
 
@@ -147,7 +147,7 @@ def test_response_verification_chat_surface_prefers_accuracy_label(monkeypatch):
     monkeypatch.setattr(
         brain_server.RUNTIME_GOVERNOR,
         "handle_governed_invocation",
-        lambda capability_id, params: ActionResult.ok(
+        lambda capability_id, params, **authority: ActionResult.ok(
             "Verification Report\nClaim Reliability: Low (0.40)\nReport Confidence: High (0.90)",
             data={
                 "verification_accuracy_label": "Low",

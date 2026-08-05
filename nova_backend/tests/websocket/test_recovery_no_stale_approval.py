@@ -13,13 +13,11 @@ import asyncio
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
 from src.governor.governor_mediator import GovernorMediator, Invocation
-
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 
 class _RecordingLedger:
@@ -69,7 +67,7 @@ def test_cap22_disconnect_clears_pending_state(monkeypatch):
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_gov, capability_id, params):
+    async def _fake_invoke(_gov, capability_id, params, **authority):
         calls.append((capability_id, dict(params)))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
@@ -127,7 +125,7 @@ def test_cap64_disconnect_clears_pending_state(monkeypatch):
         },
     )
 
-    async def _fake_invoke(_gov, capability_id, params):
+    async def _fake_invoke(_gov, capability_id, params, **authority):
         calls.append((capability_id, dict(params)))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
@@ -179,8 +177,8 @@ def test_new_session_can_still_create_fresh_pending(monkeypatch):
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_gov, capability_id, params):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_gov, capability_id, params, **authority):
+        calls.append((capability_id, {**dict(params), "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened.", request_id="fresh-cap22")
@@ -208,6 +206,8 @@ def test_new_session_can_still_create_fresh_pending(monkeypatch):
     # Fresh request should have been created and confirmed
     assert len(calls) == 1
     assert calls[0][0] == 22
-    assert calls[0][1]["confirmed"] is True
+    assert "confirmed" not in calls[0][1]
+    assert calls[0][1]["_authority"]["session_id"]
+    assert calls[0][1]["_authority"]["approval_id"]
     assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
     assert _event_types(ledger).count("ACTION_COMPLETED") == 1

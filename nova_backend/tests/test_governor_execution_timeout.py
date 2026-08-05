@@ -473,7 +473,16 @@ def test_governor_normalizes_effect_metadata_from_topology(monkeypatch):
         ),
     )
 
-    result = gov.handle_governed_invocation(22, {"path": r"C:\Nova-Project", "confirmed": True})
+    params = {"path": r"C:\Nova-Project"}
+    grant = gov.issue_approval_grant(
+        session_id="timeout-metadata", capability_id=22, params=params
+    )
+    result = gov.handle_governed_invocation(
+        22,
+        params,
+        session_id="timeout-metadata",
+        approval_id=grant.approval_id,
+    )
 
     assert result.success is True
     assert result.authority_class == "reversible_local"

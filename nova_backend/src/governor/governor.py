@@ -8,12 +8,21 @@ to preserve Phase-3.5 safety until the unlock.
 
 from __future__ import annotations
 
+import hashlib
 import time
 from typing import Any, Dict
 
 import src.ledger.writer as ledger_mod
 from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
+from src.governor.approval_grants import (
+    DEFAULT_APPROVAL_TTL_SECONDS,
+    ApprovalAuthorityMetadataError,
+    ApprovalGrant,
+    ApprovalGrantError,
+    ApprovalGrantStore,
+    canonical_action_snapshot,
+)
 from src.governor.exceptions import (
     CapabilityRegistryError,
     LedgerWriteFailed,
@@ -53,6 +62,7 @@ class Governor:
     def __init__(self):
         self._execute_boundary = ExecuteBoundary()
         self._queue = SingleActionQueue()
+        self._approval_grants = ApprovalGrantStore()
 
         # Lazy-loaded runtime components.
         self._registry = None
@@ -202,10 +212,95 @@ class Governor:
         result.data["policy_id"] = policy_id
         return decision, result
 
+    def issue_approval_grant(
+        self,
+        *,
+        session_id: str,
+        capability_id: int,
+        params: Dict[str, Any],
+        ttl_seconds: float = DEFAULT_APPROVAL_TTL_SECONDS,
+    ) -> ApprovalGrant:
+        cap = self.registry.get(capability_id)
+        if not self.registry.is_enabled(capability_id):
+            raise ApprovalGrantError("Cannot approve a disabled capability.")
+        action_params = canonical_action_snapshot(params)
+        grant = self._approval_grants.issue(
+            session_id=session_id,
+            capability_id=capability_id,
+            params=action_params,
+            ttl_seconds=ttl_seconds,
+        )
+        try:
+            self.ledger.log_event(
+                "APPROVAL_GRANTED",
+                {
+                    "approval_fingerprint": hashlib.sha256(
+                        grant.approval_id.encode("utf-8")
+                    ).hexdigest()[:16],
+                    "session_id": grant.session_id,
+                    "capability_id": int(capability_id),
+                    "capability_name": str(cap.name),
+                    "action_hash": grant.action_hash,
+                    "issued_at": grant.issued_at,
+                    "expires_at": grant.expires_at,
+                },
+            )
+        except Exception:
+            # Slice 1 policy: authority may exist without an issuance receipt.
+            # Execution still requires the exact grant, and ACTION_ATTEMPTED
+            # remains a separate fail-closed ledger boundary.
+            pass
+        return grant
+
+    @staticmethod
+    def _requires_approval(cap: Any, capability_id: int, params: Dict[str, Any]) -> bool:
+        if bool(getattr(cap, "requires_confirmation", False)) or str(
+            getattr(cap, "risk_level", "low")
+        ) == "confirm":
+            return True
+        if int(capability_id) == 61:
+            return str(params.get("action") or "").strip().lower() in {
+                "delete",
+                "unlock",
+                "supersede",
+            }
+        return False
+
+    def _approval_refusal(self, capability_id: int, reason: str) -> ActionResult:
+        messages = {
+            "missing": (
+                "This action requires confirmation through an approval grant before I can proceed."
+            ),
+            "unknown": "The approval grant is unknown or no longer available.",
+            "replayed": "That approval grant has already been used.",
+            "expired": "That approval grant has expired.",
+            "session_mismatch": "That approval grant belongs to a different session.",
+            "capability_mismatch": "That approval grant belongs to a different capability.",
+            "action_mismatch": "The action changed after approval, so a new approval is required.",
+            "invalidated": "That approval grant is no longer valid.",
+            "invalid_action_parameters": "The action parameters are not valid for approval.",
+            "caller_confirmation_metadata": (
+                "Caller-supplied confirmation metadata cannot authorize execution."
+            ),
+            "untrusted_approval_metadata": (
+                "Approval IDs must be supplied through the trusted Governor invocation context."
+            ),
+        }
+        return self._normalize_action_result(
+            ActionResult.refusal(
+                messages.get(reason, "This action does not have valid approval."),
+                data={"approval_reason": str(reason)},
+            ),
+            capability_id=capability_id,
+        )
+
     def handle_governed_invocation(
         self,
         capability_id: int,
         params: Dict[str, Any],
+        *,
+        session_id: str | None = None,
+        approval_id: str | None = None,
     ) -> ActionResult:
         try:
             cap = self.registry.get(capability_id)
@@ -221,11 +316,28 @@ class Governor:
                 capability_id=capability_id,
             )
 
-        if getattr(cap, "risk_level", "low") == "confirm" and not bool((params or {}).get("confirmed")):
-            return self._normalize_action_result(
-                ActionResult.refusal("This action requires confirmation before I can proceed."),
-                capability_id=capability_id,
+        try:
+            action_params = canonical_action_snapshot(params)
+        except ApprovalAuthorityMetadataError as exc:
+            reason = (
+                "caller_confirmation_metadata"
+                if exc.key == "confirmed"
+                else "untrusted_approval_metadata"
             )
+            return self._approval_refusal(capability_id, reason)
+        except ApprovalGrantError:
+            return self._approval_refusal(capability_id, "invalid_action_parameters")
+
+        requires_approval = self._requires_approval(cap, capability_id, action_params)
+        if requires_approval or approval_id:
+            decision = self._approval_grants.consume(
+                approval_id=str(approval_id or ""),
+                session_id=str(session_id or ""),
+                capability_id=capability_id,
+                params_snapshot=action_params,
+            )
+            if not decision.allowed:
+                return self._approval_refusal(capability_id, decision.reason)
 
         if not self._execute_boundary.allow_execution():
             capability_label = str(getattr(cap, "name", "that action") or "that action").replace("_", " ").strip()
@@ -265,7 +377,11 @@ class Governor:
                 capability_id=capability_id,
             )
 
-        req = ActionRequest(capability_id=capability_id, params=params)
+        req = ActionRequest(
+            capability_id=capability_id,
+            params=action_params,
+            approval_id=str(approval_id or "").strip() or None,
+        )
 
         try:
             return self._execute(req)

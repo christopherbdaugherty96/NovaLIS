@@ -99,7 +99,8 @@ def test_memory_unlock_and_delete_require_confirmation(tmp_path: Path):
     unlock_with_confirm = executor.execute(
         ActionRequest(
             capability_id=61,
-            params={"action": "unlock", "item_id": item_id, "confirmed": True},
+            params={"action": "unlock", "item_id": item_id},
+            approval_id="test-approval",
         )
     )
     assert unlock_with_confirm.success is True
@@ -113,7 +114,8 @@ def test_memory_unlock_and_delete_require_confirmation(tmp_path: Path):
     delete_with_confirm = executor.execute(
         ActionRequest(
             capability_id=61,
-            params={"action": "delete", "item_id": item_id, "confirmed": True},
+            params={"action": "delete", "item_id": item_id},
+            approval_id="test-approval",
         )
     )
     assert delete_with_confirm.success is True
@@ -128,7 +130,7 @@ def test_memory_export_returns_non_deleted_items(tmp_path: Path):
     store = GovernedMemoryStore(tmp_path / "memory_items.json")
     executor = MemoryGovernanceExecutor(ledger=ledger, store=store)
 
-    first = executor.execute(
+    executor.execute(
         ActionRequest(
             capability_id=61,
             params={"action": "save", "title": "Keep", "body": "Retain this governed note."},
@@ -144,7 +146,8 @@ def test_memory_export_returns_non_deleted_items(tmp_path: Path):
     executor.execute(
         ActionRequest(
             capability_id=61,
-            params={"action": "delete", "item_id": second_id, "confirmed": True},
+            params={"action": "delete", "item_id": second_id},
+            approval_id="test-approval",
         )
     )
 
@@ -260,11 +263,11 @@ def test_memory_supersede_preserves_visibility_links_and_sets_edit_metadata(tmp_
                 "action": "supersede",
                 "item_id": original_id,
                 "new_body": "Client supplies alcohol for private events only; Pour Social does not sell alcohol.",
-                "confirmed": True,
                 "source": "explicit_user_edit",
                 "session_id": "session-2",
                 "user_visible": True,
             },
+            approval_id="test-approval",
         )
     )
 
@@ -339,8 +342,8 @@ def test_memory_recent_and_search_commands_surface_recent_and_best_matches(tmp_p
                 "action": "supersede",
                 "item_id": original_id,
                 "new_body": "Client supplies alcohol for private events only; Pour Social does not sell alcohol.",
-                "confirmed": True,
             },
+            approval_id="test-approval",
         )
     )
     executor.execute(
@@ -385,8 +388,8 @@ def test_memory_show_includes_version_and_lineage(tmp_path: Path):
                 "action": "supersede",
                 "item_id": original_id,
                 "new_body": "New policy body.",
-                "confirmed": True,
             },
+            approval_id="test-approval",
         )
     )
     replacement_id = str((updated.data or {}).get("memory_item", {}).get("id") or "")
