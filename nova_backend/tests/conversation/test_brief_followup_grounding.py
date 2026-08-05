@@ -670,13 +670,37 @@ def test_active_awareness_decision_followup_degrades_for_unavailable_auralis():
     assert "Best move:" not in answer
 
 
-def test_decision_phrasing_outside_active_awareness_remains_general_chat():
+def test_exact_decision_intent_uses_silently_hydrated_awareness_without_setting_focus():
     state: dict = {}
-    store_awareness_brief_surface(
+    payload = _awareness_payload_with_auralis()
+    auralis_items = payload["sections"][-1]["items"]
+    displayed_owner = next(item for item in auralis_items if item.startswith("Owner blocker:"))
+    displayed_best = next(item for item in auralis_items if item.startswith("Best move:"))
+    store_awareness_brief_surface(state, payload, set_focus=False)
+    before = deepcopy(state)
+
+    assert is_discussion_shaped_brief_followup(
+        "What decision requires my attention?",
         state,
-        _awareness_payload_with_auralis(),
-        set_focus=False,
+    ) is True
+    answer = answer_grounded_brief_followup(
+        "What decision requires my attention?",
+        state,
     )
+
+    lines = answer.splitlines()
+    assert f"- {displayed_owner}" in lines
+    assert f"- {displayed_best}" in lines
+    assert "Watch: July 9 Google Merchant review" not in answer
+    assert "active_brief_item" not in state
+    assert state == before
+
+
+def test_empty_focus_decision_fallback_requires_complete_auralis_contract():
+    state: dict = {}
+    payload = _awareness_payload_with_auralis()
+    payload["sections"][-1]["items"] = ["Owner blocker: Meta business verification"]
+    store_awareness_brief_surface(state, payload, set_focus=False)
 
     assert is_discussion_shaped_brief_followup(
         "What decision requires my attention?",
@@ -686,6 +710,40 @@ def test_decision_phrasing_outside_active_awareness_remains_general_chat():
         "What decision requires my attention?",
         state,
     ) == ""
+
+
+def test_empty_focus_decision_fallback_preserves_unavailable_response():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        _awareness_payload_with_auralis(
+            owner_blocker="Not enough trusted inputs to recommend today.",
+            status="not_configured",
+        ),
+        set_focus=False,
+    )
+    before = deepcopy(state)
+
+    assert is_discussion_shaped_brief_followup(
+        "What decision requires my attention?",
+        state,
+    ) is True
+    answer = answer_grounded_brief_followup(
+        "What decision requires my attention?",
+        state,
+    )
+
+    assert "decision information is unavailable" in answer
+    assert "status: not_configured" in answer
+    assert state == before
+
+
+def test_non_decision_vague_wording_does_not_use_empty_focus_awareness():
+    state: dict = {}
+    store_awareness_brief_surface(state, _awareness_payload_with_auralis(), set_focus=False)
+
+    assert is_discussion_shaped_brief_followup("Tell me more about that", state) is False
+    assert answer_grounded_brief_followup("Tell me more about that", state) == ""
 
 
 def test_active_news_surface_keeps_decision_phrasing_out_of_awareness():
@@ -707,6 +765,22 @@ def test_active_news_surface_keeps_decision_phrasing_out_of_awareness():
         "What decision requires my attention?",
         state,
     ) is False
+
+
+def test_any_non_awareness_explicit_focus_blocks_empty_focus_decision_fallback():
+    for active_key in ("weather", "calendar", "runtime", "future_surface"):
+        state: dict = {}
+        store_awareness_brief_surface(state, _awareness_payload_with_auralis(), set_focus=False)
+        state["active_brief_item"] = active_key
+
+        assert is_discussion_shaped_brief_followup(
+            "What decision requires my attention?",
+            state,
+        ) is False
+        assert answer_grounded_brief_followup(
+            "What decision requires my attention?",
+            state,
+        ) == ""
 
 
 def test_awareness_overview_degrades_honestly_without_live_content():
