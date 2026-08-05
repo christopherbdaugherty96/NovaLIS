@@ -8,6 +8,7 @@ to preserve Phase-3.5 safety until the unlock.
 
 from __future__ import annotations
 
+import hashlib
 import time
 from typing import Any, Dict
 
@@ -16,9 +17,11 @@ from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
 from src.governor.approval_grants import (
     DEFAULT_APPROVAL_TTL_SECONDS,
+    ApprovalAuthorityMetadataError,
     ApprovalGrant,
     ApprovalGrantError,
     ApprovalGrantStore,
+    canonical_action_snapshot,
 )
 from src.governor.exceptions import (
     CapabilityRegistryError,
@@ -220,9 +223,7 @@ class Governor:
         cap = self.registry.get(capability_id)
         if not self.registry.is_enabled(capability_id):
             raise ApprovalGrantError("Cannot approve a disabled capability.")
-        action_params = dict(params or {})
-        if "confirmed" in action_params or "approval_id" in action_params:
-            raise ApprovalGrantError("Authority metadata cannot be approved as action parameters.")
+        action_params = canonical_action_snapshot(params)
         grant = self._approval_grants.issue(
             session_id=session_id,
             capability_id=capability_id,
@@ -233,7 +234,9 @@ class Governor:
             self.ledger.log_event(
                 "APPROVAL_GRANTED",
                 {
-                    "approval_id": grant.approval_id,
+                    "approval_fingerprint": hashlib.sha256(
+                        grant.approval_id.encode("utf-8")
+                    ).hexdigest()[:16],
                     "session_id": grant.session_id,
                     "capability_id": int(capability_id),
                     "capability_name": str(cap.name),
@@ -243,6 +246,9 @@ class Governor:
                 },
             )
         except Exception:
+            # Slice 1 policy: authority may exist without an issuance receipt.
+            # Execution still requires the exact grant, and ACTION_ATTEMPTED
+            # remains a separate fail-closed ledger boundary.
             pass
         return grant
 
@@ -272,6 +278,7 @@ class Governor:
             "capability_mismatch": "That approval grant belongs to a different capability.",
             "action_mismatch": "The action changed after approval, so a new approval is required.",
             "invalidated": "That approval grant is no longer valid.",
+            "invalid_action_parameters": "The action parameters are not valid for approval.",
             "caller_confirmation_metadata": (
                 "Caller-supplied confirmation metadata cannot authorize execution."
             ),
@@ -309,11 +316,17 @@ class Governor:
                 capability_id=capability_id,
             )
 
-        action_params = dict(params or {})
-        if "confirmed" in action_params:
-            return self._approval_refusal(capability_id, "caller_confirmation_metadata")
-        if "approval_id" in action_params:
-            return self._approval_refusal(capability_id, "untrusted_approval_metadata")
+        try:
+            action_params = canonical_action_snapshot(params)
+        except ApprovalAuthorityMetadataError as exc:
+            reason = (
+                "caller_confirmation_metadata"
+                if exc.key == "confirmed"
+                else "untrusted_approval_metadata"
+            )
+            return self._approval_refusal(capability_id, reason)
+        except ApprovalGrantError:
+            return self._approval_refusal(capability_id, "invalid_action_parameters")
 
         requires_approval = self._requires_approval(cap, capability_id, action_params)
         if requires_approval or approval_id:
@@ -321,7 +334,7 @@ class Governor:
                 approval_id=str(approval_id or ""),
                 session_id=str(session_id or ""),
                 capability_id=capability_id,
-                params=action_params,
+                params_snapshot=action_params,
             )
             if not decision.allowed:
                 return self._approval_refusal(capability_id, decision.reason)

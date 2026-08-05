@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
+from fastapi.testclient import TestClient
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
+from src.governor.approval_grants import ApprovalGrantStore
 from src.governor.governor_mediator import GovernorMediator, Invocation
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
@@ -22,6 +24,18 @@ class _RecordingLedger:
 
 def _event_types(ledger: _RecordingLedger) -> list[str]:
     return [event_type for event_type, _payload in ledger.events]
+
+
+def _receive_completed_turn(ws, *, required_text: str = "") -> list[dict]:
+    frames: list[dict] = []
+    found_required = not required_text
+    while True:
+        frame = ws.receive_json()
+        frames.append(frame)
+        if required_text in str(frame.get("message") or ""):
+            found_required = True
+        if frame.get("type") == "chat_done" and found_required:
+            return frames
 
 
 def _install_session_gate_baseline(monkeypatch, routes: dict[str, Invocation]) -> list[str]:
@@ -385,3 +399,57 @@ def test_session_unrelated_input_cancels_pending_without_execution(monkeypatch):
     assert "ACTION_COMPLETED" not in _event_types(ledger)
     chat_messages = _chat_messages(ws)
     assert any("Cancelled the pending action before handling your new command." in message for message in chat_messages)
+
+
+@pytest.mark.slow
+def test_real_websocket_composes_grant_issuance_consumption_and_replay_refusal(monkeypatch):
+    """Exercise the complete /ws -> shared Governor -> harmless dispatch boundary."""
+    _install_session_gate_baseline(
+        monkeypatch,
+        {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
+    )
+    governor = brain_server.RUNTIME_GOVERNOR
+    dispatch = Mock(return_value=ActionResult.ok("Opened harmless test target."))
+    monkeypatch.setattr(governor, "_approval_grants", ApprovalGrantStore())
+    monkeypatch.setattr(governor, "_ledger", _RecordingLedger())
+    monkeypatch.setattr(governor, "_dispatch_capability", dispatch)
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="I'm here when you're ready.",
+    ), TestClient(brain_server.app) as client:
+        with client.websocket_connect("/ws") as ws:
+            ws.send_json({"type": "chat", "text": "open documents"})
+            pending_frames = _receive_completed_turn(ws, required_text="Cap 22")
+            assert dispatch.call_count == 0
+            assert any("Cap 22" in str(frame.get("message") or "") for frame in pending_frames)
+
+            ws.send_json({"type": "chat", "text": "yes"})
+            completed_frames = _receive_completed_turn(
+                ws, required_text="Opened harmless test target."
+            )
+            assert any(
+                "Opened harmless test target." in str(frame.get("message") or "")
+                for frame in completed_frames
+            )
+
+        assert dispatch.call_count == 1
+        request = dispatch.call_args.args[0]
+        assert request.approval_id
+        assert request.params["session_id"]
+        assert "confirmed" not in request.params
+
+        replay = governor.handle_governed_invocation(
+            22,
+            dict(request.params),
+            session_id=str(request.params["session_id"]),
+            approval_id=request.approval_id,
+        )
+        assert replay.success is False
+        assert replay.data["approval_reason"] == "replayed"
+        assert dispatch.call_count == 1
+
+        with client.websocket_connect("/ws") as second_ws:
+            second_ws.send_json({"type": "chat", "text": "yes"})
+            _receive_completed_turn(second_ws)
+        assert dispatch.call_count == 1
