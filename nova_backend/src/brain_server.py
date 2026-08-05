@@ -3683,12 +3683,17 @@ async def invoke_governed_capability(
     governor: Governor,
     capability_id: int,
     params: dict,
+    *,
+    session_id: str | None = None,
+    approval_id: str | None = None,
 ) -> object:
     try:
         return await asyncio.to_thread(
             governor.handle_governed_invocation,
             capability_id,
             params,
+            session_id=session_id,
+            approval_id=approval_id,
         )
     except Exception:
         log.exception("Governed capability %s raised unexpectedly — returning failure result", capability_id)

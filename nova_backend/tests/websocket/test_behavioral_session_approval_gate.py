@@ -5,13 +5,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
 from src.governor.governor_mediator import GovernorMediator, Invocation
-
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 
 class _RecordingLedger:
@@ -56,8 +54,8 @@ def test_cap22_session_request_creates_pending_state_without_execution(monkeypat
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened.", request_id="should-not-run")
@@ -87,8 +85,8 @@ def test_cap64_session_request_creates_pending_state_without_execution(monkeypat
         },
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Draft opened.", request_id="should-not-run")
@@ -114,8 +112,8 @@ def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monk
     )
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened documents.", request_id="confirmed-cap22")
@@ -131,7 +129,9 @@ def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monk
     capability_id, params = calls[0]
     assert capability_id == 22
     assert params["target"] == "documents"
-    assert params["confirmed"] is True
+    assert "confirmed" not in params
+    assert params["_authority"]["session_id"] == params["session_id"]
+    assert str(params["_authority"]["approval_id"]).strip()
     assert str(params.get("session_id") or "").strip()
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
     assert any("Opened documents." in message for message in _chat_messages(ws))
@@ -150,8 +150,8 @@ def test_session_yes_resumes_pending_cap64_only_through_governed_invocation(monk
     )
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Draft opened.", request_id="confirmed-cap64")
@@ -168,7 +168,9 @@ def test_session_yes_resumes_pending_cap64_only_through_governed_invocation(monk
     assert capability_id == 64
     assert params["to"] == "test@example.com"
     assert params["subject"] == "Approval gate test"
-    assert params["confirmed"] is True
+    assert "confirmed" not in params
+    assert params["_authority"]["session_id"] == params["session_id"]
+    assert str(params["_authority"]["approval_id"]).strip()
     assert str(params.get("session_id") or "").strip()
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
     assert any("Draft opened." in message for message in _chat_messages(ws))
@@ -239,8 +241,8 @@ def test_session_no_clears_pending_without_execution(monkeypatch):
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened.", request_id="should-not-run")
@@ -265,8 +267,8 @@ def test_session_cancel_clears_pending_without_execution(monkeypatch):
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened.", request_id="should-not-run")
@@ -300,8 +302,8 @@ def test_session_duplicate_yes_does_not_double_execute_cap64(monkeypatch):
         },
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Draft opened.", request_id="dup-yes-cap64")
@@ -318,7 +320,8 @@ def test_session_duplicate_yes_does_not_double_execute_cap64(monkeypatch):
     # The first "yes" should have consumed the pending action — exactly one invocation.
     assert len(calls) == 1
     assert calls[0][0] == 64
-    assert calls[0][1]["confirmed"] is True
+    assert "confirmed" not in calls[0][1]
+    assert calls[0][1]["_authority"]["approval_id"]
 
     # Ledger must show exactly one ACTION_ATTEMPTED and one ACTION_COMPLETED.
     assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
@@ -335,8 +338,8 @@ def test_session_duplicate_yes_does_not_double_execute_cap22(monkeypatch):
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened.", request_id="dup-yes-cap22")
@@ -352,7 +355,8 @@ def test_session_duplicate_yes_does_not_double_execute_cap22(monkeypatch):
 
     assert len(calls) == 1
     assert calls[0][0] == 22
-    assert calls[0][1]["confirmed"] is True
+    assert "confirmed" not in calls[0][1]
+    assert calls[0][1]["_authority"]["approval_id"]
     assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
     assert _event_types(ledger).count("ACTION_COMPLETED") == 1
 
@@ -365,8 +369,8 @@ def test_session_unrelated_input_cancels_pending_without_execution(monkeypatch):
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
 
-    async def _fake_invoke(_governor, capability_id: int, params: dict):
-        calls.append((capability_id, dict(params)))
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok("Opened.", request_id="should-not-run")

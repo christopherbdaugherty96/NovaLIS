@@ -21,6 +21,8 @@ class ActionRequest:
     capability_id: int
     params: Mapping[str, Any]  # read‑only view after freezing
 
+    approval_id: str | None = None
+
     # System metadata
     request_id: str = field(default_factory=lambda: str(uuid4()))
     created_at: str = field(

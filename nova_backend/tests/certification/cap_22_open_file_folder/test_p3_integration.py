@@ -6,9 +6,8 @@ Tests the full Governor spine:
   GovernorMediator → CapabilityRegistry → ExecuteBoundary
   → LedgerWriter → OpenFolderExecutor → ActionResult
 
-Cap 22 requires confirmation (risk_level=confirm), so integration
-tests that exercise execution pass confirmed=True. The confirmation-
-gate itself is tested separately in the approval-gate regression suite.
+Cap 22 requires confirmation (risk_level=confirm), so integration tests
+that exercise execution issue a session- and action-bound ApprovalGrant.
 
 System-control open_path is mocked; no real folder opens.
 """
@@ -17,10 +16,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from src.governor.governor import Governor
-
 
 _CAPABILITY_ID = 22
 _CAPABILITY_NAME = "open_file_folder"
@@ -28,6 +24,19 @@ _CAPABILITY_NAME = "open_file_folder"
 
 def _make_governor() -> Governor:
     return Governor()
+
+
+def _invoke_approved(gov: Governor, params: dict):
+    session_id = "cert-cap22"
+    grant = gov.issue_approval_grant(
+        session_id=session_id, capability_id=_CAPABILITY_ID, params=params
+    )
+    return gov.handle_governed_invocation(
+        _CAPABILITY_ID,
+        params,
+        session_id=session_id,
+        approval_id=grant.approval_id,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -80,21 +89,14 @@ def test_preset_folder_passes_through_spine(tmp_path: Path):
         ".SystemControlExecutor.open_path",
         return_value=True,
     ):
-        result = gov.handle_governed_invocation(
-            _CAPABILITY_ID,
-            {"target": "downloads", "confirmed": True},
-        )
+        result = _invoke_approved(gov, {"target": "downloads"})
     assert result.success is True
 
 
 def test_missing_path_returns_failure():
     gov = _make_governor()
-    result = gov.handle_governed_invocation(
-        _CAPABILITY_ID,
-        {
-            "path": "/nonexistent/path/that/does/not/exist_cert22",
-            "confirmed": True,
-        },
+    result = _invoke_approved(
+        gov, {"path": "/nonexistent/path/that/does/not/exist_cert22"}
     )
     assert result.success is False
 
@@ -123,10 +125,7 @@ def test_spine_logs_action_attempted(tmp_path: Path):
         ".SystemControlExecutor.open_path",
         return_value=True,
     ):
-        gov.handle_governed_invocation(
-            _CAPABILITY_ID,
-            {"target": "downloads", "confirmed": True},
-        )
+        _invoke_approved(gov, {"target": "downloads"})
     assert "ACTION_ATTEMPTED" in logged
 
 
