@@ -788,9 +788,10 @@ def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch, fa
 
     workspace_str = str(fake_nova_workspace)
 
-    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
         assert capability_id == 22
-        assert params.get("confirmed") is True
+        assert "confirmed" not in params
+        assert authority.get("approval_id")
         assert params.get("path") == workspace_str
         return ActionResult.ok(
             f"Opened folder: {workspace_str}",
@@ -821,9 +822,10 @@ def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkey
 
     ws = _ScriptedWebSocket([f"open {workspace_str}", "yes"])
 
-    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
         assert capability_id == 22
-        assert params.get("confirmed") is True
+        assert "confirmed" not in params
+        assert authority.get("approval_id")
         assert params.get("path") == workspace_str
         return ActionResult.ok(
             f"Opened folder: {workspace_str}",

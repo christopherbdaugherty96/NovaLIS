@@ -13,20 +13,16 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import pytest
-
 from src.governor.governor import Governor
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-_CONFIRMED_PARAMS = {
+_ACTION_PARAMS = {
     "to": "integration-test@example.com",
     "subject": "Integration test subject",
     "body_intent": "explain the integration test",
-    "confirmed": True,
 }
 
 _UNCONFIRMED_PARAMS = {
@@ -37,6 +33,16 @@ _UNCONFIRMED_PARAMS = {
 
 def _make_governor() -> Governor:
     return Governor()
+
+
+def _invoke_approved(gov: Governor, params: dict = _ACTION_PARAMS):
+    session_id = "cert-cap64"
+    grant = gov.issue_approval_grant(
+        session_id=session_id, capability_id=64, params=params
+    )
+    return gov.handle_governed_invocation(
+        64, params, session_id=session_id, approval_id=grant.approval_id
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -72,11 +78,11 @@ def test_cap_64_requires_confirmation():
 # ---------------------------------------------------------------------------
 
 def test_unconfirmed_call_is_refused_by_governor():
-    """The governor must refuse cap 64 when confirmed=True is absent."""
+    """The governor must refuse cap 64 when an ApprovalGrant is absent."""
     gov = _make_governor()
     result = gov.handle_governed_invocation(64, _UNCONFIRMED_PARAMS)
     assert result.success is False
-    assert "confirm" in result.message.lower()
+    assert "approval grant" in result.message.lower()
 
 
 def test_confirmed_false_is_refused_by_governor():
@@ -84,22 +90,22 @@ def test_confirmed_false_is_refused_by_governor():
     params = {**_UNCONFIRMED_PARAMS, "confirmed": False}
     result = gov.handle_governed_invocation(64, params)
     assert result.success is False
-    assert "confirm" in result.message.lower()
+    assert "caller-supplied confirmation metadata" in result.message.lower()
 
 
 # ---------------------------------------------------------------------------
 # Confirmed happy-path — full spine
 # ---------------------------------------------------------------------------
 
-def test_confirmed_call_passes_through_full_spine():
-    """With confirmed=True and mocked executor side-effects, governor succeeds."""
+def test_approved_call_passes_through_full_spine():
+    """With an exact ApprovalGrant and mocked side-effects, governor succeeds."""
     gov = _make_governor()
 
     with (
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="Integration body text"),
         patch("src.executors.send_email_draft_executor.SendEmailDraftExecutor._open_mailto", return_value=True),
     ):
-        result = gov.handle_governed_invocation(64, _CONFIRMED_PARAMS)
+        result = _invoke_approved(gov)
 
     assert result.success is True
     assert result.authority_class == "persistent_change"
@@ -124,7 +130,7 @@ def test_full_spine_ledger_receives_action_attempted():
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="body"),
         patch("src.executors.send_email_draft_executor.SendEmailDraftExecutor._open_mailto", return_value=True),
     ):
-        gov.handle_governed_invocation(64, _CONFIRMED_PARAMS)
+        _invoke_approved(gov)
 
     assert "ACTION_ATTEMPTED" in logged_types
     assert "ACTION_COMPLETED" in logged_types
@@ -136,7 +142,7 @@ def test_full_spine_result_has_request_id():
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="body"),
         patch("src.executors.send_email_draft_executor.SendEmailDraftExecutor._open_mailto", return_value=True),
     ):
-        result = gov.handle_governed_invocation(64, _CONFIRMED_PARAMS)
+        result = _invoke_approved(gov)
     assert result.request_id is not None
     assert len(result.request_id) > 0
 
@@ -151,7 +157,7 @@ def test_governor_normalizes_risk_level_on_result():
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="body"),
         patch("src.executors.send_email_draft_executor.SendEmailDraftExecutor._open_mailto", return_value=True),
     ):
-        result = gov.handle_governed_invocation(64, _CONFIRMED_PARAMS)
+        result = _invoke_approved(gov)
     assert result.risk_level == "confirm"
 
 
@@ -161,7 +167,7 @@ def test_governor_normalizes_external_effect_true():
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="body"),
         patch("src.executors.send_email_draft_executor.SendEmailDraftExecutor._open_mailto", return_value=True),
     ):
-        result = gov.handle_governed_invocation(64, _CONFIRMED_PARAMS)
+        result = _invoke_approved(gov)
     assert result.external_effect is True
 
 
@@ -176,7 +182,7 @@ def test_mailto_open_failure_propagates_gracefully_through_governor():
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="body"),
         patch("src.executors.send_email_draft_executor.SendEmailDraftExecutor._open_mailto", return_value=False),
     ):
-        result = gov.handle_governed_invocation(64, _CONFIRMED_PARAMS)
+        result = _invoke_approved(gov)
     # success=False is fine; what matters is no unhandled exception
     assert isinstance(result.success, bool)
     assert result.message

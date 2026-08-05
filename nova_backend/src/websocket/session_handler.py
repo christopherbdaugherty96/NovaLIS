@@ -1089,9 +1089,20 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if confirm_action == "confirm":
                     capability_id = int(pending_governed_confirm.get("capability_id") or 0)
                     params = dict(pending_governed_confirm.get("params") or {})
-                    params["confirmed"] = True
+                    params.pop("confirmed", None)
                     params.setdefault("session_id", session_id)
-                    action_result = await invoke_governed_capability(governor, capability_id, params)
+                    grant = governor.issue_approval_grant(
+                        session_id=session_id,
+                        capability_id=capability_id,
+                        params=params,
+                    )
+                    action_result = await invoke_governed_capability(
+                        governor,
+                        capability_id,
+                        params,
+                        session_id=session_id,
+                        approval_id=grant.approval_id,
+                    )
                     session_state["pending_governed_confirm"] = None
                     outgoing_message = _structure_long_message(_action_result_message(action_result))
                     if outgoing_message:
@@ -1115,10 +1126,19 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if pending_web_open:
                 web_action = pending_confirmation_resolution_action(SessionRouter, raw_text)
                 if web_action == "confirm":
+                    web_params = dict(pending_web_open)
+                    web_params["session_id"] = session_id
+                    grant = governor.issue_approval_grant(
+                        session_id=session_id,
+                        capability_id=17,
+                        params=web_params,
+                    )
                     action_result = await invoke_governed_capability(
                         governor,
                         17,
-                        {**pending_web_open, "confirmed": True, "session_id": session_id},
+                        web_params,
+                        session_id=session_id,
+                        approval_id=grant.approval_id,
                     )
                     session_state["pending_web_open"] = None
                     action_payload = _action_result_payload(action_result)
@@ -3971,7 +3991,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         continue
                     params = prepared_params
                     memory_action = str(params.get("action") or "").strip().lower()
-                    if memory_action in {"delete", "unlock", "supersede"} and not params.get("confirmed"):
+                    if memory_action in {"delete", "unlock", "supersede"}:
                         session_state["pending_governed_confirm"] = {
                             "capability_id": capability_id,
                             "params": dict(params),
@@ -3983,7 +4003,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         await send_chat_done(ws)
                         continue
 
-                if capability_id == 22 and not params.get("confirmed"):
+                if capability_id == 22:
                     target = str(params.get("target") or "").strip()
                     path = str(params.get("path") or "").strip()
                     resource = path or target or "that location"
@@ -4002,7 +4022,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_done(ws)
                     continue
 
-                if capability_id == 64 and not params.get("confirmed"):
+                if capability_id == 64:
                     to = str(params.get("to") or "").strip()
                     subject = str(params.get("subject") or "").strip()
                     recipient_line = f"To: {to}" if to else "(fill in)"
@@ -4028,7 +4048,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         await send_chat_message(ws, str(plan.get("message") or "I couldn't resolve that website."))
                         await send_chat_done(ws)
                         continue
-                    if plan.get("requires_confirmation") and not params.get("confirmed") and not params.get("preview"):
+                    if plan.get("requires_confirmation") and not params.get("preview"):
                         session_state["pending_web_open"] = {
                             "target": params.get("target", ""),
                             "resolved_url": plan.get("url", ""),
@@ -4055,7 +4075,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     elif last_response and str(params.get("text") or "").strip() == last_response:
                         review_followthrough_source_answer = last_response
 
-                action_result = await invoke_governed_capability(governor, capability_id, params)
+                action_result = await invoke_governed_capability(
+                    governor,
+                    capability_id,
+                    params,
+                )
                 action_message = _action_result_message(action_result)
                 action_payload = _action_result_payload(action_result)
                 if isinstance(action_payload, dict) and "budget_state" in action_payload:

@@ -141,7 +141,7 @@ class TestGateWrappingWiring:
             staticmethod(lambda *a, **kw: GateResult(handled=False)),
         )
 
-        async def _fake_invoke(_gov, capability_id, params):
+        async def _fake_invoke(_gov, capability_id, params, **authority):
             from src.actions.action_result import ActionResult
             invocations.append((capability_id, dict(params)))
             return ActionResult.ok("Done.", request_id="test")

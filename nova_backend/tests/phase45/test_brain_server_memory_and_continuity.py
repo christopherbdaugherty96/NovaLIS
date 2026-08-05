@@ -5,7 +5,6 @@ from datetime import datetime
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
@@ -26,7 +25,7 @@ def test_silent_memory_overview_refresh_updates_widget_without_chat_noise(monkey
 
     ws = _ScriptedWebSocket([{"type": "chat", "text": "memory overview", "silent_widget_refresh": True}])
 
-    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
         assert capability_id == 61
         assert params.get("action") == "overview"
         return ActionResult.ok(
@@ -65,7 +64,7 @@ def test_silent_memory_list_refresh_updates_widget_without_chat_noise(monkeypatc
 
     ws = _ScriptedWebSocket([{"type": "chat", "text": "list memories", "silent_widget_refresh": True}])
 
-    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
         assert capability_id == 61
         assert params.get("action") == "list"
         return ActionResult.ok(
@@ -750,7 +749,7 @@ def test_delete_that_memory_requires_confirmation_then_executes(monkeypatch):
     )
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
         calls.append((capability_id, dict(params)))
         if len(calls) == 1:
             return ActionResult.ok(
@@ -761,7 +760,8 @@ def test_delete_that_memory_requires_confirmation_then_executes(monkeypatch):
         assert capability_id == 61
         assert params.get("action") == "delete"
         assert params.get("item_id") == "MEM-00011"
-        assert params.get("confirmed") is True
+        assert "confirmed" not in params
+        assert authority.get("approval_id")
         return ActionResult.ok(
             "Deleted memory MEM-00011.\nTry next:\n- list memories\n- memory overview",
             data={"memory_item": {"id": "MEM-00011"}},
@@ -797,7 +797,7 @@ def test_edit_that_memory_requires_confirmation_then_supersedes(monkeypatch):
     )
     calls: list[tuple[int, dict]] = []
 
-    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
         calls.append((capability_id, dict(params)))
         if len(calls) == 1:
             return ActionResult.ok(
@@ -810,7 +810,8 @@ def test_edit_that_memory_requires_confirmation_then_supersedes(monkeypatch):
         assert params.get("item_id") == "MEM-00012"
         assert params.get("new_body") == "Client supplies alcohol for private events only; Pour Social does not sell alcohol."
         assert params.get("source") == "explicit_user_edit"
-        assert params.get("confirmed") is True
+        assert "confirmed" not in params
+        assert authority.get("approval_id")
         return ActionResult.ok(
             "Updated memory with replacement item MEM-00013.\nTry next:\n- memory show MEM-00013\n- list memories\n- memory unlock MEM-00013",
             data={"memory_item": {"id": "MEM-00013", "source": "explicit_user_edit"}},

@@ -466,7 +466,7 @@ class MemoryGovernanceExecutor:
         item_id = str(params.get("item_id") or "").strip()
         if not item_id:
             raise ValueError("Please provide a memory item ID.")
-        confirmed = bool(params.get("confirmed"))
+        confirmed = bool(request.approval_id)
         item = store.unlock_item(item_id, confirmed=confirmed)
         self._log("MEMORY_ITEM_UNLOCKED", {"item_id": item["id"]})
         return ActionResult.ok(
@@ -482,7 +482,7 @@ class MemoryGovernanceExecutor:
         item_id = str(params.get("item_id") or "").strip()
         if not item_id:
             raise ValueError("Please provide a memory item ID.")
-        confirmed = bool(params.get("confirmed"))
+        confirmed = bool(request.approval_id)
         item = store.delete_item(item_id, confirmed=confirmed)
         self._log("MEMORY_ITEM_DELETED", {"item_id": item["id"]})
         return ActionResult.ok(
@@ -498,7 +498,7 @@ class MemoryGovernanceExecutor:
         item_id = str(params.get("item_id") or "").strip()
         new_title = str(params.get("new_title") or "").strip()
         new_body = str(params.get("new_body") or "").strip()
-        confirmed = bool(params.get("confirmed"))
+        confirmed = bool(request.approval_id)
         source = str(params.get("source") or "explicit_user_edit").strip()
         session_id = str(params.get("session_id") or "").strip()
         user_visible = params.get("user_visible")
