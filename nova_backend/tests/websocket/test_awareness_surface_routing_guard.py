@@ -179,6 +179,58 @@ def test_active_awareness_decision_followup_is_grounded_at_websocket_boundary(mo
     )
 
 
+def test_silent_startup_awareness_decision_followup_is_grounded_without_llm(monkeypatch):
+    _disable_unrelated_routes(monkeypatch)
+    monkeypatch.setattr(
+        "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
+        lambda self, **kwargs: [],
+    )
+    rendered_brief = _DecisionAwarenessBrief()
+    auralis_items = rendered_brief.to_dict()["sections"][1]["items"]
+    displayed_owner = next(item for item in auralis_items if item.startswith("Owner blocker:"))
+    displayed_best = next(item for item in auralis_items if item.startswith("Best move:"))
+    ws = _ScriptedWebSocket(
+        [
+            {
+                "type": "chat",
+                "text": "awareness brief",
+                "silent_widget_refresh": True,
+            },
+            "What decision requires my attention?",
+        ]
+    )
+
+    with (
+        patch(
+            "src.brief.awareness_brief.compose_awareness_brief",
+            return_value=rendered_brief,
+        ),
+        patch(
+            "src.skills.general_chat.generate_chat",
+            side_effect=AssertionError("GeneralChat must not run for silent-hydration decision intent"),
+        ),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    decision_answer = next(
+        message
+        for message in _chat_messages(ws)
+        if "Displayed Auralis Today decision items:" in message
+    )
+    lines = decision_answer.splitlines()
+    assert f"- {displayed_owner}" in lines
+    assert f"- {displayed_best}" in lines
+    assert "Watch: July 9 Google Merchant review" not in decision_answer
+    assert not any(
+        message.get("type") == "status" and message.get("status") == "thinking"
+        for message in ws.sent_messages
+    )
+    assert not any(
+        message.get("type") in {"confirmation", "confirmation_required", "action_result"}
+        for message in ws.sent_messages
+    )
+
+
 def test_auralis_today_request_routes_and_degrades_honestly_without_inputs(monkeypatch):
     _disable_unrelated_routes(monkeypatch)
     monkeypatch.setattr(
