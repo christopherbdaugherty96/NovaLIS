@@ -216,6 +216,18 @@ def test_expired_grant_refuses_before_executor():
     dispatch.assert_not_called()
 
 
+@pytest.mark.parametrize("ttl", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_ttl_is_rejected_before_storage_or_ledger_issuance(ttl):
+    governor, dispatch = _governor()
+
+    with pytest.raises(ValueError, match="TTL must be between"):
+        _grant(governor, {"target": "documents"}, ttl=ttl)
+
+    assert governor._approval_grants._grants == {}
+    assert governor.ledger.events == []
+    dispatch.assert_not_called()
+
+
 def test_wall_clock_rollback_cannot_extend_monotonic_expiration():
     wall = [1000.0]
     monotonic = [500.0]
