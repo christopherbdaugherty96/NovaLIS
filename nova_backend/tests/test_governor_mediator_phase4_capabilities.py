@@ -291,7 +291,7 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 61
     assert inv.params["action"] == "unlock"
-    assert inv.params["confirmed"] is True
+    assert "confirmed" not in inv.params
 
     inv = GovernorMediator.parse_governed_invocation("memory export")
     assert isinstance(inv, Invocation)
@@ -308,14 +308,14 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 61
     assert inv.params["action"] == "delete"
     assert inv.params["item_id"] == "this"
-    assert inv.params["confirmed"] is False
+    assert "confirmed" not in inv.params
 
     inv = GovernorMediator.parse_governed_invocation("forget this confirm")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 61
     assert inv.params["action"] == "delete"
     assert inv.params["item_id"] == "this"
-    assert inv.params["confirmed"] is True
+    assert "confirmed" not in inv.params
 
     inv = GovernorMediator.parse_governed_invocation("memory")
     assert isinstance(inv, Clarification)

@@ -1459,7 +1459,6 @@ class GovernorMediator:
                 {
                     "action": "unlock",
                     "item_id": m.group("item_id").strip(),
-                    "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
 
@@ -1470,7 +1469,6 @@ class GovernorMediator:
                 {
                     "action": "delete",
                     "item_id": m.group("item_id").strip(),
-                    "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
 
@@ -1481,7 +1479,6 @@ class GovernorMediator:
                 {
                     "action": "delete",
                     "item_id": (m.group("item_id") or "last").strip(),
-                    "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
 
@@ -1492,7 +1489,6 @@ class GovernorMediator:
                 {
                     "action": "delete",
                     "item_id": m.group("item_ref").strip().lower(),
-                    "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
 
@@ -1505,7 +1501,6 @@ class GovernorMediator:
                     "item_id": m.group("item_id").strip(),
                     "new_title": m.group("title").strip(),
                     "new_body": m.group("body").strip(),
-                    "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
 
@@ -1518,7 +1513,6 @@ class GovernorMediator:
                     "item_id": (m.group("item_id") or "last").strip(),
                     "new_title": "",
                     "new_body": m.group("body").strip(),
-                    "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
 
