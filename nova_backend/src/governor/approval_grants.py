@@ -139,7 +139,7 @@ class ApprovalGrantStore:
         if normalized_capability <= 0:
             raise ApprovalGrantError("Approval grants require a capability ID.")
         ttl = float(ttl_seconds)
-        if ttl <= 0 or ttl > MAX_APPROVAL_TTL_SECONDS:
+        if not math.isfinite(ttl) or ttl <= 0 or ttl > MAX_APPROVAL_TTL_SECONDS:
             raise ApprovalGrantError(
                 f"Approval grant TTL must be between 0 and {MAX_APPROVAL_TTL_SECONDS:g} seconds."
             )
