@@ -22,15 +22,19 @@ Authority rules:
 
 `NOVA_AUTHORITY_AND_DECISION_OS_DIRECTION_2026-07-28.md` records the converged long-term
 product thesis: Nova as a local-first personal authority and decision operating system,
-organized as awareness -> decision intelligence -> Prepared Reality -> governed execution ->
-outcome learning. It also records the feature-warrant guardrail, the non-negotiable boundary
-that learning may improve proposals but never permissions, and the local-authority /
-governed-hybrid-compute interpretation of local-first.
+organized as five permanently separated systems: Awareness, Decision, Authority, Execution,
+and Outcome. It includes Prepared Reality as the non-executing decision handoff; mandate,
+provenance, simulation, action-risk, attention, learning, privacy, incident, replaceability,
+and retirement guardrails; the OpenClaw-as-replaceable-actuator boundary; and the
+non-negotiable rule that learning may improve proposals but never permissions. It also preserves
+Issue #326's economic-value progression as a strategic, non-activating dependency chain.
 
 That document is a strategic compass, not an ordering or scope authority. It synthesizes
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
 This roadmap still determines ordering; lane locks still determine scope; owner decisions still
-activate work. The next product input and authorization-integrity position below are unchanged.
+activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
+proof, OpenClaw work, or delegation. The next product input and authorization-integrity position
+below are unchanged.
 
 ## Observation-driven candidates (added 2026-07-11; seven-morning threshold closed 2026-07-22)
 
