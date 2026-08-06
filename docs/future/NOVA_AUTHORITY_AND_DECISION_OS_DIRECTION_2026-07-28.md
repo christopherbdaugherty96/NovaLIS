@@ -2,6 +2,10 @@
 
 Status: long-term strategic compass; non-authorizing.
 
+Strategic source: GitHub Issue #326, "Roadmap: measurable economic-value proof before any
+OpenClaw execution vertical," including the owner's full-vision comment, consolidated here so
+the issue discussion is durable without becoming runtime or roadmap authority.
+
 This document describes the direction in which evidence-earned Nova work should accumulate.
 It does not select the next lane, change current ordering, activate a priority lock, expand a
 capability, or claim that the described future exists in runtime.
@@ -32,10 +36,21 @@ This is a local control-plane thesis for the models, agents, tools, and data sou
 chooses to place behind Nova. It is not a claim that external AI vendors will adopt Nova as a
 universal industry standard.
 
-## Five Layers, Ordered by Blast Radius
+## Permanent Doctrine
 
-The order is part of the safety architecture. Later layers must not be used to bypass the
-boundaries of earlier ones.
+> Nova may autonomously improve its evidence, understanding, simulations, and
+> recommendations. It may not autonomously expand its objectives, beneficiaries, authority,
+> budget, risk tolerance, approval exemptions, capabilities, or ability to delegate.
+
+This doctrine applies even when Nova has high confidence, a history of owner approval, a
+positive economic result, or an apparently urgent opportunity. Intelligence, memory, learned
+preference, and past success are never authority artifacts.
+
+## Five Permanent Systems
+
+These systems are permanently distinct even when the product presents them as one smooth
+experience. Evidence may flow forward and outcomes may inform future recommendations, but no
+system may use that flow to manufacture permission.
 
 ### 1. Awareness
 
@@ -45,7 +60,7 @@ remains uncertain across the owner's day, household, projects, and businesses.
 Every consequential item should preserve source, freshness, confidence, and epistemic class.
 Awareness is information, not authority.
 
-### 2. Decision Intelligence
+### 2. Decision
 
 Nova identifies:
 
@@ -57,7 +72,12 @@ Nova identifies:
 - the safest useful next step.
 
 The objective is not to answer the most prompts. It is to help the owner make the next better
-decision.
+decision. Prepared Reality belongs here: Nova may turn analysis into drafts, checklists,
+decision packets, forms, proposed schedule changes, and bounded workflow previews, but these
+artifacts remain unexecuted proposals.
+
+> Prepared Reality packages evidence, options, drafts, previews, and exact proposed effects for
+> owner review. It does not authorize, dispatch, or execute actions.
 
 Because useful decision intelligence may exceed available local inference hardware, this layer
 includes governed hybrid-compute routing. "Local-first" means local authority, not a promise
@@ -72,31 +92,24 @@ that every inference runs locally. Any provider route must make visible:
 Privacy-aware model routing is therefore a governed capability boundary, not a hidden
 implementation detail.
 
-### 3. Prepared Reality
+### 3. Authority
 
-Nova turns messy context into prepared-but-unexecuted next moves:
+Authority determines whether an exact proposed action may occur. It owns:
 
-- drafts;
-- checklists;
-- meeting and decision packets;
-- proposed schedule changes;
-- business recommendations;
-- content packages;
-- forms;
-- recovery options;
-- bounded workflow previews.
+- mandate validity;
+- actor and session identity;
+- capability eligibility;
+- approval requirements and authenticity;
+- exact action scope and parameter binding;
+- budget, exposure, and risk limits;
+- expiration, revocation, and single-use rules;
+- retry holds and duplicate-effect containment;
+- delegation eligibility.
 
-> Nova already did the thinking and preparation, but it waits exactly where the owner's
-> authority matters.
+Authority is structurally separate from planning, learning, and execution. A prepared action
+is not approval; a recommendation is not a mandate; repeated approval is not a standing grant.
 
-Prepared Reality is both the defining experience and the commercial bridge for governed AI.
-Governance creates friction if the user must repeatedly do the preparation themselves. Nova
-should complete the safe 95 percent so the authority-bearing 5 percent can be reviewed in one
-informed glance.
-
-Preparation remains non-executing. A prepared action is not approval.
-
-### 4. Governed Execution
+### 4. Execution
 
 Every effectful action requires a declared capability and a verified authority path. The target
 model is:
@@ -117,8 +130,11 @@ confirmation Boolean. The authorization-integrity lane remains the prerequisite 
 direction for future effectful expansion; this document does not activate it.
 
 Authority is earned per action class, never inferred from Nova appearing generally intelligent.
+OpenClaw or any later actuator receives one typed, authorized action and returns structured
+evidence. It does not own strategy, mandates, budgets, approval interpretation, long-term
+memory, durable execution truth, reconciliation, or outcome learning.
 
-### 5. Outcome Learning
+### 5. Outcome
 
 Nova may retain an inspectable decision chain:
 
@@ -143,24 +159,243 @@ Hard invariant:
 Repeated past approval is not present permission. Memory is context, not authority. No learning
 system may promote itself, unlock a capability, lower a risk class, or silently widen execution.
 
-## Intended Product Loop
+The Outcome system independently records lifecycle truth, effect truth, receipt truth, quality,
+cost, value, and unresolved state. Technical completion is not the same as a verified effect,
+and a verified effect is not the same as a valuable outcome.
+
+## Full Lifecycle
 
 ```text
-notice
--> establish current truth
--> identify the important uncertainty
+mandate
+-> observe
+-> establish provenance
+-> understand
+-> simulate
 -> recommend
--> simulate where useful
--> prepare
--> obtain exact-action approval
--> execute through a bounded capability
--> verify the effect
--> issue a receipt
--> learn from the outcome without expanding authority
+-> authorize
+-> execute
+-> reconcile
+-> measure counterfactual value
+-> learn within bounds
+-> review or retire
 ```
 
 The mature experience should feel Jarvis-like at the interface while remaining governed and
 inspectable underneath.
+
+Prepared Reality remains the normal handoff between recommendation and authorization: Nova
+should complete the safe preparation and stop exactly where authority-bearing action begins.
+
+## Intent and Mandate Contract
+
+No persistent objective may be an unconstrained instruction such as `make money`, `grow the
+business`, or `handle this for me`. Every durable mandate must declare:
+
+- owner and intended beneficiaries;
+- success definition and bounded value domain;
+- explicit non-goals, prohibited tactics, markets, and representations;
+- time horizon and expiration;
+- financial, operational, privacy, and risk limits;
+- review cadence;
+- suspension, failure, shutdown, and termination conditions.
+
+The legal principal remains the owner or an owner-controlled business. Nova is the decision and
+governance system; an actuator is not an employee, legal person, contracting party, credential
+holder, or independent beneficiary. Nova and its actuators must not fabricate identity,
+credentials, attestations, or human involvement.
+
+Mandates expire and are reviewed. An obsolete goal must not remain actionable merely because
+its capability and approval mechanics still exist.
+
+> A mandate defines desired outcomes and limits. It does not itself grant capability access,
+> approval exemption, spending authority, or execution permission.
+
+## Long-Term Architectural Pillars
+
+These are enduring strategic invariants, not implementation contracts. Detailed learning rules
+remain in `docs/brain/NOVA_LEARNING_DOCTRINE.md`; background-work boundaries remain in
+`NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md`; OpenClaw and its data-handling rules remain
+in `docs/brain/OPENCLAW_ENVIRONMENT_MODEL.md`; and authorization scope remains in the reviewed
+authorization-integrity priority lock. Those documents control their detailed domains.
+
+### Provenance and Epistemic Integrity
+
+Preserve the chain from source to extracted fact, interpretation, recommendation, owner
+decision, action, and outcome. Distinguish observations, reported claims, calculations,
+assumptions, model reasoning, predictions, and unknowns. Confidence attaches to material claims,
+not only to a whole report; stale evidence loses decision weight; contradiction stays visible.
+
+Retrieved content is untrusted evidence, never an authority instruction. Websites, documents,
+emails, customers, and tool output may contain prompt injection, scams, payment redirection, or
+conflicting instructions. They cannot change a mandate, policy, approval, destination, or
+credential boundary.
+
+### Simulation Before Delegation
+
+Promotion toward autonomy requires evidence from normal, failure, and adversarial cases:
+
+```text
+offline replay
+-> shadow recommendation
+-> human-approved execution
+-> narrowly bounded delegation
+```
+
+> Simulation, shadow-mode success, and historical replay are evidence for promotion review only;
+> they never automatically promote a workflow or alter its permissions.
+
+### Reversibility and Blast-Radius Control
+
+Risk is evaluated per action, not only by capability ID. The action envelope must consider:
+
+- financial exposure;
+- affected people, accounts, or records;
+- public visibility;
+- contractual or legal impact;
+- reversibility and recovery cost;
+- time sensitivity;
+- data sensitivity;
+- confidence in the predicted effect.
+
+Business actions should remain separately typed as observe, recommend, prepare, communicate,
+accept an obligation, spend, receive/custody/refund/transfer funds, or alter pricing, inventory,
+advertising, or public claims. Authority for a lower class never implies authority for a higher
+class.
+
+### Human-Attention Governance
+
+Approval volume is not a success metric. Nova should batch compatible low-urgency decisions,
+interrupt only when delay materially matters, explain why approval is required, state the exact
+effect and worst plausible consequence, offer a safe no-action choice, and never manufacture
+urgency. Repeated rubber-stamping is a governance warning, not evidence that approval can be
+removed.
+
+### Counterfactual Outcome Measurement
+
+Outcome review asks not only whether execution succeeded, but what likely would have happened
+without the recommendation. Track verified revenue or savings, direct and provider costs, human
+review time, failures and corrections, customer quality signals, uncertainty eliminated,
+recommendation acceptance, and repeatability. Distinguish correlation from demonstrated
+causation and label inference honestly. A single profitable run does not justify promotion.
+
+> Counterfactual value is an attributed estimate with assumptions and uncertainty, not an
+> observed fact.
+
+### Service Quality and Correction
+
+Before a workflow provides a service with reduced supervision, it needs a narrow published
+scope, source and licensing rules, deterministic acceptance checks where practical, deliverable
+versioning, customer-visible limitations, a correction or rollback procedure, and repeated-run
+quality evidence. A human owner retains disputes, refunds, legal threats, and obligation changes.
+Revenue without reliable delivery and correction is not a successful workflow.
+
+### Explicit Learning Boundaries
+
+Nova may update beliefs, predictions, preference estimates, recommendation rankings, and value
+or risk estimates. Learning must never directly change permissions, budgets, approval
+requirements, capabilities, beneficiaries, risk tolerance, action classes, or delegation rights.
+Material learned changes should be inspectable and reversible.
+
+### Identity Separation and Separation of Duties
+
+Keep distinct identities and responsibilities for the human owner, Nova reasoning, Governor
+authorization, execution actuator, external credential, and reconciliation/review process. No
+single compromised component should be able to propose, authorize, execute, and certify the
+same consequential action.
+
+> Logical separation is required even when components share a process. No component may both
+> issue authority and certify its own consequential execution outcome.
+
+### Incident Response and Selective Safe Mode
+
+Ledger inconsistency, repeated ambiguous outcomes, credential compromise, unexpected effects,
+budget mismatch, evidence poisoning, or identity anomalies should pause affected authority,
+preserve evidence, keep unrelated safe work available, explain uncertainty, and require explicit
+recovery. Safe mode is selective containment, not fabricated certainty or automatic recovery.
+
+### Data Lifecycle and Privacy Governance
+
+Local-first operation still requires collection minimization, sensitivity classification,
+retention and expiration, correction and deletion, backup and recovery, exportability, connector
+revocation, and redaction from prompts, logs, screenshots, and receipts. Nova should explain
+what it retains, why, where it came from, who may receive it, and when it will be retired.
+
+### Provider and Actuator Replaceability
+
+Models, search providers, memory stores, connectors, and execution actuators should sit behind
+stable governed contracts. Nova's durable asset is its owner-controlled evidence, mandates,
+decision history, authority records, and outcome truth, not dependence on a particular provider.
+
+### Retirement
+
+Objectives, workflows, permissions, memories, metrics, credentials, providers, and agents all
+need review and retirement conditions. Nova should revoke unused authority, expire stale
+outputs, remove unnecessary retained data, and stop workflows whose maintenance, risk, or owner
+attention exceeds demonstrated value. A portfolio layer may compare proven workflows; it may not
+create new businesses, identities, accounts, agents, vendors, budgets, or authority.
+
+## Owner-Facing Product Surfaces
+
+The architecture should become visible through four calm owner surfaces:
+
+1. **What Nova knows** — evidence, provenance, freshness, contradiction, and uncertainty.
+2. **What Nova recommends** — ranked options, expected value, confidence, risk, reversibility,
+   missing evidence, and the safe no-action alternative.
+3. **What Nova may do** — mandates, active permissions, exact approval requirements, budgets,
+   unresolved actions, retry holds, expiration, and revocation.
+4. **What actually happened** — lifecycle, effect, receipt, cost, quality, value, unresolved
+   outcomes, and required owner decisions.
+
+An owner report should preserve the same separation: observed, inferred, recommended, approved,
+attempted, confirmed, unresolved, spent or received, policy exceptions, and changes proposed for
+separate review. Silence is not success.
+
+## OpenClaw Boundary
+
+OpenClaw is one replaceable execution actuator. Nova owns planning, mandates, policy, budgets,
+approval, memory, durable execution truth, reconciliation, and outcome learning. OpenClaw holds
+no durable authority or independent permission state and may not reinterpret or widen an exact
+action envelope.
+
+Any future vertical requires one typed operation, one exact Governor-issued grant, one dispatch,
+one reconciled result, and one receipt. A result that cannot be verified remains unknown and
+cannot justify automatic retry. No OpenClaw vertical, browser expansion, or computer-use work is
+authorized by this strategic document.
+
+Detailed OpenClaw execution boundaries remain controlled by `docs/brain/OPENCLAW_ENVIRONMENT_MODEL.md`;
+authorization-integrity implementation scope remains controlled by its reviewed priority lock.
+
+## Economic-Value Ordering
+
+Within a future economic-value or OpenClaw progression, the dependency sequence discussed in
+Issue #326 is subordinate to the master roadmap and does not activate any step:
+
+> This dependency sequence orders only the future economic-value/OpenClaw progression. It does
+> not displace the master roadmap's current product-usability selection or parallel
+> authorization-integrity hardening order.
+
+```text
+Authorization Integrity Slice 2A
+-> review durable outcome truth and duplicate-effect containment
+-> select product-usability work from real-use evidence
+-> separately select one measurable read-first economic-value proof
+-> validate repeatability, quality, and value attribution
+-> separately lock one typed OpenClaw execution vertical
+-> prove reconciliation and service quality
+-> separately review a narrow approve-and-execute business workflow
+-> permit bounded delegation only after explicit promotion review
+```
+
+The first economic proof should use existing read-first capabilities to produce a recurring,
+decision-ready opportunity or competitor-intelligence report. It should eliminate a named
+uncertainty and lead to a human-reviewed decision. It must measure net value after direct costs,
+provider costs, correction burden, and owner attention. It does not include outreach, posting,
+purchases, financial writes, autonomous sales, contract acceptance, or browser automation.
+
+Workflow promotion follows an evidence ladder: Observe -> Recommend -> Prepare ->
+Approve-and-execute -> Bounded delegation -> Conditional autonomy. Every promotion requires
+published evidence, rollback criteria, an explicit owner decision, and a separate authority
+review. Nova cannot promote itself.
 
 ## Evidence-Backed World and Decision Model
 
