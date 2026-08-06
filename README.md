@@ -2,38 +2,45 @@
 
 **Version 0.5 Alpha — Current State**
 
-NovaLIS is a governance-first local AI platform designed to separate intelligence from execution.
+> **Nova is a local-first, governed awareness and decision-support system that maintains
+> context, identifies what matters, reduces uncertainty, and coordinates authorized tools only
+> when evidence and authority justify action.**
 
-Nova focuses on what the system is allowed to do, how actions are routed, and how real execution stays visible, bounded, reviewable, and auditable.
+Nova separates intelligence from authority so useful reasoning can remain broad while real
+execution stays bounded, inspectable, revocable, and provable.
 
 ## Why Nova
-Most AI tools optimize for capability expansion. Nova emphasizes bounded execution, reviewable actions, local ownership, visible trust boundaries, and user-visible control.
+Most assistants wait for a command. Nova is being built to establish what changed, what matters,
+what remains uncertain, and which decision deserves attention before choosing whether a tool is
+relevant.
 
-Nova is intended to evolve into:
+Its permanent architectural model is:
 
 ```text
-A Jarvis-style personal butler with governed execution:
-a personal butler at the interface layer,
-a governed runtime at the execution layer.
+Awareness -> Decision -> Authority -> Execution -> Outcome
+```
 
-Jarvis is product voice, not execution authority.
+Capability is a property of the governed runtime: what Nova can technically do. It is not
+permission. Authority decides whether an exact action may occur; Outcome verifies what actually
+happened and reconciles it into future awareness without expanding permission.
+
+The operating loop is:
+
+```text
+Observe -> build awareness -> identify relevance -> expose uncertainty -> recommend
+-> authorize -> execute -> evaluate outcome -> reconcile -> record
+```
+
 Intelligence proposes. Nova governs. You decide.
-```
-
-The long-term direction has two connected domains:
-
-```text
-1. Everyday home / voice / local assistant platform
-2. Creator-business operational coordination platform
-```
 
 Canonical ordering authority for all future work:
 - [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md)
 
 Canonical future-product summary:
-- [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
+- [Nova Authority and Decision OS Direction](docs/future/NOVA_AUTHORITY_AND_DECISION_OS_DIRECTION_2026-07-28.md)
 
 See:
+- [Product Definition](docs/product/PRODUCT_DEFINITION.md)
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
 - [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
 - [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
@@ -75,8 +82,12 @@ Then the human onboarding path:
 - [Capability Signoff Matrix](docs/product/CAPABILITY_SIGNOFF_MATRIX.md)
 - [Proof Capture Checklist](docs/product/PROOF_CAPTURE_CHECKLIST.md)
 
-## Current Demo Proof
-Latest proof package:
+## Selected Proof Packages
+Selected historical and current proof records:
+
+- [Seven-Morning Synthesis — 2026-07-22](docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md)
+- [Grounded Brief Routing Closeout — 2026-07-23](docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md)
+- [Current Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md)
 
 - [2026-04-29 Conversation + Search Proof](docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md)
 - [Conversation + Search Proof Index](docs/demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX.md)
@@ -103,7 +114,8 @@ Current proof verdict:
 ```text
 Governance paths are now strongly evidenced for the current confirmation-bound scope.
 Everyday live-session reliability workstream closed 2026-05-19 (75% -> 97% pass, 0 timeouts).
-Current active state is the Phase 3 observation period (see Current active task below).
+Seven-morning observation and its rank-1 grounded-routing repair are complete.
+Later current-state and acceptance-provenance details live in the Daily Command Center.
 Nova is not yet a finished consumer product.
 ```
 
@@ -113,7 +125,7 @@ Version 0.5 Alpha is a technical-user / early-adopter state, not a finished main
 Current grounded status:
 
 ```text
-- governance-first local AI/runtime platform
+- local-first governed awareness and decision-support system
 - bounded execution infrastructure exists
 - active runtime capabilities exist
 - active != certified != locked
@@ -123,8 +135,13 @@ Current grounded status:
 - Cap 65 Shopify intelligence is P1-P5 certification-locked (2026-05-22), read-only, not Shopify writes
 - OpenClaw exists as runtime code with bounded/manual-first execution surfaces
 - PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
-- PR #206 merged a real live-user simulation baseline
-- PR #207 merged the first Ollama wait-serialization mitigation
+- Authorization Integrity Slice 1 is merged through PR #325
+- Slice 2A is not implemented on main; its separate bounded local approval is not activation by this README
+- Slice 2B remains deferred and separately gated
+- Issue #326 and PR #327 are non-authorizing
+- post-#312 acceptance provenance remains unresolved in repository truth
+- no economic-value, expanded OpenClaw, browser/computer-use, financial-write, outreach,
+  posting, contracting, autonomous-business, or delegation lane is active
 - generated runtime docs are current as of the latest recorded drift check
 ```
 
@@ -136,27 +153,18 @@ Historical sequencing references (May 2026; superseded by the master roadmap for
 [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
 [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
 
-Current active task:
+Current remaining order:
 
 ```text
-PHASE 3 — Can Nova become a habit? (2026-07-06)
+1. Resolve post-#312 acceptance provenance honestly; do not fabricate a retrospective record.
+2. Continue only the separately owner-approved bounded local Slice 2A work within its exact
+   scope and publication stop.
+3. Select one product-usability lane independently from real-use evidence.
+4. Only after Slice 2A and product evidence, separately authorize one read-first economic proof.
+5. Only later consider one separately locked, typed OpenClaw execution vertical.
 
-Engineering and verification are complete. Build lanes shipped: UX
-simplification (#261/#262/#264), C1 Auralis Today decision surface
-(#266/#267/#268, seeded + frozen), and documentation (#263/#269/#270/
-#271). Live verification on fresh main: weather / news / calendar /
-routing / C1 all PASS; email / reminders / traffic NOT IMPLEMENTED.
-
-The only input that moves the project now is OBSERVED DAILY USE, not
-more building. See docs/product/PRODUCT_DEFINITION.md (mission +
-purpose), docs/capability_verification/CAPABILITY_INVENTORY.md (what
-works), and docs/status/DAILY_COMMAND_CENTER.md (where we are).
-
-Ordering authority for everything after this lane:
-docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md
-
-Do not expand capabilities. No Shopify writes, no posting,
-no broad agent execution (2026-06-18 boundary).
+This summary authorizes nothing. The Daily Command Center and master roadmap hold current detail
+and ordering; lane locks hold implementation scope.
 ```
 
 ## Future Directions
@@ -183,6 +191,10 @@ The documents below remain design references; the master roadmap decides sequenc
 **Intelligence is not authority.**
 
 **Visibility is not authority.**
+
+**Capability is not permission.**
+
+**Outcome learning may improve recommendations, never authority.**
 
 Nova may reason, summarize, search, draft, and recommend. Conversation context and memory can improve understanding, but they do not authorize execution. Real actions should remain bounded by capability checks, execution boundaries, confirmation where required, and visible receipts.
 
