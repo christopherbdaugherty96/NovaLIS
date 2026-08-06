@@ -4,13 +4,25 @@ Governed AI for daily life and small-business workflows.
 
 ## Core Idea
 
-Nova is a governed personal AI operating layer.
+Nova is a local-first, governed awareness and decision-support system that maintains context,
+identifies what matters, reduces uncertainty, and coordinates authorized tools only when evidence
+and authority justify action.
 
 It is designed to help with everyday life, routines, memory, news, planning, research, and small-business work — without giving the AI unchecked authority over real-world actions.
 
 Nova’s core principle is:
 
 > Intelligence is not authority.
+
+Its permanent architectural model is:
+
+```text
+Awareness -> Decision -> Authority -> Execution -> Outcome
+```
+
+Capability describes what the governed runtime can technically do. Authority determines whether
+it may do it; Execution performs the authorized action; Outcome verifies and reconciles what
+actually happened.
 
 Nova can reason, summarize, remember, plan, draft, search, compare, and suggest.
 
@@ -70,7 +82,8 @@ approved automation platform
 
 The SaaS direction is important, but it is not the whole identity.
 
-Nova’s deeper identity is the governed operating layer.
+Nova’s deeper identity is the governed awareness and decision-support system described above;
+the personal and business operating layers are delivery domains.
 
 SaaS is one way to deliver that operating layer to small-business users who need useful AI assistance without invisible or uncontrolled execution.
 
@@ -715,7 +728,8 @@ Nova should become more capable while preserving the central rule:
 
 ## Final Framing
 
-Nova is a governed personal AI operating layer for daily life and small-business work.
+Nova is a local-first, governed awareness and decision-support system for daily life and
+small-business work.
 
 It is designed to remember context, support routines, summarize news, prepare morning briefs, track priorities, assist with client/business workflows, and eventually run approved automation routines.
 

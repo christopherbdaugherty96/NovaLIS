@@ -24,7 +24,39 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-07-23)
+## The current gate (as of 2026-08-06)
+
+`main` is at `45a6759d` after PR #327. Seven-morning observation and grounded brief/category
+routing remain complete. PR #320 synchronized continuity through #319 while deliberately
+excluding the post-#312 acceptance scaffold; later product repairs #321, #322,
+and #324 are merged, but repository truth contains no formal acceptance artifact connecting
+real-use evidence to those lane selections. Acceptance provenance is therefore unresolved in
+the repository and must not be reconstructed or fabricated.
+
+Authorization integrity now has three distinct states:
+
+- **Slice 1 — MERGED through PR #325.** The Governor owns an exact-action-bound ApprovalGrant
+  lifecycle.
+- **Slice 2A — NOT IMPLEMENTED ON MAIN.** The owner approved bounded local implementation in an
+  external conversation under a separate exact scope and publication boundary. Issue #326 and
+  PR #327 did not authorize it; this truth-sync does not activate it.
+- **Slice 2B — DEFERRED.** Later cooperative cancellation and capability-specific reconciliation
+  remain separately gated.
+
+The August 6 documentation continuity truth-sync is recorded by this block. Remaining ordering is:
+
+1. Resolve post-#312 acceptance provenance honestly.
+2. Continue the separately owner-approved bounded local Slice 2A work within its exact scope.
+3. Select one product-usability lane independently from real-use evidence.
+4. Only after Slice 2A and product evidence, separately authorize one read-first economic proof.
+5. Only later consider one separately locked, typed OpenClaw execution vertical.
+
+Issue #326 and PR #327 are non-authorizing. No economic-value proof, expanded OpenClaw,
+browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business, or
+delegation lane is active. OpenClaw remains a replaceable actuator rather than an authority.
+This file records ordering only and authorizes nothing.
+
+## Historical gate (as of 2026-07-23)
 
 Phase 3 — "Can Nova become a habit?" — is the current product phase. Per
 `CURRENT_WORK_STATUS.md` and the product definition, **observed daily use gates product-usability

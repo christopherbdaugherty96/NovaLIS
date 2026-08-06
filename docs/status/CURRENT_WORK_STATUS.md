@@ -1,8 +1,7 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; PR #311-#312 merged; grounded
-brief/category routing lane shipped and fresh-main verified). Read the latest 2026-07-23 block in
-docs/status/DAILY_COMMAND_CENTER.md first; older July blocks remain historical context.
+Last reviewed: 2026-08-06 (`main` at `45a6759d`, PR #327 merged). Read the latest 2026-08-06
+block in `docs/status/DAILY_COMMAND_CENTER.md` first; older blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
 `../capability_verification/CAPABILITY_INVENTORY.md` (what works), `DAILY_COMMAND_CENTER.md`
@@ -25,67 +24,46 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-PHASE 3 - Can Nova become a habit? SEVEN-MORNING THRESHOLD COMPLETE (updated 2026-07-23)
+CURRENT MERGED TRUTH (2026-08-06)
 
-For product-usability and capability-expansion work, the input that moves the project is
-OBSERVED DAILY USE. Engineering freeze holds; only truth-critical, observation-backed, explicitly
-approved repairs are taken. Broad capability expansion, provider/model switching, and autonomous
-work remain parked. Separately, authorization integrity is the first activatable post-observation
-hardening lane and does not require another morning to justify it (this truth-sync does not start
-it).
+Main is at 45a6759d after PR #327. No pull requests were open at this truth-sync base.
+PR #320 synchronized continuity through #319 but deliberately excluded the post-#312
+acceptance-morning scaffold. Product repairs #321/#322/#324 then grounded Auralis decision
+follow-ups, preserved exact Owner blocker / Best move lines, and supported empty Awareness focus.
+PR #323 restored hosted CI and runtime-fingerprint cleanliness.
 
-Seven-morning observation is COMPLETE:
-  docs/observation/MORNING_01..07 are logged and synthesized in
-  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
-  threshold complete, named grounded brief/category routing the rank-1 defect, and required no
-  further open-ended morning cycle to justify that first lane.
+AUTHORIZATION INTEGRITY
+  Slice 1 - MERGED through PR #325: Governor-owned, session/capability/exact-action-bound,
+            expiring, single-use ApprovalGrants.
+  Slice 2A - NOT IMPLEMENTED ON MAIN. Owner-approved in an external conversation for bounded
+             local implementation only, subject to its exact scope and publication stop. It was
+             not authorized by Issue #326 or PR #327. This status sync does not activate it.
+  Slice 2B - DEFERRED and separately gated: later cooperative cancellation and
+             capability-specific reconciliation.
 
-Merged since the last status block:
-  #302-#307 - Morning 1-5 interaction/content repairs (brief-phrasing recognition, status-frame
-         truth, Gotcha-loop, news confidence degradation, local usage visibility, async news
-         synthesis cache/read-through + Slice 2, grounded-brief Slice 0).
-  #311 - isolate turns after a response timeout (Morning 6-7 cross-turn containment).
-  #312 - ground news routing to the active brief surface (merged 2026-07-23): "show me
-         <category> news" reaches governed Cap 49; brief/story follow-ups bind to the rendered
-         Cap 50 clusters / active surface; numeric story commands resolve against a stable
-         active-surface map; one confidence value feeds body and Trust strip; deterministic
-         source-bounded fallback preserved. Validation: 205 focused tests, Ruff PASS,
-         prove_runtime_truth PASS, live branch verification in the PR body, plus fresh-main
-         verification in docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md.
+PRODUCT ACCEPTANCE
+  Repository provenance remains unresolved. Main has the later repairs but no committed formal
+  post-#312 acceptance artifact connecting real-use evidence to their lane selection. Do not
+  fabricate a retrospective record or claim what occurred outside repository evidence.
 
-The grounded brief/category routing lane is COMPLETE. It shipped exactly the scope previously
-described as "Slice 1"; that lane is now closed, not pending.
+CURRENT ORDER
+  The August 6 documentation continuity truth-sync is recorded by this block. Remaining order:
+  1. Honest resolution of the post-#312 acceptance provenance.
+  2. Continue separately owner-approved bounded local Slice 2A work within its exact boundary.
+  3. Independently select one product-usability lane from real-use evidence.
+  4. After Slice 2A and product evidence, separately authorize one read-first economic proof.
+  5. Later, consider one separately locked typed OpenClaw execution vertical.
 
-Next product input:
-  ONE targeted post-#312 morning for additional real-use / product-acceptance input. PR #312 is
-  already verified on fresh `main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md),
-  so this morning is continued real use, not that verification. After it the owner selects the
-  next evidence-ranked PRODUCT-USABILITY lane. Two distinct lists feed that choice (none
-  authorized here):
-    Synthesis-ranked secondary repairs (each a separate decision):
-      - connection-truth/source-label repair;
-      - runtime-generator (fingerprint) reconciliation;
-      - business-context freshness/tense repair: stale past-dated memory-derived status
-        (e.g. "Watch: July 9...") must not present as current; separately authorize; no
-        business action or external write;
-      - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
-    Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
-  The post-#312 morning determines whether any product gap is selected.
-
-First post-observation hardening lane (parallel, do not lose):
-  Authorization integrity (lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md)
-  is the FIRST hardening lane after observation. Sequencing steps 1-2 are now satisfied (seven
-  mornings COMPLETE; PR #312 closed the evidence-ranked product bottleneck), so it is activatable
-  in parallel priority with the top product lane, superseded only by a higher-severity
-  correctness/governance defect. LOCK ONLY; this truth-sync does not start it.
-
-Still gated:
-  Slice 2 - echo-only -> constrained grounded generation. Requires hallucination-negative tests,
-  an interactive latency budget, and owner sign-off on fallback shape/within-facts strictness.
-
-Owner-only NOW gate remains outside Nova implementation: Auralis-Digital hosting migration +
-privacy flip, Instagram, filming, Meta verification, OpenClaw token rotation.
+BOUNDARY
+  Issue #326 is a non-authorizing strategic record. PR #327 is documentation-only and
+  non-authorizing. No economic-value proof, expanded OpenClaw, browser/computer-use,
+  financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
+  active. OpenClaw is a replaceable actuator, not an authority. Product selection remains
+  independent from authorization hardening.
 ```
+
+The reconciled block above supersedes any later `current`, `next`, `active`, or `LOCK ONLY`
+wording retained below as historical continuity or task inventory.
 
 <!-- Historical lock below retained for continuity. -->
 
