@@ -122,7 +122,8 @@ Current code implements:
 - due and upcoming state;
 - cancel, dismiss, and reschedule operations;
 - quiet-hours and delivery-rate policy;
-- due reminder surfacing in the Nova dashboard.
+- saved, due, and upcoming reminder state visibility through Nova's schedule/dashboard surfaces
+  when those surfaces are loaded or refreshed.
 
 Current truth does not imply or authorize:
 
@@ -131,9 +132,11 @@ Current truth does not imply or authorize:
 - autonomous execution of actions described by a reminder;
 - new background or operating-system notification expansion.
 
-A Nova reminder record is not an external calendar event. Reminder due-state may surface in the
-dashboard; a scheduled action does not auto-run. This evidence changes no capability registry or
-runtime authority.
+A Nova reminder record is not an external calendar event. Saved and due reminder state can be
+inspected through Nova's schedule surfaces when those surfaces are loaded or refreshed. This is
+not background reminder delivery and does not guarantee an automatic alert at the due time. A
+scheduled action does not auto-run. This evidence changes no capability registry or runtime
+authority.
 
 ## Secondary findings - recorded, not active
 
