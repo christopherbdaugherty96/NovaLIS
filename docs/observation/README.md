@@ -1,25 +1,31 @@
 # docs/observation - Morning observation logs
 
-**Status:** ACTIVE - this is the current phase's primary evidence stream.
+**Status:** ACTIVE evidence stream; no open-ended morning gate is active.
 **Authority:** observation logs are recorded evidence (facts about usage), not plans or designs.
 They feed the roadmap; they do not authorize builds by themselves.
 
 ## Why This Folder Exists
 
-Phase 3 is closed and engineering is frozen behind the observation gate: **at least 7 real
-mornings of logged use before broad feature building.** Behavior generates the roadmap, not specs,
-reference repos, or theory. This folder is where that behavior gets recorded.
+Phase 3 is closed. The seven-morning threshold was completed and synthesized on 2026-07-22, and
+its rank-1 grounded-routing repair shipped through PR #312. The targeted post-#312 owner-use
+session is recorded in
+[OWNER_ACCEPTANCE_POST_312_2026-08-07.md](OWNER_ACCEPTANCE_POST_312_2026-08-07.md). That record
+closed the pending product-selection input and selected `Commitment Truth + Natural Reminder
+Handoff` under a separate owner-approved priority lock.
 
-Current posture update (2026-07-15): the default remains collect-before-building, but a narrower
-exception exists when a real morning exposes a trust, truth, or daily-use blocker and the owner
-explicitly fires a lane from that evidence. Morning 4/5 repairs followed that pattern: observation
-named the problem first, then fixes stayed scoped to the observed failure. Do not treat this as
-permission to resume speculative roadmap implementation.
+Observation remains an evidence stream: behavior generates product priorities, not speculative
+architecture. There is no new open-ended morning gate. Future normal use may discover defects
+without automatically restarting a formal observation phase.
+
+Current posture update (2026-08-07): when real use exposes a trust, truth, or daily-use blocker,
+record it first and require an explicit bounded owner decision before implementation. The August 7
+record followed that rule. Do not treat normal use or this folder as permission to resume
+speculative roadmap implementation or activate a secondary candidate.
 
 The single success metric: **did Nova eliminate at least one uncertainty before you reached for
 another app?**
 
-## Launch Procedure For The Observation Week
+## Launch Procedure For A Live Observation Session
 
 1. Confirm Nova is not already running: no python process should own port 8000
    (`netstat -ano | findstr :8000`). If one does, run `stop_nova.bat` first.
@@ -43,20 +49,19 @@ test.
 
 ## Protocol
 
-1. One file per morning: `MORNING_01_YYYY-MM-DD.md` (02, 03, ...), copied from
-   [MORNING_LOG_TEMPLATE.md](MORNING_LOG_TEMPLATE.md).
-2. Fill it in **right after** using the Morning Brief, while the experience is fresh.
-   Short honest answers beat long polished ones. Always record the config-state and condition-log
-   tables (launch path, dashboard open/closed, fresh/warm); without them the 7-morning set mixes
-   product behavior with observer-induced load.
-3. **Collect before analyzing.** No trend analysis, no speculative roadmap decisions, no broad
-   builds until at least 7 logs exist. A single morning is an anecdote; seven are evidence.
-4. Exceptions to the freeze: critical bugs and owner-approved evidence-fired trust repairs. If
+1. For a formal morning record, copy [MORNING_LOG_TEMPLATE.md](MORNING_LOG_TEMPLATE.md) and fill
+   it in immediately while the experience is fresh.
+2. Record config and condition metadata, especially the exact running commit, branch, launch path,
+   dashboard state, and fresh/warm state. Missing provenance limits commit-level attribution.
+3. Distinguish a single-session finding from a repeated trend. A severe trust/correctness defect
+   may support a bounded repair; ordinary wishes remain candidates until repeated evidence earns
+   priority.
+4. Exceptions to the freeze remain critical bugs and owner-approved evidence-fired trust repairs. If
    Nova acts without asking, presents inference as fact, fabricates source-like output, or an
    observed daily-use blocker makes the product misleading, log it first; it may be fixed
    immediately only when the owner explicitly calls that lane.
-5. After 7+ logs: analyze for repetition. A wish repeated 3+ mornings is a roadmap candidate.
-   A wish appearing once is noise.
+5. Do not restart the completed seven-morning phase or require another post-#312 acceptance morning
+   unless the owner explicitly creates a new evidence gate.
 
 ## What Happens To The Results
 

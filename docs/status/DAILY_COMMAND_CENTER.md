@@ -1,6 +1,67 @@
 # Daily Command Center
 
-## 2026-08-06 continuity truth-sync (latest - read this first)
+## 2026-08-07 post-#312 owner evidence and selected repair (latest - read this first)
+
+```text
+CURRENT MERGED MAIN: 6a078f1e after PR #328.
+
+PR #328 closed the documentation truth-sync. The targeted post-#312 real-use session occurred on
+2026-08-07 and is recorded in:
+  docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md
+
+EVIDENCE STATUS:
+  Prospective owner-use evidence suitable for product prioritization.
+  Exact runtime commit attribution is limited because the running SHA and branch were not captured
+  in the transcript. Do not use it for exact commit-level regression attribution.
+
+SELECTED ACTIVE PRODUCT REPAIR:
+  Commitment Truth + Natural Reminder Handoff
+  Lock: docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md
+
+PRIMARY OBSERVED DEFECT:
+  A natural multi-turn calendar/reminder request escaped deterministic action handling and
+  GeneralChat produced unsupported reminder-completion language without a verified persisted
+  result or schedule ID.
+
+REMINDER TRUTH:
+  Nova already persists reminder schedules and can surface due state in the dashboard. This lane
+  repairs natural conversational handoff and completion truth. It does not add Google Calendar
+  writes, Google Tasks/Reminders, autonomous scheduled actions, or scheduler expansion.
+
+AUTHORIZATION INTEGRITY:
+  Slice 1 remains MERGED through PR #325.
+  Slice 2A remains separately owner-approved and NOT IMPLEMENTED ON MAIN. It is temporarily paused
+  behind this observed P1 correctness/trust repair. Keep the implementations and PRs separate.
+  Slice 2B remains DEFERRED and separately gated.
+
+CURRENT ORDER:
+  1. Land this acceptance/priority documentation package.
+  2. Implement Commitment Truth + Natural Reminder Handoff only.
+  3. Rerun the exact natural phrases from the August 7 session.
+  4. Close the repair only with deterministic tests plus live owner verification that records the
+     running commit.
+  5. Resume separately scoped Authorization Integrity Slice 2A.
+  6. Then select the next product-usability candidate from evidence.
+
+SECONDARY CANDIDATES - NOT ACTIVE:
+  arbitrary-location weather routing;
+  stale Auralis business-context freshness;
+  local-first identity-copy truth;
+  visible STT/TTS interaction state;
+  startup cohesion.
+
+No additional acceptance morning is required before this bounded repair. No new open-ended
+observation cycle begins. No economic-value proof, expanded OpenClaw, browser/computer-use,
+financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
+active. OpenClaw remains a bounded replaceable actuator, not an authority.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-08-07 (post-#312 owner-use evidence recorded; one bounded repair selected).
+
+The 2026-08-06 and earlier sections below are historical continuity records.
+
+## 2026-08-06 continuity truth-sync (historical continuity)
 
 ```text
 CURRENT MERGED MAIN: 45a6759d (PR #327). No open pull requests at this truth-sync base.
@@ -335,10 +396,9 @@ test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 ## Decisions Needed
 
 ```text
-1. Owner activation: authorization integrity is the first activatable post-observation
-   hardening lane (LOCK ONLY). Starting it needs a separate owner decision; this truth-sync
-   does not start it.
-2. Owner: pick the next evidence-ranked product lane after the post-#312 morning.
+1. Close the active Commitment Truth + Natural Reminder Handoff repair with deterministic tests
+   and live owner verification. Do not select another product lane first.
+2. Resume separately scoped Authorization Integrity Slice 2A after the P1 repair closes.
 3. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
    repo vs repo split vs GitHub Pro) - the business playbook is currently public.
 ```
@@ -346,18 +406,17 @@ test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 ## This Week
 
 ```text
-1. One post-#312 real-use/product-acceptance morning (verify shipped grounded routing in
-   daily use; not a re-verification of #312).
+1. Land, implement, and live-verify only Commitment Truth + Natural Reminder Handoff.
 2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
-3. No new product/capability lane until observed use surfaces a real gap; authorization
-   integrity may be activated in parallel by a separate owner decision.
+3. No secondary product/capability lane. Slice 2A stays separate and paused behind the P1 repair.
 ```
 
 ## Morning coverage (what Nova reliably does today, confirmed through Morning 7, 2026-07-22)
 
 ```text
 Weather  OK  |  News  OK  |  Calendar  OK  |  Business/C1  OK
-Email  NOT IMPLEMENTED  |  Reminders  NOT IMPLEMENTED  |  Traffic  NOT IMPLEMENTED
+Email  NOT IMPLEMENTED  |  Google Tasks/Reminders  NOT IMPLEMENTED  |  Traffic  NOT IMPLEMENTED
+Nova reminder schedule records + dashboard due-state surfacing  EXIST
 ~3 of Chris's ~5-6 morning checks. Gap-fill order (only when evidence pulls it):
 Google Tasks -> Gmail -> Traffic. Full detail: CAPABILITY_INVENTORY.md.
 ```

@@ -35,35 +35,49 @@ This roadmap still determines ordering; lane locks still determine scope; owner 
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Current Ordering — 2026-08-06
+## Current Ordering — 2026-08-07
 
-`main` is at `45a6759d` after PR #327. The meaningful post-#319 sequence is concise:
+`main` is at `6a078f1e` after PR #328. The meaningful post-#319 sequence is concise:
 
 - PR #320 synchronized continuity and deliberately excluded the post-#312 acceptance scaffold.
 - PRs #321/#322/#324 grounded Auralis decision follow-ups and their exact display contract.
 - PR #323 restored hosted CI and runtime-fingerprint cleanliness.
 - PR #325 merged Authorization Integrity Slice 1.
 - Issue #326 and PR #327 preserve non-authorizing strategy only.
+- PR #328 merged the product, roadmap, and landing-page truth-sync.
 
-Authorization Integrity Slice 1 is **MERGED**. Slice 2A is **NOT IMPLEMENTED ON MAIN**; it is
-owner-approved in an external conversation for bounded local implementation under a separate
-exact scope and publication boundary, not by Issue #326 or PR #327. Slice 2B is **DEFERRED** and
-separately gated.
+The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded in
+`../observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md`. It is prospective owner-use evidence
+suitable for product prioritization. Exact commit-level attribution is limited because the running
+SHA and branch were not captured. This closes the pending product-selection input without
+fabricating missing runtime provenance.
 
-The formal post-#312 acceptance record remains unresolved in repository truth. Main contains
-the later repairs, but no committed acceptance artifact formally connects real-use evidence to
-their lane selections. Do not infer what occurred outside the repository or fabricate a
-retrospective record.
+The owner selected one active product repair: **Commitment Truth + Natural Reminder Handoff**,
+scoped by `../status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md`. The observed
+P1 defect is unsupported reminder-completion language after a natural multi-turn calendar/reminder
+request escaped deterministic handling. Existing Nova reminder schedules persist records and
+surface due state; this lane adds no external calendar write, autonomous scheduled action,
+capability, or authority.
 
-The August 6 documentation continuity truth-sync is recorded by this block. Remaining order:
+Authorization Integrity Slice 1 is **MERGED**. Slice 2A is **NOT IMPLEMENTED ON MAIN** and remains
+separately owner-approved under its existing exact scope and publication boundary. It is
+temporarily paused behind the observed P1 correctness/trust repair; do not mix the implementations
+or PRs. Slice 2B is **DEFERRED** and separately gated.
 
-1. Resolve the acceptance provenance honestly.
-2. Continue separately owner-approved bounded local Slice 2A work within its exact boundary.
-3. Select one product-usability lane independently from real-use evidence.
-4. After Slice 2A and product evidence, separately authorize one read-first economic proof.
-5. Only later consider one separately locked, typed OpenClaw execution vertical.
+Current order:
 
-This ordering activates nothing. No economic-value proof, expanded OpenClaw, browser/computer-use,
+1. Land the August 7 acceptance and priority-lock documentation package.
+2. Implement Commitment Truth + Natural Reminder Handoff only.
+3. Rerun the exact August 7 natural phrases.
+4. Close the repair only with deterministic tests plus live owner verification that records the
+   running commit.
+5. Resume separately scoped Authorization Integrity Slice 2A.
+6. Then select the next product-usability candidate from evidence.
+
+No additional acceptance morning or open-ended observation cycle is required before this bounded
+repair. Secondary candidates - arbitrary-location weather routing, stale Auralis freshness,
+local-first identity copy, visible STT/TTS state, and startup cohesion - remain inactive. No
+economic-value proof, expanded OpenClaw, browser/computer-use,
 financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
 active. OpenClaw remains a replaceable actuator, not an authority.
 
