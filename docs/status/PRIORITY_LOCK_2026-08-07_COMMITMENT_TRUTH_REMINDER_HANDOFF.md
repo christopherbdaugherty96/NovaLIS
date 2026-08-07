@@ -110,7 +110,8 @@ Complete onboarding for work
 Today at 2:00 PM
 Schedule ID: SCH-...
 
-It will surface in Nova when due.
+Reminder saved locally. Nova does not currently provide background reminder alerts.
+You can inspect saved/due reminders through Nova's schedule surfaces.
 Scheduled actions do not auto-run.
 ```
 
