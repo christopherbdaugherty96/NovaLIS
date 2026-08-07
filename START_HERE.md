@@ -1,12 +1,16 @@
 # Start Here
 
-Last reviewed: 2026-07-09
+Last reviewed: 2026-08-06
 
 This is the shortest human path through NovaLIS.
 
-Nova is a governance-first local AI system. It is designed to separate intelligence from execution so useful actions can stay bounded, visible, and reviewable.
+Nova is a local-first, governed awareness and decision-support system that maintains context,
+identifies what matters, reduces uncertainty, and coordinates authorized tools only when evidence
+and authority justify action.
 
-Nova is currently an alpha build for technical users and early adopters. It is not a finished consumer product. The current product state is the Phase 3 observation period (see [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md)).
+Nova is currently an alpha build for technical users and early adopters. It is not a finished
+consumer product. For current work state and authority boundaries, see the
+[Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md).
 
 ---
 
@@ -46,6 +50,14 @@ Use generated runtime truth docs for exact current capability status:
 ## What To Look For First
 
 Do not evaluate Nova only by feature count.
+
+Use its permanent architectural model:
+
+```text
+Awareness -> Decision -> Authority -> Execution -> Outcome
+```
+
+Capability describes what the runtime can technically do; it does not grant permission.
 
 Evaluate whether it makes these things clear:
 
@@ -103,37 +115,34 @@ For implementation detail:
 
 ---
 
-## Current Brutal Truth
+## Current Grounded Truth
 
-Nova now has a strong governed reasoning and workflow substrate:
+Nova has a real governed runtime and verified awareness surfaces:
 
-- explicit memory loop (receipted, user-controlled)
-- bounded Context Pack (labeled, filtered, conflict-aware)
-- Brain Mode contracts and trace (non-authorizing)
-- RoutineGraph (Daily Brief)
-- Plan My Week (proposal + approval record)
+- conversational interaction and frontend/backend WebSocket communication
+- governed information retrieval, weather, news, calendar, arithmetic, and morning awareness
+- capability registry, authority checks, receipts, runtime-truth generation, and drift verification
+- bounded/manual-first OpenClaw runtime surfaces, without broad autonomous authority
+- Authorization Integrity Slice 1 merged through PR #325
 
 However:
 
-- plans do not execute actions
-- routines do not automate workflows
-- Brain Mode is not visible in UI
-- Context Pack is mostly invisible to users
-- there is no unified workflow dashboard yet
+- Nova is not a finished continuously reliable consumer product
+- Slice 2A is not implemented on main
+- Slice 2B is deferred and separately gated
+- formal post-#312 acceptance provenance is unresolved in repository truth
+- economic, browser/computer-use, financial-write, outreach, posting, contracting,
+  autonomous-business, and delegation lanes remain inactive
 
-The bottleneck is no longer core architecture.
-
-The bottleneck is:
-- making the system visible
-- proving value through one clear workflow
-- improving onboarding and setup
-- strengthening trust UI and proof surfaces
+Do not infer permission from capability, a roadmap, memory, prior approval, Issue #326, or PR #327.
 
 ---
 
 ## What Nova Is Right Now
 
-A governed reasoning system with structured workflows that do not yet execute real-world actions.
+A local-first governed awareness and decision-support system with real runtime capabilities and
+explicit authority boundaries. It can reason, recommend, and use currently governed surfaces; it
+is not authorized to pursue broad goals or expand its own authority.
 
 ---
 
@@ -147,13 +156,12 @@ A governed reasoning system with structured workflows that do not yet execute re
 
 ## What Comes Next
 
-The next step is not more internal architecture.
+Current remaining order:
 
-The next step is:
+1. Resolve post-#312 acceptance provenance honestly.
+2. Continue only separately owner-approved bounded local Slice 2A work within its exact boundary.
+3. Select one product-usability lane independently from real-use evidence.
+4. Separately authorize any later read-first economic proof.
+5. Consider a typed OpenClaw execution vertical only under a later separate lock.
 
-> build one visible workflow that proves Nova is useful
-
-Example direction:
-- daily operator dashboard
-- plan → review → approve → follow-up flow
-- small business workflow (Auralis direction)
+This page records the navigation path and current boundary. It does not activate any lane.

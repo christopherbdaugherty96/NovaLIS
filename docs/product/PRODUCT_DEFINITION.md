@@ -21,8 +21,9 @@ for another app?* — not "replace Gmail," not "answer everything." One.
 
 ## Identity
 
-> **Nova is an awareness engine that helps you know what matters, converse naturally about it,
-> and use tools only when awareness changes what should happen next — asking before it acts.**
+> **Nova is a local-first, governed awareness and decision-support system that maintains
+> context, identifies what matters, reduces uncertainty, and coordinates authorized tools only
+> when evidence and authority justify action.**
 
 Not a chatbot, not a dashboard, not an agent. Intelligence proposes, Nova governs, you decide.
 Personality may increase initiative, never authority.
@@ -51,13 +52,43 @@ layer" any more than they think "I'm using TCP/IP." The one exception that stays
 governance's **legibility** — receipts, "why am I recommending this," and the approval moment
 before any action. Good infrastructure disappears; the trust it produces does not.
 
+## Permanent architectural model
+
+```text
+Awareness -> Decision -> Authority -> Execution -> Outcome
+```
+
+These systems remain distinct even when Nova presents them as one smooth experience:
+
+- **Awareness** maintains evidence-backed context and identifies what changed, what matters,
+  and what remains uncertain.
+- **Decision** evaluates relevance, alternatives, and the next appropriate recommendation.
+- **Authority** determines whether an exact proposed action is permitted.
+- **Execution** performs only the authorized action through a governed capability.
+- **Outcome** verifies what happened, evaluates whether value was produced, and reconciles the
+  result into future awareness without expanding permission.
+
+**Capability is a governed-runtime property, not a sixth decision-making system.** It describes
+what Nova can technically do. Capability does not establish relevance, permission, or approval.
+
 ## Operating loop
 
 ```text
-Reality -> Awareness -> Decision -> Action (only with approval) -> Observation -> Learning
+Observe
+-> build awareness
+-> identify relevance
+-> expose uncertainty
+-> recommend
+-> authorize
+-> execute
+-> evaluate outcome
+-> reconcile
+-> record
 ```
 
-Observation and Learning close the loop — that is how Nova improves without guessing.
+Outcome evaluation and reconciliation close the loop. They may improve future awareness and
+recommendations, but they may never expand authority, lower approval requirements, or turn
+memory into permission.
 
 ## The five layers
 

@@ -14,10 +14,36 @@ For what runs today see [02_RUNTIME_TRUTH.md](02_RUNTIME_TRUTH.md).
   have to ask it.
 - **Purpose:** reduce uncertainty. If something does not reduce uncertainty, it is probably not
   a priority.
-- **Identity:** an awareness engine that helps you know what matters, converse about it, and use
-  tools only when awareness changes what should happen next — asking before it acts.
+- **Identity:** a local-first, governed awareness and decision-support system that maintains
+  context, identifies what matters, reduces uncertainty, and coordinates authorized tools only
+  when evidence and authority justify action.
 - **Objective function:** "help me make the next better decision" — deliberately different from
   an assistant's "answer my question" or an agent's "complete my task".
+
+## Permanent architectural model
+
+```text
+Awareness -> Decision -> Authority -> Execution -> Outcome
+```
+
+Capability is a property of the governed runtime: what Nova can technically do. It is not
+authority. Outcome verifies the effect and value of execution and reconciles results into future
+awareness; it may improve recommendations but may not expand permission.
+
+The full operating loop is:
+
+```text
+Observe
+-> build awareness
+-> identify relevance
+-> expose uncertainty
+-> recommend
+-> authorize
+-> execute
+-> evaluate outcome
+-> reconcile
+-> record
+```
 
 ## Shape the user sees
 
