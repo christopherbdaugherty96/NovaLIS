@@ -21,10 +21,11 @@ Awareness -> Decision -> Authority -> Execution -> Outcome
 ```
 
 Capability is a property of the governed runtime: what Nova can technically do. It is not
-permission. Authority decides whether an exact action may occur; Outcome verifies what actually
-happened and reconciles it into future awareness without expanding permission.
+permission. Authority decides whether an exact action may occur. In Nova’s target architecture,
+Outcome is responsible for verifying what actually happened and reconciling it into future
+awareness without expanding permission.
 
-The operating loop is:
+The intended operating loop is:
 
 ```text
 Observe -> build awareness -> identify relevance -> expose uncertainty -> recommend
