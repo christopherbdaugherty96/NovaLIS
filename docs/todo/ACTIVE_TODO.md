@@ -1,11 +1,35 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-07-23 (seven-morning threshold COMPLETE; grounded routing shipped via
-PR #312). Latest state: see the 2026-07-23 block in docs/status/DAILY_COMMAND_CENTER.md.
+Last reviewed: 2026-08-06 (`main` at `45a6759d`, PR #327 merged). Latest state: see the
+2026-08-06 block in `docs/status/DAILY_COMMAND_CENTER.md`.
 
 ---
 
 ## Current Active Task
+
+```text
+The August 6 documentation continuity truth-sync is recorded by this block. Remaining order:
+
+1. Resolve the post-#312 acceptance provenance honestly. Repository truth contains no formal
+   committed acceptance artifact; PR #320 deliberately excluded its scaffold. Repairs
+   #321/#322/#324 are merged, but their lane-selection provenance must not be fabricated.
+2. Continue the separately owner-approved bounded local Authorization Integrity Slice 2A work
+   only within its exact external scope and publication stop. Slice 2A is NOT IMPLEMENTED ON
+   MAIN and was not authorized by Issue #326 or PR #327.
+3. Select one product-usability lane independently from real-use evidence.
+4. After Slice 2A and product evidence, separately authorize one read-first economic proof.
+5. Only later consider one separately locked, typed OpenClaw execution vertical.
+
+Authorization Integrity Slice 1 is MERGED through PR #325. Slice 2B is DEFERRED and separately
+gated. PR #323 restored hosted CI/runtime-fingerprint cleanliness; PR #327 merged the
+documentation-only five-system compass. Issue #326 and PR #327 activate no implementation.
+
+No economic-value proof, expanded OpenClaw, browser/computer-use, financial-write, outreach,
+posting, contracting, autonomous-business, or delegation lane is active. OpenClaw remains a
+replaceable actuator rather than an authority. This TODO activates no work.
+```
+
+## Historical active-task record (2026-07-23)
 
 ```text
 PHASE 3 - Can Nova become a habit? (Product definition: docs/product/PRODUCT_DEFINITION.md)
@@ -80,6 +104,9 @@ requires a separate design doc and is not authorized.
 Dashboard clarity is improved. Goal Cards remain display-only.
 Second Brain Slice 1 priority lock is accepted.
 ```
+
+The reconciled ordering above supersedes any later `current`, `next`, or `active` wording retained
+below as task inventory or historical continuity.
 
 Current lock truth:
 

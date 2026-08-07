@@ -16,10 +16,13 @@ priority locks. Owner approval remains the source of activation.
 
 ## North Star
 
-> Nova is a local-first personal authority and decision operating system. It builds an
-> evidence-backed understanding of what matters, prepares the next best action, routes work
-> among approved intelligence providers, and permits execution only through explicit,
-> inspectable, revocable authority — with proof of what actually changed.
+> **Nova is a local-first, governed awareness and decision-support system that maintains
+> context, identifies what matters, reduces uncertainty, and coordinates authorized tools only
+> when evidence and authority justify action.**
+
+Its permanent architectural model is **Awareness -> Decision -> Authority -> Execution ->
+Outcome**. Capability is a property of the governed runtime—what Nova can technically do—not
+permission and not a sixth decision-making system.
 
 Nova does not need to be the smartest model. Models and specialist agents may be replaceable
 reasoning providers. Nova's durable role is to govern:
@@ -513,9 +516,21 @@ The feature warrant prevents laying stones no observed need earned.
 
 This document changes no current action:
 
-- one post-#312 real-use/product-acceptance morning remains the next product input;
-- the owner then selects the next evidence-ranked product lane;
-- authorization integrity remains independently activatable in parallel priority;
-- continuity consolidation and document-lifecycle work remain separate owner decisions;
+- `main` is at `45a6759d` after PR #327;
+- Authorization Integrity Slice 1 is merged through PR #325;
+- Slice 2A is not implemented on `main`; bounded local implementation was owner-approved in an
+  external conversation under its own exact scope and publication boundary, not by Issue #326
+  or PR #327;
+- Slice 2B remains deferred and separately gated;
+- formal post-#312 acceptance provenance remains unresolved in repository truth and must not be
+  retrospectively fabricated;
+- product lane selection remains independent from authorization hardening;
+- no economic-value proof or expanded OpenClaw vertical is active;
 - no new capability, connector, external write, scheduler, OpenClaw expansion, autonomous
   execution, learning authority, or cloud-data route is authorized here.
+
+The August 6 continuity truth-sync is recorded by this boundary. Remaining sequence: resolve
+acceptance provenance honestly; continue separately approved bounded local Slice 2A work within
+its own boundary; select one product-usability lane from real-use evidence; then, only through
+separate authorization, consider a read-first economic proof and later one typed OpenClaw
+vertical. OpenClaw remains a replaceable actuator rather than an authority.

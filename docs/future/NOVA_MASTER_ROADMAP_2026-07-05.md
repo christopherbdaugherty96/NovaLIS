@@ -33,10 +33,41 @@ That document is a strategic compass, not an ordering or scope authority. It syn
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
 This roadmap still determines ordering; lane locks still determine scope; owner decisions still
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
-proof, OpenClaw work, or delegation. The next product input and authorization-integrity position
-below are unchanged.
+proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Observation-driven candidates (added 2026-07-11; seven-morning threshold closed 2026-07-22)
+## Current Ordering — 2026-08-06
+
+`main` is at `45a6759d` after PR #327. The meaningful post-#319 sequence is concise:
+
+- PR #320 synchronized continuity and deliberately excluded the post-#312 acceptance scaffold.
+- PRs #321/#322/#324 grounded Auralis decision follow-ups and their exact display contract.
+- PR #323 restored hosted CI and runtime-fingerprint cleanliness.
+- PR #325 merged Authorization Integrity Slice 1.
+- Issue #326 and PR #327 preserve non-authorizing strategy only.
+
+Authorization Integrity Slice 1 is **MERGED**. Slice 2A is **NOT IMPLEMENTED ON MAIN**; it is
+owner-approved in an external conversation for bounded local implementation under a separate
+exact scope and publication boundary, not by Issue #326 or PR #327. Slice 2B is **DEFERRED** and
+separately gated.
+
+The formal post-#312 acceptance record remains unresolved in repository truth. Main contains
+the later repairs, but no committed acceptance artifact formally connects real-use evidence to
+their lane selections. Do not infer what occurred outside the repository or fabricate a
+retrospective record.
+
+The August 6 documentation continuity truth-sync is recorded by this block. Remaining order:
+
+1. Resolve the acceptance provenance honestly.
+2. Continue separately owner-approved bounded local Slice 2A work within its exact boundary.
+3. Select one product-usability lane independently from real-use evidence.
+4. After Slice 2A and product evidence, separately authorize one read-first economic proof.
+5. Only later consider one separately locked, typed OpenClaw execution vertical.
+
+This ordering activates nothing. No economic-value proof, expanded OpenClaw, browser/computer-use,
+financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
+active. OpenClaw remains a replaceable actuator, not an authority.
+
+## Observation-driven candidates (historical 2026-07-11 through 2026-07-28 context)
 
 The Phase-3 observation period generates roadmap candidates from real behavior. Recorded here
 as they surface; none is authorized to build except via the stated gate.
@@ -217,10 +248,9 @@ ENDGAME      a personal operating system that feels like Jarvis and
 > **Supersession boundary.** The detailed Lane A/B/C/D bodies below were written on
 > 2026-07-05, before the Phase-3 observation cycle. They are retained as backlog / reference
 > material for per-lane scope and sequencing. They DO NOT describe current status and DO NOT
-> override the top "Observation-driven candidates" block or the "Ordering Summary (one screen)"
-> — both of which carry current post-#312 truth (seven-morning threshold complete; #311/#312
-> merged; next input = one post-#312 morning; authorization integrity = first activatable
-> hardening lane). Where a body below says a lane is "active", "next", "not yet built", or
+> override the top "Current Ordering — 2026-08-06" block. The observation-candidate and
+> historical ordering sections preserve earlier status only. Where a body below says a lane is
+> "active", "next", "not yet built", or
 > "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (this
 > truth-sync), A2+B2 (PR #264), C1 (Auralis Today, shipped/frozen).
 
@@ -591,7 +621,7 @@ governed runtime integration -> generated runtime truth -> docs
 
 No horizon item skips stages. Usefulness is not implementation.
 
-## Ordering Summary (one screen)
+## Historical Ordering Summary (superseded by the 2026-08-06 current ordering above)
 
 ```text
 DONE (this cycle)

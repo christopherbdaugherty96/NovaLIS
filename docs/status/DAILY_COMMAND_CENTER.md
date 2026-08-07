@@ -1,6 +1,56 @@
 # Daily Command Center
 
-## 2026-07-28 session (latest - read this first)
+## 2026-08-06 continuity truth-sync (latest - read this first)
+
+```text
+CURRENT MERGED MAIN: 45a6759d (PR #327). No open pull requests at this truth-sync base.
+
+MEANINGFUL CHANGES SINCE THE PRIOR #319 CONTINUITY BLOCK:
+  #320 - synchronized continuity through #319 and landed the smoke/direction records; it
+         deliberately excluded the post-#312 acceptance-morning scaffold.
+  #321 - grounded Auralis decision follow-ups to the displayed Owner blocker / Best move.
+  #322 - preserved those decision items as exact physical lines with separate provenance.
+  #323 - restored the hosted CI and runtime-fingerprint baseline without behavior expansion.
+  #324 - grounded Auralis decision follow-ups when Awareness focus is empty, without stealing
+         an explicit conversational focus.
+  #325 - Authorization Integrity Slice 1: Governor-owned, exact-action-bound ApprovalGrants.
+  #327 - merged the non-authorizing five-system strategic compass from Issue #326.
+
+AUTHORIZATION-INTEGRITY DECOMPOSITION:
+  Slice 1 - MERGED through #325.
+  Slice 2A - NOT IMPLEMENTED ON MAIN. The owner approved bounded local implementation in an
+             external conversation under its exact stop/publication boundaries. Issue #326 and
+             PR #327 did not authorize it, and this truth-sync does not activate it.
+  Slice 2B - DEFERRED and separately gated (later cooperative cancellation and
+             capability-specific reconciliation).
+
+PRODUCT ACCEPTANCE PROVENANCE:
+  Repository truth does not contain the formal post-#312 acceptance artifact. PR #320 explicitly
+  excluded its scaffold. Repairs #321/#322/#324 are merged, but no committed artifact formally
+  connects real-use evidence to those lane selections. Do not infer that the morning occurred or
+  did not occur outside the repository, and do not fabricate retrospective evidence.
+
+CURRENT ORDER:
+  The August 6 documentation continuity truth-sync is recorded by this block. Remaining order:
+  1. Resolve post-#312 acceptance provenance honestly.
+  2. Continue the separately owner-approved bounded local Slice 2A work within its exact scope.
+  3. Select one product-usability lane independently from real-use evidence.
+  4. Only after Slice 2A and product evidence, separately authorize one read-first
+     economic-value proof.
+  5. Only later consider one separately locked, typed OpenClaw execution vertical.
+
+BOUNDARY:
+  Issue #326 and PR #327 are non-authorizing. No economic-value proof, expanded OpenClaw,
+  browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business,
+  or delegation lane is active. OpenClaw remains a replaceable actuator, not an authority.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-08-06 (PRs #320-#327 reconciled; no implementation activated).
+
+The 2026-07-28 and earlier sections below are historical continuity records.
+
+## 2026-07-28 session (historical context)
 
 ```text
 SEVEN-MORNING THRESHOLD COMPLETE. GROUNDED ROUTING SHIPPED. B1 CLEARED.
