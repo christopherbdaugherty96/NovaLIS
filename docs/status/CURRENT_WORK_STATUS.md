@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-06 (`main` at `45a6759d`, PR #327 merged). Read the latest 2026-08-06
+Last reviewed: 2026-08-07 (`main` at `6a078f1e`, PR #328 merged). Read the latest 2026-08-07
 block in `docs/status/DAILY_COMMAND_CENTER.md` first; older blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
@@ -24,42 +24,49 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-CURRENT MERGED TRUTH (2026-08-06)
+CURRENT MERGED TRUTH (2026-08-07)
 
-Main is at 45a6759d after PR #327. No pull requests were open at this truth-sync base.
-PR #320 synchronized continuity through #319 but deliberately excluded the post-#312
-acceptance-morning scaffold. Product repairs #321/#322/#324 then grounded Auralis decision
-follow-ups, preserved exact Owner blocker / Best move lines, and supported empty Awareness focus.
-PR #323 restored hosted CI and runtime-fingerprint cleanliness.
+Main is at 6a078f1e after PR #328. PR #328 closed the 11-file product, roadmap, and landing-page
+truth-sync. The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded in
+docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md.
+
+PRODUCT ACCEPTANCE
+  The August 7 session is prospective owner-use evidence suitable for product prioritization.
+  Exact commit-level regression attribution is limited because the running SHA and branch were
+  not captured. This closes the pending product-selection input without fabricating provenance.
+  No additional acceptance morning or new open-ended observation cycle is required before the
+  selected bounded repair.
+
+ACTIVE PRODUCT REPAIR
+  Commitment Truth + Natural Reminder Handoff.
+  Lock: docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md
+  Primary defect: GeneralChat produced unsupported reminder-completion language after a natural
+  multi-turn calendar/reminder request escaped deterministic handling.
+  Existing reminder schedules persist records and surface due state in Nova; this lane adds no
+  calendar write, autonomous scheduled action, external integration, capability, or authority.
 
 AUTHORIZATION INTEGRITY
   Slice 1 - MERGED through PR #325: Governor-owned, session/capability/exact-action-bound,
             expiring, single-use ApprovalGrants.
   Slice 2A - NOT IMPLEMENTED ON MAIN. Owner-approved in an external conversation for bounded
-             local implementation only, subject to its exact scope and publication stop. It was
-             not authorized by Issue #326 or PR #327. This status sync does not activate it.
+             local implementation only, subject to its exact scope and publication stop. It
+             remains approved but is temporarily paused behind the observed P1 repair. Keep its
+             implementation and PR separate.
   Slice 2B - DEFERRED and separately gated: later cooperative cancellation and
              capability-specific reconciliation.
 
-PRODUCT ACCEPTANCE
-  Repository provenance remains unresolved. Main has the later repairs but no committed formal
-  post-#312 acceptance artifact connecting real-use evidence to their lane selection. Do not
-  fabricate a retrospective record or claim what occurred outside repository evidence.
-
 CURRENT ORDER
-  The August 6 documentation continuity truth-sync is recorded by this block. Remaining order:
-  1. Honest resolution of the post-#312 acceptance provenance.
-  2. Continue separately owner-approved bounded local Slice 2A work within its exact boundary.
-  3. Independently select one product-usability lane from real-use evidence.
-  4. After Slice 2A and product evidence, separately authorize one read-first economic proof.
-  5. Later, consider one separately locked typed OpenClaw execution vertical.
+  1. Land this acceptance and priority-lock documentation package.
+  2. Implement Commitment Truth + Natural Reminder Handoff only.
+  3. Rerun the exact August 7 natural phrases.
+  4. Require deterministic tests plus live owner verification before closeout.
+  5. Resume separately scoped Authorization Integrity Slice 2A.
+  6. Then select another product-usability candidate from evidence.
 
 BOUNDARY
-  Issue #326 is a non-authorizing strategic record. PR #327 is documentation-only and
-  non-authorizing. No economic-value proof, expanded OpenClaw, browser/computer-use,
+  No secondary candidate is active. No economic-value proof, expanded OpenClaw, browser/computer-use,
   financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
-  active. OpenClaw is a replaceable actuator, not an authority. Product selection remains
-  independent from authorization hardening.
+  active. OpenClaw is a bounded replaceable actuator, not an authority.
 ```
 
 The reconciled block above supersedes any later `current`, `next`, `active`, or `LOCK ONLY`

@@ -24,34 +24,44 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-08-06)
+## The current gate (as of 2026-08-07)
 
-`main` is at `45a6759d` after PR #327. Seven-morning observation and grounded brief/category
-routing remain complete. PR #320 synchronized continuity through #319 while deliberately
-excluding the post-#312 acceptance scaffold; later product repairs #321, #322,
-and #324 are merged, but repository truth contains no formal acceptance artifact connecting
-real-use evidence to those lane selections. Acceptance provenance is therefore unresolved in
-the repository and must not be reconstructed or fabricated.
+`main` is at `6a078f1e` after PR #328. Seven-morning observation and grounded brief/category
+routing remain complete. The targeted post-#312 owner-use session occurred on 2026-08-07 and is
+recorded in `../observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md`. It is prospective owner-use
+evidence suitable for product prioritization. Exact commit-level attribution is limited because
+the running SHA and branch were not captured; the record does not fabricate that missing
+provenance.
+
+The owner selected one active product repair:
+`Commitment Truth + Natural Reminder Handoff`, scoped by
+`../status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md`. The observed P1 defect
+is unsupported reminder-completion language after a natural multi-turn calendar/reminder request
+escaped deterministic handling. Existing reminder schedules persist records and surface due state
+in Nova; the lane adds no calendar write, autonomous scheduled action, capability, or authority.
 
 Authorization integrity now has three distinct states:
 
 - **Slice 1 — MERGED through PR #325.** The Governor owns an exact-action-bound ApprovalGrant
   lifecycle.
-- **Slice 2A — NOT IMPLEMENTED ON MAIN.** The owner approved bounded local implementation in an
-  external conversation under a separate exact scope and publication boundary. Issue #326 and
-  PR #327 did not authorize it; this truth-sync does not activate it.
+- **Slice 2A — NOT IMPLEMENTED ON MAIN.** The owner approved bounded local implementation under a
+  separate exact scope and publication boundary. It remains separately approved but is temporarily
+  paused behind the observed P1 correctness/trust repair. Do not mix the implementations or PRs.
 - **Slice 2B — DEFERRED.** Later cooperative cancellation and capability-specific reconciliation
   remain separately gated.
 
-The August 6 documentation continuity truth-sync is recorded by this block. Remaining ordering is:
+The current ordering is:
 
-1. Resolve post-#312 acceptance provenance honestly.
-2. Continue the separately owner-approved bounded local Slice 2A work within its exact scope.
-3. Select one product-usability lane independently from real-use evidence.
-4. Only after Slice 2A and product evidence, separately authorize one read-first economic proof.
-5. Only later consider one separately locked, typed OpenClaw execution vertical.
+1. Land the August 7 acceptance and priority-lock documentation package.
+2. Implement Commitment Truth + Natural Reminder Handoff only.
+3. Rerun the exact August 7 natural phrases.
+4. Close the repair only with deterministic tests plus live owner verification that records the
+   running commit.
+5. Resume separately scoped Authorization Integrity Slice 2A.
+6. Then select the next product-usability candidate from evidence.
 
-Issue #326 and PR #327 are non-authorizing. No economic-value proof, expanded OpenClaw,
+No additional acceptance morning or open-ended observation cycle is required before the bounded
+repair. Secondary candidates remain inactive. No economic-value proof, expanded OpenClaw,
 browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business, or
 delegation lane is active. OpenClaw remains a replaceable actuator rather than an authority.
 This file records ordering only and authorizes nothing.
