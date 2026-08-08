@@ -251,6 +251,90 @@ def is_headline_summary_request(text: str) -> bool:
     return bool(_HEADLINE_SUMMARY_RE.search(str(text or "")))
 
 
+_REMINDER_CLOCK_WORDS = {
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+    "eleven": "11",
+    "twelve": "12",
+}
+
+
+def _normalize_reminder_time_text(raw: str) -> str:
+    value = " ".join(str(raw or "").strip().lower().rstrip(".?!").split())
+    value = re.sub(r"^(today|tomorrow)\s+at\s+", r"\1 ", value)
+    return re.sub(
+        r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b(?=\s*(?:am|pm)\b)",
+        lambda match: _REMINDER_CLOCK_WORDS[match.group(1)],
+        value,
+    )
+
+
+def _calendar_reminder_context(raw: str) -> dict[str, str]:
+    """Extract reminder-safe context without treating calendar time as reminder time."""
+    value = " ".join(str(raw or "").strip().rstrip(".?!").split())
+    body = ""
+
+    after_calendar = re.search(r"\bcalendar\s+to\s+(?P<body>.+)$", value, re.IGNORECASE)
+    if after_calendar:
+        body = str(after_calendar.group("body") or "").strip()
+    else:
+        before_calendar = re.match(
+            r"^\s*(?:add|put|block)\s+(?P<body>.+?)\s+(?:to|on)\s+(?:my\s+)?calendar\b",
+            value,
+            re.IGNORECASE,
+        )
+        if before_calendar:
+            body = str(before_calendar.group("body") or "").strip()
+        else:
+            after_event = re.match(
+                r"^\s*(?:schedule|create)\s+(?:this\s+|an?\s+)?(?:calendar\s+)?event"
+                r"(?:\s+(?:to|for|called|named)\s+(?P<body>.+))?$",
+                value,
+                re.IGNORECASE,
+            )
+            if after_event:
+                body = str(after_event.group("body") or "").strip()
+
+    event_time_match = re.search(
+        r"\s+(?:at|on)\s+(?P<context>(?:(?:today|tomorrow)\s+)?"
+        r"(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)?|"
+        r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*(?:am|pm)))\s*$",
+        value,
+        re.IGNORECASE,
+    )
+    event_time = str(event_time_match.group("context") or "").strip() if event_time_match else ""
+    if event_time and body:
+        body = re.sub(
+            r"\s+(?:at|on)\s+" + re.escape(event_time) + r"\s*$",
+            "",
+            body,
+            flags=re.IGNORECASE,
+        ).strip()
+
+    if body.lower() in {"this", "this time", "an event", "a event", "event"}:
+        body = ""
+    return {
+        "body": body[:400],
+        "requested_event_context": value[:500],
+        "requested_event_time": event_time[:80],
+    }
+
+
+def _reminder_body_from_request(raw: str, body_pattern: Any) -> str:
+    match = body_pattern.match(str(raw or "").strip().rstrip(".?!"))
+    if match:
+        return str(match.group("body") or "").strip()[:400]
+    return ""
+
+
 # ---------------------------------------------------------------------------
 # Deterministic arithmetic — avoids Ollama for simple math
 # ---------------------------------------------------------------------------
@@ -379,6 +463,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     EMAIL_INBOX_RESPONSE = deps.EMAIL_INBOX_RESPONSE
     REMIND_ME_TIMELESS_RE = deps.REMIND_ME_TIMELESS_RE
     REMIND_ME_TIMELESS_RESPONSE = deps.REMIND_ME_TIMELESS_RESPONSE
+    CALENDAR_WRITE_REQUEST_RE = deps.CALENDAR_WRITE_REQUEST_RE
+    REMINDER_BODY_FIRST_RE = deps.REMINDER_BODY_FIRST_RE
+    REMINDER_TIME_ONLY_RE = deps.REMINDER_TIME_ONLY_RE
+    REMINDER_PLAIN_TIME_RE = deps.REMINDER_PLAIN_TIME_RE
     _capability_help_message = deps._capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     _render_local_time_message = deps._render_local_time_message
@@ -593,6 +681,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "pending_web_open": None,
         "pending_governed_confirm": None,
         "pending_interpret_confirm": None,
+        "pending_reminder": None,
         "analysis_documents": [],
         "last_analysis_doc_id": None,
         "last_intent_family": "",
@@ -719,6 +808,64 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             session_state,
             str(speakable_message if speakable_message is not None else presented_message or "").strip(),
         )
+        session_state["turn_count"] += 1
+
+    async def _save_local_reminder(
+        *,
+        reminder_body: str,
+        time_text: str,
+        recurrence: str = "once",
+    ) -> None:
+        normalized_time = _normalize_reminder_time_text(time_text)
+        try:
+            scheduled_for = _parse_schedule_datetime(normalized_time, recurrence=recurrence)
+        except ValueError as exc:
+            await _complete_immediate_turn(str(exc), remember_response=False, tone_domain="system")
+            return
+
+        try:
+            item = notification_schedules.create_schedule(
+                kind="reminder",
+                title=f"Reminder: {reminder_body[:80]}",
+                body=reminder_body,
+                recurrence=recurrence,
+                next_run_at=scheduled_for,
+            )
+            snapshot = notification_schedules.summarize()
+        except Exception:
+            session_state["pending_reminder"] = None
+            log.exception("Local Nova reminder persistence failed")
+            await _complete_immediate_turn(
+                "I couldn't create that Nova reminder. No reminder was created. Please try again.",
+                remember_response=False,
+                tone_domain="system",
+            )
+            return
+
+        session_state["pending_reminder"] = None
+        _log_ledger_event(
+            governor,
+            "NOTIFICATION_SCHEDULE_CREATED",
+            {
+                "schedule_id": item["id"],
+                "kind": item["kind"],
+                "recurrence": item["recurrence"],
+            },
+        )
+        success_message = (
+            f"Reminder saved: {item['id']}\n"
+            f"Text: {reminder_body}\n"
+            f"Requested for: {_format_local_schedule_time(scheduled_for)}\n\n"
+            "Honesty note: Nova does not have background reminder delivery. "
+            "This reminder is saved but will not fire automatically. You can "
+            "view saved reminders with \"show schedules\".\n\n"
+            f"{str(snapshot.get('summary') or '').strip()}"
+        )
+        session_state["last_response"] = success_message
+        presented_message = await send_chat_message(ws, success_message, tone_domain="system")
+        await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+        await send_chat_done(ws)
+        _maybe_auto_speak_for_voice_turn(session_state, str(presented_message or "").strip())
         session_state["turn_count"] += 1
 
     async def _complete_silent_widget_refresh() -> None:
@@ -1162,6 +1309,107 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     "Reply yes/no immediately after an open prompt to resolve it instead.",
                 )
 
+            pending_reminder = session_state.get("pending_reminder")
+            if pending_reminder:
+                if session_state["turn_count"] > int(pending_reminder.get("expires_after_turn") or 0):
+                    session_state["pending_reminder"] = None
+                    pending_reminder = None
+
+            if pending_reminder:
+                pending_stage = str(pending_reminder.get("stage") or "").strip().lower()
+                reminder_reply = raw_text.strip().rstrip(".?!")
+                reminder_resolution = pending_confirmation_resolution_action(SessionRouter, reminder_reply)
+
+                if reminder_resolution == "cancel":
+                    session_state["pending_reminder"] = None
+                    await _complete_immediate_turn(
+                        "Okay. No Nova reminder was created.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+
+                if pending_stage == "offer":
+                    if reminder_resolution == "confirm":
+                        pending_reminder["stage"] = "time" if pending_reminder.get("body") else "body"
+                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
+                        session_state["pending_reminder"] = pending_reminder
+                        prompt = (
+                            "What time should Nova save this reminder for?"
+                            if pending_reminder.get("body")
+                            else "What should the Nova reminder say?"
+                        )
+                        await _complete_immediate_turn(prompt, remember_response=False, tone_domain="system")
+                        continue
+                    session_state["pending_reminder"] = None
+
+                elif pending_stage == "time":
+                    time_match = REMINDER_TIME_ONLY_RE.match(reminder_reply)
+                    if time_match:
+                        reminder_time = str(time_match.group("time") or "").strip()
+                        if time_match.group("daily"):
+                            pending_reminder["recurrence"] = "daily"
+                    elif REMINDER_PLAIN_TIME_RE.match(reminder_reply):
+                        reminder_time = reminder_reply
+                    else:
+                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 1
+                        session_state["pending_reminder"] = pending_reminder
+                        await _complete_immediate_turn(
+                            "I still need a reminder time, such as 2 PM or tomorrow at 9 AM.",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
+
+                    pending_reminder["reminder_time"] = reminder_time
+                    reminder_body = str(pending_reminder.get("body") or "").strip()
+                    if reminder_body:
+                        await _save_local_reminder(
+                            reminder_body=reminder_body,
+                            time_text=reminder_time,
+                            recurrence=str(pending_reminder.get("recurrence") or "once"),
+                        )
+                        continue
+                    pending_reminder["stage"] = "body"
+                    pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
+                    session_state["pending_reminder"] = pending_reminder
+                    await _complete_immediate_turn(
+                        "What should the Nova reminder say?",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+
+                elif pending_stage == "body":
+                    reminder_body = _reminder_body_from_request(reminder_reply, REMINDER_BODY_FIRST_RE)
+                    if not reminder_body:
+                        reminder_body = reminder_reply.strip()[:400]
+                    if not reminder_body:
+                        await _complete_immediate_turn(
+                            "What should the Nova reminder say?",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
+                    pending_reminder["body"] = reminder_body
+                    reminder_time = str(pending_reminder.get("reminder_time") or "").strip()
+                    if reminder_time:
+                        await _save_local_reminder(
+                            reminder_body=reminder_body,
+                            time_text=reminder_time,
+                            recurrence=str(pending_reminder.get("recurrence") or "once"),
+                        )
+                        continue
+                    pending_reminder["stage"] = "time"
+                    pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
+                    session_state["pending_reminder"] = pending_reminder
+                    await _complete_immediate_turn(
+                        "What time should Nova save this reminder for?",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+
             route_context = SessionRouter.normalize_and_route(raw_text, session_state)
             if route_context.is_empty:
                 await _complete_immediate_turn(SessionRouter.ready_prompt(), remember_response=False)
@@ -1176,6 +1424,37 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if untrusted_content_response:
                 await _complete_immediate_turn(
                     untrusted_content_response,
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            if CALENDAR_WRITE_REQUEST_RE.match(text):
+                reminder_context = _calendar_reminder_context(text)
+                reminder_body = str(reminder_context.get("body") or "").strip()
+                session_state["pending_reminder"] = {
+                    "stage": "offer",
+                    "body": reminder_body,
+                    "reminder_time": "",
+                    "recurrence": "once",
+                    "destination": "nova_local_reminder",
+                    "requested_event_context": reminder_context.get("requested_event_context", ""),
+                    "requested_event_time": reminder_context.get("requested_event_time", ""),
+                    "expires_after_turn": session_state["turn_count"] + 2,
+                }
+                reminder_offer = (
+                    f'I can save a local Nova reminder for "{reminder_body}" instead. '
+                    if reminder_body
+                    else "I can save a local Nova reminder instead. "
+                )
+                await _complete_immediate_turn(
+                    (
+                        "Calendar writing isn't enabled. No calendar event was created. "
+                        f"{reminder_offer}Say \"yes, set a reminder\" if you want that."
+                    ),
+                    suggested_actions=[
+                        {"label": "Use a Nova reminder", "command": "yes, set a reminder"},
+                    ],
                     remember_response=False,
                     tone_domain="system",
                 )
@@ -1542,12 +1821,49 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # Timeless reminder — "remind me to X" without a time spec.
             # Full form ("remind me at 3pm to X") is handled downstream by REMIND_ME_RE.
-            if REMIND_ME_TIMELESS_RE.match(command_text):
+            time_first_reminder = REMINDER_TIME_ONLY_RE.match(command_text)
+            if time_first_reminder:
+                reminder_time = str(time_first_reminder.group("time") or "").strip()
+                session_state["pending_reminder"] = {
+                    "stage": "body",
+                    "body": "",
+                    "reminder_time": reminder_time,
+                    "recurrence": "daily" if time_first_reminder.group("daily") else "once",
+                    "destination": "nova_local_reminder",
+                    "requested_event_context": "",
+                    "requested_event_time": "",
+                    "expires_after_turn": session_state["turn_count"] + 2,
+                }
                 await _complete_immediate_turn(
-                    REMIND_ME_TIMELESS_RESPONSE,
+                    "What should the Nova reminder say?",
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            if REMIND_ME_TIMELESS_RE.match(command_text):
+                reminder_body = _reminder_body_from_request(command_text, REMINDER_BODY_FIRST_RE)
+                session_state["pending_reminder"] = {
+                    "stage": "time" if reminder_body else "body",
+                    "body": reminder_body,
+                    "reminder_time": "",
+                    "recurrence": "once",
+                    "destination": "nova_local_reminder",
+                    "requested_event_context": "",
+                    "requested_event_time": "",
+                    "expires_after_turn": session_state["turn_count"] + 2,
+                }
+                await _complete_immediate_turn(
+                    (
+                        "What time should Nova save this reminder for?"
+                        if reminder_body
+                        else "What should the Nova reminder say?"
+                    ),
                     suggested_actions=[
-                        {"label": "Remind me at 3pm", "command": "remind me at 3pm to "},
+                        {"label": "Use 3 PM", "command": "3 PM"},
                     ],
+                    remember_response=False,
+                    tone_domain="system",
                 )
                 continue
 
@@ -2967,52 +3283,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            remind_me_match = REMIND_ME_RE.match(text)
+            remind_me_match = REMIND_ME_RE.match(command_text)
             if remind_me_match:
                 recurrence = "daily" if remind_me_match.group("daily") else "once"
-                try:
-                    scheduled_for = _parse_schedule_datetime(
-                        remind_me_match.group("time"),
-                        recurrence=recurrence,
-                    )
-                except ValueError as exc:
-                    await send_chat_message(ws, str(exc), tone_domain="system")
-                    await send_chat_done(ws)
-                    continue
                 reminder_body = str(remind_me_match.group("body") or "").strip()
-                item = notification_schedules.create_schedule(
-                    kind="reminder",
-                    title=f"Reminder: {reminder_body[:80]}",
-                    body=reminder_body,
+                await _save_local_reminder(
+                    reminder_body=reminder_body,
+                    time_text=str(remind_me_match.group("time") or "").strip(),
                     recurrence=recurrence,
-                    next_run_at=scheduled_for,
                 )
-                snapshot = notification_schedules.summarize()
-                _log_ledger_event(
-                    governor,
-                    "NOTIFICATION_SCHEDULE_CREATED",
-                    {
-                        "schedule_id": item["id"],
-                        "kind": item["kind"],
-                        "recurrence": item["recurrence"],
-                    },
-                )
-                await send_chat_message(
-                    ws,
-                    (
-                        f"Reminder saved: {item['id']}\n"
-                        f"Text: {reminder_body}\n"
-                        f"Requested for: {_format_local_schedule_time(scheduled_for)}\n\n"
-                        "Honesty note: Nova does not yet have background "
-                        "reminder delivery. This reminder is saved but will "
-                        "not fire automatically. You can view saved reminders "
-                        "with \"show schedules\".\n\n"
-                        f"{str(snapshot.get('summary') or '').strip()}"
-                    ),
-                    tone_domain="system",
-                )
-                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
-                await send_chat_done(ws)
                 continue
 
             reschedule_schedule_match = RESCHEDULE_SCHEDULE_RE.match(text)
