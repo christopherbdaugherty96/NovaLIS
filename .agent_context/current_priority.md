@@ -1,6 +1,6 @@
 # Current Priority
 
-## Phase 3 Observation - Seven-Morning Threshold COMPLETE - 2026-07-23
+## Post-#312 Product Repair Selected - 2026-08-07
 
 Current active product state:
 
@@ -11,14 +11,17 @@ and critical bugs, plus observation-backed trust repairs approved by the owner.
 The seven-morning gate is CLOSED. No additional seven-morning or open-ended
 observation gate is required. PR #312 is verified on fresh `main`
 (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
-Next product input is ONE targeted post-#312 morning for additional real-use /
-product-acceptance input (not a re-verification of #312), then the owner selects
-the next evidence-ranked product-usability lane. Authorization integrity is the
-FIRST post-observation hardening lane (lock:
-docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md), now activatable
-in parallel priority with the top product lane and superseded only by a
-higher-severity correctness/governance defect. Do not select broad implementation
-lanes from roadmap/history without owner approval; this file starts none.
+The targeted post-#312 owner-use session is recorded in
+docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md. It is valid for product
+prioritization; exact commit-level regression attribution is limited because the
+running SHA was not captured.
+The owner selected Commitment Truth + Natural Reminder Handoff as the active
+product repair (lock:
+docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md).
+Do not start another acceptance cycle or select another product lane until this
+repair closes or is explicitly superseded. Authorization Integrity Slice 2A
+remains separately approved but is temporarily paused behind this observed P1
+correctness/trust repair. Do not mix the implementations or PRs.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -46,9 +49,17 @@ The grounded brief/category routing lane is COMPLETE:
   This shipped exactly the scope previously described as "Slice 1"; that lane
   is now closed, not pending.
 
-This truth-sync authorizes no new capability. Slice 2 (constrained grounded
-generation) remains NOT authorized; it requires hallucination-negative tests
-and separate owner sign-off.
+The 2026-08-07 prospective owner-use record closes the post-#312 product-selection
+input. Its primary P1 finding is that a natural multi-turn calendar/reminder
+request escaped deterministic handling and GeneralChat produced unsupported
+completion language. Existing Nova reminder schedules persist records and surface
+due state in the dashboard; calendar writes, Google Tasks/Reminders, and autonomous
+scheduled actions remain unavailable or unauthorized.
+
+This documentation truth-sync adds no runtime behavior. The bounded repair lock
+authorizes only its stated implementation scope after the lock lands. No secondary
+candidate is active. Slice 2 (constrained grounded generation) remains NOT
+authorized; it requires hallucination-negative tests and separate owner sign-off.
 ```
 
 What agents should do:
@@ -58,10 +69,15 @@ What agents should do:
 2. Read docs/status/DAILY_COMMAND_CENTER.md for where the project is.
 3. Do NOT select implementation work from this file's historical sections
    or from any pre-2026-07-07 priority/status doc.
-4. Verify capability lock truth mechanically:
+4. Do NOT request another post-#312 acceptance morning. Implement only the active
+   Commitment Truth + Natural Reminder Handoff lock after it lands, then rerun
+   the exact 2026-08-07 natural phrases and record the running commit.
+5. Keep Authorization Integrity Slice 2A separate and paused until this P1 repair
+   closes or the owner explicitly changes ordering.
+6. Verify capability lock truth mechanically:
    python scripts/certify_capability.py status
    (Cap 16, 22, 64, 65 = LOCK as of 2026-07-09.)
-5. Verify runtime truth mechanically:
+7. Verify runtime truth mechanically:
    python scripts/prove_runtime_truth.py
 ```
 
