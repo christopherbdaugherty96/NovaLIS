@@ -2575,6 +2575,7 @@ const _RECEIPT_OUTCOME = {
 // Human-readable badge labels per outcome
 const _OUTCOME_LABEL = {
   done:    "Done",
+  unverified: "Outcome unverified",
   failed:  "Failed",
   blocked: "Blocked",
   pending: "Pending",
@@ -2638,8 +2639,35 @@ function _receiptCapabilityLabel(r) {
   return String(r.capability_name || r.action || r.capability_id || "").trim();
 }
 
+function _receiptOutcomeState(r) {
+  return String(r.outcome_state || "").trim().toLowerCase();
+}
+
+function _receiptLabel(r) {
+  const type = String(r.event_type || "").trim();
+  if (type === "ACTION_COMPLETED" && _receiptOutcomeState(r) === "accepted_unverified") {
+    return "Action accepted; outcome unverified";
+  }
+  return _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
+}
+
+function _receiptOutcomeKey(r) {
+  if (_receiptOutcomeState(r) === "accepted_unverified") return "unverified";
+  const type = String(r.event_type || "").trim();
+  return _RECEIPT_OUTCOME[type] || "info";
+}
+
+function _receiptBoundary(r) {
+  if (_receiptOutcomeState(r) === "accepted_unverified") {
+    return "Request accepted; visible outcome not verified";
+  }
+  return _RECEIPT_BOUNDARY[String(r.event_type || "").trim()] || "";
+}
+
 function _receiptExecutionStatus(r) {
   const status = String(r.status || "").trim();
+  if (status === "failed" || status === "refused") return status;
+  if (_receiptOutcomeState(r) === "accepted_unverified") return "accepted_unverified";
   if (status) return status;
   const type = String(r.event_type || "").trim();
   if (type === "OPENCLAW_ACTION_PENDING") return "pending_confirmation";
@@ -2663,8 +2691,7 @@ function _receiptLedgerRef(r) {
 }
 
 function _receiptOutcomeLabel(r) {
-  const type = String(r.event_type || "").trim();
-  const outcome = _RECEIPT_OUTCOME[type] || "info";
+  const outcome = _receiptOutcomeKey(r);
   return _OUTCOME_LABEL[outcome] || "Recorded";
 }
 
@@ -2700,13 +2727,12 @@ function _renderReceiptRows(host) {
   list.className = "trust-activity-list";
   trustReviewState.receipts.slice(0, 12).forEach((r, index) => {
     const key = _receiptKey(r, index);
-    const type = String(r.event_type || "").trim();
-    const label = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
+    const label = _receiptLabel(r);
     const detail = _receiptDetail(r);
     const capability = _receiptCapabilityLabel(r);
     const time = _receiptTime(r.timestamp_utc);
-    const outcome = _RECEIPT_OUTCOME[type] || "info";
-    const boundary = _RECEIPT_BOUNDARY[type] || "";
+    const outcome = _receiptOutcomeKey(r);
+    const boundary = _receiptBoundary(r);
     const sourcePath = _receiptSourcePathSummary(r);
 
     const row = document.createElement("button");
@@ -2783,7 +2809,7 @@ function _renderReceiptDetail(host) {
   }
 
   [
-    ["Receipt", _RECEIPT_LABELS[String(selected.event_type || "").trim()] || String(selected.event_type || "Unknown").trim() || "Unknown"],
+    ["Receipt", _receiptLabel(selected) || "Unknown"],
     ["Capability", _receiptCapabilityLabel(selected) || "Not recorded"],
     ["Execution status", _receiptExecutionStatus(selected)],
     ["Outcome", _receiptOutcomeLabel(selected)],
@@ -2792,7 +2818,7 @@ function _renderReceiptDetail(host) {
     ["Source path", _receiptSourcePathSummary(selected)],
     ["Request", String(selected.request_id || "Not recorded").trim() || "Not recorded"],
     ["Ledger", _receiptLedgerRef(selected) || "Not recorded"],
-    ["Boundary", _RECEIPT_BOUNDARY[String(selected.event_type || "").trim()] || "No extra boundary note recorded"],
+    ["Boundary", _receiptBoundary(selected) || "No extra boundary note recorded"],
     ["Detail", _receiptDetail(selected) || "No additional detail recorded"],
     ["Why", _receiptReason(selected) || "No additional reason recorded"],
   ].forEach(([label, value]) => {
