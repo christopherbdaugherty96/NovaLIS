@@ -830,7 +830,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 recurrence=recurrence,
                 next_run_at=scheduled_for,
             )
-            snapshot = notification_schedules.summarize()
         except Exception:
             session_state["pending_reminder"] = None
             log.exception("Local Nova reminder persistence failed")
@@ -840,6 +839,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 tone_domain="system",
             )
             return
+
+        try:
+            snapshot = notification_schedules.summarize()
+        except Exception:
+            snapshot = None
+            log.exception("Local Nova reminder summary failed after persistence")
 
         session_state["pending_reminder"] = None
         _log_ledger_event(
@@ -858,11 +863,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             "Honesty note: Nova does not have background reminder delivery. "
             "This reminder is saved but will not fire automatically. You can "
             "view saved reminders with \"show schedules\".\n\n"
-            f"{str(snapshot.get('summary') or '').strip()}"
+            f"{str(snapshot.get('summary') or '').strip() if snapshot is not None else 'Schedule overview is temporarily unavailable.'}"
         )
         session_state["last_response"] = success_message
         presented_message = await send_chat_message(ws, success_message, tone_domain="system")
-        await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+        if snapshot is not None:
+            try:
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+            except Exception:
+                log.exception("Local Nova reminder widget failed after persistence")
         await send_chat_done(ws)
         _maybe_auto_speak_for_voice_turn(session_state, str(presented_message or "").strip())
         session_state["turn_count"] += 1
@@ -1428,7 +1437,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 continue
 
-            if CALENDAR_WRITE_REQUEST_RE.match(text):
+            if CALENDAR_WRITE_REQUEST_RE.match(text.rstrip(".?!")):
                 reminder_context = _calendar_reminder_context(text)
                 reminder_body = str(reminder_context.get("body") or "").strip()
                 session_state["pending_reminder"] = {

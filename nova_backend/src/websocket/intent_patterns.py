@@ -191,8 +191,14 @@ REMIND_ME_TIMELESS_RESPONSE = (
 # separate, explicit destination by the session handler.
 CALENDAR_WRITE_REQUEST_RE = re.compile(
     r"^\s*(?:"
-    r"(?:add|put|block)\b.{0,240}\b(?:calendar|event)\b.*"
-    r"|(?:schedule|create)\s+(?:this\s+|an?\s+)?(?:calendar\s+)?event\b.*"
+    r"(?:add|put|block)\s+.+?\s+(?:to|on)\s+(?:(?:my|the)\s+)?calendar"
+    r"(?:\s+(?:at|on|for|to)\s+.+)?"
+    r"|add\s+(?:this\s+)?to\s+(?:(?:my|the)\s+)?calendar"
+    r"(?:\s+(?:at|on|for|to)\s+.+)?"
+    r"|schedule\s+(?:this|the|an?)\s+event"
+    r"(?:\s+(?:at|on|for|to|called|named)\s+.+)?"
+    r"|(?:create|add)\s+(?:an?\s+)?(?:calendar\s+)?event"
+    r"(?:\s+(?:at|on|for|to|called|named)\s+.+)?"
     r")\s*$",
     re.IGNORECASE,
 )
