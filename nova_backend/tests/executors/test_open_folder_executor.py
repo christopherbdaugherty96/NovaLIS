@@ -87,7 +87,7 @@ def test_open_folder_executor_reports_opened_only_after_visible_verification(
 
     monkeypatch.setattr("src.executors.open_folder_executor.PRESET_FOLDERS", {"downloads": target})
     monkeypatch.setattr(executor.system_control, "open_path", lambda path: True)
-    monkeypatch.setattr(executor, "_visible_folder_verified", lambda path: True)
+    monkeypatch.setattr(executor, "_trusted_visible_explorer_paths", lambda: (target,))
     result = executor.execute(ActionRequest(capability_id=22, params={"target": "downloads"}))
 
     assert result.success is True
@@ -95,3 +95,33 @@ def test_open_folder_executor_reports_opened_only_after_visible_verification(
     assert result.data["outcome_state"] == "visible_verified"
     assert result.data["launch_request_accepted"] is True
     assert result.data["visible_effect_verified"] is True
+
+
+def test_open_folder_executor_does_not_verify_same_title_for_different_path(
+    monkeypatch, tmp_path: Path
+):
+    executor = OpenFolderExecutor()
+    requested = tmp_path / "home" / "Downloads"
+    unrelated = tmp_path / "archive" / "Downloads"
+    requested.mkdir(parents=True)
+    unrelated.mkdir(parents=True)
+
+    monkeypatch.setattr(
+        "src.executors.open_folder_executor.PRESET_FOLDERS",
+        {"downloads": requested},
+    )
+    monkeypatch.setattr(executor.system_control, "open_path", lambda path: path == requested)
+    monkeypatch.setattr(
+        executor,
+        "_trusted_visible_explorer_paths",
+        lambda: (unrelated,),
+    )
+    result = executor.execute(ActionRequest(capability_id=22, params={"target": "downloads"}))
+
+    assert requested.name == unrelated.name
+    assert result.success is True
+    assert result.data["outcome_state"] == "accepted_unverified"
+    assert result.data["launch_request_accepted"] is True
+    assert result.data["visible_effect_verified"] is False
+    assert "couldn't verify" in result.message.lower()
+    assert not result.message.lower().startswith("opened")
