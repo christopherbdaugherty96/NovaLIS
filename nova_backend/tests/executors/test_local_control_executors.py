@@ -225,6 +225,35 @@ def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_act
     assert item["ledger_ref"] == "L57"
 
 
+def test_os_diagnostics_recent_activity_does_not_present_accepted_unverified_as_completed():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "_ledger_line": 58,
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 22,
+            "request_id": "req-folder-789",
+            "success": True,
+            "status": "completed",
+            "outcome_state": "accepted_unverified",
+            "outcome_reason": (
+                "The operating system accepted the open request, but a visible file manager "
+                "window could not be verified."
+            ),
+            "external_effect": False,
+            "reversible": True,
+            "timestamp_utc": "2026-03-19T04:06:00+00:00",
+        },
+        {22: "open file or folder"},
+    )
+
+    assert item is not None
+    assert item["title"] == "Action accepted; outcome unverified"
+    assert item["outcome"] == "info"
+    assert item["outcome_state"] == "accepted_unverified"
+    assert item["title"] != "Action completed"
+    assert "could not be verified" in item["reason"]
+
+
 @pytest.mark.slow
 def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
