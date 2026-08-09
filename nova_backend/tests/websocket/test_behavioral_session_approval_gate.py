@@ -131,7 +131,7 @@ def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monk
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
         return ActionResult.ok(
-            "Open request sent for Documents. I couldn't verify that File Explorer became visible.",
+            "Open request sent for Documents. I couldn't verify that the file manager became visible.",
             data={
                 "outcome_state": "accepted_unverified",
                 "launch_request_accepted": True,
@@ -158,7 +158,7 @@ def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monk
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
     messages = _chat_messages(ws)
     assert any("Open request sent for Documents." in message for message in messages)
-    assert any("couldn't verify that File Explorer became visible" in message for message in messages)
+    assert any("couldn't verify that the file manager became visible" in message for message in messages)
     assert not any("Opened documents." in message for message in messages)
 
 
@@ -223,7 +223,7 @@ def test_session_approved_cap22_uses_real_governor_ledger_sequence(monkeypatch):
     assert _event_types(ledger).count("ACTION_COMPLETED") == 1
     messages = _chat_messages(ws)
     assert any("Open request sent" in message for message in messages)
-    assert any("couldn't verify that File Explorer became visible" in message for message in messages)
+    assert any("couldn't verify that the file manager became visible" in message for message in messages)
     assert not any(message.startswith("Opened ") for message in messages)
 
 
