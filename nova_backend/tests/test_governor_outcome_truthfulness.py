@@ -171,6 +171,60 @@ def test_clean_success_path_is_unchanged_when_receipt_persists(monkeypatch):
     assert any(event == "ACTION_COMPLETED" for event, _ in gov._ledger.events)
 
 
+def test_cap22_accepted_unverified_outcome_persists_in_completion_receipt(
+    monkeypatch, tmp_path
+):
+    from src.executors.open_folder_executor import OpenFolderExecutor
+    from src.governor.governor import Governor
+
+    documents = tmp_path / "Documents"
+    documents.mkdir()
+    monkeypatch.setattr(
+        "src.executors.open_folder_executor.PRESET_FOLDERS",
+        {"documents": documents},
+    )
+    monkeypatch.setattr(
+        "src.system_control.system_control_executor.SystemControlExecutor.open_path",
+        lambda self, path: path == documents,
+    )
+    monkeypatch.setattr(
+        OpenFolderExecutor,
+        "_visible_folder_verified",
+        lambda self, path: False,
+    )
+
+    gov = Governor()
+    gov._ledger = _FakeLedger()
+    params = {"target": "documents"}
+    session_id = "cap22-outcome-receipt"
+    grant = gov.issue_approval_grant(
+        session_id=session_id,
+        capability_id=22,
+        params=params,
+    )
+
+    result = gov.handle_governed_invocation(
+        22,
+        params,
+        session_id=session_id,
+        approval_id=grant.approval_id,
+    )
+    completion = next(
+        metadata
+        for event_type, metadata in gov._ledger.events
+        if event_type == "ACTION_COMPLETED"
+    )
+
+    assert result.success is True
+    assert result.data["outcome_state"] == "accepted_unverified"
+    assert completion["success"] is True
+    assert completion["status"] == "completed"
+    assert completion["outcome_state"] == "accepted_unverified"
+    assert completion["launch_request_accepted"] is True
+    assert completion["visible_effect_verified"] is False
+    assert "could not be verified" in completion["outcome_reason"].lower()
+
+
 def test_action_result_mark_audit_degraded_on_success():
     from src.actions.action_result import ActionResult
 
