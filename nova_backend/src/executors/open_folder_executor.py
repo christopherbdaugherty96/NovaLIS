@@ -82,10 +82,10 @@ class OpenFolderExecutor:
             if candidate.is_dir():
                 message = (
                     f"Open request sent for {display_name}. "
-                    "I couldn't verify that File Explorer became visible."
+                    "I couldn't verify that the file manager became visible."
                 )
                 outcome_reason = (
-                    "The operating system accepted the open request, but a visible File Explorer "
+                    "The operating system accepted the open request, but a visible file manager "
                     "window could not be verified."
                 )
             else:

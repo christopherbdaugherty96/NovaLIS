@@ -21,6 +21,8 @@ def test_open_folder_executor_reports_accepted_unverified_for_explicit_folder(
     assert str(target) in result.message
     assert "open request sent" in result.message.lower()
     assert "couldn't verify" in result.message.lower()
+    assert "file manager" in result.message.lower()
+    assert "File Explorer" not in result.message
     assert not result.message.lower().startswith("opened")
     assert result.data["path"] == str(target)
     assert result.data["outcome_state"] == "accepted_unverified"
@@ -57,6 +59,8 @@ def test_open_folder_executor_reports_accepted_unverified_for_preset_folder(
     assert result.success is True
     assert "Open request sent for Downloads" in result.message
     assert "couldn't verify" in result.message.lower()
+    assert "file manager" in result.message.lower()
+    assert "File Explorer" not in result.message
     assert result.data["path"] == str(downloads)
     assert result.data["outcome_state"] == "accepted_unverified"
     assert result.data["launch_request_accepted"] is True
@@ -124,4 +128,6 @@ def test_open_folder_executor_does_not_verify_same_title_for_different_path(
     assert result.data["launch_request_accepted"] is True
     assert result.data["visible_effect_verified"] is False
     assert "couldn't verify" in result.message.lower()
+    assert "file manager" in result.message.lower()
+    assert "File Explorer" not in result.message
     assert not result.message.lower().startswith("opened")
