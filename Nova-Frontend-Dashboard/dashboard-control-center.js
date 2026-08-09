@@ -2643,8 +2643,24 @@ function _receiptOutcomeState(r) {
   return String(r.outcome_state || "").trim().toLowerCase();
 }
 
+function _receiptActionFailureState(r) {
+  if (String(r.event_type || "").trim() !== "ACTION_COMPLETED") return "";
+  const outcomeState = _receiptOutcomeState(r);
+  const status = String(r.status || "").trim().toLowerCase();
+  if (outcomeState === "rejected" || status === "rejected" || status === "refused") {
+    return "rejected";
+  }
+  if (outcomeState === "failed" || status === "failed" || r.success === false) {
+    return "failed";
+  }
+  return "";
+}
+
 function _receiptLabel(r) {
   const type = String(r.event_type || "").trim();
+  const failureState = _receiptActionFailureState(r);
+  if (failureState === "rejected") return "Action rejected";
+  if (failureState === "failed") return "Action failed";
   if (type === "ACTION_COMPLETED" && _receiptOutcomeState(r) === "accepted_unverified") {
     return "Action accepted; outcome unverified";
   }
@@ -2652,12 +2668,16 @@ function _receiptLabel(r) {
 }
 
 function _receiptOutcomeKey(r) {
+  if (_receiptActionFailureState(r)) return "failed";
   if (_receiptOutcomeState(r) === "accepted_unverified") return "unverified";
   const type = String(r.event_type || "").trim();
   return _RECEIPT_OUTCOME[type] || "info";
 }
 
 function _receiptBoundary(r) {
+  const failureState = _receiptActionFailureState(r);
+  if (failureState === "rejected") return "Request rejected; intended effect did not occur";
+  if (failureState === "failed") return "Action failed; intended effect did not occur";
   if (_receiptOutcomeState(r) === "accepted_unverified") {
     return "Request accepted; visible outcome not verified";
   }
@@ -2665,8 +2685,9 @@ function _receiptBoundary(r) {
 }
 
 function _receiptExecutionStatus(r) {
-  const status = String(r.status || "").trim();
-  if (status === "failed" || status === "refused") return status;
+  const failureState = _receiptActionFailureState(r);
+  if (failureState) return failureState;
+  const status = String(r.status || "").trim().toLowerCase();
   if (_receiptOutcomeState(r) === "accepted_unverified") return "accepted_unverified";
   if (status) return status;
   const type = String(r.event_type || "").trim();
