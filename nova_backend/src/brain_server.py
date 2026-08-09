@@ -113,6 +113,8 @@ from src.websocket.intent_patterns import (
     PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, HELP_ORIENT_RE,
     AMBIENT_CLARIFICATION_PATTERNS, EMAIL_INBOX_RE, EMAIL_INBOX_RESPONSE, TIME_QUERY_RE,
     REMIND_ME_TIMELESS_RE, REMIND_ME_TIMELESS_RESPONSE,
+    CALENDAR_WRITE_REQUEST_RE, REMINDER_BODY_FIRST_RE, REMINDER_TIME_ONLY_RE,
+    REMINDER_PLAIN_TIME_RE,
     LOCAL_PROJECT_CURRENT_RE, LOCAL_PROJECT_TARGET_RE, LOCAL_PROJECT_DISK_RE,
     CODEBASE_SUMMARY_CURRENT_RE, CODEBASE_SUMMARY_TARGET_RE, CODEBASE_SUMMARY_TARGET_ONLY_RE,
     CODEBASE_DO_RE, CODEBASE_CAPABILITY_RE, LOCAL_ARCHITECTURE_REPORT_RE,
@@ -1384,6 +1386,7 @@ def _reset_operational_session_state(
     session_state["pending_web_open"] = None
     session_state["pending_governed_confirm"] = None
     session_state["pending_interpret_confirm"] = None
+    session_state["pending_reminder"] = None
     session_state["last_calendar_summary"] = ""
     session_state["last_calendar_events"] = []
     session_state["working_context"] = dict(working_context_snapshot or {})

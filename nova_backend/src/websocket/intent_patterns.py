@@ -185,6 +185,40 @@ REMIND_ME_TIMELESS_RESPONSE = (
     "or \"remind me daily at 9am to check email\"."
 )
 
+# Calendar writes are not implemented. These action-shaped forms must remain
+# deterministic so they cannot fall through to advisory GeneralChat and produce
+# an unsupported completion claim. A local Nova reminder may be offered as a
+# separate, explicit destination by the session handler.
+CALENDAR_WRITE_REQUEST_RE = re.compile(
+    r"^\s*(?:"
+    r"(?:add|put|block)\s+.+?\s+(?:to|on)\s+(?:(?:my|the)\s+)?calendar"
+    r"(?:\s+(?:at|on|for|to)\s+.+)?"
+    r"|add\s+(?:this\s+)?to\s+(?:(?:my|the)\s+)?calendar"
+    r"(?:\s+(?:at|on|for|to)\s+.+)?"
+    r"|schedule\s+(?:this|the|an?)\s+event"
+    r"(?:\s+(?:at|on|for|to|called|named)\s+.+)?"
+    r"|(?:create|add)\s+(?:an?\s+)?(?:calendar\s+)?event"
+    r"(?:\s+(?:at|on|for|to|called|named)\s+.+)?"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
+REMINDER_BODY_FIRST_RE = re.compile(
+    r"^\s*remind\s+me\s+to\s+(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+REMINDER_TIME_ONLY_RE = re.compile(
+    r"^\s*remind\s+me(?:\s+(?P<daily>daily))?\s+at\s+(?P<time>(?!.*\s+to\s+).+?)\s*$",
+    re.IGNORECASE,
+)
+REMINDER_PLAIN_TIME_RE = re.compile(
+    r"^\s*(?:(?:today|tomorrow)\s+(?:at\s+)?)?(?:"
+    r"\d{1,2}(?::\d{2})?\s*(?:am|pm)?"
+    r"|(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*(?:am|pm)"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
 # -------------------------------------------------
 # Local project patterns
 # -------------------------------------------------

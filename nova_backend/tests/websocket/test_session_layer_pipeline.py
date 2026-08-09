@@ -17,18 +17,18 @@ from __future__ import annotations
 import re
 
 import pytest
-
 from src.conversation.response_style_router import InputNormalizer
 from src.governor.governor_mediator import GovernorMediator
 from src.websocket.intent_patterns import (
     AMBIENT_CLARIFICATION_PATTERNS,
+    CALENDAR_WRITE_REQUEST_RE,
     CAPABILITY_HELP_RE,
     EMAIL_INBOX_RE,
     HELP_ORIENT_RE,
     REMIND_ME_TIMELESS_RE,
+    REMINDER_TIME_ONLY_RE,
     TIME_QUERY_RE,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -49,6 +49,8 @@ def _pipeline(raw: str) -> str | int | None:
     # Step 3: session-layer checks (order matches session_handler)
     if TIME_QUERY_RE.match(command_text):
         return "TIME_QUERY"
+    if CALENDAR_WRITE_REQUEST_RE.match(command_text):
+        return "CALENDAR_WRITE"
     if EMAIL_INBOX_RE.match(command_text):
         return "EMAIL_INBOX"
     if HELP_ORIENT_RE.match(command_text):
@@ -57,6 +59,8 @@ def _pipeline(raw: str) -> str | int | None:
         return "CAPABILITY_HELP"
     if REMIND_ME_TIMELESS_RE.match(command_text):
         return "REMIND_TIMELESS"
+    if REMINDER_TIME_ONLY_RE.match(command_text):
+        return "REMIND_TIME_ONLY"
     for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
         if pat.match(command_text):
             return "AMBIENT_CLARIFICATION"
@@ -242,6 +246,37 @@ class TestRemindMeTimeless:
             f"{repr(raw)} has a time spec — should NOT route to REMIND_TIMELESS; "
             f"got {result!r}"
         )
+
+
+class TestCommitmentTruthRouting:
+    @pytest.mark.parametrize("raw", [
+        "add this to my calendar",
+        "put this on my calendar",
+        "schedule this event",
+        "create a calendar event",
+        "block this time on my calendar",
+        "add an event",
+    ])
+    def test_calendar_write_forms_route_deterministically(self, raw: str):
+        assert _pipeline(raw) == "CALENDAR_WRITE"
+
+    @pytest.mark.parametrize("raw", [
+        "add calendar support to this project",
+        "create a calendar event handler in Python",
+        "put the calendar response in a table",
+        "block this calendar discussion into sections",
+        "add an event listener to this component",
+    ])
+    def test_normal_calendar_and_event_language_is_not_a_write_request(self, raw: str):
+        assert _pipeline(raw) != "CALENDAR_WRITE"
+
+    @pytest.mark.parametrize("raw", [
+        "remind me at 2 pm",
+        "remind me at two pm",
+        "remind me daily at 9 am",
+    ])
+    def test_time_first_reminders_route_deterministically(self, raw: str):
+        assert _pipeline(raw) == "REMIND_TIME_ONLY"
 
 
 # ---------------------------------------------------------------------------
