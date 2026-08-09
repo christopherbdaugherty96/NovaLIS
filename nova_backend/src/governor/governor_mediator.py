@@ -1124,7 +1124,7 @@ class GovernorMediator:
         if re.match(r"^\s*(speak that|read that|say it|read this out loud|say this out loud|read that to me)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(18, {})
 
-        if re.match(r"^\s*(?:volume\s+up|turn(?: the)? volume up|make it louder|make the volume louder|louder|too quiet|it(?:'s| is) too quiet)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:volume\s+up|turn(?: the)? volume up|turn up(?: the)? volume|make it louder|make the volume louder|louder|too quiet|it(?:'s| is) too quiet)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "up"})
         if re.match(r"^\s*(?:volume\s+down|turn(?: the)? volume down|make it quieter|make the volume quieter|make it softer|quieter|lower (?:the )?volume|too loud|it(?:'s| is) too loud)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "down"})

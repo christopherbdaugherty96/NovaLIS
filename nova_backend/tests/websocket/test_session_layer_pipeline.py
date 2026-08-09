@@ -72,6 +72,24 @@ def _pipeline(raw: str) -> str | int | None:
     return getattr(result, "capability_id", None)
 
 
+class TestCap19NaturalVolumePhrasing:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "turn up volume",
+            "Turn up volume!",
+            "nova turn up volume",
+        ],
+    )
+    def test_turn_up_volume_routes_to_cap19(self, raw: str):
+        assert _pipeline(raw) == 19
+
+    def test_turn_up_volume_resolves_to_up_action(self):
+        result = GovernorMediator.parse_governed_invocation("turn up volume")
+        assert getattr(result, "capability_id", None) == 19
+        assert getattr(result, "params", {}).get("action") == "up"
+
+
 # ---------------------------------------------------------------------------
 # RC-7: "help me" forms → HELP_ORIENT (warm orienting question)
 # These were previously broken: PHRASE_NORMALIZATION mapped them to

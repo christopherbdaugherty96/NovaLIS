@@ -130,7 +130,15 @@ def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monk
         calls.append((capability_id, {**params, "_authority": authority}))
         ledger.log_event("ACTION_ATTEMPTED", {"capability_id": capability_id})
         ledger.log_event("ACTION_COMPLETED", {"capability_id": capability_id})
-        return ActionResult.ok("Opened documents.", request_id="confirmed-cap22")
+        return ActionResult.ok(
+            "Open request sent for Documents. I couldn't verify that File Explorer became visible.",
+            data={
+                "outcome_state": "accepted_unverified",
+                "launch_request_accepted": True,
+                "visible_effect_verified": False,
+            },
+            request_id="confirmed-cap22",
+        )
 
     monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke)
 
@@ -148,7 +156,10 @@ def test_session_yes_resumes_pending_cap22_only_through_governed_invocation(monk
     assert str(params["_authority"]["approval_id"]).strip()
     assert str(params.get("session_id") or "").strip()
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
-    assert any("Opened documents." in message for message in _chat_messages(ws))
+    messages = _chat_messages(ws)
+    assert any("Open request sent for Documents." in message for message in messages)
+    assert any("couldn't verify that File Explorer became visible" in message for message in messages)
+    assert not any("Opened documents." in message for message in messages)
 
 
 def test_session_yes_resumes_pending_cap64_only_through_governed_invocation(monkeypatch):
@@ -210,7 +221,10 @@ def test_session_approved_cap22_uses_real_governor_ledger_sequence(monkeypatch):
 
     assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
     assert _event_types(ledger).count("ACTION_COMPLETED") == 1
-    assert any("Opened folder:" in message or "Opened path:" in message for message in _chat_messages(ws))
+    messages = _chat_messages(ws)
+    assert any("Open request sent" in message for message in messages)
+    assert any("couldn't verify that File Explorer became visible" in message for message in messages)
+    assert not any(message.startswith("Opened ") for message in messages)
 
 
 def test_session_approved_cap64_uses_real_governor_ledger_sequence(monkeypatch):
