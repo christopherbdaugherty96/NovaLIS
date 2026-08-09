@@ -297,7 +297,11 @@ def build_changes_section(recent_receipts: list[dict[str, Any]] | None) -> Aware
         if not isinstance(receipt, dict):
             continue
         event_type = str(receipt.get("event_type") or "")
-        label = _LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
+        outcome_state = str(receipt.get("outcome_state") or "").strip().lower()
+        if event_type == "ACTION_COMPLETED" and outcome_state == "accepted_unverified":
+            label = "accepted; outcome unverified"
+        else:
+            label = _LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
         detail = _clean(
             receipt.get("capability_name") or receipt.get("outcome_reason") or receipt.get("message"),
             limit=60,

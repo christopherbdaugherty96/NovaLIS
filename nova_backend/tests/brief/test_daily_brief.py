@@ -235,6 +235,22 @@ class TestComposeDailyBrief:
         assert any("action completed" in item for item in section.items)
         assert any("memory saved" in item for item in section.items)
 
+    def test_recent_receipts_marks_accepted_unverified_without_claiming_completion(self):
+        brief = compose_daily_brief(
+            recent_receipts=[
+                {
+                    "event_type": "ACTION_COMPLETED",
+                    "outcome_state": "accepted_unverified",
+                    "capability_name": "open file or folder",
+                }
+            ]
+        )
+
+        section = next(s for s in brief.sections if s.title == "Recent Actions")
+        assert len(section.items) == 1
+        assert "action accepted; outcome unverified" in section.items[0]
+        assert "action completed" not in section.items[0]
+
     def test_recommended_next_step_prefers_action(self):
         memory = [
             {"category": "action", "content": "refactor executor"},

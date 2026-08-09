@@ -435,7 +435,11 @@ def _build_recent_receipts(recent_receipts: list[dict[str, Any]]) -> BriefSectio
         if not isinstance(receipt, dict):
             continue
         event_type = str(receipt.get("event_type") or "")
-        label = _RECEIPT_LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
+        outcome_state = str(receipt.get("outcome_state") or "").strip().lower()
+        if event_type == "ACTION_COMPLETED" and outcome_state == "accepted_unverified":
+            label = "action accepted; outcome unverified"
+        else:
+            label = _RECEIPT_LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
         if not label.strip():
             continue
         ts = str(receipt.get("timestamp_utc") or "")

@@ -382,13 +382,19 @@ class OSDiagnosticsExecutor:
             capability_lookup.get(capability_id, "") if capability_id is not None else ""
         )
         status = str(entry.get("status") or "").strip().lower()
+        outcome_state = str(entry.get("outcome_state") or "").strip().lower()
         authority_class = str(entry.get("authority_class") or "").strip()
         reversible = entry.get("reversible")
         external_effect = entry.get("external_effect")
 
         if event_type.startswith("ACTION_") and event_type.endswith("_COMPLETED"):
             kind = "action"
-            title = "Action completed" if outcome != "issue" else "Action needs attention"
+            if outcome == "issue":
+                title = "Action needs attention"
+            elif outcome_state == "accepted_unverified":
+                title = "Action accepted; outcome unverified"
+            else:
+                title = "Action completed"
             detail = OSDiagnosticsExecutor._capability_label_from_entry(entry, capability_lookup)
             reason = str(entry.get("failure_reason") or entry.get("outcome_reason") or "").strip()
             if not reason:
@@ -460,6 +466,7 @@ class OSDiagnosticsExecutor:
             "request_id": request_id,
             "ledger_ref": ledger_ref,
             "status": status,
+            "outcome_state": outcome_state,
             "capability_id": str(capability_id) if capability_id is not None else "",
             "capability_name": capability_name,
             "authority_class": authority_class,
@@ -478,13 +485,14 @@ class OSDiagnosticsExecutor:
     @staticmethod
     def _recent_activity_outcome(entry: dict[str, object]) -> str:
         success = entry.get("success")
-        if isinstance(success, bool):
-            return "success" if success else "issue"
         status = str(entry.get("status") or "").strip().lower()
-        if status == "completed":
-            return "success"
-        if status in {"failed", "refused"}:
+        outcome_state = str(entry.get("outcome_state") or "").strip().lower()
+        if success is False or status in {"failed", "refused"} or outcome_state == "rejected":
             return "issue"
+        if outcome_state == "accepted_unverified":
+            return "info"
+        if success is True or status == "completed":
+            return "success"
         return "info"
 
     @staticmethod

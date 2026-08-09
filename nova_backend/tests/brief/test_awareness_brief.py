@@ -211,6 +211,22 @@ class TestChangesSection:
         assert s.status == "ok"
         assert any("weather_check" in item for item in s.items)
 
+    def test_accepted_unverified_receipt_does_not_claim_completion(self):
+        s = build_changes_section(
+            [
+                {
+                    "event_type": "ACTION_COMPLETED",
+                    "outcome_state": "accepted_unverified",
+                    "capability_name": "open file or folder",
+                }
+            ]
+        )
+
+        assert s.status == "ok"
+        assert len(s.items) == 1
+        assert "accepted; outcome unverified" in s.items[0]
+        assert "completed" not in s.items[0]
+
 
 class TestComposeAwarenessBrief:
     def test_returns_all_seven_sections(self):
