@@ -235,21 +235,39 @@ class TestComposeDailyBrief:
         assert any("action completed" in item for item in section.items)
         assert any("memory saved" in item for item in section.items)
 
-    def test_recent_receipts_marks_accepted_unverified_without_claiming_completion(self):
+    @pytest.mark.parametrize(
+        ("receipt", "expected_label"),
+        [
+            (
+                {"status": "completed", "success": True, "outcome_state": "visible_verified"},
+                "action completed",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "accepted_unverified"},
+                "action accepted; outcome unverified",
+            ),
+            (
+                {"status": "failed", "success": False, "outcome_state": "rejected"},
+                "action rejected",
+            ),
+            ({"status": "failed", "success": False}, "action failed"),
+            ({"status": "completed", "success": True}, "action completed"),
+        ],
+    )
+    def test_recent_receipts_preserve_action_outcome_truth(self, receipt, expected_label):
+        receipt.update(
+            {
+                "event_type": "ACTION_COMPLETED",
+                "capability_name": "open file or folder",
+            }
+        )
         brief = compose_daily_brief(
-            recent_receipts=[
-                {
-                    "event_type": "ACTION_COMPLETED",
-                    "outcome_state": "accepted_unverified",
-                    "capability_name": "open file or folder",
-                }
-            ]
+            recent_receipts=[receipt]
         )
 
         section = next(s for s in brief.sections if s.title == "Recent Actions")
         assert len(section.items) == 1
-        assert "action accepted; outcome unverified" in section.items[0]
-        assert "action completed" not in section.items[0]
+        assert section.items[0] == f"{expected_label}: open file or folder"
 
     def test_recommended_next_step_prefers_action(self):
         memory = [

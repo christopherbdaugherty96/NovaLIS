@@ -129,7 +129,7 @@ def test_trust_center_receipts_renderer_stays_display_only():
     assert "approve" not in body.lower()
 
 
-def test_trust_center_receipts_honor_accepted_unverified_outcome_state():
+def test_trust_center_receipts_preserve_action_outcome_truth_matrix():
     source = load_dashboard_runtime_js()
     styles = load_dashboard_runtime_css()
     node = os.environ.get("NODE_EXE") or shutil.which("node")
@@ -142,6 +142,7 @@ def test_trust_center_receipts_honor_accepted_unverified_outcome_state():
         _extract_js_object_const(source, "_OUTCOME_LABEL"),
         _extract_js_object_const(source, "_RECEIPT_BOUNDARY"),
         _extract_js_function(source, "_receiptOutcomeState"),
+        _extract_js_function(source, "_receiptActionFailureState"),
         _extract_js_function(source, "_receiptLabel"),
         _extract_js_function(source, "_receiptOutcomeKey"),
         _extract_js_function(source, "_receiptBoundary"),
@@ -149,45 +150,66 @@ def test_trust_center_receipts_honor_accepted_unverified_outcome_state():
         _extract_js_function(source, "_receiptOutcomeLabel"),
     ]
     script = "\n".join(blocks) + """
-const unverified = {
-  event_type: "ACTION_COMPLETED",
-  status: "completed",
-  success: true,
-  outcome_state: "accepted_unverified",
-};
-if (_receiptLabel(unverified) !== "Action accepted; outcome unverified") {
-  throw new Error("unverified receipt retained completed label");
-}
-if (_receiptOutcomeKey(unverified) !== "unverified") {
-  throw new Error("unverified receipt retained done badge");
-}
-if (_receiptOutcomeLabel(unverified) !== "Outcome unverified") {
-  throw new Error("unverified receipt retained Done outcome");
-}
-if (_receiptExecutionStatus(unverified) !== "accepted_unverified") {
-  throw new Error("unverified receipt retained completed execution status");
-}
-if (_receiptBoundary(unverified) !== "Request accepted; visible outcome not verified") {
-  throw new Error("unverified receipt lost its verification boundary");
-}
-
-const verified = {
-  event_type: "ACTION_COMPLETED",
-  status: "completed",
-  success: true,
-  outcome_state: "visible_verified",
-};
-if (_receiptLabel(verified) !== "Action completed") {
-  throw new Error("verified receipt lost completed label");
-}
-if (_receiptOutcomeKey(verified) !== "done") {
-  throw new Error("verified receipt lost done badge");
-}
-if (_receiptOutcomeLabel(verified) !== "Done") {
-  throw new Error("verified receipt lost Done outcome");
-}
-if (_receiptExecutionStatus(verified) !== "completed") {
-  throw new Error("verified receipt lost completed execution status");
+const cases = [
+  {
+    name: "visible verified",
+    receipt: { event_type: "ACTION_COMPLETED", status: "completed", success: true, outcome_state: "visible_verified" },
+    label: "Action completed",
+    outcomeKey: "done",
+    outcomeLabel: "Done",
+    status: "completed",
+    boundary: "",
+  },
+  {
+    name: "accepted unverified",
+    receipt: { event_type: "ACTION_COMPLETED", status: "completed", success: true, outcome_state: "accepted_unverified" },
+    label: "Action accepted; outcome unverified",
+    outcomeKey: "unverified",
+    outcomeLabel: "Outcome unverified",
+    status: "accepted_unverified",
+    boundary: "Request accepted; visible outcome not verified",
+  },
+  {
+    name: "rejected",
+    receipt: { event_type: "ACTION_COMPLETED", status: "failed", success: false, outcome_state: "rejected" },
+    label: "Action rejected",
+    outcomeKey: "failed",
+    outcomeLabel: "Failed",
+    status: "rejected",
+    boundary: "Request rejected; intended effect did not occur",
+  },
+  {
+    name: "missing outcome state with failed status",
+    receipt: { event_type: "ACTION_COMPLETED", status: "failed", success: false },
+    label: "Action failed",
+    outcomeKey: "failed",
+    outcomeLabel: "Failed",
+    status: "failed",
+    boundary: "Action failed; intended effect did not occur",
+  },
+  {
+    name: "legacy successful action completed",
+    receipt: { event_type: "ACTION_COMPLETED", status: "completed", success: true },
+    label: "Action completed",
+    outcomeKey: "done",
+    outcomeLabel: "Done",
+    status: "completed",
+    boundary: "",
+  },
+];
+for (const testCase of cases) {
+  const actual = {
+    label: _receiptLabel(testCase.receipt),
+    outcomeKey: _receiptOutcomeKey(testCase.receipt),
+    outcomeLabel: _receiptOutcomeLabel(testCase.receipt),
+    status: _receiptExecutionStatus(testCase.receipt),
+    boundary: _receiptBoundary(testCase.receipt),
+  };
+  for (const field of ["label", "outcomeKey", "outcomeLabel", "status", "boundary"]) {
+    if (actual[field] !== testCase[field]) {
+      throw new Error(`${testCase.name} ${field}: expected ${testCase[field]}, got ${actual[field]}`);
+    }
+  }
 }
 """
     subprocess.run([node, "-e", script], check=True)

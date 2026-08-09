@@ -211,21 +211,39 @@ class TestChangesSection:
         assert s.status == "ok"
         assert any("weather_check" in item for item in s.items)
 
-    def test_accepted_unverified_receipt_does_not_claim_completion(self):
+    @pytest.mark.parametrize(
+        ("receipt", "expected_label"),
+        [
+            (
+                {"status": "completed", "success": True, "outcome_state": "visible_verified"},
+                "completed",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "accepted_unverified"},
+                "accepted; outcome unverified",
+            ),
+            (
+                {"status": "failed", "success": False, "outcome_state": "rejected"},
+                "rejected",
+            ),
+            ({"status": "failed", "success": False}, "failed"),
+            ({"status": "completed", "success": True}, "completed"),
+        ],
+    )
+    def test_receipt_changes_preserve_action_outcome_truth(self, receipt, expected_label):
+        receipt.update(
+            {
+                "event_type": "ACTION_COMPLETED",
+                "capability_name": "open file or folder",
+            }
+        )
         s = build_changes_section(
-            [
-                {
-                    "event_type": "ACTION_COMPLETED",
-                    "outcome_state": "accepted_unverified",
-                    "capability_name": "open file or folder",
-                }
-            ]
+            [receipt]
         )
 
         assert s.status == "ok"
         assert len(s.items) == 1
-        assert "accepted; outcome unverified" in s.items[0]
-        assert "completed" not in s.items[0]
+        assert s.items[0] == f"{expected_label}: open file or folder"
 
 
 class TestComposeAwarenessBrief:

@@ -277,6 +277,20 @@ def build_printify_section() -> AwarenessSection:
     )
 
 
+def _action_receipt_state(receipt: dict[str, Any]) -> str:
+    if str(receipt.get("event_type") or "") != "ACTION_COMPLETED":
+        return ""
+    outcome_state = str(receipt.get("outcome_state") or "").strip().lower()
+    status = str(receipt.get("status") or "").strip().lower()
+    if outcome_state == "rejected" or status in {"rejected", "refused"}:
+        return "rejected"
+    if outcome_state == "failed" or status == "failed" or receipt.get("success") is False:
+        return "failed"
+    if outcome_state == "accepted_unverified":
+        return "accepted_unverified"
+    return "completed"
+
+
 def build_changes_section(recent_receipts: list[dict[str, Any]] | None) -> AwarenessSection:
     receipts = list(recent_receipts) if isinstance(recent_receipts, list) else []
     if not receipts:
@@ -297,8 +311,12 @@ def build_changes_section(recent_receipts: list[dict[str, Any]] | None) -> Aware
         if not isinstance(receipt, dict):
             continue
         event_type = str(receipt.get("event_type") or "")
-        outcome_state = str(receipt.get("outcome_state") or "").strip().lower()
-        if event_type == "ACTION_COMPLETED" and outcome_state == "accepted_unverified":
+        action_state = _action_receipt_state(receipt)
+        if action_state == "rejected":
+            label = "rejected"
+        elif action_state == "failed":
+            label = "failed"
+        elif action_state == "accepted_unverified":
             label = "accepted; outcome unverified"
         else:
             label = _LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
