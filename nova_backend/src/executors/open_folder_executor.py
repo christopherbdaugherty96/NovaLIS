@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import ctypes
-import platform
-import time
 from pathlib import Path
 
 from src.actions.action_result import ActionResult
@@ -17,62 +14,36 @@ PRESET_FOLDERS = {
 
 
 class OpenFolderExecutor:
-    _VISIBLE_WINDOW_ATTEMPTS = 6
-    _VISIBLE_WINDOW_POLL_SECONDS = 0.2
-
     def __init__(self) -> None:
         self.system_control = SystemControlExecutor()
 
     @staticmethod
-    def _visible_explorer_titles() -> tuple[str, ...]:
-        """Return visible Windows File Explorer titles without assuming pywin32."""
-        if platform.system() != "Windows":
-            return ()
+    def _trusted_visible_explorer_paths() -> tuple[Path, ...]:
+        """Return path-bound Explorer evidence from a trusted observer.
 
+        The current runtime has no reliable path-bound Windows observer. An
+        empty result keeps launch outcomes accepted-unverified instead of using
+        a window title as evidence for a specific filesystem path.
+        """
+        return ()
+
+    @staticmethod
+    def _normalized_path(path: Path) -> str:
         try:
-            user32 = ctypes.windll.user32  # type: ignore[attr-defined]
-            callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
-            titles: list[str] = []
-
-            @callback_type
-            def _collect(hwnd, _lparam):
-                if not user32.IsWindowVisible(hwnd) or user32.IsIconic(hwnd):
-                    return True
-
-                class_name = ctypes.create_unicode_buffer(256)
-                user32.GetClassNameW(hwnd, class_name, len(class_name))
-                if class_name.value != "CabinetWClass":
-                    return True
-
-                title_length = int(user32.GetWindowTextLengthW(hwnd) or 0)
-                if title_length <= 0:
-                    return True
-                title = ctypes.create_unicode_buffer(title_length + 1)
-                user32.GetWindowTextW(hwnd, title, len(title))
-                if title.value.strip():
-                    titles.append(title.value.strip())
-                return True
-
-            user32.EnumWindows(_collect, 0)
-            return tuple(titles)
+            resolved = path.expanduser().resolve(strict=False)
         except Exception:
-            return ()
+            return ""
+        return str(resolved).rstrip("\\/").casefold()
 
     def _visible_folder_verified(self, folder: Path) -> bool:
-        """Conservatively verify that an Explorer window for the folder is visible."""
-        if platform.system() != "Windows" or not folder.is_dir():
+        """Require exact normalized-path evidence before claiming visible success."""
+        requested_path = self._normalized_path(folder)
+        if not requested_path:
             return False
 
-        target_name = folder.name.strip().casefold()
-        if not target_name:
-            return False
-
-        for attempt in range(self._VISIBLE_WINDOW_ATTEMPTS):
-            titles = self._visible_explorer_titles()
-            if any(title.casefold() == target_name for title in titles):
+        for visible_path in self._trusted_visible_explorer_paths():
+            if self._normalized_path(visible_path) == requested_path:
                 return True
-            if attempt + 1 < self._VISIBLE_WINDOW_ATTEMPTS:
-                time.sleep(self._VISIBLE_WINDOW_POLL_SECONDS)
         return False
 
     @staticmethod
