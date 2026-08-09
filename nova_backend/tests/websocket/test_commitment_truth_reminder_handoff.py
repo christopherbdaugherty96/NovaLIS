@@ -4,11 +4,9 @@ import asyncio
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.conversation.session_router import GateResult
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
-
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 pytestmark = pytest.mark.slow
 
@@ -40,6 +38,11 @@ class _RecordingScheduleStore:
 class _FailingScheduleStore(_RecordingScheduleStore):
     def create_schedule(self, **kwargs) -> dict:
         raise OSError("simulated persistence failure")
+
+
+class _SummaryFailingScheduleStore(_RecordingScheduleStore):
+    def summarize(self) -> dict:
+        raise OSError("simulated summary failure after persistence")
 
 
 def _run_session(monkeypatch, prompts: list[str], store: _RecordingScheduleStore) -> _ScriptedWebSocket:
@@ -140,3 +143,15 @@ def test_persistence_failure_never_claims_success(monkeypatch):
     assert not any("SCH-" in message for message in messages)
     assert not any("scheduled" in message.lower() for message in messages)
     assert not any("done" in message.lower() for message in messages)
+
+
+def test_summary_failure_does_not_retract_successful_persistence(monkeypatch):
+    store = _SummaryFailingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me at 2 PM to call mom"], store)
+
+    assert len(store.created) == 1
+    messages = _chat_messages(ws)
+    assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
+    assert any("Text: call mom" in message for message in messages)
+    assert any("Schedule overview is temporarily unavailable" in message for message in messages)
+    assert not any("No reminder was created" in message for message in messages)

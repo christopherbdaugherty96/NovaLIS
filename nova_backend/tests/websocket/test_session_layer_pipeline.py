@@ -17,7 +17,6 @@ from __future__ import annotations
 import re
 
 import pytest
-
 from src.conversation.response_style_router import InputNormalizer
 from src.governor.governor_mediator import GovernorMediator
 from src.websocket.intent_patterns import (
@@ -30,7 +29,6 @@ from src.websocket.intent_patterns import (
     REMINDER_TIME_ONLY_RE,
     TIME_QUERY_RE,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -261,6 +259,16 @@ class TestCommitmentTruthRouting:
     ])
     def test_calendar_write_forms_route_deterministically(self, raw: str):
         assert _pipeline(raw) == "CALENDAR_WRITE"
+
+    @pytest.mark.parametrize("raw", [
+        "add calendar support to this project",
+        "create a calendar event handler in Python",
+        "put the calendar response in a table",
+        "block this calendar discussion into sections",
+        "add an event listener to this component",
+    ])
+    def test_normal_calendar_and_event_language_is_not_a_write_request(self, raw: str):
+        assert _pipeline(raw) != "CALENDAR_WRITE"
 
     @pytest.mark.parametrize("raw", [
         "remind me at 2 pm",
