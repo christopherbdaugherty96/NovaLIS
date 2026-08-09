@@ -1,13 +1,41 @@
 from __future__ import annotations
 
+import os
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
-from tests._dashboard_bundle import load_dashboard_runtime_css, load_dashboard_runtime_js
+import pytest
 
+from tests._dashboard_bundle import (
+    load_dashboard_runtime_css,
+    load_dashboard_runtime_js,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
+
+
+def _extract_js_function(source: str, name: str) -> str:
+    start = source.index(f"function {name}")
+    brace_start = source.index("{", start)
+    depth = 0
+    for idx in range(brace_start, len(source)):
+        char = source[idx]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return source[start : idx + 1]
+    raise AssertionError(f"Could not extract function {name}")
+
+
+def _extract_js_object_const(source: str, name: str) -> str:
+    start = source.index(f"const {name} = ")
+    end = source.index("\n};", start) + 3
+    return source[start:end]
 
 
 def test_dashboard_renders_trust_review_sections_from_system_status():
@@ -99,6 +127,80 @@ def test_trust_center_receipts_renderer_stays_display_only():
     assert "GovernorMediator" not in body
     assert "OpenClaw" not in body
     assert "approve" not in body.lower()
+
+
+def test_trust_center_receipts_honor_accepted_unverified_outcome_state():
+    source = load_dashboard_runtime_js()
+    styles = load_dashboard_runtime_css()
+    node = os.environ.get("NODE_EXE") or shutil.which("node")
+    if not node:
+        pytest.skip("Node.js is required for the Trust Center receipt outcome regression")
+
+    blocks = [
+        _extract_js_object_const(source, "_RECEIPT_LABELS"),
+        _extract_js_object_const(source, "_RECEIPT_OUTCOME"),
+        _extract_js_object_const(source, "_OUTCOME_LABEL"),
+        _extract_js_object_const(source, "_RECEIPT_BOUNDARY"),
+        _extract_js_function(source, "_receiptOutcomeState"),
+        _extract_js_function(source, "_receiptLabel"),
+        _extract_js_function(source, "_receiptOutcomeKey"),
+        _extract_js_function(source, "_receiptBoundary"),
+        _extract_js_function(source, "_receiptExecutionStatus"),
+        _extract_js_function(source, "_receiptOutcomeLabel"),
+    ]
+    script = "\n".join(blocks) + """
+const unverified = {
+  event_type: "ACTION_COMPLETED",
+  status: "completed",
+  success: true,
+  outcome_state: "accepted_unverified",
+};
+if (_receiptLabel(unverified) !== "Action accepted; outcome unverified") {
+  throw new Error("unverified receipt retained completed label");
+}
+if (_receiptOutcomeKey(unverified) !== "unverified") {
+  throw new Error("unverified receipt retained done badge");
+}
+if (_receiptOutcomeLabel(unverified) !== "Outcome unverified") {
+  throw new Error("unverified receipt retained Done outcome");
+}
+if (_receiptExecutionStatus(unverified) !== "accepted_unverified") {
+  throw new Error("unverified receipt retained completed execution status");
+}
+if (_receiptBoundary(unverified) !== "Request accepted; visible outcome not verified") {
+  throw new Error("unverified receipt lost its verification boundary");
+}
+
+const verified = {
+  event_type: "ACTION_COMPLETED",
+  status: "completed",
+  success: true,
+  outcome_state: "visible_verified",
+};
+if (_receiptLabel(verified) !== "Action completed") {
+  throw new Error("verified receipt lost completed label");
+}
+if (_receiptOutcomeKey(verified) !== "done") {
+  throw new Error("verified receipt lost done badge");
+}
+if (_receiptOutcomeLabel(verified) !== "Done") {
+  throw new Error("verified receipt lost Done outcome");
+}
+if (_receiptExecutionStatus(verified) !== "completed") {
+  throw new Error("verified receipt lost completed execution status");
+}
+"""
+    subprocess.run([node, "-e", script], check=True)
+
+    rows = _extract_js_function(source, "_renderReceiptRows")
+    detail = _extract_js_function(source, "_renderReceiptDetail")
+    assert "const label = _receiptLabel(r);" in rows
+    assert "const outcome = _receiptOutcomeKey(r);" in rows
+    assert "const boundary = _receiptBoundary(r);" in rows
+    assert '["Receipt", _receiptLabel(selected) || "Unknown"]' in detail
+    assert '["Boundary", _receiptBoundary(selected)' in detail
+    assert ".trust-activity-outcome-unverified" in styles
+    assert '.trust-activity-item[data-outcome="unverified"]' in styles
 
 
 def test_chat_trust_review_card_renders_deterministic_non_action_fields():
