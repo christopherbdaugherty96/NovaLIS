@@ -226,6 +226,62 @@ def test_outcome_adapter_preserves_pr331_distinctions(
     assert outcome.effect_verified is effect_verified
 
 
+@pytest.mark.parametrize(
+    ("metadata", "expected_state", "request_accepted"),
+    [
+        (
+            {
+                "status": "completed",
+                "outcome_state": "visible_verified",
+                "launch_request_accepted": True,
+                "visible_effect_verified": False,
+            },
+            OutcomeState.ACCEPTED_UNVERIFIED,
+            True,
+        ),
+        (
+            {
+                "status": "completed",
+                "outcome_state": "visible_verified",
+                "launch_request_accepted": True,
+            },
+            OutcomeState.ACCEPTED_UNVERIFIED,
+            True,
+        ),
+        (
+            {
+                "status": "failed",
+                "outcome_state": "visible_verified",
+                "launch_request_accepted": True,
+                "visible_effect_verified": True,
+            },
+            OutcomeState.FAILED,
+            True,
+        ),
+        (
+            {
+                "status": "rejected",
+                "outcome_state": "visible_verified",
+                "launch_request_accepted": False,
+                "visible_effect_verified": True,
+            },
+            OutcomeState.REJECTED,
+            False,
+        ),
+    ],
+)
+def test_outcome_adapter_never_upgrades_missing_or_contradictory_verification(
+    metadata,
+    expected_state,
+    request_accepted,
+):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is expected_state
+    assert outcome.request_accepted is request_accepted
+    assert outcome.effect_verified is False
+
+
 def test_outcome_states_and_lifecycle_completion_remain_independent():
     accepted = OutcomeSemantics.from_action_metadata(
         {
