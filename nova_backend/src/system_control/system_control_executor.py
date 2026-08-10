@@ -6,7 +6,31 @@ import platform
 import re
 import shutil
 import subprocess
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
+
+
+class OpenPathLaunchState(str, Enum):
+    """What the local launcher boundary can prove about an open request."""
+
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    FAILED = "failed"
+    UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True)
+class OpenPathLaunchResult:
+    """Structured Cap 22 launch truth without claiming a visible effect."""
+
+    state: OpenPathLaunchState
+    reason: str
+    returncode: int | None = None
+
+    @property
+    def accepted(self) -> bool:
+        return self.state is OpenPathLaunchState.ACCEPTED
 
 
 class SystemControlExecutor:
@@ -431,20 +455,74 @@ class SystemControlExecutor:
         except Exception:
             return False
 
-    def open_path(self, path: Path) -> bool:
-        try:
-            if not self._is_allowed_path(path):
-                return False
-            system = platform.system()
-            if system == "Windows":
+    def open_path_result(self, path: Path) -> OpenPathLaunchResult:
+        """Request a local open and preserve rejection/failure/uncertainty.
+
+        This method reports launcher-boundary truth only. A successful launcher
+        return does not prove that the requested item became visible.
+        """
+        if not self._is_allowed_path(path):
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.REJECTED,
+                "path_not_allowed",
+            )
+
+        system = platform.system()
+        if system == "Windows":
+            try:
                 os.startfile(str(path))  # type: ignore[attr-defined]
-                return True
-            if system == "Darwin":
-                completed = subprocess.run(["open", str(path)], check=False, timeout=3)
-                return completed.returncode == 0
-            if system == "Linux":
-                completed = subprocess.run(["xdg-open", str(path)], check=False, timeout=3)
-                return completed.returncode == 0
-            return False
+            except (FileNotFoundError, PermissionError, OSError):
+                return OpenPathLaunchResult(
+                    OpenPathLaunchState.REJECTED,
+                    "launcher_rejected_before_dispatch",
+                )
+            except Exception:
+                return OpenPathLaunchResult(
+                    OpenPathLaunchState.UNKNOWN,
+                    "launcher_exception_outcome_unknown",
+                )
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.ACCEPTED,
+                "launcher_returned_success",
+            )
+
+        if system not in {"Darwin", "Linux"}:
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.REJECTED,
+                "unsupported_platform",
+            )
+
+        command = "open" if system == "Darwin" else "xdg-open"
+        try:
+            completed = subprocess.run([command, str(path)], check=False, timeout=3)
+        except subprocess.TimeoutExpired:
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.UNKNOWN,
+                "launcher_timed_out_outcome_unknown",
+            )
+        except (FileNotFoundError, PermissionError, OSError):
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.REJECTED,
+                "launcher_unavailable_before_dispatch",
+            )
         except Exception:
-            return False
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.UNKNOWN,
+                "launcher_exception_outcome_unknown",
+            )
+
+        if completed.returncode == 0:
+            return OpenPathLaunchResult(
+                OpenPathLaunchState.ACCEPTED,
+                "launcher_returned_success",
+                returncode=0,
+            )
+        return OpenPathLaunchResult(
+            OpenPathLaunchState.FAILED,
+            "launcher_reported_failure",
+            returncode=int(completed.returncode),
+        )
+
+    def open_path(self, path: Path) -> bool:
+        """Compatibility wrapper for callers that only consume acceptance."""
+        return self.open_path_result(path).accepted

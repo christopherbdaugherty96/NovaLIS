@@ -478,8 +478,21 @@ class Governor:
                     failure_reason = str(result.outcome_reason or result.message or "").strip()
                     if failure_reason:
                         completion_metadata["failure_reason"] = failure_reason[:240]
+                outcome_reason = str(result.outcome_reason or "").strip()
+                if outcome_reason:
+                    completion_metadata["outcome_reason"] = outcome_reason[:240]
                 structured_result = result.structured_data if hasattr(result, "structured_data") else {}
                 if isinstance(structured_result, dict):
+                    outcome_state = str(structured_result.get("outcome_state") or "").strip()
+                    if outcome_state:
+                        completion_metadata["outcome_state"] = outcome_state[:80]
+                    for field_name in (
+                        "launch_request_accepted",
+                        "visible_effect_verified",
+                    ):
+                        value = structured_result.get(field_name)
+                        if isinstance(value, bool):
+                            completion_metadata[field_name] = value
                     for field_name in (
                         "reasoning_provider",
                         "reasoning_provider_label",
@@ -489,10 +502,14 @@ class Governor:
                         "reasoning_authority",
                         "reasoning_authority_label",
                         "reasoning_governance_note",
+                        "launch_result_reason",
                     ):
                         value = str(structured_result.get(field_name) or "").strip()
                         if value:
                             completion_metadata[field_name] = value[:240]
+                    launcher_returncode = structured_result.get("launcher_returncode")
+                    if type(launcher_returncode) is int:
+                        completion_metadata["launcher_returncode"] = launcher_returncode
                 self.ledger.log_event(
                     "ACTION_COMPLETED",
                     completion_metadata,

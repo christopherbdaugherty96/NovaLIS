@@ -13,12 +13,19 @@ def test_open_folder_rejects_non_preset():
 def test_open_folder_accepts_explicit_path(tmp_path):
     from src.executors.open_folder_executor import OpenFolderExecutor
     from src.actions.action_request import ActionRequest
+    from src.system_control.system_control_executor import (
+        OpenPathLaunchResult,
+        OpenPathLaunchState,
+    )
 
     path = tmp_path / "notes.txt"
     path.write_text("hello", encoding="utf-8")
 
     ex = OpenFolderExecutor()
-    ex.system_control.open_path = lambda p: True  # type: ignore[method-assign]
+    ex.system_control.open_path_result = lambda p: OpenPathLaunchResult(  # type: ignore[method-assign]
+        OpenPathLaunchState.ACCEPTED,
+        "test_accept",
+    )
     req = ActionRequest(capability_id=22, params={"path": str(path)})
     result = ex.execute(req)
 

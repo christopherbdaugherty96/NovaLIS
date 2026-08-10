@@ -235,6 +235,60 @@ class TestComposeDailyBrief:
         assert any("action completed" in item for item in section.items)
         assert any("memory saved" in item for item in section.items)
 
+    @pytest.mark.parametrize(
+        ("receipt", "expected_label"),
+        [
+            (
+                {"status": "completed", "success": True, "outcome_state": "visible_verified"},
+                "action completed",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "accepted_unverified"},
+                "action accepted; outcome unverified",
+            ),
+            (
+                {"status": "failed", "success": False, "outcome_state": "unknown_unverified"},
+                "action outcome unknown; not verified",
+            ),
+            (
+                {"status": "failed", "success": False, "outcome_state": "rejected"},
+                "action rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "rejected"},
+                "action rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "failed"},
+                "action failed",
+            ),
+            (
+                {"status": "failed", "success": True, "outcome_state": "accepted_unverified"},
+                "action failed",
+            ),
+            (
+                {"status": "completed", "success": False, "outcome_state": "visible_verified"},
+                "action failed",
+            ),
+            ({"status": "failed", "success": False}, "action failed"),
+            ({"status": "completed", "success": True}, "action completed"),
+        ],
+    )
+    def test_recent_receipts_preserve_action_outcome_truth(self, receipt, expected_label):
+        receipt.update(
+            {
+                "event_type": "ACTION_COMPLETED",
+                "capability_name": "open file or folder",
+            }
+        )
+        brief = compose_daily_brief(
+            recent_receipts=[receipt]
+        )
+
+        section = next(s for s in brief.sections if s.title == "Recent Actions")
+        assert len(section.items) == 1
+        assert section.items[0] == f"{expected_label}: open file or folder"
+
     def test_recommended_next_step_prefers_action(self):
         memory = [
             {"category": "action", "content": "refactor executor"},
