@@ -262,7 +262,17 @@ class OutcomeSemantics:
     @classmethod
     def from_action_metadata(cls, metadata: Mapping[str, Any]) -> OutcomeSemantics:
         """Adapt PR #331-style action or receipt metadata without runtime imports."""
-        raw_state = str(metadata.get("outcome_state") or "").strip().lower()
+        nested = metadata.get("structured_data")
+        structured_data = nested if isinstance(nested, Mapping) else {}
+
+        def metadata_value(*keys: str) -> Any:
+            for source in (metadata, structured_data):
+                for key in keys:
+                    if key in source:
+                        return source.get(key)
+            return None
+
+        raw_state = str(metadata_value("outcome_state") or "").strip().lower()
         state = _OUTCOME_ALIASES.get(raw_state)
         if state is None:
             try:
@@ -271,17 +281,17 @@ class OutcomeSemantics:
                 state = OutcomeState.UNKNOWN_UNVERIFIED
 
         request_accepted = _optional_bool(
-            metadata.get("request_accepted", metadata.get("launch_request_accepted"))
+            metadata_value("request_accepted", "launch_request_accepted")
         )
-        success = _optional_bool(metadata.get("success"))
+        success = _optional_bool(metadata_value("success"))
         effect_verification = _optional_bool(
-            metadata.get("effect_verified", metadata.get("visible_effect_verified"))
+            metadata_value("effect_verified", "visible_effect_verified")
         )
         effect_verified = effect_verification is True
-        partial_failure = bool(metadata.get("partial_failure")) or (
+        partial_failure = bool(metadata_value("partial_failure")) or (
             state is OutcomeState.PARTIAL_FAILURE
         )
-        status = str(metadata.get("status") or "").strip().lower()
+        status = str(metadata_value("status") or "").strip().lower()
 
         positive_state = state in {
             OutcomeState.EFFECT_VERIFIED,
@@ -316,8 +326,7 @@ class OutcomeSemantics:
 
         lifecycle_completed = status in {"completed", "completed_degraded"}
         reason = str(
-            metadata.get("outcome_reason")
-            or metadata.get("failure_reason")
+            metadata_value("outcome_reason", "failure_reason")
             or ""
         ).strip()
         return cls(
