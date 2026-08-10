@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from src.semantic.contracts import Confidence
+
 _KB_ID_RE = re.compile(r"^kb_[A-Za-z0-9][A-Za-z0-9_-]*$")
 _CONTENT_HASH_RE = re.compile(r"^sha256:[a-f0-9]{64}$")
 _TAG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_/-]*$")
@@ -60,13 +62,6 @@ class ReviewState(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     SUPERSEDED = "superseded"
-
-
-class Confidence(str, Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    UNKNOWN = "unknown"
 
 
 class RelationshipType(str, Enum):
