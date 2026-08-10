@@ -292,12 +292,19 @@ class OutcomeSemantics:
             state is OutcomeState.PARTIAL_FAILURE
         )
         status = str(metadata_value("status") or "").strip().lower()
+        reason = str(
+            metadata_value("outcome_reason", "failure_reason")
+            or ""
+        ).strip()
 
         positive_state = state in {
             OutcomeState.EFFECT_VERIFIED,
             OutcomeState.ACCEPTED_UNVERIFIED,
         }
-        if status in {"rejected", "refused"}:
+        if reason == "timed_out_outcome_unknown":
+            state = OutcomeState.UNKNOWN_UNVERIFIED
+            effect_verified = False
+        elif status in {"rejected", "refused"}:
             state = OutcomeState.REJECTED
             request_accepted = False
             effect_verified = False
@@ -323,12 +330,10 @@ class OutcomeSemantics:
         elif state is OutcomeState.REJECTED:
             request_accepted = False
             effect_verified = False
+        elif state in {OutcomeState.FAILED, OutcomeState.UNKNOWN_UNVERIFIED}:
+            effect_verified = False
 
         lifecycle_completed = status in {"completed", "completed_degraded"}
-        reason = str(
-            metadata_value("outcome_reason", "failure_reason")
-            or ""
-        ).strip()
         return cls(
             state=state,
             request_accepted=request_accepted,
