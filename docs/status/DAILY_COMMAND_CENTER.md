@@ -1,65 +1,67 @@
 # Daily Command Center
 
-## 2026-08-07 post-#312 owner evidence and selected repair (latest - read this first)
+## 2026-08-09 post-#332 closeout and next sequence (latest - read this first)
 
 ```text
-CURRENT MERGED MAIN: 6a078f1e after PR #328.
+CURRENT MERGED MAIN: dfef1db5df89bfdb276904acce26205d1c894331 after PR #332.
 
-PR #328 closed the documentation truth-sync. The targeted post-#312 real-use session occurred on
-2026-08-07 and is recorded in:
-  docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md
+CLOSED PRODUCT/TRUST LANES:
+  Commitment Truth + Natural Reminder Handoff - COMPLETE through PR #330 and PR #332.
+  Local Action Outcome Truth - COMPLETE through PR #331.
 
-EVIDENCE STATUS:
-  Prospective owner-use evidence suitable for product prioritization.
-  Exact runtime commit attribution is limited because the running SHA and branch were not captured
-  in the transcript. Do not use it for exact commit-level regression attribution.
+FRESH-MAIN COMMITMENT-TRUTH PROOF:
+  Runtime/source SHA: dfef1db5df89bfdb276904acce26205d1c894331.
+  The exact August 7 calendar-to-reminder flow persisted one real SCH record.
+  `show schedules` and `reminders` displayed notification schedules in the same session.
+  A fresh session retrieved the persisted reminder with `show schedules`.
+  `what's my schedule today?`, `show my calendar`, and
+  `what do I have scheduled tomorrow?` remained calendar queries.
+  The separate `tomorrow` scope wording defect was not part of this closeout and is inactive.
 
-SELECTED ACTIVE PRODUCT REPAIR:
-  Commitment Truth + Natural Reminder Handoff
-  Lock: docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md
+LOCAL-ACTION PROOF:
+  PR #331 is merged and live-proven on merged main for Cap 17, Cap 19, and Cap 22.
+  Request acceptance is no longer overstated as visible-effect verification, and receipt
+  consumers preserve accepted-unverified and rejected/failed outcomes.
 
-PRIMARY OBSERVED DEFECT:
-  A natural multi-turn calendar/reminder request escaped deterministic action handling and
-  GeneralChat produced unsupported reminder-completion language without a verified persisted
-  result or schedule ID.
+ACTIVE WORK:
+  Semantic Substrate Slice 1 is the next bounded implementation package. It requires an exact
+  reviewed scope before code. Do not combine it with Google work.
 
-REMINDER TRUTH:
-  Nova already persists reminder schedules and can surface due state in the dashboard. This lane
-  repairs natural conversational handoff and completion truth. It does not add Google Calendar
-  writes, Google Tasks/Reminders, autonomous scheduled actions, or scheduler expansion.
+SELECTED NEXT SEQUENCE:
+  1. Semantic Substrate Slice 1 - provider-neutral evidence/state/outcome contracts and tests.
+  2. Google Workspace Foundation - connection/account/scope/token lifecycle only; no domain data.
+  3. Google Tasks vertical - read evidence first; separately governed writes only after proof.
+
+PERMANENT GOOGLE BOUNDARY:
+  Google capability != Google authorization != Nova authority.
+  Connected != evidence collected != action permitted.
+  Prepared Reality remains local; creating/changing a Google resource is external mutation.
 
 AUTHORIZATION INTEGRITY:
   Slice 1 remains MERGED through PR #325.
-  Slice 2A remains separately owner-approved and NOT IMPLEMENTED ON MAIN. It is temporarily paused
-  behind this observed P1 correctness/trust repair. Keep the implementations and PRs separate.
+  Slice 2A remains separately owner-approved, paused, and NOT IMPLEMENTED ON MAIN. This ordering
+  neither cancels nor activates it. Keep its implementation and PR separate.
   Slice 2B remains DEFERRED and separately gated.
-
-CURRENT ORDER:
-  1. Land this acceptance/priority documentation package.
-  2. Implement Commitment Truth + Natural Reminder Handoff only.
-  3. Rerun the exact natural phrases from the August 7 session.
-  4. Close the repair only with deterministic tests plus live owner verification that records the
-     running commit.
-  5. Resume separately scoped Authorization Integrity Slice 2A.
-  6. Then select the next product-usability candidate from evidence.
 
 SECONDARY CANDIDATES - NOT ACTIVE:
   arbitrary-location weather routing;
   stale Auralis business-context freshness;
   local-first identity-copy truth;
   visible STT/TTS interaction state;
-  startup cohesion.
+  startup cohesion;
+  `tomorrow` calendar-scope wording.
 
-No additional acceptance morning is required before this bounded repair. No new open-ended
-observation cycle begins. No economic-value proof, expanded OpenClaw, browser/computer-use,
+No additional acceptance morning or new open-ended observation cycle is active. Semantic Slice 1
+must add no provider/network/execution/authority surface. Google runtime work starts only under its
+own bounded package. No economic-value proof, expanded OpenClaw, browser/computer-use,
 financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
 active. OpenClaw remains a bounded replaceable actuator, not an authority.
 ```
 
 Status: manual continuity surface.
-Last reviewed: 2026-08-07 (post-#312 owner-use evidence recorded; one bounded repair selected).
+Last reviewed: 2026-08-09 (PRs #330-#332 closed and fresh-main proof passed; next sequence selected).
 
-The 2026-08-06 and earlier sections below are historical continuity records.
+The 2026-08-07 and earlier sections below are historical continuity records.
 
 ## 2026-08-06 continuity truth-sync (historical continuity)
 
@@ -396,19 +398,19 @@ test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 ## Decisions Needed
 
 ```text
-1. Close the active Commitment Truth + Natural Reminder Handoff repair with deterministic tests
-   and live owner verification. Do not select another product lane first.
-2. Resume separately scoped Authorization Integrity Slice 2A after the P1 repair closes.
-3. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
+1. Review the exact Semantic Substrate Slice 1 scope, then implement only that bounded package.
+2. Keep Google Foundation and the Tasks vertical behind Semantic Slice 1; do not combine them.
+3. Decide separately when to resume Authorization Integrity Slice 2A; it remains approved/paused.
+4. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
    repo vs repo split vs GitHub Pro) - the business playbook is currently public.
 ```
 
 ## This Week
 
 ```text
-1. Land, implement, and live-verify only Commitment Truth + Natural Reminder Handoff.
+1. Bound Semantic Substrate Slice 1 without adding provider, network, execution, or authority code.
 2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
-3. No secondary product/capability lane. Slice 2A stays separate and paused behind the P1 repair.
+3. Do not start Google code, a secondary product/capability lane, or Slice 2A inside this package.
 ```
 
 ## Morning coverage (what Nova reliably does today, confirmed through Morning 7, 2026-07-22)

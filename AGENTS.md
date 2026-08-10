@@ -41,22 +41,27 @@ Current active product state:
 
 ```text
 Phase 3 observation: SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis).
-Engineering remains frozen except for explicitly approved proof/truth-sync work
-and critical bugs.
 The seven-morning gate is CLOSED. Its rank-1 defect — grounded brief/category
 routing — was repaired, merged as PR #312 (2026-07-23), and verified on fresh
 `main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
 No additional seven-morning or open-ended observation gate is required.
-The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded
-in docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md. It is prospective
-owner-use evidence suitable for product prioritization; exact commit-level
-attribution is limited because the running SHA was not captured.
-Active owner-selected product repair: Commitment Truth + Natural Reminder
-Handoff (lock: docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md).
-Do not start another acceptance cycle or select another product lane until this
-repair closes or is explicitly superseded. Authorization Integrity Slice 2A
-remains separately approved but is temporarily paused behind this observed P1
-correctness/trust repair. Do not mix the two implementations or PRs.
+
+The August 7 owner-use defect is CLOSED on merged main. PR #330 implemented
+Commitment Truth + Natural Reminder Handoff; PR #332 fixed notification-schedule
+command precedence. Fresh-main proof at
+dfef1db5df89bfdb276904acce26205d1c894331 confirmed the exact natural handoff,
+real reminder persistence, `show schedules`, `reminders`, fresh-session retrieval,
+and preservation of calendar-query routing.
+
+The local-action outcome-truth lane is also CLOSED. PR #331 is merged and its
+Cap 17/19/22 behavior was live-proven on merged main.
+
+The owner-selected next implementation package is Semantic Substrate Slice 1,
+then Google Workspace Foundation, then the first Google Tasks vertical. Semantic Slice 1 is
+limited to shared evidence/state/outcome contracts and tests; it adds no provider,
+network, execution, capability, or authority path. Google runtime work remains
+separately gated. Authorization Integrity Slice 2A remains separately approved,
+not implemented on main, and paused; it is neither cancelled nor silently active.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -89,10 +94,13 @@ Grounded brief/category routing (synthesis rank-1 defect) — COMPLETE
 Timeout containment (Morning 6-7 cross-turn blocking) — COMPLETE (PR #311).
 Post-#312 owner-use evidence - RECORDED (2026-08-07; suitable for product
   prioritization, with incomplete exact runtime provenance).
-Current activity: land and implement only Commitment Truth + Natural Reminder
-  Handoff. No additional acceptance morning or secondary product lane is active.
-Authorization Integrity Slice 2A remains separately approved and temporarily
-  paused behind this observed P1 correctness/trust repair.
+Commitment Truth + Natural Reminder Handoff — COMPLETE (PR #330 plus PR #332;
+  fresh-main closeout PASS at dfef1db5 on 2026-08-09).
+Local Action Outcome Truth — COMPLETE (PR #331; merged-main live proof PASS).
+Current activity: bound and implement only Semantic Substrate Slice 1. Google
+  Foundation and Tasks are ordered after it but are not activated by this status text.
+Authorization Integrity Slice 2A remains separately approved, paused, and
+  unimplemented on main.
 Do not select implementation work from any document dated before 2026-07-07
   without checking docs/CANONICAL/07_ROADMAP_TRUTH.md first.
 ```

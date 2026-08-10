@@ -1,10 +1,11 @@
 # Priority Lock - Commitment Truth + Natural Reminder Handoff - 2026-08-07
 
-Status: OWNER-APPROVED PRODUCT REPAIR LOCK
+Status: COMPLETE — MERGED AND FRESH-MAIN VERIFIED
 
 Severity: observed P1 correctness/trust defect
 
-Implementation state: no implementation is contained in this documentation package
+Implementation state: PR #330 implemented the bounded repair; PR #332 closed the remaining
+notification-schedule command-precedence defect. Fresh-main closeout passed on 2026-08-09.
 
 Evidence:
 `../observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md`
@@ -188,3 +189,31 @@ The lane is not complete until all of the following exist:
 
 This document approves the bounded repair scope after the documentation lock lands. It does not
 implement or publish that repair, authorize a secondary lane, or change runtime truth by itself.
+
+## Closeout evidence — 2026-08-09
+
+```text
+Merged main: dfef1db5df89bfdb276904acce26205d1c894331
+PR #330: Commitment Truth + Natural Reminder Handoff
+PR #332: notification-schedule command precedence
+```
+
+Fresh-main verification used a clean worktree pinned to the exact merge commit and an isolated
+runtime/data directory. It proved:
+
+1. The exact August 7 natural calendar-to-reminder flow stayed deterministic and persisted one
+   real schedule with an `SCH-...` identifier.
+2. `show schedules` displayed the saved notification schedule in the same session.
+3. `reminders` displayed the same notification schedule in the same session.
+4. A fresh WebSocket session retrieved the persisted schedule with `show schedules`.
+5. `what's my schedule today?`, `show my calendar`, and
+   `what do I have scheduled tomorrow?` remained calendar queries rather than notification
+   management commands.
+6. The notification-schedule store and ledger agreed: one creation and three schedule views.
+7. The isolated runtime was stopped and its test state was not written into the normal owner store.
+
+The separate response-scope defect in the `tomorrow` calendar counterexample is outside this lock
+and remains inactive. It does not invalidate notification-management routing or reopen this lane.
+
+All completion evidence in this lock is satisfied. Commitment Truth + Natural Reminder Handoff is
+CLOSED. Reopening it requires new contradictory evidence, not another documentation or review pass.

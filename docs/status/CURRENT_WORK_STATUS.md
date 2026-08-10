@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-07 (`main` at `6a078f1e`, PR #328 merged). Read the latest 2026-08-07
+Last reviewed: 2026-08-09 (`main` at `dfef1db5`, PR #332 merged). Read the latest 2026-08-09
 block in `docs/status/DAILY_COMMAND_CENTER.md` first; older blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
@@ -24,49 +24,46 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-CURRENT MERGED TRUTH (2026-08-07)
+CURRENT MERGED TRUTH (2026-08-09)
 
-Main is at 6a078f1e after PR #328. PR #328 closed the 11-file product, roadmap, and landing-page
-truth-sync. The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded in
-docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md.
+Main is at dfef1db5df89bfdb276904acce26205d1c894331 after PR #332.
 
-PRODUCT ACCEPTANCE
-  The August 7 session is prospective owner-use evidence suitable for product prioritization.
-  Exact commit-level regression attribution is limited because the running SHA and branch were
-  not captured. This closes the pending product-selection input without fabricating provenance.
-  No additional acceptance morning or new open-ended observation cycle is required before the
-  selected bounded repair.
+CLOSED LANES
+  Commitment Truth + Natural Reminder Handoff - COMPLETE through PR #330 and PR #332.
+  Local Action Outcome Truth - COMPLETE through PR #331.
 
-ACTIVE PRODUCT REPAIR
-  Commitment Truth + Natural Reminder Handoff.
-  Lock: docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md
-  Primary defect: GeneralChat produced unsupported reminder-completion language after a natural
-  multi-turn calendar/reminder request escaped deterministic handling.
-  Existing reminder schedules persist records and surface due state in Nova; this lane adds no
-  calendar write, autonomous scheduled action, external integration, capability, or authority.
+FRESH-MAIN ACCEPTANCE
+  The exact August 7 natural reminder handoff persisted a real schedule on dfef1db5.
+  `show schedules` and `reminders` displayed notification schedules; a fresh session retrieved
+  the persisted record. Calendar counterexamples stayed on calendar awareness. The separate
+  `tomorrow` scope wording defect remains outside the closeout and inactive.
+
+CURRENT WORK
+  Bound Semantic Substrate Slice 1, then implement only its reviewed provider-neutral contracts
+  and tests. Do not combine it with Google code.
+
+SELECTED NEXT ORDER
+  1. Semantic Substrate Slice 1 - shared provider-neutral evidence/state/outcome contracts/tests.
+  2. Google Workspace Foundation - OAuth/account/token/scope/revoke/disconnect; no domain data.
+  3. Google Tasks vertical - read evidence first, governed writes only after separate proof.
+
+  Semantic Slice 1 adds no provider/network/execution/capability/authority path. Google capability,
+  Google authorization, and Nova authority remain distinct. Connection does not grant Nova action
+  authority.
 
 AUTHORIZATION INTEGRITY
   Slice 1 - MERGED through PR #325: Governor-owned, session/capability/exact-action-bound,
             expiring, single-use ApprovalGrants.
   Slice 2A - NOT IMPLEMENTED ON MAIN. Owner-approved in an external conversation for bounded
              local implementation only, subject to its exact scope and publication stop. It
-             remains approved but is temporarily paused behind the observed P1 repair. Keep its
-             implementation and PR separate.
+             remains approved but paused. This ordering neither cancels nor activates it.
   Slice 2B - DEFERRED and separately gated: later cooperative cancellation and
              capability-specific reconciliation.
 
-CURRENT ORDER
-  1. Land this acceptance and priority-lock documentation package.
-  2. Implement Commitment Truth + Natural Reminder Handoff only.
-  3. Rerun the exact August 7 natural phrases.
-  4. Require deterministic tests plus live owner verification before closeout.
-  5. Resume separately scoped Authorization Integrity Slice 2A.
-  6. Then select another product-usability candidate from evidence.
-
 BOUNDARY
-  No secondary candidate is active. No economic-value proof, expanded OpenClaw, browser/computer-use,
-  financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
-  active. OpenClaw is a bounded replaceable actuator, not an authority.
+  No Google connector runtime, secondary candidate, economic-value proof, expanded OpenClaw,
+  browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business,
+  or delegation lane is active. OpenClaw is a bounded replaceable actuator, not an authority.
 ```
 
 The reconciled block above supersedes any later `current`, `next`, `active`, or `LOCK ONLY`
@@ -922,8 +919,8 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
-- Run one post-#312 real-use/product-acceptance morning.
-- Owner activation decision for the authorization-integrity hardening lane (LOCK ONLY).
+- Bound Semantic Substrate Slice 1 before implementation.
+- Keep the separately approved Authorization Integrity Slice 2A paused until owner sequencing.
 ```
 
 No active *implementation* follow-up issue is open; the two above are operational.
@@ -1026,16 +1023,12 @@ Current sequence:
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Current active state is Phase 3 observation, seven-morning threshold
-   COMPLETE (2026-07-22 synthesis); grounded brief/category routing shipped
-   via PR #312 (2026-07-23) and verified on fresh main
-   (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No
-   additional seven-morning or open-ended observation gate is required. Next
-   product input is ONE targeted post-#312 real-use/product-acceptance morning
-   (not a re-verification of #312), then owner selection of the next
-   evidence-ranked product lane. Authorization integrity
-   (docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md) is the
-   first post-observation hardening lane, activatable in parallel priority.
+9. Phase 3 observation, the post-#312 selection gate, Commitment Truth, and
+   Local Action Outcome Truth are complete. PRs #330-#332 are merged; fresh-main
+   Commitment Truth proof passed at dfef1db5. The next selected product order is
+   Semantic Substrate Slice 1, Google Workspace Foundation, then Google Tasks.
+   Google work remains separately gated; Authorization Integrity Slice 2A remains
+   separately approved, paused, and unimplemented on main.
 10. Runtime recovery and health truth remains accepted/deferred pending
     morning evidence (lock:
     docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md).
