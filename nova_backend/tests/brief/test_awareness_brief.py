@@ -211,6 +211,60 @@ class TestChangesSection:
         assert s.status == "ok"
         assert any("weather_check" in item for item in s.items)
 
+    @pytest.mark.parametrize(
+        ("receipt", "expected_label"),
+        [
+            (
+                {"status": "completed", "success": True, "outcome_state": "visible_verified"},
+                "completed",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "accepted_unverified"},
+                "accepted; outcome unverified",
+            ),
+            (
+                {"status": "failed", "success": False, "outcome_state": "unknown_unverified"},
+                "outcome unknown; not verified",
+            ),
+            (
+                {"status": "failed", "success": False, "outcome_state": "rejected"},
+                "rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "rejected"},
+                "rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "failed"},
+                "failed",
+            ),
+            (
+                {"status": "failed", "success": True, "outcome_state": "accepted_unverified"},
+                "failed",
+            ),
+            (
+                {"status": "completed", "success": False, "outcome_state": "visible_verified"},
+                "failed",
+            ),
+            ({"status": "failed", "success": False}, "failed"),
+            ({"status": "completed", "success": True}, "completed"),
+        ],
+    )
+    def test_receipt_changes_preserve_action_outcome_truth(self, receipt, expected_label):
+        receipt.update(
+            {
+                "event_type": "ACTION_COMPLETED",
+                "capability_name": "open file or folder",
+            }
+        )
+        s = build_changes_section(
+            [receipt]
+        )
+
+        assert s.status == "ok"
+        assert len(s.items) == 1
+        assert s.items[0] == f"{expected_label}: open file or folder"
+
 
 class TestComposeAwarenessBrief:
     def test_returns_all_seven_sections(self):

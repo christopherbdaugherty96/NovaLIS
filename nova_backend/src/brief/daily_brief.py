@@ -429,13 +429,43 @@ def _build_memory_reminders(memory_items: list[dict[str, Any]]) -> BriefSection:
     )
 
 
+def _action_receipt_state(receipt: dict[str, Any]) -> str:
+    if str(receipt.get("event_type") or "") != "ACTION_COMPLETED":
+        return ""
+    outcome_state = str(receipt.get("outcome_state") or "").strip().lower()
+    status = str(receipt.get("status") or "").strip().lower()
+    if outcome_state == "rejected":
+        return "rejected"
+    if outcome_state == "failed":
+        return "failed"
+    if outcome_state == "unknown_unverified":
+        return "unknown_unverified"
+    if status in {"rejected", "refused"}:
+        return "rejected"
+    if status == "failed" or receipt.get("success") is False:
+        return "failed"
+    if outcome_state == "accepted_unverified":
+        return "accepted_unverified"
+    return "completed"
+
+
 def _build_recent_receipts(recent_receipts: list[dict[str, Any]]) -> BriefSection:
     labels: list[str] = []
     for receipt in recent_receipts:
         if not isinstance(receipt, dict):
             continue
         event_type = str(receipt.get("event_type") or "")
-        label = _RECEIPT_LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
+        action_state = _action_receipt_state(receipt)
+        if action_state == "rejected":
+            label = "action rejected"
+        elif action_state == "failed":
+            label = "action failed"
+        elif action_state == "accepted_unverified":
+            label = "action accepted; outcome unverified"
+        elif action_state == "unknown_unverified":
+            label = "action outcome unknown; not verified"
+        else:
+            label = _RECEIPT_LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
         if not label.strip():
             continue
         ts = str(receipt.get("timestamp_utc") or "")

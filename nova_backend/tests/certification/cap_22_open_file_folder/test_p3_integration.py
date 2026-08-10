@@ -17,6 +17,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 from src.governor.governor import Governor
+from src.system_control.system_control_executor import (
+    OpenPathLaunchResult,
+    OpenPathLaunchState,
+)
 
 _CAPABILITY_ID = 22
 _CAPABILITY_NAME = "open_file_folder"
@@ -86,8 +90,8 @@ def test_preset_folder_passes_through_spine(tmp_path: Path):
         {"downloads": downloads},
     ), patch(
         "src.system_control.system_control_executor"
-        ".SystemControlExecutor.open_path",
-        return_value=True,
+        ".SystemControlExecutor.open_path_result",
+        return_value=OpenPathLaunchResult(OpenPathLaunchState.ACCEPTED, "test_accept"),
     ):
         result = _invoke_approved(gov, {"target": "downloads"})
     assert result.success is True
@@ -122,8 +126,8 @@ def test_spine_logs_action_attempted(tmp_path: Path):
         {"downloads": downloads},
     ), patch(
         "src.system_control.system_control_executor"
-        ".SystemControlExecutor.open_path",
-        return_value=True,
+        ".SystemControlExecutor.open_path_result",
+        return_value=OpenPathLaunchResult(OpenPathLaunchState.ACCEPTED, "test_accept"),
     ):
         _invoke_approved(gov, {"target": "downloads"})
     assert "ACTION_ATTEMPTED" in logged

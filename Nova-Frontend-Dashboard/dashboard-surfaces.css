@@ -2051,6 +2051,12 @@ button.workspace-spotlight-card.active {
   color: #b8f0d5;
 }
 
+.trust-activity-outcome-unverified {
+  border: 1px solid rgba(140, 185, 255, 0.32);
+  background: rgba(28, 60, 110, 0.28);
+  color: #b8d4ff;
+}
+
 .trust-activity-outcome-issue,
 .trust-activity-outcome-blocked {
   border: 1px solid rgba(255, 182, 131, 0.34);
@@ -2073,6 +2079,10 @@ button.workspace-spotlight-card.active {
 .trust-activity-item[data-outcome="issue"],
 .trust-activity-item[data-outcome="blocked"] {
   border-color: rgba(255, 182, 131, 0.28);
+}
+
+.trust-activity-item[data-outcome="unverified"] {
+  border-color: rgba(140, 185, 255, 0.28);
 }
 
 .trust-activity-item[data-outcome="failed"] {
