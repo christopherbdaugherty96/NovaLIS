@@ -259,6 +259,24 @@ def test_revoke_closes_pending_connection_session():
     assert receiver.closed is True
 
 
+@pytest.mark.parametrize(
+    "terminal_state",
+    [GoogleConnectionState.REVOKED, GoogleConnectionState.DISCONNECTED],
+)
+def test_terminal_token_free_state_allows_a_new_connection(terminal_state):
+    manager, _, _, receivers, _ = _manager()
+    _complete(manager, receivers, manager.begin_connection())
+    if terminal_state is GoogleConnectionState.REVOKED:
+        manager.revoke()
+    else:
+        manager.disconnect()
+
+    request = manager.begin_connection()
+
+    assert request.profile_id == "identity"
+    assert manager.status().state is GoogleConnectionState.CONNECTING
+
+
 def test_insufficient_grant_is_recorded_exactly_and_skips_identity_lookup():
     manager, vault, transport, receivers, _ = _manager()
     transport.exchange_grant = GoogleTokenGrant(
