@@ -418,6 +418,44 @@ def test_action_result_refusal_preserves_rejection_with_or_without_positive_labe
     assert outcome.effect_verified is False
 
 
+def test_timed_out_refusal_preserves_unknown_outcome():
+    metadata = ActionResult.refusal(
+        "The final outcome could not be verified.",
+        outcome_reason="timed_out_outcome_unknown",
+    ).to_contract_dict()
+
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.request_accepted is None
+    assert outcome.effect_verified is False
+    assert outcome.reason == "timed_out_outcome_unknown"
+
+
+@pytest.mark.parametrize(
+    ("raw_state", "expected_state"),
+    [
+        ("failed", OutcomeState.FAILED),
+        ("unknown_unverified", OutcomeState.UNKNOWN_UNVERIFIED),
+        ("", OutcomeState.UNKNOWN_UNVERIFIED),
+    ],
+)
+def test_non_verified_states_clear_contradictory_verification_evidence(
+    raw_state,
+    expected_state,
+):
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "outcome_state": raw_state,
+            "visible_effect_verified": True,
+        }
+    )
+
+    assert outcome.state is expected_state
+    assert outcome.effect_verified is False
+
+
 @pytest.mark.parametrize(
     ("structured_data", "expected_state", "effect_verified"),
     [
