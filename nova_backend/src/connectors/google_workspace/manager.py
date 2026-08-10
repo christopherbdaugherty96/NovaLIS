@@ -72,7 +72,10 @@ class GoogleWorkspaceConnectionManager:
     ) -> GoogleAuthorizationRequest:
         profile = self._profiles.get_enabled(profile_id)
         existing = self._vault.load()
-        if existing is not None:
+        if existing is not None and existing.state not in {
+            GoogleConnectionState.REVOKED,
+            GoogleConnectionState.DISCONNECTED,
+        }:
             missing = set(profile.scopes).difference(existing.granted_scopes)
             if missing and not reconnect:
                 raise GoogleReconnectRequired(
