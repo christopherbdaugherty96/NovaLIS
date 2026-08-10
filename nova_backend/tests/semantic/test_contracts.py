@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import EvidenceConfidence
 from src.brain.second_brain.schemas import Confidence as SecondBrainConfidence
 from src.semantic import (
@@ -394,6 +395,26 @@ def test_explicit_acceptance_is_preserved_when_execution_later_fails():
 
     assert outcome.state is OutcomeState.FAILED
     assert outcome.request_accepted is True
+    assert outcome.effect_verified is False
+
+
+@pytest.mark.parametrize("positive_label", [False, True])
+def test_action_result_refusal_preserves_rejection_with_or_without_positive_label(
+    positive_label,
+):
+    metadata = ActionResult.refusal("Action is not authorized.").to_contract_dict()
+    if positive_label:
+        metadata.update(
+            {
+                "outcome_state": "accepted_unverified",
+                "launch_request_accepted": True,
+            }
+        )
+
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.REJECTED
+    assert outcome.request_accepted is False
     assert outcome.effect_verified is False
 
 

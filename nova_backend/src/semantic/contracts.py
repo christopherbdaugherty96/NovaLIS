@@ -287,7 +287,11 @@ class OutcomeSemantics:
             OutcomeState.EFFECT_VERIFIED,
             OutcomeState.ACCEPTED_UNVERIFIED,
         }
-        if positive_state and (status == "rejected" or request_accepted is False):
+        if status in {"rejected", "refused"}:
+            state = OutcomeState.REJECTED
+            request_accepted = False
+            effect_verified = False
+        elif positive_state and request_accepted is False:
             state = OutcomeState.REJECTED
             request_accepted = False
             effect_verified = False
