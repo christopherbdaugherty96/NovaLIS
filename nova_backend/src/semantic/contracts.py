@@ -315,6 +315,9 @@ class OutcomeSemantics:
         elif positive_state and (status == "failed" or success is False):
             state = OutcomeState.FAILED
             effect_verified = False
+        elif not raw_state and (status == "failed" or success is False):
+            state = OutcomeState.FAILED
+            effect_verified = False
         elif state is OutcomeState.EFFECT_VERIFIED:
             verification_is_contradicted = effect_verification is not True
             if verification_is_contradicted:

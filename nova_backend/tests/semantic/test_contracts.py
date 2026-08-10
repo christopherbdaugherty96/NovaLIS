@@ -433,6 +433,20 @@ def test_timed_out_refusal_preserves_unknown_outcome():
 
 
 @pytest.mark.parametrize(
+    "metadata",
+    [
+        ActionResult.failure("Action failed.").to_contract_dict(),
+        {"status": "completed", "success": False},
+    ],
+)
+def test_unlabeled_explicit_failure_maps_to_failed(metadata):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.FAILED
+    assert outcome.effect_verified is False
+
+
+@pytest.mark.parametrize(
     ("raw_state", "expected_state"),
     [
         ("failed", OutcomeState.FAILED),
