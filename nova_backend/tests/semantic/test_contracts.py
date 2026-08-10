@@ -282,6 +282,121 @@ def test_outcome_adapter_never_upgrades_missing_or_contradictory_verification(
     assert outcome.effect_verified is False
 
 
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {
+            "status": "completed",
+            "success": False,
+            "outcome_state": "visible_verified",
+            "launch_request_accepted": True,
+        },
+        {
+            "status": "completed",
+            "success": False,
+            "outcome_state": "visible_verified",
+            "launch_request_accepted": True,
+            "visible_effect_verified": True,
+        },
+        {
+            "status": "failed",
+            "success": True,
+            "outcome_state": "visible_verified",
+            "launch_request_accepted": True,
+            "visible_effect_verified": True,
+        },
+    ],
+)
+def test_explicit_failure_prevents_verified_effect(metadata):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.FAILED
+    assert outcome.effect_verified is False
+
+
+@pytest.mark.parametrize(
+    ("metadata", "expected_state", "request_accepted"),
+    [
+        (
+            {
+                "status": "completed",
+                "outcome_state": "accepted_unverified",
+                "launch_request_accepted": False,
+            },
+            OutcomeState.REJECTED,
+            False,
+        ),
+        (
+            {
+                "status": "failed",
+                "outcome_state": "accepted_unverified",
+            },
+            OutcomeState.FAILED,
+            None,
+        ),
+        (
+            {
+                "status": "completed",
+                "success": False,
+                "outcome_state": "accepted_unverified",
+            },
+            OutcomeState.FAILED,
+            None,
+        ),
+        (
+            {
+                "status": "rejected",
+                "outcome_state": "accepted_unverified",
+            },
+            OutcomeState.REJECTED,
+            False,
+        ),
+        (
+            {
+                "status": "completed",
+                "outcome_state": "accepted_unverified",
+            },
+            OutcomeState.UNKNOWN_UNVERIFIED,
+            None,
+        ),
+        (
+            {
+                "status": "completed",
+                "outcome_state": "accepted_unverified",
+                "launch_request_accepted": True,
+            },
+            OutcomeState.ACCEPTED_UNVERIFIED,
+            True,
+        ),
+    ],
+)
+def test_accepted_label_never_upgrades_missing_or_contradictory_acceptance(
+    metadata,
+    expected_state,
+    request_accepted,
+):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is expected_state
+    assert outcome.request_accepted is request_accepted
+    assert outcome.effect_verified is False
+
+
+def test_explicit_acceptance_is_preserved_when_execution_later_fails():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "failed",
+            "success": False,
+            "outcome_state": "accepted_unverified",
+            "launch_request_accepted": True,
+        }
+    )
+
+    assert outcome.state is OutcomeState.FAILED
+    assert outcome.request_accepted is True
+    assert outcome.effect_verified is False
+
+
 def test_outcome_states_and_lifecycle_completion_remain_independent():
     accepted = OutcomeSemantics.from_action_metadata(
         {
