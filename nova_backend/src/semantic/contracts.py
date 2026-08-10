@@ -273,6 +273,7 @@ class OutcomeSemantics:
         request_accepted = _optional_bool(
             metadata.get("request_accepted", metadata.get("launch_request_accepted"))
         )
+        success = _optional_bool(metadata.get("success"))
         effect_verification = _optional_bool(
             metadata.get("effect_verified", metadata.get("visible_effect_verified"))
         )
@@ -282,26 +283,29 @@ class OutcomeSemantics:
         )
         status = str(metadata.get("status") or "").strip().lower()
 
-        if state is OutcomeState.EFFECT_VERIFIED:
-            verification_is_contradicted = (
-                effect_verification is not True
-                or request_accepted is False
-                or status in {"failed", "rejected"}
-            )
+        positive_state = state in {
+            OutcomeState.EFFECT_VERIFIED,
+            OutcomeState.ACCEPTED_UNVERIFIED,
+        }
+        if positive_state and (status == "rejected" or request_accepted is False):
+            state = OutcomeState.REJECTED
+            request_accepted = False
+            effect_verified = False
+        elif positive_state and (status == "failed" or success is False):
+            state = OutcomeState.FAILED
+            effect_verified = False
+        elif state is OutcomeState.EFFECT_VERIFIED:
+            verification_is_contradicted = effect_verification is not True
             if verification_is_contradicted:
                 effect_verified = False
-                if status == "rejected" or request_accepted is False:
-                    state = OutcomeState.REJECTED
-                    request_accepted = False
-                elif status == "failed":
-                    state = OutcomeState.FAILED
-                elif request_accepted is True:
+                if request_accepted is True:
                     state = OutcomeState.ACCEPTED_UNVERIFIED
                 else:
                     state = OutcomeState.UNKNOWN_UNVERIFIED
         elif state is OutcomeState.ACCEPTED_UNVERIFIED:
-            request_accepted = True
             effect_verified = False
+            if request_accepted is not True:
+                state = OutcomeState.UNKNOWN_UNVERIFIED
         elif state is OutcomeState.REJECTED:
             request_accepted = False
             effect_verified = False
