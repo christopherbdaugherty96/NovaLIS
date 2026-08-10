@@ -1,37 +1,34 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-08-07 (`main` at `6a078f1e`, PR #328 merged). Latest state: see the
-2026-08-07 block in `docs/status/DAILY_COMMAND_CENTER.md`.
+Last reviewed: 2026-08-09 (`main` at `dfef1db5`, PR #332 merged). Latest state: see the
+2026-08-09 block in `docs/status/DAILY_COMMAND_CENTER.md`.
 
 ---
 
 ## Current Active Task
 
 ```text
-The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded in
-docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md. It is valid for product prioritization;
-exact commit-level attribution is limited because the running SHA was not captured. Do not request
-another acceptance morning before the selected repair.
+Current merged main:
+  dfef1db5df89bfdb276904acce26205d1c894331 after PR #332.
 
-Active product repair:
-  Commitment Truth + Natural Reminder Handoff
-  docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md
+Closed:
+  Commitment Truth + Natural Reminder Handoff - PR #330 + PR #332; fresh-main proof PASS.
+  Local Action Outcome Truth - PR #331; merged-main live proof PASS.
 
 Remaining order:
-1. Land this acceptance and priority-lock documentation package.
-2. Implement only the bounded Commitment Truth + Natural Reminder Handoff repair.
-3. Rerun the exact natural phrases from the August 7 session.
-4. Close only with deterministic tests plus live owner verification that records the running SHA.
-5. Resume separately scoped Authorization Integrity Slice 2A.
-6. Then select the next product-usability candidate from evidence.
+1. Bound and implement Semantic Substrate Slice 1 only.
+2. Establish Google Workspace Foundation only after Semantic Slice 1.
+3. Prove Google Tasks as the first read-first vertical; gate writes separately.
+4. Expand Google evidence and action families one at a time only after proof.
 
 Authorization Integrity Slice 1 is MERGED through PR #325. Slice 2A remains separately approved,
-NOT IMPLEMENTED ON MAIN, and temporarily paused behind this P1 correctness/trust repair. Slice 2B
-is DEFERRED and separately gated. Keep the Slice 2A and product-repair implementations separate.
+NOT IMPLEMENTED ON MAIN, and paused. This order neither cancels nor activates it. Slice 2B is
+DEFERRED and separately gated.
 
-No economic-value proof, expanded OpenClaw, browser/computer-use, financial-write, outreach,
-posting, contracting, autonomous-business, or delegation lane is active. OpenClaw remains a
-replaceable actuator rather than an authority. No secondary product candidate is active.
+Semantic Slice 1 is provider-neutral contract/test work only. Google capability, Google
+authorization, and Nova authority remain separate. No Google runtime, economic-value proof,
+expanded OpenClaw, browser/computer-use, financial-write, outreach, posting, contracting,
+autonomous-business, or delegation lane is active in this documentation package.
 ```
 
 ## Historical active-task record (2026-07-23)
@@ -159,9 +156,9 @@ Cap 65 P5 live proof — complete and locked (2026-05-22).
 
 ## Current Open Issues
 
-There are no active *implementation* follow-up issues. Operational follow-ups are current,
-though: one post-#312 real-use/product-acceptance morning and the owner activation decision for
-the authorization-integrity hardening lane (LOCK ONLY).
+The post-#312 acceptance and Commitment Truth closeout are complete. Current follow-through is the
+bounded Semantic Substrate Slice 1. Authorization Integrity Slice 2A remains a separate
+approved-but-paused hardening lane.
 
 Open GitHub *issues* are planning/future/backlog only:
 
@@ -226,8 +223,10 @@ dashboard clarity improved (PR #233 UI simplification)
    Learning cannot become silent authority.
 
 4. Google / workspace connectors
-   Planning/future only. Read-only and draft-only surfaces must come
-   before writes.
+   Selected after Semantic Substrate Slice 1. Foundation establishes connection/account/scope/
+   token lifecycle without domain data. Google Tasks is the first read-first vertical. Gmail,
+   Calendar, selected Drive, and Docs/Sheets evidence follow one family at a time. Local prepared
+   proposals precede separately governed writes.
 
 5. Trust / receipt maturity
    Existing trust surfaces must not be overstated as a complete mature
@@ -249,26 +248,21 @@ Second Brain Slice 1 priority lock is accepted.
 Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
-Current active state: Phase 3 observation — seven-morning threshold COMPLETE (2026-07-22).
-Grounded brief/category routing shipped via PR #312 (2026-07-23), verified on fresh main
-(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). No additional seven-morning
-or open-ended observation gate is required. Next product input is ONE targeted post-#312
-real-use/product-acceptance morning (not a re-verification of #312), then owner selection of
-the next evidence-ranked product-usability lane. Authorization integrity is the parallel first
-post-observation hardening lane (see Deferred lanes below). This file starts no lane.
+Phase 3 observation, grounded brief routing, post-#312 selection, Commitment Truth, and Local
+Action Outcome Truth are complete. PRs #330-#332 are merged and the fresh-main reminder closeout
+passed at dfef1db5. The selected next product sequence is Semantic Substrate Slice 1 -> Google
+Workspace Foundation -> Google Tasks. This file records order; exact lane scope still governs work.
 
 Deferred implementation lanes (accepted; runtime-recovery and Second Brain reactivate on
-morning evidence, authorization integrity is activatable now — see each entry):
+evidence, Authorization Integrity Slice 2A remains separately approved/paused — see each entry):
   - Authorization integrity (correctness/security lane — FIRST post-observation hardening
     lane; lock: docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md):
     Governor-owned single-use action-bound ApprovalGrant, no auth booleans in
     capability params, timeout outcome_unknown state machine, effect/receipt
     reconciliation, adversarial multi-session end-to-end tests. Runs on correctness
-    priority and does NOT require morning evidence to justify it. With observation
-    complete and PR #312 landed (sequencing steps 1-2 met) it is ACTIVATABLE in parallel
-    priority with the top product lane, superseded only by a higher-severity governance
-    defect. Still LOCK ONLY / not started — activation is a separate owner decision, not
-    this file.
+    priority and does NOT require morning evidence to justify it. Slice 1 is merged through
+    PR #325. Slice 2A is separately approved but paused and not implemented on main; this
+    file does not reactivate it.
   - Runtime recovery and health truth
     (lock: docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md):
     canonical health truth, timeout/degraded/unavailable status modeling,
@@ -320,15 +314,15 @@ Goal Card persistence and UI simplification are complete. Goal Cards
 remain display-only. Second Brain Slice 1 and runtime recovery remain
 accepted but deferred.
 
-The seven-morning observation threshold is complete, and PR #312
-closed the evidence-ranked grounded-routing bottleneck.
+The seven-morning observation threshold, post-#312 selection gate,
+Commitment Truth lane, and Local Action Outcome Truth lane are complete.
 
-Next product input is one post-#312 real-use/product-acceptance morning,
-followed by owner selection of the next evidence-ranked product lane.
+Next: Semantic Substrate Slice 1, then Google Workspace Foundation,
+then the Google Tasks vertical. Connection, evidence access, and action
+authority remain distinct.
 
-Authorization integrity is the first activatable post-observation
-hardening lane, in parallel priority with the selected product lane.
-It remains LOCK ONLY and requires a separate owner activation decision.
+Authorization Integrity Slice 1 is merged. Slice 2A remains separately
+approved, paused, and unimplemented on main.
 
 This TODO authorizes no implementation lane.
 ```

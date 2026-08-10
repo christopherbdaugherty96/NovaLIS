@@ -24,47 +24,70 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-08-07)
+## The current gate (as of 2026-08-09)
 
-`main` is at `6a078f1e` after PR #328. Seven-morning observation and grounded brief/category
-routing remain complete. The targeted post-#312 owner-use session occurred on 2026-08-07 and is
-recorded in `../observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md`. It is prospective owner-use
-evidence suitable for product prioritization. Exact commit-level attribution is limited because
-the running SHA and branch were not captured; the record does not fabricate that missing
-provenance.
+`main` is at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. Seven-morning
+observation, grounded brief/category routing, and the post-#312 product-selection gate are complete.
 
-The owner selected one active product repair:
-`Commitment Truth + Natural Reminder Handoff`, scoped by
-`../status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md`. The observed P1 defect
-is unsupported reminder-completion language after a natural multi-turn calendar/reminder request
-escaped deterministic handling. Existing reminder schedules persist records and surface due state
-in Nova; the lane adds no calendar write, autonomous scheduled action, capability, or authority.
+The two evidence-selected trust lanes are closed:
+
+- **Commitment Truth + Natural Reminder Handoff — COMPLETE.** PR #330 implemented truthful natural
+  calendar-to-reminder handoff and result-backed persistence language. PR #332 fixed the remaining
+  notification-schedule command precedence defect. Fresh-main proof at `dfef1db5...` confirmed the
+  exact August 7 flow, a real `SCH-...` record, `show schedules`, `reminders`, fresh-session
+  retrieval, and preservation of calendar-query routing.
+- **Local Action Outcome Truth — COMPLETE.** PR #331 aligned Cap 22 action responses, durable
+  receipts, and receipt consumers with the distinction between request acceptance and verified
+  visible effect; Cap 19 natural-language coverage was repaired. Merged-main live proof passed.
+
+The separate `tomorrow` calendar-scope wording defect was not part of PR #332 or its closeout. It
+remains an inactive observation, not a reason to reopen Commitment Truth.
 
 Authorization integrity now has three distinct states:
 
 - **Slice 1 — MERGED through PR #325.** The Governor owns an exact-action-bound ApprovalGrant
   lifecycle.
 - **Slice 2A — NOT IMPLEMENTED ON MAIN.** The owner approved bounded local implementation under a
-  separate exact scope and publication boundary. It remains separately approved but is temporarily
-  paused behind the observed P1 correctness/trust repair. Do not mix the implementations or PRs.
+  separate exact scope and publication boundary. It remains separately approved but paused; this
+  ordering update neither cancels nor activates it.
 - **Slice 2B — DEFERRED.** Later cooperative cancellation and capability-specific reconciliation
   remain separately gated.
 
 The current ordering is:
 
-1. Land the August 7 acceptance and priority-lock documentation package.
-2. Implement Commitment Truth + Natural Reminder Handoff only.
-3. Rerun the exact August 7 natural phrases.
-4. Close the repair only with deterministic tests plus live owner verification that records the
-   running commit.
-5. Resume separately scoped Authorization Integrity Slice 2A.
-6. Then select the next product-usability candidate from evidence.
+1. Implement **Semantic Substrate Slice 1** as a small provider-neutral contract-and-test lane:
+   `SourceIdentity`, `EvidenceEnvelope`, `Freshness`, `Confidence`, `ObservedState`,
+   `IntendedState`, `StateDelta`, and shared `OutcomeSemantics`. No provider call, network I/O,
+   capability, authority, or execution path belongs in this slice.
+2. Implement **Google Workspace Foundation**: OAuth with PKCE, account identity, encrypted token
+   storage, granted-scope inventory, explicit reconnect/grant profiles, revoke, and disconnect.
+   Foundation connects an account but reads no domain data and performs no domain write.
+3. Implement the first **Google Tasks vertical**: read evidence first, then separately governed
+   writes only after read behavior, provenance, freshness, authority mapping, idempotency, outcome
+   verification, and reconciliation are proven.
+4. Expand Google evidence one family at a time: Gmail read, Calendar read, selected Drive access,
+   then Docs/Sheets reads over selected resources. Unified awareness follows proven individual
+   sources; local prepared proposals precede external mutation.
+5. Add Google action families one at a time under explicit operation-level authority. Event-driven
+   synchronization remains optional and evidence-driven.
 
-No additional acceptance morning or open-ended observation cycle is required before the bounded
-repair. Secondary candidates remain inactive. No economic-value proof, expanded OpenClaw,
+Permanent Google boundary:
+
+```text
+Google capability != Google authorization != Nova authority
+connected != evidence collected != action permitted
+```
+
+Google is an external evidence/action ecosystem under Nova, not part of Nova's authority model.
+An OAuth grant proves only that the software can call an API; Nova Authority still decides whether
+the exact operation, account, resource, parameters, and time are permitted. Google outcomes must
+reuse Nova's request-accepted / effect-verified / outcome-state vocabulary rather than a second
+boolean success model.
+
+Secondary candidates remain inactive. No economic-value proof, expanded OpenClaw,
 browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business, or
 delegation lane is active. OpenClaw remains a replaceable actuator rather than an authority.
-This file records ordering only and authorizes nothing.
+This file records ordering only and authorizes nothing beyond an already explicit owner decision.
 
 ## Historical gate (as of 2026-07-23)
 
