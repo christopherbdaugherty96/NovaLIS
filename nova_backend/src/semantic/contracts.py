@@ -273,16 +273,32 @@ class OutcomeSemantics:
         request_accepted = _optional_bool(
             metadata.get("request_accepted", metadata.get("launch_request_accepted"))
         )
-        effect_verified = bool(
-            metadata.get("effect_verified", metadata.get("visible_effect_verified", False))
+        effect_verification = _optional_bool(
+            metadata.get("effect_verified", metadata.get("visible_effect_verified"))
         )
+        effect_verified = effect_verification is True
         partial_failure = bool(metadata.get("partial_failure")) or (
             state is OutcomeState.PARTIAL_FAILURE
         )
+        status = str(metadata.get("status") or "").strip().lower()
 
         if state is OutcomeState.EFFECT_VERIFIED:
-            request_accepted = True if request_accepted is None else request_accepted
-            effect_verified = True
+            verification_is_contradicted = (
+                effect_verification is not True
+                or request_accepted is False
+                or status in {"failed", "rejected"}
+            )
+            if verification_is_contradicted:
+                effect_verified = False
+                if status == "rejected" or request_accepted is False:
+                    state = OutcomeState.REJECTED
+                    request_accepted = False
+                elif status == "failed":
+                    state = OutcomeState.FAILED
+                elif request_accepted is True:
+                    state = OutcomeState.ACCEPTED_UNVERIFIED
+                else:
+                    state = OutcomeState.UNKNOWN_UNVERIFIED
         elif state is OutcomeState.ACCEPTED_UNVERIFIED:
             request_accepted = True
             effect_verified = False
@@ -290,7 +306,6 @@ class OutcomeSemantics:
             request_accepted = False
             effect_verified = False
 
-        status = str(metadata.get("status") or "").strip().lower()
         lifecycle_completed = status in {"completed", "completed_degraded"}
         reason = str(
             metadata.get("outcome_reason")
