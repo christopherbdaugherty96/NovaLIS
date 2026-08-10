@@ -4,6 +4,19 @@ from pathlib import Path
 
 from src.actions.action_request import ActionRequest
 from src.executors.open_folder_executor import OpenFolderExecutor
+from src.system_control.system_control_executor import (
+    OpenPathLaunchResult,
+    OpenPathLaunchState,
+)
+
+
+def _launch_result(
+    state: OpenPathLaunchState,
+    reason: str = "test_launch_result",
+    *,
+    returncode: int | None = None,
+) -> OpenPathLaunchResult:
+    return OpenPathLaunchResult(state, reason, returncode=returncode)
 
 
 def test_open_folder_executor_reports_accepted_unverified_for_explicit_folder(
@@ -13,7 +26,11 @@ def test_open_folder_executor_reports_accepted_unverified_for_explicit_folder(
     target = tmp_path / "notes"
     target.mkdir()
 
-    monkeypatch.setattr(executor.system_control, "open_path", lambda path: path == target)
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(OpenPathLaunchState.ACCEPTED),
+    )
     monkeypatch.setattr(executor, "_visible_folder_verified", lambda path: False)
     result = executor.execute(ActionRequest(capability_id=22, params={"path": str(target)}))
 
@@ -51,7 +68,11 @@ def test_open_folder_executor_reports_accepted_unverified_for_preset_folder(
     downloads.mkdir()
 
     monkeypatch.setattr("src.executors.open_folder_executor.PRESET_FOLDERS", {"downloads": downloads})
-    monkeypatch.setattr(executor.system_control, "open_path", lambda path: path == downloads)
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(OpenPathLaunchState.ACCEPTED),
+    )
     monkeypatch.setattr(executor, "_visible_folder_verified", lambda path: False)
 
     result = executor.execute(ActionRequest(capability_id=22, params={"target": "downloads"}))
@@ -72,13 +93,70 @@ def test_open_folder_executor_reports_rejected_when_os_launch_fails(monkeypatch,
     target = tmp_path / "Documents"
     target.mkdir()
 
-    monkeypatch.setattr(executor.system_control, "open_path", lambda path: False)
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(OpenPathLaunchState.REJECTED, "path_not_allowed"),
+    )
     result = executor.execute(ActionRequest(capability_id=22, params={"path": str(target)}))
 
     assert result.success is False
-    assert "couldn't open" in result.message.lower()
+    assert "couldn't send" in result.message.lower()
     assert result.data["outcome_state"] == "rejected"
     assert result.data["launch_request_accepted"] is False
+    assert result.data["visible_effect_verified"] is False
+
+
+def test_open_folder_executor_preserves_launcher_reported_failure(monkeypatch, tmp_path: Path):
+    executor = OpenFolderExecutor()
+    target = tmp_path / "Documents"
+    target.mkdir()
+
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(
+            OpenPathLaunchState.FAILED,
+            "launcher_reported_failure",
+            returncode=3,
+        ),
+    )
+    result = executor.execute(ActionRequest(capability_id=22, params={"path": str(target)}))
+
+    assert result.success is False
+    assert result.status == "failed"
+    assert "system launcher reported a failure" in result.message.lower()
+    assert "couldn't verify" in result.message.lower()
+    assert result.data["outcome_state"] == "failed"
+    assert "launch_request_accepted" not in result.data
+    assert result.data["visible_effect_verified"] is False
+    assert result.data["launcher_returncode"] == 3
+
+
+def test_open_folder_executor_preserves_unknown_post_dispatch_outcome(
+    monkeypatch, tmp_path: Path
+):
+    executor = OpenFolderExecutor()
+    target = tmp_path / "Documents"
+    target.mkdir()
+
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(
+            OpenPathLaunchState.UNKNOWN,
+            "launcher_timed_out_outcome_unknown",
+        ),
+    )
+    result = executor.execute(ActionRequest(capability_id=22, params={"path": str(target)}))
+
+    assert result.success is False
+    assert result.status == "failed"
+    assert "may have been dispatched" in result.message.lower()
+    assert "couldn't verify" in result.message.lower()
+    assert "rejected" not in result.message.lower()
+    assert result.data["outcome_state"] == "unknown_unverified"
+    assert "launch_request_accepted" not in result.data
     assert result.data["visible_effect_verified"] is False
 
 
@@ -90,7 +168,11 @@ def test_open_folder_executor_reports_opened_only_after_visible_verification(
     target.mkdir()
 
     monkeypatch.setattr("src.executors.open_folder_executor.PRESET_FOLDERS", {"downloads": target})
-    monkeypatch.setattr(executor.system_control, "open_path", lambda path: True)
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(OpenPathLaunchState.ACCEPTED),
+    )
     monkeypatch.setattr(executor, "_trusted_visible_explorer_paths", lambda: (target,))
     result = executor.execute(ActionRequest(capability_id=22, params={"target": "downloads"}))
 
@@ -114,7 +196,11 @@ def test_open_folder_executor_does_not_verify_same_title_for_different_path(
         "src.executors.open_folder_executor.PRESET_FOLDERS",
         {"downloads": requested},
     )
-    monkeypatch.setattr(executor.system_control, "open_path", lambda path: path == requested)
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: _launch_result(OpenPathLaunchState.ACCEPTED),
+    )
     monkeypatch.setattr(
         executor,
         "_trusted_visible_explorer_paths",

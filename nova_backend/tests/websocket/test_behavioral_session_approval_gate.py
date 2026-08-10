@@ -202,6 +202,11 @@ def test_session_yes_resumes_pending_cap64_only_through_governed_invocation(monk
 
 
 def test_session_approved_cap22_uses_real_governor_ledger_sequence(monkeypatch):
+    from src.system_control.system_control_executor import (
+        OpenPathLaunchResult,
+        OpenPathLaunchState,
+    )
+
     ledger = _RecordingLedger()
     _install_session_gate_baseline(
         monkeypatch,
@@ -213,8 +218,8 @@ def test_session_approved_cap22_uses_real_governor_ledger_sequence(monkeypatch):
     with (
         patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")),
         patch(
-            "src.system_control.system_control_executor.SystemControlExecutor.open_path",
-            return_value=True,
+            "src.system_control.system_control_executor.SystemControlExecutor.open_path_result",
+            return_value=OpenPathLaunchResult(OpenPathLaunchState.ACCEPTED, "test_accept"),
         ),
     ):
         asyncio.run(brain_server.websocket_endpoint(ws))

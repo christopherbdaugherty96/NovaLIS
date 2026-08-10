@@ -3,7 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from src.actions.action_result import ActionResult
-from src.system_control.system_control_executor import SystemControlExecutor
+from src.system_control.system_control_executor import (
+    OpenPathLaunchResult,
+    OpenPathLaunchState,
+    SystemControlExecutor,
+)
 
 PRESET_FOLDERS = {
     "documents": Path.home() / "Documents",
@@ -56,6 +60,78 @@ class OpenFolderExecutor:
         if requested_path:
             data["requested_path"] = requested_path
         return data
+
+    @staticmethod
+    def _launch_outcome_data(
+        launch_result: OpenPathLaunchResult,
+        *,
+        outcome_state: str,
+        requested_path: str,
+    ) -> dict:
+        data = {
+            "outcome_state": outcome_state,
+            "visible_effect_verified": False,
+            "launch_result_reason": launch_result.reason,
+            "requested_path": requested_path,
+        }
+        if launch_result.state is OpenPathLaunchState.REJECTED:
+            data["launch_request_accepted"] = False
+        if launch_result.returncode is not None:
+            data["launcher_returncode"] = launch_result.returncode
+        return data
+
+    def _launch_problem_result(
+        self,
+        request,
+        *,
+        launch_result: OpenPathLaunchResult,
+        requested_path: str,
+    ) -> ActionResult:
+        if launch_result.state is OpenPathLaunchState.REJECTED:
+            return ActionResult.failure(
+                "I couldn't send that open request on this system.",
+                data=self._launch_outcome_data(
+                    launch_result,
+                    outcome_state="rejected",
+                    requested_path=requested_path,
+                ),
+                request_id=request.request_id,
+                outcome_reason=(
+                    "The open request was rejected before meaningful dispatch "
+                    f"({launch_result.reason})."
+                ),
+            )
+
+        if launch_result.state is OpenPathLaunchState.FAILED:
+            return ActionResult.failure(
+                "The system launcher reported a failure. "
+                "I couldn't verify whether the requested item became visible.",
+                data=self._launch_outcome_data(
+                    launch_result,
+                    outcome_state="failed",
+                    requested_path=requested_path,
+                ),
+                request_id=request.request_id,
+                outcome_reason=(
+                    "The launcher reported a failure after dispatch began; "
+                    "the visible outcome was not verified."
+                ),
+            )
+
+        return ActionResult.failure(
+            "The open request may have been dispatched, but the launcher outcome is unknown. "
+            "I couldn't verify whether the requested item became visible.",
+            data=self._launch_outcome_data(
+                launch_result,
+                outcome_state="unknown_unverified",
+                requested_path=requested_path,
+            ),
+            request_id=request.request_id,
+            outcome_reason=(
+                "The launcher outcome became unknown after dispatch may have begun; "
+                "the visible outcome was not verified."
+            ),
+        )
 
     def _accepted_result(self, request, *, candidate: Path, item_label: str, target: str = "") -> ActionResult:
         # Presets have a bounded user-facing target name that can be matched to
@@ -119,11 +195,12 @@ class OpenFolderExecutor:
                     data=self._rejected_data(requested_path=str(candidate)),
                     request_id=request.request_id,
                 )
-            if not self.system_control.open_path(candidate):
-                return ActionResult.failure(
-                    "I couldn't open that path on this system.",
-                    data=self._rejected_data(requested_path=str(candidate)),
-                    request_id=request.request_id,
+            launch_result = self.system_control.open_path_result(candidate)
+            if not launch_result.accepted:
+                return self._launch_problem_result(
+                    request,
+                    launch_result=launch_result,
+                    requested_path=str(candidate),
                 )
             item_label = "folder" if candidate.is_dir() else "path"
             return self._accepted_result(request, candidate=candidate, item_label=item_label)
@@ -143,11 +220,12 @@ class OpenFolderExecutor:
                 data=self._rejected_data(requested_path=str(folder)),
                 request_id=request.request_id,
             )
-        if not self.system_control.open_path(folder):
-            return ActionResult.failure(
-                "I couldn't open that folder on this system.",
-                data=self._rejected_data(requested_path=str(folder)),
-                request_id=request.request_id,
+        launch_result = self.system_control.open_path_result(folder)
+        if not launch_result.accepted:
+            return self._launch_problem_result(
+                request,
+                launch_result=launch_result,
+                requested_path=str(folder),
             )
 
         return self._accepted_result(

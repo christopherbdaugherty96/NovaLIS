@@ -202,14 +202,18 @@ def test_pending_cap64_does_not_dispatch_or_log_action_attempted(monkeypatch):
 def test_approved_cap22_runs_only_after_governor_attempt_ledger(monkeypatch):
     import src.governor.governor as governor_mod
     from src.governor.governor import Governor
+    from src.system_control.system_control_executor import (
+        OpenPathLaunchResult,
+        OpenPathLaunchState,
+    )
 
     ledger = _RecordingLedger()
     repo_root = Path(__file__).resolve().parents[3]
     monkeypatch.setattr(governor_mod.ledger_mod, "LedgerWriter", lambda: ledger)
 
     with patch(
-        "src.system_control.system_control_executor.SystemControlExecutor.open_path",
-        return_value=True,
+        "src.system_control.system_control_executor.SystemControlExecutor.open_path_result",
+        return_value=OpenPathLaunchResult(OpenPathLaunchState.ACCEPTED, "test_accept"),
     ):
         governor = Governor()
         params = {"path": str(repo_root)}

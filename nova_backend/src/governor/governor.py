@@ -502,10 +502,14 @@ class Governor:
                         "reasoning_authority",
                         "reasoning_authority_label",
                         "reasoning_governance_note",
+                        "launch_result_reason",
                     ):
                         value = str(structured_result.get(field_name) or "").strip()
                         if value:
                             completion_metadata[field_name] = value[:240]
+                    launcher_returncode = structured_result.get("launcher_returncode")
+                    if type(launcher_returncode) is int:
+                        completion_metadata["launcher_returncode"] = launcher_returncode
                 self.ledger.log_event(
                     "ACTION_COMPLETED",
                     completion_metadata,

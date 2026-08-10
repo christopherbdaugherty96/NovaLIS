@@ -223,8 +223,28 @@ class TestChangesSection:
                 "accepted; outcome unverified",
             ),
             (
+                {"status": "failed", "success": False, "outcome_state": "unknown_unverified"},
+                "outcome unknown; not verified",
+            ),
+            (
                 {"status": "failed", "success": False, "outcome_state": "rejected"},
                 "rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "rejected"},
+                "rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "failed"},
+                "failed",
+            ),
+            (
+                {"status": "failed", "success": True, "outcome_state": "accepted_unverified"},
+                "failed",
+            ),
+            (
+                {"status": "completed", "success": False, "outcome_state": "visible_verified"},
+                "failed",
             ),
             ({"status": "failed", "success": False}, "failed"),
             ({"status": "completed", "success": True}, "completed"),

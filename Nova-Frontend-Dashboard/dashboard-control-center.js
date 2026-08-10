@@ -2647,12 +2647,11 @@ function _receiptActionFailureState(r) {
   if (String(r.event_type || "").trim() !== "ACTION_COMPLETED") return "";
   const outcomeState = _receiptOutcomeState(r);
   const status = String(r.status || "").trim().toLowerCase();
-  if (outcomeState === "rejected" || status === "rejected" || status === "refused") {
-    return "rejected";
-  }
-  if (outcomeState === "failed" || status === "failed" || r.success === false) {
-    return "failed";
-  }
+  if (outcomeState === "rejected") return "rejected";
+  if (outcomeState === "failed") return "failed";
+  if (outcomeState === "unknown_unverified") return "";
+  if (status === "rejected" || status === "refused") return "rejected";
+  if (status === "failed" || r.success === false) return "failed";
   return "";
 }
 
@@ -2661,6 +2660,9 @@ function _receiptLabel(r) {
   const failureState = _receiptActionFailureState(r);
   if (failureState === "rejected") return "Action rejected";
   if (failureState === "failed") return "Action failed";
+  if (type === "ACTION_COMPLETED" && _receiptOutcomeState(r) === "unknown_unverified") {
+    return "Action outcome unknown; not verified";
+  }
   if (type === "ACTION_COMPLETED" && _receiptOutcomeState(r) === "accepted_unverified") {
     return "Action accepted; outcome unverified";
   }
@@ -2669,7 +2671,9 @@ function _receiptLabel(r) {
 
 function _receiptOutcomeKey(r) {
   if (_receiptActionFailureState(r)) return "failed";
-  if (_receiptOutcomeState(r) === "accepted_unverified") return "unverified";
+  if (["accepted_unverified", "unknown_unverified"].includes(_receiptOutcomeState(r))) {
+    return "unverified";
+  }
   const type = String(r.event_type || "").trim();
   return _RECEIPT_OUTCOME[type] || "info";
 }
@@ -2677,7 +2681,10 @@ function _receiptOutcomeKey(r) {
 function _receiptBoundary(r) {
   const failureState = _receiptActionFailureState(r);
   if (failureState === "rejected") return "Request rejected; intended effect did not occur";
-  if (failureState === "failed") return "Action failed; intended effect did not occur";
+  if (failureState === "failed") return "Action reported failure; visible outcome not verified";
+  if (_receiptOutcomeState(r) === "unknown_unverified") {
+    return "Dispatch may have begun; visible outcome not verified";
+  }
   if (_receiptOutcomeState(r) === "accepted_unverified") {
     return "Request accepted; visible outcome not verified";
   }
@@ -2688,6 +2695,7 @@ function _receiptExecutionStatus(r) {
   const failureState = _receiptActionFailureState(r);
   if (failureState) return failureState;
   const status = String(r.status || "").trim().toLowerCase();
+  if (_receiptOutcomeState(r) === "unknown_unverified") return "unknown_unverified";
   if (_receiptOutcomeState(r) === "accepted_unverified") return "accepted_unverified";
   if (status) return status;
   const type = String(r.event_type || "").trim();

@@ -254,6 +254,45 @@ def test_os_diagnostics_recent_activity_does_not_present_accepted_unverified_as_
     assert "could not be verified" in item["reason"]
 
 
+def test_os_diagnostics_explicit_failed_outcome_overrides_generic_success():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 22,
+            "success": True,
+            "status": "completed",
+            "outcome_state": "failed",
+            "outcome_reason": "The launcher reported a failure.",
+        },
+        {22: "open file or folder"},
+    )
+
+    assert item is not None
+    assert item["title"] == "Action needs attention"
+    assert item["outcome"] == "issue"
+    assert item["title"] != "Action completed"
+
+
+def test_os_diagnostics_unknown_outcome_overrides_generic_failed_status():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 22,
+            "success": False,
+            "status": "failed",
+            "outcome_state": "unknown_unverified",
+            "outcome_reason": "The launcher timed out after dispatch may have begun.",
+        },
+        {22: "open file or folder"},
+    )
+
+    assert item is not None
+    assert item["title"] == "Action outcome unknown; not verified"
+    assert item["outcome"] == "info"
+    assert item["title"] != "Action completed"
+    assert item["title"] != "Action needs attention"
+
+
 @pytest.mark.slow
 def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
