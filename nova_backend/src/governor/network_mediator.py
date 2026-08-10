@@ -2,6 +2,7 @@
 
 import ipaddress
 import os
+import re
 import socket
 import threading
 from collections import defaultdict
@@ -10,7 +11,11 @@ from typing import Any, Dict, Optional
 from urllib.parse import urljoin, urlparse
 
 import requests
-from src.governor.exceptions import CapabilityRegistryError, NetworkMediatorError
+from src.governor.exceptions import (
+    CapabilityRegistryError,
+    NetworkMediatorError,
+    ProviderConnectionNetworkError,
+)
 from src.ledger.writer import LedgerWriter
 
 NETWORK_TIMEOUT = 5  # seconds (default)
@@ -19,6 +24,19 @@ DISALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
 RATE_LIMIT_PER_MINUTE = 50
 MAX_REDIRECT_HOPS = 5
 HTTP_EXCEPTION_ENV = "NOVA_HTTP_EXCEPTION_HOSTS"
+
+CONNECTION_OPERATION_ENDPOINTS: dict[str, dict[str, tuple[str, str]]] = {
+    "google_workspace": {
+        "exchange_code": ("POST", "https://oauth2.googleapis.com/token"),
+        "refresh_token": ("POST", "https://oauth2.googleapis.com/token"),
+        "fetch_identity": (
+            "GET",
+            "https://openidconnect.googleapis.com/v1/userinfo",
+        ),
+        "revoke": ("POST", "https://oauth2.googleapis.com/revoke"),
+    }
+}
+SAFE_CONNECTION_ERROR_RE = re.compile(r"^[a-z0-9_-]{1,64}$")
 
 
 def _http_exception_hosts() -> set[str]:
@@ -45,7 +63,7 @@ class NetworkMediator:
     def __init__(self):
         self._registry = None  # lazy-loaded
         self.ledger = LedgerWriter()
-        self._request_times: Dict[int, list] = defaultdict(list)
+        self._request_times: Dict[Any, list] = defaultdict(list)
         self._lock = threading.Lock()
 
     @property
@@ -55,7 +73,7 @@ class NetworkMediator:
             self._registry = CapabilityRegistry()
         return self._registry
 
-    def _check_rate_limit(self, key: int) -> None:
+    def _check_rate_limit(self, key: Any) -> None:
         now = time()
         with self._lock:
             times = self._request_times[key]
@@ -235,4 +253,130 @@ class NetworkMediator:
             },
         )
 
+        return result
+
+    def connection_request(
+        self,
+        provider_id: str,
+        operation: str,
+        method: str,
+        url: str,
+        *,
+        form_payload: Optional[Dict[str, str]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        as_json: bool = True,
+        timeout: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Perform one allowlisted, user-initiated provider connection request.
+
+        Connection setup is deliberately separate from capability execution:
+        it does not consult the Governor or capability registry and therefore
+        cannot grant Nova execution authority. The provider, operation, HTTP
+        method, and endpoint must match the static setup allowlist exactly.
+
+        Payloads and headers can contain credentials and are never written to
+        the ledger. Only safe request metadata is recorded.
+        """
+        provider = str(provider_id or "").strip().lower()
+        operation_name = str(operation or "").strip().lower()
+        method_name = str(method or "").strip().upper()
+        expected = CONNECTION_OPERATION_ENDPOINTS.get(provider, {}).get(operation_name)
+        if expected is None or expected != (method_name, url):
+            raise NetworkMediatorError("Provider connection operation is not allowlisted.")
+
+        self._check_rate_limit(("connection", provider))
+        self._validate_url(url)
+        request_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
+
+        try:
+            response = requests.request(
+                method=method_name,
+                url=url,
+                data=form_payload,
+                headers=headers,
+                timeout=request_timeout,
+                allow_redirects=False,
+            )
+        except requests.RequestException as error:
+            self.ledger.log_event(
+                "CONNECTION_NETWORK_CALL_FAILED",
+                {
+                    "provider_id": provider,
+                    "operation": operation_name,
+                    "url": url,
+                    "method": method_name,
+                    "error": type(error).__name__,
+                },
+            )
+            raise NetworkMediatorError("Provider connection request failed.") from error
+
+        if response.is_redirect or response.is_permanent_redirect:
+            self.ledger.log_event(
+                "CONNECTION_NETWORK_CALL_FAILED",
+                {
+                    "provider_id": provider,
+                    "operation": operation_name,
+                    "url": url,
+                    "method": method_name,
+                    "error": "redirect_rejected",
+                },
+            )
+            raise NetworkMediatorError("Provider connection redirects are not allowed.")
+
+        if response.status_code >= 400:
+            safe_error = "http_error"
+            try:
+                payload = response.json() if response.content else {}
+                candidate = str(payload.get("error") or "").strip().lower()
+                if SAFE_CONNECTION_ERROR_RE.fullmatch(candidate):
+                    safe_error = candidate
+            except (AttributeError, TypeError, ValueError):
+                pass
+            self.ledger.log_event(
+                "CONNECTION_NETWORK_CALL_FAILED",
+                {
+                    "provider_id": provider,
+                    "operation": operation_name,
+                    "url": url,
+                    "method": method_name,
+                    "status_code": response.status_code,
+                    "error": safe_error,
+                },
+            )
+            raise ProviderConnectionNetworkError(
+                status_code=response.status_code,
+                error_code=safe_error,
+            )
+
+        result: Dict[str, Any] = {"status_code": response.status_code}
+        if as_json:
+            try:
+                result["data"] = response.json() if response.content else None
+            except ValueError as error:
+                self.ledger.log_event(
+                    "CONNECTION_NETWORK_CALL_FAILED",
+                    {
+                        "provider_id": provider,
+                        "operation": operation_name,
+                        "url": url,
+                        "method": method_name,
+                        "error": "invalid_json",
+                    },
+                )
+                raise NetworkMediatorError(
+                    "Provider connection response was not valid JSON."
+                ) from error
+        else:
+            result["text"] = response.text
+
+        self.ledger.log_event(
+            "CONNECTION_NETWORK_CALL",
+            {
+                "provider_id": provider,
+                "operation": operation_name,
+                "url": url,
+                "method": method_name,
+                "status_code": response.status_code,
+            },
+        )
         return result
