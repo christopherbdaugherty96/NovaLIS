@@ -10,15 +10,10 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from enum import Enum
 from typing import Any
 from urllib.parse import urlparse
 
-
-class EvidenceConfidence(str, Enum):
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
+from src.semantic.contracts import Confidence as EvidenceConfidence
 
 
 @dataclass(frozen=True)
