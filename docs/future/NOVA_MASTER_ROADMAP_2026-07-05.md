@@ -35,9 +35,10 @@ This roadmap still determines ordering; lane locks still determine scope; owner 
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Current Ordering — 2026-08-07
+## Current Ordering — 2026-08-09
 
-`main` is at `6a078f1e` after PR #328. The meaningful post-#319 sequence is concise:
+`main` is at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. The meaningful
+post-#319 sequence is concise:
 
 - PR #320 synchronized continuity and deliberately excluded the post-#312 acceptance scaffold.
 - PRs #321/#322/#324 grounded Auralis decision follow-ups and their exact display contract.
@@ -45,6 +46,10 @@ proof, OpenClaw work, or delegation. Current status and ordering are recorded im
 - PR #325 merged Authorization Integrity Slice 1.
 - Issue #326 and PR #327 preserve non-authorizing strategy only.
 - PR #328 merged the product, roadmap, and landing-page truth-sync.
+- PR #329 recorded the August 7 owner-use evidence and selected Commitment Truth.
+- PR #330 implemented Commitment Truth + Natural Reminder Handoff.
+- PR #331 implemented and live-proved Local Action Outcome Truth.
+- PR #332 closed notification-schedule command precedence and retrieval routing.
 
 The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded in
 `../observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md`. It is prospective owner-use evidence
@@ -52,34 +57,67 @@ suitable for product prioritization. Exact commit-level attribution is limited b
 SHA and branch were not captured. This closes the pending product-selection input without
 fabricating missing runtime provenance.
 
-The owner selected one active product repair: **Commitment Truth + Natural Reminder Handoff**,
-scoped by `../status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md`. The observed
-P1 defect is unsupported reminder-completion language after a natural multi-turn calendar/reminder
-request escaped deterministic handling. Existing Nova reminder schedules persist records and
-surface due state; this lane adds no external calendar write, autonomous scheduled action,
-capability, or authority.
+The selected product repair is now complete. Fresh-main verification at
+`dfef1db5df89bfdb276904acce26205d1c894331` proved the exact August 7 natural handoff, real
+reminder persistence, same-session `show schedules` and `reminders`, fresh-session retrieval, and
+preservation of calendar-query routing. The Commitment Truth lane is CLOSED. The separate
+`tomorrow` calendar-scope wording defect was outside this proof and remains inactive.
+
+PR #331's local-action outcome-truth lane is also CLOSED after merged-main live proof. Nova now
+preserves the distinction between launch/request acceptance and visible-effect verification in
+the action response, durable receipt, and later receipt consumers.
 
 Authorization Integrity Slice 1 is **MERGED**. Slice 2A is **NOT IMPLEMENTED ON MAIN** and remains
-separately owner-approved under its existing exact scope and publication boundary. It is
-temporarily paused behind the observed P1 correctness/trust repair; do not mix the implementations
-or PRs. Slice 2B is **DEFERRED** and separately gated.
+separately owner-approved under its existing exact scope and publication boundary. It is paused;
+this ordering neither cancels nor activates it. Slice 2B is **DEFERRED** and separately gated.
 
 Current order:
 
-1. Land the August 7 acceptance and priority-lock documentation package.
-2. Implement Commitment Truth + Natural Reminder Handoff only.
-3. Rerun the exact August 7 natural phrases.
-4. Close the repair only with deterministic tests plus live owner verification that records the
-   running commit.
-5. Resume separately scoped Authorization Integrity Slice 2A.
-6. Then select the next product-usability candidate from evidence.
+1. **Semantic Substrate Slice 1.** Establish only the minimal provider-neutral contracts and tests
+   for source identity, evidence envelopes, freshness, confidence, observed/intended state,
+   state deltas, and shared outcome semantics. No network/provider I/O, runtime capability,
+   authority, execution, migration, or broad refactor belongs in Slice 1.
+2. **Google Workspace Foundation.** Establish OAuth with PKCE, account identity, encrypted token
+   storage, granted-scope inventory, explicit reconnect/grant profiles, revoke, and disconnect.
+   Connection alone reads no domain data and performs no domain mutation.
+3. **Google Tasks vertical.** Prove account identity -> scoped API read -> normalized evidence ->
+   provenance/freshness -> Nova awareness. Only afterward may a separately scoped Tasks write
+   family prove operation-level authority, idempotency, effect verification, and reconciliation.
+4. **Google Evidence expansion.** Gmail read -> Calendar read -> selected Drive access ->
+   Docs/Sheets reads over selected resources -> unified Google awareness.
+5. **Google Action expansion.** Local prepared proposals first; then one separately governed write
+   family at a time. Push/event synchronization is optional and requires evidence that polling or
+   refresh-on-use is insufficient.
 
-No additional acceptance morning or open-ended observation cycle is required before this bounded
-repair. Secondary candidates - arbitrary-location weather routing, stale Auralis freshness,
-local-first identity copy, visible STT/TTS state, and startup cohesion - remain inactive. No
-economic-value proof, expanded OpenClaw, browser/computer-use,
-financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is
-active. OpenClaw remains a replaceable actuator, not an authority.
+### Google Workspace permanent boundary
+
+```text
+Google capability != Google authorization != Nova authority
+connected != evidence collected != action permitted
+Prepared Reality is local; creating or changing a Google resource is external mutation.
+```
+
+Google Workspace is Nova's first major external evidence/action ecosystem, but it remains below
+Nova's Awareness, Decision, Authority, Execution, and Outcome architecture. An OAuth token proves
+technical API eligibility only. Every operation is classified independently for data sensitivity,
+mutation risk, authority, reversibility, and outcome verification.
+
+Google outcomes must reuse Nova's existing truth vocabulary. A connector result should be able to
+carry service, operation, account identity, resource identity/version, granted scope,
+request-accepted, effect-verified, outcome-state/reason, partial failure, idempotency key,
+authority receipt identity, and observation time. This is a target contract, not current runtime
+behavior.
+
+OAuth scope growth is an explicit reconnect/grant event. Foundation is not blanket access. Gmail
+and Drive read access must be treated according to data sensitivity, not merely labeled safe
+because it is read-only. Event-driven infrastructure remains deferred until real evidence justifies
+its operational cost.
+
+Secondary candidates - arbitrary-location weather routing, stale Auralis freshness,
+local-first identity copy, visible STT/TTS state, startup cohesion, and the separate `tomorrow`
+calendar-scope wording defect - remain inactive. No economic-value proof, expanded OpenClaw,
+browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business, or
+delegation lane is active. OpenClaw remains a replaceable actuator, not an authority.
 
 ## Observation-driven candidates (historical 2026-07-11 through 2026-07-28 context)
 

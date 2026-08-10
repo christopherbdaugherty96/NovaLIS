@@ -1,27 +1,30 @@
 # Current Priority
 
-## Post-#312 Product Repair Selected - 2026-08-07
+## Post-#332 Closeout and Next Product Sequence - 2026-08-09
 
 Current active product state:
 
 ```text
 Phase 3 observation: SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis).
-Engineering is frozen except for explicitly approved proof/truth-sync work
-and critical bugs, plus observation-backed trust repairs approved by the owner.
 The seven-morning gate is CLOSED. No additional seven-morning or open-ended
 observation gate is required. PR #312 is verified on fresh `main`
 (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
-The targeted post-#312 owner-use session is recorded in
-docs/observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md. It is valid for product
-prioritization; exact commit-level regression attribution is limited because the
-running SHA was not captured.
-The owner selected Commitment Truth + Natural Reminder Handoff as the active
-product repair (lock:
-docs/status/PRIORITY_LOCK_2026-08-07_COMMITMENT_TRUTH_REMINDER_HANDOFF.md).
-Do not start another acceptance cycle or select another product lane until this
-repair closes or is explicitly superseded. Authorization Integrity Slice 2A
-remains separately approved but is temporarily paused behind this observed P1
-correctness/trust repair. Do not mix the implementations or PRs.
+
+The post-#312 product repair is now CLOSED:
+  PR #330 - Commitment Truth + Natural Reminder Handoff.
+  PR #332 - notification-schedule command precedence and retrieval closeout.
+Fresh-main verification at dfef1db5df89bfdb276904acce26205d1c894331 proved
+the exact August 7 flow, real persistence, `show schedules`, `reminders`,
+fresh-session retrieval, and calendar-query counterexamples.
+
+The local-action outcome-truth repair is also CLOSED through PR #331 and
+merged-main live proof.
+
+The owner-selected next sequence is Semantic Substrate Slice 1 -> Google Workspace
+Foundation -> Google Tasks vertical. Semantic Slice 1 is a bounded contract-and-test lane only;
+it must not add provider calls, network I/O, capabilities, authority, or execution.
+Google connector runtime work remains separately gated. Authorization Integrity
+Slice 2A remains separately approved, paused, and not implemented on main.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -49,17 +52,18 @@ The grounded brief/category routing lane is COMPLETE:
   This shipped exactly the scope previously described as "Slice 1"; that lane
   is now closed, not pending.
 
-The 2026-08-07 prospective owner-use record closes the post-#312 product-selection
-input. Its primary P1 finding is that a natural multi-turn calendar/reminder
-request escaped deterministic handling and GeneralChat produced unsupported
-completion language. Existing Nova reminder schedules persist records and surface
-due state in the dashboard; calendar writes, Google Tasks/Reminders, and autonomous
-scheduled actions remain unavailable or unauthorized.
+The 2026-08-07 prospective owner-use record selected the Commitment Truth repair.
+PR #330 closed the false-completion and natural handoff defect. PR #332 closed the
+remaining advertised-command routing defect. The 2026-08-09 fresh-main closeout
+confirmed one real `SCH-...` record, same-session and fresh-session retrieval, and
+correct separation between reminder-management and calendar-awareness commands.
 
-This documentation truth-sync adds no runtime behavior. The bounded repair lock
-authorizes only its stated implementation scope after the lock lands. No secondary
-candidate is active. Slice 2 (constrained grounded generation) remains NOT
-authorized; it requires hallucination-negative tests and separate owner sign-off.
+PR #331 separately closed local-action outcome truth: request acceptance is not
+presented as visible-effect verification, and that distinction persists through
+receipts and their consumers.
+
+The separate known `tomorrow` calendar-scope wording defect was outside the #332
+closeout and remains inactive. It must not be folded into Commitment Truth.
 ```
 
 What agents should do:
@@ -69,15 +73,16 @@ What agents should do:
 2. Read docs/status/DAILY_COMMAND_CENTER.md for where the project is.
 3. Do NOT select implementation work from this file's historical sections
    or from any pre-2026-07-07 priority/status doc.
-4. Do NOT request another post-#312 acceptance morning. Implement only the active
-   Commitment Truth + Natural Reminder Handoff lock after it lands, then rerun
-   the exact 2026-08-07 natural phrases and record the running commit.
-5. Keep Authorization Integrity Slice 2A separate and paused until this P1 repair
-   closes or the owner explicitly changes ordering.
-6. Verify capability lock truth mechanically:
+4. Do NOT reopen Commitment Truth, Local Action Outcome Truth, or the post-#312
+   acceptance cycle without new contradictory evidence.
+5. Follow the selected order: Semantic Substrate Slice 1 -> Google Workspace
+   Foundation -> Google Tasks. Do not combine the packages.
+6. Keep Semantic Slice 1 non-authorizing and provider-neutral. Keep Google runtime
+   work and Authorization Integrity Slice 2A separately scoped and gated.
+7. Verify capability lock truth mechanically:
    python scripts/certify_capability.py status
    (Cap 16, 22, 64, 65 = LOCK as of 2026-07-09.)
-7. Verify runtime truth mechanically:
+8. Verify runtime truth mechanically:
    python scripts/prove_runtime_truth.py
 ```
 
