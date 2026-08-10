@@ -274,9 +274,11 @@ class OutcomeSemantics:
 
         raw_state = str(metadata_value("outcome_state") or "").strip().lower()
         state = _OUTCOME_ALIASES.get(raw_state)
+        state_is_recognized = state is not None
         if state is None:
             try:
                 state = OutcomeState(raw_state)
+                state_is_recognized = True
             except ValueError:
                 state = OutcomeState.UNKNOWN_UNVERIFIED
 
@@ -315,7 +317,7 @@ class OutcomeSemantics:
         elif positive_state and (status == "failed" or success is False):
             state = OutcomeState.FAILED
             effect_verified = False
-        elif not raw_state and (status == "failed" or success is False):
+        elif not state_is_recognized and (status == "failed" or success is False):
             state = OutcomeState.FAILED
             effect_verified = False
         elif state is OutcomeState.EFFECT_VERIFIED:

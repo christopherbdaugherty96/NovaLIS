@@ -447,6 +447,34 @@ def test_unlabeled_explicit_failure_maps_to_failed(metadata):
 
 
 @pytest.mark.parametrize(
+    "metadata",
+    [
+        {"status": "failed", "success": False, "outcome_state": "cancelled"},
+        {"status": "failed", "success": True, "outcome_state": "future_state"},
+        {"status": "completed", "success": False, "outcome_state": "future_state"},
+    ],
+)
+def test_unrecognized_outcome_label_cannot_suppress_explicit_failure(metadata):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.FAILED
+    assert outcome.effect_verified is False
+
+
+def test_unrecognized_positive_outcome_remains_conservatively_unknown():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "outcome_state": "future_state",
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
+@pytest.mark.parametrize(
     ("raw_state", "expected_state"),
     [
         ("failed", OutcomeState.FAILED),
