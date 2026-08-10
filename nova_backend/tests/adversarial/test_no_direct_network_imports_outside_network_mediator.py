@@ -37,6 +37,9 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     # provider_status.py uses urllib.request only for a localhost Ollama health probe
     # (http://localhost:11434/api/tags). No external network calls — local-only check.
     SRC_ROOT / "usage" / "provider_status.py",
+    # Google OAuth uses urllib.parse for URL construction and a one-shot stdlib
+    # HTTPServer bound only to 127.0.0.1. External HTTP remains in NetworkMediator.
+    SRC_ROOT / "connectors" / "google_workspace" / "oauth.py",
     # news_synthesis_cache.py uses urllib.parse only to normalize URLs into stable cache
     # keys (parse_qsl/urlencode/urlsplit/urlunsplit). It makes no outbound network calls —
     # urllib.parse is a standard-library string parser, not a network client.
