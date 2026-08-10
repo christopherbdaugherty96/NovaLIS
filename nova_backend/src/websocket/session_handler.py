@@ -1575,18 +1575,20 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             #            left untouched, so receipts and memory keep the real utterance.
             #   medium → ask which brief domain was meant; run nothing.
             #   low    → change nothing; the existing cascade handles it.
-            brief_intent = resolve_brief_intent(
-                command_text,
-                news_context_loaded=bool(session_state.get("news_cache")),
-            )
-            if brief_intent.confidence == "medium":
+            brief_intent = None
+            if command_lowered not in SHOW_SCHEDULES_COMMANDS:
+                brief_intent = resolve_brief_intent(
+                    command_text,
+                    news_context_loaded=bool(session_state.get("news_cache")),
+                )
+            if brief_intent is not None and brief_intent.confidence == "medium":
                 await _complete_immediate_turn(
                     brief_intent.clarification,
                     remember_response=False,
                     tone_domain="daily",
                 )
                 continue
-            if brief_intent.confidence == "high":
+            if brief_intent is not None and brief_intent.confidence == "high":
                 if brief_intent.capability == "news" and session_state.get("news_cache"):
                     # Prefer the already-loaded headline context over a fresh fetch.
                     await _complete_immediate_turn(

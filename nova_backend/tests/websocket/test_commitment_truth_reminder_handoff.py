@@ -24,13 +24,25 @@ class _RecordingScheduleStore:
         }
 
     def summarize(self) -> dict:
+        upcoming_items = [
+            {
+                "id": "SCH-TEST-0001",
+                "kind": str(item["kind"]),
+                "title": str(item["title"]),
+                "body": str(item["body"]),
+                "recurrence": str(item["recurrence"]),
+                "next_run_at": item["next_run_at"].isoformat(),
+                "active": True,
+            }
+            for item in self.created
+        ]
         return {
             "summary": f"0 due | {len(self.created)} upcoming",
             "active_count": len(self.created),
             "due_count": 0,
             "upcoming_count": len(self.created),
             "due_items": [],
-            "upcoming_items": [],
+            "upcoming_items": upcoming_items,
             "policy_summary": "",
         }
 
@@ -92,6 +104,55 @@ def test_calendar_offer_preserves_subject_then_persists_real_reminder(monkeypatc
     assert any("Text: complete onboarding for work" in message for message in messages)
     assert any("does not have background reminder delivery" in message for message in messages)
     assert any("will not fire automatically" in message for message in messages)
+
+
+@pytest.mark.parametrize("management_command", ["show schedules", "reminders"])
+def test_notification_management_command_displays_persisted_reminder(
+    monkeypatch,
+    management_command: str,
+):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "add to my calendar to complete onboarding for work at 3:00 PM",
+            "yes, set a reminder",
+            "remind me at two pm",
+            management_command,
+        ],
+        store,
+    )
+
+    assert len(store.created) == 1
+    messages = _chat_messages(ws)
+    assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
+    assert any("Scheduled Updates" in message for message in messages)
+
+    schedule_widgets = [
+        message for message in ws.sent_messages if message.get("type") == "notification_schedule"
+    ]
+    assert len(schedule_widgets) == 2
+    assert schedule_widgets[-1]["active_count"] == 1
+    assert schedule_widgets[-1]["upcoming_items"][0]["id"] == "SCH-TEST-0001"
+    assert schedule_widgets[-1]["upcoming_items"][0]["body"] == "complete onboarding for work"
+    assert not any(message.get("type") == "calendar" for message in ws.sent_messages)
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "what's my schedule today?",
+        "show my calendar",
+        "what do I have scheduled tomorrow?",
+    ],
+)
+def test_calendar_awareness_queries_remain_calendar_queries(monkeypatch, phrase: str):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, [phrase], store)
+
+    assert store.created == []
+    assert any(message.get("type") == "calendar" for message in ws.sent_messages)
+    assert not any(message.get("type") == "notification_schedule" for message in ws.sent_messages)
 
 
 @pytest.mark.parametrize(
