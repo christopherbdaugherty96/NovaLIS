@@ -393,6 +393,8 @@ class OSDiagnosticsExecutor:
                 title = "Action needs attention"
             elif outcome_state == "accepted_unverified":
                 title = "Action accepted; outcome unverified"
+            elif outcome_state == "unknown_unverified":
+                title = "Action outcome unknown; not verified"
             else:
                 title = "Action completed"
             detail = OSDiagnosticsExecutor._capability_label_from_entry(entry, capability_lookup)
@@ -487,7 +489,11 @@ class OSDiagnosticsExecutor:
         success = entry.get("success")
         status = str(entry.get("status") or "").strip().lower()
         outcome_state = str(entry.get("outcome_state") or "").strip().lower()
-        if success is False or status in {"failed", "refused"} or outcome_state == "rejected":
+        if outcome_state in {"rejected", "failed"}:
+            return "issue"
+        if outcome_state == "unknown_unverified":
+            return "info"
+        if success is False or status in {"failed", "refused"}:
             return "issue"
         if outcome_state == "accepted_unverified":
             return "info"

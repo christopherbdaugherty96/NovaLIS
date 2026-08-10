@@ -6,6 +6,10 @@ from src.actions.action_request import ActionRequest
 from src.executors.media_executor import MediaExecutor
 from src.executors.open_folder_executor import OpenFolderExecutor
 from src.executors.volume_executor import VolumeExecutor
+from src.system_control.system_control_executor import (
+    OpenPathLaunchResult,
+    OpenPathLaunchState,
+)
 
 
 def test_volume_executor_handles_mute_on_windows(monkeypatch):
@@ -43,7 +47,11 @@ def test_open_folder_executor_returns_canonical_local_metadata(monkeypatch, tmp_
     target = tmp_path / "notes"
     target.mkdir()
 
-    monkeypatch.setattr(executor.system_control, "open_path", lambda path: path == target)
+    monkeypatch.setattr(
+        executor.system_control,
+        "open_path_result",
+        lambda path: OpenPathLaunchResult(OpenPathLaunchState.ACCEPTED, "test_accept"),
+    )
     result = executor.execute(ActionRequest(capability_id=22, params={"path": str(target)}))
 
     assert result.success is True

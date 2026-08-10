@@ -247,8 +247,28 @@ class TestComposeDailyBrief:
                 "action accepted; outcome unverified",
             ),
             (
+                {"status": "failed", "success": False, "outcome_state": "unknown_unverified"},
+                "action outcome unknown; not verified",
+            ),
+            (
                 {"status": "failed", "success": False, "outcome_state": "rejected"},
                 "action rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "rejected"},
+                "action rejected",
+            ),
+            (
+                {"status": "completed", "success": True, "outcome_state": "failed"},
+                "action failed",
+            ),
+            (
+                {"status": "failed", "success": True, "outcome_state": "accepted_unverified"},
+                "action failed",
+            ),
+            (
+                {"status": "completed", "success": False, "outcome_state": "visible_verified"},
+                "action failed",
             ),
             ({"status": "failed", "success": False}, "action failed"),
             ({"status": "completed", "success": True}, "action completed"),

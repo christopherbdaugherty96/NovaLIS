@@ -282,9 +282,15 @@ def _action_receipt_state(receipt: dict[str, Any]) -> str:
         return ""
     outcome_state = str(receipt.get("outcome_state") or "").strip().lower()
     status = str(receipt.get("status") or "").strip().lower()
-    if outcome_state == "rejected" or status in {"rejected", "refused"}:
+    if outcome_state == "rejected":
         return "rejected"
-    if outcome_state == "failed" or status == "failed" or receipt.get("success") is False:
+    if outcome_state == "failed":
+        return "failed"
+    if outcome_state == "unknown_unverified":
+        return "unknown_unverified"
+    if status in {"rejected", "refused"}:
+        return "rejected"
+    if status == "failed" or receipt.get("success") is False:
         return "failed"
     if outcome_state == "accepted_unverified":
         return "accepted_unverified"
@@ -318,6 +324,8 @@ def build_changes_section(recent_receipts: list[dict[str, Any]] | None) -> Aware
             label = "failed"
         elif action_state == "accepted_unverified":
             label = "accepted; outcome unverified"
+        elif action_state == "unknown_unverified":
+            label = "outcome unknown; not verified"
         else:
             label = _LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
         detail = _clean(
