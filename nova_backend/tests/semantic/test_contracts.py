@@ -418,6 +418,70 @@ def test_action_result_refusal_preserves_rejection_with_or_without_positive_labe
     assert outcome.effect_verified is False
 
 
+@pytest.mark.parametrize(
+    ("structured_data", "expected_state", "effect_verified"),
+    [
+        (
+            {
+                "outcome_state": "accepted_unverified",
+                "launch_request_accepted": True,
+                "visible_effect_verified": False,
+            },
+            OutcomeState.ACCEPTED_UNVERIFIED,
+            False,
+        ),
+        (
+            {
+                "outcome_state": "visible_verified",
+                "launch_request_accepted": True,
+                "visible_effect_verified": True,
+            },
+            OutcomeState.EFFECT_VERIFIED,
+            True,
+        ),
+    ],
+)
+def test_action_result_structured_outcome_metadata_is_adapted(
+    structured_data,
+    expected_state,
+    effect_verified,
+):
+    metadata = ActionResult.ok(
+        "Action result.",
+        data=structured_data,
+    ).to_contract_dict()
+
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is expected_state
+    assert outcome.request_accepted is True
+    assert outcome.effect_verified is effect_verified
+
+
+def test_top_level_receipt_metadata_takes_precedence_over_structured_action_data():
+    metadata = ActionResult.ok(
+        "Action result.",
+        data={
+            "outcome_state": "visible_verified",
+            "launch_request_accepted": True,
+            "visible_effect_verified": True,
+        },
+    ).to_contract_dict()
+    metadata.update(
+        {
+            "outcome_state": "accepted_unverified",
+            "launch_request_accepted": True,
+            "visible_effect_verified": False,
+        }
+    )
+
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.ACCEPTED_UNVERIFIED
+    assert outcome.request_accepted is True
+    assert outcome.effect_verified is False
+
+
 def test_outcome_states_and_lifecycle_completion_remain_independent():
     accepted = OutcomeSemantics.from_action_metadata(
         {
