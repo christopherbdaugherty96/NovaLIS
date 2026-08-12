@@ -83,6 +83,29 @@ The current ordering is:
 10. Only after proven Tasks read evidence may a separately scoped Tasks write be considered; later
    Google evidence/action families remain one-at-a-time and separately governed.
 
+### Accepted future direction: Continuity Model
+
+The Continuity Model is **strategically accepted, inactive, and not implementation-authorized**.
+It surrounds the permanent five-system architecture as reconciled product state; it is not a
+sixth system, an authority plane, or current work.
+
+Its earliest consideration remains:
+
+```text
+P2 stabilization
+-> remaining acceptance coverage
+-> full fresh-main regression
+-> Google Workspace Foundation review/merge decision
+-> live identity-only proof
+-> first Google READ/evidence vertical
+-> separately warranted, scoped, authorized, implemented, and proved Continuity Slice 1
+```
+
+This ordering does not modify PR #335 or any active stabilization lane. It authorizes no
+Continuity implementation, persistence, graph infrastructure, model inference, UI, capability,
+authority, or execution. A future slice still requires its own warrant, scope, activation, tests,
+and proof.
+
 Permanent Google boundary:
 
 ```text
