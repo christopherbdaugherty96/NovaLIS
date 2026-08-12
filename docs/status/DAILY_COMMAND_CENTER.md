@@ -40,10 +40,12 @@ EVIDENCE-RANKED BLOCKERS BEFORE GOOGLE EXPANSION:
 
 FOLLOW-THROUGH ORDER (ordering only; no implementation authorized here):
   1. Bound and repair P1-A user-visible commitment truth under separate authorization.
-  2. Bound and repair P1-B receipt-correlated action/outcome history separately.
-  3. Rerun only the targeted P1 acceptance matrix.
-  4. Address the recorded P2 groups, then run a gap-focused 36-section acceptance pass.
-  5. Resume PR #335 review only after the acceptance-derived truth failures are closed.
+  2. After P1-A merges, run its targeted fresh-main live proof.
+  3. Bound and repair P1-B receipt-correlated action/outcome history separately.
+  4. After P1-B merges, run targeted P1-B / live P1 proof.
+  5. Address the recorded P2 groups and remaining 36-section stress-test gaps.
+  6. Run the full fresh-main regression.
+  7. Resume PR #335 review only after the acceptance-derived truth failures are closed.
 
 AUTHORIZATION INTEGRITY:
   Slice 1 remains MERGED through PR #325.
@@ -460,7 +462,7 @@ test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 
 ```text
 1. Bound P1-A under a separate reviewed implementation authorization.
-2. Keep P1-B as a separate later implementation package with its own authorization.
+2. Require targeted fresh-main P1-A proof before selecting the separately authorized P1-B package.
 3. Keep PR #335 draft and Google Tasks unstarted until the acceptance-derived truth failures close.
 4. Decide separately when to resume Authorization Integrity Slice 2A; it remains approved/paused.
 5. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
@@ -472,7 +474,7 @@ test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 ```text
 1. Use the fresh-main acceptance record as the scope basis for P1-A; ordering alone does not
    authorize runtime implementation.
-2. Keep P1-B separate and later; do not combine the two P1 repairs.
+2. Prove P1-A live before beginning P1-B; keep P1-B separate and do not combine the repairs.
 3. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
 4. Do not expand PR #335, start Google Tasks, or activate Slice 2A inside this package.
 ```

@@ -47,10 +47,12 @@ FRESH-MAIN REAL-USER ACCEPTANCE
 EVIDENCE-SELECTED CURRENT ORDER
   1. P1-A user-visible commitment truth: unsupported external-action claims and pre-truth streamed
      reminder promises.
-  2. P1-B receipt-correlated action/outcome history as a separate bounded repair.
-  3. Targeted P1 acceptance proof.
-  4. Evidence-grouped P2 repairs and a gap-focused completion of the 36-section catalog.
-  5. Resume PR #335 review only after the acceptance-derived truth failures are closed.
+  2. Targeted fresh-main live proof of P1-A after its separately authorized repair merges.
+  3. P1-B receipt-correlated action/outcome history as a separate bounded repair.
+  4. Targeted P1-B / live P1 acceptance proof.
+  5. Evidence-grouped P2 repairs and completion of the remaining 36-section catalog gaps.
+  6. Full fresh-main regression.
+  7. Resume PR #335 review only after the acceptance-derived truth failures are closed.
 
   Google capability, Google authorization, and Nova authority remain distinct. Connection does not
   grant Nova action authority. Draft foundation code does not establish Google domain access.
@@ -924,7 +926,8 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
-- Use the 2026-08-12 acceptance evidence to bound P1-A without treating order as authorization.
+- Use the 2026-08-12 acceptance evidence to bound P1-A without treating order as authorization;
+  prove P1-A live before selecting the separately bounded P1-B implementation.
 - Keep PR #335 draft while the evidence-selected P1 truth repairs remain open.
 - Keep the separately approved Authorization Integrity Slice 2A paused until owner sequencing.
 ```

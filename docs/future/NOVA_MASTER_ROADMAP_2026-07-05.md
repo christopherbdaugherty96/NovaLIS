@@ -68,23 +68,26 @@ The acceptance run nevertheless selected two P1 product-truth repairs:
 Current order:
 
 1. Bound and implement P1-A only under a separate reviewed implementation authorization.
-2. Bound and implement P1-B as a separate package under its own reviewed authorization.
-3. Run targeted P1 fresh-main proof: Calendar-write claim, streamed reminder truth,
-   persistence failure/timeout, action-history correlation, background-read recap truth, and no
-   unauthorized execution.
-4. Address P2 findings by failure class, not one broad cleanup PR:
+2. After P1-A separately merges, run targeted P1-A fresh-main live proof: Calendar-write claim,
+   streamed reminder truth, persistence success/failure/timeout, and no unauthorized execution.
+3. Bound and implement P1-B as a separate package under its own reviewed authorization.
+4. After P1-B separately merges, run targeted P1-B / live P1 fresh-main proof: action-history
+   correlation, background-read recap truth, verified/failed/unknown outcomes, and no unauthorized
+   execution.
+5. Address P2 findings by failure class, not one broad cleanup PR:
    - capability/copy truth — Google Tasks narration and background-alert claims;
    - deterministic routing/temporal/source truth — arbitrary-location weather, `tomorrow` Calendar,
      schedule cancellation, private Drive intent, verification routing, and related stress gaps;
    - News governed-parameter defect — establish the callback/canonicalization hypothesis with a
      focused regression before calling it root cause.
-5. Complete the untested/partial rows from the 36-section catalog, then run a focused fresh-main
-   golden regression rather than repeating proven authority paths unnecessarily.
-6. Resume PR #335 review. Any branch modification, ready transition, or merge remains separately
+6. Complete the untested/partial rows from the 36-section catalog.
+7. Run the full fresh-main regression, combining the golden 25-step flow with the remaining
+   high-value stress cases rather than repeating proven authority paths unnecessarily.
+8. Resume PR #335 review. Any branch modification, ready transition, or merge remains separately
    authorized. The pause does not cancel or invalidate its existing implementation.
-7. If #335 merges, prove the identity-only foundation live: account identity, granted scopes,
+9. If #335 merges, prove the identity-only foundation live: account identity, granted scopes,
    credential validity/refresh, reconnect, revoke, disconnect, and absence of token leakage.
-8. Only then select **Google Tasks READ** as the first Google domain-data vertical. A Tasks write,
+10. Only then select **Google Tasks READ** as the first Google domain-data vertical. A Tasks write,
    Gmail/Calendar/Drive/Docs/Sheets evidence, and later Google actions remain separately ordered,
    separately scoped, and separately authorized.
 
