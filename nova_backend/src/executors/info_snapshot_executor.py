@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import re
 from typing import Any
 
 from src.actions.action_result import ActionResult
@@ -103,14 +104,30 @@ def _build_snapshot_message(capability_id: int, widget: dict[str, Any], fallback
 
 class WeatherSnapshotExecutor:
     def __init__(self, network: Any | None = None) -> None:
-        self._skill = WeatherSkill(network=network)
+        self._network = network
 
     def execute(self, request) -> ActionResult:
-        result = _run_skill(self._skill, "weather")
+        requested_location = re.sub(
+            r"\s+",
+            " ",
+            str(request.params.get("location") or ""),
+        ).strip(" ,.")[:120]
+        skill = WeatherSkill(
+            network=self._network,
+            location=requested_location or None,
+        )
+        result = _run_skill(skill, "weather")
         if result is None:
+            widget = _fallback_widget(55)
+            if requested_location:
+                widget["data"]["location"] = requested_location
             return ActionResult.failure(
-                "Weather is currently unavailable.",
-                data={"widget": _fallback_widget(55), "follow_up_prompts": _follow_up_prompts(55)},
+                (
+                    f"Weather for {requested_location} is currently unavailable."
+                    if requested_location
+                    else "Weather is currently unavailable."
+                ),
+                data={"widget": widget, "follow_up_prompts": _follow_up_prompts(55)},
                 request_id=request.request_id,
                 authority_class="read_only",
                 external_effect=False,
@@ -118,7 +135,16 @@ class WeatherSnapshotExecutor:
             )
         widget = getattr(result, "widget_data", None)
         safe_widget = widget if isinstance(widget, dict) else _fallback_widget(55)
-        fallback_message = str(getattr(result, "message", "") or "Weather is currently unavailable.").strip()
+        if requested_location:
+            safe_widget.setdefault("data", {}).setdefault("location", requested_location)
+        fallback_message = str(
+            getattr(result, "message", "")
+            or (
+                f"Weather for {requested_location} is currently unavailable."
+                if requested_location
+                else "Weather is currently unavailable."
+            )
+        ).strip()
         message = _build_snapshot_message(55, safe_widget, fallback_message)
         if getattr(result, "success", False):
             return ActionResult.ok(

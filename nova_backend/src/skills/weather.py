@@ -27,8 +27,13 @@ class WeatherSkill(BaseSkill):
         "later",
     )
 
-    def __init__(self, network: NetworkMediator | None = None):
-        self.service = WeatherService(network=network)
+    def __init__(
+        self,
+        network: NetworkMediator | None = None,
+        location: str | None = None,
+    ):
+        self.requested_location = str(location or "").strip()
+        self.service = WeatherService(location=location, network=network)
 
     def can_handle(self, text: str) -> bool:
         query = str(text or "").strip().lower()
@@ -80,13 +85,18 @@ class WeatherSkill(BaseSkill):
         except Exception as e:
             log.debug(f"Weather failure: {e}")
             detail = str(e or "").strip()
+            requested_location = self.requested_location
             if "WEATHER_API_KEY" in detail:
                 message = "Weather is available, but no provider key is configured yet."
                 status = "not_configured"
                 connected = False
                 setup_hint = "Add WEATHER_API_KEY to enable live weather."
             else:
-                message = "Weather is unavailable right now."
+                message = (
+                    f"Weather for {requested_location} is unavailable right now."
+                    if requested_location
+                    else "Weather is unavailable right now."
+                )
                 status = "unavailable"
                 connected = False
                 setup_hint = ""
@@ -103,6 +113,7 @@ class WeatherSkill(BaseSkill):
                     "type": "weather",
                     "data": {
                         "summary": message,
+                        "location": requested_location,
                         "forecast": "",
                         "alerts": [],
                         "updated_at": timestamp,
