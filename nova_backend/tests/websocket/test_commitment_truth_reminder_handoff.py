@@ -57,6 +57,11 @@ class _SummaryFailingScheduleStore(_RecordingScheduleStore):
         raise OSError("simulated summary failure after persistence")
 
 
+class _TimeoutScheduleStore(_RecordingScheduleStore):
+    def create_schedule(self, **kwargs) -> dict:
+        raise TimeoutError("simulated persistence timeout")
+
+
 def _run_session(monkeypatch, prompts: list[str], store: _RecordingScheduleStore) -> _ScriptedWebSocket:
     monkeypatch.setattr(brain_server, "NotificationScheduleStore", lambda: store)
     monkeypatch.setattr(
@@ -164,6 +169,10 @@ def test_calendar_awareness_queries_remain_calendar_queries(monkeypatch, phrase:
         "create a calendar event",
         "block this time on my calendar",
         "add an event",
+        "add a dentist appointment tomorrow at 3 PM",
+        "put dinner on my calendar at 7",
+        "schedule a meeting tomorrow at noon",
+        "add this to Google Calendar",
     ],
 )
 def test_calendar_write_forms_are_blocked_before_general_chat(monkeypatch, phrase: str):
@@ -176,12 +185,35 @@ def test_calendar_write_forms_are_blocked_before_general_chat(monkeypatch, phras
     assert any("No calendar event was created" in message for message in messages)
 
 
+def test_google_calendar_boundary_hands_off_to_local_reminder_without_claiming_write(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "add this to Google Calendar",
+            "yes, set a reminder",
+            "dentist appointment",
+            "tomorrow at 3 PM",
+        ],
+        store,
+    )
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "dentist appointment"
+    messages = _chat_messages(ws)
+    assert any("Google Calendar writing isn't enabled" in message for message in messages)
+    assert any("No calendar event was created" in message for message in messages)
+    assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+
+
 @pytest.mark.parametrize(
     "prompts, expected_body",
     [
         (["remind me to call mom", "2 PM"], "call mom"),
         (["remind me at 2 PM", "call mom"], "call mom"),
         (["remind me at 2 PM to complete onboarding"], "complete onboarding"),
+        (["set a reminder tomorrow at 2 PM to test Nova"], "test Nova"),
     ],
 )
 def test_reminder_slots_are_preserved_until_persistence(monkeypatch, prompts, expected_body):
@@ -194,6 +226,29 @@ def test_reminder_slots_are_preserved_until_persistence(monkeypatch, prompts, ex
     assert any("Reminder saved: SCH-TEST-0001" in message for message in _chat_messages(ws))
 
 
+def test_natural_tomorrow_reminder_never_streams_a_prepersistence_promise(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me tomorrow at 2 PM to test Nova"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "test Nova"
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+    messages = _chat_messages(ws)
+    assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
+    assert any("will not fire automatically" in message for message in messages)
+
+
+def test_unparsed_reminder_action_fails_truthfully_without_general_chat_stream(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me on August 13 at 2 PM to test Nova"], store)
+
+    assert store.created == []
+    messages = _chat_messages(ws)
+    assert any("no reminder was saved" in message for message in messages)
+    assert not any("Reminder saved:" in message for message in messages)
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+
+
 def test_persistence_failure_never_claims_success(monkeypatch):
     store = _FailingScheduleStore()
     ws = _run_session(monkeypatch, ["remind me at 2 PM to call mom"], store)
@@ -204,6 +259,37 @@ def test_persistence_failure_never_claims_success(monkeypatch):
     assert not any("SCH-" in message for message in messages)
     assert not any("scheduled" in message.lower() for message in messages)
     assert not any("done" in message.lower() for message in messages)
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+
+
+def test_persistence_timeout_reports_unknown_without_streaming_success(monkeypatch):
+    store = _TimeoutScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me tomorrow at 2 PM to test Nova"], store)
+
+    messages = _chat_messages(ws)
+    assert any("persistence timed out" in message for message in messages)
+    assert any("won't claim one was created" in message for message in messages)
+    assert not any("Reminder saved:" in message for message in messages)
+    assert not any("I'll remind" in message for message in messages)
+    assert not any("done" in message.lower() for message in messages)
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "can reminders alert me while Nova is closed?",
+        "will you notify me tomorrow if Nova is closed?",
+    ],
+)
+def test_background_delivery_questions_never_claim_closed_app_alerts(monkeypatch, question):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, [question], store)
+
+    messages = _chat_messages(ws)
+    assert any("cannot alert you while Nova is closed" in message for message in messages)
+    assert any("do not run in the background" in message for message in messages)
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
 
 
 def test_summary_failure_does_not_retract_successful_persistence(monkeypatch):
