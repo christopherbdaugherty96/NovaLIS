@@ -24,52 +24,62 @@ Its own authority rules:
   — committed vs local vs in-progress. Not generated truth; code wins on conflict.
 - **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
 
-## The current gate (as of 2026-08-09)
+## The current gate (as of 2026-08-12)
 
-`main` is at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. Seven-morning
-observation, grounded brief/category routing, and the post-#312 product-selection gate are complete.
+`main` is at `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30` after PR #334.
 
-The two evidence-selected trust lanes are closed:
+Durable completed state:
 
-- **Commitment Truth + Natural Reminder Handoff — COMPLETE.** PR #330 implemented truthful natural
-  calendar-to-reminder handoff and result-backed persistence language. PR #332 fixed the remaining
-  notification-schedule command precedence defect. Fresh-main proof at `dfef1db5...` confirmed the
-  exact August 7 flow, a real `SCH-...` record, `show schedules`, `reminders`, fresh-session
-  retrieval, and preservation of calendar-query routing.
-- **Local Action Outcome Truth — COMPLETE.** PR #331 aligned Cap 22 action responses, durable
-  receipts, and receipt consumers with the distinction between request acceptance and verified
-  visible effect; Cap 19 natural-language coverage was repaired. Merged-main live proof passed.
+- **Commitment Truth + Natural Reminder Handoff — COMPLETE.** PRs #330/#332 plus fresh-main proof.
+- **Local Action Outcome Truth — COMPLETE.** PR #331 plus merged-main live proof.
+- **Roadmap reconciliation — MERGED through PR #333.**
+- **Semantic Substrate Slice 1 — MERGED through PR #334.** Provider-neutral semantic contracts and
+  tests are durable infrastructure; no Google/provider runtime, capability, authority, or execution
+  path was added by that slice.
 
-The separate `tomorrow` calendar-scope wording defect was not part of PR #332 or its closeout. It
-remains an inactive observation, not a reason to reopen Commitment Truth.
+Open but not current-main capability:
 
-Authorization integrity now has three distinct states:
+- **PR #335 — Google Workspace Foundation — DRAFT / UNMERGED at `befb69e...`.** Its identity-only
+  implementation is paused behind acceptance-derived truth repairs. This pause does not cancel or
+  invalidate #335 and does not authorize changes to its branch.
+
+The 2026-08-12 fresh-main real-user acceptance record
+(`../observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`) covered the 25-step golden
+regression plus targeted probes. It did not complete every variation in the 36-section stress
+catalog. It found no unauthorized external action, but selected two P1 truth repairs:
+
+1. **P1-A — user-visible commitment/capability truth.** Prevent unsupported Google Calendar
+   completion language and streamed reminder promises before persistence/effect evidence exists.
+2. **P1-B — receipt-correlated action/outcome history.** Answer session-action questions from
+   correlated receipts and known background reads, never generative reconstruction.
+
+Authorization integrity retains three distinct states:
 
 - **Slice 1 — MERGED through PR #325.** The Governor owns an exact-action-bound ApprovalGrant
   lifecycle.
-- **Slice 2A — NOT IMPLEMENTED ON MAIN.** The owner approved bounded local implementation under a
-  separate exact scope and publication boundary. It remains separately approved but paused; this
-  ordering update neither cancels nor activates it.
+- **Slice 2A — NOT IMPLEMENTED ON MAIN.** Separately owner-approved but paused; this ordering
+  neither cancels nor activates it.
 - **Slice 2B — DEFERRED.** Later cooperative cancellation and capability-specific reconciliation
   remain separately gated.
 
 The current ordering is:
 
-1. Implement **Semantic Substrate Slice 1** as a small provider-neutral contract-and-test lane:
-   `SourceIdentity`, `EvidenceEnvelope`, `Freshness`, `Confidence`, `ObservedState`,
-   `IntendedState`, `StateDelta`, and shared `OutcomeSemantics`. No provider call, network I/O,
-   capability, authority, or execution path belongs in this slice.
-2. Implement **Google Workspace Foundation**: OAuth with PKCE, account identity, encrypted token
-   storage, granted-scope inventory, explicit reconnect/grant profiles, revoke, and disconnect.
-   Foundation connects an account but reads no domain data and performs no domain write.
-3. Implement the first **Google Tasks vertical**: read evidence first, then separately governed
-   writes only after read behavior, provenance, freshness, authority mapping, idempotency, outcome
-   verification, and reconciliation are proven.
-4. Expand Google evidence one family at a time: Gmail read, Calendar read, selected Drive access,
-   then Docs/Sheets reads over selected resources. Unified awareness follows proven individual
-   sources; local prepared proposals precede external mutation.
-5. Add Google action families one at a time under explicit operation-level authority. Event-driven
-   synchronization remains optional and evidence-driven.
+1. Bound and implement **P1-A user-visible commitment/capability truth** only under a separate
+   reviewed authorization.
+2. Bound and implement **P1-B receipt-correlated action/outcome history** separately, also under a
+   separate reviewed authorization.
+3. Run the targeted P1 fresh-main acceptance matrix: commitment truth, persistence failure/timeout,
+   action-history correlation, background-read recap truth, and no unauthorized execution.
+4. Address the recorded P2 groups without creating one broad cleanup lane: capability/copy truth;
+   deterministic routing/temporal/source scope; and the News governed-parameter defect.
+5. Complete the untested/partial 36-section stress rows and run a fresh-main regression focused on
+   gaps rather than repeating already-proven authority paths.
+6. Resume PR #335 review. Make its ready/merge decision separately; do not assume this ordering
+   approves modification or merge.
+7. If #335 eventually merges, run live identity-only Google acceptance before selecting
+   **Google Tasks READ** as the first domain-data vertical.
+8. Only after proven Tasks read evidence may a separately scoped Tasks write be considered; later
+   Google evidence/action families remain one-at-a-time and separately governed.
 
 Permanent Google boundary:
 
@@ -84,10 +94,12 @@ the exact operation, account, resource, parameters, and time are permitted. Goog
 reuse Nova's request-accepted / effect-verified / outcome-state vocabulary rather than a second
 boolean success model.
 
-Secondary candidates remain inactive. No economic-value proof, expanded OpenClaw,
-browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business, or
-delegation lane is active. OpenClaw remains a replaceable actuator rather than an authority.
-This file records ordering only and authorizes nothing beyond an already explicit owner decision.
+The recorded weather, News, Calendar scope, reminder cancellation, Google Tasks/capability-copy,
+private-source routing, verification, and stress-coverage gaps are ordered follow-through, not
+authorized implementation. No economic-value proof, expanded OpenClaw, browser/computer-use,
+financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is active.
+OpenClaw remains a replaceable actuator rather than an authority. This file ORDERS work and does
+not authorize either P1 repair, PR #335 mutation/merge, Google domain access, or external action.
 
 ## Historical gate (as of 2026-07-23)
 
@@ -152,7 +164,8 @@ model-quality gap.
 From `CURRENT_WORK_STATUS.md`, none of these is authorized without its own lock:
 
 ```text
-Google connector runtime, Shopify writes, ElevenLabs, OpenClaw expansion,
+modification/expansion of PR #335, Google domain-data connector runtime,
+Shopify writes, ElevenLabs, OpenClaw expansion,
 browser/computer-use expansion, external writes, finance automation,
 social posting automation, autonomous workflow execution.
 ```

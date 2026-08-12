@@ -1,6 +1,67 @@
 # Daily Command Center
 
-## 2026-08-09 post-#332 closeout and next sequence (latest - read this first)
+## 2026-08-12 fresh-main acceptance and evidence-ranked truth repair (latest - read this first)
+
+```text
+CURRENT MERGED MAIN: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30 after PR #334.
+
+MERGED INFRASTRUCTURE:
+  Semantic Substrate Slice 1 - MERGED through PR #334. It is durable provider-neutral
+  contract/test infrastructure; it added no runtime integration, provider call, capability,
+  authority, or execution path.
+
+OPEN GOOGLE WORK:
+  PR #335 - Google Workspace Foundation - remains DRAFT / UNMERGED at befb69e....
+  Its identity-only foundation scope adds no Google Tasks, Gmail, Google Calendar, Drive, Docs,
+  Sheets, or external-write capability. Do not describe its draft code as current-main behavior.
+
+FRESH-MAIN REAL-USER ACCEPTANCE:
+  Evidence: docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md.
+  Runtime/source SHA: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30.
+  The 25-step golden regression was substantially covered, with targeted authority/truth probes.
+  The full 36-section catalog was NOT completed; the evidence record classifies each gap.
+
+LOWER TRUST LAYERS HELD:
+  ApprovalGrant integrity, approval cancellation/replay containment, memory != authority, caller
+  bypass strings != authority, Cap 22 outcome underclaiming, local reminder persistence/retrieval,
+  and measured Cap 19 OS effects all passed. No unauthorized external action was observed.
+
+LOCAL REMINDER TRUTH:
+  Nova local reminder schedules and persistent SCH records EXIST.
+  `show schedules` / `reminders` retrieval EXISTS.
+  Dependable background delivery/alerts and automatic firing DO NOT EXIST.
+  Google Tasks and Google Reminders DO NOT EXIST on current main.
+
+EVIDENCE-RANKED BLOCKERS BEFORE GOOGLE EXPANSION:
+  P1-A - user-visible commitment truth: unsupported Google Calendar action language and streamed
+         reminder promises must not appear without effect/persistence evidence.
+  P1-B - receipt-correlated action history: session recap must distinguish real background reads
+         from user-requested actions and unsupported outcomes.
+
+FOLLOW-THROUGH ORDER (ordering only; no implementation authorized here):
+  1. Bound and repair P1-A user-visible commitment truth under separate authorization.
+  2. Bound and repair P1-B receipt-correlated action/outcome history separately.
+  3. Rerun only the targeted P1 acceptance matrix.
+  4. Address the recorded P2 groups, then run a gap-focused 36-section acceptance pass.
+  5. Resume PR #335 review only after the acceptance-derived truth failures are closed.
+
+AUTHORIZATION INTEGRITY:
+  Slice 1 remains MERGED through PR #325.
+  Slice 2A remains separately owner-approved, paused, and NOT IMPLEMENTED ON MAIN.
+  Slice 2B remains DEFERRED and separately gated.
+
+BOUNDARY:
+  This documentation/evidence reconciliation authorizes no runtime repair, Google expansion,
+  external write, authority change, capability change, Semantic Slice 2, OpenClaw expansion,
+  or Authorization Integrity work. PR #335 remains separate and draft.
+```
+
+Status: manual continuity surface.
+Last reviewed: 2026-08-12 (PR #334 merged; fresh-main acceptance recorded; PR #335 draft).
+
+The 2026-08-09 and earlier sections below are historical continuity records.
+
+## 2026-08-09 post-#332 closeout and next sequence (historical continuity)
 
 ```text
 CURRENT MERGED MAIN: dfef1db5df89bfdb276904acce26205d1c894331 after PR #332.
@@ -398,27 +459,32 @@ test) in #316. The pytest-timeout guard (PR #264, 180s) remains in place.
 ## Decisions Needed
 
 ```text
-1. Review the exact Semantic Substrate Slice 1 scope, then implement only that bounded package.
-2. Keep Google Foundation and the Tasks vertical behind Semantic Slice 1; do not combine them.
-3. Decide separately when to resume Authorization Integrity Slice 2A; it remains approved/paused.
-4. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
+1. Bound P1-A under a separate reviewed implementation authorization.
+2. Keep P1-B as a separate later implementation package with its own authorization.
+3. Keep PR #335 draft and Google Tasks unstarted until the acceptance-derived truth failures close.
+4. Decide separately when to resume Authorization Integrity Slice 2A; it remains approved/paused.
+5. Owner: choose Auralis-Digital hosting migration path (Netlify/Cloudflare from a private
    repo vs repo split vs GitHub Pro) - the business playbook is currently public.
 ```
 
 ## This Week
 
 ```text
-1. Bound Semantic Substrate Slice 1 without adding provider, network, execution, or authority code.
-2. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
-3. Do not start Google code, a secondary product/capability lane, or Slice 2A inside this package.
+1. Use the fresh-main acceptance record as the scope basis for P1-A; ordering alone does not
+   authorize runtime implementation.
+2. Keep P1-B separate and later; do not combine the two P1 repairs.
+3. Owner NOW items: Auralis-Digital migration, Instagram, filming, verification, rotation.
+4. Do not expand PR #335, start Google Tasks, or activate Slice 2A inside this package.
 ```
 
 ## Morning coverage (what Nova reliably does today, confirmed through Morning 7, 2026-07-22)
 
 ```text
-Weather  OK  |  News  OK  |  Calendar  OK  |  Business/C1  OK
+Weather configured-location  OK; explicit location  P2
+News sourced surface  EXISTS; `give me today's news`  P2
+Calendar today/local .ics  OK; `tomorrow` scope  P2  |  Business/C1  OK
 Email  NOT IMPLEMENTED  |  Google Tasks/Reminders  NOT IMPLEMENTED  |  Traffic  NOT IMPLEMENTED
-Nova reminder schedule records + dashboard due-state surfacing  EXIST
+Nova reminder schedule records + retrieval  EXIST  |  background alert delivery  DOES NOT EXIST
 ~3 of Chris's ~5-6 morning checks. Gap-fill order (only when evidence pulls it):
 Google Tasks -> Gmail -> Traffic. Full detail: CAPABILITY_INVENTORY.md.
 ```
@@ -426,13 +492,10 @@ Google Tasks -> Gmail -> Traffic. Full detail: CAPABILITY_INVENTORY.md.
 ## Branch State
 
 ```text
-main includes PR #311 (timeout containment) and PR #312 (grounded routing); tip at
-c3856473 (grounded-routing verification closeout).
-Active branch: docs/sync-post-pr312-current-truth (PR #314, this documentation truth-sync;
-open, not merged).
-PR #313 (2026-07-25 direction-session docs) open; handled after #314 merges.
-Remote review candidates: second-brain-slice1-activation (keep - roadmap H13);
-others likely superseded (owner review pending).
+main is c44b6d0cd72f0f91a6ec517427ad3fe2076beb30 after PR #334.
+PR #335 is open, draft, mergeable, and unmerged at befb69e....
+The 2026-08-12 repository truth reconciliation is grounded in the fresh-main acceptance record.
+No runtime repair branch is authorized or active from this documentation record.
 ```
 
 ## Recent Landed Stack (since 2026-06-17)

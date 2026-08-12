@@ -3,10 +3,35 @@
 **Canonical truth source.** Future verification UPDATES this file — do not create scattered
 verification docs. Every "Live Verified" row is backed by observed evidence, not code reading.
 
-Last verified: **2026-07-11** against fresh `main` (see QA Rule #1 below). Latest status update
-**2026-07-23** (grounded routing shipped; capability set unchanged — no new capability, connector,
-or authority). PR #312 is verified on fresh main (see the 2026-07-23 update below); a future
-morning provides additional real-use/product-acceptance input, not a re-verification of #312.
+Last broad capability verification: **2026-07-11** against fresh `main` (see QA Rule #1 below).
+Latest targeted fresh-main acceptance: **2026-08-12** at
+`c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`. The targeted run did not reverify every capability or
+complete every 36-section stress variant. This update distinguishes Nova's implemented local
+reminder schedules from unimplemented background delivery, Google Tasks, and Google Reminders. It
+adds no capability, connector, or authority.
+
+---
+
+## 2026-08-12 Current Update
+
+```text
+PR #334 merged Semantic Substrate Slice 1 as provider-neutral contracts/tests only.
+PR #335 Google Workspace Foundation remains DRAFT / UNMERGED and adds no current-main capability.
+
+Fresh-main real-user acceptance:
+  docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md
+
+Live-proven current reminder truth:
+  Nova local reminder schedules exist.
+  A deterministic handoff persisted a real SCH record.
+  `show schedules` / `reminders` displayed it after a full backend-process restart.
+  Background reminder delivery and automatic firing do not exist.
+  Google Tasks and Google Reminders do not exist.
+
+The same run reconfirmed approval/replay/bypass boundaries and real Cap 19 effects, while exposing
+P1 conversation-truth defects and several P2 routing/source defects. Therefore implemented
+capability and truthful capability narration are not yet consistent across all wording.
+```
 
 ---
 
@@ -29,7 +54,8 @@ Live-verification status: PR #312's grounded brief/category routing is verified 
 full category -> second-story -> "what matters most" follow-up workflow, [Fallback] marking, and
 a healthy interface were confirmed). The rows below keep their "Live Verified 2026-07-11" date; a
 future morning is additional real-use/product-acceptance input, not the missing verification of
-#312. Email/Reminders/Traffic remain NOT IMPLEMENTED. Nothing here authorizes
+#312. Email/Google Tasks/Google Reminders/Traffic remain NOT IMPLEMENTED. Nova local reminder
+schedules are now implemented but have no background delivery. Nothing here authorizes
 Google Tasks, Gmail, Traffic, new connectors, external writes, or autonomous execution.
 ```
 
@@ -71,18 +97,19 @@ was fine. Always verify against a current-`main` instance.
 CORE PLATFORM   ██████████  95%   governance, caps, runtime truth, memory, C1
 INFORMATION     ████████░░  80%   weather + news + calendar verified live
 BUSINESS        ███████░░░  75%   C1, Shopify awareness, promotion queue, best-move
-PERSONAL        ████░░░░░░  40%   calendar yes; email/reminders/traffic absent
+PERSONAL        █████░░░░░  50%   calendar + local schedules; Gmail/Google Tasks/traffic absent
 AUTOMATION      ██░░░░░░░░  20%   read-only only, by design
 ```
 
-## Morning needs covered (measured against Chris's real routine): **~50%**
+## Morning needs covered (measured against Chris's real routine): **~50%, with partial reminder coverage**
 
 | Morning check | Status |
 |---|---|
-| Weather | ✅ verified live |
-| News | ✅ verified live |
-| Calendar | ✅ verified live (reads .ics; honest "nothing today") |
-| Reminders | ❌ not built (Google Tasks/Reminders) |
+| Weather | 🟡 configured-location path works; explicit-location routing defect observed 2026-08-12 |
+| News | 🟡 real sourced surface works; `give me today's news` parameter defect observed 2026-08-12 |
+| Calendar | 🟡 local `.ics` today path works; `tomorrow` scope defect observed 2026-08-12 |
+| Local reminder schedules | 🟡 persistent SCH records + retrieval work; cancellation routing defect and no background delivery |
+| Google Tasks / Google Reminders | ❌ not built |
 | Email | ❌ not built (Gmail) |
 | Traffic | ❌ not built |
 | Business (when needed) | ✅ C1 |
@@ -138,14 +165,21 @@ local-vs-cloud model-quality comparison should now use this grounded path as the
 
 Not "what exists" — what is dependable:
 
-- **Weather** — real, fast, honest.
-- **News** — real headlines from live feeds (BBC/NPR/TechCrunch anchor it).
-- **Calendar** — reads your calendar and reports honestly (including "nothing today").
+- **Configured-location weather** — returns real weather; arbitrary-location routing is currently
+  not dependable.
+- **News surface** — can return real headlines from live feeds; the exact `give me today's news`
+  route is currently not dependable.
+- **Today's local Calendar view** — reads the configured `.ics`; `tomorrow` scope wording is
+  currently not dependable.
+- **Local reminder schedules** — saves and retrieves persistent SCH records through the supported
+  deterministic handoff; cancellation by advertised command and background delivery are not
+  dependable.
 - **C1 / business best-move** — deterministic, honest, governed.
 - **The awareness brief on open** — assembles the above with honest per-section degradation.
 
-**Cannot yet rely on:** email, reminders, traffic (not built); web search (no key); fast
-conversational chat (slow model).
+**Cannot yet rely on:** email, Google Tasks/Google Reminders, background reminder alerts, or
+traffic (not built); schedule cancellation by advertised command (routing defect observed
+2026-08-12); web search without a configured key; consistently truthful/fast conversational chat.
 
 ---
 
@@ -161,6 +195,12 @@ Keep this design; do not swap to a paid NewsAPI without a specific need.
 ---
 
 ## Verification log
+
+- **2026-08-12** — Fresh-main real-user acceptance at `c44b6d0...`: local reminder schedule
+  persisted and survived backend restart; `show schedules` / `reminders` retrieved it; Cap 19
+  produced measured Windows volume effects; approval/replay/bypass boundaries held. The run also
+  found P1 conversation-truth defects and did not complete every variant in the 36-section catalog.
+  See `docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`.
 
 - **2026-07-06** — Full live verification against fresh `main`. Weather/News/Calendar/routing
   all PASS live (news + calendar were false negatives on the prior stale instance). Gmail/
