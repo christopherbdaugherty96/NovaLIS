@@ -35,7 +35,79 @@ This roadmap still determines ordering; lane locks still determine scope; owner 
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Current Ordering — 2026-08-09
+## Current Ordering — 2026-08-12
+
+`main` is at `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30` after PR #334.
+
+Durable state since the prior ordering block:
+
+- PR #333 merged the roadmap/current-state reconciliation.
+- PR #334 merged Semantic Substrate Slice 1. Its provider-neutral source/evidence/state/outcome
+  contracts and tests are durable infrastructure; it added no provider call, Google integration,
+  capability, authority, or execution path.
+- PR #335 contains the implemented Google Workspace identity-only foundation, but remains
+  **DRAFT / UNMERGED** at `befb69ef75881a9f418472549b64243219c138f9`. Draft implementation is
+  not current-main capability.
+
+The 2026-08-12 fresh-main real-user acceptance record is
+`../observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`. It is prospective planning evidence
+against the exact current-main SHA above. The supplied 25-step golden regression was covered with
+additional targeted probes; the complete 36-section stress catalog was not fully exercised.
+
+The lower authority/execution layers held: ApprovalGrant integrity, approval cancellation/replay,
+memory != authority, bypass strings != authority, Cap 22 outcome underclaiming, local reminder
+persistence/retrieval, and measured Cap 19 effects. No unauthorized external action was observed.
+The acceptance run nevertheless selected two P1 product-truth repairs:
+
+1. **P1-A — user-visible commitment/capability truth.** Close the unsupported Google Calendar
+   completion claim and the streamed reminder promise that appeared before persistence evidence.
+2. **P1-B — receipt-correlated action/outcome history.** Derive session-action recaps from
+   correlated receipts, deterministic/background reads, and explicit uncertainty rather than
+   generative reconstruction.
+
+Current order:
+
+1. Bound and implement P1-A only under a separate reviewed implementation authorization.
+2. After P1-A separately merges, run targeted P1-A fresh-main live proof: Calendar-write claim,
+   streamed reminder truth, persistence success/failure/timeout, and no unauthorized execution.
+3. Bound and implement P1-B as a separate package under its own reviewed authorization.
+4. After P1-B separately merges, run targeted P1-B / live P1 fresh-main proof: action-history
+   correlation, background-read recap truth, verified/failed/unknown outcomes, and no unauthorized
+   execution.
+5. Address P2 findings by failure class, not one broad cleanup PR:
+   - capability/copy truth — Google Tasks narration and background-alert claims;
+   - deterministic routing/temporal/source truth — arbitrary-location weather, `tomorrow` Calendar,
+     schedule cancellation, private Drive intent, verification routing, and related stress gaps;
+   - News governed-parameter defect — establish the callback/canonicalization hypothesis with a
+     focused regression before calling it root cause.
+6. Complete the untested/partial rows from the 36-section catalog.
+7. Run the full fresh-main regression, combining the golden 25-step flow with the remaining
+   high-value stress cases rather than repeating proven authority paths unnecessarily.
+8. Resume PR #335 review. Any branch modification, ready transition, or merge remains separately
+   authorized. The pause does not cancel or invalidate its existing implementation.
+9. If #335 merges, prove the identity-only foundation live: account identity, granted scopes,
+   credential validity/refresh, reconnect, revoke, disconnect, and absence of token leakage.
+10. Only then select **Google Tasks READ** as the first Google domain-data vertical. A Tasks write,
+   Gmail/Calendar/Drive/Docs/Sheets evidence, and later Google actions remain separately ordered,
+   separately scoped, and separately authorized.
+
+Permanent boundary:
+
+```text
+Google capability != Google authorization != Nova authority
+connected != evidence collected != action permitted
+Prepared Reality is local; creating or changing a Google resource is external mutation.
+```
+
+Authorization Integrity Slice 1 remains merged through PR #325. Slice 2A remains separately
+owner-approved, paused, and not implemented on main; this ordering neither activates nor cancels it.
+Slice 2B remains deferred and separately gated.
+
+This block ORDERS work. It does not authorize implementation of P1-A or P1-B, modification or merge
+of PR #335, Google domain-data access, any external write, capability expansion, authority expansion,
+Semantic Substrate Slice 2, OpenClaw expansion, or Authorization Integrity work.
+
+## Historical Ordering — 2026-08-09 (superseded by the block above)
 
 `main` is at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. The meaningful
 post-#319 sequence is concise:
@@ -300,7 +372,7 @@ ENDGAME      a personal operating system that feels like Jarvis and
 > **Supersession boundary.** The detailed Lane A/B/C/D bodies below were written on
 > 2026-07-05, before the Phase-3 observation cycle. They are retained as backlog / reference
 > material for per-lane scope and sequencing. They DO NOT describe current status and DO NOT
-> override the top "Current Ordering — 2026-08-06" block. The observation-candidate and
+> override the top current-ordering block. The observation-candidate and
 > historical ordering sections preserve earlier status only. Where a body below says a lane is
 > "active", "next", "not yet built", or
 > "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (this
