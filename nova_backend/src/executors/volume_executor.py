@@ -11,6 +11,36 @@ class VolumeExecutor:
     def _apply_volume(self, action: str, level: int | None) -> bool:
         return self.system_control.set_volume(action=action, level=level)
 
+    @staticmethod
+    def _accepted_unverified_result(
+        *,
+        request_id: str | None,
+        action: str,
+        message: str,
+        level: int | None = None,
+    ) -> ActionResult:
+        outcome_reason = (
+            "The operating system accepted the volume control request, but "
+            "the resulting system volume could not be verified."
+        )
+        structured_data = {
+            "action": action,
+            "outcome_state": "accepted_unverified",
+            "request_accepted": True,
+            "effect_verified": False,
+        }
+        if level is not None:
+            structured_data["level"] = level
+        return ActionResult.ok(
+            message=message,
+            data=structured_data,
+            request_id=request_id,
+            authority_class="reversible_local",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=outcome_reason,
+        )
+
     def execute(self, request) -> ActionResult:
         params = request.params or {}
         action = (params.get("action") or "").strip().lower()
@@ -40,8 +70,15 @@ class VolumeExecutor:
                     message="I couldn't adjust volume on this device right now.",
                     **common_meta,
                 )
-            message = "Turned the volume up." if action == "up" else "Turned the volume down."
-            return ActionResult.ok(message=message, data={"action": action}, **common_meta)
+            direction = "up" if action == "up" else "down"
+            return self._accepted_unverified_result(
+                request_id=request.request_id,
+                action=action,
+                message=(
+                    f"Volume-{direction} request sent. "
+                    "I couldn't verify the resulting system volume."
+                ),
+            )
 
         if action in {"mute", "unmute"}:
             applied = self._apply_volume(action, None)
@@ -50,8 +87,15 @@ class VolumeExecutor:
                     message=f"I couldn't {action} audio on this device right now.",
                     **common_meta,
                 )
-            message = "Audio muted." if action == "mute" else "Audio unmuted."
-            return ActionResult.ok(message=message, data={"action": action}, **common_meta)
+            label = "Mute" if action == "mute" else "Unmute"
+            return self._accepted_unverified_result(
+                request_id=request.request_id,
+                action=action,
+                message=(
+                    f"{label} request sent. "
+                    "I couldn't verify the resulting system audio state."
+                ),
+            )
 
         if action == "set":
             try:
@@ -66,7 +110,15 @@ class VolumeExecutor:
                     message="I couldn't set volume on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Set volume to {value}%.", data={"action": "set", "level": value}, **common_meta)
+            return self._accepted_unverified_result(
+                request_id=request.request_id,
+                action="set",
+                level=value,
+                message=(
+                    f"Volume-level request sent for {value}%. "
+                    "I couldn't verify the resulting system volume."
+                ),
+            )
 
         return ActionResult.failure(
             "Invalid volume command. Try: volume up, volume down, mute, unmute, or set volume to 40.",
