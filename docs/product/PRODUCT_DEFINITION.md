@@ -34,6 +34,17 @@ different objective function, and it is what keeps Nova out of the crowded task-
 Everything is subordinate to it: facts inform decisions, reasoning explains them, inference
 suggests them (honestly, with uncertainty), capabilities execute them.
 
+**Continuity is the intended product moat.** Governance is Nova's technical trust foundation;
+continuity is how that trust becomes useful across days, decisions, commitments, and outcomes:
+
+> **Nova preserves continuity between what the user intended, what was decided, what actually
+> happened, what remains unresolved, and what deserves attention next.**
+
+Continuity is persistent, reconciled state surrounding the permanent architecture below. It is
+not a sixth system and is never an authority artifact. It may preserve state, reconcile old state
+against new evidence, and project the smallest useful next action into Awareness and Decision.
+It may not authorize, execute, modify permission, or silently create a commitment.
+
 **User-facing shape (three visible layers):**
 
 ```text
@@ -71,6 +82,23 @@ These systems remain distinct even when Nova presents them as one smooth experie
 **Capability is a governed-runtime property, not a sixth decision-making system.** It describes
 what Nova can technically do. Capability does not establish relevance, permission, or approval.
 
+The future Continuity Model surrounds this architecture without joining its authority chain:
+
+```text
+Continuity Model
+    -> Awareness
+    -> Decision
+    -> Authority
+    -> Execution
+    -> Outcome
+    -> Reconciliation
+    -> Continuity Model
+```
+
+Its intended state includes commitments, decisions, dependencies, open loops, evidence-backed
+status, review/reopen conditions, operating mode, focus constraints, and attention policy.
+Recommendation priority remains distinct from authority.
+
 ## Operating loop
 
 ```text
@@ -89,6 +117,27 @@ Observe
 Outcome evaluation and reconciliation close the loop. They may improve future awareness and
 recommendations, but they may never expand authority, lower approval requirements, or turn
 memory into permission.
+
+## Continuity truth distinctions
+
+Conversation must not silently become life or project state. Consequential continuity records
+must preserve provenance such as `owner_stated`, `owner_confirmed`, `externally_observed`,
+`nova_derived`, or `imported`, and distinguish at least:
+
+```text
+mentioned != proposed != owner-confirmed != externally observed
+idea != decision != commitment != started != completed != verified
+receipt != verified outcome
+```
+
+Future status vocabulary may include `proposed`, `confirmed`, `active`, `waiting`, `blocked`,
+`completed_unverified`, `verified`, `abandoned`, and `superseded`. These are strategic semantics,
+not current runtime schemas.
+
+A closed decision remains closed unless material evidence changes, a recorded assumption becomes
+invalid, a review trigger fires, or the owner explicitly reopens it. Nova may propose reopening;
+it may not silently rewrite the decision. `do_not_work_on_yet` is valid continuity state: a useful
+idea can be recorded without becoming current work.
 
 ## The five layers
 
