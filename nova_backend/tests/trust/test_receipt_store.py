@@ -10,13 +10,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 import src.trust.receipt_store as store_mod
 from src.trust.receipt_store import (
     _RECEIPT_WORTHY,
     get_receipt_summary,
     get_recent_receipts,
+    get_session_action_receipts,
 )
 
 # ---------------------------------------------------------------------------
@@ -210,3 +209,76 @@ class TestAllReceiptEventTypes:
         result = get_recent_receipts(limit=100)
         returned_types = {r["event_type"] for r in result}
         assert returned_types == _RECEIPT_WORTHY
+
+
+class TestSessionActionReceipts:
+    def test_requires_exact_session_request_and_trusted_origin(self, monkeypatch, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        _write_ledger(
+            ledger,
+            [
+                _entry(
+                    "ACTION_ATTEMPTED",
+                    session_id="current",
+                    request_id="req-1",
+                    activity_origin="user_action",
+                ),
+                _entry(
+                    "ACTION_COMPLETED",
+                    session_id="current",
+                    request_id="req-1",
+                    activity_origin="user_action",
+                    success=True,
+                    status="completed",
+                ),
+                _entry(
+                    "ACTION_COMPLETED",
+                    session_id="other",
+                    request_id="req-other",
+                    activity_origin="user_action",
+                ),
+                _entry(
+                    "ACTION_COMPLETED",
+                    session_id="current",
+                    request_id="",
+                    activity_origin="user_action",
+                ),
+                _entry(
+                    "ACTION_COMPLETED",
+                    session_id="current",
+                    request_id="legacy-no-origin",
+                ),
+                _entry(
+                    "ACTION_COMPLETED",
+                    session_id="current",
+                    request_id="free-form-origin",
+                    activity_origin="dashboard_guess",
+                ),
+            ],
+        )
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
+
+        receipts = get_session_action_receipts("current")
+
+        assert [item["request_id"] for item in receipts] == ["req-1", "req-1"]
+        assert {item["event_type"] for item in receipts} == {
+            "ACTION_ATTEMPTED",
+            "ACTION_COMPLETED",
+        }
+
+    def test_does_not_infer_legacy_session_from_timestamp(self, monkeypatch, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        _write_ledger(
+            ledger,
+            [
+                _entry(
+                    "ACTION_COMPLETED",
+                    ts="2026-08-12T12:00:00Z",
+                    request_id="recent-but-legacy",
+                    activity_origin="user_action",
+                )
+            ],
+        )
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
+
+        assert get_session_action_receipts("current") == []

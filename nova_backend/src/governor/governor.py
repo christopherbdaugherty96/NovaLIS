@@ -34,6 +34,7 @@ from src.governor.execute_boundary.execute_boundary import (
     ExecutionCPUExceededError,
 )
 from src.governor.single_action_queue import SingleActionQueue
+from src.trust.session_activity import normalize_activity_origin
 
 CAPABILITY_TIMEOUT_OVERRIDES = {
     16: 20.0,  # Governed web search may need search, source reads, and bounded synthesis.
@@ -301,7 +302,10 @@ class Governor:
         *,
         session_id: str | None = None,
         approval_id: str | None = None,
+        activity_origin: str = "user_action",
     ) -> ActionResult:
+        trusted_session_id = str(session_id or "").strip()[:128]
+        trusted_activity_origin = normalize_activity_origin(activity_origin)
         try:
             cap = self.registry.get(capability_id)
         except CapabilityRegistryError as exc:
@@ -332,7 +336,7 @@ class Governor:
         if requires_approval or approval_id:
             decision = self._approval_grants.consume(
                 approval_id=str(approval_id or ""),
-                session_id=str(session_id or ""),
+                session_id=trusted_session_id,
                 capability_id=capability_id,
                 params_snapshot=action_params,
             )
@@ -366,17 +370,6 @@ class Governor:
                 capability_id=capability_id,
             )
 
-        try:
-            self.ledger.log_event(
-                "ACTION_ATTEMPTED",
-                {"capability_id": capability_id, "capability_name": cap.name},
-            )
-        except Exception:
-            return self._normalize_action_result(
-                ActionResult.failure("I couldn't do that right now."),
-                capability_id=capability_id,
-            )
-
         req = ActionRequest(
             capability_id=capability_id,
             params=action_params,
@@ -384,7 +377,32 @@ class Governor:
         )
 
         try:
-            return self._execute(req)
+            self.ledger.log_event(
+                "ACTION_ATTEMPTED",
+                {
+                    "capability_id": capability_id,
+                    "capability_name": cap.name,
+                    "request_id": req.request_id,
+                    "session_id": trusted_session_id,
+                    "activity_origin": trusted_activity_origin,
+                },
+            )
+        except Exception:
+            return self._normalize_action_result(
+                ActionResult.failure(
+                    "I couldn't do that right now.",
+                    request_id=req.request_id,
+                ),
+                capability_id=capability_id,
+                request_id=req.request_id,
+            )
+
+        try:
+            return self._execute(
+                req,
+                session_id=trusted_session_id,
+                activity_origin=trusted_activity_origin,
+            )
         except (NetworkMediatorError, LedgerWriteFailed):
             return self._normalize_action_result(
                 ActionResult.failure("I couldn't do that right now.", request_id=req.request_id),
@@ -398,7 +416,13 @@ class Governor:
                 request_id=req.request_id,
             )
 
-    def _execute(self, req: ActionRequest) -> ActionResult:
+    def _execute(
+        self,
+        req: ActionRequest,
+        *,
+        session_id: str = "",
+        activity_origin: str = "user_action",
+    ) -> ActionResult:
         entered_execution = False
         self._queue.set_pending(req.request_id)
 
@@ -460,6 +484,8 @@ class Governor:
                 completion_metadata = {
                     "capability_id": req.capability_id,
                     "request_id": req.request_id,
+                    "session_id": str(session_id or "").strip()[:128],
+                    "activity_origin": normalize_activity_origin(activity_origin),
                     "success": result.success,
                     "status": str(result.status or ""),
                     "external_effect": bool(result.external_effect),

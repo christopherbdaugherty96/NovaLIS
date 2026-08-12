@@ -41,6 +41,13 @@ _RECEIPT_WORTHY: frozenset[str] = frozenset(
 
 _DEFAULT_LIMIT = 20
 _READ_TAIL = 500  # max ledger lines to scan for receipts
+_SESSION_READ_TAIL = 5000
+_SESSION_ACTION_EVENTS: frozenset[str] = frozenset(
+    {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}
+)
+_TRUSTED_ACTIVITY_ORIGINS: frozenset[str] = frozenset(
+    {"user_action", "background_read"}
+)
 
 
 def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
@@ -97,6 +104,64 @@ def get_receipt_summary() -> dict[str, Any]:
         "last_receipt": receipts[0] if receipts else None,
         "has_receipts": bool(receipts),
     }
+
+
+def get_session_action_receipts(
+    session_id: str,
+    *,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    """Return strictly correlated action receipts for one server session.
+
+    Legacy receipts without an exact session ID, request ID, or trusted origin
+    are intentionally excluded.  Current-session membership is never inferred
+    from timestamp proximity.
+    """
+    trusted_session_id = str(session_id or "").strip()
+    if not trusted_session_id or limit <= 0:
+        return []
+    try:
+        return _collect_session_action_receipts(trusted_session_id, limit)
+    except Exception:
+        _log.exception("receipt_store: unexpected error reading session receipts")
+        return []
+
+
+def _collect_session_action_receipts(
+    session_id: str,
+    limit: int,
+) -> list[dict[str, Any]]:
+    if not _LEDGER_PATH.exists():
+        return []
+    try:
+        raw_lines = _read_tail_lines(_LEDGER_PATH, _SESSION_READ_TAIL)
+    except OSError:
+        return []
+
+    receipts: list[dict[str, Any]] = []
+    for line in reversed(raw_lines):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("event_type") not in _SESSION_ACTION_EVENTS:
+            continue
+        if str(entry.get("session_id") or "").strip() != session_id:
+            continue
+        if not str(entry.get("request_id") or "").strip():
+            continue
+        origin = str(entry.get("activity_origin") or "").strip().lower()
+        if origin not in _TRUSTED_ACTIVITY_ORIGINS:
+            continue
+        receipts.append(entry)
+        if len(receipts) >= limit:
+            break
+    return receipts
 
 
 def _read_tail_lines(path: Path, n: int) -> list[str]:

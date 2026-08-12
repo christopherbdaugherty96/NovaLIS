@@ -75,6 +75,11 @@ from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor
 from src.trust.failure_ladder import FailureLadder
+from src.trust.session_activity import (
+    TRUSTED_ACTIVITY_ORIGIN_PARAM,
+    TRUSTED_SESSION_ID_PARAM,
+    normalize_activity_origin,
+)
 from src.trust.trust_contract import normalize_trust_status
 from src.runtime_health import resolve_runtime_health
 from src.patterns.pattern_review_store import PatternReviewStore
@@ -112,6 +117,7 @@ from src.websocket.session_handler import run_websocket_session
 from src.websocket.intent_patterns import (
     PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, HELP_ORIENT_RE,
     AMBIENT_CLARIFICATION_PATTERNS, EMAIL_INBOX_RE, EMAIL_INBOX_RESPONSE, TIME_QUERY_RE,
+    SESSION_ACTIVITY_RECAP_RE,
     REMIND_ME_TIMELESS_RE, REMIND_ME_TIMELESS_RESPONSE,
     REMINDER_BACKGROUND_DELIVERY_RE, REMINDER_BACKGROUND_DELIVERY_RESPONSE,
     REMINDER_SAVE_STATUS_RE,
@@ -3693,13 +3699,24 @@ async def invoke_governed_capability(
     session_id: str | None = None,
     approval_id: str | None = None,
 ) -> object:
+    trusted_params = dict(params or {})
+    trusted_activity_origin = normalize_activity_origin(
+        trusted_params.pop(TRUSTED_ACTIVITY_ORIGIN_PARAM, "user_action")
+    )
+    server_session_id = trusted_params.pop(TRUSTED_SESSION_ID_PARAM, "")
+    trusted_session_id = str(session_id or server_session_id or "").strip()
+    if trusted_session_id:
+        trusted_params["session_id"] = trusted_session_id
+    else:
+        trusted_params.pop("session_id", None)
     try:
         return await asyncio.to_thread(
             governor.handle_governed_invocation,
             capability_id,
-            params,
-            session_id=session_id,
+            trusted_params,
+            session_id=trusted_session_id,
             approval_id=approval_id,
+            activity_origin=trusted_activity_origin,
         )
     except Exception:
         log.exception("Governed capability %s raised unexpectedly — returning failure result", capability_id)
@@ -3729,7 +3746,12 @@ async def invoke_governed_text_command(
         params.update(extra_params)
     params.setdefault("session_id", session_id)
 
-    action_result = await invoke_governed_capability(governor, parsed.capability_id, params)
+    action_result = await invoke_governed_capability(
+        governor,
+        parsed.capability_id,
+        params,
+        session_id=session_id,
+    )
     return parsed.capability_id, action_result
 
 # -------------------------------------------------
