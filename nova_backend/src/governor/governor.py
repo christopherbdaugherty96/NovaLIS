@@ -513,6 +513,8 @@ class Governor:
                     if outcome_state:
                         completion_metadata["outcome_state"] = outcome_state[:80]
                     for field_name in (
+                        "request_accepted",
+                        "effect_verified",
                         "launch_request_accepted",
                         "visible_effect_verified",
                     ):
