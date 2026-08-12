@@ -66,19 +66,21 @@ The current ordering is:
 
 1. Bound and implement **P1-A user-visible commitment/capability truth** only under a separate
    reviewed authorization.
-2. Bound and implement **P1-B receipt-correlated action/outcome history** separately, also under a
+2. Run targeted **P1-A fresh-main live proof** after that repair is separately merged.
+3. Bound and implement **P1-B receipt-correlated action/outcome history** separately, also under a
    separate reviewed authorization.
-3. Run the targeted P1 fresh-main acceptance matrix: commitment truth, persistence failure/timeout,
-   action-history correlation, background-read recap truth, and no unauthorized execution.
-4. Address the recorded P2 groups without creating one broad cleanup lane: capability/copy truth;
+4. Run targeted **P1-B / live P1 fresh-main proof**: action-history correlation, background-read
+   recap truth, verified/failed/unknown outcomes, and no unauthorized execution.
+5. Address the recorded P2 groups without creating one broad cleanup lane: capability/copy truth;
    deterministic routing/temporal/source scope; and the News governed-parameter defect.
-5. Complete the untested/partial 36-section stress rows and run a fresh-main regression focused on
-   gaps rather than repeating already-proven authority paths.
-6. Resume PR #335 review. Make its ready/merge decision separately; do not assume this ordering
+6. Complete the untested/partial 36-section stress rows.
+7. Run the full fresh-main regression, combining the golden 25-step regression with the remaining
+   high-value stress cases.
+8. Resume PR #335 review. Make its ready/merge decision separately; do not assume this ordering
    approves modification or merge.
-7. If #335 eventually merges, run live identity-only Google acceptance before selecting
+9. If #335 eventually merges, run live identity-only Google acceptance before selecting
    **Google Tasks READ** as the first domain-data vertical.
-8. Only after proven Tasks read evidence may a separately scoped Tasks write be considered; later
+10. Only after proven Tasks read evidence may a separately scoped Tasks write be considered; later
    Google evidence/action families remain one-at-a-time and separately governed.
 
 Permanent Google boundary:

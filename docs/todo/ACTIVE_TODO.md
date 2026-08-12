@@ -22,11 +22,13 @@ Open, separate, and paused behind acceptance-derived truth work:
 
 Current evidence-selected order:
 1. Bound and repair P1-A user-visible commitment truth under separate authorization.
-2. Bound and repair P1-B receipt-correlated action/outcome history separately.
-3. Rerun the targeted P1 acceptance matrix.
-4. Address the recorded P2 groups, then complete the untested/partial 36-section catalog rows.
-5. Resume PR #335 review only after the truth failures are closed.
-6. After an eventual foundation merge and live identity-only proof, select Google Tasks READ.
+2. After P1-A merges, run targeted fresh-main P1-A live proof.
+3. Bound and repair P1-B receipt-correlated action/outcome history separately.
+4. After P1-B merges, run targeted P1-B / live P1 proof.
+5. Address the recorded P2 groups and complete the untested/partial 36-section catalog rows.
+6. Run the full fresh-main regression.
+7. Resume PR #335 review only after the truth failures are closed.
+8. After an eventual foundation merge and live identity-only proof, select Google Tasks READ.
 
 Local reminder schedules exist and persist across process restart. `show schedules` and
 `reminders` retrieve them. Background delivery/automatic firing does not exist; Google Tasks and
@@ -331,8 +333,9 @@ The seven-morning observation threshold, post-#312 selection gate, Commitment Tr
 Action Outcome Truth lane, and Semantic Substrate Slice 1 are complete.
 
 Next runtime lane, only when separately authorized: P1-A user-visible commitment/capability truth.
-Then close P1-B receipt-correlated action history as a separate bounded repair. Keep Google
-Workspace Foundation PR #335 draft and Google Tasks unstarted until targeted proof closes.
+After its separate merge, prove P1-A live before closing P1-B receipt-correlated action history as
+a separate bounded repair and proof. Keep Google Workspace Foundation PR #335 draft and Google
+Tasks unstarted until both P1 proofs and the later regression gates close.
 Connection, evidence access, and action authority remain distinct.
 
 Authorization Integrity Slice 1 is merged. Slice 2A remains separately

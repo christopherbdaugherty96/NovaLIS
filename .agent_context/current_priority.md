@@ -28,11 +28,13 @@ PR #335 contains an implemented identity-only Google Workspace Foundation, but i
 DRAFT / UNMERGED at `befb69e...`. It is paused, not cancelled or invalidated, behind the
 acceptance-derived order below:
   1. P1-A - user-visible commitment/capability truth.
-  2. P1-B - receipt-correlated action/outcome history.
-  3. Targeted P1 fresh-main proof.
-  4. Recorded P2 repairs and the remaining stress-test gaps.
-  5. Resume #335 review, then make a separate merge decision.
-  6. If merged, run live identity-only Google proof before selecting Google Tasks READ.
+  2. Targeted P1-A fresh-main live proof.
+  3. P1-B - receipt-correlated action/outcome history.
+  4. Targeted P1-B / live P1 fresh-main proof.
+  5. Recorded P2 repairs and the remaining stress-test gaps.
+  6. Full fresh-main regression.
+  7. Resume #335 review, then make a separate merge decision.
+  8. If merged, run live identity-only Google proof before selecting Google Tasks READ.
 
 This priority document ORDERS work. It does not authorize either P1 implementation, modification
 of PR #335, Google domain-data access, or any external write. Authorization Integrity Slice 2A
@@ -97,11 +99,12 @@ What agents should do:
 3. Do NOT select implementation work from this file's historical sections
    or from any pre-2026-07-07 priority/status doc.
 4. Treat PR #334 / Semantic Substrate Slice 1 as COMPLETE; do not select it again.
-5. Use the August 12 evidence to scope P1-A and P1-B separately. Ordering is not implementation
-   authority; require a separate reviewed authorization before changing runtime code.
-6. Keep PR #335 draft, unmodified, and unmerged while the P1 truth repairs and proof remain open.
+5. Use the August 12 evidence to scope P1-A, prove it live, then scope P1-B separately. Ordering is
+   not implementation authority; require a separate reviewed authorization before changing runtime
+   code or beginning either proof.
+6. Keep PR #335 draft, unmodified, and unmerged while the P1 truth repairs and proofs remain open.
    Do not start Google Tasks or any other Google domain-data vertical.
-7. After P1 proof, address P2 groups and the untested/partial stress rows; do not claim the full
+7. After both P1 proofs, address P2 groups and the untested/partial stress rows; do not claim the full
    36-section catalog already passed.
 8. Keep Authorization Integrity Slice 2A separately scoped, approved/paused, and unimplemented.
 9. Verify capability lock truth mechanically:

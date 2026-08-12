@@ -302,10 +302,16 @@ P1-A user-visible commitment/capability truth
         -> catch unsupported Google-qualified calendar-write wording
         -> prevent action-bearing partial output from becoming a visible promise before truth checks
 
+Targeted P1-A fresh-main live proof
+        -> prove Calendar-write and reminder persistence/streaming truth before selecting P1-B
+
 P1-B receipt-correlated action/outcome history
         -> answer "what did you do?" from correlated receipts
         -> distinguish background surface refreshes from user-requested actions
         -> report uncertainty when correlation is incomplete
+
+Targeted P1-B / live P1 proof
+        -> prove action-history correlation across verified, failed, and unknown outcomes
 
 P2 capability/source routing
         -> Google Tasks, Drive, and background-reminder truth

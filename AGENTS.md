@@ -65,9 +65,10 @@ selected by the 2026-08-12 fresh-main real-user acceptance record:
   A. user-visible commitment/capability truth;
   B. receipt-correlated action/outcome history.
 The 25-step golden regression was covered; the full 36-section stress catalog was
-not completed. After targeted P1 proof, address the recorded P2 groups and remaining
-stress-test gaps before resuming #335 review. This text ORDERS that work but does not
-authorize either repair, modify #335, or activate Google domain-data access.
+not completed. Repair and prove P1-A before beginning the separately bounded P1-B;
+after both P1 proofs, address the recorded P2 groups and remaining stress-test gaps
+before resuming #335 review. This text ORDERS that work but does not authorize either
+repair or proof, modification of #335, or activation of Google domain-data access.
 
 Authorization Integrity Slice 2A remains separately approved, not implemented on
 main, and paused; it is neither cancelled nor silently active.
@@ -110,10 +111,11 @@ Local Action Outcome Truth — COMPLETE (PR #331; merged-main live proof PASS).
 Semantic Substrate Slice 1 — COMPLETE (PR #334; merged in current main c44b6d0).
 2026-08-12 fresh-main real-user acceptance — RECORDED for planning; 25-step golden
   regression covered, full 36-section catalog incomplete.
-Current planning priority: P1-A user-visible commitment/capability truth, then P1-B
-  receipt-correlated action/outcome history; neither implementation is authorized by
-  this documentation sync. PR #335 remains draft/unmerged and must not be modified,
-  marked ready, or merged from this ordering text. Google Tasks remains unstarted.
+Current planning priority: P1-A user-visible commitment/capability truth, its targeted
+  fresh-main live proof, then the separately bounded P1-B receipt-correlated action/outcome
+  history and its targeted live proof. Neither implementation nor either proof is authorized by this
+  documentation sync. PR #335 remains draft/unmerged and must not be modified, marked ready,
+  or merged from this ordering text. Google Tasks remains unstarted.
 Authorization Integrity Slice 2A remains separately approved, paused, and
   unimplemented on main.
 Do not select implementation work from any document dated before 2026-07-07
