@@ -19,6 +19,9 @@ For what runs today see [02_RUNTIME_TRUTH.md](02_RUNTIME_TRUTH.md).
   when evidence and authority justify action.
 - **Objective function:** "help me make the next better decision" — deliberately different from
   an assistant's "answer my question" or an agent's "complete my task".
+- **Product moat:** Continuity preserves the source-backed relationship between what the user
+  intended, what was decided, what actually happened, what remains unresolved, and what deserves
+  attention next. Governance remains Nova's technical trust foundation.
 
 ## Permanent architectural model
 
@@ -29,6 +32,24 @@ Awareness -> Decision -> Authority -> Execution -> Outcome
 Capability is a property of the governed runtime: what Nova can technically do. It is not
 authority. Outcome verifies the effect and value of execution and reconciles results into future
 awareness; it may improve recommendations but may not expand permission.
+
+The future **Continuity Model** is persistent reconciled state surrounding—not joining—the five
+systems. It may preserve commitments, decisions, dependencies, open loops, evidence-backed
+status, review conditions, operating mode, focus constraints, and attention policy; reconcile
+that state against new evidence; and project useful next actions into Awareness and Decision.
+It may not authorize, execute, modify permission, or silently create commitments.
+
+Continuity must keep conversation, intent, and evidence distinct:
+
+```text
+idea != decision != commitment != started != completed != verified
+receipt != verified outcome
+```
+
+Records preserve origin such as `owner_stated`, `owner_confirmed`, `externally_observed`,
+`nova_derived`, or `imported`. Closed decisions reopen only when material evidence changes, an
+assumption becomes invalid, a review trigger fires, or the owner explicitly reopens them.
+Continuity is strategic product direction, not implemented runtime behavior.
 
 The full operating loop is:
 
