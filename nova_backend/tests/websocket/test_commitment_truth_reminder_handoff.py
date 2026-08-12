@@ -46,6 +46,15 @@ class _RecordingScheduleStore:
             "policy_summary": "",
         }
 
+    def get_schedule(self, schedule_id: str) -> dict | None:
+        if schedule_id != "SCH-TEST-0001" or not self.created:
+            return None
+        return {
+            "id": schedule_id,
+            "body": str(self.created[-1]["body"]),
+            "active": True,
+        }
+
 
 class _FailingScheduleStore(_RecordingScheduleStore):
     def create_schedule(self, **kwargs) -> dict:
@@ -60,6 +69,11 @@ class _SummaryFailingScheduleStore(_RecordingScheduleStore):
 class _TimeoutScheduleStore(_RecordingScheduleStore):
     def create_schedule(self, **kwargs) -> dict:
         raise TimeoutError("simulated persistence timeout")
+
+
+class _ReadFailingScheduleStore(_RecordingScheduleStore):
+    def get_schedule(self, schedule_id: str) -> dict | None:
+        raise OSError("simulated reminder verification failure")
 
 
 def _run_session(monkeypatch, prompts: list[str], store: _RecordingScheduleStore) -> _ScriptedWebSocket:
@@ -236,6 +250,73 @@ def test_natural_tomorrow_reminder_never_streams_a_prepersistence_promise(monkey
     messages = _chat_messages(ws)
     assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
     assert any("will not fire automatically" in message for message in messages)
+
+
+def test_saved_reminder_followup_uses_persisted_session_evidence(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to test Nova",
+            "show schedules",
+            "did you save that reminder?",
+        ],
+        store,
+    )
+
+    assert len(store.created) == 1
+    messages = _chat_messages(ws)
+    assert any(
+        'Yes. Nova saved reminder SCH-TEST-0001: "test Nova"' in message
+        for message in messages
+    )
+    assert any("will not fire automatically while Nova is closed" in message for message in messages)
+
+
+def test_failed_reminder_followup_never_claims_persistence(monkeypatch):
+    store = _FailingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me at 2 PM to call mom", "did you save that reminder?"],
+        store,
+    )
+
+    messages = _chat_messages(ws)
+    assert any("did not save the most recent reminder request" in message for message in messages)
+    assert not any("Yes. Nova saved reminder" in message for message in messages)
+
+
+def test_unparsed_reminder_followup_does_not_inherit_prior_success(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to test Nova",
+            "remind me on August 13 at 2 PM to test Nova",
+            "did you save that reminder?",
+        ],
+        store,
+    )
+
+    messages = _chat_messages(ws)
+    assert len(store.created) == 1
+    assert any("no reminder was saved" in message for message in messages)
+    assert any("did not save the most recent reminder request" in message for message in messages)
+    assert sum("Yes. Nova saved reminder" in message for message in messages) == 0
+
+
+def test_reminder_followup_fails_conservatively_when_store_cannot_be_verified(monkeypatch):
+    store = _ReadFailingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me tomorrow at 2 PM to test Nova", "did you save that reminder?"],
+        store,
+    )
+
+    messages = _chat_messages(ws)
+    assert len(store.created) == 1
+    assert any("couldn't verify the reminder store" in message for message in messages)
+    assert not any("Yes. Nova saved reminder" in message for message in messages)
 
 
 def test_unparsed_reminder_action_fails_truthfully_without_general_chat_stream(monkeypatch):

@@ -482,6 +482,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     REMINDER_PLAIN_TIME_RE = deps.REMINDER_PLAIN_TIME_RE
     REMINDER_BACKGROUND_DELIVERY_RE = deps.REMINDER_BACKGROUND_DELIVERY_RE
     REMINDER_BACKGROUND_DELIVERY_RESPONSE = deps.REMINDER_BACKGROUND_DELIVERY_RESPONSE
+    REMINDER_SAVE_STATUS_RE = deps.REMINDER_SAVE_STATUS_RE
     REMINDER_ACTION_REQUEST_RE = deps.REMINDER_ACTION_REQUEST_RE
     REMINDER_ACTION_UNPARSED_RESPONSE = deps.REMINDER_ACTION_UNPARSED_RESPONSE
     _capability_help_message = deps._capability_help_message
@@ -699,6 +700,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "pending_governed_confirm": None,
         "pending_interpret_confirm": None,
         "pending_reminder": None,
+        "last_reminder_save_result": None,
         "analysis_documents": [],
         "last_analysis_doc_id": None,
         "last_intent_family": "",
@@ -837,6 +839,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         try:
             scheduled_for = _parse_schedule_datetime(normalized_time, recurrence=recurrence)
         except ValueError as exc:
+            session_state["last_reminder_save_result"] = {
+                "status": "not_saved",
+                "reason": "unsupported_time",
+            }
             await _complete_immediate_turn(str(exc), remember_response=False, tone_domain="system")
             return
 
@@ -850,6 +856,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
         except TimeoutError:
             session_state["pending_reminder"] = None
+            session_state["last_reminder_save_result"] = {
+                "status": "not_saved",
+                "reason": "persistence_timeout",
+            }
             log.exception("Local Nova reminder persistence timed out")
             await _complete_immediate_turn(
                 "Reminder persistence timed out. I couldn't verify a Nova reminder, so I won't "
@@ -860,6 +870,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             return
         except Exception:
             session_state["pending_reminder"] = None
+            session_state["last_reminder_save_result"] = {
+                "status": "not_saved",
+                "reason": "persistence_failure",
+            }
             log.exception("Local Nova reminder persistence failed")
             await _complete_immediate_turn(
                 "I couldn't create that Nova reminder. No reminder was created. Please try again.",
@@ -867,6 +881,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 tone_domain="system",
             )
             return
+
+        session_state["last_reminder_save_result"] = {
+            "status": "saved",
+            "schedule_id": str(item["id"]),
+            "body": reminder_body,
+            "scheduled_for": scheduled_for,
+        }
 
         try:
             snapshot = notification_schedules.summarize()
@@ -1872,6 +1893,55 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 continue
 
+            if REMINDER_SAVE_STATUS_RE.match(command_text):
+                last_save = session_state.get("last_reminder_save_result") or {}
+                schedule_id = str(last_save.get("schedule_id") or "").strip()
+                reminder_verification_failed = False
+                try:
+                    stored_reminder = (
+                        notification_schedules.get_schedule(schedule_id)
+                        if last_save.get("status") == "saved" and schedule_id
+                        else None
+                    )
+                except Exception:
+                    stored_reminder = None
+                    reminder_verification_failed = True
+                    log.exception("Local Nova reminder verification failed")
+                if stored_reminder is not None:
+                    reminder_body = str(stored_reminder.get("body") or last_save.get("body") or "").strip()
+                    scheduled_for = last_save.get("scheduled_for")
+                    await _complete_immediate_turn(
+                        f"Yes. Nova saved reminder {schedule_id}: \"{reminder_body}\" for "
+                        f"{_format_local_schedule_time(scheduled_for)}. It is a local record and "
+                        "will not fire automatically while Nova is closed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                elif reminder_verification_failed:
+                    await _complete_immediate_turn(
+                        "I couldn't verify the reminder store just now, so I will not claim the "
+                        "most recent reminder is saved. Try \"show schedules\" again before "
+                        "relying on it.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                elif last_save.get("status") == "not_saved":
+                    await _complete_immediate_turn(
+                        "No. Nova did not save the most recent reminder request. You can verify "
+                        "the current records with \"show schedules\".",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                else:
+                    await _complete_immediate_turn(
+                        "I do not have verified reminder-save evidence for that request in this "
+                        "session, so I will not claim it was saved. Use \"show schedules\" to "
+                        "inspect the current records.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                continue
+
             # Reminder creation remains deterministic through persistence. No
             # action-shaped reminder request may reach streamed GeneralChat.
             time_first_reminder = REMINDER_TIME_ONLY_RE.match(command_text)
@@ -1932,6 +2002,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             if REMINDER_ACTION_REQUEST_RE.match(command_text):
+                session_state["last_reminder_save_result"] = {
+                    "status": "not_saved",
+                    "reason": "unsupported_time",
+                }
                 await _complete_immediate_turn(
                     REMINDER_ACTION_UNPARSED_RESPONSE,
                     remember_response=False,

@@ -197,6 +197,12 @@ REMINDER_BACKGROUND_DELIVERY_RESPONSE = (
     "No. Nova's saved reminders do not run in the background and cannot alert you "
     "while Nova is closed. They are local records you can review with \"show schedules\"."
 )
+REMINDER_SAVE_STATUS_RE = re.compile(
+    r"^\s*(?:did\s+you\s+save\s+(?:that|the|my)\s+reminder"
+    r"|was\s+(?:that|the|my)\s+reminder\s+saved"
+    r"|is\s+(?:that|the|my)\s+reminder\s+saved)\??\s*$",
+    re.IGNORECASE,
+)
 REMINDER_ACTION_REQUEST_RE = re.compile(
     r"^\s*(?:remind\s+me\s+(?:at|on|today|tomorrow|daily|next|in\s+\d+)\b.*"
     r"|(?:set|add)\s+(?:a\s+)?reminder"
