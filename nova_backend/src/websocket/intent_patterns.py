@@ -185,6 +185,29 @@ REMIND_ME_TIMELESS_RESPONSE = (
     "or \"remind me daily at 9am to check email\"."
 )
 
+# Reminder delivery is local/dashboard-only. Questions about background or
+# closed-app delivery must not reach advisory GeneralChat, where streamed text
+# could manufacture an unsupported alert capability before final correction.
+REMINDER_BACKGROUND_DELIVERY_RE = re.compile(
+    r"^\s*(?=.*\b(?:remind\w*|notif\w*|alert\w*)\b)"
+    r"(?=.*\b(?:background|closed|offline|not\s+running)\b).+\s*$",
+    re.IGNORECASE,
+)
+REMINDER_BACKGROUND_DELIVERY_RESPONSE = (
+    "No. Nova's saved reminders do not run in the background and cannot alert you "
+    "while Nova is closed. They are local records you can review with \"show schedules\"."
+)
+REMINDER_ACTION_REQUEST_RE = re.compile(
+    r"^\s*(?:remind\s+me\s+(?:at|on|today|tomorrow|daily|next|in\s+\d+)\b.*"
+    r"|(?:set|add)\s+(?:a\s+)?reminder"
+    r"(?:\s+(?:at|on|today|tomorrow|daily|for|to)\b.*)?)\s*$",
+    re.IGNORECASE,
+)
+REMINDER_ACTION_UNPARSED_RESPONSE = (
+    "I couldn't parse a supported reminder time, so no reminder was saved. Try: "
+    '"remind me tomorrow at 2 PM to test Nova".'
+)
+
 # Calendar writes are not implemented. These action-shaped forms must remain
 # deterministic so they cannot fall through to advisory GeneralChat and produce
 # an unsupported completion claim. A local Nova reminder may be offered as a
@@ -193,8 +216,10 @@ CALENDAR_WRITE_REQUEST_RE = re.compile(
     r"^\s*(?:"
     r"(?:add|put|block)\s+.+?\s+(?:to|on)\s+(?:(?:my|the)\s+)?calendar"
     r"(?:\s+(?:at|on|for|to)\s+.+)?"
-    r"|add\s+(?:this\s+)?to\s+(?:(?:my|the)\s+)?calendar"
+    r"|add\s+(?:this\s+)?to\s+(?:(?:my|the|google)\s+)?calendar"
     r"(?:\s+(?:at|on|for|to)\s+.+)?"
+    r"|(?:add|schedule)\s+.+?\b(?:appointment|meeting)\s+(?:today|tomorrow)"
+    r"(?:\s+(?:at|for)\s+(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)?|noon|midnight))?"
     r"|schedule\s+(?:this|the|an?)\s+event"
     r"(?:\s+(?:at|on|for|to|called|named)\s+.+)?"
     r"|(?:create|add)\s+(?:an?\s+)?(?:calendar\s+)?event"
@@ -447,7 +472,10 @@ SCHEDULE_BRIEF_RE = re.compile(
     re.IGNORECASE,
 )
 REMIND_ME_RE = re.compile(
-    r"^\s*remind\s+me(?:\s+(?P<daily>daily))?\s+at\s+(?P<time>.+?)\s+to\s+(?P<body>.+?)\s*$",
+    r"^\s*(?:remind\s+me|(?:set|add)\s+(?:a\s+)?reminder)"
+    r"(?:\s+(?P<daily>daily))?\s+"
+    r"(?:at\s+|(?=(?:today|tomorrow)\b))"
+    r"(?P<time>.+?)\s+to\s+(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
 CANCEL_SCHEDULE_RE = re.compile(

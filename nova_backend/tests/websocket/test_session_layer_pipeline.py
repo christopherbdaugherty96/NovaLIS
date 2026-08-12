@@ -25,7 +25,10 @@ from src.websocket.intent_patterns import (
     CAPABILITY_HELP_RE,
     EMAIL_INBOX_RE,
     HELP_ORIENT_RE,
+    REMIND_ME_RE,
     REMIND_ME_TIMELESS_RE,
+    REMINDER_ACTION_REQUEST_RE,
+    REMINDER_BACKGROUND_DELIVERY_RE,
     REMINDER_TIME_ONLY_RE,
     TIME_QUERY_RE,
 )
@@ -61,6 +64,12 @@ def _pipeline(raw: str) -> str | int | None:
         return "REMIND_TIMELESS"
     if REMINDER_TIME_ONLY_RE.match(command_text):
         return "REMIND_TIME_ONLY"
+    if REMIND_ME_RE.match(command_text):
+        return "REMIND_FULL"
+    if REMINDER_BACKGROUND_DELIVERY_RE.match(command_text):
+        return "REMINDER_BACKGROUND_DELIVERY"
+    if REMINDER_ACTION_REQUEST_RE.match(command_text):
+        return "REMINDER_ACTION_UNPARSED"
     for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
         if pat.match(command_text):
             return "AMBIENT_CLARIFICATION"
@@ -274,12 +283,18 @@ class TestCommitmentTruthRouting:
         "create a calendar event",
         "block this time on my calendar",
         "add an event",
+        "add a dentist appointment tomorrow at 3 PM",
+        "put dinner on my calendar at 7",
+        "schedule a meeting tomorrow at noon",
+        "add this to Google Calendar",
     ])
     def test_calendar_write_forms_route_deterministically(self, raw: str):
         assert _pipeline(raw) == "CALENDAR_WRITE"
 
     @pytest.mark.parametrize("raw", [
         "add calendar support to this project",
+        "add Google Calendar support to this project",
+        "add OAuth support to Google Calendar",
         "create a calendar event handler in Python",
         "put the calendar response in a table",
         "block this calendar discussion into sections",
@@ -295,6 +310,39 @@ class TestCommitmentTruthRouting:
     ])
     def test_time_first_reminders_route_deterministically(self, raw: str):
         assert _pipeline(raw) == "REMIND_TIME_ONLY"
+
+    def test_natural_tomorrow_reminder_routes_deterministically(self):
+        assert _pipeline("remind me tomorrow at 2 PM to test Nova") == "REMIND_FULL"
+
+    def test_set_reminder_tomorrow_routes_deterministically(self):
+        assert _pipeline("set a reminder tomorrow at 2 PM to test Nova") == "REMIND_FULL"
+
+    def test_unparsed_reminder_action_still_cannot_reach_general_chat(self):
+        assert _pipeline("remind me on August 13 at 2 PM to test Nova") == "REMINDER_ACTION_UNPARSED"
+
+    def test_non_action_remind_me_question_is_not_overcaptured(self):
+        assert _pipeline("remind me why the sky is blue") != "REMINDER_ACTION_UNPARSED"
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "add a reminder component to this app",
+            "set reminder copy in the user interface",
+        ],
+    )
+    def test_normal_reminder_domain_language_is_not_overcaptured(self, raw: str):
+        assert _pipeline(raw) != "REMINDER_ACTION_UNPARSED"
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "can reminders alert me while Nova is closed?",
+            "will you notify me tomorrow if Nova is closed?",
+            "do notifications work in the background?",
+        ],
+    )
+    def test_background_delivery_questions_route_deterministically(self, raw: str):
+        assert _pipeline(raw) == "REMINDER_BACKGROUND_DELIVERY"
 
 
 # ---------------------------------------------------------------------------

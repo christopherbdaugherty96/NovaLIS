@@ -281,36 +281,50 @@ def _calendar_reminder_context(raw: str) -> dict[str, str]:
     """Extract reminder-safe context without treating calendar time as reminder time."""
     value = " ".join(str(raw or "").strip().rstrip(".?!").split())
     body = ""
+    event_time = ""
 
     after_calendar = re.search(r"\bcalendar\s+to\s+(?P<body>.+)$", value, re.IGNORECASE)
     if after_calendar:
         body = str(after_calendar.group("body") or "").strip()
     else:
         before_calendar = re.match(
-            r"^\s*(?:add|put|block)\s+(?P<body>.+?)\s+(?:to|on)\s+(?:my\s+)?calendar\b",
+            r"^\s*(?:add|put|block)\s+(?P<body>.+?)\s+(?:to|on)\s+"
+            r"(?:(?:my|the|google)\s+)?calendar\b",
             value,
             re.IGNORECASE,
         )
         if before_calendar:
             body = str(before_calendar.group("body") or "").strip()
         else:
-            after_event = re.match(
-                r"^\s*(?:schedule|create)\s+(?:this\s+|an?\s+)?(?:calendar\s+)?event"
-                r"(?:\s+(?:to|for|called|named)\s+(?P<body>.+))?$",
+            timed_natural_event = re.match(
+                r"^\s*(?:add|schedule)\s+(?P<body>.+?\b(?:appointment|meeting))\s+"
+                r"(?P<context>(?:today|tomorrow)(?:\s+(?:at|for)\s+"
+                r"(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)?|noon|midnight))?)$",
                 value,
                 re.IGNORECASE,
             )
-            if after_event:
-                body = str(after_event.group("body") or "").strip()
+            if timed_natural_event:
+                body = str(timed_natural_event.group("body") or "").strip()
+                event_time = str(timed_natural_event.group("context") or "").strip()
+            else:
+                after_event = re.match(
+                    r"^\s*(?:schedule|create)\s+(?:this\s+|an?\s+)?(?:calendar\s+)?event"
+                    r"(?:\s+(?:to|for|called|named)\s+(?P<body>.+))?$",
+                    value,
+                    re.IGNORECASE,
+                )
+                if after_event:
+                    body = str(after_event.group("body") or "").strip()
 
-    event_time_match = re.search(
-        r"\s+(?:at|on)\s+(?P<context>(?:(?:today|tomorrow)\s+)?"
-        r"(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)?|"
-        r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*(?:am|pm)))\s*$",
-        value,
-        re.IGNORECASE,
-    )
-    event_time = str(event_time_match.group("context") or "").strip() if event_time_match else ""
+    if not event_time:
+        event_time_match = re.search(
+            r"\s+(?:at|on)\s+(?P<context>(?:(?:today|tomorrow)\s+)?"
+            r"(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)?|"
+            r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*(?:am|pm)))\s*$",
+            value,
+            re.IGNORECASE,
+        )
+        event_time = str(event_time_match.group("context") or "").strip() if event_time_match else ""
     if event_time and body:
         body = re.sub(
             r"\s+(?:at|on)\s+" + re.escape(event_time) + r"\s*$",
@@ -466,6 +480,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     REMINDER_BODY_FIRST_RE = deps.REMINDER_BODY_FIRST_RE
     REMINDER_TIME_ONLY_RE = deps.REMINDER_TIME_ONLY_RE
     REMINDER_PLAIN_TIME_RE = deps.REMINDER_PLAIN_TIME_RE
+    REMINDER_BACKGROUND_DELIVERY_RE = deps.REMINDER_BACKGROUND_DELIVERY_RE
+    REMINDER_BACKGROUND_DELIVERY_RESPONSE = deps.REMINDER_BACKGROUND_DELIVERY_RESPONSE
+    REMINDER_ACTION_REQUEST_RE = deps.REMINDER_ACTION_REQUEST_RE
+    REMINDER_ACTION_UNPARSED_RESPONSE = deps.REMINDER_ACTION_UNPARSED_RESPONSE
     _capability_help_message = deps._capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     _render_local_time_message = deps._render_local_time_message
@@ -830,6 +848,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 recurrence=recurrence,
                 next_run_at=scheduled_for,
             )
+        except TimeoutError:
+            session_state["pending_reminder"] = None
+            log.exception("Local Nova reminder persistence timed out")
+            await _complete_immediate_turn(
+                "Reminder persistence timed out. I couldn't verify a Nova reminder, so I won't "
+                "claim one was created. Check \"show schedules\" before retrying.",
+                remember_response=False,
+                tone_domain="system",
+            )
+            return
         except Exception:
             session_state["pending_reminder"] = None
             log.exception("Local Nova reminder persistence failed")
@@ -1440,6 +1468,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if CALENDAR_WRITE_REQUEST_RE.match(text.rstrip(".?!")):
                 reminder_context = _calendar_reminder_context(text)
                 reminder_body = str(reminder_context.get("body") or "").strip()
+                calendar_name = (
+                    "Google Calendar"
+                    if re.search(r"\bgoogle\s+calendar\b", text, re.IGNORECASE)
+                    else "Calendar"
+                )
                 session_state["pending_reminder"] = {
                     "stage": "offer",
                     "body": reminder_body,
@@ -1457,7 +1490,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 await _complete_immediate_turn(
                     (
-                        "Calendar writing isn't enabled. No calendar event was created. "
+                        f"{calendar_name} writing isn't enabled. No calendar event was created. "
                         f"{reminder_offer}Say \"yes, set a reminder\" if you want that."
                     ),
                     suggested_actions=[
@@ -1829,8 +1862,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 continue
 
-            # Timeless reminder — "remind me to X" without a time spec.
-            # Full form ("remind me at 3pm to X") is handled downstream by REMIND_ME_RE.
+            # Keep delivery/capability questions ahead of creation parsing so
+            # they receive a truthful deterministic answer without persistence.
+            if REMINDER_BACKGROUND_DELIVERY_RE.match(command_text):
+                await _complete_immediate_turn(
+                    REMINDER_BACKGROUND_DELIVERY_RESPONSE,
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            # Reminder creation remains deterministic through persistence. No
+            # action-shaped reminder request may reach streamed GeneralChat.
             time_first_reminder = REMINDER_TIME_ONLY_RE.match(command_text)
             if time_first_reminder:
                 reminder_time = str(time_first_reminder.group("time") or "").strip()
@@ -1872,6 +1915,25 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     suggested_actions=[
                         {"label": "Use 3 PM", "command": "3 PM"},
                     ],
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            remind_me_match = REMIND_ME_RE.match(command_text)
+            if remind_me_match:
+                recurrence = "daily" if remind_me_match.group("daily") else "once"
+                reminder_body = str(remind_me_match.group("body") or "").strip()
+                await _save_local_reminder(
+                    reminder_body=reminder_body,
+                    time_text=str(remind_me_match.group("time") or "").strip(),
+                    recurrence=recurrence,
+                )
+                continue
+
+            if REMINDER_ACTION_REQUEST_RE.match(command_text):
+                await _complete_immediate_turn(
+                    REMINDER_ACTION_UNPARSED_RESPONSE,
                     remember_response=False,
                     tone_domain="system",
                 )
@@ -3291,17 +3353,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
                 await send_chat_done(ws)
-                continue
-
-            remind_me_match = REMIND_ME_RE.match(command_text)
-            if remind_me_match:
-                recurrence = "daily" if remind_me_match.group("daily") else "once"
-                reminder_body = str(remind_me_match.group("body") or "").strip()
-                await _save_local_reminder(
-                    reminder_body=reminder_body,
-                    time_text=str(remind_me_match.group("time") or "").strip(),
-                    recurrence=recurrence,
-                )
                 continue
 
             reschedule_schedule_match = RESCHEDULE_SCHEDULE_RE.match(text)
