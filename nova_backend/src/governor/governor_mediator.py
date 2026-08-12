@@ -223,6 +223,12 @@ WEATHER_RE = re.compile(
     r"|what(?:'s|s) (?:the )?temperature(?: today| outside| right now)?)\s*$",
     re.IGNORECASE,
 )
+EXPLICIT_WEATHER_LOCATION_RE = re.compile(
+    r"^\s*(?:weather|how(?:'s| is) the weather|what(?:'s| is) (?:the )?weather)"
+    r"\s+in\s+(?P<location>[a-z0-9][a-z0-9 ,.'\-]{0,119}?)"
+    r"(?:\s+(?:today|now|tomorrow|tonight))?\s*$",
+    re.IGNORECASE,
+)
 NEWS_RE = re.compile(
     r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|whats (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
     r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news"
@@ -910,7 +916,13 @@ class GovernorMediator:
             return None
 
         if WEATHER_RE.match(t):
-            return _invocation_if_enabled(55, {})
+            weather_location = EXPLICIT_WEATHER_LOCATION_RE.match(t)
+            location = (
+                re.sub(r"\s+", " ", weather_location.group("location")).strip(" ,.")
+                if weather_location
+                else ""
+            )
+            return _invocation_if_enabled(55, {"location": location} if location else {})
 
         # TODAY_NEWS_RE must fire before NEWS_RE — "today's news" is specific to Cap 50
         if TODAY_NEWS_RE.match(t):
