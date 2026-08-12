@@ -1,5 +1,4 @@
 import pytest
-
 from src.actions.action_request import ActionRequest
 from src.executors.brightness_executor import BrightnessExecutor
 from src.executors.media_executor import MediaExecutor
@@ -53,7 +52,44 @@ def test_volume_executor_supports_mute(monkeypatch):
 
     assert result.success is True
     assert seen["action"] == "mute"
-    assert result.message == "Audio muted."
+    assert result.message == (
+        "Mute request sent. I couldn't verify the resulting system audio state."
+    )
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
+
+
+@pytest.mark.parametrize(
+    ("params", "forbidden_claim", "expected_fragment"),
+    [
+        ({"action": "up"}, "turned the volume up", "volume-up request sent"),
+        ({"action": "down"}, "turned the volume down", "volume-down request sent"),
+        ({"action": "mute"}, "audio muted", "mute request sent"),
+        ({"action": "unmute"}, "audio unmuted", "unmute request sent"),
+        ({"action": "set", "level": 40}, "set volume to", "volume-level request sent for 40%"),
+    ],
+)
+def test_volume_executor_does_not_claim_an_unverified_effect(
+    monkeypatch,
+    params,
+    forbidden_claim,
+    expected_fragment,
+):
+    executor = VolumeExecutor()
+    monkeypatch.setattr(executor.system_control, "set_volume", lambda *_args, **_kwargs: True)
+
+    result = executor.execute(ActionRequest(capability_id=19, params=params))
+
+    assert result.success is True
+    assert result.status == "completed"
+    assert forbidden_claim not in result.message.lower()
+    assert expected_fragment in result.message.lower()
+    assert "couldn't verify" in result.message.lower()
+    assert result.outcome_reason.endswith("could not be verified.")
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
 
 
 def test_media_executor_fails_when_system_control_cannot_apply(monkeypatch):

@@ -25,6 +25,10 @@ def test_volume_executor_handles_mute_on_windows(monkeypatch):
     assert result.authority_class == "reversible_local"
     assert result.external_effect is False
     assert result.reversible is True
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
+    assert "muted" not in result.message.lower()
 
 
 def test_media_executor_handles_pause_on_windows(monkeypatch):
