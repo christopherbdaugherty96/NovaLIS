@@ -171,6 +171,18 @@ TIME_QUERY_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Current-session activity recap. Keep this intentionally exact so generic
+# research/context questions containing "what happened" remain untouched.
+SESSION_ACTIVITY_RECAP_RE = re.compile(
+    r"^\s*(?:"
+    r"what did you actually do"
+    r"|what actions did you perform"
+    r"|what happened during this session"
+    r"|what can you verify happened"
+    r")\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+
 # -------------------------------------------------
 # Reminder without time — clarification response
 # "remind me to call mom" (no "at TIME") → ask for time
