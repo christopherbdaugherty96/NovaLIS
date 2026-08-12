@@ -39,6 +39,10 @@ This is a local control-plane thesis for the models, agents, tools, and data sou
 chooses to place behind Nova. It is not a claim that external AI vendors will adopt Nova as a
 universal industry standard.
 
+Governance is Nova's technical trust foundation. Continuity is its intended product moat: Nova
+should preserve the source-backed state between what the owner intended, what was decided, what
+actually happened, what remains unresolved, and what deserves attention next.
+
 ## Permanent Doctrine
 
 > Nova may autonomously improve its evidence, understanding, simulations, and
@@ -165,6 +169,111 @@ system may promote itself, unlock a capability, lower a risk class, or silently 
 The Outcome system independently records lifecycle truth, effect truth, receipt truth, quality,
 cost, value, and unresolved state. Technical completion is not the same as a verified effect,
 and a verified effect is not the same as a valuable outcome.
+
+## Continuity Model — Cross-Cutting Strategic State
+
+Continuity is persistent, reconciled state surrounding the five permanent systems. It is not a
+sixth system, a second planning brain, or an authority plane.
+
+```text
+                    CONTINUITY MODEL
+
+  Commitments | Decisions | Dependencies | Open Loops
+  Evidence | Status | Review Triggers | Operating Mode
+  Focus Constraints | Attention Policy
+
+                          |
+                          v
+Awareness -> Decision -> Authority -> Execution -> Outcome
+     ^                                              |
+     |--------------- Reconciliation ---------------|
+```
+
+Continuity has three responsibilities:
+
+- **Preserve** what was intended, decided, committed, observed, and left unresolved.
+- **Reconcile** prior state against new evidence without silently overwriting conflict.
+- **Project** the smallest useful next action into Awareness and Decision.
+
+Continuity has three absolute prohibitions:
+
+- never authorize;
+- never execute;
+- never silently invent commitments or modify permission.
+
+The initial conceptual model consists of:
+
+- **Commitment Graph** — goals, commitments, dependencies, next actions, review conditions,
+  blockers, and completion evidence;
+- **Decision Ledger** — decisions, alternatives, evidence, rationale, confidence, assumptions,
+  invalidating conditions, review triggers, and current status;
+- **Open Loops** — waiting items, unresolved promises, blocked work, stale plans, and unverified
+  completions;
+- **Evidence-backed Status** — explicit state transitions that do not confuse discussion,
+  action, receipt, completion, and verification;
+- **Operating Mode** — a small explicit or deterministically inferred vocabulary of `EXPLORE`,
+  `DECIDE`, `PLAN`, `EXECUTE`, `DEBUG`, `WAIT`, `REVIEW`, and `CLOSE` that changes recommendation
+  style but never authority;
+- **Attention Policy** — advisory ranking and batching by value, urgency, consequence,
+  confidence, effort, and attention cost; recommendation priority is not permission;
+- **Next-Action Projection** — an explainable projection of current objective, owner, dependency,
+  deadline or review trigger, done condition, blocker, and `do_not_work_on_yet` state;
+- **Decision Compression and Critical Path** — retain the full evidence while exposing the
+  current answer, main uncertainty, invalidation condition, and dependency that unlocks the next
+  meaningful move.
+
+### State provenance and lifecycle
+
+Every consequential continuity record should identify its origin, including at least:
+
+```text
+owner_stated
+owner_confirmed
+externally_observed
+nova_derived
+imported
+```
+
+Mentioning, proposing, confirming, and observing are different evidence states:
+
+```text
+"I might apply"              -> mentioned or proposed
+"I will apply tomorrow"      -> owner-confirmed commitment
+submission evidence observed -> externally observed outcome
+```
+
+Likewise:
+
+```text
+idea != decision
+decision != commitment
+commitment != started
+started != completed
+receipt != verified outcome
+```
+
+Strategic status vocabulary includes `proposed`, `confirmed`, `active`, `waiting`, `blocked`,
+`completed_unverified`, `verified`, `abandoned`, and `superseded`. Future implementation must
+define reviewed transition rules; these terms do not claim a current runtime schema.
+
+### Reopening, focus, and correction
+
+A closed decision remains closed unless material evidence changes, a recorded assumption becomes
+invalid, a `ReviewTrigger` fires, or the owner explicitly reopens it. Nova may propose reopening
+and show the conflicting evidence. It may not silently revise or reopen a decision.
+
+`do_not_work_on_yet` is first-class strategic state. Nova should distinguish "this is relevant"
+from "this is current work," preserve useful deferred ideas, and explain which dependency must
+change before they become active.
+
+The owner must be able to inspect, correct, supersede, defer, export, or delete continuity state
+where practical. Corrections retain provenance; inference never outranks owner correction or
+stronger external evidence.
+
+This direction is strategically accepted but inactive. Any future Continuity Slice 1 requires
+its own evidence-backed warrant, reviewed scope, owner activation, implementation, tests, and
+proof. It adds no current class, database, graph infrastructure, model inference, UI, capability,
+authority, background observer, or execution path.
 
 ## Full Lifecycle
 
@@ -514,23 +623,12 @@ The feature warrant prevents laying stones no observed need earned.
 
 ## Present Boundary
 
-This document changes no current action:
+This strategic compass does not record volatile branch, SHA, pull-request, or active-lane state.
+For current ordering use `NOVA_MASTER_ROADMAP_2026-07-05.md`; for current work use
+`../status/DAILY_COMMAND_CENTER.md`; for runtime existence use code and generated runtime truth.
 
-- `main` is at `45a6759d` after PR #327;
-- Authorization Integrity Slice 1 is merged through PR #325;
-- Slice 2A is not implemented on `main`; bounded local implementation was owner-approved in an
-  external conversation under its own exact scope and publication boundary, not by Issue #326
-  or PR #327;
-- Slice 2B remains deferred and separately gated;
-- formal post-#312 acceptance provenance remains unresolved in repository truth and must not be
-  retrospectively fabricated;
-- product lane selection remains independent from authorization hardening;
-- no economic-value proof or expanded OpenClaw vertical is active;
-- no new capability, connector, external write, scheduler, OpenClaw expansion, autonomous
-  execution, learning authority, or cloud-data route is authorized here.
-
-The August 6 continuity truth-sync is recorded by this boundary. Remaining sequence: resolve
-acceptance provenance honestly; continue separately approved bounded local Slice 2A work within
-its own boundary; select one product-usability lane from real-use evidence; then, only through
-separate authorization, consider a read-first economic proof and later one typed OpenClaw
-vertical. OpenClaw remains a replaceable actuator rather than an authority.
+Continuity is strategically accepted direction and remains inactive. This document authorizes no
+Continuity implementation, schema, persistence store, graph, model behavior, UI, background work,
+capability, authority, connector, external write, scheduler, OpenClaw expansion, autonomous
+execution, learning authority, or cloud-data route. Existing lane locks and explicit owner
+activation remain required. OpenClaw remains a replaceable actuator rather than an authority.

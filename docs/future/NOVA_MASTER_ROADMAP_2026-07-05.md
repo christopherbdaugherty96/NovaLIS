@@ -26,8 +26,10 @@ organized as five permanently separated systems: Awareness, Decision, Authority,
 and Outcome. It includes Prepared Reality as the non-executing decision handoff; mandate,
 provenance, simulation, action-risk, attention, learning, privacy, incident, replaceability,
 and retirement guardrails; the OpenClaw-as-replaceable-actuator boundary; and the
-non-negotiable rule that learning may improve proposals but never permissions. It also preserves
-Issue #326's economic-value progression as a strategic, non-activating dependency chain.
+non-negotiable rule that learning may improve proposals but never permissions. It also defines
+the Continuity Model as persistent reconciled state surrounding—not joining—the five systems,
+and preserves Issue #326's economic-value progression as a strategic, non-activating dependency
+chain.
 
 That document is a strategic compass, not an ordering or scope authority. It synthesizes
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
@@ -90,6 +92,29 @@ Current order:
 10. Only then select **Google Tasks READ** as the first Google domain-data vertical. A Tasks write,
    Gmail/Calendar/Drive/Docs/Sheets evidence, and later Google actions remain separately ordered,
    separately scoped, and separately authorized.
+
+### Continuity Model strategic ordering
+
+The Continuity Model is **STRATEGICALLY ACCEPTED / INACTIVE / NOT IMPLEMENTATION-AUTHORIZED**.
+It is persistent reconciled state surrounding Awareness, Decision, Authority, Execution, and
+Outcome; it is not a sixth system or an authority plane.
+
+Earliest consideration remains after the currently ordered stabilization and Google evidence
+work:
+
+```text
+P2 stabilization
+-> remaining acceptance coverage
+-> full fresh-main regression
+-> Google Workspace Foundation review/merge decision
+-> live identity-only proof
+-> first Google READ/evidence vertical
+-> separately warranted, scoped, authorized, implemented, and proved Continuity Slice 1
+```
+
+This relationship records strategic sequencing only. It does not modify PR #335, change any
+current lane, or authorize Continuity records, persistence, graph infrastructure, automatic
+extraction, prioritization, UI, learning, capability, authority, or execution.
 
 Permanent boundary:
 
