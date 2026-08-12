@@ -1,6 +1,6 @@
 # Current Priority
 
-## Post-#332 Closeout and Next Product Sequence - 2026-08-09
+## August 12 Acceptance-Derived Truth Priority - 2026-08-12
 
 Current active product state:
 
@@ -10,21 +10,35 @@ The seven-morning gate is CLOSED. No additional seven-morning or open-ended
 observation gate is required. PR #312 is verified on fresh `main`
 (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
 
-The post-#312 product repair is now CLOSED:
+The post-#312 product repair is CLOSED:
   PR #330 - Commitment Truth + Natural Reminder Handoff.
   PR #332 - notification-schedule command precedence and retrieval closeout.
-Fresh-main verification at dfef1db5df89bfdb276904acce26205d1c894331 proved
+Fresh-main verification at `dfef1db5...` proved
 the exact August 7 flow, real persistence, `show schedules`, `reminders`,
 fresh-session retrieval, and calendar-query counterexamples.
 
 The local-action outcome-truth repair is also CLOSED through PR #331 and
 merged-main live proof.
 
-The owner-selected next sequence is Semantic Substrate Slice 1 -> Google Workspace
-Foundation -> Google Tasks vertical. Semantic Slice 1 is a bounded contract-and-test lane only;
-it must not add provider calls, network I/O, capabilities, authority, or execution.
-Google connector runtime work remains separately gated. Authorization Integrity
-Slice 2A remains separately approved, paused, and not implemented on main.
+PR #333 merged the roadmap/current-state reconciliation. PR #334 merged Semantic Substrate
+Slice 1 as provider-neutral contract/test infrastructure. Current `main` is
+`c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`.
+
+PR #335 contains an implemented identity-only Google Workspace Foundation, but it remains
+DRAFT / UNMERGED at `befb69e...`. It is paused, not cancelled or invalidated, behind the
+acceptance-derived order below:
+  1. P1-A - user-visible commitment/capability truth.
+  2. Targeted P1-A fresh-main live proof.
+  3. P1-B - receipt-correlated action/outcome history.
+  4. Targeted P1-B / live P1 fresh-main proof.
+  5. Recorded P2 repairs and the remaining stress-test gaps.
+  6. Full fresh-main regression.
+  7. Resume #335 review, then make a separate merge decision.
+  8. If merged, run live identity-only Google proof before selecting Google Tasks READ.
+
+This priority document ORDERS work. It does not authorize either P1 implementation, modification
+of PR #335, Google domain-data access, or any external write. Authorization Integrity Slice 2A
+remains separately approved, paused, and not implemented on main.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -62,8 +76,19 @@ PR #331 separately closed local-action outcome truth: request acceptance is not
 presented as visible-effect verification, and that distinction persists through
 receipts and their consumers.
 
-The separate known `tomorrow` calendar-scope wording defect was outside the #332
-closeout and remains inactive. It must not be folded into Commitment Truth.
+PR #333 merged the roadmap reconciliation and PR #334 merged Semantic Substrate Slice 1.
+
+The 2026-08-12 fresh-main real-user acceptance record
+(`docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`) covered the 25-step golden
+regression plus targeted probes, but did not complete every variant in the 36-section catalog.
+It found no unauthorized external action. It selected two separate P1 truth repairs:
+  A. unsupported Google Calendar completion language and streamed reminder promises before
+     persistence/effect evidence;
+  B. receipt-correlated session action/outcome history instead of generative reconstruction.
+
+The separate `tomorrow` Calendar scope, arbitrary-location weather, schedule cancellation,
+Google Tasks/capability narration, private-source routing, News parameter, and other recorded
+findings remain P2 follow-through. They must not be folded into a P1 repair without separate scope.
 ```
 
 What agents should do:
@@ -73,16 +98,19 @@ What agents should do:
 2. Read docs/status/DAILY_COMMAND_CENTER.md for where the project is.
 3. Do NOT select implementation work from this file's historical sections
    or from any pre-2026-07-07 priority/status doc.
-4. Do NOT reopen Commitment Truth, Local Action Outcome Truth, or the post-#312
-   acceptance cycle without new contradictory evidence.
-5. Follow the selected order: Semantic Substrate Slice 1 -> Google Workspace
-   Foundation -> Google Tasks. Do not combine the packages.
-6. Keep Semantic Slice 1 non-authorizing and provider-neutral. Keep Google runtime
-   work and Authorization Integrity Slice 2A separately scoped and gated.
-7. Verify capability lock truth mechanically:
+4. Treat PR #334 / Semantic Substrate Slice 1 as COMPLETE; do not select it again.
+5. Use the August 12 evidence to scope P1-A, prove it live, then scope P1-B separately. Ordering is
+   not implementation authority; require a separate reviewed authorization before changing runtime
+   code or beginning either proof.
+6. Keep PR #335 draft, unmodified, and unmerged while the P1 truth repairs and proofs remain open.
+   Do not start Google Tasks or any other Google domain-data vertical.
+7. After both P1 proofs, address P2 groups and the untested/partial stress rows; do not claim the full
+   36-section catalog already passed.
+8. Keep Authorization Integrity Slice 2A separately scoped, approved/paused, and unimplemented.
+9. Verify capability lock truth mechanically:
    python scripts/certify_capability.py status
    (Cap 16, 22, 64, 65 = LOCK as of 2026-07-09.)
-8. Verify runtime truth mechanically:
+10. Verify runtime truth mechanically:
    python scripts/prove_runtime_truth.py
 ```
 

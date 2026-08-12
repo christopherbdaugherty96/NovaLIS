@@ -48,20 +48,30 @@ No additional seven-morning or open-ended observation gate is required.
 
 The August 7 owner-use defect is CLOSED on merged main. PR #330 implemented
 Commitment Truth + Natural Reminder Handoff; PR #332 fixed notification-schedule
-command precedence. Fresh-main proof at
-dfef1db5df89bfdb276904acce26205d1c894331 confirmed the exact natural handoff,
-real reminder persistence, `show schedules`, `reminders`, fresh-session retrieval,
-and preservation of calendar-query routing.
+command precedence. Fresh-main proof at `dfef1db5...` confirmed the exact natural
+handoff, real reminder persistence, `show schedules`, `reminders`, fresh-session
+retrieval, and preservation of calendar-query routing.
 
 The local-action outcome-truth lane is also CLOSED. PR #331 is merged and its
 Cap 17/19/22 behavior was live-proven on merged main.
 
-The owner-selected next implementation package is Semantic Substrate Slice 1,
-then Google Workspace Foundation, then the first Google Tasks vertical. Semantic Slice 1 is
-limited to shared evidence/state/outcome contracts and tests; it adds no provider,
-network, execution, capability, or authority path. Google runtime work remains
-separately gated. Authorization Integrity Slice 2A remains separately approved,
-not implemented on main, and paused; it is neither cancelled nor silently active.
+PR #333 merged the roadmap/current-state reconciliation. PR #334 merged Semantic
+Substrate Slice 1 as durable provider-neutral contract/test infrastructure. Current
+merged `main` is `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`.
+
+PR #335 contains the implemented Google Workspace identity-only foundation, but it
+remains DRAFT / UNMERGED at `befb69e...`. It is paused behind two P1 truth repairs
+selected by the 2026-08-12 fresh-main real-user acceptance record:
+  A. user-visible commitment/capability truth;
+  B. receipt-correlated action/outcome history.
+The 25-step golden regression was covered; the full 36-section stress catalog was
+not completed. Repair and prove P1-A before beginning the separately bounded P1-B;
+after both P1 proofs, address the recorded P2 groups and remaining stress-test gaps
+before resuming #335 review. This text ORDERS that work but does not authorize either
+repair or proof, modification of #335, or activation of Google domain-data access.
+
+Authorization Integrity Slice 2A remains separately approved, not implemented on
+main, and paused; it is neither cancelled nor silently active.
 Runtime recovery remains historical/accepted context, deferred until
 observation evidence reactivates it.
 ```
@@ -69,7 +79,8 @@ observation evidence reactivates it.
 Not authorized without a separate reviewed priority lock:
 
 ```text
-New implementation lanes, capability expansion, Google connector runtime work,
+New implementation lanes, capability expansion, modification/expansion of PR #335,
+Google domain-data connector work,
 Shopify writes, ElevenLabs implementation, OpenClaw expansion,
 browser/computer-use expansion, external writes, finance automation, social
 posting automation, autonomous workflow execution, multi-agent expansion,
@@ -97,8 +108,14 @@ Post-#312 owner-use evidence - RECORDED (2026-08-07; suitable for product
 Commitment Truth + Natural Reminder Handoff — COMPLETE (PR #330 plus PR #332;
   fresh-main closeout PASS at dfef1db5 on 2026-08-09).
 Local Action Outcome Truth — COMPLETE (PR #331; merged-main live proof PASS).
-Current activity: bound and implement only Semantic Substrate Slice 1. Google
-  Foundation and Tasks are ordered after it but are not activated by this status text.
+Semantic Substrate Slice 1 — COMPLETE (PR #334; merged in current main c44b6d0).
+2026-08-12 fresh-main real-user acceptance — RECORDED for planning; 25-step golden
+  regression covered, full 36-section catalog incomplete.
+Current planning priority: P1-A user-visible commitment/capability truth, its targeted
+  fresh-main live proof, then the separately bounded P1-B receipt-correlated action/outcome
+  history and its targeted live proof. Neither implementation nor either proof is authorized by this
+  documentation sync. PR #335 remains draft/unmerged and must not be modified, marked ready,
+  or merged from this ordering text. Google Tasks remains unstarted.
 Authorization Integrity Slice 2A remains separately approved, paused, and
   unimplemented on main.
 Do not select implementation work from any document dated before 2026-07-07

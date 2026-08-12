@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-09 (`main` at `dfef1db5`, PR #332 merged). Read the latest 2026-08-09
+Last reviewed: 2026-08-12 (`main` at `c44b6d0`, PR #334 merged). Read the latest 2026-08-12
 block in `docs/status/DAILY_COMMAND_CENTER.md` first; older blocks remain historical context.
 
 Canonical companions: `../product/PRODUCT_DEFINITION.md` (what/why),
@@ -24,32 +24,38 @@ See FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md for the post-audit
 ## Current Active Task
 
 ```text
-CURRENT MERGED TRUTH (2026-08-09)
+CURRENT MERGED TRUTH (2026-08-12)
 
-Main is at dfef1db5df89bfdb276904acce26205d1c894331 after PR #332.
+Main is at c44b6d0cd72f0f91a6ec517427ad3fe2076beb30 after PR #334.
 
-CLOSED LANES
+CLOSED LANES / MERGED INFRASTRUCTURE
   Commitment Truth + Natural Reminder Handoff - COMPLETE through PR #330 and PR #332.
   Local Action Outcome Truth - COMPLETE through PR #331.
+  Semantic Substrate Slice 1 - MERGED through PR #334; provider-neutral contracts/tests only.
 
-FRESH-MAIN ACCEPTANCE
-  The exact August 7 natural reminder handoff persisted a real schedule on dfef1db5.
-  `show schedules` and `reminders` displayed notification schedules; a fresh session retrieved
-  the persisted record. Calendar counterexamples stayed on calendar awareness. The separate
-  `tomorrow` scope wording defect remains outside the closeout and inactive.
+OPEN / UNMERGED
+  PR #335 - Google Workspace Foundation - DRAFT at befb69e.... Its identity-only foundation
+  adds no Google domain-data read or write capability and is not current-main behavior.
 
-CURRENT WORK
-  Bound Semantic Substrate Slice 1, then implement only its reviewed provider-neutral contracts
-  and tests. Do not combine it with Google code.
+FRESH-MAIN REAL-USER ACCEPTANCE
+  docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md records a live UI run against
+  c44b6d0.... The core authority boundary held and no unauthorized external action was observed.
+  Local reminder save, persistence, process-restart retrieval, and management display passed.
+  Dependable background reminder delivery does not exist. Google Tasks/Reminders do not exist.
+  The 25-step golden run was substantially covered; the full 36-section catalog was not complete.
 
-SELECTED NEXT ORDER
-  1. Semantic Substrate Slice 1 - shared provider-neutral evidence/state/outcome contracts/tests.
-  2. Google Workspace Foundation - OAuth/account/token/scope/revoke/disconnect; no domain data.
-  3. Google Tasks vertical - read evidence first, governed writes only after separate proof.
+EVIDENCE-SELECTED CURRENT ORDER
+  1. P1-A user-visible commitment truth: unsupported external-action claims and pre-truth streamed
+     reminder promises.
+  2. Targeted fresh-main live proof of P1-A after its separately authorized repair merges.
+  3. P1-B receipt-correlated action/outcome history as a separate bounded repair.
+  4. Targeted P1-B / live P1 acceptance proof.
+  5. Evidence-grouped P2 repairs and completion of the remaining 36-section catalog gaps.
+  6. Full fresh-main regression.
+  7. Resume PR #335 review only after the acceptance-derived truth failures are closed.
 
-  Semantic Slice 1 adds no provider/network/execution/capability/authority path. Google capability,
-  Google authorization, and Nova authority remain distinct. Connection does not grant Nova action
-  authority.
+  Google capability, Google authorization, and Nova authority remain distinct. Connection does not
+  grant Nova action authority. Draft foundation code does not establish Google domain access.
 
 AUTHORIZATION INTEGRITY
   Slice 1 - MERGED through PR #325: Governor-owned, session/capability/exact-action-bound,
@@ -61,9 +67,10 @@ AUTHORIZATION INTEGRITY
              capability-specific reconciliation.
 
 BOUNDARY
-  No Google connector runtime, secondary candidate, economic-value proof, expanded OpenClaw,
+  No runtime repair, Google expansion, secondary candidate, economic-value proof, expanded OpenClaw,
   browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business,
-  or delegation lane is active. OpenClaw is a bounded replaceable actuator, not an authority.
+  or delegation work is authorized by this documentation package. OpenClaw remains a bounded
+  replaceable actuator, not an authority.
 ```
 
 The reconciled block above supersedes any later `current`, `next`, `active`, or `LOCK ONLY`
@@ -919,11 +926,14 @@ Generated runtime docs are current as of the latest recorded drift check on PR #
 Active follow-ups (operational, current — not code-implementation lanes):
 
 ```text
-- Bound Semantic Substrate Slice 1 before implementation.
+- Use the 2026-08-12 acceptance evidence to bound P1-A without treating order as authorization;
+  prove P1-A live before selecting the separately bounded P1-B implementation.
+- Keep PR #335 draft while the evidence-selected P1 truth repairs remain open.
 - Keep the separately approved Authorization Integrity Slice 2A paused until owner sequencing.
 ```
 
-No active *implementation* follow-up issue is open; the two above are operational.
+No runtime implementation is authorized by this documentation package; the items above are
+operational sequencing truth.
 
 Open planning / future trackers (not active workstreams):
 
@@ -1023,12 +1033,13 @@ Current sequence:
 6. Do not reopen the approval-gate lane unless registry truth changes.
 7. Goal Card Phase 4 (execution) requires separate design doc.
 8. No runtime lane is authorized by the repo-doc operating-loop proof.
-9. Phase 3 observation, the post-#312 selection gate, Commitment Truth, and
-   Local Action Outcome Truth are complete. PRs #330-#332 are merged; fresh-main
-   Commitment Truth proof passed at dfef1db5. The next selected product order is
-   Semantic Substrate Slice 1, Google Workspace Foundation, then Google Tasks.
-   Google work remains separately gated; Authorization Integrity Slice 2A remains
-   separately approved, paused, and unimplemented on main.
+9. Phase 3 observation, the post-#312 selection gate, Commitment Truth, and Local Action Outcome
+   Truth are complete. PRs #330-#332 are merged. Semantic Substrate Slice 1 is merged through
+   PR #334 at current main c44b6d0.... Fresh-main acceptance at that SHA exposed two P1 truth
+   repair packages that precede further Google expansion: user-visible commitment truth, then
+   receipt-correlated action/outcome history. PR #335 remains draft/unmerged. Google work remains
+   separately gated; Authorization Integrity Slice 2A remains separately approved, paused, and
+   unimplemented on main.
 10. Runtime recovery and health truth remains accepted/deferred pending
     morning evidence (lock:
     docs/status/PRIORITY_LOCK_2026-06-17_RUNTIME_RECOVERY_HEALTH_TRUTH.md).

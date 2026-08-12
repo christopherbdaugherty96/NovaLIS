@@ -1,7 +1,7 @@
 # Active TODO - Nova
 
-Last reviewed: 2026-08-09 (`main` at `dfef1db5`, PR #332 merged). Latest state: see the
-2026-08-09 block in `docs/status/DAILY_COMMAND_CENTER.md`.
+Last reviewed: 2026-08-12 (`main` at `c44b6d0`, PR #334 merged). Latest state: see the
+2026-08-12 block in `docs/status/DAILY_COMMAND_CENTER.md`.
 
 ---
 
@@ -9,24 +9,37 @@ Last reviewed: 2026-08-09 (`main` at `dfef1db5`, PR #332 merged). Latest state: 
 
 ```text
 Current merged main:
-  dfef1db5df89bfdb276904acce26205d1c894331 after PR #332.
+  c44b6d0cd72f0f91a6ec517427ad3fe2076beb30 after PR #334.
 
 Closed:
   Commitment Truth + Natural Reminder Handoff - PR #330 + PR #332; fresh-main proof PASS.
   Local Action Outcome Truth - PR #331; merged-main live proof PASS.
+  Semantic Substrate Slice 1 - PR #334; provider-neutral contracts/tests merged.
 
-Remaining order:
-1. Bound and implement Semantic Substrate Slice 1 only.
-2. Establish Google Workspace Foundation only after Semantic Slice 1.
-3. Prove Google Tasks as the first read-first vertical; gate writes separately.
-4. Expand Google evidence and action families one at a time only after proof.
+Open, separate, and paused behind acceptance-derived truth work:
+  PR #335 - Google Workspace Foundation - DRAFT / UNMERGED at befb69e....
+  Identity-only foundation; no Gmail, Google Calendar, Tasks, Drive, Docs, Sheets, or writes.
+
+Current evidence-selected order:
+1. Bound and repair P1-A user-visible commitment truth under separate authorization.
+2. After P1-A merges, run targeted fresh-main P1-A live proof.
+3. Bound and repair P1-B receipt-correlated action/outcome history separately.
+4. After P1-B merges, run targeted P1-B / live P1 proof.
+5. Address the recorded P2 groups and complete the untested/partial 36-section catalog rows.
+6. Run the full fresh-main regression.
+7. Resume PR #335 review only after the truth failures are closed.
+8. After an eventual foundation merge and live identity-only proof, select Google Tasks READ.
+
+Local reminder schedules exist and persist across process restart. `show schedules` and
+`reminders` retrieve them. Background delivery/automatic firing does not exist; Google Tasks and
+Google Reminders do not exist on current main.
 
 Authorization Integrity Slice 1 is MERGED through PR #325. Slice 2A remains separately approved,
 NOT IMPLEMENTED ON MAIN, and paused. This order neither cancels nor activates it. Slice 2B is
 DEFERRED and separately gated.
 
-Semantic Slice 1 is provider-neutral contract/test work only. Google capability, Google
-authorization, and Nova authority remain separate. No Google runtime, economic-value proof,
+Google capability, Google authorization, and Nova authority remain separate. No P1/P2 runtime
+repair, Google expansion, economic-value proof,
 expanded OpenClaw, browser/computer-use, financial-write, outreach, posting, contracting,
 autonomous-business, or delegation lane is active in this documentation package.
 ```
@@ -156,8 +169,9 @@ Cap 65 P5 live proof — complete and locked (2026-05-22).
 
 ## Current Open Issues
 
-The post-#312 acceptance and Commitment Truth closeout are complete. Current follow-through is the
-bounded Semantic Substrate Slice 1. Authorization Integrity Slice 2A remains a separate
+The post-#312 acceptance and Commitment Truth closeout are complete. Semantic Substrate Slice 1 is
+merged through PR #334. Current follow-through is the 2026-08-12 acceptance-derived truth work;
+PR #335 remains draft/unmerged. Authorization Integrity Slice 2A remains a separate
 approved-but-paused hardening lane.
 
 Open GitHub *issues* are planning/future/backlog only:
@@ -223,10 +237,10 @@ dashboard clarity improved (PR #233 UI simplification)
    Learning cannot become silent authority.
 
 4. Google / workspace connectors
-   Selected after Semantic Substrate Slice 1. Foundation establishes connection/account/scope/
-   token lifecycle without domain data. Google Tasks is the first read-first vertical. Gmail,
-   Calendar, selected Drive, and Docs/Sheets evidence follow one family at a time. Local prepared
-   proposals precede separately governed writes.
+   Semantic Substrate Slice 1 is merged. Google Workspace Foundation PR #335 remains draft and
+   identity-only, behind acceptance-derived P1 truth closure. Google Tasks remains the first later
+   read-first vertical. Gmail, Calendar, selected Drive, and Docs/Sheets evidence follow one family
+   at a time. Local prepared proposals precede separately governed writes.
 
 5. Trust / receipt maturity
    Existing trust surfaces must not be overstated as a complete mature
@@ -249,9 +263,10 @@ Phase 4 (execution envelopes) requires a separate design doc
 and is not authorized.
 
 Phase 3 observation, grounded brief routing, post-#312 selection, Commitment Truth, and Local
-Action Outcome Truth are complete. PRs #330-#332 are merged and the fresh-main reminder closeout
-passed at dfef1db5. The selected next product sequence is Semantic Substrate Slice 1 -> Google
-Workspace Foundation -> Google Tasks. This file records order; exact lane scope still governs work.
+Action Outcome Truth are complete. PRs #330-#332 are merged. Semantic Substrate Slice 1 is merged
+through PR #334 at c44b6d0.... The 2026-08-12 fresh-main acceptance record now selects two bounded
+P1 truth repairs before Google expansion: user-visible commitment truth, then receipt-correlated
+action/outcome history. PR #335 remains draft/unmerged; Google Tasks remains later and unstarted.
 
 Deferred implementation lanes (accepted; runtime-recovery and Second Brain reactivate on
 evidence, Authorization Integrity Slice 2A remains separately approved/paused — see each entry):
@@ -314,12 +329,14 @@ Goal Card persistence and UI simplification are complete. Goal Cards
 remain display-only. Second Brain Slice 1 and runtime recovery remain
 accepted but deferred.
 
-The seven-morning observation threshold, post-#312 selection gate,
-Commitment Truth lane, and Local Action Outcome Truth lane are complete.
+The seven-morning observation threshold, post-#312 selection gate, Commitment Truth lane, Local
+Action Outcome Truth lane, and Semantic Substrate Slice 1 are complete.
 
-Next: Semantic Substrate Slice 1, then Google Workspace Foundation,
-then the Google Tasks vertical. Connection, evidence access, and action
-authority remain distinct.
+Next runtime lane, only when separately authorized: P1-A user-visible commitment/capability truth.
+After its separate merge, prove P1-A live before closing P1-B receipt-correlated action history as
+a separate bounded repair and proof. Keep Google Workspace Foundation PR #335 draft and Google
+Tasks unstarted until both P1 proofs and the later regression gates close.
+Connection, evidence access, and action authority remain distinct.
 
 Authorization Integrity Slice 1 is merged. Slice 2A remains separately
 approved, paused, and unimplemented on main.
