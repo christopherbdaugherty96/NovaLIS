@@ -22,6 +22,14 @@ from src.conversation.brief_followup_grounding import (
 from src.conversation.brief_intent_resolver import resolve_brief_intent
 from src.llm.llm_gateway import model_status_snapshot
 from src.openclaw.run_state_machine import run_event_hub
+from src.trust.session_activity import (
+    TRUSTED_ACTIVITY_ORIGIN_PARAM,
+    TRUSTED_SESSION_ID_PARAM,
+    ActivityOrigin,
+    activity_origin_for_request,
+    record_rejected_or_unsupported,
+    render_session_activity_recap,
+)
 from src.usage.provider_usage_store import _estimate_tokens
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
 from src.websocket.turn_abandon import mark_turn_abandoned
@@ -487,9 +495,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     REMINDER_ACTION_UNPARSED_RESPONSE = deps.REMINDER_ACTION_UNPARSED_RESPONSE
     _capability_help_message = deps._capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
+    SESSION_ACTIVITY_RECAP_RE = deps.SESSION_ACTIVITY_RECAP_RE
     _render_local_time_message = deps._render_local_time_message
     _prepare_explicit_memory_save_params = deps._prepare_explicit_memory_save_params
-    invoke_governed_capability = deps.invoke_governed_capability
+    _invoke_governed_capability = deps.invoke_governed_capability
     _action_result_message = deps._action_result_message
     _action_result_payload = deps._action_result_payload
     send_memory_item_widget = deps.send_memory_item_widget
@@ -561,7 +570,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _extract_phase42_query = deps._extract_phase42_query
     PHASE_4_2_ENABLED = deps.PHASE_4_2_ENABLED
     _build_phase42_agents = deps._build_phase42_agents
-    invoke_governed_text_command = deps.invoke_governed_text_command
+    _invoke_governed_text_command = deps.invoke_governed_text_command
     _extract_sources_from_results = deps._extract_sources_from_results
     _extract_source_links = deps._extract_source_links
     send_widget_message = deps.send_widget_message
@@ -736,10 +745,79 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "last_tone_snapshot": {},
         "last_schedule_overview": {},
         "last_pattern_review": {},
+        "session_activity_facts": [],
         "general_chat_context": [],
         "general_chat_summary": {},
         "conversation_context": {},
     }
+    trusted_session_id = session_id
+    current_activity_origin = ActivityOrigin.USER_ACTION.value
+
+    async def invoke_governed_capability(
+        governor_instance: Any,
+        capability_id: int,
+        params: dict[str, Any],
+        *,
+        session_id: str | None = None,
+        approval_id: str | None = None,
+    ) -> Any:
+        """Attach only server-owned correlation metadata to a governed call."""
+        trusted_params = dict(params or {})
+        trusted_params["session_id"] = trusted_session_id
+        trusted_params[TRUSTED_ACTIVITY_ORIGIN_PARAM] = current_activity_origin
+        trusted_params[TRUSTED_SESSION_ID_PARAM] = trusted_session_id
+        authority: dict[str, Any] = {}
+        if approval_id is not None:
+            authority["session_id"] = trusted_session_id
+            authority["approval_id"] = approval_id
+        result = await _invoke_governed_capability(
+            governor_instance,
+            capability_id,
+            trusted_params,
+            **authority,
+        )
+        if (
+            current_activity_origin == ActivityOrigin.USER_ACTION.value
+            and not bool(getattr(result, "success", False))
+            and not str(getattr(result, "request_id", "") or "").strip()
+        ):
+            record_rejected_or_unsupported(
+                session_state,
+                label=f"Capability {capability_id}",
+                reason=str(getattr(result, "message", "") or "Request rejected."),
+            )
+        return result
+
+    async def invoke_governed_text_command(
+        governor_instance: Any,
+        command_text: str,
+        _caller_session_id: str,
+        *,
+        extra_params: dict[str, Any] | None = None,
+    ) -> tuple[Any, Any]:
+        """Attach the same trusted origin to mediator-generated actions."""
+        trusted_extra_params = dict(extra_params or {})
+        trusted_extra_params[TRUSTED_ACTIVITY_ORIGIN_PARAM] = current_activity_origin
+        trusted_extra_params[TRUSTED_SESSION_ID_PARAM] = trusted_session_id
+        capability_id, result = await _invoke_governed_text_command(
+            governor_instance,
+            command_text,
+            trusted_session_id,
+            extra_params=trusted_extra_params,
+        )
+        if (
+            capability_id is not None
+            and current_activity_origin == ActivityOrigin.USER_ACTION.value
+            and result is not None
+            and not bool(getattr(result, "success", False))
+            and not str(getattr(result, "request_id", "") or "").strip()
+        ):
+            record_rejected_or_unsupported(
+                session_state,
+                label=f"Capability {capability_id}",
+                reason=str(getattr(result, "message", "") or "Request rejected."),
+            )
+        return capability_id, result
 
     initial_trust_refresh_task: asyncio.Task[None] | None = None
     run_event_queue = run_event_hub.subscribe()
@@ -1212,6 +1290,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             channel = (msg.get("channel") or "text").strip().lower()
             invocation_source = (msg.get("invocation_source") or "").strip().lower()
             silent_widget_refresh = bool(msg.get("silent_widget_refresh"))
+            current_activity_origin = ActivityOrigin.USER_ACTION.value
             if channel not in {"voice", "text"}:
                 channel = "text"
             if invocation_source not in {"voice", "text", "ui", "news_surface", "deepseek_button", "openclaw_bridge"}:
@@ -1249,6 +1328,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
+            current_activity_origin = activity_origin_for_request(
+                silent_widget_refresh=silent_widget_refresh,
+                command_text=raw_text,
+            )
 
             incoming_turn_id = str(msg.get("turn_id") or msg.get("request_id") or "").strip()
             if not incoming_turn_id:
@@ -1477,6 +1560,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             decision = route_context.decision
             _prune_topic_stack(session_state, session_state["turn_count"])
 
+            if SESSION_ACTIVITY_RECAP_RE.match(text):
+                await _complete_immediate_turn(
+                    render_session_activity_recap(
+                        session_id=trusted_session_id,
+                        activity_facts=session_state.get("session_activity_facts") or [],
+                    ),
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
             untrusted_content_response = untrusted_quoted_content_response(text)
             if untrusted_content_response:
                 await _complete_immediate_turn(
@@ -1509,6 +1603,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if reminder_body
                     else "I can save a local Nova reminder instead. "
                 )
+                record_rejected_or_unsupported(
+                    session_state,
+                    label=f"{calendar_name} write",
+                    reason="Calendar writing is not enabled; no calendar event was created.",
+                )
                 await _complete_immediate_turn(
                     (
                         f"{calendar_name} writing isn't enabled. No calendar event was created. "
@@ -1524,6 +1623,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             governance_refusal = governance_refusal_for(text)
             if governance_refusal:
+                record_rejected_or_unsupported(
+                    session_state,
+                    label="Governed request",
+                    reason=governance_refusal,
+                )
                 await _complete_immediate_turn(
                     governance_refusal,
                     remember_response=False,
@@ -1860,6 +1964,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # RC-1: email inbox intent → scoped immediate response.
             # Must fire before the governor so Cap 17 (website open) doesn't scoop it.
             if EMAIL_INBOX_RE.match(command_text):
+                record_rejected_or_unsupported(
+                    session_state,
+                    label="Email inbox access",
+                    reason="Nova does not have inbox access; no email read was attempted.",
+                )
                 await _complete_immediate_turn(
                     EMAIL_INBOX_RESPONSE,
                     suggested_actions=[
@@ -2006,6 +2115,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     "status": "not_saved",
                     "reason": "unsupported_time",
                 }
+                record_rejected_or_unsupported(
+                    session_state,
+                    label="Nova reminder request",
+                    reason="The requested reminder time was unsupported; no reminder was saved.",
+                )
                 await _complete_immediate_turn(
                     REMINDER_ACTION_UNPARSED_RESPONSE,
                     remember_response=False,
@@ -4459,6 +4573,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if capability_id == 17:
                     plan = plan_web_open(params)
                     if not plan.get("ok"):
+                        record_rejected_or_unsupported(
+                            session_state,
+                            label="Website open request",
+                            reason=str(plan.get("message") or "Website target could not be resolved."),
+                        )
                         await send_chat_message(ws, str(plan.get("message") or "I couldn't resolve that website."))
                         await send_chat_done(ws)
                         continue

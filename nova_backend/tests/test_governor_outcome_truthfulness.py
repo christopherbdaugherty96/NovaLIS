@@ -173,6 +173,64 @@ def test_clean_success_path_is_unchanged_when_receipt_persists(monkeypatch):
     assert any(event == "ACTION_COMPLETED" for event, _ in gov._ledger.events)
 
 
+def test_attempted_and_completed_receipts_share_trusted_correlation_metadata(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+    gov._registry = _fake_registry("volume_up_down")
+    gov._ledger = _FakeLedger()
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok("done", request_id=req.request_id),
+    )
+    monkeypatch.setattr(gov._execute_boundary, "run_with_timeout", lambda op, timeout_seconds=None: op())
+    monkeypatch.setattr(gov._execute_boundary, "enforce_memory_limits", lambda: None)
+    monkeypatch.setattr(gov._execute_boundary, "enforce_cpu_limits", lambda: None)
+
+    result = gov.handle_governed_invocation(
+        19,
+        {"action": "up", "session_id": "client-spoofed"},
+        session_id="server-session",
+        activity_origin="background_read",
+    )
+
+    attempted = next(metadata for event, metadata in gov._ledger.events if event == "ACTION_ATTEMPTED")
+    completed = next(metadata for event, metadata in gov._ledger.events if event == "ACTION_COMPLETED")
+    assert attempted["request_id"] == completed["request_id"] == result.request_id
+    assert attempted["session_id"] == completed["session_id"] == "server-session"
+    assert attempted["activity_origin"] == completed["activity_origin"] == "background_read"
+
+
+def test_untrusted_activity_origin_is_not_persisted(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+    gov._registry = _fake_registry("volume_up_down")
+    gov._ledger = _FakeLedger()
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok("done", request_id=req.request_id),
+    )
+    monkeypatch.setattr(gov._execute_boundary, "run_with_timeout", lambda op, timeout_seconds=None: op())
+    monkeypatch.setattr(gov._execute_boundary, "enforce_memory_limits", lambda: None)
+    monkeypatch.setattr(gov._execute_boundary, "enforce_cpu_limits", lambda: None)
+
+    gov.handle_governed_invocation(
+        19,
+        {"action": "up"},
+        session_id="server-session",
+        activity_origin="client_claimed_verified",
+    )
+
+    correlated = [metadata for event, metadata in gov._ledger.events if event.startswith("ACTION_")]
+    assert correlated
+    assert {metadata["activity_origin"] for metadata in correlated} == {"user_action"}
+
+
 def test_cap22_accepted_unverified_outcome_persists_in_completion_receipt(
     monkeypatch, tmp_path
 ):

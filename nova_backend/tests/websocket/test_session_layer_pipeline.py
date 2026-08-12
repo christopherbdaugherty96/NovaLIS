@@ -30,6 +30,7 @@ from src.websocket.intent_patterns import (
     REMINDER_ACTION_REQUEST_RE,
     REMINDER_BACKGROUND_DELIVERY_RE,
     REMINDER_TIME_ONLY_RE,
+    SESSION_ACTIVITY_RECAP_RE,
     TIME_QUERY_RE,
 )
 
@@ -52,6 +53,8 @@ def _pipeline(raw: str) -> str | int | None:
     # Step 3: session-layer checks (order matches session_handler)
     if TIME_QUERY_RE.match(command_text):
         return "TIME_QUERY"
+    if SESSION_ACTIVITY_RECAP_RE.match(command_text):
+        return "SESSION_ACTIVITY_RECAP"
     if CALENDAR_WRITE_REQUEST_RE.match(command_text):
         return "CALENDAR_WRITE"
     if EMAIL_INBOX_RE.match(command_text):
@@ -97,6 +100,32 @@ class TestCap19NaturalVolumePhrasing:
         result = GovernorMediator.parse_governed_invocation("turn up volume")
         assert getattr(result, "capability_id", None) == 19
         assert getattr(result, "params", {}).get("action") == "up"
+
+
+class TestSessionActivityRecapRouting:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "what did you actually do?",
+            "what actions did you perform?",
+            "what happened during this session?",
+            "what can you verify happened?",
+        ],
+    )
+    def test_exact_recap_phrases_use_deterministic_route(self, raw: str):
+        assert _pipeline(raw) == "SESSION_ACTIVITY_RECAP"
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "what happened with OpenAI today?",
+            "what happened with the election?",
+            "what happened with my project?",
+            "we talked about opening Documents but did not do it",
+        ],
+    )
+    def test_generic_happened_and_discussion_phrases_do_not_hit_recap(self, raw: str):
+        assert _pipeline(raw) != "SESSION_ACTIVITY_RECAP"
 
 
 # ---------------------------------------------------------------------------
