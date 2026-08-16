@@ -8,6 +8,36 @@ class BrightnessExecutor:
     def __init__(self) -> None:
         self.system_control = SystemControlExecutor()
 
+    @staticmethod
+    def _accepted_unverified_result(
+        *,
+        request_id: str | None,
+        action: str,
+        message: str,
+        level: int | None = None,
+    ) -> ActionResult:
+        outcome_reason = (
+            "The operating system accepted the brightness control request, but "
+            "the resulting display brightness could not be verified."
+        )
+        structured_data = {
+            "action": action,
+            "outcome_state": "accepted_unverified",
+            "request_accepted": True,
+            "effect_verified": False,
+        }
+        if level is not None:
+            structured_data["level"] = level
+        return ActionResult.ok(
+            message=message,
+            data=structured_data,
+            request_id=request_id,
+            authority_class="reversible_local",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=outcome_reason,
+        )
+
     def execute(self, request) -> ActionResult:
         params = request.params or {}
         action = (params.get("action") or "").strip().lower()
@@ -26,8 +56,15 @@ class BrightnessExecutor:
                     message="I couldn't adjust brightness on this device right now.",
                     **common_meta,
                 )
-            message = "Turned the brightness up." if action == "up" else "Turned the brightness down."
-            return ActionResult.ok(message=message, data={"action": action}, **common_meta)
+            direction = "up" if action == "up" else "down"
+            return self._accepted_unverified_result(
+                request_id=request.request_id,
+                action=action,
+                message=(
+                    f"Brightness-{direction} request sent. "
+                    "I couldn't verify the resulting display brightness."
+                ),
+            )
 
         if action == "set":
             try:
@@ -42,7 +79,15 @@ class BrightnessExecutor:
                     message="I couldn't set brightness on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Set brightness to {value}%.", data={"action": "set", "level": value}, **common_meta)
+            return self._accepted_unverified_result(
+                request_id=request.request_id,
+                action="set",
+                level=value,
+                message=(
+                    f"Brightness-level request sent for {value}%. "
+                    "I couldn't verify the resulting display brightness."
+                ),
+            )
 
         return ActionResult.failure(
             "Invalid brightness command. Try: brightness up, brightness down, or set brightness to 65.",
