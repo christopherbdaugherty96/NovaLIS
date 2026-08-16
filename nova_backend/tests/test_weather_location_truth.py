@@ -1,10 +1,13 @@
 import asyncio
 
 import pytest
+from src import brain_server
 from src.actions.action_request import ActionRequest
 from src.executors.info_snapshot_executor import WeatherSnapshotExecutor
 from src.governor.governor_mediator import GovernorMediator, Invocation
 from src.services.weather_service import WeatherService
+
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 
 @pytest.mark.parametrize(
@@ -124,3 +127,90 @@ def test_explicit_location_provider_error_never_retries_with_default(monkeypatch
     assert len(requested_urls) == 1
     assert "Detroit/today" in requested_urls[0]
     assert "Ann%20Arbor" not in requested_urls[0]
+
+
+def _weather_widgets(ws: _ScriptedWebSocket) -> list[dict]:
+    return [message for message in ws.sent_messages if message.get("type") == "weather"]
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("location", ["Detroit", "Chicago", "Battle Creek"])
+def test_explicit_weather_location_survives_full_websocket_path(monkeypatch, location):
+    observed_locations = []
+
+    async def fake_weather(self):
+        observed_locations.append(self.location)
+        return {
+            "temperature": 68,
+            "condition": "Clear",
+            "location": location,
+            "forecast": "Today: clear",
+            "alerts": [],
+        }
+
+    async def must_not_run(*args, **kwargs):
+        raise AssertionError("GeneralChat must not run for a deterministic weather request.")
+
+    monkeypatch.setattr(WeatherService, "get_current_weather", fake_weather)
+    monkeypatch.setattr(brain_server, "run_general_chat_fallback", must_not_run)
+    ws = _ScriptedWebSocket([f"weather in {location}"])
+
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chats = _chat_messages(ws)
+    widgets = _weather_widgets(ws)
+    assert observed_locations == [location]
+    assert any(f"Location: {location}" in message for message in chats)
+    assert all("Ann Arbor" not in message for message in chats)
+    assert widgets[-1]["data"]["location"] == location
+
+
+@pytest.mark.slow
+def test_default_weather_still_uses_configured_location_through_websocket(monkeypatch):
+    observed_locations = []
+
+    async def fake_weather(self):
+        observed_locations.append(self.location)
+        return {
+            "temperature": 68,
+            "condition": "Clear",
+            "location": self.location,
+            "forecast": "Today: clear",
+            "alerts": [],
+        }
+
+    monkeypatch.setattr(WeatherService, "get_current_weather", fake_weather)
+    ws = _ScriptedWebSocket(["weather"])
+
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert observed_locations == [WeatherService.DEFAULT_LOCATION]
+    assert _weather_widgets(ws)[-1]["data"]["location"] == WeatherService.DEFAULT_LOCATION
+
+
+@pytest.mark.slow
+def test_explicit_weather_failure_never_falls_back_in_full_websocket_path(monkeypatch):
+    observed_locations = []
+
+    async def fail_weather(self):
+        observed_locations.append(self.location)
+        raise RuntimeError("provider rejected the requested location")
+
+    async def must_not_run(*args, **kwargs):
+        raise AssertionError("GeneralChat must not run for a deterministic weather request.")
+
+    monkeypatch.setattr(WeatherService, "get_current_weather", fail_weather)
+    monkeypatch.setattr(brain_server, "run_general_chat_fallback", must_not_run)
+    ws = _ScriptedWebSocket(["weather in Zzyzx Invalid Place"])
+
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chats = _chat_messages(ws)
+    widgets = _weather_widgets(ws)
+    assert observed_locations == ["Zzyzx Invalid Place"]
+    assert any(
+        "Weather for Zzyzx Invalid Place is unavailable right now." in message
+        for message in chats
+    )
+    assert all("Ann Arbor" not in message for message in chats)
+    assert widgets[-1]["data"]["location"] == "Zzyzx Invalid Place"
