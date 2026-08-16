@@ -324,6 +324,16 @@ def test_volume_media_brightness_parsing():
 
 
 
+def test_turn_down_volume_routes_to_cap19_down_action():
+    from src.governor.governor_mediator import GovernorMediator, Invocation
+
+    invocation = GovernorMediator.parse_governed_invocation("turn down volume")
+
+    assert isinstance(invocation, Invocation)
+    assert invocation.capability_id == 19
+    assert invocation.params["action"] == "down"
+
+
 def test_news_intelligence_parsing():
     from src.governor.governor_mediator import GovernorMediator, Invocation
     from src.governor.governor_mediator import Clarification
