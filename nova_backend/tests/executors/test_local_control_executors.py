@@ -24,9 +24,10 @@ def test_media_executor_uses_system_control(monkeypatch):
 
 def test_brightness_executor_uses_system_control_for_set(monkeypatch):
     executor = BrightnessExecutor()
-    seen: dict[str, int] = {}
+    seen: dict[str, int | str] = {}
 
     def fake_brightness(action: str, level: int | None = None) -> bool:
+        seen["action"] = action
         seen["level"] = int(level or -1)
         return True
 
@@ -34,8 +35,69 @@ def test_brightness_executor_uses_system_control_for_set(monkeypatch):
     result = executor.execute(ActionRequest(capability_id=21, params={"action": "set", "level": 65}))
 
     assert result.success is True
+    assert seen["action"] == "set"
     assert seen["level"] == 65
-    assert result.message == "Set brightness to 65%."
+    assert result.message == (
+        "Brightness-level request sent for 65%. "
+        "I couldn't verify the resulting display brightness."
+    )
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
+
+
+@pytest.mark.parametrize(
+    ("params", "forbidden_claim", "expected_fragment"),
+    [
+        ({"action": "up"}, "turned the brightness up", "brightness-up request sent"),
+        ({"action": "down"}, "turned the brightness down", "brightness-down request sent"),
+        (
+            {"action": "set", "level": 40},
+            "set brightness to",
+            "brightness-level request sent for 40%",
+        ),
+    ],
+)
+def test_brightness_executor_does_not_claim_an_unverified_effect(
+    monkeypatch,
+    params,
+    forbidden_claim,
+    expected_fragment,
+):
+    executor = BrightnessExecutor()
+    monkeypatch.setattr(
+        executor.system_control,
+        "set_brightness",
+        lambda *_args, **_kwargs: True,
+    )
+
+    result = executor.execute(ActionRequest(capability_id=21, params=params))
+
+    assert result.success is True
+    assert result.status == "completed"
+    assert forbidden_claim not in result.message.lower()
+    assert expected_fragment in result.message.lower()
+    assert "couldn't verify" in result.message.lower()
+    assert result.outcome_reason.endswith("could not be verified.")
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
+
+
+def test_brightness_executor_fails_when_system_control_cannot_apply(monkeypatch):
+    executor = BrightnessExecutor()
+    monkeypatch.setattr(
+        executor.system_control,
+        "set_brightness",
+        lambda *_args, **_kwargs: False,
+    )
+
+    result = executor.execute(
+        ActionRequest(capability_id=21, params={"action": "set", "level": 40})
+    )
+
+    assert result.success is False
+    assert "couldn't set brightness" in result.message.lower()
 
 
 def test_volume_executor_supports_mute(monkeypatch):
