@@ -1859,7 +1859,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             ):
                 _, weather_result = await invoke_governed_text_command(
                     governor,
-                    "weather",
+                    command_text,
                     session_id,
                 )
                 if weather_result is None:
@@ -1919,7 +1919,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, _personality_failure_message("Weather capability is temporarily unavailable"), tone_domain="daily")
+                        failure_message = _structure_long_message(
+                            str(weather_result.message or "Weather is currently unavailable.")
+                        )
+                        await send_chat_message(ws, failure_message, tone_domain="daily")
                     if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
                         store_brief_widget(session_state, "weather", weather_widget, set_focus=not silent_widget_refresh)
                         await ws_send(ws, weather_widget)
