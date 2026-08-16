@@ -336,6 +336,53 @@ def test_cap19_accepted_unverified_outcome_persists_and_renders_truthfully(monke
     assert "Volume up down (Cap 19): request accepted; visible effect was not verified" in recap
 
 
+def test_cap21_accepted_unverified_outcome_persists_and_renders_truthfully(monkeypatch):
+    from src.governor.governor import Governor
+    from src.trust.session_activity import render_session_activity_recap
+
+    monkeypatch.setattr(
+        "src.system_control.system_control_executor.SystemControlExecutor.set_brightness",
+        lambda self, action, level=None: True,
+    )
+    gov = Governor()
+    gov._ledger = _FakeLedger()
+    session_id = "cap21-outcome-receipt"
+
+    result = gov.handle_governed_invocation(
+        21,
+        {"action": "up"},
+        session_id=session_id,
+    )
+    receipts = [
+        {"event_type": event_type, **metadata}
+        for event_type, metadata in gov._ledger.events
+        if event_type in {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}
+    ]
+    completion = next(
+        metadata
+        for event_type, metadata in gov._ledger.events
+        if event_type == "ACTION_COMPLETED"
+    )
+    recap = render_session_activity_recap(
+        session_id=session_id,
+        receipts=receipts,
+    )
+
+    assert result.success is True
+    assert "Turned the brightness up" not in result.message
+    assert "couldn't verify" in result.message
+    assert completion["success"] is True
+    assert completion["status"] == "completed"
+    assert completion["outcome_state"] == "accepted_unverified"
+    assert completion["request_accepted"] is True
+    assert completion["effect_verified"] is False
+    assert "could not be verified" in completion["outcome_reason"].lower()
+    assert (
+        "Brightness control (Cap 21): request accepted; visible effect was not verified"
+        in recap
+    )
+
+
 @pytest.mark.parametrize(
     (
         "launch_state",

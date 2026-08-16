@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from src.actions.action_request import ActionRequest
+from src.executors.brightness_executor import BrightnessExecutor
 from src.executors.media_executor import MediaExecutor
 from src.executors.open_folder_executor import OpenFolderExecutor
 from src.executors.volume_executor import VolumeExecutor
@@ -29,6 +30,28 @@ def test_volume_executor_handles_mute_on_windows(monkeypatch):
     assert result.structured_data["request_accepted"] is True
     assert result.structured_data["effect_verified"] is False
     assert "muted" not in result.message.lower()
+
+
+def test_brightness_executor_returns_canonical_unverified_metadata(monkeypatch):
+    executor = BrightnessExecutor()
+    monkeypatch.setattr(
+        executor.system_control,
+        "set_brightness",
+        lambda action, level=None: True,
+    )
+
+    result = executor.execute(
+        ActionRequest(capability_id=21, params={"action": "up"})
+    )
+
+    assert result.success is True
+    assert result.authority_class == "reversible_local"
+    assert result.external_effect is False
+    assert result.reversible is True
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
+    assert "turned" not in result.message.lower()
 
 
 def test_media_executor_handles_pause_on_windows(monkeypatch):
