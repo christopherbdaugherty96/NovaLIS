@@ -97,6 +97,80 @@ Hard rule:
 
 Provider selection should eventually consider task fit, privacy class, allowed data, redaction/minimization, cost, latency, network availability, user preference, and fallback order. Cloud escalation should never silently widen authority.
 
+### Frontier-model escalation
+
+Nova should explicitly support large frontier models as first-class **optional escalation targets**, while remaining local-first by default. The architecture should not hard-wire Nova to one model family or provider.
+
+Conceptually:
+
+```text
+request
+  -> local model first when policy and capability allow
+  -> if local is sufficient, remain local
+  -> if the task exceeds local capability, evaluate escalation
+  -> apply privacy / data-sharing / cost / provider policy
+  -> route bounded context to an allowed frontier provider
+  -> return reasoning to Nova
+  -> Nova remains responsible for decision, authority, execution, and outcome truth
+```
+
+Initial provider classes may include:
+
+```text
+Local models     -> default routine/private reasoning
+OpenAI           -> optional frontier reasoning / coding / analysis
+Anthropic        -> optional frontier reasoning / long-context analysis
+Gemini           -> optional frontier reasoning / multimodal or Google-adjacent work
+Future providers -> replaceable additions behind the same provider contract
+```
+
+The provider names are examples, not permanent architectural dependencies. Provider quality, pricing, privacy characteristics, and capabilities will change over time.
+
+A future `ModelProviderRegistry` / `ModelRouter` should be able to reason over metadata such as:
+
+```text
+provider
+model
+capability profile
+context limits
+privacy / data class eligibility
+network requirement
+latency class
+cost class
+preferred task types
+fallback order
+availability
+```
+
+User/provider policy should eventually support controls such as:
+
+```text
+local_only
+local_preferred
+ask_before_cloud
+cloud_allowed_for_selected_tasks
+preferred_frontier_provider
+preferred_coding_provider
+allowed_data_classes
+max_cost_per_request
+monthly_provider_budget
+```
+
+Escalation must follow data minimization: send only the context needed for the bounded task where practical, and do not silently send sensitive local Continuity/state to a cloud provider merely because a larger model may perform better.
+
+A frontier model's output is **advisory input**, not authority. Even when GPT-class, Claude-class, Gemini-class, or another future model produces the plan, recommendation, draft, or tool proposal, the result returns to Nova and remains subject to Nova's own state, policy, capability, Governor, approval, execution, and outcome boundaries.
+
+Therefore:
+
+```text
+frontier intelligence != Nova authority
+provider tool access != Nova capability grant
+provider recommendation != permission to execute
+cloud escalation != permission expansion
+```
+
+This multi-provider architecture is strategically important, but implementation should remain sequenced behind the nearer product proof: stabilization -> Google evidence -> minimal Continuity. Nova should preserve the architectural seam now without delaying the core validation loop to build a broad provider marketplace prematurely.
+
 ## 5. Nova does not inherently require a remote server
 
 Nova can remain a local application while the primary machine is running.
@@ -285,7 +359,7 @@ Nova should continue, but horizontal capability expansion should remain constrai
 
 The durable thesis is:
 
-> **Nova is a local-first, vendor-neutral personal operations platform and governed AI control plane. It consumes evidence from external systems, maintains operational Continuity, uses replaceable local/cloud reasoning providers, separates intelligence from authority, prepares bounded next steps, executes only through governed capabilities, and reconciles verified outcomes back into state.**
+> **Nova is a local-first, vendor-neutral personal operations platform and governed AI control plane. It consumes evidence from external systems, maintains operational Continuity, uses replaceable local/cloud reasoning providers — including optional frontier models such as OpenAI, Anthropic, Gemini, and future providers — separates intelligence from authority, prepares bounded next steps, executes only through governed capabilities, and reconciles verified outcomes back into state.**
 
 The next proof is not `Can Nova do more?`
 
