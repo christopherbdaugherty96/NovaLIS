@@ -125,7 +125,10 @@ def test_calendar_offer_preserves_subject_then_persists_real_reminder(monkeypatc
     assert any("will not fire automatically" in message for message in messages)
 
 
-@pytest.mark.parametrize("management_command", ["show schedules", "reminders"])
+@pytest.mark.parametrize(
+    "management_command",
+    ["show schedules", "reminders", "are there any reminders today?"],
+)
 def test_notification_management_command_displays_persisted_reminder(
     monkeypatch,
     management_command: str,
