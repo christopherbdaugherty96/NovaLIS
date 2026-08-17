@@ -154,7 +154,20 @@ WHY_RESEARCH_RE = re.compile(
     re.IGNORECASE,
 )
 CURRENT_INFO_QUESTION_RE = re.compile(
-    r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|news|update|updates|happening|happened|price|forecast|status)\b.*\s*$",
+    r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|news|update|updates|happening|happened|price|forecast|status|(?:live|on)\s+right\s+now)\b.*\s*$",
+    re.IGNORECASE,
+)
+# Availability questions need both an explicit time marker and an availability
+# predicate; a bare time word must not turn local or conceptual intent into search.
+CURRENT_INFO_EXISTENCE_RE = re.compile(
+    r"^\s*(?:is|are)\s+there\b"
+    r"(?=.*\b(?:today|tonight|currently|right\s+now)\b)"
+    r"(?=.*\b(?:available|changes?|current|happening|live|new|on|open|playing|running|outages?|delays?|events?|games?|sports|updates?)\b)"
+    r".*\s*$",
+    re.IGNORECASE,
+)
+CURRENT_INFO_LOCAL_SOURCE_RE = re.compile(
+    r"\b(?:reminders?|(?:my|our)\s+(?:calendar|schedule|agenda|appointments?|files?|folders?|computer|device|system|notes?|memory|email|inbox|drive|documents?|projects?|tasks?|threads?))\b",
     re.IGNORECASE,
 )
 FIND_CURRENT_INFO_RE = re.compile(
@@ -234,11 +247,11 @@ NEWS_RE = re.compile(
     r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news"
     r"|news headlines|top stories(?: today| now)?|show me today'?s? news|what(?:'s| is) (?:the )?top stories"
     r"|morning news|evening news|any news(?: today| now)?|what'?s? happening(?: in the world)?(?: today)?"
-    r"|catch me up|what did i miss|anything new(?: today| now)?)\s*$",
+    r"|catch me up|what did i miss|anything new(?: today| now)?|is there any news(?: today| now)?|are there any headlines(?: today| now)?)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
-    r"^\s*(?:calendar|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what do i have tomorrow|what(?:'s| is) on today|what(?:'s| is) on tomorrow|todays schedule|today's schedule|tomorrows schedule|tomorrow's schedule|todays calendar|today's calendar|tomorrows calendar|tomorrow's calendar|upcoming schedule|upcoming calendar|upcoming events|show upcoming events|coming up|what(?:'s| is) coming up|my upcoming schedule|this week|this week(?:'s)? schedule|this week(?:'s)? calendar|agenda (?:for )?today|agenda (?:for )?tomorrow|what(?:'?s| is) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) on (?:today'?s?|tomorrow'?s?) (?:calendar|schedule))\s*$",
+    r"^\s*(?:calendar|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what do i have tomorrow|what(?:'s| is) on today|what(?:'s| is) on tomorrow|todays schedule|today's schedule|tomorrows schedule|tomorrow's schedule|todays calendar|today's calendar|tomorrows calendar|tomorrow's calendar|upcoming schedule|upcoming calendar|upcoming events|show upcoming events|coming up|what(?:'s| is) coming up|my upcoming schedule|this week|this week(?:'s)? schedule|this week(?:'s)? calendar|agenda (?:for )?today|agenda (?:for )?tomorrow|what(?:'?s| is) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) on (?:today'?s?|tomorrow'?s?) (?:calendar|schedule)|is there anything on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|are there any (?:appointments?|events?) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?)\s*$",
     re.IGNORECASE,
 )
 SYSTEM_RE = re.compile(
@@ -1040,7 +1053,9 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(16, {"query": m.group("q").strip()})
 
-        if CURRENT_INFO_QUESTION_RE.match(t):
+        if (
+            CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)
+        ) and not CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
             return _invocation_if_enabled(16, {"query": t.strip()})
         if _looks_like_time_sensitive_finance_or_policy_query(t):
             return _invocation_if_enabled(16, {"query": t.strip()})
