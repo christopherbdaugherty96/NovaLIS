@@ -1687,6 +1687,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             command_text = re.sub(r"[.?!]+$", "", text).strip()
             command_lowered = re.sub(r"[.?!]+$", "", lowered).strip()
+            explicit_cancel_schedule_match = CANCEL_SCHEDULE_RE.match(command_text)
 
             if await _maybe_handle_review_auto_final(command_lowered):
                 continue
@@ -1734,7 +1735,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             #   medium → ask which brief domain was meant; run nothing.
             #   low    → change nothing; the existing cascade handles it.
             brief_intent = None
-            if command_lowered not in SHOW_SCHEDULES_COMMANDS:
+            if (
+                command_lowered not in SHOW_SCHEDULES_COMMANDS
+                and explicit_cancel_schedule_match is None
+            ):
                 brief_intent = resolve_brief_intent(
                     command_text,
                     news_context_loaded=bool(session_state.get("news_cache")),
@@ -3588,7 +3592,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            cancel_schedule_match = CANCEL_SCHEDULE_RE.match(text)
+            # Preserve explicit notification-schedule precedence. InputNormalizer
+            # adds terminal punctuation, while the broad brief resolver treats the
+            # word "schedule" as Calendar; use the punctuation-free match captured
+            # before that resolver can canonicalize the command.
+            cancel_schedule_match = explicit_cancel_schedule_match
             if cancel_schedule_match:
                 schedule_id = str(cancel_schedule_match.group("schedule_id") or "").strip().upper()
                 try:
