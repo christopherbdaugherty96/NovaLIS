@@ -50,7 +50,7 @@ class BriefIntent:
 
 # --- Owner-supplied v1 lexicon (the entire matcher; extend only with a test) ---
 _WEATHER_TERMS = ("hot", "cold", "rain", "jacket", "stay cool", "outside", "heat alert", "umbrella")
-_CALENDAR_TERMS = ("anything on", "what am i doing", "plans", "free", "busy", "schedule", "after that")
+_CALENDAR_TERMS = ("what am i doing", "plans", "free", "busy", "schedule", "after that")
 _NEWS_TERMS = ("anything happening", "headlines", "what should i know", "what matters today")
 
 _CANONICAL = {"weather": "weather", "news": "news", "calendar": "agenda for today"}
