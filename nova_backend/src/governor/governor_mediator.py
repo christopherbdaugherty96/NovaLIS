@@ -161,13 +161,13 @@ CURRENT_INFO_QUESTION_RE = re.compile(
 # predicate; a bare time word must not turn local or conceptual intent into search.
 CURRENT_INFO_EXISTENCE_RE = re.compile(
     r"^\s*(?:is|are)\s+there\b"
-    r"(?=.*\b(?:today|tonight|currently|right\s+now)\b)"
-    r"(?=.*\b(?:available|changes?|current|happening|live|new|on|open|playing|running|outages?|delays?|events?|games?|sports|updates?)\b)"
+    r"(?=.*\b(?:today|tonight|currently|now|right\s+now)\b)"
+    r"(?=.*\b(?:available|changes?|current|happening|live|new|open|playing|running|outages?|delays?|events?|games?|sports|updates?|on\s+(?:live\s+)?(?:today|tonight|now|right\s+now))\b)"
     r".*\s*$",
     re.IGNORECASE,
 )
 CURRENT_INFO_LOCAL_SOURCE_RE = re.compile(
-    r"\b(?:reminders?|(?:my|our)\s+(?:calendar|schedule|agenda|appointments?|files?|folders?|computer|device|system|notes?|memory|email|inbox|drive|documents?|projects?|tasks?|threads?))\b",
+    r"\b(?:reminders?|(?:(?:my|our|this|that|these|those)\s+|(?:the\s+)?local\s+)(?:calendar|schedule|agenda|appointments?|files?|folders?|computer|device|system|notes?|memory|email|inbox|drive|documents?|projects?|tasks?|threads?|pages?|desks?|servers?))\b",
     re.IGNORECASE,
 )
 FIND_CURRENT_INFO_RE = re.compile(
