@@ -51,6 +51,18 @@ _AWARENESS_DECISION_FOLLOWUP_PATTERNS = (
     re.compile(r"\bis\s+there\s+a\s+decision\s+i\s+need\s+to\s+make\b", re.I),
 )
 
+_BROAD_SITUATIONAL_AWARENESS_RE = re.compile(
+    r"^\s*(?=.*\b(?:anything|what)\s+else\b)"
+    r"(?=.*\b(?:ongoing|happening|current|new|today|right\s+now)\b)"
+    r"(?=.*\b(?:aware\s+of|know\s+about|watch)\b).+?\??\s*$",
+    re.I,
+)
+_SPECIFIC_NEWS_REFERENCE_RE = re.compile(
+    r"\b(?:that|this|the)\s+(?:story|headline|article)\b"
+    r"|\b(?:about|with)\s+(?:that|this|it)\b",
+    re.I,
+)
+
 # Schedule / calendar / commitment questions. Kept specific to avoid over-capturing
 # ordinary chat: explicit schedule nouns, "am I free/busy", or "what do I have <when>".
 # Schedule / calendar / commitment QUESTIONS only. Deliberately does not match a
@@ -372,6 +384,11 @@ def _select_explicit_item_key(lowered: str, state: dict[str, Any]) -> str:
     )
     active_surface = state.get("active_news_surface")
     active_key = str(state.get("active_brief_item") or "").strip()
+    if _is_broad_situational_awareness_followup(lowered):
+        if state.get("awareness_brief_clusters") or state.get("last_brief_clusters"):
+            return "awareness_brief"
+        if state.get("active_news_surface") or state.get("news_cache"):
+            return "news"
     if (
         active_key in {"", "awareness_brief"}
         and _has_auralis_decision_surface(state)
@@ -433,6 +450,13 @@ def _is_awareness_decision_followup(lowered: str) -> bool:
     return any(pattern.search(lowered) for pattern in _AWARENESS_DECISION_FOLLOWUP_PATTERNS)
 
 
+def _is_broad_situational_awareness_followup(lowered: str) -> bool:
+    return bool(
+        _BROAD_SITUATIONAL_AWARENESS_RE.match(lowered)
+        and not _SPECIFIC_NEWS_REFERENCE_RE.search(lowered)
+    )
+
+
 def _has_auralis_decision_surface(state: dict[str, Any]) -> bool:
     """Return whether the current Awareness payload can answer decision intent.
 
@@ -473,6 +497,8 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
             or re.search(r"\bwill\s+it\b", lowered) is not None
         )
     if key == "news":
+        if _is_broad_situational_awareness_followup(lowered):
+            return True
         if state.get("active_news_surface") and any(
             marker in lowered
             for marker in ("what matters most", "what stands out", "what should i watch", "keep an eye on")
@@ -495,18 +521,23 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
             or re.search(r"\bconnection\s+status\b", lowered) is not None
         ) and any(marker in lowered for marker in ("what caused", "why", "cause", "mean", "meaning", "that warning"))
     if key == "awareness_brief":
-        return _is_awareness_decision_followup(lowered) or _has_reference_shape(lowered) or any(
-            marker in lowered
-            for marker in (
-                "why does",
-                "what matters",
-                "what stands out",
-                "what changed",
-                "what should i watch",
-                "keep an eye on",
-                "complete",
-                "partial",
-                "done",
+        return (
+            _is_broad_situational_awareness_followup(lowered)
+            or _is_awareness_decision_followup(lowered)
+            or _has_reference_shape(lowered)
+            or any(
+                marker in lowered
+                for marker in (
+                    "why does",
+                    "what matters",
+                    "what stands out",
+                    "what changed",
+                    "what should i watch",
+                    "keep an eye on",
+                    "complete",
+                    "partial",
+                    "done",
+                )
             )
         )
     return False
@@ -579,6 +610,19 @@ def _news_lines(query: str, state: dict[str, Any]) -> list[str]:
         if isinstance(surface, dict) and surface.get("stories")
         else list(state.get("news_cache") or [])
     )
+    if _is_broad_situational_awareness_followup(str(query or "").lower()):
+        active_index = state.get("active_news_story_index")
+        indexed_items = [
+            (index, dict(item or {}))
+            for index, item in enumerate(items)
+            if not isinstance(active_index, int) or index != active_index
+        ]
+        if not indexed_items:
+            indexed_items = [(index, dict(item or {})) for index, item in enumerate(items)]
+        return [
+            _story_line(item, index + 1)
+            for index, item in indexed_items[:5]
+        ]
     target = _ordinal_index(query)
     if target is None and _is_vague_followup(query):
         active_story = state.get("active_news_story")
@@ -842,6 +886,15 @@ def _answer_weather_followup(lowered: str, state: dict[str, Any]) -> str:
 
 def _answer_news_followup(query: str, state: dict[str, Any]) -> str:
     lowered = str(query or "").lower()
+    if _is_broad_situational_awareness_followup(lowered):
+        lines = _news_lines(query, state)
+        if not lines:
+            return "I do not have other loaded headline facts to answer from yet."
+        return (
+            "Other sourced headlines from the active news surface:\n"
+            + "\n".join(lines[:3])
+            + "\n\nThese are separate loaded items, not additional claims about the selected story."
+        )
     target = _ordinal_index(query)
     if target is not None:
         selected = _remember_active_news_story(state, target)
@@ -921,8 +974,9 @@ def _answer_awareness_followup(query: str, state: dict[str, Any]) -> str:
         and _is_awareness_decision_followup(lowered)
         and _has_auralis_decision_surface(state)
     )
+    broad_awareness_followup = _is_broad_situational_awareness_followup(lowered)
     use_awareness_surface = (
-        (active_key == "awareness_brief" or empty_focus_decision)
+        (active_key == "awareness_brief" or empty_focus_decision or broad_awareness_followup)
         and "awareness_brief_clusters" in state
     )
     cluster_source = awareness_clusters if use_awareness_surface else list(state.get("last_brief_clusters") or [])
