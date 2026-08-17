@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
 from src import brain_server
 from src.conversation.session_router import GateResult
+from src.tasks.notification_schedule_store import NotificationScheduleStore
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 pytestmark = pytest.mark.slow
@@ -157,6 +159,57 @@ def test_notification_management_command_displays_persisted_reminder(
     assert schedule_widgets[-1]["active_count"] == 1
     assert schedule_widgets[-1]["upcoming_items"][0]["id"] == "SCH-TEST-0001"
     assert schedule_widgets[-1]["upcoming_items"][0]["body"] == "complete onboarding for work"
+    assert not any(message.get("type") == "calendar" for message in ws.sent_messages)
+
+
+def test_cancel_schedule_id_uses_local_store_before_calendar_routing(monkeypatch, tmp_path):
+    store = NotificationScheduleStore(tmp_path / "notification_schedules.json")
+    ledger_events: list[tuple[str, dict]] = []
+    monkeypatch.setattr(
+        brain_server,
+        "_log_ledger_event",
+        lambda _governor, event_type, payload: ledger_events.append(
+            (event_type, dict(payload))
+        ),
+    )
+    item = store.create_schedule(
+        kind="reminder",
+        title="Cancel routing proof",
+        body="Cancel routing proof reminder",
+        recurrence="once",
+        next_run_at=datetime.now(timezone.utc) + timedelta(days=1),
+    )
+
+    ws = _run_session(monkeypatch, [f"cancel schedule {item['id']}"], store)
+
+    persisted = store.get_schedule(item["id"])
+    assert persisted is not None
+    assert persisted["active"] is False
+    assert any(
+        f"Schedule cancelled: {item['id']}" in message
+        for message in _chat_messages(ws)
+    )
+    assert any(message.get("type") == "notification_schedule" for message in ws.sent_messages)
+    assert not any(message.get("type") == "calendar" for message in ws.sent_messages)
+    assert (
+        "NOTIFICATION_SCHEDULE_CANCELLED",
+        {"schedule_id": item["id"], "kind": "reminder"},
+    ) in ledger_events
+
+
+def test_cancel_unknown_schedule_id_fails_truthfully_without_calendar_routing(
+    monkeypatch,
+    tmp_path,
+):
+    store = NotificationScheduleStore(tmp_path / "notification_schedules.json")
+
+    ws = _run_session(monkeypatch, ["cancel schedule SCH-NOT-FOUND"], store)
+
+    assert any(
+        "I could not find that schedule ID yet." in message
+        for message in _chat_messages(ws)
+    )
+    assert not any("Schedule cancelled:" in message for message in _chat_messages(ws))
     assert not any(message.get("type") == "calendar" for message in ws.sent_messages)
 
 

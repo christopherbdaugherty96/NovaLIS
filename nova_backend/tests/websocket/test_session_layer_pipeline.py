@@ -22,6 +22,7 @@ from src.governor.governor_mediator import GovernorMediator
 from src.websocket.intent_patterns import (
     AMBIENT_CLARIFICATION_PATTERNS,
     CALENDAR_WRITE_REQUEST_RE,
+    CANCEL_SCHEDULE_RE,
     CAPABILITY_HELP_RE,
     EMAIL_INBOX_RE,
     HELP_ORIENT_RE,
@@ -58,6 +59,8 @@ def _pipeline(raw: str) -> str | int | None:
         return "SESSION_ACTIVITY_RECAP"
     if CALENDAR_WRITE_REQUEST_RE.match(command_text):
         return "CALENDAR_WRITE"
+    if CANCEL_SCHEDULE_RE.match(command_text):
+        return "CANCEL_SCHEDULE"
     if EMAIL_INBOX_RE.match(command_text):
         return "EMAIL_INBOX"
     if HELP_ORIENT_RE.match(command_text):
@@ -407,6 +410,17 @@ class TestRemindMeTimeless:
 
 
 class TestCommitmentTruthRouting:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "cancel schedule SCH-20260817-020934-F40E",
+            "Cancel schedule SCH-TEST-0001!",
+            "nova cancel schedule SCH-TEST-0001",
+        ],
+    )
+    def test_cancel_schedule_id_precedes_calendar_routing(self, raw: str):
+        assert _pipeline(raw) == "CANCEL_SCHEDULE"
+
     @pytest.mark.parametrize("raw", [
         "add this to my calendar",
         "put this on my calendar",
