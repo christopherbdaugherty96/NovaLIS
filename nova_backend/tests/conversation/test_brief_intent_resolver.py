@@ -12,7 +12,6 @@ clarification; low leaves the existing advisory path untouched.
 from __future__ import annotations
 
 import pytest
-
 from src.conversation.brief_intent_resolver import (
     BRIEF_CLARIFICATION,
     BriefIntent,
@@ -89,6 +88,20 @@ def test_cross_domain_collision_asks_clarification():
     ],
 )
 def test_authoring_and_search_intents_are_not_stolen(text):
+    intent = _resolve(text)
+    assert intent.confidence == "low"
+    assert intent.capability is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "is there anything on the local server today?",
+        "is there any note on my desk today?",
+        "is there anything written on this document today?",
+    ],
+)
+def test_local_or_document_queries_are_not_stolen_by_calendar(text):
     intent = _resolve(text)
     assert intent.confidence == "low"
     assert intent.capability is None
