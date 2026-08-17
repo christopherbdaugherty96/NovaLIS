@@ -137,6 +137,28 @@ SEARCH_RE = re.compile(
     r"^\s*(?:search(?:\s+for)?|look\s+up|find\s+me|find\s+(?:me\s+)?(?:information|info|details|facts)\s+(?:about|on))\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
 )
+PRIVATE_GOOGLE_DRIVE_SOURCE_RE = re.compile(
+    r"\b(?:"
+    r"(?:my|our)\s+(?:google\s+)?drive"
+    r"|(?:my|our)\s+(?:files?|documents?)\s+(?:in|on)\s+(?:google\s+)?drive"
+    r")\b",
+    re.IGNORECASE,
+)
+PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE = (
+    "Google Drive access isn't enabled in Nova yet. I didn't search the public web, "
+    "and no Drive data was accessed."
+)
+
+
+def is_private_google_drive_search(text: str) -> bool:
+    """Identify an explicit search of the owner's private Google Drive source."""
+    search_match = SEARCH_RE.match(str(text or "").strip())
+    if not search_match:
+        return False
+    query = _normalize_search_query(search_match.group("q"))
+    return bool(PRIVATE_GOOGLE_DRIVE_SOURCE_RE.search(query))
+
+
 SOURCE_RELIABILITY_RE = re.compile(
     r"^\s*analy[sz]e\s+source\s+reliability\s+(?:for|of|on)\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
@@ -1082,6 +1104,11 @@ class GovernorMediator:
         m = SEARCH_RE.match(t)
         if m:
             search_query = _normalize_search_query(m.group("q"))
+            if is_private_google_drive_search(t):
+                return Clarification(
+                    capability_id=16,
+                    message=PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE,
+                )
             lowered_query = search_query.lower()
             if lowered_query.startswith(("memories for ", "memory for ", "memory ", "memories ")):
                 memory_query = re.sub(r"^(?:my\s+)?memories?\s+for\s+", "", search_query, flags=re.IGNORECASE)

@@ -483,6 +483,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     AMBIENT_CLARIFICATION_PATTERNS = deps.AMBIENT_CLARIFICATION_PATTERNS
     EMAIL_INBOX_RE = deps.EMAIL_INBOX_RE
     EMAIL_INBOX_RESPONSE = deps.EMAIL_INBOX_RESPONSE
+    PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE = deps.PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE
+    is_private_google_drive_search = deps.is_private_google_drive_search
     REMIND_ME_TIMELESS_RE = deps.REMIND_ME_TIMELESS_RE
     CALENDAR_WRITE_REQUEST_RE = deps.CALENDAR_WRITE_REQUEST_RE
     REMINDER_BODY_FIRST_RE = deps.REMINDER_BODY_FIRST_RE
@@ -1616,6 +1618,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     suggested_actions=[
                         {"label": "Use a Nova reminder", "command": "yes, set a reminder"},
                     ],
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            if is_private_google_drive_search(text.rstrip(".?!")):
+                record_rejected_or_unsupported(
+                    session_state,
+                    label="Google Drive search",
+                    reason=(
+                        "Google Drive access is not enabled; no Drive data or public web search "
+                        "was attempted."
+                    ),
+                )
+                await _complete_immediate_turn(
+                    PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE,
                     remember_response=False,
                     tone_domain="system",
                 )

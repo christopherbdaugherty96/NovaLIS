@@ -18,7 +18,7 @@ import re
 
 import pytest
 from src.conversation.response_style_router import InputNormalizer
-from src.governor.governor_mediator import GovernorMediator
+from src.governor.governor_mediator import GovernorMediator, is_private_google_drive_search
 from src.websocket.intent_patterns import (
     AMBIENT_CLARIFICATION_PATTERNS,
     CALENDAR_WRITE_REQUEST_RE,
@@ -59,6 +59,8 @@ def _pipeline(raw: str) -> str | int | None:
         return "SESSION_ACTIVITY_RECAP"
     if CALENDAR_WRITE_REQUEST_RE.match(command_text):
         return "CALENDAR_WRITE"
+    if is_private_google_drive_search(command_text):
+        return "PRIVATE_GOOGLE_DRIVE_SEARCH"
     if CANCEL_SCHEDULE_RE.match(command_text):
         return "CANCEL_SCHEDULE"
     if EMAIL_INBOX_RE.match(command_text):
@@ -170,6 +172,34 @@ class TestCurrentInformationFreshnessRouting:
         capability_id: str | int,
     ):
         assert _pipeline(raw) == capability_id
+
+
+class TestPrivateGoogleDriveSourceSelection:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "search my Google Drive",
+            "Nova, search my Google Drive please?",
+            "please search my Google Drive",
+            "search my Drive for the tax return",
+            "look up the budget in my Google Drive",
+            "search for the onboarding plan in our Drive",
+            "search my documents in Google Drive",
+        ],
+    )
+    def test_private_drive_search_never_routes_to_public_web(self, raw: str):
+        assert _pipeline(raw) == "PRIVATE_GOOGLE_DRIVE_SEARCH"
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "search Google Drive pricing",
+            "search for the latest Google Drive outage",
+            "look up Google Drive documentation",
+        ],
+    )
+    def test_public_google_drive_topics_remain_governed_web_search(self, raw: str):
+        assert _pipeline(raw) == 16
 
 
 class TestCalendarTemporalScopeRouting:
