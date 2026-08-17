@@ -471,6 +471,11 @@ TONE_RESET_RE = re.compile(r"^\s*tone\s+reset(?:\s+(?P<body>.+?))?\s*$", re.IGNO
 # Notification / schedule patterns
 # -------------------------------------------------
 SHOW_SCHEDULES_COMMANDS = {
+    "are there any reminders",
+    "are there any reminders today",
+    "do i have any reminders today",
+    "do i have reminders today",
+    "is there any reminder today",
     "show schedules",
     "list schedules",
     "notification status",

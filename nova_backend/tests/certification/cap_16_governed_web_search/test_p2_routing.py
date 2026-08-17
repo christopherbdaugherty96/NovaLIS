@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -42,7 +41,7 @@ def _not_cap16(text: str):
 
 def test_bare_search_returns_clarification():
     # Clarification requires a session_id so the mediator can track the pending state.
-    from src.governor.governor_mediator import GovernorMediator, Clarification
+    from src.governor.governor_mediator import Clarification, GovernorMediator
     session_id = "cert-16-p2-bare-no-ctx"
     GovernorMediator.clear_session(session_id)
     result = _parse("search", session_id=session_id)
@@ -51,7 +50,7 @@ def test_bare_search_returns_clarification():
 
 
 def test_bare_search_clarification_then_cap16():
-    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+    from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
     session_id = "cert-16-p2-bare-search"
     GovernorMediator.clear_session(session_id)
 
@@ -122,6 +121,26 @@ def test_right_now_routes_to_cap16():
     assert "bitcoin" in inv.params["query"].lower()
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "is there any sports on live today?",
+        "are there any games on today?",
+        "is there any live transit coverage tonight?",
+        "are there any current service outages right now?",
+        "what sports are live right now?",
+        "is there anything happening in Congress today?",
+        "are there any live events happening today?",
+        "is there anything new with OpenAI today?",
+        "are there any policy updates today?",
+    ],
+)
+def test_natural_current_availability_questions_route_to_cap16(text: str):
+    inv = _invocation(text)
+    assert inv.capability_id == 16
+    assert inv.params["query"]
+
+
 # ---------------------------------------------------------------------------
 # Claim-check / fact-check phrasing → cap 16
 # ---------------------------------------------------------------------------
@@ -171,3 +190,44 @@ def test_generic_factual_question_returns_none():
     from src.governor.governor_mediator import GovernorMediator
     result = GovernorMediator.parse_governed_invocation("is the sky blue")
     assert result is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "explain how live sports broadcasting works",
+        "write a live sports schedule parser",
+        "I watched sports today",
+        "tell me the history of the Super Bowl",
+        "is there a difference between live and recorded sports?",
+        "is there any difference between today and tomorrow?",
+        "are there any reminders today?",
+        "is there anything in my files today?",
+        "are there any updates in my inbox today?",
+        "what reminders do I have today?",
+        "what's in my inbox today?",
+        "what happened with my project today?",
+    ],
+)
+def test_non_current_or_local_requests_do_not_route_to_cap16(text: str):
+    _not_cap16(text)
+
+
+@pytest.mark.parametrize(
+    ("text", "capability_id"),
+    [
+        ("what's the weather today?", 55),
+        ("today's news", 50),
+        ("show my calendar", 57),
+        ("what's my schedule today?", 57),
+        ("is there anything on my calendar today?", 57),
+        ("are there any appointments on my schedule today?", 57),
+        ("is there any news today?", 56),
+    ],
+)
+def test_specific_current_information_domains_keep_precedence(
+    text: str,
+    capability_id: int,
+):
+    inv = _invocation(text)
+    assert inv.capability_id == capability_id

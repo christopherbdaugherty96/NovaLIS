@@ -31,6 +31,7 @@ from src.websocket.intent_patterns import (
     REMINDER_BACKGROUND_DELIVERY_RE,
     REMINDER_TIME_ONLY_RE,
     SESSION_ACTIVITY_RECAP_RE,
+    SHOW_SCHEDULES_COMMANDS,
     TIME_QUERY_RE,
 )
 
@@ -73,6 +74,8 @@ def _pipeline(raw: str) -> str | int | None:
         return "REMINDER_BACKGROUND_DELIVERY"
     if REMINDER_ACTION_REQUEST_RE.match(command_text):
         return "REMINDER_ACTION_UNPARSED"
+    if command_text.lower() in SHOW_SCHEDULES_COMMANDS:
+        return "SHOW_SCHEDULES"
     for pat, _ in AMBIENT_CLARIFICATION_PATTERNS:
         if pat.match(command_text):
             return "AMBIENT_CLARIFICATION"
@@ -100,6 +103,61 @@ class TestCap19NaturalVolumePhrasing:
         result = GovernorMediator.parse_governed_invocation("turn up volume")
         assert getattr(result, "capability_id", None) == 19
         assert getattr(result, "params", {}).get("action") == "up"
+
+
+class TestCurrentInformationFreshnessRouting:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "is there any sports on live today?",
+            "Are there any games on today?",
+            "nova what sports are live right now?",
+            "is there anything happening in Congress today?",
+            "are there any live events happening today?",
+            "is there anything new with OpenAI today?",
+            "are there any policy updates today?",
+        ],
+    )
+    def test_natural_freshness_demand_routes_to_governed_search(self, raw: str):
+        assert _pipeline(raw) == 16
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "explain how live sports broadcasting works",
+            "write a live sports schedule parser",
+            "I watched sports today",
+            "is there a difference between live and recorded sports?",
+            "is there any difference between today and tomorrow?",
+            "is there anything in my files today?",
+            "are there any updates in my inbox today?",
+            "what reminders do I have today?",
+            "what's in my inbox today?",
+            "what happened with my project today?",
+        ],
+    )
+    def test_non_current_requests_still_fall_through(self, raw: str):
+        assert _pipeline(raw) is None
+
+    @pytest.mark.parametrize(
+        ("raw", "capability_id"),
+        [
+            ("what's the weather today?", 55),
+            ("today's news", 50),
+            ("show my calendar", 57),
+            ("what's my schedule today?", 57),
+            ("is there anything on my calendar today?", 57),
+            ("are there any appointments on my schedule today?", 57),
+            ("is there any news today?", 56),
+            ("are there any reminders today?", "SHOW_SCHEDULES"),
+        ],
+    )
+    def test_specific_domains_keep_precedence(
+        self,
+        raw: str,
+        capability_id: str | int,
+    ):
+        assert _pipeline(raw) == capability_id
 
 
 class TestSessionActivityRecapRouting:
