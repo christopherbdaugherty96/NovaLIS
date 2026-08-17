@@ -206,6 +206,98 @@ def test_news_followup_stays_attached_to_selected_story():
     assert state["active_news_story_index"] == 1
 
 
+def test_broad_awareness_followup_does_not_bind_to_selected_story():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "First headline", "source": "NPR", "summary": "First summary"},
+                {"title": "Selected headline", "source": "BBC News", "summary": "Selected summary"},
+                {"title": "Third headline", "source": "AP", "summary": "Third summary"},
+            ],
+        },
+        set_focus=True,
+    )
+
+    answer_grounded_brief_followup("Tell me more about the second story.", state)
+
+    prompt = "anything else ongoing that I should be aware of?"
+    assert is_discussion_shaped_brief_followup(prompt, state) is True
+    answer = answer_grounded_brief_followup(prompt, state)
+
+    assert "Other sourced headlines" in answer
+    assert "First headline" in answer
+    assert "Third headline" in answer
+    assert "Selected headline" not in answer
+    assert "not additional claims about the selected story" in answer
+
+
+def test_broad_awareness_followup_prefers_available_awareness_surface_over_selected_story():
+    state: dict = {}
+    store_awareness_brief_surface(
+        state,
+        {
+            "sections": [
+                {
+                    "key": "calendar_today",
+                    "title": "Calendar",
+                    "items": ["Dentist appointment at 3 PM."],
+                    "source": "local calendar",
+                    "status": "ok",
+                },
+                {
+                    "key": "weather_today",
+                    "title": "Weather",
+                    "items": ["Rain is possible this afternoon."],
+                    "source": "weather provider",
+                    "status": "ok",
+                },
+            ]
+        },
+    )
+    store_brief_widget(
+        state,
+        "news",
+        {
+            "type": "news",
+            "items": [
+                {"title": "First headline", "source": "NPR", "summary": "First summary"},
+                {"title": "Selected headline", "source": "BBC News", "summary": "Selected summary"},
+            ],
+        },
+        set_focus=True,
+    )
+    answer_grounded_brief_followup("Tell me more about the second story.", state)
+
+    prompt = "anything else ongoing that I should be aware of?"
+    assert is_discussion_shaped_brief_followup(prompt, state) is True
+    answer = answer_grounded_brief_followup(prompt, state)
+
+    assert "Current rendered brief" in answer
+    assert "Dentist appointment at 3 PM" in answer
+    assert "Rain is possible this afternoon" in answer
+    assert "Selected headline" not in answer
+    assert "I do not have a rendered intelligence brief" not in answer
+
+
+def test_explicit_story_reference_remains_attached_to_selected_story():
+    state = _news_state()
+    answer_grounded_brief_followup("Tell me more about the second story.", state)
+
+    for prompt in (
+        "anything else current that I should know about that story?",
+        "anything else current that I should know about it?",
+    ):
+        assert is_discussion_shaped_brief_followup(prompt, state) is True
+        answer = answer_grounded_brief_followup(prompt, state)
+
+        assert "Budget vote delayed" in answer
+        assert "Alvarez wins" not in answer
+
+
 def test_unrelated_prompts_are_not_captured_after_brief_loads():
     state: dict = {}
     store_brief_widget(
