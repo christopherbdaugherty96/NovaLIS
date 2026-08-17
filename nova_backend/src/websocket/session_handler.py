@@ -3378,7 +3378,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in SHOW_SCHEDULES_COMMANDS:
+            if command_lowered in SHOW_SCHEDULES_COMMANDS:
                 snapshot = notification_schedules.summarize()
                 if silent_widget_refresh:
                     snapshot = _process_due_notification_delivery(governor, notification_schedules, snapshot)
