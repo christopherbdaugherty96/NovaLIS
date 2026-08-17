@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from src.actions.action_request import ActionRequest
 from src.base_skill import SkillResult
 from src.executors.info_snapshot_executor import (
@@ -5,6 +7,7 @@ from src.executors.info_snapshot_executor import (
     NewsSnapshotExecutor,
     WeatherSnapshotExecutor,
 )
+from src.governor.governor_mediator import GovernorMediator, Invocation
 
 
 def test_weather_snapshot_executor_success(monkeypatch):
@@ -157,6 +160,70 @@ def test_calendar_snapshot_executor_success(monkeypatch):
     assert result.data["widget"]["events"][0]["title"] == "Standup"
     assert "Upcoming events loaded: 1" in result.message
     assert result.data["follow_up_prompts"]
+
+
+def test_calendar_snapshot_executor_preserves_mediator_temporal_scope(monkeypatch, tmp_path):
+    today = datetime.now()
+    tomorrow = today + timedelta(days=1)
+    later = today + timedelta(days=3)
+    ics_path = tmp_path / "calendar.ics"
+    ics_path.write_text(
+        "BEGIN:VCALENDAR\n"
+        "BEGIN:VEVENT\n"
+        f"DTSTART:{today.strftime('%Y%m%dT090000')}\n"
+        "SUMMARY:Today Only\n"
+        "END:VEVENT\n"
+        "BEGIN:VEVENT\n"
+        f"DTSTART:{tomorrow.strftime('%Y%m%dT143000')}\n"
+        "SUMMARY:Tomorrow Only\n"
+        "END:VEVENT\n"
+        "BEGIN:VEVENT\n"
+        f"DTSTART:{later.strftime('%Y%m%dT110000')}\n"
+        "SUMMARY:Later Only\n"
+        "END:VEVENT\n"
+        "END:VCALENDAR\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("NOVA_CALENDAR_ICS_PATH", str(ics_path))
+
+    cases = (
+        ("calendar", "today", ["Today Only"]),
+        ("calendar tomorrow", "tomorrow", ["Tomorrow Only"]),
+        ("tomorrow's schedule", "tomorrow", ["Tomorrow Only"]),
+        ("what do i have tomorrow", "tomorrow", ["Tomorrow Only"]),
+        ("upcoming events", "upcoming", ["Today Only", "Tomorrow Only", "Later Only"]),
+    )
+    for command, expected_scope, expected_titles in cases:
+        invocation = GovernorMediator.parse_governed_invocation(command)
+        assert isinstance(invocation, Invocation)
+        result = CalendarSnapshotExecutor().execute(
+            ActionRequest(capability_id=57, params=invocation.params)
+        )
+
+        assert result.success is True
+        widget = result.data["widget"]
+        assert widget["scope"] == expected_scope
+        assert [event["title"] for event in widget["events"]] == expected_titles
+
+
+def test_calendar_snapshot_executor_rejects_unknown_scope_by_falling_back_to_today(monkeypatch):
+    async def fake_handle(self, query: str):
+        del self
+        assert query == "calendar"
+        return SkillResult(
+            success=True,
+            message="You're clear today.",
+            widget_data={"type": "calendar", "scope": "today", "events": []},
+            skill="calendar",
+        )
+
+    monkeypatch.setattr("src.skills.calendar.CalendarSkill.handle", fake_handle)
+    result = CalendarSnapshotExecutor().execute(
+        ActionRequest(capability_id=57, params={"scope": "arbitrary"})
+    )
+
+    assert result.success is True
+    assert result.data["widget"]["scope"] == "today"
 
 
 def test_calendar_snapshot_executor_failure_preserves_skill_widget(monkeypatch):

@@ -204,11 +204,19 @@ class NewsSnapshotExecutor:
 
 
 class CalendarSnapshotExecutor:
+    _SCOPE_QUERIES = {
+        "today": "calendar",
+        "tomorrow": "tomorrow's schedule",
+        "upcoming": "upcoming events",
+    }
+
     def __init__(self) -> None:
         self._skill = CalendarSkill()
 
     def execute(self, request) -> ActionResult:
-        result = _run_skill(self._skill, "calendar")
+        requested_scope = str((request.params or {}).get("scope") or "today").strip().lower()
+        query = self._SCOPE_QUERIES.get(requested_scope, self._SCOPE_QUERIES["today"])
+        result = _run_skill(self._skill, query)
         if result is None:
             return ActionResult.failure(
                 "Calendar is currently unavailable.",
