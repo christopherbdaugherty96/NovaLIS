@@ -1,184 +1,162 @@
 # Nova Product / Platform Direction — 2026-08-17
 
-Status: strategic synthesis; non-authorizing.
+Status: consolidated strategic synthesis; non-authorizing.
 
-This document consolidates the current product-level direction for Nova after the August 2026
-architecture, product, competitive, and runtime reviews. It is a durable strategic reference only.
-It does not change current roadmap ordering, activate a lane, modify runtime behavior, authorize
-Google domain access, expand capabilities, change authority, or authorize OpenClaw/browser work.
+This is the single durable Product / Platform strategy for Nova from the August 2026 review cycle. It consolidates the original direction and the second-pass conclusions. It does not change runtime truth, roadmap ordering, lane scope, capability state, Google scopes, authority, or approval requirements.
 
-Current runtime truth remains defined by code and generated runtime documentation. Current work
-ordering remains defined by the canonical roadmap/current-state surfaces and separately reviewed
-lane scope. Owner approval remains the source of activation.
+Current runtime truth remains defined by code and generated runtime documentation. Current implementation ordering remains defined by the canonical roadmap/current-state surfaces and reviewed lane locks. Owner approval remains the source of activation.
 
-Grounded baseline when this document was created:
+Grounded baseline when this direction was established:
 
 ```text
 main: e69ca987cd458de8723f1ce9f3885de2de4ec6e8
-latest merged PR: #352 — keep private Drive searches off public web
+latest merged PR at baseline: #352 — keep private Drive searches off public web
 ```
-
----
 
 ## 1. Product identity
 
 Nova should not be treated as another general-purpose chatbot or autonomous agent.
 
-The clearest product identity is:
+> **Nova is a local-first, vendor-neutral personal operations platform and governed AI control plane. It consumes evidence from external systems, maintains operational Continuity, uses replaceable local/cloud reasoning providers, separates intelligence from authority, prepares bounded next steps, executes only through governed capabilities, and reconciles verified outcomes back into state.**
 
-> **Nova is a local-first personal operations system and governed AI control plane that maintains
-> operational state, identifies what matters, prepares the next useful step, coordinates optional
-> reasoning providers and tools, and preserves what actually happened afterward.**
-
-Its permanent architecture remains:
+Permanent architecture:
 
 ```text
 Awareness -> Decision -> Authority -> Execution -> Outcome
 ```
 
-Continuity surrounds that loop as persistent, reconciled operational state.
+Continuity surrounds the loop as persistent, reconciled operational state.
 
-The product-level objective is not maximum task throughput. The objective is to reduce uncertainty
-and help the user make the next better decision while preserving truthful state across time.
+The product objective is not maximum task throughput. It is to reduce uncertainty, preserve truthful state across time, focus attention, prepare the next useful step, and help close real loops without silently taking authority.
 
----
+## 2. Product, platform, and harness
 
-## 2. Nova is a platform whose core contains a governed AI harness/control plane
-
-If forced to choose between "harness" and "platform," Nova is best classified as a **platform**.
-
-The distinction is:
+Nova is product-wise a **Personal Operations System**, architecturally a **platform**, and internally contains a governed AI **harness/control plane**.
 
 ```text
 PRODUCT
-Nova — Personal Operations System
-
-        built on
+Personal Operations System
 
 PLATFORM
-State + Continuity + Evidence + Decision + Authority + Outcome
-
-        containing
+Operational State + Continuity + Evidence + Decision + Authority + Outcome
 
 HARNESS / CONTROL PLANE
-Models + capabilities + tools + execution boundaries
+Models + provider routing + capabilities + tools + execution boundaries
 ```
 
-The harness is the technical layer that wraps and controls models/tools. The platform is broader:
-it provides durable state, evidence, policy, authority, provider routing, capability management,
-execution, reconciliation, and eventually multiple operating surfaces.
-
-Nova should not be marketed primarily as an "AI harness." That is an engineering description.
-The user-facing product is the personal operations system.
-
----
+`AI harness` is an engineering description, not the preferred user-facing identity.
 
 ## 3. Local-first means local control, not local-only intelligence
 
-Nova should remain **local-first**, but local-first should be interpreted as:
+Nova should remain local-first permanently:
 
 > **Local control plane, hybrid intelligence.**
 
-The preferred topology is:
+Local/user-controlled state should preferentially own:
 
-```text
-LOCAL / USER-CONTROLLED
-- durable Continuity state
-- credentials / secrets
-- authority / approvals
-- capability policy
-- receipts / ledger
-- local files
-- sensitive memory
-- user preferences
-- local model default
+- authority and approval policy;
+- Continuity and durable operational state;
+- credentials/secrets;
+- capability policy;
+- receipts/ledger;
+- local files and sensitive memory;
+- provider/data-sharing preferences.
 
-OPTIONAL EXTERNAL REASONING
-- OpenAI
-- Anthropic
-- Gemini
-- other future providers
+Optional external reasoning may include OpenAI, Anthropic, Gemini, and future providers. Optional actuators/services may include Google APIs, Shopify, web search, OpenClaw, and later browser/computer-use when separately warranted.
 
-OPTIONAL EXTERNAL ACTUATORS / SERVICES
-- Google APIs
-- Shopify
-- web search
-- OpenClaw
-- browser/computer-use later if separately warranted
-```
-
-Nova does not need the smartest model to be durable. Models should remain replaceable reasoning
-providers beneath Nova's state, evidence, authority, and outcome system.
-
----
-
-## 4. Multi-provider model direction
-
-Nova should eventually support OpenAI, Anthropic, Gemini, and other providers as optional reasoning
-engines while keeping local inference as the default.
-
-Target routing hierarchy:
-
-```text
-Tier 1 — Local
-Use the smallest capable local model for routine/private work.
-
-Tier 2 — External advisory reasoning
-Escalate to OpenAI / Anthropic / Gemini / others for harder reasoning, large context,
-second opinions, research synthesis, coding review, or specialized capabilities.
-
-Tier 3 — Specialized execution / technical workers
-Codex, OpenClaw, browser/computer-use, or other specialist agents receive bounded work only.
-```
-
-Future provider policy should be able to express:
-
-```text
-local_only
-local_preferred
-ask_before_cloud
-cloud_allowed_for_selected_data
-preferred_provider
-preferred_coding_provider
-cost ceiling / budget
-privacy class
-allowed data classes
-fallback order
-```
-
-A future provider registry/router may track:
-
-- provider;
-- model;
-- task strengths;
-- context limits;
-- latency;
-- cost class;
-- privacy class;
-- permitted data classes;
-- network requirement;
-- fallback order.
+Nova does not need to own the smartest model. Models should remain replaceable beneath Nova's state, evidence, authority, and outcome system.
 
 Hard rule:
 
 > **Models advise. Nova governs.**
 
-A model recommendation, plan, memory, confidence score, or prior success never becomes action
-authority.
+## 4. Frontier-model escalation and provider neutrality
 
----
+Large frontier models should be first-class **optional escalation targets**, while local inference remains the default when sufficient.
 
-## 5. Capability and authority remain permanently separate
+```text
+request
+-> deterministic/local handling where sufficient
+-> local model when reasoning is needed and sufficient
+-> if local is insufficient, evaluate escalation
+-> apply privacy / data-sharing / cost / provider policy
+-> send bounded/minimized context to an allowed frontier provider
+-> return reasoning to Nova
+-> Nova retains decision, authority, execution, and outcome truth
+```
 
-Capability answers:
+Provider classes may include:
 
-> What can the runtime technically do?
+```text
+Local models     -> default routine/private reasoning
+OpenAI           -> optional frontier reasoning/coding/analysis
+Anthropic        -> optional frontier reasoning/long-context analysis
+Gemini           -> optional frontier reasoning/multimodal/Google-adjacent work
+Future providers -> replaceable additions behind the same provider contract
+```
 
-Authority answers:
+Provider names are examples, not permanent dependencies. Quality, pricing, privacy characteristics, and capabilities will change.
 
-> May this exact action occur now, in this scope, for this actor/session, with these parameters?
+Future policy should be able to express requirements such as:
 
-Therefore:
+```text
+local_only
+local_preferred
+ask_before_cloud
+cloud_allowed_for_selected_tasks/data
+preferred_frontier_provider
+preferred_coding_provider
+allowed_data_classes
+max_cost_per_request
+monthly_provider_budget
+fallback order
+```
+
+A future `ModelProviderRegistry` / `ModelRouter` may track provider/model capability profile, context limits, privacy/data eligibility, network requirement, latency, cost, preferred task types, availability, and fallback order.
+
+Do **not** implement that broad contract until the provider-routing lane is actually activated. Strategy preserves the requirements; active-lane design should define the real interfaces against then-current provider APIs and Nova state models.
+
+Permanent boundaries:
+
+```text
+frontier intelligence != Nova authority
+provider tool access != Nova capability grant
+provider recommendation != permission to execute
+cloud escalation != permission expansion
+```
+
+## 5. Local-first economics and cost-aware execution
+
+Nova's architecture should minimize unnecessary recurring frontier-model inference.
+
+> **Use the cheapest sufficient computation for each workflow step while keeping correctness, privacy, truth, and authority ahead of cost optimization.**
+
+Routine work should use deterministic/local execution or local inference when sufficient. Hard, high-context, ambiguous, or quality-sensitive steps may escalate to paid frontier intelligence when the expected value justifies it.
+
+A workflow should not automatically run end-to-end through the most expensive model because one step requires frontier intelligence.
+
+```text
+1. classify local files        -> local model
+2. move approved files         -> local executor
+3. analyze difficult document  -> frontier model
+4. prepare proposal            -> local/frontier based on quality need
+5. stage email                 -> Nova/local capability
+6. send external effect        -> separately governed action path
+```
+
+`Local` does not mean literally free. Hardware, electricity, maintenance, storage, APIs, and external services can still cost money. Avoid market claims such as `Nova does what Codex does for free`; provider pricing and capabilities are temporary market conditions.
+
+Durable positioning:
+
+> **Local-first execution for routine work; premium frontier intelligence only when it is actually useful.**
+
+Future metrics may include local completion rate, frontier escalation rate, cost per completed workflow, average frontier cost per user/day, escalation quality improvement, latency, and user overrides. No arbitrary local-completion percentage is assumed in advance.
+
+## 6. Capability and authority remain permanently separate
+
+Capability answers `What can the runtime technically do?`
+
+Authority answers `May this exact action occur now, in this scope, for this actor/session, with these parameters?`
 
 ```text
 capability != authority
@@ -188,7 +166,7 @@ recommendation != mandate
 connection != action permission
 ```
 
-The existing governed execution spine remains the correct foundation:
+The governed execution spine remains foundational:
 
 ```text
 User
@@ -201,34 +179,23 @@ User
 -> Executor
 ```
 
-Effectful growth should preserve exact-action binding, approval authenticity, bounded execution,
-receipts, and truthful outcome handling.
+Effectful growth should preserve exact-action binding, approval authenticity, bounded execution, receipts, and truthful outcome handling.
 
----
+## 7. ApprovalGrant and outcome truth
 
-## 6. ApprovalGrant and outcome truth are core trust assets
+Approval must not degrade into a reusable caller-controlled Boolean.
 
-Approval should not be represented as a reusable caller-controlled Boolean.
+ApprovalGrant binds approval to the exact action/session/capability and prevents parameter mutation after approval, replay, cross-session reuse, cross-capability reuse, stale approval reuse, and caller-fabricated `confirmed=true` authority.
 
-ApprovalGrant exists to bind approval to the exact action/session/capability and prevent classes of
-failure such as:
-
-- parameter mutation after approval;
-- replay;
-- cross-session reuse;
-- cross-capability reuse;
-- stale approval reuse;
-- caller-fabricated `confirmed=true` authority.
-
-Nova should continue treating outcome truth independently from execution truth.
-
-`accepted_unverified` exists because:
+Nova should also keep execution truth separate from outcome truth.
 
 ```text
 request accepted != external effect verified
 ```
 
-Nova should preserve distinctions such as:
+`accepted_unverified` exists because Nova may have evidence that an execution request was accepted without sufficient evidence that the intended external effect actually occurred.
+
+Outcome vocabulary should preserve distinctions such as:
 
 ```text
 rejected
@@ -238,31 +205,17 @@ verified
 unknown
 ```
 
-Execution answers what Nova attempted. Outcome answers what Nova can actually prove happened.
+Execution answers what Nova attempted. Outcome answers what Nova can prove happened.
 
----
+## 8. Request understanding is the current architectural pressure point
 
-## 7. Current engineering pressure point: request understanding / routing
+The Governor/execution architecture is stronger than the natural-language interpretation/source-resolution layer.
 
-The current Governor/execution architecture is stronger than the natural-language interpretation
-layer.
+Recent defects have clustered around parameter loss, temporal-scope loss, private/public source confusion, route precedence, equivalent word-order variants, follow-up binding, and broad intent being narrowed incorrectly.
 
-Recent defects have clustered around:
+Do not replace this with an unconstrained LLM router or perform a big-bang rewrite during stabilization.
 
-- explicit parameters being dropped;
-- temporal scope loss (`tomorrow` -> `today`);
-- source confusion (private Drive -> public web);
-- route precedence;
-- equivalent word-order variants;
-- follow-up scope binding;
-- broad intent being narrowed incorrectly.
-
-This indicates semantic interpretation/source resolution is now the primary architectural pressure
-point.
-
-Do not perform a big-bang routing rewrite during the current stabilization sequence.
-
-Post-stabilization direction should be incremental semantic normalization, for example:
+Preferred post-stabilization direction:
 
 ```text
 raw language
@@ -273,101 +226,67 @@ raw language
 -> Governor
 ```
 
-Illustrative future request shape:
+Principle:
 
-```text
-intent: retrieve
-domain: calendar
-source_scope: private
-resource: events
-temporal_scope: tomorrow
-requested_effect: read
-confidence: high
-provenance: deterministic_rule | bounded_classifier
-```
+> **Interpret once, preserve semantics, route deterministically.**
 
-The safer long-term approach is hybrid:
-
-- deterministic guards for effectful/private/source-sensitive requests;
-- typed normalization for domain/source/time/effect;
-- bounded model classification only for unresolved advisory/read-only ambiguity;
-- GeneralChat fallback only after governed/private/source-sensitive routes are excluded.
+Use deterministic guards for effectful/private/source-sensitive requests, typed normalization for domain/source/time/effect, bounded model classification only for unresolved advisory/read-only ambiguity, and GeneralChat fallback only after governed/private/source-sensitive routes are excluded.
 
 An LLM may suggest a route. It may not manufacture authority.
 
----
-
-## 8. Continuity is the primary product moat
+## 9. Continuity is the primary product moat
 
 Governance is the technical trust foundation. **Continuity is the user-facing moat.**
 
-Continuity is not generic memory. It is persistent operational state answering:
+Memory answers `What does the system know about the user?`
+
+Continuity answers `What is actually going on?`
+
+Continuity should preserve and reconcile goals, commitments, decisions, dependencies, open loops, waiting items, blockers, evidence, status, review/reopen conditions, verified/unverified outcomes, next-action projections, and attention ranking.
+
+It should answer accurately from evidence:
 
 ```text
 What am I trying to accomplish?
 What did I decide?
 What did I commit to?
 What is due?
+What changed?
 What am I waiting on?
 What is blocked?
-What actually happened?
+What actually executed?
 What was verified?
 What remains unresolved?
 What deserves attention next?
 ```
 
-Continuity should preserve and reconcile:
-
-- commitments;
-- decisions;
-- dependencies;
-- open loops;
-- waiting items;
-- blockers;
-- evidence;
-- status;
-- review/reopen conditions;
-- next-action projections;
-- attention ranking.
-
-Hard boundaries remain:
+Hard boundaries:
 
 - Continuity never authorizes;
 - Continuity never executes;
 - Continuity never silently invents commitments;
 - Continuity never converts learning/history into permission.
 
-The first runtime slice should remain deliberately small. A good initial product proof would support:
+The first runtime slice should remain deliberately small: commitments, open loops, waiting items, provenance, and a minimal state vocabulary. No graph database, predictive-learning system, or autonomous extraction is required to prove the value.
+
+## 10. Evidence sources are not product clones
+
+Google Tasks, Gmail, Calendar, GitHub, Shopify, local state, and Nova receipts should primarily feed evidence into Nova's operational state rather than become cloned applications inside Nova.
 
 ```text
-Objects:
-- commitment
-- open loop
-- waiting item
-
-Sources:
-- owner confirmed
-- provider observed
-- Nova receipt observed
-
-States:
-- active
-- waiting
-- completed_unverified
-- verified
-- abandoned
+Google Tasks -> observed commitments
+Gmail        -> commitments/deadlines/waiting/counterparty evidence
+Calendar     -> temporal commitments/scheduled obligations
+GitHub       -> project/action/outcome evidence
+Shopify      -> business-state evidence
+Nova receipts-> execution/effect evidence
 ```
 
-No graph database, broad learning system, predictive automation, or autonomous extraction is required
-to prove the core value.
+Nova owns reconciliation across these sources.
 
----
+### Google sequencing
 
-## 9. Google is evidence infrastructure, not the product
-
-Google Workspace should enter Nova as a governed external evidence ecosystem.
-
-The current Foundation direction remains correct:
+Google Workspace should enter Nova as a governed external evidence ecosystem:
 
 ```text
 OAuth identity / connection
@@ -385,246 +304,137 @@ Google capability != Google authorization != Nova authority
 connected != evidence collected != action permitted
 ```
 
-First Google evidence vertical should remain **Google Tasks READ**.
+The preferred first evidence vertical remains Google Tasks READ, followed quickly by minimal Continuity. Gmail READ is a high-value next evidence stream because many commitments and waiting items live in messages rather than task systems.
 
-Target chain:
+## 11. Product experience and attention
 
-```text
-Google account identity
--> exact Tasks read scope
--> scoped API read
--> normalized evidence
--> provenance/freshness
--> observed commitment state
--> Nova Awareness
-```
+The product should feel less like `open chatbot, ask question` and more like a persistent operations layer.
 
-Google Tasks is not being added so Nova can become another task-list app. It is being added because
-Tasks provides external evidence of real commitments.
+Chat remains an interface into state, not the primary persistence model.
 
-After Tasks evidence is proven, minimal Continuity should follow quickly so Nova can reconcile
-provider-backed obligations across days.
-
-Gmail READ is a high-value next evidence source because many commitments and waiting items live in
-messages rather than task systems. Gmail should therefore be treated as an evidence stream into
-Continuity, not as "Gmail inside Nova."
-
----
-
-## 10. Product experience should center on operational state
-
-The long-term product should feel less like "open chatbot, ask question" and more like a persistent
-operations layer.
-
-A strong daily loop is:
+The `Today` surface should eventually become the operating front door once real Continuity exists. It should prioritize:
 
 ```text
-Observe real sources
--> reconcile state
--> identify what matters
--> present a small attention set
--> support natural questions
--> prepare the next step
--> require authority for real effects
--> execute through governed capability
--> verify outcome
--> reconcile back into Continuity
+Needs attention
+Commitments / deadlines
+Waiting items
+Blockers
+Decisions needing review
+Changed since last review
+Completed but unverified
+3–5 highest-value next attention items
 ```
 
-The Today surface should eventually prioritize:
+Weather/news/traffic remain supporting context.
 
-- commitments;
-- deadlines;
-- waiting items;
-- blockers;
-- decisions needing review;
-- verified/unverified completions;
-- changes since last review;
-- 3–5 highest-value attention items.
+The scarce resource is attention, not information. Attention ranking may later consider value, urgency, consequence, confidence, effort, dependencies, and interruption cost while remaining separate from authority.
 
-Weather/news/traffic remain supporting context rather than defining the product.
+## 12. Prepared Reality bridges decision and action
 
-Conversation remains an interface into state, not the primary persistence model.
+Nova should not be forced into a binary of `talk` versus `act`.
 
-Long-term primary objects are closer to:
+Prepared Reality lets Nova research, gather evidence, draft, assemble, preview, or stage the next useful action while leaving it unexecuted until the correct authority path is satisfied.
 
-```text
-Commitment
-Decision
-Project
-Open Loop
-Evidence
-Action
-Outcome
-```
-
----
-
-## 11. Prepared Reality should bridge decision and action
-
-Nova should avoid a false binary where it either talks or acts.
-
-Prepared Reality allows Nova to:
-
-```text
-understand
--> gather evidence
--> prepare draft/checklist/plan/preview
--> show exact proposed effect
--> await user authority
-```
-
-Examples include:
-
-- follow-up email draft;
-- proposed calendar change;
-- client proposal;
-- task plan;
-- workflow preview;
-- prepared form;
-- bounded action packet.
+Examples include a follow-up email draft, proposed calendar change, client proposal, task plan, workflow preview, prepared form, or bounded action packet.
 
 Prepared Reality remains non-authorizing and non-executing.
 
----
+## 13. OpenClaw, Codex, and other agents remain workers/actuators
 
-## 12. OpenClaw and other agents remain actuators/workers
-
-OpenClaw should not own:
-
-- strategy;
-- durable state;
-- authority;
-- budgets;
-- approval interpretation;
-- long-term memory;
-- outcome reconciliation.
-
-The same principle should apply to future external workers such as Codex or other agents.
-
-Nova owns the control relationship:
+External workers should not own strategy, durable state, authority, budgets, approval interpretation, long-term memory, or outcome reconciliation.
 
 ```text
 Nova state / decision / authority
-        ↓
-typed bounded task
-        ↓
-worker / actuator
-        ↓
-structured evidence
-        ↓
-Nova outcome / reconciliation
+-> typed bounded task
+-> worker / actuator
+-> structured evidence
+-> Nova outcome / reconciliation
 ```
 
 More OpenClaw/browser autonomy is not the current product priority.
 
----
-
-## 13. Deployment direction
+## 14. Deployment direction
 
 Nova does **not** inherently require a remote server.
 
-Near-term deployment should remain local-first.
+Near-term deployment should remain local-first. If Nova only needs to operate while the user machine is running, the local application is enough.
 
-If Nova only needs to operate while the user machine is running, the local application is enough.
+An always-on node becomes useful later for reliable scheduling, background polling, connector refresh, monitoring, notifications, and morning preparation while the primary machine is unavailable.
 
-An always-on component becomes useful later for:
+The always-on node must not become authority merely because it is continuously available.
 
-- reliable scheduling;
-- background polling;
-- connector refresh;
-- monitoring;
-- notifications;
-- morning preparation while the primary machine is asleep/off.
+If Nova becomes multi-user, hosted account/sync/update infrastructure will likely be needed, but local authority/control can remain a core product principle.
 
-A future topology may be:
+## 15. Competitive position
 
-```text
-LOCAL CONTROL PLANE
-- Governor / authority
-- Continuity
-- credentials
-- receipts
-- user policy
-- sensitive memory
+Major AI platforms are converging on chat, memory, connected apps, daily briefs, scheduled/background work, browser/computer use, long-running agents, app actions, and generic personalization. Treat these as necessary/commodity capabilities rather than Nova's moat.
 
-OPTIONAL ALWAYS-ON NODE
-- schedule runner
-- polling/monitoring
-- connector refresh
-- low-risk read workflows
-- notification triggers
+Nova should not race ChatGPT, Gemini, Copilot, Siri, Claude, Grok, or future assistants feature-for-feature.
 
-REMOTE PROVIDERS / SERVICES
-- Google APIs
-- Shopify
-- OpenAI / Anthropic / Gemini
-- web search
-```
+The differentiated thesis is one abstraction higher:
 
-The always-on node must not become authority merely because it is available continuously.
+> **Nova maintains the governed operational truth connecting intent -> commitment -> decision -> authority -> action -> verified outcome across whichever models, agents, apps, and providers the user chooses.**
 
-If Nova becomes a multi-user product, hosted services will likely be needed for account/sync/update
-infrastructure, but local authority/control can remain a product principle.
-
----
-
-## 14. Competitive position
-
-The market is rapidly commoditizing:
-
-- chat;
-- memory;
-- connected apps;
-- daily briefs;
-- scheduled tasks;
-- background monitoring;
-- browser/computer use;
-- long-running agents;
-- app actions;
-- generic personalization.
-
-Nova should not compete feature-for-feature with ChatGPT, Gemini, Copilot, Siri, Claude, Grok, or
-other major assistants.
-
-The more defensible direction is:
-
-> **Vendor-neutral operational continuity + explicit authority + evidence-backed outcome truth.**
-
-Nova's strategic advantage is the combination of:
+Strategic combination:
 
 ```text
-cross-platform operational state
-+ commitments / decisions / open loops
-+ evidence provenance
-+ explicit authority boundaries
-+ exact action approvals
+Operational Continuity
++ evidence/provenance
++ explicit authority
++ exact-action approval
 + verified outcomes
-+ model/agent replaceability
++ vendor-neutral intelligence
++ local-first execution
++ frontier escalation
++ cost-aware routing
 + local control
 ```
 
-Other systems may supply intelligence, apps, models, search, and execution. Nova should own the
-coherent operational state and control relationship among them.
+As external agents become more capable, Nova can become more valuable as the state/authority/control layer coordinating them rather than another competing agent.
 
----
+## 16. Pursuit decision and investment gates
 
-## 15. Engineering / collaboration posture
+Nova is worth pursuing, but product-market fit is not established.
 
-Nova is now complex enough that an independent senior engineering review is warranted before the
-Google + Continuity phase compounds integration complexity.
+Current strategic judgment:
 
-The first useful outside review should focus on:
+```text
+Technical feasibility: high
+Core architecture: strong
+Governance / trust model: very strong
+Market need: real
+Competition: extremely high
+Generic-assistant differentiation: low
+Nova-specific differentiation: plausible
+Current product proof: incomplete
+Worth continuing: yes
+Worth betting everything on today: no
+```
 
-- request-understanding/routing architecture;
-- session/orchestration maintainability;
-- Semantic Substrate boundaries;
-- Governor/ApprovalGrant architecture;
-- Google OAuth/security foundation;
-- persistence/state/Continuity design;
-- what should **not** be refactored.
+The next stage must earn stronger investment through evidence rather than capability count.
 
-The recommended collaboration model is not a full team yet:
+Escalate investment when evidence changes:
+
+```text
+Gate A — stabilized semantic/runtime behavior
+Gate B — real external evidence (Google Tasks, then Gmail/Calendar)
+Gate C — minimal Continuity works across days
+Gate D — owner 7–14 day Continuity proof
+Gate E — 3–10 external users show repeat/voluntary usage
+Gate F — users/revenue/production obligations justify recurring team capacity
+```
+
+The strongest signal is not that users say the idea is impressive. It is that they return because Nova preserved something important, reduced reconstruction, surfaced the right unresolved item, or helped close a real loop.
+
+If Continuity does not create meaningful daily value, do not compensate by adding more capabilities.
+
+## 17. Engineering collaboration and builder posture
+
+Nova is complex enough that an independent senior engineering/security review is high-value before Google + Continuity compound integration complexity, but a full team is not yet justified.
+
+The first outside review should focus on request understanding/routing, orchestration maintainability, Governor/ApprovalGrant, Google OAuth/security, persistence/Continuity, and what should **not** be refactored.
+
+Recommended collaboration model:
 
 ```text
 1. independent senior architecture/security review
@@ -633,84 +443,65 @@ The recommended collaboration model is not a full team yet:
 4. team growth after real user/revenue/production obligations
 ```
 
-AI-assisted development is not treated as invalid engineering. The important standard is whether
-architecture, constraints, tests, failures, tradeoffs, and behavior are understood and can be
-explained/reviewed rather than blindly accepted from generated code.
+AI-assisted development is legitimate when represented transparently and paired with demonstrated understanding. The owner should be able to explain and defend the capability/authority split, execution path, ApprovalGrant, `accepted_unverified`, routing fragility, Google OAuth boundaries, Continuity, and major architectural tradeoffs without pretending to have hand-written every line.
 
----
+## 18. Product-validation sequence
 
-## 16. Immediate product-validation sequence
-
-This strategic document does not change current roadmap authority. The recommended product-level
-sequence is nevertheless:
+This strategy does not override current roadmap authority. Product-level sequencing remains:
 
 ```text
 1. Finish current semantic/routing stabilization.
-2. Reconcile stale human-maintained operational truth surfaces to current main.
+2. Truth-sync stale human-maintained operational surfaces to current main.
 3. Complete remaining evidence-backed P2 defects only.
 4. Run one clean fresh-main regression checkpoint.
 5. Reconcile/harden Google Workspace Foundation onto that checkpoint.
-6. Independently review the Google Foundation + request-understanding architecture.
+6. Independently review Google Foundation + request-understanding architecture.
 7. Prove identity-only Google connection live.
 8. Build/prove Google Tasks READ.
 9. Build minimal Continuity.
-10. Run a 7–14 day real-life Continuity test.
+10. Run the 7–14 day owner Continuity proof.
 11. Add Gmail READ as commitment/waiting evidence.
 12. Make Today/Attention Continuity-driven.
-13. Test with external users.
-14. Expand OpenClaw/browser/execution only after product pull is demonstrated.
+13. Run the 3–10 external-user pilot.
+14. Expand providers/agents/OpenClaw/browser execution only after product pull is demonstrated.
 ```
 
 Do not prioritize now:
 
-- broad feature expansion;
-- multi-agent architecture;
-- broad browser/computer-use;
-- more OpenClaw autonomy;
-- predictive learning;
-- large graph/memory infrastructure;
-- SaaS productization before core product proof;
-- another architecture redesign unrelated to observed failures.
-
----
-
-## 17. Core validation test
-
-The next major product threshold is not capability count.
-
-Nova should prove that it can maintain one person's real operational state for at least 7–14 days
-and answer accurately, from evidence:
-
 ```text
-What am I trying to accomplish?
-What did I commit to?
-What is due?
-What changed?
-What am I waiting on?
-What is blocked?
-What did I decide?
-What actually executed?
-What was verified?
-What remains unresolved?
-What deserves attention next?
+large graph/memory infrastructure
+predictive learning
+multi-agent orchestration
+broad browser/computer-use
+expanded OpenClaw autonomy
+autonomous business operation
+broad SaaS productization
+provider marketplace / broad ModelRouter implementation
 ```
 
-If Nova can do this reliably across provider evidence, conversation, project state, and Nova's own
-receipts, then it has crossed from a governed AI system into a differentiated personal operations
-product.
+The detailed proof criteria live in `NOVA_PRODUCT_VALIDATION_PROTOCOL_2026-08-17.md`.
 
-If it cannot, the response should not be additional capability breadth. The state/continuity and
-request-understanding foundations should be corrected until the loop works.
+## 19. Documentation and implementation discipline
 
----
+Generated runtime truth is a strength. Stale human-maintained planning/status surfaces are a project-management defect because AI coding agents can consume them as instructions.
 
-## 18. Final direction
+Preferred interpretation hierarchy:
 
-Nova should be developed as:
+```text
+1. Generated Runtime Truth — what exists now
+2. Product Definition — what Nova is
+3. Current State — where the project is now
+4. Master Roadmap — what comes next
+5. Lane Lock — exact authorized implementation scope
+6. Evidence / Proof — why work is considered complete
+7. Strategic/Future docs — non-authorizing direction/reference
+```
 
-> **A local-first, vendor-neutral personal operations platform whose core governed AI harness
-> coordinates replaceable reasoning providers, data sources, capabilities, and actuators while
-> Nova itself owns Continuity, evidence, authority, execution truth, and outcome reconciliation.**
+Older Second Brain, learning, Brain/Daily Brief, agent-workspace, multi-model, and economic/OpenClaw concepts should remain historical/reference material and be explicitly classified so they do not compete with current direction. See `NOVA_STRATEGIC_DOCUMENT_STATUS_INDEX_2026-08-17.md`.
+
+Implementation contracts should be created **when their lane activates**, not speculatively. Strategy should preserve requirements; active implementation should define schemas/interfaces against current runtime and current provider APIs.
+
+## 20. Final direction
 
 The durable hierarchy is:
 
@@ -722,8 +513,8 @@ PLATFORM
 Operational State + Continuity + Evidence + Decision + Authority + Outcome
 
 CONTROL PLANE / HARNESS
-Local model + OpenAI + Anthropic + Gemini + future providers
-Capabilities + APIs + OpenClaw + other actuators
+Local models + optional OpenAI / Anthropic / Gemini / future providers
+Capabilities + APIs + OpenClaw + other bounded actuators
 ```
 
 The Governor makes Nova safe.
@@ -732,5 +523,10 @@ Models make Nova intelligent.
 Connectors make Nova informed.
 Continuity makes Nova useful across time.
 Outcome reconciliation makes Nova trustworthy after action.
+Cost-aware local-first routing makes routine operation economically efficient without tying the product to one provider's pricing.
 
-The product should now prove that combination rather than continue expanding horizontally.
+The core product threshold is:
+
+> **Can Nova know what is actually going on, preserve that truth across days, focus attention correctly, and help close real loops without silently taking authority?**
+
+If yes for the owner and then repeatedly for external users, Nova justifies deeper investment. If not, repair the state/request-understanding/product loop rather than expanding horizontally.
