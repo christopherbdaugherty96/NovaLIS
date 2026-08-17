@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import pytest
 from src.conversation.brief_followup_grounding import (
     active_news_surface_clusters,
     answer_grounded_brief_followup,
@@ -472,6 +473,52 @@ def test_unqualified_after_that_requires_selected_calendar_event():
     answer_grounded_brief_followup("Tell me more about the first event.", state)
 
     assert is_discussion_shaped_brief_followup("What do I have after that?", state) is True
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "is there anything on the local server today?",
+        "is there anything written on this document today?",
+        "is there any note on my desk today?",
+    ],
+)
+def test_active_calendar_does_not_capture_explicit_non_calendar_targets(prompt: str):
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "One event today.",
+            "events": [
+                {"title": "Dentist", "date": "2026-07-11", "time": "2:00 PM"},
+            ],
+        },
+        set_focus=True,
+    )
+    answer_grounded_brief_followup("Tell me more about the first event.", state)
+
+    assert is_discussion_shaped_brief_followup(prompt, state) is False
+
+
+def test_active_calendar_keeps_explicit_event_reference():
+    state: dict = {}
+    store_brief_widget(
+        state,
+        "calendar",
+        {
+            "type": "calendar",
+            "summary": "One event today.",
+            "events": [
+                {"title": "Dentist", "date": "2026-07-11", "time": "2:00 PM"},
+            ],
+        },
+        set_focus=True,
+    )
+    answer_grounded_brief_followup("Tell me more about the first event.", state)
+
+    assert is_discussion_shaped_brief_followup("What time is that?", state) is True
 
 
 def test_calendar_after_that_returns_next_sorted_event():

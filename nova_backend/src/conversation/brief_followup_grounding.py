@@ -62,6 +62,11 @@ _SPECIFIC_NEWS_REFERENCE_RE = re.compile(
     r"|\b(?:about|with)\s+(?:that|this|it)\b",
     re.I,
 )
+_NON_CALENDAR_REFERENCE_TARGET_RE = re.compile(
+    r"\b(?:(?:my|our|your|this|that|the)\s+|(?:the\s+)?local\s+)"
+    r"(?:documents?|files?|pages?|servers?|desks?|folders?|drives?|projects?|tasks?|notes?)\b",
+    re.I,
+)
 
 # Schedule / calendar / commitment questions. Kept specific to avoid over-capturing
 # ordinary chat: explicit schedule nouns, "am I free/busy", or "what do I have <when>".
@@ -544,8 +549,11 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
 
 
 def _has_active_reference_shape(key: str, lowered: str, state: dict[str, Any]) -> bool:
-    if key == "calendar" and "after that" in lowered:
-        return bool(state.get("active_calendar_event"))
+    if key == "calendar":
+        if _NON_CALENDAR_REFERENCE_TARGET_RE.search(lowered):
+            return False
+        if "after that" in lowered:
+            return bool(state.get("active_calendar_event"))
     return _has_reference_shape(lowered)
 
 
