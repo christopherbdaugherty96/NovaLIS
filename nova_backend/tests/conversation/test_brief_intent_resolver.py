@@ -33,6 +33,8 @@ def _resolve(text: str, *, news_loaded: bool = False) -> BriefIntent:
         ("theres heat alerts for outside, how should i stay cool?", "weather", "weather"),
         ("will it rain later?", "weather", "weather"),
         ("anyhting on my schedule?", "calendar", "agenda for today"),
+        ("tomorrow's schedule", "calendar", "agenda for tomorrow"),
+        ("what is my upcoming schedule?", "calendar", "upcoming events"),
         ("am I free after that?", "calendar", "agenda for today"),
         ("what are my plans?", "calendar", "agenda for today"),
         ("anything happening?", "news", "news"),
