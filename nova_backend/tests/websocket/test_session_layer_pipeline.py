@@ -116,6 +116,11 @@ class TestCurrentInformationFreshnessRouting:
             "are there any live events happening today?",
             "is there anything new with OpenAI today?",
             "are there any policy updates today?",
+            "is there anything on today?",
+            "is there anything on live tonight?",
+            "is there anything live now?",
+            "is there anything available today?",
+            "is there anything happening today?",
         ],
     )
     def test_natural_freshness_demand_routes_to_governed_search(self, raw: str):
@@ -134,6 +139,10 @@ class TestCurrentInformationFreshnessRouting:
             "what reminders do I have today?",
             "what's in my inbox today?",
             "what happened with my project today?",
+            "is there anything on the local server today?",
+            "is there any note on my desk today?",
+            "is there anything written on this document today?",
+            "is there any difference between today and tomorrow based on time zone?",
         ],
     )
     def test_non_current_requests_still_fall_through(self, raw: str):
