@@ -171,6 +171,85 @@ cloud escalation != permission expansion
 
 This multi-provider architecture is strategically important, but implementation should remain sequenced behind the nearer product proof: stabilization -> Google evidence -> minimal Continuity. Nova should preserve the architectural seam now without delaying the core validation loop to build a broad provider marketplace prematurely.
 
+### Local-first economics and cost-aware execution
+
+Nova's local-first architecture can also create an economic advantage: routine intelligence and routine actions should not require paid frontier inference when local reasoning or deterministic execution is sufficient.
+
+The goal is not to claim that Nova is literally free. Local operation still has hardware, electricity, maintenance, and optional external-service costs. The stronger and more accurate product principle is:
+
+> **Nova minimizes recurring AI-compute cost by using local reasoning and local execution whenever they are sufficient, and escalates to paid frontier intelligence only when the expected value justifies it.**
+
+The preferred execution economics are:
+
+```text
+Routine/private task
+  -> local reasoning if needed
+  -> deterministic/local capability
+  -> no frontier-model call when unnecessary
+
+Hard/high-context/ambiguous task
+  -> evaluate escalation policy
+  -> frontier provider only for the step that benefits from it
+  -> return result to Nova
+  -> continue local/governed execution where possible
+```
+
+A multi-step workflow should not automatically run end-to-end through the most expensive provider. Nova should eventually be able to choose the **cheapest sufficient intelligence/execution level per step**.
+
+Illustrative pattern:
+
+```text
+1. classify local files        -> local model
+2. move approved files         -> local executor
+3. analyze difficult document  -> frontier model
+4. prepare proposal            -> frontier or local based on quality need
+5. stage email                 -> Nova / local capability
+6. send external effect        -> separately governed action path
+```
+
+This is preferable to paying premium inference cost for every step merely because one step requires a frontier model.
+
+Cost-aware routing should remain subordinate to correctness, privacy, and authority. Nova must never choose a cheaper route that cannot satisfy the task safely or truthfully, and it must never choose a more expensive/cloud route merely because it is available.
+
+Future cost policy may consider:
+
+```text
+task complexity
+quality requirement
+local-model sufficiency
+provider price
+expected token/context usage
+latency
+privacy class
+allowed data
+remaining user budget
+per-request ceiling
+monthly budget
+fallback availability
+```
+
+A useful future product metric is:
+
+> **What percentage of routine Nova operations complete locally without paid frontier inference while maintaining acceptable correctness and user value?**
+
+This should be measured rather than assumed. A high local-completion ratio for routine daily operations would be a meaningful product characteristic, but no fixed percentage is claimed in advance.
+
+The competitive claim should therefore avoid `Nova does what Codex does for free`. Nova and Codex are different systems, and provider pricing/capabilities can change. The durable positioning is:
+
+> **Local-first execution for routine work; premium frontier intelligence only when it is actually useful.**
+
+This adds cost efficiency to Nova's strategic combination:
+
+```text
+Operational Continuity
++ Governance
++ Vendor-neutral intelligence
++ Local-first execution
++ Frontier escalation
++ Cost-aware routing
++ Verified outcomes
+```
+
 ## 5. Nova does not inherently require a remote server
 
 Nova can remain a local application while the primary machine is running.
@@ -359,7 +438,7 @@ Nova should continue, but horizontal capability expansion should remain constrai
 
 The durable thesis is:
 
-> **Nova is a local-first, vendor-neutral personal operations platform and governed AI control plane. It consumes evidence from external systems, maintains operational Continuity, uses replaceable local/cloud reasoning providers — including optional frontier models such as OpenAI, Anthropic, Gemini, and future providers — separates intelligence from authority, prepares bounded next steps, executes only through governed capabilities, and reconciles verified outcomes back into state.**
+> **Nova is a local-first, vendor-neutral personal operations platform and governed AI control plane. It consumes evidence from external systems, maintains operational Continuity, uses replaceable local/cloud reasoning providers — including optional frontier models such as OpenAI, Anthropic, Gemini, and future providers — separates intelligence from authority, uses local reasoning/execution when sufficient, escalates to paid frontier intelligence when justified, prepares bounded next steps, executes only through governed capabilities, and reconciles verified outcomes back into state.**
 
 The next proof is not `Can Nova do more?`
 
