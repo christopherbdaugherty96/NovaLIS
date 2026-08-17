@@ -251,9 +251,20 @@ NEWS_RE = re.compile(
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
-    r"^\s*(?:calendar|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what do i have tomorrow|what(?:'s| is) on today|what(?:'s| is) on tomorrow|todays schedule|today's schedule|tomorrows schedule|tomorrow's schedule|todays calendar|today's calendar|tomorrows calendar|tomorrow's calendar|upcoming schedule|upcoming calendar|upcoming events|show upcoming events|coming up|what(?:'s| is) coming up|my upcoming schedule|this week|this week(?:'s)? schedule|this week(?:'s)? calendar|agenda (?:for )?today|agenda (?:for )?tomorrow|what(?:'?s| is) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) on (?:today'?s?|tomorrow'?s?) (?:calendar|schedule)|is there anything on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|are there any (?:appointments?|events?) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?)\s*$",
+    r"^\s*(?:calendar|calendar tomorrow|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what do i have tomorrow|what(?:'s| is) on today|what(?:'s| is) on tomorrow|todays schedule|today's schedule|tomorrows schedule|tomorrow's schedule|todays calendar|today's calendar|tomorrows calendar|tomorrow's calendar|upcoming schedule|upcoming calendar|upcoming events|show upcoming events|coming up|what(?:'s| is) coming up|my upcoming schedule|this week|this week(?:'s)? schedule|this week(?:'s)? calendar|agenda (?:for )?today|agenda (?:for )?tomorrow|what(?:'?s| is) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|what(?:'?s| is) on (?:today'?s?|tomorrow'?s?) (?:calendar|schedule)|is there anything on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?|are there any (?:appointments?|events?) on (?:my |the )?(?:calendar|schedule)(?: (?:today|tomorrow|this week))?)\s*$",
     re.IGNORECASE,
 )
+
+
+def _calendar_scope_from_text(text: str) -> str:
+    value = (text or "").strip().lower()
+    if "tomorrow" in value:
+        return "tomorrow"
+    if any(marker in value for marker in ("upcoming", "this week", "coming up")):
+        return "upcoming"
+    return "today"
+
+
 SYSTEM_RE = re.compile(
     r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the |my )?system status"
     r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status"
@@ -954,7 +965,7 @@ class GovernorMediator:
                 )
 
         if CALENDAR_RE.match(t):
-            return _invocation_if_enabled(57, {})
+            return _invocation_if_enabled(57, {"scope": _calendar_scope_from_text(t)})
 
         if SYSTEM_RE.match(t):
             return _invocation_if_enabled(32, {})

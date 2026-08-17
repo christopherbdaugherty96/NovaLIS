@@ -169,6 +169,41 @@ class TestCurrentInformationFreshnessRouting:
         assert _pipeline(raw) == capability_id
 
 
+class TestCalendarTemporalScopeRouting:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "calendar tomorrow",
+            "tomorrow's schedule",
+            "what do I have tomorrow?",
+        ],
+    )
+    def test_tomorrow_queries_route_to_calendar_with_tomorrow_scope(self, raw: str):
+        normalized = InputNormalizer.normalize(raw)
+        command_text = re.sub(r"[.?!]+$", "", normalized).strip()
+        invocation = GovernorMediator.parse_governed_invocation(command_text)
+
+        assert _pipeline(raw) == 57
+        assert getattr(invocation, "params", {}).get("scope") == "tomorrow"
+
+    @pytest.mark.parametrize(
+        ("raw", "scope"),
+        [
+            ("calendar", "today"),
+            ("today's schedule", "today"),
+            ("upcoming events", "upcoming"),
+            ("what's coming up?", "upcoming"),
+        ],
+    )
+    def test_today_and_upcoming_controls_keep_their_scope(self, raw: str, scope: str):
+        normalized = InputNormalizer.normalize(raw)
+        command_text = re.sub(r"[.?!]+$", "", normalized).strip()
+        invocation = GovernorMediator.parse_governed_invocation(command_text)
+
+        assert _pipeline(raw) == 57
+        assert getattr(invocation, "params", {}).get("scope") == scope
+
+
 class TestSessionActivityRecapRouting:
     @pytest.mark.parametrize(
         "raw",

@@ -54,6 +54,7 @@ _CALENDAR_TERMS = ("what am i doing", "plans", "free", "busy", "schedule", "afte
 _NEWS_TERMS = ("anything happening", "headlines", "what should i know", "what matters today")
 
 _CANONICAL = {"weather": "weather", "news": "news", "calendar": "agenda for today"}
+_UPCOMING_CALENDAR_MARKERS = ("upcoming", "this week", "next 7 days", "coming up")
 
 # --- Ambiguous preparation phrases that plausibly span >=2 brief domains -------
 _MEDIUM_PREPARE_PHRASES = (
@@ -110,6 +111,16 @@ def _domain_hits(q: str) -> dict[str, tuple[str, ...]]:
     return hits
 
 
+def _canonical_for_domain(domain: str, q: str) -> str:
+    if domain != "calendar":
+        return _CANONICAL[domain]
+    if "tomorrow" in q:
+        return "agenda for tomorrow"
+    if any(marker in q for marker in _UPCOMING_CALENDAR_MARKERS):
+        return "upcoming events"
+    return _CANONICAL[domain]
+
+
 def resolve_brief_intent(text: str, *, news_context_loaded: bool = False) -> BriefIntent:
     """Classify a natural utterance against the brief lexicon.
 
@@ -131,7 +142,7 @@ def resolve_brief_intent(text: str, *, news_context_loaded: bool = False) -> Bri
         return BriefIntent(
             capability=domain,
             confidence="high",
-            canonical=_CANONICAL[domain],
+            canonical=_canonical_for_domain(domain, q),
             matched_terms=matched,
         )
 
