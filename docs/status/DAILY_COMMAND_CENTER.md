@@ -1,17 +1,23 @@
 # Daily Command Center
 
-## 2026-08-20 — Wave A1 operational truth synchronization
+## 2026-08-20 — Wave B1 runtime-truth instrumentation
 
 ```text
 ACTIVE LANE:
-  Wave A1 — documentation / operational truth reconciliation only.
+  Wave B1 — runtime-truth instrumentation only.
 
-A1 BRANCH:
-  codex/wave-a1-operational-truth-sync-20260820
+B1 BRANCH:
+  codex/b1-runtime-truth-instrumentation-20260820
 
-MERGED-MAIN CHECKPOINT WHEN A1 STARTED:
-  1a517d8832a2c834c80b10a7062bed878f6312cc
-  (planning checkpoint; verify current GitHub HEAD before future work)
+POST-A2 BASE:
+  060380f2e8c6437ff888773f0078647547ff4622
+  (planning checkpoint; not a permanent current-main alias or validated baseline)
+
+COMPLETED GATES:
+  PR #353 / Wave A1 — MERGED
+    f25c798c7cb488495a343068463e9214cab0a763
+  PR #355 / Wave A2 — MERGED
+    060380f2e8c6437ff888773f0078647547ff4622
 
 MERGED STABILIZATION WORK — DO NOT REOPEN AS PENDING:
   #337 / #338  P1-A commitment/capability truth
@@ -35,9 +41,7 @@ GOOGLE FOUNDATION:
   Do not merge or extend the historical branch state.
 
 CURRENT ORDER:
-  A1 operational truth sync
-  -> A2 strategy reconciliation
-  -> B1 runtime-truth instrumentation
+  B1 runtime-truth instrumentation
   -> B2 capability narration
   -> B3 memory governance
   -> B4 reproducibility hygiene
@@ -48,12 +52,21 @@ CURRENT ORDER:
   -> Google Tasks READ / first real Google evidence vertical
   -> separately warranted Continuity slice
 
-A1 LOCK:
-  Documentation/current-truth reconciliation only.
-  No runtime behavior, runtime-auditor, GeneralChat persistence,
-  self-awareness, capability-registry, OAuth, #335 implementation,
-  Google domain-data, Continuity runtime, OpenClaw-authority,
-  provider-routing, or external-write change.
+B1 LOCK:
+  Instrumentation/proof-truth only.
+  No network behavior, capability narration, GeneralChat persistence,
+  capability-registry, OAuth, #335 implementation, Google domain-data,
+  Continuity runtime, OpenClaw-authority, provider-routing, or external-write change.
+
+KNOWN NETWORK FINDING:
+  nova_backend/src/api/connections_api.py
+  classification: local administrative health probe
+  detected outside NetworkMediator; B1 reports it but does not reroute it.
+
+HOSTED CI:
+  Issue #354 tracks repeated zero-step GitHub Actions failures.
+  Infrastructure state only; not behavioral pass/fail evidence.
+  Must be resolved before Wave C relies on hosted CI evidence.
 
 PERMANENT CONTROL-PLANE RULE:
   Governed capability plane != local operator/admin plane != bounded agent/routine plane.
@@ -72,19 +85,20 @@ Status: manual operational surface.
 
 ## What matters today
 
-1. **Finish A1 truth synchronization.** Every active instruction/status surface must stop directing agents toward completed #337–#352 work.
-2. **Keep #335 untouched.** Its historical test totals and generated fingerprints are not proof for a future reconciled branch.
-3. **Keep strategy separate.** The August Product/Platform strategy and validation package is A2 input, not A1 current truth.
-4. **Prepare for Wave B, not Google domain expansion.** B1–B4 address truth instrumentation, capability narration, memory governance, and reproducibility.
-5. **Do not call a baseline validated before Wave C.** Candidate HEAD and immutable validated baseline are distinct concepts.
+1. **Finish B1 truth instrumentation.** One generated discrepancy system must expose direct-network findings that the bypass report already detects.
+2. **Replace weak Phase 9 evidence.** Retired placeholder-file existence must not establish Phase 9 runtime state; use import/symbol evidence for the active modules.
+3. **Expand fingerprint scope deliberately.** Behaviorally active source families used by generated truth must influence the runtime fingerprint without broadening unrelated network scans.
+4. **Qualify generated invariants.** Generated claims must say what the auditor actually proves rather than whole-repository absolutes.
+5. **Keep operational truth synchronized.** `check_runtime_doc_drift.py` remains narrow; the new operational checker verifies the active entry points agree on the stabilization lane and permanent truth boundaries.
+6. **Keep #335 untouched and B2 blocked.** B2 starts only after B1 merges.
 
 ## Current operational interpretation
 
-Nova's governed execution and authority-separation foundation is existing implementation. Wave A1 is reconciling current instructions and evidence semantics; it does not adopt or revise Product/Platform strategy.
+A1 fixed repository/current-truth drift and A2 separately reconciled Product/Platform strategy. B1 now fixes the runtime truth machinery itself.
+
+The current B1 correction is epistemic instrumentation. It does not grant, remove, or reroute authority. In particular, reporting `connections_api.py` as a known direct-network exception is not equivalent to approving that path or moving it behind NetworkMediator.
 
 Operational Continuity remains strategic and inactive. It must stay non-authorizing and non-executing.
-
-The separate August Product/Platform strategy and validation package remains deferred to Wave A2.
 
 ## Current evidence rule
 
@@ -110,6 +124,9 @@ If a test or acceptance scenario fails, classify the failure before assigning a 
 ## Deferred until the stabilization gate exits
 
 ```text
+B2 capability narration
+B3 memory governance
+B4 reproducibility hygiene
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -127,4 +144,4 @@ Protection Wall runtime expansion
 
 ## Next handoff
 
-When A1 is reviewed and merged, the next lane is **Wave A2 strategy reconciliation**, not a runtime implementation package.
+After B1 is reviewed and merged, the next lane is **Wave B2 capability narration**. Do not begin it from this document before B1 closes.
