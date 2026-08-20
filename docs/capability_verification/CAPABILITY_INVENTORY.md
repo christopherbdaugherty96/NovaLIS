@@ -16,7 +16,7 @@ Merged `main` when Wave A1 began:
 
 This is an A1 planning checkpoint, not an immutable validated baseline.
 
-Generated runtime state at that checkpoint reports **27 active capabilities**.
+At the A1 planning checkpoint, generated runtime state reports **27 active capabilities**.
 
 ## August stabilization update
 
@@ -61,7 +61,7 @@ These rows mean the named implementation defects are not current pending work. T
 
 ## Active capability registry
 
-Generated runtime state currently reports these active capability IDs:
+At the A1 planning checkpoint, generated runtime state reports these active capability IDs:
 
 ```text
 16 governed_web_search
@@ -201,7 +201,3 @@ Before any live verification:
 6. do not generalize one passing phrase/location/source into universal natural-language support.
 
 Historical proof remains useful for what it actually tested. It does not silently become current proof after later merges.
-
-## Product criterion for new connectors
-
-A new data source is not a Nova product feature merely because Nova can connect to it. It becomes product value when trustworthy source evidence can be connected to other relevant state and reduce a real uncertainty or improve a grounded decision.
