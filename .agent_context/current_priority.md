@@ -1,43 +1,71 @@
 # Current Priority
 
-## Wave A1 — Operational Truth Synchronization — 2026-08-20
+## Wave B1 — Runtime Truth Instrumentation — 2026-08-20
 
 Current active lane:
 
 ```text
-WAVE A1 — documentation / operational truth reconciliation only
+WAVE B1 — runtime-truth instrumentation only
 ```
 
-Planning checkpoint merged `main` when this lane began:
+Current B1 planning base:
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-This SHA is an observed checkpoint, not a permanent current-main alias. Always verify current GitHub head before selecting or publishing later work.
+This SHA is an observed post-A2 checkpoint, not a permanent current-main alias and not a validated baseline. Verify current GitHub head before later work.
 
-## Why this lane exists
-
-The repository's operational instructions still describe the August 12 pre-#337 sequence even though the stabilization repairs through #352 have merged. Before changing runtime behavior again, agents need one coherent instruction set that matches current repository state.
-
-## Already merged — do not select again
+## Completed gates
 
 ```text
-#337 / #338  P1-A commitment/capability truth
-#339         P1-B receipt-correlated session activity/outcome history
-#340         Cap 19 outcome truth
-#341 / #344  explicit-location weather repair / WebSocket preservation
-#345         brightness outcome truth
-#346         turn-down-volume wording/routing
-#347         current-information freshness/source-boundary routing
-#348         broad awareness follow-up interpretation
-#349         Calendar source-selection overmatch repair
-#350         Calendar tomorrow-scope preservation
-#351         local schedule-cancellation routing
-#352         private Drive source-selection truth
+Wave A1 — operational truth synchronization
+  MERGED via PR #353
+  merge: f25c798c7cb488495a343068463e9214cab0a763
+
+Wave A2 — strategy reconciliation
+  MERGED via PR #355
+  merge: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-These merges do not imply that every related capability is universally live-proven or product-complete; they mean the named implementation packages are no longer pending work.
+Do not reopen A1/A2 unless a new material defect is reproduced.
+
+## Why B1 exists
+
+The generated runtime truth currently has measurement inconsistencies:
+
+- direct `requests` usage can be detected in `BYPASS_SURFACES.md` while the main discrepancy set still says none;
+- the known `nova_backend/src/api/connections_api.py` path outside NetworkMediator is documented manually but not represented in generated discrepancy state;
+- Phase 9 status relies on retired placeholder-file existence rather than live implementation/import/symbol evidence;
+- the runtime fingerprint does not cover all behaviorally active source families that generated truth depends on;
+- generated invariants overstate whole-repository guarantees beyond what the auditor mechanically proves;
+- `check_runtime_doc_drift.py` is intentionally narrow and does not check agreement among active operational truth surfaces.
+
+## B1 target package
+
+B1 is limited to:
+
+```text
+runtime-truth instrumentation
+network-exception/discrepancy representation
+Phase 9 live implementation evidence
+fingerprint coverage
+qualified generated invariants
+focused regression tests
+separate operational-truth consistency checker
+required generated runtime outputs
+minimal current-status sync
+```
+
+The known direct-network finding remains:
+
+```text
+path: nova_backend/src/api/connections_api.py
+classification: local administrative health probe
+status: detected outside NetworkMediator; pending explicit disposition
+```
+
+B1 must make that finding visible. B1 does not reroute or otherwise change the network behavior.
 
 ## Google Foundation state
 
@@ -55,11 +83,9 @@ It must not be merged from its historical branch state. Reconstruction/reconcili
 ## Current ordered sequence
 
 ```text
-A1  operational truth synchronization
-A2  strategy reconciliation
-B1  runtime-truth instrumentation repair
-B2  capability narration repair
-B3  memory governance repair
+B1  runtime-truth instrumentation
+B2  capability narration
+B3  memory governance
 B4  reproducibility hygiene
 C   proof / semantic-contract stabilization / validated baseline
 -> reconstruct #335 onto exact validated baseline
@@ -71,27 +97,19 @@ C   proof / semantic-contract stabilization / validated baseline
 
 Issue #343 is the detailed ordering record.
 
-## A1 scope
+Issue #354 separately tracks zero-step GitHub Actions infrastructure failures. Those failures are not behavioral test evidence, but trustworthy hosted CI evidence is required before Wave C certification.
 
-A1 may reconcile only:
+## B1 scope lock
 
-- agent instructions;
-- status/current-priority surfaces;
-- active TODO/current blockers;
-- canonical truth interpretation;
-- capability inventory wording;
-- roadmap current-ordering block without redesigning the roadmap;
-- governance status wording;
-- documentation cleanup state;
-- Issue #343.
+B1 may change only the instrumentation/proof surfaces listed above.
 
-A1 does **not** change:
+B1 does **not** change:
 
 ```text
-runtime behavior
-runtime auditor
-GeneralChat persistence
-self-awareness behavior
+network behavior or NetworkMediator wiring
+capability narration semantics (B2)
+GeneralChat durable-memory semantics (B3)
+dependency-source truth (B4)
 capability registry
 OAuth
 Google #335 implementation
@@ -142,17 +160,14 @@ Authorization is request-specific. Generated evidence is authoritative only for 
 
 ```text
 1. Read AGENTS.md and docs/CANONICAL/00_INDEX.md.
-2. Treat Wave A1 as the only active lane until its docs-only PR is reviewed/merged.
-3. Do not select #337-#352 implementation work again.
+2. Treat Wave B1 as the only active implementation lane.
+3. Repair the auditor's measurement/reporting semantics only.
 4. Keep #335 untouched.
-5. Do not start Google domain-data work or Continuity runtime work.
-6. After A1, reconcile strategy separately as Wave A2 rather than folding strategy into this branch.
-7. After A2, take Wave B packages one focused PR at a time.
-8. Do not call a baseline validated until Wave C proof completes.
+5. Do not start B2, B3, B4, Google domain work, or Continuity runtime work.
+6. Keep Issue #354 separate from B1 behavior/content unless diagnosing hosted Actions is explicitly selected.
+7. Do not call a baseline validated until Wave C proof completes.
 ```
 
-## Deferred strategic direction
+## Strategic direction
 
-Operational Continuity remains strategically accepted and implementation-inactive. It must remain non-authorizing and non-executing.
-
-The separate August Product/Platform strategy and validation package is Wave A2 input. A1 records its existence only; it does not import, summarize, or canonize that package's product doctrine.
+The consolidated August Product/Platform strategy is merged through PR #355 and remains non-authorizing. Operational Continuity remains strategically accepted and implementation-inactive; it must remain non-authorizing and non-executing.
