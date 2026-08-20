@@ -155,4 +155,4 @@ Authorization is request-specific. Generated evidence is authoritative only for 
 
 Operational Continuity remains strategically accepted and implementation-inactive. It must remain non-authorizing and non-executing.
 
-The conversation-level doctrines Earned Compression, Attention Saved over Engagement, Mirror → Assist → Replace, consequence-based prioritization, and Hour 1 / Hour 6 / Day 2 are validation/product doctrine. They are not automatically canonical repository truth before Wave A2 deliberately reconciles them.
+The separate August Product/Platform strategy and validation package is Wave A2 input. A1 records its existence only; it does not import, summarize, or canonize that package's product doctrine.
