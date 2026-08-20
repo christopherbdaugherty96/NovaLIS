@@ -1,50 +1,177 @@
-# 06 — Test and Proof Truth (what evidence exists)
+# 06 — Test and Proof Truth
 
-**Status: mixed.** Tests are runtime-backed; proof packets are dated artifacts whose currency
-varies. Read each artifact's own date, not just its title.
+**Status: current evidence map.**
 
-## Three distinct evidence genres (kept separate on purpose)
+Tests, generated proof, proof packets, live verification, and validated baselines are different evidence classes. None should be silently substituted for another.
 
-Per `docs/todo/DOC_CLEANUP.md`, these are **not merged** — they are different kinds of evidence:
+## Evidence genres
 
-| Folder | Genre | What it is |
+| Evidence | What it proves | Important limit |
 | --- | --- | --- |
-| [`../PROOFS/`](../PROOFS/) | Implementation proof packets | Per-phase/per-capability proof that a boundary or feature was built and checked. |
-| [`../demo_proof/`](../demo_proof/) | Demo / walkthrough evidence | Captured runs of user-facing flows (daily brief, memory loop, conversation+search). |
-| [`../capability_verification/`](../capability_verification/) | Live verification | Observed pass/fail against a running build, following QA Rule #1. |
+| Runtime/unit/integration tests | behavior covered by those tests on the tested revision/environment | passing tests do not prove untested semantics or live-provider behavior |
+| Generated runtime truth | properties mechanically inspected by the generator | cannot prove properties the generator does not inspect |
+| Structural runtime smoke | selected imports/routes/registry/governance structure | not comprehensive behavioral validation |
+| Implementation proof packet | what a bounded package proved when recorded | dated evidence; not automatically current proof |
+| Live verification / acceptance | observed behavior on a specified running build | limited to the exact cases/environment exercised |
+| Candidate baseline | exact commit selected for final proof | not validated yet |
+| Validated baseline | exact commit after the required proof package passes | immutable evidence record; not a permanent alias for current HEAD |
 
-## Current vs historical proofs
+## Existing evidence folders
 
-- **Proof index / currency map:** [`../PROOFS/README.md`](../PROOFS/README.md) — lists the
-  current canonical packet entry points and which artifacts are historical vs generated.
-- **Latest live verification:**
-  [`../capability_verification/LIVE_VERIFICATION_2026-07-07.md`](../capability_verification/LIVE_VERIFICATION_2026-07-07.md).
-- Older per-phase proof packets (Phase-4 … Phase-8) are **historical** records of the state at
-  their date. They remain valid as evidence of *what was proven then*, not as a claim about today.
+These remain intentionally separate:
 
-## Tests as living proof
+| Folder | Genre |
+| --- | --- |
+| [`../PROOFS/`](../PROOFS/) | implementation proof packets |
+| [`../demo_proof/`](../demo_proof/) | demo / walkthrough evidence |
+| [`../capability_verification/`](../capability_verification/) | observed capability verification |
 
-- `nova_backend/tests/` holds runtime, governance, phase, and regression coverage — this is the
-  strongest continuously-checked evidence.
-- Root **structural runtime smoke proof**: `python scripts/prove_runtime_truth.py` checks app
-  import, local routes, `/ws`, capability registry loading, and Governor confirmation/unknown-
-  capability blocking. It is a structural smoke proof only — a PASS is NOT comprehensive runtime
-  truth and does NOT prove response validity, inference, model-lock enforcement, receipt
-  persistence, live providers, or authorization integrity. See the script docstring for full
-  non-goals.
-- Approval-gate certification (Cap 22 / Cap 64) closeout:
-  [`../status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md`](../status/APPROVAL_GATE_CERTIFICATION_CLOSEOUT_2026-05-19.md).
+Do not merge these genres merely for tidiness; the distinction preserves epistemic meaning.
 
-## Naming reconciliation (recorded, not a bug)
+## Current stabilization proof posture — 2026-08-20
 
-`PROOFS/Trust-Panel/` contains a proven trust-*page* MVP, while the runtime gaps list "Trust
-Panel not implemented." Both are true: the trust **page** MVP was proven; the full Trust
-**Panel** concept (Phase 4.5) remains open. Do not read this as a contradiction.
+The August stabilization implementation packages through PR #352 have merged. Their PR bodies/tests provide bounded package-level evidence, including P1-A/P1-B truth repairs, local outcome-truth repairs, weather/location routing, current-information routing, Calendar scope/selection, schedule cancellation, and private Drive source selection.
 
-## Full-suite verification status
+That is **not yet one unified validated baseline**.
 
-[VERIFIED CLEAN 2026-07-27] The complete test suite passed on merged main after PRs #315 and
-#316: 3799 passed in 6:46, exit code 0, with no pytest timeout and no external browser or
-email-client launch. The historical high-completion stall did not reproduce. Targeted suites
-remain useful for bounded development checks, but are no longer a substitute for the full suite —
-which now completes. The 180-second pytest-timeout guard remains enabled.
+At the start of Wave A1, merged `main` was:
+
+```text
+1a517d8832a2c834c80b10a7062bed878f6312cc
+```
+
+This SHA is the A1 planning checkpoint only. It must not be labeled `validated_baseline_sha` merely because it is current or because individual PR checks passed.
+
+Wave C will later choose an exact candidate commit and run the required proof matrix. Only after those checks complete may Nova record:
+
+```text
+validated_baseline_sha
+validated_at
+verification package
+supported-environment scope
+known exceptions
+remaining defects
+```
+
+That record is immutable evidence for the tested baseline. Future HEAD may move beyond it.
+
+## Historical full-suite evidence
+
+A complete merged-main suite was recorded on 2026-07-27 after PRs #315/#316:
+
+```text
+3799 passed
+exit code 0
+6:46
+```
+
+That remains valid historical evidence for that revision. It is **not** proof that the current August 20 codebase has passed that same exact full-suite package.
+
+Later PRs include their own focused/broader/full-suite results. Those totals are evidence for those PR heads/bases and must not be copied forward as proof of a future reconciled #335 or Wave C candidate.
+
+## Structural runtime proof
+
+`python scripts/prove_runtime_truth.py` is a structural smoke proof. A PASS does not by itself prove:
+
+- semantic response correctness;
+- evidence relevance;
+- reference binding;
+- temporal/source scope preservation;
+- live-provider success;
+- complete network mediation;
+- durable-memory governance;
+- exact authorization semantics across every path;
+- effect verification;
+- cross-platform equivalence.
+
+Use the script for what it measures; do not inflate its meaning.
+
+## Runtime-document drift proof
+
+`python scripts/check_runtime_doc_drift.py` remains useful for the narrow document/runtime relationship it checks. It must not be represented as complete consistency across all operational/canonical instructions.
+
+Wave B1 is expected to add a separate operational-truth consistency check.
+
+## Wave C required proof shape
+
+After A1, A2, and the Wave B repairs, Wave C should:
+
+1. freeze one exact candidate code commit;
+2. regenerate repaired runtime truth against that exact candidate;
+3. run the strongest supported proof matrix in each environment without inventing unsupported cross-platform evidence;
+4. run semantic-contract regression across intent, reference binding, evidence relevance, execution truth, lifecycle state, capability narration, memory persistence/provenance, source scope, and temporal scope;
+5. prioritize metamorphic/invariant tests, including paraphrase and scope-preservation cases;
+6. re-evaluate Issue #227 against the actual current local inference stack;
+7. fix only defects that reproduce;
+8. record an immutable validated baseline only after the required package passes.
+
+## Failure classification rule
+
+A failed acceptance scenario does not establish its own root cause.
+
+Before choosing a repair, classify the failure. Possible classes include:
+
+```text
+evidence quality / normalization
+semantic inference / intent resolution
+reference binding
+source or temporal scope
+prioritization
+UX framing / narration
+runtime execution behavior
+persistence/lifecycle behavior
+product-hypothesis failure
+```
+
+This keeps the proof framework falsifiable. Do not assume every Hour 1 / Hour 6 / Day 2 failure is an evidence-normalization defect.
+
+## Semantic-contract regression doctrine
+
+High-value invariants include:
+
+```text
+paraphrase should preserve intent
+temporal wording should preserve temporal scope
+private-source wording must not upgrade to public web
+narration must not upgrade accepted_unverified to verified
+reference wording must not bind to an unrelated prior object
+model narration must not manufacture capability availability
+connection or OAuth scope must not become Nova authority
+```
+
+## Environment truth
+
+Report the strongest evidence actually supported by each environment.
+
+For example:
+
+```text
+primary/full-suite environment:
+  required full suite
+
+Windows:
+  supported Windows certification/adversarial coverage
+  + explicit remaining full-suite gap, if any
+
+live local environment:
+  fresh-main real-user proof where required
+```
+
+Do not label unexecuted/zero-step CI as passing or failing test evidence. Infrastructure status is a separate fact.
+
+## Proof currency rule
+
+When using any proof artifact, record or inspect:
+
+- exact revision;
+- date;
+- environment;
+- test/acceptance scope;
+- known exclusions;
+- whether the claim is structural, automated-behavioral, or live-observed.
+
+A newer timestamp on a copied or regenerated document does not automatically make the underlying behavioral evidence newer.
+
+## Naming reconciliation
+
+`PROOFS/Trust-Panel/` and current runtime references to an incomplete fuller Trust Panel can coexist: the earlier trust-page MVP proof is historical evidence for that bounded surface, while the broader Trust Panel concept remains a different scope. Preserve the distinction rather than forcing one boolean status.
