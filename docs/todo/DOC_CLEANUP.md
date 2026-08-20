@@ -16,6 +16,60 @@ These are still valid maintenance candidates, but none is an active product/runt
 - add cross-links among `PROOFS/`, `demo_proof/`, and `capability_verification/` without merging those distinct evidence genres;
 - keep old archive/future trees clearly non-authoritative rather than mass-moving them and breaking references.
 
+### Unresolved / deferred reference work
+
+The following items remain unresolved. Wave A1 preserves them without attempting the underlying documentation expansion.
+
+#### `NOVA_JOB_WORKFLOW_PLAN` roadmap/reference citations
+
+```text
+Status: unresolved
+Destination: target current documentation set
+Deferred: not part of Wave A1
+```
+
+Retain the need to connect the job-workflow plan to the appropriate current roadmap/reference surfaces where it remains relevant.
+
+#### Connector-security references
+
+```text
+Status: unresolved
+Destination: target current documentation set
+Deferred: not part of Wave A1
+```
+
+Retain the need to connect current connector/security guidance to the appropriate governance, integration, and security documentation without treating future connector plans as implemented behavior.
+
+#### Conversation response contract
+
+```text
+Status: unresolved
+Destination: target current documentation set
+Deferred: not part of Wave A1
+```
+
+Retain the need to surface/reference `docs/nova-conversation-response-contract.md` from the appropriate current product/behavior documentation.
+
+#### Approval / simulation evidence
+
+```text
+Status: unresolved
+Destination: target current documentation set
+Deferred: not part of Wave A1
+```
+
+Retain the need to connect existing approval/simulation proof or design evidence to the appropriate current proof/governance documentation without upgrading design evidence into runtime proof.
+
+#### B / H / D substrate citations
+
+```text
+Status: unresolved
+Destination: target current documentation set
+Deferred: not part of Wave A1
+```
+
+Retain the need to connect the relevant engineering-robustness, horizon, and product-coherence substrate/reference documents to the current roadmap/reference set where those citations are still missing.
+
 ### Human-only repository hygiene
 
 `branches_safe_to_delete.txt`, if still present and still stale, remains a separate repository-root cleanup decision. Do not delete it merely from a docs truth-sync.
@@ -67,6 +121,7 @@ Historical trust-page MVP proof and a broader incomplete Trust Panel concept are
 3. Generated artifacts are authoritative only for the properties their generators actually inspect.
 4. Do not delete or relocate non-doc repository artifacts as a side effect of documentation cleanup.
 5. Documentation cleanup does not authorize runtime, capability, authority, connector, memory, provider, OAuth, OpenClaw, or external-write changes.
+6. Unresolved cleanup work must remain recorded until it is explicitly completed, rejected, or superseded; Wave A1 must not erase it merely to simplify the tracker.
 
 ## Current priority relationship
 
