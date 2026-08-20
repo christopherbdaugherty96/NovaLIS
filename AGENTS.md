@@ -2,148 +2,199 @@
 
 Guidance for AI agents working on NovaLIS.
 
-Start here before editing the repo.
+Start here before editing the repository.
 
 ## Core Rule
 
-Intelligence is not authority.
+**Intelligence is not authority.**
 
-Nova's reasoning layers may clarify, plan, search, summarize, and propose. Runtime execution still goes through the Governor, capability registry, execution boundaries, and receipts.
+Reasoning may clarify, plan, search, summarize, compare, and propose. Governed capability execution remains subject to Nova's authority and execution boundaries.
 
-## Project Positioning
+## Product Positioning
 
-Nova is a governance-first local AI system that separates intelligence from execution authority.
+Nova is a local-first, owner-controlled personal/home/business operating layer with governance as a permanent constraint.
 
-Nova prioritizes visible authority boundaries, inspectable execution, and user-controlled AI operation.
+The current product problem is not "add more tools." The near-term problem is to make Nova interpret intent, preserve reference and temporal scope, connect trustworthy evidence across sources, and state execution/outcome truth accurately.
 
-Nova is NOT:
+Operational Continuity is strategic direction, not current runtime authority.
 
-```text
-- "AI employee" / "fully autonomous agent" / "universal orchestrator" / "AGI coworker"
-```
+## Read Order
 
-Nova's strongest differentiator is: governed local-first execution with visible authority boundaries.
+Before selecting work, read:
 
----
+1. `docs/CANONICAL/00_INDEX.md`
+2. `docs/status/DAILY_COMMAND_CENTER.md`
+3. `.agent_context/current_priority.md`
+4. `docs/status/CURRENT_WORK_STATUS.md`
+5. `docs/todo/ACTIVE_TODO.md`
+6. `docs/capability_verification/CAPABILITY_INVENTORY.md`
+7. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+8. `docs/CANONICAL/07_ROADMAP_TRUTH.md`
 
-## Active Direction
+For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-Read these documents before starting any task, in this order (a reading order, not an
-authority ranking — for runtime-existence claims, generated runtime docs win):
+## Wave A1 Current Development State — 2026-08-20
 
-1. `docs/CANONICAL/00_INDEX.md` — how to read repo truth (defines the authority model)
-2. `docs/status/DAILY_COMMAND_CENTER.md` — where the project is right now
-3. `.agent_context/current_priority.md` — active state and safety boundaries
-4. `docs/capability_verification/CAPABILITY_INVENTORY.md` — what verifiably works
-5. `docs/current_runtime/CURRENT_RUNTIME_STATE.md` — generated runtime truth
+Wave A1 is a documentation/truth-reconciliation lane.
 
-Current active product state:
-
-```text
-Phase 3 observation: SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22 synthesis).
-The seven-morning gate is CLOSED. Its rank-1 defect — grounded brief/category
-routing — was repaired, merged as PR #312 (2026-07-23), and verified on fresh
-`main` (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md).
-No additional seven-morning or open-ended observation gate is required.
-
-The August 7 owner-use defect is CLOSED on merged main. PR #330 implemented
-Commitment Truth + Natural Reminder Handoff; PR #332 fixed notification-schedule
-command precedence. Fresh-main proof at `dfef1db5...` confirmed the exact natural
-handoff, real reminder persistence, `show schedules`, `reminders`, fresh-session
-retrieval, and preservation of calendar-query routing.
-
-The local-action outcome-truth lane is also CLOSED. PR #331 is merged and its
-Cap 17/19/22 behavior was live-proven on merged main.
-
-PR #333 merged the roadmap/current-state reconciliation. PR #334 merged Semantic
-Substrate Slice 1 as durable provider-neutral contract/test infrastructure. Current
-merged `main` is `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`.
-
-PR #335 contains the implemented Google Workspace identity-only foundation, but it
-remains DRAFT / UNMERGED at `befb69e...`. It is paused behind two P1 truth repairs
-selected by the 2026-08-12 fresh-main real-user acceptance record:
-  A. user-visible commitment/capability truth;
-  B. receipt-correlated action/outcome history.
-The 25-step golden regression was covered; the full 36-section stress catalog was
-not completed. Repair and prove P1-A before beginning the separately bounded P1-B;
-after both P1 proofs, address the recorded P2 groups and remaining stress-test gaps
-before resuming #335 review. This text ORDERS that work but does not authorize either
-repair or proof, modification of #335, or activation of Google domain-data access.
-
-Authorization Integrity Slice 2A remains separately approved, not implemented on
-main, and paused; it is neither cancelled nor silently active.
-Runtime recovery remains historical/accepted context, deferred until
-observation evidence reactivates it.
-```
-
-Not authorized without a separate reviewed priority lock:
+The merged-main checkpoint used to start this lane is:
 
 ```text
-New implementation lanes, capability expansion, modification/expansion of PR #335,
-Google domain-data connector work,
-Shopify writes, ElevenLabs implementation, OpenClaw expansion,
-browser/computer-use expansion, external writes, finance automation, social
-posting automation, autonomous workflow execution, multi-agent expansion,
-enterprise orchestration work.
+1a517d8832a2c834c80b10a7062bed878f6312cc
 ```
 
----
+That SHA is a planning checkpoint, not a permanent alias for `main`. Verify the actual current GitHub head before future work.
 
-## Current Task Status
+Merged stabilization work already includes:
 
 ```text
-Phase 3 build lanes — COMPLETE (2026-07-07). Merged #262-#272, tagged
-  phase-3-complete. Live verification recorded in PR #273.
-Docs truth reconciliation — COMPLETE (2026-07-09). PRs #276-#283.
-Runtime proof harness — LANDED (2026-07-09, PR #284).
-  Run python scripts/prove_runtime_truth.py before every merge.
-Observation scaffold — LANDED (2026-07-09, PR #285).
-Seven mornings logged and synthesized — COMPLETE (2026-07-22,
-  docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md).
-Grounded brief/category routing (synthesis rank-1 defect) — COMPLETE
-  (PR #312, merged 2026-07-23; 205 focused tests, runtime proof PASS).
-Timeout containment (Morning 6-7 cross-turn blocking) — COMPLETE (PR #311).
-Post-#312 owner-use evidence - RECORDED (2026-08-07; suitable for product
-  prioritization, with incomplete exact runtime provenance).
-Commitment Truth + Natural Reminder Handoff — COMPLETE (PR #330 plus PR #332;
-  fresh-main closeout PASS at dfef1db5 on 2026-08-09).
-Local Action Outcome Truth — COMPLETE (PR #331; merged-main live proof PASS).
-Semantic Substrate Slice 1 — COMPLETE (PR #334; merged in current main c44b6d0).
-2026-08-12 fresh-main real-user acceptance — RECORDED for planning; 25-step golden
-  regression covered, full 36-section catalog incomplete.
-Current planning priority: P1-A user-visible commitment/capability truth, its targeted
-  fresh-main live proof, then the separately bounded P1-B receipt-correlated action/outcome
-  history and its targeted live proof. Neither implementation nor either proof is authorized by this
-  documentation sync. PR #335 remains draft/unmerged and must not be modified, marked ready,
-  or merged from this ordering text. Google Tasks remains unstarted.
-Authorization Integrity Slice 2A remains separately approved, paused, and
-  unimplemented on main.
-Do not select implementation work from any document dated before 2026-07-07
-  without checking docs/CANONICAL/07_ROADMAP_TRUTH.md first.
+#337 / #338  P1-A commitment/capability truth
+#339         P1-B receipt-correlated session activity/outcome history
+#340         Cap 19 outcome truth
+#341 / #344  explicit weather-location repair / WebSocket preservation
+#345         brightness outcome truth
+#346         volume command wording/routing
+#347         current-information freshness/source-boundary routing
+#348         broad awareness follow-up interpretation
+#349         Calendar source-selection overmatch repair
+#350         Calendar tomorrow-scope preservation
+#351         local schedule-cancellation routing
+#352         private Drive source-selection truth
 ```
 
-For full merge-by-merge continuity, use `docs/status/CURRENT_WORK_STATUS.md`.
+Do **not** select any of those as if they are still unimplemented.
 
-Current grounded truth:
+PR #335 remains:
 
 ```text
-OpenClaw is implemented runtime code with bounded/manual-first execution surfaces.
-
-The unrestricted freeform-goal registry exposure identified during the audit was
-narrowed by PR #154 through read-only allowlisting, mutation-tool exclusion,
-MeteredNetworkProxy enforcement, and governance regression tests.
-
-This does not make OpenClaw broadly autonomous or fully governance-certified.
-
-Phase 8 envelope execution is PARTIAL — broader envelope-governed execution
-remains deferred. Phase 9 surfaces are ACTIVE but built on an incomplete Phase 8
-foundation. These are human-layer annotations; CURRENT_RUNTIME_STATE.md is the
-authoritative machine-generated runtime truth.
+OPEN
+DRAFT
+UNMERGED
+head: befb69ef75881a9f418472549b64243219c138f9
+historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
+Foundation/auth/identity only
 ```
 
-## Required Context Files
+Do not merge or extend PR #335 in its historical state. It is deferred until the stabilization checkpoint defined by Issue #343.
 
-Read these before making brain/governance changes:
+## Current Ordered Gate
+
+The current sequencing is:
+
+```text
+Wave A1 — operational truth synchronization
+-> Wave A2 — strategy reconciliation
+-> Wave B — truth-integrity repairs
+-> Wave C — proof / validated-baseline checkpoint
+-> reconstruct/reconcile #335 onto the exact validated baseline
+-> separate #335 review/merge decision
+-> Google identity-only live proof
+-> Google Tasks READ / first provider-backed Google evidence vertical
+-> evidence-based Continuity warrant
+```
+
+This is a stabilization gate around the existing roadmap. It is **not** a roadmap rewrite.
+
+## Wave A1 Lock
+
+Wave A1 may change operational/canonical documentation and Issue #343 only.
+
+Wave A1 must not change:
+
+```text
+runtime behavior
+runtime auditor
+GeneralChat persistence behavior
+self-awareness behavior
+capability registry
+Google #335 implementation
+OAuth behavior
+Operational Continuity runtime
+OpenClaw authority
+provider routing
+capability authority
+external-write behavior
+```
+
+## Permanent Control-Plane Distinction
+
+Nova has three distinct control planes.
+
+### 1. Governed capability plane
+
+```text
+User
+-> GovernorMediator
+-> Governor
+-> CapabilityRegistry
+-> SingleActionQueue
+-> LedgerWriter
+-> ExecuteBoundary
+-> Executor
+```
+
+This is the authority path for governed capabilities.
+
+### 2. Local operator / administrative plane
+
+Settings, credentials, connections, provider/runtime configuration, and other local operator controls are not automatically governed capabilities. They must remain explicitly classified and must not silently increase capability authority.
+
+### 3. Bounded agent / routine plane
+
+OpenClaw/routine/scheduler envelopes may have constrained enforcement of their own. They must not silently inherit or increase Nova capability authority.
+
+Permanent invariant:
+
+> No control plane may silently increase the authority available to another control plane.
+
+Permanent distinctions:
+
+```text
+connection != capability
+capability != authority
+OAuth scope != Nova authority
+recommendation != permission
+execution != verified outcome
+memory != Operational Continuity
+```
+
+## Evidence Discipline
+
+Do not collapse these evidence levels:
+
+```text
+exists
+enabled
+configured
+available_on_this_path
+request_accepted
+effect_verified
+verification_status
+authority_class
+```
+
+`authorized` is not static capability metadata. Approval/authority is request-specific.
+
+Do not infer that a generated PASS proves behavior the generator does not measure. Do not infer that a historical proof packet is current proof. Do not call a candidate baseline validated until the required Wave C proof package has completed.
+
+## Continuity Doctrine
+
+Operational Continuity remains strategically accepted but implementation-inactive.
+
+Continuity may preserve/reconcile/project state, but it may never:
+
+- authorize;
+- execute;
+- change permission;
+- manufacture commitments;
+- silently reopen decisions;
+- convert learned behavior into authority.
+
+Conversation-level product doctrine currently includes Earned Compression, Attention Saved over Engagement, Mirror → Assist → Replace, consequence-based prioritization, and the Hour 1 / Hour 6 / Day 2 acceptance scenario. These are product/validation doctrine only unless and until adopted into canonical repository strategy through a separately reviewed strategy reconciliation.
+
+## Required Context Before Brain/Governance Changes
+
+Read:
 
 - `docs/brain.md`
 - `docs/brain/README.md`
@@ -154,16 +205,14 @@ Read these before making brain/governance changes:
 
 ## Do Not
 
-- add execution capabilities without explicit request
-- bypass GovernorMediator
-- treat memory as permission
-- claim conceptual docs are implemented runtime behavior
-- treat Cap 64/65 certification locks (both P1-P5 locked, 2026-05) as permission
-  to expand scope — locked means bounded, not expandable
-- add Shopify writes or email sending under existing read/draft capabilities
+- bypass `GovernorMediator` for governed capability execution;
+- treat memory, conversation context, recommendations, model confidence, OAuth scopes, or repeated success as permission;
+- claim conceptual/strategy docs are implemented behavior;
+- infer broad autonomy from OpenClaw runtime presence;
+- expand Google domain-data access before the ordered gate permits it;
+- use old PR test totals as proof of a reconciled branch;
+- direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
 
 ## Repo Truth Rule
 
-Generated runtime docs and implementation beat roadmap language.
-
-When exact current status matters, verify against code and generated runtime truth.
+Code is authoritative for implemented behavior. Generated runtime surfaces are authoritative for the exact mechanically measured claims they report. Hand-maintained operational docs establish current ordering and interpretation, but may go stale and must be reconciled when the repository changes.
