@@ -9,7 +9,8 @@ Authority rules:
 
 ```text
 1. This document ORDERS work. It does not re-scope work.
-2. Lane-specific lock docs remain the scope authority for their lane.
+2. Lane-specific lock docs remain the scope authority for their lane
+   (e.g. UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md for Lane A).
 3. Everything in docs/future/ and the root future/ tree NOT
    referenced by this document is reference/archive material, not
    an active priority.
@@ -34,7 +35,7 @@ That document is a strategic compass, not an ordering or scope authority. It syn
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
 This roadmap still determines ordering; lane locks still determine scope; owner decisions still
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
-proof, OpenClaw work, or delegation.
+proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
 ## Current Ordering — 2026-08-20
 
@@ -134,23 +135,24 @@ This current block ORDERS work. It does not itself authorize Wave B implementati
 or merge, Google domain-data access, external writes, capability/authority expansion, Operational
 Continuity runtime, broad OpenClaw expansion, or provider expansion.
 
-## Historical Ordering — 2026-08-12 (superseded by the 2026-08-20 gate)
+## Historical Ordering — 2026-08-12 (superseded by the block above)
 
 `main` was at `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30` after PR #334.
 
-Durable state at that time:
+Durable state since the prior ordering block:
 
 - PR #333 merged the roadmap/current-state reconciliation.
 - PR #334 merged Semantic Substrate Slice 1. Its provider-neutral source/evidence/state/outcome
   contracts and tests are durable infrastructure; it added no provider call, Google integration,
   capability, authority, or execution path.
-- PR #335 contained the implemented Google Workspace identity-only foundation, but remained
-  **DRAFT / UNMERGED** at `befb69ef75881a9f418472549b64243219c138f9`.
+- PR #335 contains the implemented Google Workspace identity-only foundation, but remains
+  **DRAFT / UNMERGED** at `befb69ef75881a9f418472549b64243219c138f9`. Draft implementation is
+  not current-main capability.
 
 The 2026-08-12 fresh-main real-user acceptance record is
-`../observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`. It was prospective planning evidence
-against the exact current-main SHA above. The supplied 25-step golden regression was covered with
-additional targeted probes; the complete 36-section stress catalog was not fully exercised.
+`../observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`. It is prospective planning evidence
+against the exact then-current-main SHA above. The supplied 25-step golden regression was covered
+with additional targeted probes; the complete 36-section stress catalog was not fully exercised.
 
 The lower authority/execution layers held: ApprovalGrant integrity, approval cancellation/replay,
 memory != authority, bypass strings != authority, Cap 22 outcome underclaiming, local reminder
@@ -166,39 +168,66 @@ The acceptance run nevertheless selected two P1 product-truth repairs:
 The then-current order was:
 
 1. Bound and implement P1-A only under a separate reviewed implementation authorization.
-2. After P1-A separately merges, run targeted P1-A fresh-main live proof.
+2. After P1-A separately merges, run targeted P1-A fresh-main live proof: Calendar-write claim,
+   streamed reminder truth, persistence success/failure/timeout, and no unauthorized execution.
 3. Bound and implement P1-B as a separate package under its own reviewed authorization.
-4. After P1-B separately merges, run targeted P1-B / live P1 fresh-main proof.
-5. Address P2 findings by failure class, not one broad cleanup PR.
+4. After P1-B separately merges, run targeted P1-B / live P1 fresh-main proof: action-history
+   correlation, background-read recap truth, verified/failed/unknown outcomes, and no unauthorized
+   execution.
+5. Address P2 findings by failure class, not one broad cleanup PR:
+   - capability/copy truth — Google Tasks narration and background-alert claims;
+   - deterministic routing/temporal/source truth — arbitrary-location weather, `tomorrow` Calendar,
+     schedule cancellation, private Drive intent, verification routing, and related stress gaps;
+   - News governed-parameter defect — establish the callback/canonicalization hypothesis with a
+     focused regression before calling it root cause.
 6. Complete the untested/partial rows from the 36-section catalog.
-7. Run the full fresh-main regression.
-8. Resume PR #335 review.
-9. If #335 merges, prove the identity-only foundation live.
-10. Only then select **Google Tasks READ** as the first Google domain-data vertical.
+7. Run the full fresh-main regression, combining the golden 25-step flow with the remaining
+   high-value stress cases rather than repeating proven authority paths unnecessarily.
+8. Resume PR #335 review. Any branch modification, ready transition, or merge remains separately
+   authorized. The pause does not cancel or invalidate its existing implementation.
+9. If #335 merges, prove the identity-only foundation live: account identity, granted scopes,
+   credential validity/refresh, reconnect, revoke, disconnect, and absence of token leakage.
+10. Only then select **Google Tasks READ** as the first Google domain-data vertical. A Tasks write,
+   Gmail/Calendar/Drive/Docs/Sheets evidence, and later Google actions remain separately ordered,
+   separately scoped, and separately authorized.
 
 This historical sequence is retained as provenance. Its P1/P2 pending-work language is superseded
 because #337-#352 have since merged.
 
-### Historical Continuity Model strategic ordering
+### Continuity Model strategic ordering
 
 The Continuity Model was already **STRATEGICALLY ACCEPTED / INACTIVE / NOT
-IMPLEMENTATION-AUTHORIZED**. It was persistent reconciled state surrounding Awareness, Decision,
-Authority, Execution, and Outcome; not a sixth system or an authority plane.
+IMPLEMENTATION-AUTHORIZED**. It is persistent reconciled state surrounding Awareness, Decision,
+Authority, Execution, and Outcome; it is not a sixth system or an authority plane.
 
-The intended dependency remained:
+Earliest consideration remained after the then-ordered stabilization and Google evidence work:
 
 ```text
-stabilization
+P2 stabilization
+-> remaining acceptance coverage
+-> full fresh-main regression
 -> Google Workspace Foundation review/merge decision
 -> live identity-only proof
 -> first Google READ/evidence vertical
 -> separately warranted, scoped, authorized, implemented, and proved Continuity Slice 1
 ```
 
-## Historical Ordering — 2026-08-09
+Permanent boundary:
 
-`main` was at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. The meaningful
-post-#319 sequence was:
+```text
+Google capability != Google authorization != Nova authority
+connected != evidence collected != action permitted
+Prepared Reality is local; creating or changing a Google resource is external mutation.
+```
+
+Authorization Integrity Slice 1 remained merged through PR #325. Slice 2A remained separately
+owner-approved, paused, and not implemented on main. Slice 2B remained deferred and separately
+gated.
+
+## Historical Ordering — 2026-08-09 (superseded by the blocks above)
+
+`main` is at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. The meaningful
+post-#319 sequence is concise:
 
 - PR #320 synchronized continuity and deliberately excluded the post-#312 acceptance scaffold.
 - PRs #321/#322/#324 grounded Auralis decision follow-ups and their exact display contract.
@@ -214,35 +243,40 @@ post-#319 sequence was:
 The targeted post-#312 owner-use session occurred on 2026-08-07 and is recorded in
 `../observation/OWNER_ACCEPTANCE_POST_312_2026-08-07.md`. It is prospective owner-use evidence
 suitable for product prioritization. Exact commit-level attribution is limited because the running
-SHA and branch were not captured. This closed the pending product-selection input without
+SHA and branch were not captured. This closes the pending product-selection input without
 fabricating missing runtime provenance.
 
-The selected product repair was complete. Fresh-main verification at
+The selected product repair is now complete. Fresh-main verification at
 `dfef1db5df89bfdb276904acce26205d1c894331` proved the exact August 7 natural handoff, real
 reminder persistence, same-session `show schedules` and `reminders`, fresh-session retrieval, and
-preservation of calendar-query routing.
+preservation of calendar-query routing. The Commitment Truth lane is CLOSED. The separate
+`tomorrow` calendar-scope wording defect was outside this proof and remains inactive.
 
-PR #331's local-action outcome-truth lane was also closed after merged-main live proof. Nova
-preserved the distinction between launch/request acceptance and visible-effect verification in
+PR #331's local-action outcome-truth lane is also CLOSED after merged-main live proof. Nova now
+preserves the distinction between launch/request acceptance and visible-effect verification in
 the action response, durable receipt, and later receipt consumers.
 
-Authorization Integrity Slice 1 was **MERGED**. Slice 2A was **NOT IMPLEMENTED ON MAIN** and
-remained separately owner-approved under its existing exact scope and publication boundary. Slice
-2B remained **DEFERRED** and separately gated.
+Authorization Integrity Slice 1 is **MERGED**. Slice 2A is **NOT IMPLEMENTED ON MAIN** and remains
+separately owner-approved under its existing exact scope and publication boundary. It is paused;
+this ordering neither cancels nor activates it. Slice 2B is **DEFERRED** and separately gated.
 
-The then-current order was:
+Current order at that time:
 
 1. **Semantic Substrate Slice 1.** Establish only the minimal provider-neutral contracts and tests
    for source identity, evidence envelopes, freshness, confidence, observed/intended state,
-   state deltas, and shared outcome semantics.
+   state deltas, and shared outcome semantics. No network/provider I/O, runtime capability,
+   authority, execution, migration, or broad refactor belongs in Slice 1.
 2. **Google Workspace Foundation.** Establish OAuth with PKCE, account identity, encrypted token
    storage, granted-scope inventory, explicit reconnect/grant profiles, revoke, and disconnect.
+   Connection alone reads no domain data and performs no domain mutation.
 3. **Google Tasks vertical.** Prove account identity -> scoped API read -> normalized evidence ->
-   provenance/freshness -> Nova awareness.
+   provenance/freshness -> Nova awareness. Only afterward may a separately scoped Tasks write
+   family prove operation-level authority, idempotency, effect verification, and reconciliation.
 4. **Google Evidence expansion.** Gmail read -> Calendar read -> selected Drive access ->
    Docs/Sheets reads over selected resources -> unified Google awareness.
 5. **Google Action expansion.** Local prepared proposals first; then one separately governed write
-   family at a time.
+   family at a time. Push/event synchronization is optional and requires evidence that polling or
+   refresh-on-use is insufficient.
 
 ### Google Workspace permanent boundary
 
@@ -260,18 +294,24 @@ mutation risk, authority, reversibility, and outcome verification.
 Google outcomes must reuse Nova's existing truth vocabulary. A connector result should be able to
 carry service, operation, account identity, resource identity/version, granted scope,
 request-accepted, effect-verified, outcome-state/reason, partial failure, idempotency key,
-authority receipt identity, and observation time. This remains a target contract, not current
-runtime behavior.
+authority receipt identity, and observation time. This is a target contract, not current runtime
+behavior.
 
 OAuth scope growth is an explicit reconnect/grant event. Foundation is not blanket access. Gmail
 and Drive read access must be treated according to data sensitivity, not merely labeled safe
 because it is read-only. Event-driven infrastructure remains deferred until real evidence justifies
 its operational cost.
 
+Secondary candidates - arbitrary-location weather routing, stale Auralis freshness,
+local-first identity copy, visible STT/TTS state, startup cohesion, and the separate `tomorrow`
+calendar-scope wording defect - remain historical/inactive here. No economic-value proof, expanded
+OpenClaw, browser/computer-use, financial-write, outreach, posting, contracting,
+autonomous-business, or delegation lane was active.
+
 ## Observation-driven candidates (historical 2026-07-11 through 2026-07-28 context)
 
-The Phase-3 observation period generated roadmap candidates from real behavior. Recorded here as
-historical context; none is authorized to build merely because it appears below.
+The Phase-3 observation period generates roadmap candidates from real behavior. Recorded here
+as they surface; none is authorized to build except via the stated gate.
 
 ```text
 SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
@@ -279,26 +319,65 @@ SEVEN-MORNING THRESHOLD COMPLETE (2026-07-22):
   docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md. The synthesis declared the evidence
   threshold complete and named grounded brief/category routing the rank-1 defect. No additional
   seven-morning or open-ended observation gate is required.
-  Next PRODUCT input at that time was ONE targeted post-#312 morning for additional real-use/
-  product-acceptance input.
-  HARDENING lane, in parallel: authorization integrity was the first post-observation hardening
-  lane per docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md.
+  Next PRODUCT input is ONE targeted post-#312 morning for additional real-use/product-acceptance
+  input (PR #312 is already verified on fresh main per
+  docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md; this is not that verification),
+  then owner selection of the next evidence-ranked product-usability lane. Two distinct lists
+  feed that choice (none authorized here):
+    Synthesis-ranked secondary repairs (each a separate decision):
+      - connection-truth/source-label repair;
+      - runtime-generator (fingerprint) reconciliation;
+      - business-context freshness/tense repair: stale past-dated memory-derived status
+        (e.g. "Watch: July 9...") must not present as current; separately authorize; no
+        business action or external write;
+      - corruption-safe loading stays PARKED unless an actual corruption/loading failure is observed.
+    Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
+  The post-#312 morning determines whether any product gap is selected.
+  HARDENING lane, in parallel (do not lose): authorization integrity is the FIRST
+  post-observation hardening lane per
+  docs/status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md. Its sequencing steps 1-2 are
+  satisfied, so it is activatable in parallel priority with the top product lane and is superseded
+  only by a higher-severity correctness/governance defect. LOCK ONLY; not started here.
 
 LANDED (freeze-exempt, owner-approved):
-  #311  Timeout containment - isolate turns after a response timeout.
-  #312  Grounded brief/category routing, merged 2026-07-23 and verified on fresh main.
-  #294  Observation Step 0 documentation + protocol.
-  #295  Truthful availability under dashboard refresh.
-  #297  Input reliability repair.
-  #298  Grounded follow-up conversation over brief items.
+  #311  Timeout containment - isolate turns after a response timeout so a timed-out model turn
+        no longer blocks the next deterministic request (Morning 6-7 evidence).
+  #312  Grounded brief/category routing (synthesis rank-1 defect), merged 2026-07-23 -
+        "show me <category> news" reaches governed Cap 49; brief/story follow-ups bind to the
+        rendered Cap 50 clusters / active surface; numeric story commands resolve against a
+        stable active-surface map; one confidence value feeds body + Trust; deterministic
+        source-bounded fallback preserved. 205 focused tests, prove_runtime_truth PASS, live
+        branch verification plus fresh-main verification
+        (docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md). This shipped the scope
+        earlier called "Slice 1"; lane now CLOSED.
+  #294  Observation Step 0 (documentation + protocol) — morning-log template + single launch
+        procedure + config truth (runtime reads Windows User-scope env, not nova_backend/.env).
+  #295  Truth-critical repair — Truthful availability under dashboard refresh: fixed false
+        "not configured" labels for news + weather (news 180s cache vs cap-56 rate-limit
+        exhaustion; weather widget-envelope unwrap; honest "temporarily unavailable" language;
+        news no longer blames Brave).
+  #297  Input reliability repair - dashboard websocket idle/reconnect loop fixed with visible
+        keepalive, server ping no-op, hidden-tab reconnect suppression, and refocus reconnect
+        once. Post-merge smoke from main passed.
+  #298  Grounded follow-up conversation over brief items - fetch prompts stay deterministic;
+        follow-ups over loaded news/weather/calendar/runtime brief facts answer from structured
+        sourced session state before LLM fallback. Guardrails prevent unsupported fact
+        laundering, background focus theft, unrelated prompt routing, GeneralChat prompt
+        contamination, news refresh identity drift, and calendar event-order drift. Post-merge
+        smoke from main passed.
 
 HISTORICAL SPEC (implemented by PR #298; retained for scope context):
-  "Grounded follow-up conversation over brief items" routed discussion-shaped follow-ups to
-  conversation over structured sourced session state before LLM fallback and preserved the
-  unsupported-fact boundary.
+  "Grounded follow-up conversation over brief items" — route discussion-shaped follow-ups
+  ("what do you think about that?") to the conversation lane instead of the widget; inject the
+  sourced brief facts (news/weather/calendar) already in session_state into the LLM context;
+  keep unsupported claims tagged, not laundered (the P0 hallucination boundary). This lane was
+  the prerequisite before any local-vs-cloud (DeepSeek) model-quality test was meaningful: a
+  pre-#298 read-only trace confirmed the conversation LLM received no brief facts, so a weak
+  conversation would have been plumbing evidence, not model evidence.
+  memory "grounded-conversation-lane" + docs/status/DAILY_COMMAND_CENTER.md (2026-07-11 block).
 
-STILL PARKED behind evidence at that time: model preset / governed cloud-conversation brain
-(DeepSeek), gated on observed use producing a genuine model-quality signal.
+STILL PARKED behind evidence: model preset / governed cloud-conversation brain (DeepSeek),
+gated on observed use of the grounded follow-up path producing a genuine model-quality signal.
 ```
 
 ## North Star
@@ -375,113 +454,223 @@ ENDGAME      a personal operating system that feels like Jarvis and
   a security warning, unless the action is genuinely risky.
 ```
 
-## NOW - Owner Actions (historical 2026-07-05 gate; not current Nova implementation ordering)
+## NOW - Owner Actions (the gate in front of the roadmap, cost ~zero)
 
 ```text
-1. Instagram: bio rewrite, products UTM link, highlights, unfollow batches.
+1. Instagram: bio rewrite (approved 4-line copy), single /products
+   UTM link, rename highlights (Shop / Custom / Drops / Made to
+   Order), start unfollow batches. Afterwards confirm the bio link
+   renders on the logged-out/incognito view.
 2. Meta business verification.
-3. Filming: first product Reel.
-4. OpenClaw token rotation.
-5. Small Auralis commerce/admin batch.
-6. Google Merchant review check.
-7. Auralis-Digital repository/hosting security migration.
-8. GitHub profile bio fix.
+3. Filming: first product Reel (Sun of Life sherpa), WELCOME10 in
+   caption. Reviewed in Meta Business Suite before posting.
+4. OpenClaw token rotation (three locations, including
+   NOVA_OPENCLAW_BRIDGE_TOKEN in nova_backend/.env).
+5. Small batch: footer signup retitle, order-email branding, tag
+   order #1001 as family in Shopify admin, proof email to pillow
+   customer, phone storefront walkthrough ("can I see the art?"),
+   Depth hoodie L-only decision.
+6. Scheduled (2026-07-05 owner item; the July 9 date is now past): Google Merchant review check.
+7. SECURITY: Auralis-Digital repo is PUBLIC with the business
+   playbook readable (profit table, margins, operating rhythm,
+   internal/) because free-plan GitHub Pages serves the site from
+   it. Fix: migrate hosting to Netlify/Cloudflare Pages from a
+   private repo, then flip the repo private (git rm alone does NOT
+   fix history). Same exposure class that motivated the NovaLIS
+   privacy flip, on the repo that matters more.
+8. GitHub profile bio fix (two minutes, alongside the Instagram
+   bio): "Building Nova - a local-first, governed AI system.
+   Intelligence proposes, Nova governs, you decide." Add website
+   link once hosting is settled.
 ```
-
-These owner actions are retained as July context. They do not override the current Wave A/B/C
-Nova stabilization gate.
 
 ## Lane A-D detailed bodies (2026-07-05) — RETAINED REFERENCE, not current status
 
 > **Supersession boundary.** The detailed Lane A/B/C/D bodies below were written on
-> 2026-07-05, before the Phase-3 observation cycle. They are retained as backlog/reference
+> 2026-07-05, before the Phase-3 observation cycle. They are retained as backlog / reference
 > material for per-lane scope and sequencing. They DO NOT describe current status and DO NOT
-> override the top current-ordering block.
+> override the top current-ordering block. The observation-candidate and
+> historical ordering sections preserve earlier status only. Where a body below says a lane is
+> "active", "next", "not yet built", or
+> "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (the July
+> truth-sync), A2+B2 (PR #264), C1 (Auralis Today, shipped/frozen). The current 2026-08-20
+> Wave A1 uses the same label for a new operational-truth checkpoint; it does not reopen the
+> historical July A1 task.
 
-## Lane A - UX Simplification
+## Lane A - UX Simplification (2026-07-05 lane body — see supersession boundary above)
 
 Scope authority: `docs/status/UX_SIMPLIFICATION_PRIORITY_LOCK_2026-07-02.md`.
 
 ```text
-A1. UX PR 3 merged as PR #262 (quick-action reduction).
-    The July front-door/roadmap truth-sync landed as PR #263 and was refreshed post-#312 in #314.
-A2. PR 4 - navigation collapse; completed through PR #264.
+A1. UX PR 3 merged as PR #262 (quick-action reduction, branch
+    ux/quick-action-reduction, commits 5f8a924 and a1b54a8).
+    [DONE] Landing this roadmap as a docs-only PR + refreshing the stale
+    front-door docs was the A1 task; complete via PR #263 and the
+    post-#312 front-door/status refresh in PR #314.
+A2. PR 4 - navigation collapse: move Agent, Rules, Activity, and
+    status/debug surfaces behind Settings -> Advanced. Includes
+    cross-page quick-action chip cleanup and frontend mirror sync.
 A3. PR 5 - label rewrite + Home simplification.
-A4. PR 6 - usability regression ratchets.
+    Build from NOVA_USER_FACING_LANGUAGE_GUIDE_2026-04-28.md.
+A4. PR 6 - usability regression ratchets (nav count, quick-action
+    count, label lint).
 ```
 
-## Lane B - Engineering Robustness
+## Lane B - Engineering Robustness (rides alongside Lane A)
+
+B1-B2 may ride with the PR 4 work session; the rest queue behind Lane A.
 
 ```text
-B1. Test suite completion / timeout containment.
-    [RESOLVED 2026-07-27] full suite green after #315 + #316: 3799 passed, exit 0.
-B2. Ledger hardening: rotation/compaction, hash chaining, verify command, data relocation.
-B3. Runtime-state backup WITH restore drill.
-B4. Async provider probes / startup-freeze root cause.
-B5. Degraded-mode contract + latency budget.
-B6. Monolith ratchet.
-B7. Upgrade story + state schema versioning.
-B8. Break-glass mode.
-B9. Receipt privacy classes.
-B10. Idempotency keys — required before future write capability.
-B11. Local auth / session lock.
-B12. Telemetry standard / OpenTelemetry conventions.
+B1. Test suite completion: install pytest-timeout (config already
+    references it; plugin missing), convert the 85-91% stall into a
+    named failing test, then fix it. Everything inherits this.
+    [RESOLVED 2026-07-27] pytest-timeout present; the 85-91% stall did not
+    reproduce on merged main; the isolation/hermeticity failures it masked were
+    fixed in #315 + #316; full suite green (3799 passed, exit 0).
+B2. Ledger hardening: rotation/compaction (file is ~475 MB), hash
+    chaining for tamper evidence, `ledger verify` command, relocate
+    out of src/data/.
+B3. Runtime-state backup WITH restore drill: scheduled copy of
+    ledger + memory + data + .env inventory to a second location,
+    plus periodic automated restore into a temp runtime verifying
+    memory count, ledger chain, settings, and capabilities. Backup
+    is not real until restore works; emits a "backup verified"
+    receipt.
+B4. Async provider probes: fix the root cause of startup freezes
+    (sync Ollama/provider calls blocking the event loop), not just
+    the hydration symptom.
+B5. Degraded-mode contract: tested promise that Nova opens useful
+    within N seconds with Ollama down / no network / no connectors.
+    Latency budget (open -> greeting) as a CI-tested contract.
+B6. Monolith ratchet: CI check for no net line growth in
+    session_handler.py (4,176 lines) and brain_server.py (3,324).
+B7. Upgrade story + state schema versioning: documented
+    deliberate-change path for the constitutional model lock;
+    explicit schema versions and migration checks for ledger,
+    memory, goals, profiles, provider settings, and schedules.
+B8. Break-glass mode: one command that puts Nova read-only
+    immediately - stop scheduled runs, block external effects,
+    disable approvals, keep chat/brief/status alive.
+B9. Receipt privacy classes: receipt fields classified
+    (safe-to-show / private / secret / redact-by-default /
+    export-only-with-confirmation).
+B10. Idempotency keys: stable action ids on every effectful action
+     so retries cannot duplicate effects. REQUIRED before any
+     future write capability.
+B11. Local auth / session lock: trusted device, optional PIN,
+     idle lock, re-auth for sensitive pages.
+B12. Telemetry standard: adopt OpenTelemetry conventions for
+     traces (request paths), metrics (latency/errors/tool use),
+     and logs - feeding D12/D13/D15 and the degraded-mode contract
+     (B5). Spacecraft-grade observability; boring until it saves
+     you.
 
 Deferred with trigger:
-- Pre-action state snapshots [trigger: first write capability, alongside B10]
+- Pre-action state snapshots ("before" state in receipts)
+  [trigger: first write capability, alongside B10]
 
-Five Nova-defining engineering features:
+The five most Nova-defining engineering features (agreed 2026-07-05):
 ledger integrity (B2), break-glass (B8), restore drills (B3),
 idempotency keys (B10), shadow mode (H1).
 ```
 
-The current Wave B truth-integrity packages are a stabilization checkpoint around this larger
-engineering lane; they do not delete or reorder the broader backlog above.
+## Lane C - Auralis Awareness (2026-07-05 lane body — C1 has since shipped; see boundary above)
 
-## Lane C - Auralis Awareness
-
-Scope authority: the converged Auralis-awareness specification and current Auralis product docs.
+Scope authority: converged spec in Claude memory (auralis-awareness-direction) — one data
+spine, three deliveries. Do not re-derive the plan. When Lane C opens, commit the spec into
+the repo as C1's design doc so it is visible to any worker, not only sessions with Claude
+memory access.
 
 ```text
-C1. Auralis Today v1 — shipped/frozen baseline.
-C2. Friction aging v1.1.
-C3. Telegram delivery via OpenClaw pager, gated on token rotation + scheduler lifecycle repair.
-C4. Friday Risk Loop / Weekly Review Packet seed.
+C1. Auralis Today v1: build_auralis_today_section() in
+    awareness_brief.py. Five lines: Status / Revenue Reality /
+    Owner Blocker / Best Move Today (deterministic) / Watch.
+    Connector extensions: order tags, discountCodes (WELCOME10),
+    publication counts. Memory seeds: locked decisions, owner-action
+    queue (needs_chris / agent_doable / scheduled / blocked), static
+    promotion queue, proof-asset checklist, customer message draft
+    bank.
+C2. Friction aging v1.1: 7-day stale owner task -> suggest smallest
+    next step (pre-authored per item).
+C3. Telegram delivery via OpenClaw pager: same spine, read-only.
+    GATED on (a) owner token rotation (NOW item 4) AND
+    (b) agent_scheduler.py lifecycle repair (open TECH_DEBT item:
+    suppression recording, trigger/completion logging,
+    duplicate-window anti-spam). Hardening subset per
+    OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md applies even to
+    read-only delivery (envelope, budgets, receipts).
+C4. Friday Risk Loop: weekly spine variant + finance/support checks
+    (taxes, payouts, refunds, disapprovals, abandoned checkout,
+    unanswered messages, account security/2FA status, reviews-app
+    health). Seed of the endgame Weekly Review Packet (H16).
 
-Deferred with named triggers:
-- New-product publishing checklist
-- Channel review monitor
-- Content queue assistant
-- Product promotion readiness score
-- Customer proof loop
-- Finance/margin watch
-- Repo health scripts
+Deferred with named triggers (do not build early):
+- New-product publishing checklist  [trigger: next new product]
+- Channel review monitor            [trigger: Merchant Center connector]
+- Content queue assistant           [trigger: posting cadence exists]
+- Product promotion readiness score [trigger: 8-post rollout underway]
+- Customer proof loop               [trigger: stranger orders exist]
+- Finance/margin watch              [trigger: first public sale]
+- Repo health scripts (gitleaks weekly, branch/drift checks)
+  [plain scheduled scripts, NOT Nova capabilities]
 ```
 
-## Lane D - Product Coherence
+## Lane D - Product Coherence (after Lanes A-C v1)
+
+The butler-feel layer, ordered by value:
 
 ```text
-D1.  Unified startup hydration.
-D2.  Recovery journal.
-D3.  Plan preview / dry run.
-D4.  Unsupported-capability recognition + why-not explanations.
-D5.  Preamble-tolerant routing.
-D6.  Receipts as quiet professionalism / per-answer trust summary.
-D7.  Rituals: end-of-day wrap, what changed, what needs approval, what was prepared.
-D8.  Stale-doc guard.
-D9.  One killer demo loop.
+D1.  Unified startup hydration: one composed startup payload
+     replacing the widget command burst (pairs with B4).
+D2.  Recovery journal: failures narrated as receipts.
+D3.  Plan preview / dry run: "what I understood / can prepare /
+     needs approval / will not do" before multi-step or
+     higher-authority requests. Includes command decomposition
+     (multi-intent classification, no auto-execution).
+D4.  Unsupported-capability recognition + "why not" explanations:
+     refusals that name the missing path. Refusal becomes trust.
+D5.  Preamble-tolerant routing for deterministic commands.
+D6.  Receipts as quiet professionalism: user-facing receipt
+     language pass ("Prepared draft only. No message sent.").
+     Includes the per-answer trust summary ("Nothing left this
+     device. No tools ran. 3 suggestions prepared. 2 memories
+     used. 0 secrets exposed.") - visible trust as the
+     differentiator most assistants hide.
+D7.  Rituals: end-of-day wrap, "what changed while you were away",
+     "what needs approval", "what I prepared". Include explicit
+     privacy assurance lines when true: "nothing ran / nothing
+     left this device".
+D8.  Stale-doc guard: front-door freshness check.
+D9.  One killer demo loop: open -> Daily Brief -> notices issue ->
+     prepares email draft -> approval -> receipt -> What Changed.
 D10. Installer / first-run reliability pass.
-D11. Permission diff view.
-D12. Capability dependency graph.
-D13. Readiness score.
-D14. Personal operating memory view.
-D15. Brain trace surface.
+D11. Permission diff view: "this grants X, still does not allow Y,
+     new risks Z". No blind approvals.
+D12. Capability dependency graph: human-readable degraded causes.
+     Pairs with B5.
+D13. Readiness score: healthy / useful / degraded / setup needed,
+     from model, ledger, backup freshness, connectors, runtime
+     health, and drill status.
+D14. Personal operating memory view: active projects, open loops,
+     preferences, routines, recent decisions, rejected suggestions
+     - "I remembered this because you approved it". Context, never
+     permission.
+D15. Brain trace surface: user-visible trace cards. BrainTrace
+     already exists implemented and non-authorizing - this item is
+     SURFACING it, not building it.
+
+Existing specs to build from (do NOT re-spec):
+- D2  -> NOVA_FAILURE_MODE_PLAYBOOK_2026-04-28.md
+- D3  -> NOVA_APPROVAL_QUEUE_PRODUCT_PLAN_2026-04-27.md + old
+         ROADMAP.md Boundary Detector / Uncertainty Classifier
+- D6  -> NOVA_USER_FACING_LANGUAGE_GUIDE_2026-04-28.md
+- D12 -> TRACE_AND_OBSERVABILITY_SPEC.md
+- D15 -> NOVA_TRUST_SPANS_TRACE_CARDS_PLAN_2026-04-27.md (15 span
+         types; "show decisions and evidence, not private
+         chain-of-thought")
 ```
 
-Existing specs remain the substrate for those items; do not re-spec them unless current evidence
-shows the contract itself is wrong.
-
-## Horizon - Identity-Defining (not scheduled; revisit after active gates)
+## Horizon - Identity-Defining (not scheduled; revisit after Lanes A-D v1)
 
 Theme index:
 
@@ -494,46 +683,174 @@ Knowledge and judgment ..... H8, H11, H13, H21
 Privacy .................... H20
 Business and rituals ....... H12, H14, H16, H22
 Reactivity ................. H17
-Ambient intelligence ....... H23-H31
+Ambient intelligence ....... H23-H31 (sci-fi now: prepared
+                             reality, night cycle, temporal
+                             recall, presence, co-watching,
+                             what-if, generative UI, multimodal
+                             intake, MCP boundary)
 ```
 
 ```text
-H1.  Shadow mode: capabilities audition (would-have-done receipts) before enablement.
-H2.  Earned-autonomy proposals using approval history; never automatic authority.
-H3.  Attention governance + attention ledger.
-H4.  Approval-path security design.
-H5.  Household profiles + local/revocable voice identity substrate.
-H6.  Portability bundle: export/import Nova's mind in open format.
-H7.  Self-drills: automated failure rehearsal with concise reporting.
-H8.  Candor duty.
-H9.  Orb presence light; display/presence before physical-world automation.
+H1.  Shadow mode: capabilities audition (would-have-done receipts)
+     before enablement. Try-before-trust. Substrate:
+     future/governed_desktop_runs/ (envelope schema, state machine,
+     policy evaluator); the promotion ladder's dry-run stage is
+     shadow mode by another name.
+H2.  Earned-autonomy proposals: Nova cites its own approval record
+     to propose standing approvals. Governance that visibly learns.
+     Substrate: AUTO_APPROVAL_POLICY.md graduated levels (0 none /
+     1 read-only / 2 preparation / 3 limited / 4 trusted flow);
+     RECEIPT_TO_MEMORY.md promotion policy (receipts -> structured
+     learning records, never automatically); LEARNING_LAYER_SPEC.md
+     epistemic ladder (observed_signal -> candidate -> confirmed ->
+     doctrine). H1+H2 are the defining differentiator: how Nova
+     becomes Jarvis one receipted step at a time.
+H3.  Attention governance + attention ledger: interruption budget,
+     batching, interruptions logged as first-class events with
+     dismissed/useful outcomes. Urgent once the pager exists.
+H4.  Approval-path security design (unlocks remote approvals; until
+     then remote stays read-only per doctrine).
+H5.  Household profiles: per-person governance (src/profiles seed).
+     Technical foundation: local voice identity / speaker
+     recognition (enrolled voices only, on-device, revocable) so
+     each speaker automatically gets their permission profile.
+H6.  Portability bundle: export/import Nova's mind, open format.
+H7.  Self-drills: monthly automated failure rehearsal, one-line
+     report in the brief.
+H8.  Candor duty: personality-layer permission to disagree and to
+     surface what the user is avoiding.
+H9.  Orb presence light (Nova-Orb-Raspberry-Pi): ambient glow /
+     approval pulse. Read-only physical surface. Hardware staging
+     rule: display/voice/dashboard BEFORE cameras, sensors, or
+     physical-world automation.
 H10. Mobile / pocket read-only brief surface.
-H11. Prioritization engine: dependency, ROI, urgency, risk, proof value, preference.
-H12. Capability packs and Auralis client-services direction; parked until justified.
-H13. Second Brain / future world-model substrate; Slice 1 lock accepted, deferred.
-H14. Parked domains: market sandbox, YouTubeLIS, governed desktop runs / Continuous Nova.
-H15. Manager hierarchy with one Personality Layer; managers never create authority.
-H16. Weekly Review Packet.
-H17. Signal Registry; signals start awareness, never grant execution.
-H18. Co-Work Page for governed multi-run future.
-H19. Premium online voice lane as presentation-only upgrade.
-H20. Sensitive-data routing with provider-level privacy modes; mandatory before connector expansion.
-H21. Adaptive knowledge system — adapt in knowledge first, planning second, execution last.
-H22. GaaS/commercial framing using the same governed understand -> propose -> approve -> execute -> remember loop.
-H23. Prepared Reality: prepared-but-unexecuted next moves.
-H24. Night Cycle: background reasoning/consolidation/preparation, no action authority.
-H25. Temporal recall over ledger + memory evidence.
-H26. Presence rituals through read-only signals.
-H27. Explicit session-scoped co-watching built on screen-awareness capabilities.
-H28. What-if simulator: deterministic scenario math, proposal only.
-H29. Generative UI from constrained widget vocabulary.
-H30. Multimodal intake over explicitly supplied/approved inputs.
-H31. MCP-governed connector boundary + Governor permissions + receipts + privacy routing.
-```
+H11. Prioritization engine: dependency, ROI, urgency, risk, proof
+     value, user preference - the upgrade path for C1's
+     deterministic Best Move Today.
+H12. Capability packs (everyday / business / household / creator)
+     and the Auralis client-services direction ("Auralis builds
+     the website, Nova handles the leads") - a SECOND business
+     model, parked until Lucid Creations proves the first.
+H13. Second Brain (future/brain/second_brain/): most build-ready
+     horizon item - full blueprint exists (8 slices, acceptance
+     gate, test fixtures, JSON schemas, mock Obsidian vault).
+     Slice 1 lock ACCEPTED (PR #234), deferred. Start here, not
+     from scratch. End state: the WORLD MODEL - a structured map
+     of people, projects, businesses, products, tasks, risks,
+     preferences, systems, rituals, and open loops - from which
+     every brief and suggestion draws (with D14 as its user-facing
+     view). This is where Nova starts feeling intelligent instead
+     of chatty.
+H14. Parked domains (correct safety posture, no active work):
+     market sandbox (paper-trading/learning only; real-money action
+     stays prohibited), YouTubeLIS, governed desktop runs /
+     Continuous Nova ("continuous presence is not continuous
+     authority").
+H15. Manager hierarchy: Global Manager -> Domain Managers
+     (Personal / Home / Commerce / Code / Research / Admin) ->
+     Task Assistants, all presented through one Personality Layer
+     so many internal agents feel like ONE assistant. Substrate:
+     NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md operating model;
+     DOMAIN_PERMISSION_PROFILES.md risk matrix (domain / action /
+     risk_level / approval_required).
+H16. Weekly Review Packet: the endgame business ritual - one
+     weekly approval session assembling drafts, campaign calendar,
+     creative queue, analytics, fulfillment readiness. "Task loop
+     -> draft work -> review packet -> user approval -> governed
+     execution -> ledgered result." C4 is its v1 seed. Source:
+     GOVERNED_CREATIVE_COMMERCE_ORCHESTRATION_ENDGAME_2026-05-19.md.
+H17. Signal Registry: whitelist of approved triggers (user /
+     scheduled / file-folder / external-data) with per-type default
+     authority. Governance for REACTIVITY - required prerequisite
+     for any Continuous Nova presence. Signals start awareness,
+     never grant execution. Source: future/brain/SIGNAL_REGISTRY.md.
+H18. Co-Work Page: working surface for the multi-run future -
+     active runs panel, focused run view, pending approvals,
+     per-run scoped chat. Relevant once governed runs exist.
+     Source: future/brain/CO_WORK_PAGE.md.
+H19. Premium voice lane: high-quality online voice (e.g.
+     ElevenLabs) as PRESENTATION-ONLY upgrade over local TTS -
+     "the voice speaks the approved response; it never receives
+     tools, webhooks, or authority." Voice discipline rules:
+     push-to-talk first; daily brief read aloud; "what needs me?";
+     "prepare that, don't send it"; voice confirmation required
+     before any external effect; selectable tones (brief / butler /
+     operator / coach). The sci-fi move is the right sentence at
+     the right moment, not constant talking. Source:
+     NOVA_ELEVENLABS_VOICE_OPPORTUNITY_MAP_2026-04-27.md.
+H20. Sensitive data routing: provider-level privacy policy with
+     routing modes (LOCAL_ONLY / LOCAL_FIRST_CLOUD_FALLBACK /
+     CLOUD_ALLOWED / CLOUD_REDACTED / ASK_FIRST / BLOCKED) over a
+     sensitive-category taxonomy (credentials, financial, medical,
+     identity, customer records, minors, home/security, business
+     secrets). Pairs with B9; MANDATORY before any connector
+     expansion. Make the controls product-visible, not buried in
+     docs (aligns with the NIST AI RMF Generative AI Profile:
+     governance, privacy, provenance, disclosure). Source:
+     NOVA_SENSITIVE_DATA_ROUTING_PLAN_2026-04-27.md.
+H21. Adaptive knowledge system: governed awareness of new tools,
+     AI progress, APIs, and opportunities around active projects.
+     "Adapt in knowledge first, planning second, execution last" -
+     never self-install, never self-expand. Source:
+     future/brain/ADAPTIVE_KNOWLEDGE_SYSTEM.md.
+H22. GaaS framing (commercial endgame): Nova as Growth-as-a-Service
+     - the same engine loop (understand state -> leverage points ->
+     safe next actions -> execute one approved step -> remember
+     what worked -> human stays in authority) productized for a
+     person, household, creator, or small business. Lucid Creations
+     is the first case study. Ties to H12. Source:
+     nova_gaas_strategy.md.
 
-Detailed historical substrate references for H1-H31 remain discoverable in Git history and the
-referenced `future/` / `docs/future/` design documents. This Wave A1 edit does not activate,
-re-scope, or delete any horizon item.
+Ambient intelligence - "sci-fi now" additions (2026-07-05). Rule:
+every item adds awareness, preparation, or presence; NONE adds
+execution authority. All legal under the background doctrine.
+
+H23. PREPARED REALITY (the umbrella concept): Nova continuously
+     turns messy context into prepared-but-unexecuted next moves -
+     checklists, drafts, captions, PR descriptions - each with why
+     it matters, exact proposed change, risk level, approval
+     affordance, and receipt-on-completion. "Nova already did the
+     thinking, but still waits at the door before doing the
+     acting." Builds on D3's approval-queue spec + assistive
+     noticing; includes anticipatory pre-staging (Friday loop
+     pre-computed Thursday night, brief warm before usual wake
+     time). Preparation-only (auto-approval Level 2).
+H24. Night Cycle: while the user sleeps, Nova uses idle local
+     compute to replay the day's ledger, consolidate memory
+     CANDIDATES (never auto-promote), pre-compute the morning
+     brief, run self-drills (H7), and pre-stage predictable work.
+     "While you slept, I thought about X." Pure background
+     reasoning - the doctrine makes it legal; the idle GPU makes
+     it free.
+H25. Temporal recall: query-and-narrate layer over the existing
+     ledger + memory - "what were we doing on June 3rd?" replays
+     any day with receipts. Near-zero new infrastructure; unique
+     to Nova because Nova kept receipts.
+H26. Presence rituals: phone-on-wifi / BLE beacon as a read-only
+     Signal Registry (H17) trigger - spoken greeting + micro-brief
+     on arrival ("welcome back - two things happened"), watch-list
+     prompt on departure, orb (H9) glow on entry.
+H27. Co-watching sessions: explicit session-scoped screen
+     awareness built on caps 58-60 - visible indicator, Nova
+     notices and comments ("that draft says Tuesday; your calendar
+     conflicts"), nothing persists without approval, ends on
+     command.
+H28. What-if simulator: deterministic scenario math over real data
+     (repricing -> margin/WELCOME10 interaction; skipped filming ->
+     queue slip), LLM narrates only. Pure proposal; ties to H11.
+H29. Generative UI: Nova composes the right widget for the current
+     question from a constrained widget vocabulary (LLM -> widget
+     JSON -> existing renderer). The screen is never generic.
+H30. Multimodal intake: voice notes -> tasks/plans, document/
+     receipt/photo parsing, product-photo feedback for Auralis -
+     only what the user explicitly provides or approved connectors
+     expose, routed through H20 privacy modes.
+H31. MCP-governed tool boundary: standardized connector protocol
+     (Model Context Protocol-style) for tools/data sources, with
+     Nova's twist: MCP connectivity + Governor-mediated permissions
+     + receipts + H20 privacy routing. Clean protocol boundary
+     instead of bespoke connectors.
+```
 
 ## Horizon Graduation Rule
 
@@ -547,32 +864,47 @@ governed runtime integration -> generated runtime truth -> docs
 
 No horizon item skips stages. Usefulness is not implementation.
 
-## Historical Ordering Summary
+## Historical Ordering Summary (superseded by the current ordering above)
 
 ```text
-DONE (historical cycle)
-  A1 front-door/roadmap truth-sync (#263, refreshed #314).
-  A2+B2 navigation collapse + ledger start (#264).
-  B1 full-suite stall cleared (#315+#316; 3799 passed on merged main at that time).
-  C1 Auralis Today v1 shipped/frozen.
-  Seven-morning observation complete; #311 timeout containment; #312 grounded brief/category routing.
+DONE (this cycle)
+  A1  front-door/roadmap truth-sync (PR #263, refreshed by PR #314 post-#312).
+  A2+B2  PR 4 navigation collapse + ledger start (PR #264). B1 pytest-timeout
+         guard landed; the full-suite stall is now CLEARED (2026-07-27, #315+#316 -
+         3799 passed on merged main, no stall/timeout).
+  C1  Auralis Today v1 shipped, frozen baseline.
+  Seven-morning observation (Mornings 1-7 + 2026-07-22 synthesis); PR #311 timeout
+    containment; PR #312 grounded brief/category routing closed the evidence-ranked
+    product bottleneck and is verified on fresh main.
 
-OWNER (parallel historical business actions)
-  Instagram, verification, filming, token rotation, Auralis-Digital security, GitHub bio.
+OWNER (parallel, outside Nova implementation)
+  Instagram 1-4, verification, filming, token rotation, small batch,
+  Auralis-Digital security migration, GitHub bio.
 
-PARKED / SEPARATE DECISIONS AT THAT TIME
+NOW
+  One post-#312 real-use/product-acceptance morning.
+
+PRODUCT
+  Owner selects the next evidence-ranked product lane.
+
+HARDENING
+  Authorization integrity is the first activatable post-observation hardening lane;
+  separate owner activation required; runs in parallel with the selected product lane.
+
+PARKED / SEPARATE DECISIONS
   Connection-truth repair.
   Runtime-generator reconciliation.
   Business-context freshness/tense.
-  Corruption-safe loading unless an actual failure is observed.
-  Tasks -> Gmail -> Traffic as a separate gap-fill list.
+  Corruption-safe loading remains parked unless an actual failure is observed.
+  Tasks -> Gmail -> Traffic is a separate standing gap-fill list (NOT synthesis-ranked).
 
 LATER (unchanged horizon ordering)
-  A3-A4 labels, Home, ratchets.
-  B3-B12 engineering robustness backlog.
-  C2-C4 Auralis awareness progression.
-  D1-D15 coherence layer.
-  H1-H31 horizon via the promotion ladder.
+  A3-A4  labels, Home, ratchets.
+  B3-B11 backup+restore drill, async probes, degraded/latency contracts, monolith
+         ratchet, schema versions, break-glass, receipt privacy, idempotency, local auth.
+  C2-C4  friction aging -> pager (post-rotation + scheduler repair) -> Friday loop.
+  D1-D15 coherence layer, ordered.
+  H1-H31 horizon, graduated deliberately via the promotion ladder - never as scope creep.
 ```
 
 ## Supersession Note
@@ -580,27 +912,36 @@ LATER (unchanged horizon ordering)
 This document supersedes, as ordering authority only:
 
 ```text
-docs/future/ROADMAP.md and older dated plan/vision docs in docs/future/
-docs/todo/ACTIVE_TODO.md priority ordering (items may remain valid task inventory)
-"4-15-26 NEW ROADMAP" directory as archive/future-reference ordering
-future/ root tree ordering — content remains design reference; PROMOTION_PATH.md is adopted
-docs/future/ai_ecosystem_operating_model/ — docs-only coordination reference
+docs/future/ROADMAP.md and all dated plan/vision docs in docs/future/
+docs/todo/ACTIVE_TODO.md priority ordering (items remain valid as a
+  task inventory)
+"4-15-26 NEW ROADMAP" directory (archive)
+future/ root tree ordering (future/brain/, future/governed_desktop_
+  runs/, future/market_sandbox/, future/youtubelis/) - content
+  remains design reference; PROMOTION_PATH.md is ADOPTED as the
+  horizon graduation rule
+docs/future/ai_ecosystem_operating_model/ (docs-only coordination
+  package, reference)
 ```
 
-Their content remains valid as design/reference material unless separately superseded. Nothing is
-promoted merely by existing in a future/archive tree.
+Their content remains valid as design reference. Nothing is deleted; it is de-prioritized
+until referenced from a lane above.
 
-For classification of uncited `docs/future/` documents, use `docs/future/FUTURE_DOCS_MAP.md`.
-That map records status only; it does not promote work into an active lane.
+For a classification of the uncited `docs/future/` docs (active / roadmap-lane / horizon /
+design-history / superseded / owner-paused / fixture), see `docs/future/FUTURE_DOCS_MAP.md`. That
+map records status only; it does not promote anything into a lane.
 
-Alignment notes:
+Alignment notes (2026-07-05 archive deep-dive):
 
-- generated/runtime truth beats roadmap language for implemented-behavior claims, but generated
-  evidence is authoritative only for what its machinery actually measures;
-- lane locks/specs remain scope authority;
-- current operational truth lives in the Wave A1-reconciled status/canonical surfaces;
-- `docs/todo/TECH_DEBT.md` agent-scheduler repair remains a named gate on historical C3;
-- older Auralis business-direction statements remain historical/business context rather than Nova
-  runtime authority;
-- no roadmap or future document may turn memory, learning, recommendations, OAuth scopes, or
-  repeated success into execution authority.
+- This document's authority rules agree with docs/future/README.md
+  (code > generated truth > active locks > future docs > archive).
+- [HISTORICAL 2026-07-05; SUPERSEDED] At the time, docs/todo/ACTIVE_TODO.md still
+  named the superseded 2026-06-17 runtime recovery lock as active and
+  docs/status/DAILY_COMMAND_CENTER.md was stale; the planned A1 docs-only PR was to
+  refresh both. This was addressed by the post-#312 truth-sync (PR #314), and the later
+  2026-08-20 Wave A1 now performs a distinct current operational-truth reconciliation.
+- docs/todo/TECH_DEBT.md agent_scheduler repair is a named gate on C3.
+- The Auralis web-design/client-intake doc family is historical business-direction context,
+  not authority for the current Nova stabilization gate.
+- The 2026-04-27 owner HARD PAUSE on Auralis merger work remains a historical owner decision
+  unless separately superseded by later Auralis strategy.
