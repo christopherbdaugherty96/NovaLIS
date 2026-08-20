@@ -21,6 +21,8 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-20
 
+Current active stabilization lane: B1
+
 Merged `main` when Wave A1 began:
 
 ```text
@@ -103,13 +105,13 @@ Google identity-only live proof
 -> evidence-based Operational Continuity warrant
 ```
 
-## Wave A1 — current active lane
+## Wave A1 — completed gate
 
-A1 exists because active operational docs still described the August 12 pre-#337 sequence after #337–#352 had merged.
+A1 existed because active operational docs still described the August 12 pre-#337 sequence after #337–#352 had merged.
 
-A1 changes documentation/current-truth surfaces only.
+A1 changed documentation/current-truth surfaces only.
 
-It must not modify:
+It did not modify:
 
 ```text
 runtime behavior
@@ -125,15 +127,13 @@ provider routing
 external-write behavior
 ```
 
-A1 exits only when a worker starting from `AGENTS.md` is not directed toward completed stabilization work and the current operational/canonical surfaces agree on the active gate.
+A1 exited when a worker starting from `AGENTS.md` was no longer directed toward completed stabilization work and the current operational/canonical surfaces agreed on the active gate.
 
-## Wave A2 — separate strategy reconciliation
+## Wave A2 — completed strategy reconciliation
 
-A2 occurs only after A1 merges.
+A2 followed A1 and reconciled the consolidated August Product/Platform strategy against the truthful operational baseline while keeping strategy and current-state documentation distinct.
 
-Its purpose is to reconcile the consolidated August Product/Platform strategy against the now-truthful operational baseline while keeping strategy and current-state documentation distinct.
-
-The intended durable strategy package is:
+The durable strategy package is:
 
 ```text
 NOVA_PRODUCT_PLATFORM_DIRECTION_2026-08-17.md
@@ -141,9 +141,7 @@ NOVA_PRODUCT_VALIDATION_PROTOCOL_2026-08-17.md
 NOVA_STRATEGIC_DOCUMENT_STATUS_INDEX_2026-08-17.md
 ```
 
-The governed-protection-wall concept is long-term security/digital-sovereignty reference material. It must not silently become present roadmap authority or replace Nova's current product identity.
-
-A1 records the existence and intended reconciliation target of this package only. Product and validation doctrine from that package remains outside current A1 truth until Wave A2 deliberately reviews it.
+The governed-protection-wall concept remains long-term security/digital-sovereignty reference material. It does not silently become present roadmap authority or replace Nova's current product identity.
 
 ## Wave B — truth-integrity repairs
 
@@ -151,7 +149,7 @@ Wave B is intentionally split into focused PRs rather than one broad stabilizati
 
 ### B1 — runtime-truth instrumentation
 
-Repair what Nova/generated artifacts claim to know about runtime state before changing unrelated runtime behavior.
+**Current active lane.** Repair what Nova/generated artifacts claim to know about runtime state before changing unrelated runtime behavior.
 
 Target classes include direct-network discrepancy visibility, NetworkMediator exception representation, Phase 9 evidence quality, fingerprint coverage over behaviorally active modules, generated-invariant scope, and a separate operational-truth consistency check.
 
@@ -173,7 +171,7 @@ authority_class
 
 ### B3 — memory governance
 
-Define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance. This is a future runtime behavior repair, not an A1 documentation change.
+Define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance. This is a future runtime behavior repair, not B1 work.
 
 ### B4 — reproducibility hygiene
 
