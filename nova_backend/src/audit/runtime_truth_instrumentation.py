@@ -45,6 +45,7 @@ _FINGERPRINT_EXTRA_SOURCE_DIRS = (
     "policies",
     "routers",
     "trust",
+    "usage",
     "utils",
     "validation",
     "voice",
@@ -261,11 +262,13 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
             json.dumps(registry_enabled_ids, sort_keys=True).encode("utf-8")
         ).hexdigest()
         paths = auditor._behaviorally_active_fingerprint_paths()
+        source_families = list(_FINGERPRINT_EXTRA_SOURCE_DIRS)
         payload = {
             "enabled_capability_ids": registry_enabled_ids,
             "runtime_surface_hash": runtime_surface_hash,
             "phase_marker": f"Build phase {auditor.BUILD_PHASE}",
             "scope_version": FINGERPRINT_SCOPE_VERSION,
+            "source_families": source_families,
         }
         runtime_fingerprint_hash = hashlib.sha256(
             json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -278,6 +281,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
             "phase_marker": f"Build phase {auditor.BUILD_PHASE}",
             "scope_version": FINGERPRINT_SCOPE_VERSION,
             "runtime_surface_file_count": len(paths),
+            "source_families": source_families,
         }
 
     def render_runtime_fingerprint_markdown(registry_enabled_ids: list[int]) -> str:
@@ -292,6 +296,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                 f"- phase_marker: {fp['phase_marker']}",
                 f"- scope_version: {fp['scope_version']}",
                 f"- runtime_surface_file_count: {fp['runtime_surface_file_count']}",
+                f"- source_families: {', '.join(fp['source_families'])}",
                 "",
             ]
         )
@@ -306,6 +311,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
             "runtime_surface_file_count": len(
                 auditor._behaviorally_active_fingerprint_paths()
             ),
+            "source_families": list(_FINGERPRINT_EXTRA_SOURCE_DIRS),
         }
         return report
 
@@ -360,6 +366,10 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                 lines.insert(
                     index + 1,
                     f"- Runtime Surface Scope: {fp['scope_version']} ({fp['runtime_surface_file_count']} files)",
+                )
+                lines.insert(
+                    index + 2,
+                    f"- Runtime Surface Families: {', '.join(fp['source_families'])}",
                 )
                 break
 
