@@ -8,7 +8,7 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ### Wave A1 — operational truth synchronization
 
-Wave A1 implementation package is complete on draft PR #353 and is awaiting review/merge decision.
+Wave A1 implementation package is complete on draft PR #353 and is awaiting final consistency review / merge decision.
 
 - [x] Reconcile `AGENTS.md`.
 - [x] Reconcile `.agent_context/current_priority.md`.
@@ -22,9 +22,9 @@ Wave A1 implementation package is complete on draft PR #353 and is awaiting revi
 - [x] Reconcile `docs/capability_verification/CAPABILITY_INVENTORY.md`.
 - [x] Add the current stabilization gate to `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` without redesigning the roadmap.
 - [x] Reconcile or explicitly supersede `NovaLIS-Governance/STATUS.md` as a current-status surface.
-- [x] Remove resolved/stale items from `docs/todo/DOC_CLEANUP.md`.
+- [x] Remove resolved/stale items from `docs/todo/DOC_CLEANUP.md` while retaining unresolved/deferred cleanup work.
 - [x] Replace Issue #343 with the three-wave stabilization gate.
-- [x] Review exact A1 diff for docs-only scope and current-truth consistency.
+- [x] Apply second-pass A1/A2 boundary corrections and record the known `connections_api.py` network exception.
 - [x] Open draft PR #353; no merge is authorized by this checklist.
 
 A1 branch:
@@ -47,7 +47,7 @@ Do not create new work merely to repeat these merged packages:
 
 ```text
 #337 / #338  P1-A commitment/capability truth
-#339         P1-B receipt-correlated session activity/outcome history
+#339         P1-B receipt-correlated session action/outcome history
 #340         Cap 19 outcome truth
 #341 / #344  explicit weather-location preservation / WebSocket repair
 #345         brightness outcome-truth repair
@@ -135,8 +135,6 @@ Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
 -> evidence-based Operational Continuity warrant
 ```
-
-A new connector/data source is not a Nova product feature merely because it can be called. The product test is whether Nova can connect trustworthy evidence to other state and reduce a real uncertainty.
 
 ## Permanent Boundaries
 
