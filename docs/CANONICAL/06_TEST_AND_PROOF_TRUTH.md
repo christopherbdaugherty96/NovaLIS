@@ -116,14 +116,16 @@ evidence quality / normalization
 semantic inference / intent resolution
 reference binding
 source or temporal scope
-prioritization
+ranking / selection logic
 UX framing / narration
 runtime execution behavior
 persistence/lifecycle behavior
 product-hypothesis failure
 ```
 
-This keeps the proof framework falsifiable. Do not assume every Hour 1 / Hour 6 / Day 2 failure is an evidence-normalization defect.
+This keeps the proof framework falsifiable. Do not infer a specific root cause from the scenario structure alone.
+
+The separate August Product/Platform validation package is Wave A2 input. A1 does not import its scenario doctrine into canonical proof truth.
 
 ## Semantic-contract regression doctrine
 
