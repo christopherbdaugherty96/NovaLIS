@@ -18,7 +18,7 @@ Nova prioritizes visible authority boundaries, inspectable execution, and user-c
 
 Operational Continuity is strategic direction, not current runtime authority.
 
-The separate August Product/Platform strategy and validation package is input to Wave A2. Wave A1 does not import or canonize that package's product doctrine.
+The consolidated August Product/Platform strategy is merged as strategy-only guidance through PR #355. Strategy does not override current runtime truth, operational ordering, lane scope, or authority.
 
 ## Read Order
 
@@ -35,17 +35,27 @@ Before selecting work, read:
 
 For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-## Wave A1 Current Development State — 2026-08-20
+## Wave B1 Current Development State — 2026-08-20
 
-Wave A1 is a documentation/truth-reconciliation lane.
-
-The merged-main checkpoint used to start this lane is:
+Wave A1 and A2 are complete:
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+#353  Wave A1 operational truth synchronization — MERGED
+       merge: f25c798c7cb488495a343068463e9214cab0a763
+
+#355  Wave A2 strategy reconciliation — MERGED
+       merge: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-That SHA is a planning checkpoint, not a permanent alias for `main`. Verify the actual current GitHub head before future work.
+Current active lane:
+
+```text
+Wave B1 — runtime-truth instrumentation
+branch: codex/b1-runtime-truth-instrumentation-20260820
+base: 060380f2e8c6437ff888773f0078647547ff4622
+```
+
+The base SHA is the B1 planning checkpoint, not a permanent alias for `main` and not a validated baseline.
 
 Merged stabilization work already includes:
 
@@ -77,16 +87,15 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not merge or extend PR #335 in its historical state. It is deferred until the stabilization checkpoint defined by Issue #343.
+Do not merge or extend PR #335 in its historical state. It is deferred until the Wave C validated-baseline checkpoint.
 
 ## Current Ordered Gate
 
-The current sequencing is:
-
 ```text
-Wave A1 — operational truth synchronization
--> Wave A2 — strategy reconciliation
--> Wave B — truth-integrity repairs
+Wave B1 — runtime-truth instrumentation
+-> Wave B2 — capability narration
+-> Wave B3 — memory governance
+-> Wave B4 — reproducibility hygiene
 -> Wave C — proof / validated-baseline checkpoint
 -> reconstruct/reconcile #335 onto the exact validated baseline
 -> separate #335 review/merge decision
@@ -95,28 +104,49 @@ Wave A1 — operational truth synchronization
 -> evidence-based Continuity warrant
 ```
 
-This is a stabilization gate around the existing roadmap. It is **not** a roadmap rewrite.
+Issue #343 remains the detailed stabilization ordering record.
 
-## Wave A1 Lock
+Issue #354 separately tracks the zero-step GitHub Actions infrastructure failure. That infrastructure state is not behavioral test evidence and must be resolved before Wave C certification evidence is relied on.
 
-Wave A1 may change operational/canonical documentation and Issue #343 only.
+## Wave B1 Lock
 
-Wave A1 must not change:
+B1 may change only what is required to make generated/runtime truth instrumentation accurately describe what it measures:
+
+- runtime-auditor instrumentation;
+- direct-network discrepancy/classification reporting;
+- Phase 9 implementation evidence checks;
+- runtime fingerprint scope;
+- generated runtime truth outputs required by those changes;
+- focused tests;
+- a separate operational-truth consistency checker;
+- minimal current-status synchronization needed to name B1 as the active lane.
+
+B1 does **not** authorize:
 
 ```text
-runtime behavior
-runtime auditor
-GeneralChat persistence behavior
-self-awareness behavior
-capability registry
-Google #335 implementation
-OAuth behavior
+network behavior changes
+moving connections_api.py behind NetworkMediator
+capability narration repair (B2)
+GeneralChat memory/persistence repair (B3)
+dependency-source cleanup (B4)
+capability registry or authority changes
+OAuth or PR #335 implementation
+Google domain-data access
 Operational Continuity runtime
-OpenClaw authority
+OpenClaw authority expansion
 provider routing
-capability authority
 external-write behavior
 ```
+
+The known direct-network checkpoint finding remains:
+
+```text
+nova_backend/src/api/connections_api.py
+classification: local administrative health probe
+status: detected outside NetworkMediator; explicitly reported pending disposition
+```
+
+B1 makes that fact visible in discrepancy/runtime truth. It does not silently treat the path as mediated and does not fix the network path itself.
 
 ## Permanent Control-Plane Distinction
 
@@ -192,8 +222,6 @@ Continuity may preserve/reconcile/project state, but it may never:
 - silently reopen decisions;
 - convert learned behavior into authority.
 
-Detailed Product/Platform strategy and validation doctrine remain outside A1 and are handled, if adopted, in Wave A2.
-
 ## Required Context Before Brain/Governance Changes
 
 Read:
@@ -213,6 +241,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
+- start B2, B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime inside B1;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
 
 ## Repo Truth Rule
