@@ -95,6 +95,21 @@ known exceptions -> mechanically visible and explicitly justified
 new direct-network paths -> treated as governance discrepancies until reviewed
 ```
 
+Known detected exception at the A1 planning checkpoint:
+
+```text
+nova_backend/src/api/connections_api.py performs provider-health
+requests directly outside NetworkMediator.
+
+Classification:
+local administrative health probe
+
+Status:
+pending B1 runtime-truth instrumentation and explicit disposition
+```
+
+This is recorded as documentation truth, not as a runtime fix.
+
 A generated report must not simultaneously detect a relevant direct-network exception and summarize the relevant discrepancy set as empty.
 
 ## Execution and outcome truth
