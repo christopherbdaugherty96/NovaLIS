@@ -8,22 +8,24 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ### Wave A1 — operational truth synchronization
 
-- [ ] Reconcile `AGENTS.md`.
-- [ ] Reconcile `.agent_context/current_priority.md`.
-- [ ] Reconcile `docs/status/CURRENT_WORK_STATUS.md`.
-- [ ] Reconcile `docs/status/DAILY_COMMAND_CENTER.md`.
-- [ ] Reconcile this `ACTIVE_TODO.md`.
-- [ ] Reconcile `docs/CANONICAL/00_INDEX.md`.
-- [ ] Reconcile `docs/CANONICAL/03_GOVERNANCE_TRUTH.md`.
-- [ ] Reconcile `docs/CANONICAL/06_TEST_AND_PROOF_TRUTH.md`.
-- [ ] Reconcile `docs/CANONICAL/07_ROADMAP_TRUTH.md`.
-- [ ] Reconcile `docs/capability_verification/CAPABILITY_INVENTORY.md`.
-- [ ] Add the current stabilization gate to `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` without redesigning the roadmap.
-- [ ] Reconcile or explicitly supersede `NovaLIS-Governance/STATUS.md` as a current-status surface.
-- [ ] Remove resolved/stale items from `docs/todo/DOC_CLEANUP.md`.
-- [ ] Replace Issue #343 with the three-wave stabilization gate.
-- [ ] Review exact A1 diff for docs-only scope and current-truth consistency.
-- [ ] Open a draft PR; do not merge from this task list.
+Wave A1 implementation package is complete on draft PR #353 and is awaiting review/merge decision.
+
+- [x] Reconcile `AGENTS.md`.
+- [x] Reconcile `.agent_context/current_priority.md`.
+- [x] Reconcile `docs/status/CURRENT_WORK_STATUS.md`.
+- [x] Reconcile `docs/status/DAILY_COMMAND_CENTER.md`.
+- [x] Reconcile this `ACTIVE_TODO.md`.
+- [x] Reconcile `docs/CANONICAL/00_INDEX.md`.
+- [x] Reconcile `docs/CANONICAL/03_GOVERNANCE_TRUTH.md`.
+- [x] Reconcile `docs/CANONICAL/06_TEST_AND_PROOF_TRUTH.md`.
+- [x] Reconcile `docs/CANONICAL/07_ROADMAP_TRUTH.md`.
+- [x] Reconcile `docs/capability_verification/CAPABILITY_INVENTORY.md`.
+- [x] Add the current stabilization gate to `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` without redesigning the roadmap.
+- [x] Reconcile or explicitly supersede `NovaLIS-Governance/STATUS.md` as a current-status surface.
+- [x] Remove resolved/stale items from `docs/todo/DOC_CLEANUP.md`.
+- [x] Replace Issue #343 with the three-wave stabilization gate.
+- [x] Review exact A1 diff for docs-only scope and current-truth consistency.
+- [x] Open draft PR #353; no merge is authorized by this checklist.
 
 A1 branch:
 
