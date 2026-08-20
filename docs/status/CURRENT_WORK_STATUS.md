@@ -9,19 +9,31 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-WAVE A1 — operational truth synchronization
-STATUS: IN PROGRESS on docs-only branch
-BRANCH: codex/wave-a1-operational-truth-sync-20260820
-MERGED-MAIN CHECKPOINT AT START: 1a517d8832a2c834c80b10a7062bed878f6312cc
+WAVE B1 — runtime-truth instrumentation
+STATUS: IN PROGRESS
+BRANCH: codex/b1-runtime-truth-instrumentation-20260820
+POST-A2 BASE: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-The checkpoint SHA records what A1 was based on. It is not a permanent statement of current `main`; verify GitHub before subsequent work.
+The base SHA is the B1 planning checkpoint, not a permanent alias for current `main` and not a validated baseline.
+
+## Completed Gates
+
+```text
+Wave A1 — MERGED via PR #353
+  f25c798c7cb488495a343068463e9214cab0a763
+
+Wave A2 — MERGED via PR #355
+  060380f2e8c6437ff888773f0078647547ff4622
+```
+
+A1 synchronized operational truth. A2 reconciled the three durable August strategy documents and classified the Governed Protection Wall as long-term security/digital-sovereignty reference material. Neither gate authorizes later runtime lanes.
 
 ## Current Repository Truth
 
 ### Merged stabilization packages
 
-The August 12–17 stabilization sequence has materially advanced. These implementation packages are merged and must not be presented as pending:
+The August stabilization repairs below are merged and must not be presented as pending:
 
 | PR | Current truth |
 | --- | --- |
@@ -38,40 +50,42 @@ The August 12–17 stabilization sequence has materially advanced. These impleme
 | #351 | local schedule-cancellation routing merged |
 | #352 | private Drive source-selection repair merged |
 
-A merged repair does not by itself prove universal product readiness. Live-proof scope and current capability readiness must remain evidence-specific.
-
-### Current `main` checkpoint after those repairs
-
-At the start of Wave A1, merged `main` was:
-
-```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
-```
-
-That commit adds a future governed-protection-wall vision document. The document is strategic/reference material; it does not activate a runtime or roadmap lane.
+A merged repair does not by itself prove universal product readiness. Live-proof scope and current capability readiness remain evidence-specific.
 
 ### PR #335 — Google Workspace Foundation
-
-Current GitHub state:
 
 ```text
 OPEN
 DRAFT
 UNMERGED
 head: befb69ef75881a9f418472549b64243219c138f9
-base branch: main
 historical base SHA: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
-2 commits / Foundation-only scope
+Foundation/auth/identity only
 ```
 
-#335 must not be merged in that historical state. Reconciliation is intentionally deferred until Wave C establishes an exact validated baseline.
+#335 must not be merged in that historical state. Reconciliation is deferred until Wave C establishes an exact validated baseline.
+
+### GitHub Actions infrastructure
+
+Issue #354 tracks repeated zero-step hosted GitHub Actions failures across CI/governance/runtime-doc/fingerprint workflows.
+
+Classification:
+
+```text
+infrastructure/open
+not behavioral test evidence
+needed before Wave C validated-baseline proof can rely on hosted CI
+```
+
+This does not invalidate A1/A2 content and is not a B1 runtime-behavior defect.
 
 ## Current Ordering
 
 ```text
-Wave A1 — operational truth synchronization
--> Wave A2 — strategy reconciliation
--> Wave B — focused truth-integrity repairs
+Wave B1 — runtime-truth instrumentation
+-> Wave B2 — capability narration
+-> Wave B3 — memory governance
+-> Wave B4 — reproducibility hygiene
 -> Wave C — semantic/proof stabilization and validated baseline
 -> reconstruct/reconcile #335 onto exact validated baseline
 -> independent security/architecture review
@@ -81,19 +95,34 @@ Wave A1 — operational truth synchronization
 -> evidence-based Continuity warrant
 ```
 
-This ordering is a stabilization gate around the existing roadmap. It is not a roadmap redesign.
+## Wave B1 Scope Lock
 
-## Wave A1 Scope Lock
+B1 repairs generated/runtime truth instrumentation. The reproduced problems are:
 
-A1 changes only operational/canonical documentation and Issue #343.
+- `BYPASS_SURFACES.md` can detect direct `requests` usage while the main discrepancy list reports none;
+- `nova_backend/src/api/connections_api.py` is a known direct-network path outside NetworkMediator but lacked generated discrepancy classification;
+- Phase 9 status used retired placeholder-file existence instead of live import/symbol checks;
+- fingerprint coverage omitted behaviorally active source families used by generated truth;
+- generated invariants used whole-repository absolutes beyond what the auditor mechanically proves;
+- the existing runtime-doc drift checker does not verify agreement among active operational truth surfaces.
 
-A1 does not modify:
+B1 may change:
 
 ```text
-runtime behavior
-runtime auditor
+runtime-auditor instrumentation
+focused tests
+generated runtime truth required by the instrumentation
+runtime fingerprint scope
+separate operational-truth consistency checker
+minimal current-status synchronization
+```
+
+B1 does not change:
+
+```text
+network behavior or connections_api.py wiring
+capability narration semantics
 GeneralChat persistence behavior
-self-awareness behavior
 capability registry
 OAuth behavior
 PR #335 implementation
@@ -104,9 +133,15 @@ provider routing
 external-write behavior
 ```
 
-## Three Control Planes
+The known network finding remains a finding, not a runtime fix:
 
-Current architecture must be described as three distinct control planes:
+```text
+path: nova_backend/src/api/connections_api.py
+classification: local administrative health probe
+status: detected outside NetworkMediator; pending explicit disposition
+```
+
+## Three Control Planes
 
 1. **Governed capability plane** — `GovernorMediator -> Governor -> CapabilityRegistry -> SingleActionQueue -> LedgerWriter -> ExecuteBoundary -> Executor`.
 2. **Local operator / administrative plane** — settings, credentials, connections, provider/runtime configuration, and local operator controls.
@@ -129,38 +164,25 @@ memory != Operational Continuity
 
 ## Runtime Truth vs Generated Proof
 
-Generated runtime documents are authoritative for the claims their generators actually measure. They must not be represented as proving unrelated semantics, live-provider behavior, complete network mediation, memory governance, or other unmeasured properties.
+Generated runtime documents are authoritative only for claims their generators actually measure. B1 tightens that contract; it does not convert generated structure checks into live behavioral proof.
 
-A future `validated_baseline_sha` will be immutable evidence for a completed Wave C verification package. It is not the same thing as whichever commit later becomes current HEAD.
+A future `validated_baseline_sha` is immutable evidence for a completed Wave C verification package. It is not the same thing as whichever commit later becomes current HEAD.
 
 ## Strategic State
 
-Operational Continuity remains strategically accepted and implementation-inactive. It remains persistent reconciled state around Nova's five-system product architecture, not an authority plane.
+The consolidated August Product/Platform strategy is merged through PR #355 and remains strategy-only/non-authorizing.
 
-Future Continuity work still requires a separate warrant, exact scope, provenance/persistence contract, tests, implementation authorization, and fresh-main proof.
+Operational Continuity remains strategically accepted and implementation-inactive. Future Continuity work still requires a separate evidence-based warrant, exact scope, provenance/persistence contract, tests, implementation authorization, and fresh-main proof.
 
-The future governed protection wall is long-term security/digital-sovereignty reference material. It does not replace Nova's current product identity or activate implementation work.
-
-## Current Blockers Before Google Evidence Work
-
-The immediate blockers are **truth-integrity and proof quality**, not missing Google domain connectors:
-
-```text
-A1 operational docs must agree with reality
-A2 strategy must be reconciled separately
-B1 generated/runtime truth instrumentation must stop overstating what it proves
-B2 capability narration must separate existence/readiness/path availability/authority
-B3 ordinary GeneralChat persistence semantics must be explicit and governed
-B4 dependency metadata must be reproducible
-Wave C semantic-contract regression + current local-inference benchmark must pass
-```
-
-Only reproduced defects are eligible for repair. Failure classification must precede diagnosis.
+The Governed Protection Wall remains `REFERENCE / LONG-TERM SECURITY / DIGITAL-SOVEREIGNTY EXTENSION` material and does not activate implementation work.
 
 ## Explicitly Deferred
 
-Until the stabilization gate exits, do not begin:
+Until the stabilization gate permits them, do not begin:
 
+- B2 capability narration inside B1;
+- B3 memory-governance behavior;
+- B4 dependency/reproducibility repair;
 - Google Tasks domain work;
 - Gmail expansion;
 - Google Calendar writes;
@@ -177,6 +199,4 @@ Until the stabilization gate exits, do not begin:
 
 ## Short Version
 
-Nova's governed execution foundation is intact. The codebase is ahead of its operational documentation and some generated/self-narrated truth semantics.
-
-The current job is to make repository instructions truthful, then repair truth instrumentation/narration/persistence contracts, prove one exact baseline, and only then reconstruct Google Foundation and resume the existing Google-evidence → Continuity sequence.
+A1 and A2 are merged. B1 is the active lane. Its job is to make Nova's generated runtime truth expose known discrepancies, prove only what its checks actually measure, fingerprint the behaviorally active code it depends on, and detect drift among active operational truth surfaces. No capability or authority expansion is part of B1.
