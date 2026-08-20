@@ -1,45 +1,90 @@
 # Nova Canonical Truth — Index
 
-Last assembled: 2026-07-08.
+Last reconciled: 2026-08-20.
 
-This folder is a thin **navigation and reconciliation layer**. It does not hold new facts.
-Each file summarizes one kind of truth and links to the real source docs, generated runtime
-files, or tests that back it. When a canonical file and its source disagree, **the source
-wins** — these files can go stale; the generated runtime docs and the code cannot.
+This folder is a thin **navigation and reconciliation layer**. It does not create runtime facts. Each canonical file summarizes one kind of truth and points to the implementation, generated artifact, proof, or maintained status surface that supports it.
 
-## Authority order (highest first)
+## Authority and evidence order
 
-1. Running code and tests in `nova_backend/`.
-2. Generated runtime truth: [`../current_runtime/CURRENT_RUNTIME_STATE.md`](../current_runtime/CURRENT_RUNTIME_STATE.md)
-   (marked "Manual edits: NOT PERMITTED").
-3. Canonical + hand-maintained truth docs (this folder and the sources it points to).
-4. Design, planning, and archive material (intent and history, never runtime authority).
+There is no single artifact that is automatically authoritative for every kind of claim.
 
-## The seven truths
+Use the source appropriate to the claim:
+
+1. **Implemented behavior:** running code and tests in `nova_backend/`.
+2. **Mechanically generated runtime claims:** `docs/current_runtime/` — authoritative only for the properties each generator actually measures.
+3. **Current ordering / operational interpretation:** current canonical/status/priority documents and Issue #343.
+4. **Dated proof / verification:** proof packets and live-verification artifacts — evidence for the revision, environment, and scope they actually tested.
+5. **Design / strategy / future / archive:** intent, constraints, and history; never proof of current implementation or authority.
+
+Generated documents can become incomplete or misleading when their generators have incomplete coverage. A generated PASS must not be expanded into a claim the generator did not test.
+
+## Current development interpretation
+
+Wave A1 is synchronizing operational truth after merged stabilization work through PR #352.
+
+The merged-main checkpoint at the start of Wave A1 was:
+
+```text
+1a517d8832a2c834c80b10a7062bed878f6312cc
+```
+
+That SHA is a planning checkpoint, not a permanent alias for current HEAD.
+
+Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
+
+```text
+Wave A1 operational truth sync
+-> Wave A2 strategy reconciliation
+-> Wave B truth-integrity repairs
+-> Wave C validated-baseline proof checkpoint
+-> reconcile #335
+-> Google identity proof
+-> first Google READ/evidence vertical
+-> evidence-based Continuity warrant
+```
+
+## The canonical truth files
 
 | # | File | Question it answers |
 | --- | --- | --- |
-| 01 | [01_PROJECT_TRUTH.md](01_PROJECT_TRUTH.md) | What is Nova *intended* to be? |
-| 02 | [02_RUNTIME_TRUTH.md](02_RUNTIME_TRUTH.md) | What works *now*? |
-| 03 | [03_GOVERNANCE_TRUTH.md](03_GOVERNANCE_TRUTH.md) | What is *enforced in code*? |
-| 04 | [04_CAPABILITY_TRUTH.md](04_CAPABILITY_TRUTH.md) | Which capabilities exist, their state and maturity? |
+| 01 | [01_PROJECT_TRUTH.md](01_PROJECT_TRUTH.md) | What is Nova intended to be? |
+| 02 | [02_RUNTIME_TRUTH.md](02_RUNTIME_TRUTH.md) | What runtime surfaces exist now? |
+| 03 | [03_GOVERNANCE_TRUTH.md](03_GOVERNANCE_TRUTH.md) | What governance/control-plane boundaries exist and what is actually enforced? |
+| 04 | [04_CAPABILITY_TRUTH.md](04_CAPABILITY_TRUTH.md) | Which capabilities exist, and what do their states mean? |
 | 05 | [05_FRONTEND_BACKEND_TRUTH.md](05_FRONTEND_BACKEND_TRUTH.md) | How is the code laid out, front and back? |
-| 06 | [06_TEST_AND_PROOF_TRUTH.md](06_TEST_AND_PROOF_TRUTH.md) | What evidence exists, and how current is it? |
+| 06 | [06_TEST_AND_PROOF_TRUTH.md](06_TEST_AND_PROOF_TRUTH.md) | What evidence exists, what revision/environment does it cover, and how current is it? |
 | 07 | [07_ROADMAP_TRUTH.md](07_ROADMAP_TRUTH.md) | What is next, and what gates it? |
-| 08 | [08_ARCHIVE_POLICY.md](08_ARCHIVE_POLICY.md) | What counts as historical, and how it is treated. |
+| 08 | [08_ARCHIVE_POLICY.md](08_ARCHIVE_POLICY.md) | What counts as historical, and how is it treated? |
 
-## Label vocabulary used across these files
+## Label vocabulary
 
-- **runtime-backed** — asserted by generated runtime truth or a passing test.
-- **current** — hand-maintained and reviewed recently; treat as living but not generated.
-- **unverified** — claimed but not yet proven by observed evidence or a test.
-- **superseded** — replaced by a newer doc; kept for history.
+- **runtime-backed** — supported by implementation and/or a mechanically relevant runtime check.
+- **generated** — emitted by a script; scope is limited to what that script actually measures.
+- **current** — hand-maintained and deliberately reconciled with current repository state.
+- **live-proven** — observed against a specified running revision/environment.
+- **historical proof** — valid evidence for an earlier revision/environment, not a claim about current HEAD.
+- **unverified** — implemented or claimed but lacking the required proof for the statement being made.
+- **superseded** — replaced as current guidance; retained only for history/reference.
 - **historical** — a record of a past state; never a statement about today.
 
-## Relationship to existing entry points
+## Permanent truth distinctions
 
-This folder does not replace the existing navigation docs — it sits above them:
+Keep these separate across all canonical files:
 
-- [`../INDEX.md`](../INDEX.md) — goal-based router into the full docs set.
-- [`../../REPO_MAP.md`](../../REPO_MAP.md) — engineer navigation for code and docs.
+```text
+connection != capability
+capability != authority
+OAuth scope != Nova authority
+recommendation != permission
+request acceptance != verified effect
+memory != Operational Continuity
+current HEAD != immutable validated baseline
+```
+
+## Relationship to other entry points
+
+- [`../INDEX.md`](../INDEX.md) — goal-based router into the docs set.
+- [`../../REPO_MAP.md`](../../REPO_MAP.md) — engineering navigation.
 - [`../FULL_DOCUMENTATION_MAP.md`](../FULL_DOCUMENTATION_MAP.md) — deep discoverability map.
+- [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md) — current operational surface.
+- [`../../AGENTS.md`](../../AGENTS.md) — agent entry point.
