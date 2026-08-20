@@ -143,7 +143,7 @@ NOVA_STRATEGIC_DOCUMENT_STATUS_INDEX_2026-08-17.md
 
 The governed-protection-wall concept is long-term security/digital-sovereignty reference material. It must not silently become present roadmap authority or replace Nova's current product identity.
 
-Conversation-level product doctrine such as Earned Compression, Attention Saved over Engagement, Mirror → Assist → Replace, consequence-based prioritization, and Hour 1 / Hour 6 / Day 2 remains candidate validation doctrine until deliberately reconciled in A2. A1 does not canonize it by implication.
+A1 records the existence and intended reconciliation target of this package only. Product and validation doctrine from that package remains outside current A1 truth until Wave A2 deliberately reviews it.
 
 ## Wave B — truth-integrity repairs
 
@@ -201,8 +201,6 @@ Operational Continuity remains **strategically accepted / inactive / not impleme
 
 It is the future product model for persistent reconciled state around Awareness, Decision, Authority, Execution, and Outcome. It is not a sixth authority system.
 
-The long-term differentiator is preserving what the user intended, decided, did, verified, and still has unresolved across time — but Continuity must earn expansion from trustworthy evidence and demonstrated user value.
-
 A future Continuity slice requires its own:
 
 - evidence-based warrant;
@@ -232,12 +230,6 @@ connected != evidence collected != action permitted
 OAuth proves provider permission/technical eligibility, not Nova authorization for an exact action.
 
 Google evidence/actions must reuse Nova's provenance, request-acceptance, effect-verification, and outcome distinctions rather than introduce a second success model.
-
-## Product gate for new data sources
-
-A connector or data source is plumbing until Nova can use trustworthy evidence from it to reduce a real uncertainty or improve a grounded decision.
-
-This prevents connector count from becoming capability creep.
 
 ## Deferred until Wave C exits
 
