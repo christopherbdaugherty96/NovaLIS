@@ -10,10 +10,10 @@ There is no single artifact that is automatically authoritative for every kind o
 
 Use the source appropriate to the claim:
 
-1. **Implemented behavior:** running code and tests in `nova_backend/`.
-2. **Mechanically generated runtime claims:** `docs/current_runtime/` — authoritative only for the properties each generator actually measures.
-3. **Current ordering / operational interpretation:** current canonical/status/priority documents and Issue #343.
-4. **Dated proof / verification:** proof packets and live-verification artifacts — evidence for the revision, environment, and scope they actually tested.
+1. **Implementation:** running code in `nova_backend/` determines what behavior is implemented.
+2. **Automated/recorded evidence:** tests, proof packets, and live-verification artifacts are evidence for the revision, environment, and scope they actually exercised.
+3. **Mechanically generated runtime claims:** `docs/current_runtime/` — authoritative only for the properties each generator actually measures.
+4. **Current ordering / operational interpretation:** current canonical/status/priority documents and Issue #343.
 5. **Design / strategy / future / archive:** intent, constraints, and history; never proof of current implementation or authority.
 
 Generated documents can become incomplete or misleading when their generators have incomplete coverage. A generated PASS must not be expanded into a claim the generator did not test.
