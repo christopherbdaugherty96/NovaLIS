@@ -1,201 +1,266 @@
-# 07 — Roadmap Truth (what is next)
+# 07 — Roadmap Truth
 
-**Status: current.** Ordering is hand-maintained. This file points to the single ordering
-authority; it does not invent new promises.
+**Status: current ordering summary.**
 
-## Source of record (ordering authority)
+This file does not redesign Nova's roadmap. It reconciles the current stabilization gate around the existing roadmap and points to the master ordering document.
 
-- [`../future/NOVA_MASTER_ROADMAP_2026-07-05.md`](../future/NOVA_MASTER_ROADMAP_2026-07-05.md)
-  — "the single source of truth for what comes next and in what order, across all lanes."
+## Ordering authority
 
-Its own authority rules:
+- [`../future/NOVA_MASTER_ROADMAP_2026-07-05.md`](../future/NOVA_MASTER_ROADMAP_2026-07-05.md) remains the long-lived ordering authority.
+- Issue #343 is the current detailed stabilization checkpoint/order.
+- Lane-specific lock/spec documents remain scope authority for their lane.
+- Explicit reviewed owner authorization remains required to activate implementation where the governing lane requires it.
 
-```text
-1. This document ORDERS work. It does not re-scope work.
-2. Lane-specific lock docs remain the scope authority for their lane.
-3. Everything in docs/future/ and root future/ NOT referenced by it is
-   reference/archive material, not an active priority.
-4. On ordering conflicts the roadmap wins; on scope conflicts the lane lock wins.
-```
-
-## Current continuity (where we actually are)
-
-- **Human continuity note:** [`../status/CURRENT_WORK_STATUS.md`](../status/CURRENT_WORK_STATUS.md)
-  — committed vs local vs in-progress. Not generated truth; code wins on conflict.
-- **Where-we-are surface:** [`../status/DAILY_COMMAND_CENTER.md`](../status/DAILY_COMMAND_CENTER.md).
-
-## The current gate (as of 2026-08-12)
-
-`main` is at `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30` after PR #334.
-
-Durable completed state:
-
-- **Commitment Truth + Natural Reminder Handoff — COMPLETE.** PRs #330/#332 plus fresh-main proof.
-- **Local Action Outcome Truth — COMPLETE.** PR #331 plus merged-main live proof.
-- **Roadmap reconciliation — MERGED through PR #333.**
-- **Semantic Substrate Slice 1 — MERGED through PR #334.** Provider-neutral semantic contracts and
-  tests are durable infrastructure; no Google/provider runtime, capability, authority, or execution
-  path was added by that slice.
-
-Open but not current-main capability:
-
-- **PR #335 — Google Workspace Foundation — DRAFT / UNMERGED at `befb69e...`.** Its identity-only
-  implementation is paused behind acceptance-derived truth repairs. This pause does not cancel or
-  invalidate #335 and does not authorize changes to its branch.
-
-The 2026-08-12 fresh-main real-user acceptance record
-(`../observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`) covered the 25-step golden
-regression plus targeted probes. It did not complete every variation in the 36-section stress
-catalog. It found no unauthorized external action, but selected two P1 truth repairs:
-
-1. **P1-A — user-visible commitment/capability truth.** Prevent unsupported Google Calendar
-   completion language and streamed reminder promises before persistence/effect evidence exists.
-2. **P1-B — receipt-correlated action/outcome history.** Answer session-action questions from
-   correlated receipts and known background reads, never generative reconstruction.
-
-Authorization integrity retains three distinct states:
-
-- **Slice 1 — MERGED through PR #325.** The Governor owns an exact-action-bound ApprovalGrant
-  lifecycle.
-- **Slice 2A — NOT IMPLEMENTED ON MAIN.** Separately owner-approved but paused; this ordering
-  neither cancels nor activates it.
-- **Slice 2B — DEFERRED.** Later cooperative cancellation and capability-specific reconciliation
-  remain separately gated.
-
-The current ordering is:
-
-1. Bound and implement **P1-A user-visible commitment/capability truth** only under a separate
-   reviewed authorization.
-2. Run targeted **P1-A fresh-main live proof** after that repair is separately merged.
-3. Bound and implement **P1-B receipt-correlated action/outcome history** separately, also under a
-   separate reviewed authorization.
-4. Run targeted **P1-B / live P1 fresh-main proof**: action-history correlation, background-read
-   recap truth, verified/failed/unknown outcomes, and no unauthorized execution.
-5. Address the recorded P2 groups without creating one broad cleanup lane: capability/copy truth;
-   deterministic routing/temporal/source scope; and the News governed-parameter defect.
-6. Complete the untested/partial 36-section stress rows.
-7. Run the full fresh-main regression, combining the golden 25-step regression with the remaining
-   high-value stress cases.
-8. Resume PR #335 review. Make its ready/merge decision separately; do not assume this ordering
-   approves modification or merge.
-9. If #335 eventually merges, run live identity-only Google acceptance before selecting
-   **Google Tasks READ** as the first domain-data vertical.
-10. Only after proven Tasks read evidence may a separately scoped Tasks write be considered; later
-   Google evidence/action families remain one-at-a-time and separately governed.
-
-### Accepted future direction: Continuity Model
-
-The Continuity Model is **strategically accepted, inactive, and not implementation-authorized**.
-It surrounds the permanent five-system architecture as reconciled product state; it is not a
-sixth system, an authority plane, or current work.
-
-Its earliest consideration remains:
+Ordering and scope are distinct:
 
 ```text
-P2 stabilization
--> remaining acceptance coverage
--> full fresh-main regression
--> Google Workspace Foundation review/merge decision
--> live identity-only proof
--> first Google READ/evidence vertical
--> separately warranted, scoped, authorized, implemented, and proved Continuity Slice 1
+roadmap / Issue #343 -> what comes before what
+lane contract         -> what the lane may change
+implementation/proof  -> what actually changed and was verified
 ```
 
-This ordering does not modify PR #335 or any active stabilization lane. It authorizes no
-Continuity implementation, persistence, graph infrastructure, model inference, UI, capability,
-authority, or execution. A future slice still requires its own warrant, scope, activation, tests,
-and proof.
+## Current checkpoint — 2026-08-20
 
-Permanent Google boundary:
+Merged `main` when Wave A1 began:
+
+```text
+1a517d8832a2c834c80b10a7062bed878f6312cc
+```
+
+This is an A1 planning checkpoint, not a permanent alias for current HEAD and not yet a `validated_baseline_sha`.
+
+## Merged stabilization state
+
+The following August truth/routing packages are already merged and are not pending roadmap items:
+
+```text
+#337 / #338  P1-A commitment/capability truth
+#339         P1-B receipt-correlated session action/outcome history
+#340         Cap 19 outcome truth
+#341 / #344  explicit weather-location preservation / WebSocket repair
+#345         brightness outcome truth
+#346         turn-down-volume routing/wording
+#347         current-information freshness/source-boundary routing
+#348         broad awareness follow-up interpretation
+#349         Calendar source-selection overmatch repair
+#350         Calendar tomorrow-scope preservation
+#351         local schedule-cancellation routing
+#352         private Drive source-selection truth
+```
+
+Merged implementation is not identical to universal product readiness or unlimited live-proof scope. Capability verification must remain evidence-specific.
+
+## Google Workspace Foundation state
+
+PR #335 remains:
+
+```text
+OPEN
+DRAFT
+UNMERGED
+head: befb69ef75881a9f418472549b64243219c138f9
+historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
+Foundation/auth/identity only
+```
+
+It must not be merged in its historical branch state. It will be reconstructed/reconciled only after Wave C establishes an exact validated baseline, then undergo exact-head proof and independent review before a separate merge decision.
+
+## Current three-wave stabilization gate
+
+The roadmap itself remains intact. The current gate is:
+
+```text
+WAVE A — truth reconciliation
+  A1 operational truth synchronization
+  A2 strategy reconciliation
+
+WAVE B — truth-integrity repairs
+  B1 runtime-truth instrumentation
+  B2 capability narration
+  B3 memory governance
+  B4 reproducibility hygiene
+
+WAVE C — proof and stabilization checkpoint
+  exact candidate baseline
+  repaired runtime-truth regeneration
+  supported proof matrix
+  semantic-contract regression
+  current local-inference benchmark / Issue #227
+  reproduced-defect-only fixes
+  immutable validated baseline
+  reconstruct #335
+  OAuth hardening cases
+  exact-head #335 verification
+  independent security/architecture review
+  separate merge decision
+```
+
+After Wave C and only after a separate #335 merge decision:
+
+```text
+Google identity-only live proof
+-> Google Tasks READ / first real provider-backed Google evidence vertical
+-> evidence-based Operational Continuity warrant
+```
+
+## Wave A1 — current active lane
+
+A1 exists because active operational docs still described the August 12 pre-#337 sequence after #337–#352 had merged.
+
+A1 changes documentation/current-truth surfaces only.
+
+It must not modify:
+
+```text
+runtime behavior
+runtime auditor
+GeneralChat persistence behavior
+self-awareness behavior
+capability registry
+Google #335 implementation
+OAuth behavior
+Operational Continuity runtime
+OpenClaw authority
+provider routing
+external-write behavior
+```
+
+A1 exits only when a worker starting from `AGENTS.md` is not directed toward completed stabilization work and the current operational/canonical surfaces agree on the active gate.
+
+## Wave A2 — separate strategy reconciliation
+
+A2 occurs only after A1 merges.
+
+Its purpose is to reconcile the consolidated August Product/Platform strategy against the now-truthful operational baseline while keeping strategy and current-state documentation distinct.
+
+The intended durable strategy package is:
+
+```text
+NOVA_PRODUCT_PLATFORM_DIRECTION_2026-08-17.md
+NOVA_PRODUCT_VALIDATION_PROTOCOL_2026-08-17.md
+NOVA_STRATEGIC_DOCUMENT_STATUS_INDEX_2026-08-17.md
+```
+
+The governed-protection-wall concept is long-term security/digital-sovereignty reference material. It must not silently become present roadmap authority or replace Nova's current product identity.
+
+Conversation-level product doctrine such as Earned Compression, Attention Saved over Engagement, Mirror → Assist → Replace, consequence-based prioritization, and Hour 1 / Hour 6 / Day 2 remains candidate validation doctrine until deliberately reconciled in A2. A1 does not canonize it by implication.
+
+## Wave B — truth-integrity repairs
+
+Wave B is intentionally split into focused PRs rather than one broad stabilization branch.
+
+### B1 — runtime-truth instrumentation
+
+Repair what Nova/generated artifacts claim to know about runtime state before changing unrelated runtime behavior.
+
+Target classes include direct-network discrepancy visibility, NetworkMediator exception representation, Phase 9 evidence quality, fingerprint coverage over behaviorally active modules, generated-invariant scope, and a separate operational-truth consistency check.
+
+### B2 — capability narration
+
+Separate:
+
+```text
+exists
+enabled
+configured
+verification_status
+available_on_this_path
+requires_approval
+authority_class
+```
+
+`authorized` is request-specific and must not be static capability metadata.
+
+### B3 — memory governance
+
+Define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance. This is a future runtime behavior repair, not an A1 documentation change.
+
+### B4 — reproducibility hygiene
+
+Make dependency source-of-truth unambiguous, including the current `python-multipart` declaration mismatch.
+
+## Wave C — validated-baseline checkpoint
+
+Wave C turns a candidate commit into a validated baseline only after the required proof completes.
+
+Important distinction:
+
+```text
+current HEAD != candidate baseline != validated baseline
+```
+
+The validated baseline is immutable evidence for a verification package. It is not expected to remain current HEAD forever.
+
+Wave C also re-evaluates Issue #227 using current model/context/hardware/latency evidence rather than May assumptions.
+
+Only reproduced failures are repaired. Acceptance failure must be classified before root cause is assigned.
+
+## Operational Continuity strategic ordering
+
+Operational Continuity remains **strategically accepted / inactive / not implementation-authorized**.
+
+It is the future product model for persistent reconciled state around Awareness, Decision, Authority, Execution, and Outcome. It is not a sixth authority system.
+
+The long-term differentiator is preserving what the user intended, decided, did, verified, and still has unresolved across time — but Continuity must earn expansion from trustworthy evidence and demonstrated user value.
+
+A future Continuity slice requires its own:
+
+- evidence-based warrant;
+- exact scope;
+- persistence/provenance contract;
+- authority/non-authority boundaries;
+- tests;
+- implementation authorization;
+- fresh-main proof.
+
+Continuity may never:
+
+- authorize;
+- execute;
+- change permission;
+- manufacture commitments;
+- silently reopen decisions;
+- convert learned behavior into authority.
+
+## Google permanent boundary
 
 ```text
 Google capability != Google authorization != Nova authority
 connected != evidence collected != action permitted
 ```
 
-Google is an external evidence/action ecosystem under Nova, not part of Nova's authority model.
-An OAuth grant proves only that the software can call an API; Nova Authority still decides whether
-the exact operation, account, resource, parameters, and time are permitted. Google outcomes must
-reuse Nova's request-accepted / effect-verified / outcome-state vocabulary rather than a second
-boolean success model.
+OAuth proves provider permission/technical eligibility, not Nova authorization for an exact action.
 
-The recorded weather, News, Calendar scope, reminder cancellation, Google Tasks/capability-copy,
-private-source routing, verification, and stress-coverage gaps are ordered follow-through, not
-authorized implementation. No economic-value proof, expanded OpenClaw, browser/computer-use,
-financial-write, outreach, posting, contracting, autonomous-business, or delegation lane is active.
-OpenClaw remains a replaceable actuator rather than an authority. This file ORDERS work and does
-not authorize either P1 repair, PR #335 mutation/merge, Google domain access, or external action.
+Google evidence/actions must reuse Nova's provenance, request-acceptance, effect-verification, and outcome distinctions rather than introduce a second success model.
 
-## Historical gate (as of 2026-07-23)
+## Product gate for new data sources
 
-Phase 3 — "Can Nova become a habit?" — is the current product phase. Per
-`CURRENT_WORK_STATUS.md` and the product definition, **observed daily use gates product-usability
-and capability-expansion work** — build only what observed behavior proves is missing. Success
-metric: Nova eliminates one uncertainty before the user reaches for another app. This evidence
-rule scopes product/capability lanes; it does NOT gate the hardening track: authorization
-integrity is the separately reviewed first hardening lane, which does not require another morning
-to justify it (this truth-sync does not start it).
+A connector or data source is plumbing until Nova can use trustworthy evidence from it to reduce a real uncertainty or improve a grounded decision.
 
-**Seven-morning threshold COMPLETE (2026-07-22).** Mornings 1-7 are logged and synthesized in
-`../observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md`, which declared the evidence threshold
-complete and named grounded brief/category routing the rank-1 defect. That lane shipped via
-**PR #312** (merged 2026-07-23), after **PR #311** timeout containment, and is verified on fresh
-`main` (`../status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md`). It is COMPLETE, not
-pending. No additional seven-morning or open-ended observation gate is required.
+This prevents connector count from becoming capability creep.
 
-The next input is ONE targeted post-#312 morning for additional real-use / product-acceptance
-input (not a re-verification of #312); after it the owner selects the next evidence-ranked
-**product-usability** lane. Two distinct lists feed that choice (none authorized here):
+## Deferred until Wave C exits
 
-- Synthesis-ranked secondary repairs (each a separate decision):
-  - connection-truth / source-label repair;
-  - runtime-generator (fingerprint) reconciliation;
-  - business-context freshness/tense repair: stale past-dated memory-derived status
-    (e.g. `Watch: July 9...`) must not present as current; separately authorize; no
-    business action or external write;
-  - corruption-safe loading remains PARKED unless an actual corruption/loading failure is observed.
-- Standing personal gap-fill list (NOT synthesis-ranked): Google Tasks -> Gmail -> Traffic.
-
-The post-#312 morning determines whether any product gap is selected.
-
-Per the authorization-integrity lock
-(`../status/PRIORITY_LOCK_2026-07-10_AUTHORIZATION_INTEGRITY.md`), **authorization integrity is
-the first post-observation hardening lane**: a correctness/security lane that runs in parallel
-priority with the top-ranked product lane, does not require a morning to justify it, and is
-superseded only by a higher-severity correctness/governance defect. Its sequencing steps 1-2
-(seven mornings; evidence-ranked product bottleneck) are now satisfied, so it is activatable.
-This file records ordering only and authorizes nothing.
-
-**Earlier 2026-07-11 observation state:** Step 0 documentation/protocol landed in PR #294
-(morning-log template + single launch procedure + config truth) and Morning 1 is in progress.
-One truth-critical repair landed in PR #295 (truthful availability — false "not configured"
-labels for news/weather fixed), taken under explicit owner approval without lifting the freeze.
-A conversation-grounding trace found that, at that time, the LLM
-did not receive brief facts, so the next candidate lane — **"Grounded follow-up conversation
-over brief items"** — is DEFINED BUT HELD until at least one completed morning after #295; it is
-also the prerequisite before any local-vs-cloud (DeepSeek) model-quality test is meaningful. See
-the master roadmap candidate list and `docs/status/DAILY_COMMAND_CENTER.md` (2026-07-11 block).
-
-**Later 2026-07-11 update:** the grounded follow-up lane fired and landed in PR #298 after
-Morning 1/Morning 2 evidence showed Nova still felt like a status panel rather than something
-Chris could discuss the brief with. PR #297 also closed the input-reliability slice. Post-merge
-#298 smoke from fresh main passed for news selected-story carry-forward, weather no-invention,
-calendar selected-event "after that", and unrelated prompt isolation. DeepSeek/cloud
-conversation remains parked until observed use of the grounded path proves a genuine
-model-quality gap.
-
-## Queued, not active (needs a separate reviewed priority lock)
-
-From `CURRENT_WORK_STATUS.md`, none of these is authorized without its own lock:
+Do not begin:
 
 ```text
-modification/expansion of PR #335, Google domain-data connector runtime,
-Shopify writes, ElevenLabs, OpenClaw expansion,
-browser/computer-use expansion, external writes, finance automation,
-social posting automation, autonomous workflow execution.
+Google Tasks domain work
+Gmail expansion
+Google Calendar writes
+Operational Continuity runtime
+broad multi-provider routing
+large graph/memory infrastructure
+predictive learning
+multi-agent orchestration
+broad browser/computer-use
+expanded OpenClaw autonomy
+autonomous business operation
+broad SaaS productization
+Protection Wall runtime expansion
 ```
 
-## What this file is *not*
+## Historical context
 
-It does not add roadmap promises, timelines, or scope. If it disagrees with the master roadmap
-on ordering, the master roadmap wins; if it disagrees with a lane lock on scope, the lock wins.
+The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the three-wave gate above.
+
+Historical records remain evidence of what was decided or proven at their date. Do not use their old current-main SHAs or pending-work language to select today's work.
