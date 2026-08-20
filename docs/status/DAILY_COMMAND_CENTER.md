@@ -74,17 +74,17 @@ Status: manual operational surface.
 
 1. **Finish A1 truth synchronization.** Every active instruction/status surface must stop directing agents toward completed #337–#352 work.
 2. **Keep #335 untouched.** Its historical test totals and generated fingerprints are not proof for a future reconciled branch.
-3. **Do not turn strategy review into roadmap churn.** A2 is a separate strategy reconciliation after A1 merges.
+3. **Keep strategy separate.** The August Product/Platform strategy and validation package is A2 input, not A1 current truth.
 4. **Prepare for Wave B, not Google domain expansion.** B1–B4 address truth instrumentation, capability narration, memory governance, and reproducibility.
 5. **Do not call a baseline validated before Wave C.** Candidate HEAD and immutable validated baseline are distinct concepts.
 
-## Current product/truth interpretation
+## Current operational interpretation
 
-Nova's strongest existing foundation is governed execution and authority separation. The most important current gaps are semantic interpretation, cross-source usefulness, self/runtime truth integrity, and unfinished Continuity productization.
+Nova's governed execution and authority-separation foundation is existing implementation. Wave A1 is reconciling current instructions and evidence semantics; it does not adopt or revise Product/Platform strategy.
 
 Operational Continuity remains strategic and inactive. It must stay non-authorizing and non-executing.
 
-Conversation-level product doctrine — Earned Compression, Attention Saved over Engagement, Mirror → Assist → Replace, consequence-based prioritization, and Hour 1 / Hour 6 / Day 2 — is useful validation doctrine but does not automatically become canonical repository strategy before Wave A2.
+The separate August Product/Platform strategy and validation package remains deferred to Wave A2.
 
 ## Current evidence rule
 
@@ -105,7 +105,7 @@ authority_class
 
 Do not flatten them into "real and working" or "authorized."
 
-If a test or acceptance scenario fails, classify the failure before assigning a cause. Evidence quality, semantic inference, prioritization, UX framing, runtime behavior, and the product hypothesis itself are all possible failure classes.
+If a test or acceptance scenario fails, classify the failure before assigning a cause. Evidence quality, semantic inference, routing/scope, narration, runtime behavior, and persistence/lifecycle behavior are distinct possible failure classes.
 
 ## Deferred until the stabilization gate exits
 
