@@ -1,207 +1,203 @@
 # Nova Capability Inventory
 
-**Canonical truth source.** Future verification UPDATES this file — do not create scattered
-verification docs. Every "Live Verified" row is backed by observed evidence, not code reading.
+**Canonical human-maintained capability verification surface.**
 
-Last broad capability verification: **2026-07-11** against fresh `main` (see QA Rule #1 below).
-Latest targeted fresh-main acceptance: **2026-08-12** at
-`c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`. The targeted run did not reverify every capability or
-complete every 36-section stress variant. This update distinguishes Nova's implemented local
-reminder schedules from unimplemented background delivery, Google Tasks, and Google Reminders. It
-adds no capability, connector, or authority.
+Last reconciled: **2026-08-20**.
 
----
+For exact capability existence/enabled-state at a revision, compare this file with the capability registry and generated runtime state. For live reliability claims, require observed evidence. Do not treat `exists`, `enabled`, `configured`, `live-proven`, `available_on_this_path`, and `authorized` as synonyms.
 
-## 2026-08-12 Current Update
+## Current repository checkpoint
+
+Merged `main` when Wave A1 began:
 
 ```text
-PR #334 merged Semantic Substrate Slice 1 as provider-neutral contracts/tests only.
-PR #335 Google Workspace Foundation remains DRAFT / UNMERGED and adds no current-main capability.
-
-Fresh-main real-user acceptance:
-  docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md
-
-Live-proven current reminder truth:
-  Nova local reminder schedules exist.
-  A deterministic handoff persisted a real SCH record.
-  `show schedules` / `reminders` displayed it after a full backend-process restart.
-  Background reminder delivery and automatic firing do not exist.
-  Google Tasks and Google Reminders do not exist.
-
-The same run reconfirmed approval/replay/bypass boundaries and real Cap 19 effects, while exposing
-P1 conversation-truth defects and several P2 routing/source defects. Therefore implemented
-capability and truthful capability narration are not yet consistent across all wording.
+1a517d8832a2c834c80b10a7062bed878f6312cc
 ```
 
----
+This is an A1 planning checkpoint, not an immutable validated baseline.
 
-## 2026-07-23 Current Update
+At the A1 planning checkpoint, generated runtime state reports **27 active capabilities**.
+
+## August stabilization update
+
+The following previously observed truth/routing defects now have merged repairs:
+
+| Area | Merged repair | Current inventory interpretation |
+| --- | --- | --- |
+| Commitment/capability truth | #337 / #338 | implementation repair merged; no longer a pending P1 item |
+| Session action/outcome recap | #339 | receipt-correlated repair merged |
+| Volume outcome truth | #340 | accepted-vs-verified wording/receipt repair merged |
+| Explicit-location weather | #341 / #344 | mediator/executor + WebSocket location-preservation repairs merged |
+| Brightness outcome truth | #345 | accepted-vs-verified repair merged |
+| `turn down volume` wording | #346 | deterministic routing repair merged |
+| Current-information source/freshness routing | #347 | routing/source-boundary repair merged |
+| Broad awareness follow-up | #348 | interpretation repair merged |
+| Calendar source-selection overmatch | #349 | repair merged |
+| Calendar `tomorrow` scope | #350 | temporal-scope preservation repair merged |
+| Local schedule cancellation | #351 | cancellation routing repair merged |
+| Private Drive source selection | #352 | private-source/public-web separation repair merged |
+
+These rows mean the named implementation defects are not current pending work. They do **not** mean every capability has been broadly re-live-verified after every later merge.
+
+## Current high-level readiness
+
+| Surface | Exists | Current truth |
+| --- | :---: | --- |
+| Governed execution / authority spine | ✅ | core architecture present and heavily tested; Wave B/C will improve truth instrumentation/proof semantics |
+| Runtime truth / health surfaces | ✅ | generated surfaces exist; Wave B1 is required because some generator claims/coverage are broader than the mechanisms actually prove |
+| Governed memory | ✅ | explicit memory capability exists; ordinary GeneralChat durable-persistence semantics require Wave B3 governance repair |
+| Awareness brief | ✅ | grounded brief/category routing exists; broader semantic usefulness remains a product-quality concern |
+| Weather | ✅ | configured/default path exists; explicit-location preservation repair is merged through #341/#344 |
+| News | ✅ | sourced RSS/news surface exists; any remaining parameter/relevance defect must be reproduced before being treated as active |
+| Calendar | ✅ | local `.ics` read surface exists; source-selection and tomorrow-scope repairs are merged through #349/#350 |
+| Local reminder schedules | ✅ | persistent SCH records/retrieval exist; cancellation routing repair merged through #351; dependable background alert delivery is not established by this contract |
+| Governed web search | ✅ | capability exists; live execution depends on configured provider/key/runtime availability |
+| General chat / local inference | ✅ | exists; semantic quality, reference binding, and current local-model throughput remain validation targets |
+| Google Workspace Foundation | ❌ on current main | PR #335 is draft/unmerged Foundation-only code; not current capability |
+| Google Tasks | ❌ | not built |
+| Gmail | ❌ | not built |
+| Google Reminders | ❌ | not built |
+| Traffic | ❌ | not built |
+
+## Active capability registry
+
+At the A1 planning checkpoint, generated runtime state reports these active capability IDs:
 
 ```text
-SEVEN-MORNING THRESHOLD COMPLETE (docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md).
-Grounded brief/category routing — the synthesis rank-1 defect — shipped via PR #312 (merged
-2026-07-23) after PR #311 timeout containment:
-  category prompts reach governed Cap 49;
-  brief/story follow-ups bind to the rendered Cap 50 clusters / active surface;
-  numeric story commands resolve against a stable active-surface map;
-  one confidence value feeds response body and the Trust strip;
-  deterministic, source-bounded fallback preserved.
-No capability was added, expanded, or unlocked. The registry, capability count, and the four
-certification locks (Cap 16/22/64/65) are unchanged.
-
-Live-verification status: PR #312's grounded brief/category routing is verified on fresh `main`
-(docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md: restarted from clean main; the
-full category -> second-story -> "what matters most" follow-up workflow, [Fallback] marking, and
-a healthy interface were confirmed). The rows below keep their "Live Verified 2026-07-11" date; a
-future morning is additional real-use/product-acceptance input, not the missing verification of
-#312. Email/Google Tasks/Google Reminders/Traffic remain NOT IMPLEMENTED. Nova local reminder
-schedules are now implemented but have no background delivery. Nothing here authorizes
-Google Tasks, Gmail, Traffic, new connectors, external writes, or autonomous execution.
+16 governed_web_search
+17 open_website
+18 speak_text
+19 volume_up_down
+20 media_play_pause
+21 brightness_control
+22 open_file_folder
+31 response_verification
+32 os_diagnostics
+48 multi_source_reporting
+49 headline_summary
+50 intelligence_brief
+51 topic_memory_map
+52 story_tracker_update
+53 story_tracker_view
+54 analysis_document
+55 weather_snapshot
+56 news_snapshot
+57 calendar_snapshot
+58 screen_capture
+59 screen_analysis
+60 explain_anything
+61 memory_governance
+62 external_reasoning_review
+63 openclaw_execute
+64 send_email_draft
+65 shopify_intelligence_report
 ```
 
----
+Capability existence does not imply configuration, path availability, live proof, approval, or exact-request authority.
 
-## 2026-07-11 Current Update
+## Certification-lock truth
+
+Mechanical certification state should be checked with:
 
 ```text
-PR #295 fixed false "not configured" labels for news/weather.
-PR #297 fixed dashboard websocket input reliability.
-PR #298 landed grounded follow-up conversation over brief items and passed post-merge smoke:
-  news selected-story carry-forward;
-  weather no-invention rain follow-up;
-  calendar selected-event "after that";
-  unrelated weather-themed prompt stayed on normal GeneralChat path with no grounded facts
-  injected.
-
-General chat remains yellow for CPU model latency/quality, not because brief grounding is absent.
-DeepSeek/cloud conversation remains parked until observed use of the grounded path proves a
-genuine model-quality gap.
+python scripts/certify_capability.py status
 ```
 
----
+The long-standing locked set is:
 
-## QA Rule #1 (permanent)
-
-> Before any live verification, confirm the running process matches current `main`.
-> If not, **restart before testing.**
-
-On 2026-07-06 the running backend was 4 days stale (up since 07-02, pre-dating that day's
-merges). It produced two false negatives — News and Calendar both looked broken but the code
-was fine. Always verify against a current-`main` instance.
-
----
-
-## Readiness by tier
-
-```
-CORE PLATFORM   ██████████  95%   governance, caps, runtime truth, memory, C1
-INFORMATION     ████████░░  80%   weather + news + calendar verified live
-BUSINESS        ███████░░░  75%   C1, Shopify awareness, promotion queue, best-move
-PERSONAL        █████░░░░░  50%   calendar + local schedules; Gmail/Google Tasks/traffic absent
-AUTOMATION      ██░░░░░░░░  20%   read-only only, by design
+```text
+Cap 16  governed_web_search
+Cap 22  open_file_folder
+Cap 64  send_email_draft
+Cap 65  shopify_intelligence_report
 ```
 
-## Morning needs covered (measured against Chris's real routine): **~50%, with partial reminder coverage**
+A lock means the bounded certified scope is locked. It does not authorize expansion.
 
-| Morning check | Status |
-|---|---|
-| Weather | 🟡 configured-location path works; explicit-location routing defect observed 2026-08-12 |
-| News | 🟡 real sourced surface works; `give me today's news` parameter defect observed 2026-08-12 |
-| Calendar | 🟡 local `.ics` today path works; `tomorrow` scope defect observed 2026-08-12 |
-| Local reminder schedules | 🟡 persistent SCH records + retrieval work; cancellation routing defect and no background delivery |
-| Google Tasks / Google Reminders | ❌ not built |
-| Email | ❌ not built (Gmail) |
-| Traffic | ❌ not built |
-| Business (when needed) | ✅ C1 |
+## What can be relied on vs what merely exists
 
----
+### Stronger current surfaces
 
-## Capability Registry
+- governed capability routing/execution boundaries;
+- explicit approval/receipt architecture for the paths that use it;
+- local `.ics` Calendar reads;
+- sourced News and Weather surfaces with graceful degradation;
+- persistent local reminder schedule records and retrieval;
+- bounded local device/navigation actions, with outcome wording constrained by available effect evidence;
+- awareness/brief routing over loaded structured state.
 
-| Capability | Exists | Live Verified | Production Ready | Daily Value |
-|---|:--:|:--:|:--:|:--|
-| Governance / read-only / capability-lock | ✅ | ✅ | ✅ | Foundational |
-| Runtime truth / health | ✅ | ✅ | ✅ | Foundational |
-| Governed memory (+ seed loading) | ✅ | ✅ | ✅ | High |
-| C1 / Auralis Today | ✅ | ✅ | ✅ | Medium (today) |
-| Awareness brief + dogfood routing (#268) | ✅ | ✅ | ✅ | High |
-| **Weather** (Visual Crossing) | ✅ | ✅ | ✅⁴ | High |
-| **News** (RSS feeds) | ✅ | ✅ | ✅¹ ⁵ | High |
-| **Calendar** (local .ics) | ✅ | ✅ | ✅ | High |
-| Arithmetic / deterministic commands | ✅ | ✅ | ✅ | Low |
-| Web search / research | ✅ | ❌² | 🟡 | Medium |
-| General chat (Ollama gemma2:2b) | ✅ | 🟡³ | 🟡 | Medium |
-| **Gmail / email / last-3-emails** | ❌ | — | — | Very High |
-| **Google Tasks** | ❌ | — | — | High |
-| **Google Reminders** | ❌ | — | — | High |
-| **Traffic** | ❌ | — | — | High |
-| Package tracking | ❌ | — | — | Low |
+### Important qualifications
 
-¹ News works; the dead Reuters feed (HTTP 401 — killed public RSS) silently drops. Live feeds
-(BBC/NPR/TechCrunch) return real headlines. Recommend per-feed health logging. Not a blocker.
-² Web-search code routes correctly but no Brave API key is configured → cannot execute live.
-³ General chat returns answers but is slow (>30s to first token on gemma2:2b).
-⁴ Weather false "not configured" label FIXED (PR #295, 2026-07-11). Root cause was structural,
-not config: the brief read a top-level `connected` flag but the weather widget nests it under
-`data`, so a working forecast always rendered "not configured". The brief now unwraps the
-envelope; a genuine missing key still reads truthfully; a failed/rate-limited fetch reads
-"temporarily unavailable" (never "not configured / add API key").
-⁵ News false "not configured / check Brave" label FIXED (PR #295, 2026-07-11). Root cause:
-one news request fans out to ~26 governed network calls (cap 56); the ~70s dashboard refresh
-re-spent them and exhausted the 50/min rate limit, so later fetches returned empty and were
-mislabeled. A 180s result cache collapses repeated refreshes onto one fetch; empty results now
-read "temporarily unavailable" and never blame Brave (Brave = web search, not the news source).
+- merged routing repairs are not a substitute for one clean Wave C validated-baseline proof package;
+- successful OS-command dispatch may remain `accepted_unverified` if no trusted observer establishes the final physical state;
+- GeneralChat remains a semantic-quality risk surface and must not manufacture capability or execution truth;
+- private-source requests must not silently upgrade to public web search;
+- live web/provider capability depends on actual configuration and provider availability;
+- local schedules are not equivalent to dependable closed-app/background notifications;
+- OpenClaw runtime presence is not broad autonomy or blanket tool availability.
 
-**Conversation grounding (PR #298, 2026-07-11):** grounded follow-ups over brief items are now
-implemented. Fetch-shaped prompts still route to deterministic widgets; follow-ups over loaded
-news/weather/calendar facts answer from structured sourced session state before the LLM path.
-Post-merge smoke from fresh main passed for selected news story carry-forward, weather
-no-invention, calendar selected-event "after that", and unrelated prompt isolation. Any
-local-vs-cloud model-quality comparison should now use this grounded path as the test surface.
+## Current missing personal evidence surfaces
 
----
+These remain genuinely absent rather than merely misrouted:
 
-## What Chris can confidently rely on EVERY DAY today
-
-Not "what exists" — what is dependable:
-
-- **Configured-location weather** — returns real weather; arbitrary-location routing is currently
-  not dependable.
-- **News surface** — can return real headlines from live feeds; the exact `give me today's news`
-  route is currently not dependable.
-- **Today's local Calendar view** — reads the configured `.ics`; `tomorrow` scope wording is
-  currently not dependable.
-- **Local reminder schedules** — saves and retrieves persistent SCH records through the supported
-  deterministic handoff; cancellation by advertised command and background delivery are not
-  dependable.
-- **C1 / business best-move** — deterministic, honest, governed.
-- **The awareness brief on open** — assembles the above with honest per-section degradation.
-
-**Cannot yet rely on:** email, Google Tasks/Google Reminders, background reminder alerts, or
-traffic (not built); schedule cancellation by advertised command (routing defect observed
-2026-08-12); web search without a configured key; consistently truthful/fast conversational chat.
-
----
-
-## News architecture (verified)
-
+```text
+Google Tasks
+Gmail
+Google Reminders
+Traffic
 ```
-22 RSS feeds -> parallel fetch (NetworkMediator, cap 56) -> dedup by URL
-   -> score/rank -> display   |   all-empty -> "News unavailable" (honest, no fabrication)
+
+PR #335 does not change that because it remains draft/unmerged and is Foundation/auth/identity only.
+
+## Google evidence order
+
+After the Wave A/B/C stabilization gate and a separate #335 merge decision:
+
+```text
+Google identity-only live proof
+-> Google Tasks READ
+-> prove provider-backed evidence/provenance/freshness
+-> use that evidence in Nova Awareness/Decision
+-> only then consider later Google families one at a time
 ```
-Free RSS, no API key, no vendor lock-in, defusedxml-safe (XXE-hardened), graceful degradation.
-Keep this design; do not swap to a paid NewsAPI without a specific need.
 
----
+Permanent boundary:
 
-## Verification log
+```text
+connection != capability
+Google capability != Google authorization != Nova authority
+connected != evidence collected != action permitted
+```
 
-- **2026-08-12** — Fresh-main real-user acceptance at `c44b6d0...`: local reminder schedule
-  persisted and survived backend restart; `show schedules` / `reminders` retrieved it; Cap 19
-  produced measured Windows volume effects; approval/replay/bypass boundaries held. The run also
-  found P1 conversation-truth defects and did not complete every variant in the 36-section catalog.
-  See `docs/observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`.
+## Capability narration doctrine
 
-- **2026-07-06** — Full live verification against fresh `main`. Weather/News/Calendar/routing
-  all PASS live (news + calendar were false negatives on the prior stale instance). Gmail/
-  Tasks/Reminders/Traffic confirmed NOT IMPLEMENTED. Read-only preserved; 27 caps unchanged.
+User/model-facing capability copy must distinguish, where relevant:
+
+```text
+exists
+enabled
+configured
+verification_status
+available_on_this_path
+requires_approval
+authority_class
+```
+
+Do not say a capability is simply "real and working" when the relevant truth is only that it exists/enabled in the registry.
+
+Do not model `authorized` as static capability metadata. Exact-request authority/approval is contextual and consumable.
+
+Wave B2 is the implementation lane for this narration repair.
+
+## Verification discipline
+
+Before any live verification:
+
+1. confirm the running process corresponds to the intended revision;
+2. restart if stale;
+3. record exact revision/environment;
+4. exercise only the behavior being claimed;
+5. preserve accepted-vs-verified outcome distinctions;
+6. do not generalize one passing phrase/location/source into universal natural-language support.
+
+Historical proof remains useful for what it actually tested. It does not silently become current proof after later merges.

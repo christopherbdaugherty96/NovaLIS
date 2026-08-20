@@ -37,9 +37,107 @@ This roadmap still determines ordering; lane locks still determine scope; owner 
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Current Ordering — 2026-08-12
+## Current Ordering — 2026-08-20
 
-`main` is at `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30` after PR #334.
+Wave A1 began from merged-main checkpoint:
+
+```text
+1a517d8832a2c834c80b10a7062bed878f6312cc
+```
+
+That SHA is a planning checkpoint, not a permanent alias for current HEAD and not a validated
+baseline.
+
+The August 12 stabilization sequence has materially advanced. The following packages are merged
+and must not be selected again as pending work:
+
+```text
+#337 / #338  P1-A commitment/capability truth
+#339         P1-B receipt-correlated session action/outcome history
+#340         Cap 19 outcome truth
+#341 / #344  explicit weather-location preservation / WebSocket repair
+#345         brightness outcome truth
+#346         turn-down-volume routing/wording
+#347         current-information freshness/source-boundary routing
+#348         broad awareness follow-up interpretation
+#349         Calendar source-selection overmatch repair
+#350         Calendar tomorrow-scope preservation
+#351         local schedule-cancellation routing
+#352         private Drive source-selection truth
+```
+
+The current stabilization checkpoint is Issue #343. It **does not rewrite this roadmap**; it
+places a truth/proof gate around the existing Google-evidence -> Continuity sequence so Nova
+resumes that roadmap from a coherent baseline rather than from stale operational instructions.
+
+Current order:
+
+```text
+WAVE A — truth reconciliation
+  A1 operational truth synchronization
+  A2 strategy reconciliation
+
+WAVE B — truth-integrity repairs
+  B1 runtime-truth instrumentation
+  B2 capability narration
+  B3 memory governance
+  B4 reproducibility hygiene
+
+WAVE C — proof and stabilization checkpoint
+  exact candidate commit
+  repaired runtime-truth regeneration
+  supported proof matrix
+  semantic-contract regression
+  current Issue #227/local-inference benchmark
+  reproduced-defect-only fixes
+  immutable validated baseline
+  reconstruct/reconcile #335
+  OAuth hardening cases
+  exact-head #335 verification
+  independent security/architecture review
+  separate merge decision
+
+POST-STABILIZATION
+  Google identity-only live proof
+  -> Google Tasks READ / first provider-backed Google evidence vertical
+  -> separately warranted Operational Continuity slice
+```
+
+PR #335 remains **OPEN / DRAFT / UNMERGED** at
+`befb69ef75881a9f418472549b64243219c138f9`, with historical base
+`c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`. Its Foundation/auth/identity-only implementation
+must not be merged in that historical state. It is reconstructed/reconciled only after Wave C
+records an exact validated baseline; historical #335 fingerprints and test totals are not reused
+as proof for the reconciled branch.
+
+Operational Continuity remains **STRATEGICALLY ACCEPTED / INACTIVE / NOT
+IMPLEMENTATION-AUTHORIZED**. It surrounds Awareness, Decision, Authority, Execution, and Outcome
+as persistent reconciled state; it is not a sixth authority system. Its expansion remains earned
+by trustworthy provider-backed evidence and demonstrated user value.
+
+The future governed-protection-wall concept is long-term security/digital-sovereignty reference
+material. It does not replace Nova's current product identity, activate a runtime lane, or displace
+the current Google-evidence -> Continuity ordering.
+
+Permanent boundary:
+
+```text
+connection != capability
+capability != authority
+Google capability != Google authorization != Nova authority
+connected != evidence collected != action permitted
+recommendation != permission
+request acceptance != verified effect
+memory != Operational Continuity
+```
+
+This current block ORDERS work. It does not itself authorize Wave B implementation, #335 mutation
+or merge, Google domain-data access, external writes, capability/authority expansion, Operational
+Continuity runtime, broad OpenClaw expansion, or provider expansion.
+
+## Historical Ordering — 2026-08-12 (superseded by the block above)
+
+`main` was at `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30` after PR #334.
 
 Durable state since the prior ordering block:
 
@@ -53,8 +151,8 @@ Durable state since the prior ordering block:
 
 The 2026-08-12 fresh-main real-user acceptance record is
 `../observation/FRESH_MAIN_REAL_USER_ACCEPTANCE_2026-08-12.md`. It is prospective planning evidence
-against the exact current-main SHA above. The supplied 25-step golden regression was covered with
-additional targeted probes; the complete 36-section stress catalog was not fully exercised.
+against the exact then-current-main SHA above. The supplied 25-step golden regression was covered
+with additional targeted probes; the complete 36-section stress catalog was not fully exercised.
 
 The lower authority/execution layers held: ApprovalGrant integrity, approval cancellation/replay,
 memory != authority, bypass strings != authority, Cap 22 outcome underclaiming, local reminder
@@ -67,7 +165,7 @@ The acceptance run nevertheless selected two P1 product-truth repairs:
    correlated receipts, deterministic/background reads, and explicit uncertainty rather than
    generative reconstruction.
 
-Current order:
+The then-current order was:
 
 1. Bound and implement P1-A only under a separate reviewed implementation authorization.
 2. After P1-A separately merges, run targeted P1-A fresh-main live proof: Calendar-write claim,
@@ -93,14 +191,16 @@ Current order:
    Gmail/Calendar/Drive/Docs/Sheets evidence, and later Google actions remain separately ordered,
    separately scoped, and separately authorized.
 
+This historical sequence is retained as provenance. Its P1/P2 pending-work language is superseded
+because #337-#352 have since merged.
+
 ### Continuity Model strategic ordering
 
-The Continuity Model is **STRATEGICALLY ACCEPTED / INACTIVE / NOT IMPLEMENTATION-AUTHORIZED**.
-It is persistent reconciled state surrounding Awareness, Decision, Authority, Execution, and
-Outcome; it is not a sixth system or an authority plane.
+The Continuity Model was already **STRATEGICALLY ACCEPTED / INACTIVE / NOT
+IMPLEMENTATION-AUTHORIZED**. It is persistent reconciled state surrounding Awareness, Decision,
+Authority, Execution, and Outcome; it is not a sixth system or an authority plane.
 
-Earliest consideration remains after the currently ordered stabilization and Google evidence
-work:
+Earliest consideration remained after the then-ordered stabilization and Google evidence work:
 
 ```text
 P2 stabilization
@@ -112,10 +212,6 @@ P2 stabilization
 -> separately warranted, scoped, authorized, implemented, and proved Continuity Slice 1
 ```
 
-This relationship records strategic sequencing only. It does not modify PR #335, change any
-current lane, or authorize Continuity records, persistence, graph infrastructure, automatic
-extraction, prioritization, UI, learning, capability, authority, or execution.
-
 Permanent boundary:
 
 ```text
@@ -124,15 +220,11 @@ connected != evidence collected != action permitted
 Prepared Reality is local; creating or changing a Google resource is external mutation.
 ```
 
-Authorization Integrity Slice 1 remains merged through PR #325. Slice 2A remains separately
-owner-approved, paused, and not implemented on main; this ordering neither activates nor cancels it.
-Slice 2B remains deferred and separately gated.
+Authorization Integrity Slice 1 remained merged through PR #325. Slice 2A remained separately
+owner-approved, paused, and not implemented on main. Slice 2B remained deferred and separately
+gated.
 
-This block ORDERS work. It does not authorize implementation of P1-A or P1-B, modification or merge
-of PR #335, Google domain-data access, any external write, capability expansion, authority expansion,
-Semantic Substrate Slice 2, OpenClaw expansion, or Authorization Integrity work.
-
-## Historical Ordering — 2026-08-09 (superseded by the block above)
+## Historical Ordering — 2026-08-09 (superseded by the blocks above)
 
 `main` is at `dfef1db5df89bfdb276904acce26205d1c894331` after PR #332. The meaningful
 post-#319 sequence is concise:
@@ -168,7 +260,7 @@ Authorization Integrity Slice 1 is **MERGED**. Slice 2A is **NOT IMPLEMENTED ON 
 separately owner-approved under its existing exact scope and publication boundary. It is paused;
 this ordering neither cancels nor activates it. Slice 2B is **DEFERRED** and separately gated.
 
-Current order:
+Current order at that time:
 
 1. **Semantic Substrate Slice 1.** Establish only the minimal provider-neutral contracts and tests
    for source identity, evidence envelopes, freshness, confidence, observed/intended state,
@@ -212,9 +304,9 @@ its operational cost.
 
 Secondary candidates - arbitrary-location weather routing, stale Auralis freshness,
 local-first identity copy, visible STT/TTS state, startup cohesion, and the separate `tomorrow`
-calendar-scope wording defect - remain inactive. No economic-value proof, expanded OpenClaw,
-browser/computer-use, financial-write, outreach, posting, contracting, autonomous-business, or
-delegation lane is active. OpenClaw remains a replaceable actuator, not an authority.
+calendar-scope wording defect - remain historical/inactive here. No economic-value proof, expanded
+OpenClaw, browser/computer-use, financial-write, outreach, posting, contracting,
+autonomous-business, or delegation lane was active.
 
 ## Observation-driven candidates (historical 2026-07-11 through 2026-07-28 context)
 
@@ -400,8 +492,10 @@ ENDGAME      a personal operating system that feels like Jarvis and
 > override the top current-ordering block. The observation-candidate and
 > historical ordering sections preserve earlier status only. Where a body below says a lane is
 > "active", "next", "not yet built", or
-> "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (this
-> truth-sync), A2+B2 (PR #264), C1 (Auralis Today, shipped/frozen).
+> "after A2 lands", read it as 2026-07-05 framing, superseded. Completed since: A1 (the July
+> truth-sync), A2+B2 (PR #264), C1 (Auralis Today, shipped/frozen). The current 2026-08-20
+> Wave A1 uses the same label for a new operational-truth checkpoint; it does not reopen the
+> historical July A1 task.
 
 ## Lane A - UX Simplification (2026-07-05 lane body — see supersession boundary above)
 
@@ -770,7 +864,7 @@ governed runtime integration -> generated runtime truth -> docs
 
 No horizon item skips stages. Usefulness is not implementation.
 
-## Historical Ordering Summary (superseded by the 2026-08-06 current ordering above)
+## Historical Ordering Summary (superseded by the current ordering above)
 
 ```text
 DONE (this cycle)
@@ -844,12 +938,10 @@ Alignment notes (2026-07-05 archive deep-dive):
 - [HISTORICAL 2026-07-05; SUPERSEDED] At the time, docs/todo/ACTIVE_TODO.md still
   named the superseded 2026-06-17 runtime recovery lock as active and
   docs/status/DAILY_COMMAND_CENTER.md was stale; the planned A1 docs-only PR was to
-  refresh both. This is now addressed by the post-#312 truth-sync (PR #314), which
-  points both at current post-#312 truth (seven-morning threshold complete;
-  authorization integrity as first activatable hardening lane). Keep generated
-  runtime doc modifications separate unless intentionally included.
+  refresh both. This was addressed by the post-#312 truth-sync (PR #314), and the later
+  2026-08-20 Wave A1 now performs a distinct current operational-truth reconciliation.
 - docs/todo/TECH_DEBT.md agent_scheduler repair is a named gate on C3.
-- The Auralis web-design/client-intake doc family is a second
-  business (client services), parked as H12, not contradicted.
-- The 2026-04-27 owner HARD PAUSE on Auralis merger work remains the
-  recorded owner decision (4-15-26 NEW ROADMAP/BackLog.md).
+- The Auralis web-design/client-intake doc family is historical business-direction context,
+  not authority for the current Nova stabilization gate.
+- The 2026-04-27 owner HARD PAUSE on Auralis merger work remains a historical owner decision
+  unless separately superseded by later Auralis strategy.

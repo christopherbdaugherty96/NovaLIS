@@ -1,187 +1,54 @@
 # NOVA Governance Status
 
-Updated: 2026-04-28
-Status: Current runtime governance summary
-Scope: Reflective status of the live repository state
+**Status: SUPERSEDED AS A CURRENT-STATUS SURFACE — 2026-08-20**
 
-## Purpose
-This file is the short governance-facing status view for the current Nova runtime.
+This file was originally an April 2026 concise governance snapshot. It accumulated phase, proof, capability, and next-work claims that later diverged from the generated runtime and current operational truth.
 
-It replaces the older "Capability 16 only" staging snapshot.
+Do **not** use this file to answer what Nova's current phase, capability readiness, proof status, or active development lane is.
 
-Use this file when you want the concise answer to:
-- what phase Nova is currently in
-- what capability surface is active
-- what remains intentionally disabled
-- what proof/signoff work remains open
+## Current sources
 
-If there is ever a conflict between this file and the runtime truth packet, the runtime truth packet wins:
-- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
-- `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+Use these instead:
 
-## Runtime Phase Status
+1. `docs/current_runtime/CURRENT_RUNTIME_STATE.md` — generated runtime structure/capability/phase evidence for what its generator measures.
+2. `docs/current_runtime/GOVERNANCE_MATRIX.md` and `GOVERNANCE_MATRIX_TREE.md` — generated governed-capability structure.
+3. `docs/current_runtime/ROUTE_PROTECTION_COVERAGE.md` — generated route-protection classification.
+4. `docs/CANONICAL/03_GOVERNANCE_TRUTH.md` — reconciled interpretation of Nova's three control planes and governance boundaries.
+5. `docs/status/CURRENT_WORK_STATUS.md` — current human-maintained development state.
+6. `docs/status/DAILY_COMMAND_CENTER.md` — current operational lane.
+7. `docs/CANONICAL/07_ROADMAP_TRUTH.md` and Issue #343 — current ordering/gates.
 
-| Phase | Status | Meaning now |
-| --- | --- | --- |
-| 3.5 | COMPLETE | Governance baseline sealed |
-| 4 | ACTIVE | Governed execution runtime is live |
-| 4.2 | ACTIVE | Explicit orthogonal cognition and structured analysis surfaces are live |
-| 4.5 | PARTIAL | UX trust, screen/context, and daily snapshot surfaces are live; Action Receipts and trust receipt API exist; fuller Trust Panel UX remains future work |
-| 5 | ACTIVE | Governed memory, continuity, scheduling, tone, and workspace surfaces are live |
-| 6 | COMPLETE | Trust loop, policy review, capability topology, and manual policy execution review are complete |
-| 7 | COMPLETE | Governed external reasoning, second-opinion review, provider transparency, and runtime settings controls are complete |
-| 8 | ACTIVE | Manual OpenClaw home-agent runtime is live; strict preflight active; broad envelope-governed execution remains deferred |
-| 9 | ACTIVE | OpenClaw intelligence layer active: dynamic tool registry, iterative thinking loop, goal-based execution, execution memory, error recovery, Gemma 4 personality |
+## Durable governance principles retained from this historical snapshot
 
-## Current Authority Model
+The following principles remain useful, subject to the more precise current control-plane model:
 
-Nova remains:
-- invocation-bound
-- Governor-mediated
-- capability-scoped
-- ledger-audited
-- fail-closed
+```text
+intelligence != authority
+capability != authority
+memory != authority
+recommendation != permission
+request acceptance != verified effect
+```
 
-Nova does not:
-- act autonomously
-- run unapproved delegated triggers in the background
-- silently save memory
-- widen execution authority through external reasoning
-- allow memory, conversation context, or stored plans to authorize execution
+For registered governed capabilities, the canonical execution spine remains:
 
-## Active Governed Capability Surface
+```text
+User
+-> GovernorMediator
+-> Governor
+-> CapabilityRegistry
+-> SingleActionQueue
+-> LedgerWriter
+-> ExecuteBoundary
+-> Executor
+```
 
-Current active governed capability IDs:
+Nova also has local operator/administrative and bounded agent/routine planes. They are distinct from the governed-capability plane and must not silently increase one another's authority.
 
-`[16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]`
+## Why this file is no longer synchronized directly
 
-Capability count:
-- 27 active governed capabilities
+Duplicating live phase matrices, capability counts, certification state, and current priorities here creates a second manually maintained status authority that can drift again.
 
-High-level categories:
-- research and web intelligence
-- local navigation and device control
-- diagnostics and trust visibility
-- news and structured intelligence
-- screen/context explanation
-- governed memory and continuity
-- governed external reasoning review
-- OpenClaw home-agent execution (cap 63)
-- email draft composition (cap 64) — external_effect, confirmation-gated, opens local mail client draft; user sends manually
-- Shopify store intelligence (cap 65) — read-only, external_effect, requires `NOVA_SHOPIFY_SHOP_DOMAIN` + `NOVA_SHOPIFY_ACCESS_TOKEN`
+Wave A1 therefore retires this file as a **current** status surface instead of copying another transient snapshot into it.
 
-## Required Execution Path
-
-All governed capability execution must pass through:
-
-`User -> GovernorMediator -> Governor -> CapabilityRegistry -> SingleActionQueue -> LedgerWriter -> ExecuteBoundary -> Executor`
-
-This is the live runtime invariant for governed action.
-
-## Trust Receipts And Proof Surface
-
-Current proof surfaces:
-- Action Receipts in the dashboard
-- `GET /api/trust/receipts`
-- `GET /api/trust/receipts/summary`
-- append-only ledger evidence
-- capability live checklists
-
-This is enough to inspect governed-action outcomes, but it is not the full final Trust Panel. The fuller Trust Review Card / Trust Panel remains future work: richer blocked-reason drill-down, confirmation-state preview, proof browsing, and a clearer demo flow.
-
-## Intentionally Disabled or Not Yet Live
-
-These remain intentionally unavailable as live runtime truth:
-- wake word runtime (requirements file exists; no runtime module)
-- delegated trigger runtime as broad autonomy
-- background policy execution without explicit governance
-- autonomous agent execution
-- OpenClaw broad envelope-governed execution (manual foundation is live; full envelope issuance path deferred — governance hardening plan in `docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`)
-- inbox_check template (visible in agent store; email connector not yet available)
-- Cloud provider onboarding (BYOK / managed_cloud modes are selectable as preferences; onboarding flow not yet implemented)
-- Shopify operator (caps 66–76): write capabilities deferred; Tier 4 (write) activation gated on Steps 5–7 of OpenClaw hardening
-- Social content operator (caps 77–82): design complete (`docs/future/NOVA_SOCIAL_CONTENT_OPERATOR_DESIGN_2026-04-21.md`); zero code
-
-## Important Clarification About Code Structure
-
-The session routing loop has been extracted from `brain_server.py` into `src/websocket/session_handler.py`. `brain_server.py` now handles app assembly, middleware, singleton wiring, and the WebSocket endpoint registration. All live command routing, governor invocation, and session state management lives in `session_handler.py`.
-
-`brain_server.py` remains large due to inline payload-building helper functions (~35 identified). These are candidates for future extraction but are not architectural risk.
-
-## Conversation And Memory Authority Boundary
-
-Conversation context, mode, tone, memory, and stored plans can support reasoning and continuity.
-
-They cannot:
-- authorize actions
-- bypass confirmation
-- send email
-- write to Shopify
-- run background tasks by themselves
-- override capability boundaries
-- replace ledger/receipt proof
-
-See `docs/product/CONVERSATION_AND_MEMORY_MODEL.md` for the human-facing explanation.
-
-## Personality Layer
-
-Nova has two personality components that coexist:
-- `personality/core.py` — Phase 4.2 multi-agent deep cognition (prefix-triggered: `phase 4.2:` / `orthogonal:`)
-- `personality/conversation_personality_agent.py` — Phase 8 Nova voice layer (default path for all normal turns and OpenClaw result presentation)
-
-See `docs/reference/HUMAN_GUIDES/30_PERSONALITY_SYSTEM_ARCHITECTURE.md` for the full explanation.
-
-## Operational Truth
-
-What is true right now:
-- execution is enabled
-- the runtime is not Cap-16-only anymore
-- policy review is manual-review-only
-- external reasoning is advisory-only
-- remote bridge access is bounded and token-gated
-- Action Receipts and Trust Receipt API exist
-- wake word is still planned, not live
-- Cap 64 P5 is ready for human live signoff, not complete until local proof passes
-- Cap 65 P5 is blocked on Shopify credentials and live read-only proof
-
-## Canonical Next-Layer Posture
-
-Immediate (active sprint):
-- Cap 64 P5 live signoff + lock — highest priority; first external-effect cap to be formally locked after human local mail-client proof
-- Fuller Trust Review Card / Trust Panel — build on Action Receipts and Trust Receipt API, do not replace them with mock data
-- Installer clean-VM validation (Windows) — paused at bootstrap.log; resume when available
-
-Next major architecture milestone:
-- OpenClaw governance hardening Steps 1–7 are complete (EnvelopeFactory, EnvelopeStore, approval endpoint, Run Permit UI card, feature-flagged wiring at all three entry points). Feature flag `NOVA_FEATURE_ENVELOPE_FACTORY` remains off; flip to `true` after monitoring `OPENCLAW_DEPRECATED_DIRECT_RUN` ledger counts.
-
-After enabling envelope factory:
-- Shopify Tier 4 (write caps 66–76) — gated on Steps 5–7 verified in prod
-- Social content caps 77–78 (research + draft; no publish) — reuses existing web search lane
-
-Ongoing:
-- Cleaner dependency/install truth
-- Continued simplification of brain_server.py (~35 inline payload helpers are extraction candidates)
-
-## Short Version
-
-Nova is no longer a Cap-16 staging runtime.
-
-It is now a governed local intelligence and home-agent system with:
-- active Phases 4 through 9
-- 27 active governed capabilities
-- explicit settings and trust surfaces
-- Action Receipts and trust receipt API
-- governed memory and continuity
-- advisory-only external reasoning
-- manual OpenClaw home-agent execution with strict preflight (envelope governance hardening Steps 1–7 complete)
-- email draft (cap 64) as the first external-effect capability — confirmation-gated, local draft only, user sends manually
-- Shopify store intelligence (cap 65) — Tier 1 read-only, wired end-to-end, requires credentials in env
-
-And it still intentionally refuses:
-- broad autonomy
-- hidden background trigger execution
-- memory-as-authority
-- email sending without human review
-- Shopify writes in the current cap 65 surface
-- broad envelope-governed external execution without unified authority plane (hardening in progress)
+Git history preserves the April 2026 content as historical evidence.
