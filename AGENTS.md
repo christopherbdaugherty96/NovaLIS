@@ -10,13 +10,15 @@ Start here before editing the repository.
 
 Reasoning may clarify, plan, search, summarize, compare, and propose. Governed capability execution remains subject to Nova's authority and execution boundaries.
 
-## Product Positioning
+## Project Positioning
 
-Nova is a local-first, owner-controlled personal/home/business operating layer with governance as a permanent constraint.
+Nova is a governance-first local AI system that separates intelligence from execution authority.
 
-The current product problem is not "add more tools." The near-term problem is to make Nova interpret intent, preserve reference and temporal scope, connect trustworthy evidence across sources, and state execution/outcome truth accurately.
+Nova prioritizes visible authority boundaries, inspectable execution, and user-controlled AI operation.
 
 Operational Continuity is strategic direction, not current runtime authority.
+
+The separate August Product/Platform strategy and validation package is input to Wave A2. Wave A1 does not import or canonize that package's product doctrine.
 
 ## Read Order
 
@@ -177,7 +179,7 @@ authority_class
 
 Do not infer that a generated PASS proves behavior the generator does not measure. Do not infer that a historical proof packet is current proof. Do not call a candidate baseline validated until the required Wave C proof package has completed.
 
-## Continuity Doctrine
+## Continuity Boundary
 
 Operational Continuity remains strategically accepted but implementation-inactive.
 
@@ -190,7 +192,7 @@ Continuity may preserve/reconcile/project state, but it may never:
 - silently reopen decisions;
 - convert learned behavior into authority.
 
-Conversation-level product doctrine currently includes Earned Compression, Attention Saved over Engagement, Mirror → Assist → Replace, consequence-based prioritization, and the Hour 1 / Hour 6 / Day 2 acceptance scenario. These are product/validation doctrine only unless and until adopted into canonical repository strategy through a separately reviewed strategy reconciliation.
+Detailed Product/Platform strategy and validation doctrine remain outside A1 and are handled, if adopted, in Wave A2.
 
 ## Required Context Before Brain/Governance Changes
 
@@ -215,4 +217,4 @@ Read:
 
 ## Repo Truth Rule
 
-Code is authoritative for implemented behavior. Generated runtime surfaces are authoritative for the exact mechanically measured claims they report. Hand-maintained operational docs establish current ordering and interpretation, but may go stale and must be reconciled when the repository changes.
+Code is authoritative for implemented behavior. Tests and proof artifacts are evidence for the revisions/environments/scopes they actually cover. Generated runtime surfaces are authoritative for the exact mechanically measured claims they report. Hand-maintained operational docs establish current ordering and interpretation, but may go stale and must be reconciled when the repository changes.
