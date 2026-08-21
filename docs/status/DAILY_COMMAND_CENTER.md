@@ -43,7 +43,7 @@ HOSTED CI:
   #354 must be resolved before Wave C relies on hosted CI evidence.
 
 CURRENT ORDER:
-  B1 mechanical proof / generation / output inspection / exact diff / merge decision
+  B1 mechanical proof / generation / output inspection / final-state checks / exact diff / merge decision
   -> B2 capability narration
   -> B3 memory governance
   -> B4 reproducibility hygiene
@@ -84,7 +84,7 @@ codex/b1-runtime-truth-instrumentation-20260820
 
 The branch may contain handoff-only documentation commits after implementation checkpoint `b43a398...`; record the actual HEAD used for proof.
 
-### Step 2 — execute focused proof
+### Step 2 — execute focused pre-generation proof
 
 ```bash
 export PYTHONPATH=nova_backend
@@ -142,7 +142,18 @@ RUNTIME_FINGERPRINT.md
   ✓ brain / connections / identity / memory / usage included
 ```
 
-### Step 5 — final diff review
+### Step 5 — rerun mandatory final-state truth checks
+
+After generation and inspection, run again:
+
+```bash
+python scripts/check_operational_truth_consistency.py
+python scripts/check_runtime_doc_drift.py
+```
+
+These results are the checks against the post-generation branch state. Do not substitute the Step 2 checker results for this final-state evidence.
+
+### Step 6 — final diff review
 
 ```text
 base: 060380f2e8c6437ff888773f0078647547ff4622
@@ -163,7 +174,7 @@ no network-behavior change
 no README rewrite
 ```
 
-If the proof/output/diff gate is clean, **then** open B1 as a draft PR. No merge is implied.
+If the proof/output/final-state-check/diff gate is clean, **then** open B1 as a draft PR. No merge is implied.
 
 ## Known pending contradiction before generation
 
