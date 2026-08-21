@@ -1,20 +1,23 @@
 # Current Priority
 
-## Wave B1 — Runtime Truth Instrumentation — 2026-08-20
+## Wave B1 — Mechanical Proof Gate — 2026-08-20
 
 Current active lane:
 
 ```text
 WAVE B1 — runtime-truth instrumentation only
+SUBSTATE: source/truth corrections complete; mechanical proof required
 ```
 
-Current B1 planning base:
+Exact branch checkpoint for the next session:
 
 ```text
-060380f2e8c6437ff888773f0078647547ff4622
+branch: codex/b1-runtime-truth-instrumentation-20260820
+A2 base: 060380f2e8c6437ff888773f0078647547ff4622
+B1 head: b43a3989527e1c20892694b307351948a6129727
 ```
 
-This SHA is an observed post-A2 checkpoint, not a permanent current-main alias and not a validated baseline. Verify current GitHub head before later work.
+The A2 base is a planning/comparison checkpoint, not a validated baseline. The B1 head is the current proof candidate only; do not call it validated.
 
 ## Completed gates
 
@@ -25,49 +28,115 @@ Wave A1 — operational truth synchronization
 
 Wave A2 — strategy reconciliation
   MERGED via PR #355
-  merge: 060380f2e8c6437ff888773f0078647547ff4622
+  merge/current main: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-Do not reopen A1/A2 unless a new material defect is reproduced.
-
-## Why B1 exists
-
-The generated runtime truth currently has measurement inconsistencies:
-
-- direct `requests` usage can be detected in `BYPASS_SURFACES.md` while the main discrepancy set still says none;
-- the known `nova_backend/src/api/connections_api.py` path outside NetworkMediator is documented manually but not represented in generated discrepancy state;
-- Phase 9 status relies on retired placeholder-file existence rather than live implementation/import/symbol evidence;
-- the runtime fingerprint does not cover all behaviorally active source families that generated truth depends on;
-- generated invariants overstate whole-repository guarantees beyond what the auditor mechanically proves;
-- `check_runtime_doc_drift.py` is intentionally narrow and does not check agreement among active operational truth surfaces.
-
-## B1 target package
-
-B1 is limited to:
+B1 source-level work now includes:
 
 ```text
-runtime-truth instrumentation
-network-exception/discrepancy representation
-Phase 9 live implementation evidence
-fingerprint coverage
-qualified generated invariants
-focused regression tests
-separate operational-truth consistency checker
-required generated runtime outputs
-minimal current-status sync
+✓ stable-auditor instrumentation path
+✓ requests-based network discrepancy/classification reporting
+✓ connections_api.py local_administrative_health_probe classification
+✓ Phase 9 live import/symbol evidence
+✓ behaviorally_active_v2 fingerprint scope incl. usage
+✓ exact fingerprint hash/count path set
+✓ qualified generated invariants/network-scan wording
+✓ operational truth consistency checker
+✓ canonical-index lane participation + stale-index regression
+✓ generator-entrypoint integration test added
+✓ Issue #343 checkpoint synced
 ```
 
-The known direct-network finding remains:
+Third-pass review found no new scope leakage and no further code-design correction justified before execution.
+
+## Branch freeze for proof
+
+Treat `b43a3989527e1c20892694b307351948a6129727` as frozen for the mechanical proof pass.
+
+Do **not** make additional B1 implementation changes unless the proof/generation pass reproduces a concrete defect.
+
+The checked-in generated runtime artifacts are intentionally still pre-B1. Do not hand-edit them.
+
+## Next action — execute, generate, inspect
+
+From a usable local checkout of the exact B1 head:
+
+```bash
+export PYTHONPATH=nova_backend
+python -m pytest nova_backend/tests/test_runtime_truth_b1.py
+python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
+python scripts/check_operational_truth_consistency.py
+python scripts/check_runtime_doc_drift.py
+python scripts/generate_runtime_docs.py
+```
+
+If the environment is Windows PowerShell, set the equivalent environment variable before pytest:
+
+```powershell
+$env:PYTHONPATH = "nova_backend"
+```
+
+After generation, rerun the consistency/drift checks if useful for final proof capture.
+
+## Required generated-output inspection
+
+Inspect mechanically generated:
 
 ```text
-path: nova_backend/src/api/connections_api.py
-classification: local administrative health probe
-status: detected outside NetworkMediator; pending explicit disposition
+docs/current_runtime/CURRENT_RUNTIME_STATE.md
+docs/current_runtime/BYPASS_SURFACES.md
+docs/current_runtime/RUNTIME_FINGERPRINT.md
 ```
 
-B1 must make that finding visible. B1 does not reroute or otherwise change the network behavior.
+Acceptance conditions:
 
-## Google Foundation state
+```text
+CURRENT_RUNTIME_STATE.md
+  - connections_api.py appears through KNOWN_DIRECT_NETWORK_EXCEPTION
+  - no false "Discrepancies: None" while the requests-based exception is detected
+  - universal NetworkMediator/Governor/ledger claims are qualified
+  - Phase 9 evidence names real active symbols
+
+BYPASS_SURFACES.md
+  - connections_api.py remains visible
+  - classification = local_administrative_health_probe
+  - wording states requests-scanner scope and does not claim universal network coverage
+
+RUNTIME_FINGERPRINT.md
+  - scope_version = behaviorally_active_v2
+  - runtime_surface_file_count present
+  - source_families present
+  - includes brain, connections, identity, memory, usage
+  - count derives from the exact set consumed by the runtime-surface hash
+```
+
+## Final B1 gate after generation
+
+Only after successful execution and generated-output inspection:
+
+```text
+1. exact compare: A2 base 060380f... -> final B1 head
+2. verify no B2/B3/B4/Google/#335/Continuity/OpenClaw-authority/provider-routing leakage
+3. verify generated files changed only through the generator
+4. record actual test/check results without inflating their scope
+5. only then open a DRAFT B1 PR
+```
+
+No B1 PR should exist before this gate completes.
+
+## Current known generated-artifact contradiction
+
+Until `scripts/generate_runtime_docs.py` is actually run on the B1 head, checked-in generated truth remains pre-B1 and still contains the known contradiction:
+
+```text
+CURRENT_RUNTIME_STATE.md -> universal network invariant + Discrepancies: None
+BYPASS_SURFACES.md       -> connections_api.py detected outside NetworkMediator
+RUNTIME_FINGERPRINT.md   -> pre-B1 fingerprint fields only
+```
+
+This is an expected pending proof condition, not authorization to manually edit those files.
+
+## Google Foundation / CI state
 
 PR #335 remains:
 
@@ -75,99 +144,68 @@ PR #335 remains:
 OPEN / DRAFT / UNMERGED
 head: befb69ef75881a9f418472549b64243219c138f9
 historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
-scope: Google identity/auth foundation only
+Foundation/auth/identity only
 ```
 
-It must not be merged from its historical branch state. Reconstruction/reconciliation waits for Wave C to establish an exact validated baseline.
+Do not modify or merge #335 during B1.
 
-## Current ordered sequence
+Issue #354 remains:
 
 ```text
-B1  runtime-truth instrumentation
-B2  capability narration
-B3  memory governance
-B4  reproducibility hygiene
-C   proof / semantic-contract stabilization / validated baseline
+infrastructure/open
+zero-step hosted Actions
+not behavioral pass/fail evidence
+required before Wave C relies on hosted CI
+```
+
+## Ordered sequence after B1
+
+```text
+B1 proof/generation/review/merge decision
+-> B2 capability narration
+-> B3 memory governance
+-> B4 reproducibility hygiene
+-> Wave C proof / semantic-contract stabilization / validated baseline
 -> reconstruct #335 onto exact validated baseline
--> separate #335 review/merge decision
+-> independent #335 review + separate merge decision
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
--> separately warranted Continuity slice
+-> evidence-based Operational Continuity warrant
 ```
 
-Issue #343 is the detailed ordering record.
+B2/B3/B4 remain blocked until B1 receives its own completed proof/review and merge decision.
 
-Issue #354 separately tracks zero-step GitHub Actions infrastructure failures. Those failures are not behavioral test evidence, but trustworthy hosted CI evidence is required before Wave C certification.
+## Scope lock
 
-## B1 scope lock
-
-B1 may change only the instrumentation/proof surfaces listed above.
-
-B1 does **not** change:
+Do not start or modify inside B1:
 
 ```text
-network behavior or NetworkMediator wiring
 capability narration semantics (B2)
 GeneralChat durable-memory semantics (B3)
 dependency-source truth (B4)
+network behavior / NetworkMediator wiring
 capability registry
-OAuth
-Google #335 implementation
+OAuth / #335
+Google domain-data access
 Operational Continuity runtime
 OpenClaw authority
 provider routing
 external-write behavior
+README/front-door rewrite
 ```
 
-## Permanent architecture boundary
+README sequencing drift is recorded separately and must not be folded into B1.
 
-Three distinct control planes exist:
-
-1. governed capability plane;
-2. local operator / administrative plane;
-3. bounded agent / routine plane.
-
-No plane may silently increase authority available to another.
-
-Keep these distinctions explicit:
+## Permanent truth boundaries
 
 ```text
 connection != capability
 capability != authority
 OAuth scope != Nova authority
 recommendation != permission
-execution != verified outcome
+request acceptance != verified effect
 memory != Operational Continuity
+current HEAD != immutable validated baseline
 ```
 
-## Evidence discipline
-
-Do not equate:
-
-```text
-exists
-enabled
-configured
-available_on_this_path
-authorized
-request_accepted
-effect_verified
-```
-
-Authorization is request-specific. Generated evidence is authoritative only for what its generator mechanically measures. Historical test/proof totals remain historical until reproduced against the exact candidate being certified.
-
-## What agents should do now
-
-```text
-1. Read AGENTS.md and docs/CANONICAL/00_INDEX.md.
-2. Treat Wave B1 as the only active implementation lane.
-3. Repair the auditor's measurement/reporting semantics only.
-4. Keep #335 untouched.
-5. Do not start B2, B3, B4, Google domain work, or Continuity runtime work.
-6. Keep Issue #354 separate from B1 behavior/content unless diagnosing hosted Actions is explicitly selected.
-7. Do not call a baseline validated until Wave C proof completes.
-```
-
-## Strategic direction
-
-The consolidated August Product/Platform strategy is merged through PR #355 and remains non-authorizing. Operational Continuity remains strategically accepted and implementation-inactive; it must remain non-authorizing and non-executing.
+Generated evidence is authoritative only for what its generator mechanically measures. Tests prove only the revision/environment/scope actually exercised.
