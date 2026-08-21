@@ -9,15 +9,15 @@ WAVE B1 — runtime-truth instrumentation only
 SUBSTATE: source/truth corrections complete; mechanical proof required
 ```
 
-Exact branch checkpoint for the next session:
+Handoff anchors:
 
 ```text
 branch: codex/b1-runtime-truth-instrumentation-20260820
 A2 base: 060380f2e8c6437ff888773f0078647547ff4622
-B1 head: b43a3989527e1c20892694b307351948a6129727
+B1 implementation checkpoint: b43a3989527e1c20892694b307351948a6129727
 ```
 
-The A2 base is a planning/comparison checkpoint, not a validated baseline. The B1 head is the current proof candidate only; do not call it validated.
+The A2 base is a planning/comparison checkpoint, not a validated baseline. `b43a398...` is the accepted implementation/truth-harness checkpoint from the third-pass static review. Handoff-only documentation commits may advance branch HEAD after it; the next proof run must verify and record the actual current branch HEAD rather than treating `b43a398...` as a permanent HEAD alias.
 
 ## Completed gates
 
@@ -51,15 +51,31 @@ Third-pass review found no new scope leakage and no further code-design correcti
 
 ## Branch freeze for proof
 
-Treat `b43a3989527e1c20892694b307351948a6129727` as frozen for the mechanical proof pass.
+Treat the implementation at `b43a3989527e1c20892694b307351948a6129727` as frozen. Current branch HEAD may include only later handoff/status synchronization on top of that implementation checkpoint.
 
 Do **not** make additional B1 implementation changes unless the proof/generation pass reproduces a concrete defect.
 
 The checked-in generated runtime artifacts are intentionally still pre-B1. Do not hand-edit them.
 
-## Next action — execute, generate, inspect
+## Next action — verify, execute, generate, inspect
 
-From a usable local checkout of the exact B1 head:
+From a usable local checkout:
+
+```bash
+git branch --show-current
+git rev-parse HEAD
+git status --short
+```
+
+Expected branch:
+
+```text
+codex/b1-runtime-truth-instrumentation-20260820
+```
+
+Record the actual HEAD used for proof.
+
+Then run:
 
 ```bash
 export PYTHONPATH=nova_backend
@@ -115,7 +131,7 @@ RUNTIME_FINGERPRINT.md
 Only after successful execution and generated-output inspection:
 
 ```text
-1. exact compare: A2 base 060380f... -> final B1 head
+1. exact compare: A2 base 060380f... -> actual final B1 HEAD
 2. verify no B2/B3/B4/Google/#335/Continuity/OpenClaw-authority/provider-routing leakage
 3. verify generated files changed only through the generator
 4. record actual test/check results without inflating their scope
@@ -126,7 +142,7 @@ No B1 PR should exist before this gate completes.
 
 ## Current known generated-artifact contradiction
 
-Until `scripts/generate_runtime_docs.py` is actually run on the B1 head, checked-in generated truth remains pre-B1 and still contains the known contradiction:
+Until `scripts/generate_runtime_docs.py` is actually run on current B1 HEAD, checked-in generated truth remains pre-B1 and still contains the known contradiction:
 
 ```text
 CURRENT_RUNTIME_STATE.md -> universal network invariant + Discrepancies: None
