@@ -6,13 +6,15 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B1 — runtime-truth instrumentation
+### Wave B1 — mechanical proof gate
 
 Current branch:
 
 ```text
 codex/b1-runtime-truth-instrumentation-20260820
-base: 060380f2e8c6437ff888773f0078647547ff4622
+A2 base: 060380f2e8c6437ff888773f0078647547ff4622
+implementation checkpoint: b43a3989527e1c20892694b307351948a6129727
+substate: source/truth corrections complete; implementation frozen pending proof
 ```
 
 Wave A1 and A2 are already merged:
@@ -25,38 +27,76 @@ Wave A1 and A2 are already merged:
        merge: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-B1 checklist:
+Do not add more B1 implementation work unless execution reproduces a concrete defect.
+
+### Completed B1 source/truth work
 
 - [x] Reproduce the requests-based network discrepancy inconsistency: `BYPASS_SURFACES.md` detects `connections_api.py` while the main discrepancy set can report none.
-- [x] Identify the known requests-based path as `nova_backend/src/api/connections_api.py`.
-- [x] Preserve its classification as a local administrative health probe pending explicit disposition.
-- [x] Add generated discrepancy representation for known and unclassified requests-based network paths.
-- [x] Replace Phase 9 retired-placeholder evidence with live import/symbol checks against active modules.
-- [x] Expand runtime fingerprint scope over behaviorally active source families without broadening the existing requests scanner allowlist.
-- [x] Qualify generated NetworkMediator/Governor/ledger invariants to the scope actually measured.
-- [x] Add focused B1 regression coverage.
-- [x] Add `scripts/check_operational_truth_consistency.py` separately from `check_runtime_doc_drift.py`.
-- [x] Synchronize the primary active operational surfaces to B1.
-- [x] Synchronize `docs/CANONICAL/00_INDEX.md` so A1/A2 are complete, B1 is active, and B2 is blocked.
-- [x] Make the operational consistency checker compare the canonical index lane and fail on stale A1-vs-B1 drift.
+- [x] Identify `nova_backend/src/api/connections_api.py` as the known requests-based path.
+- [x] Preserve classification `local_administrative_health_probe` pending explicit disposition.
+- [x] Add discrepancy representation for known and unclassified requests-based network paths.
+- [x] Replace Phase 9 retired-placeholder evidence with live import/symbol checks.
+- [x] Expand runtime fingerprint scope over behaviorally active source families, including `usage`.
 - [x] Make `runtime_surface_file_count` use the exact path set consumed by the runtime-surface hash.
-- [x] Qualify network-scan wording to requests-based paths detectable by the existing scanner rather than universal network coverage.
-- [x] Update Issue #343 current checkpoint to post-A2 main and B1-active ordering.
-- [ ] Regenerate the mechanically derived runtime truth documents on the corrected B1 head.
-- [ ] Run the strongest locally available focused/runtime-doc/structural proof package.
-- [ ] Inspect generated `CURRENT_RUNTIME_STATE.md`, `BYPASS_SURFACES.md`, and `RUNTIME_FINGERPRINT.md` for the B1 acceptance conditions.
-- [ ] Review the exact A2-base → B1 diff for scope and generated-truth consistency.
-- [ ] Open a draft B1 PR; no merge is authorized merely by this checklist.
+- [x] Qualify generated NetworkMediator/Governor/ledger and network-scan wording to measured scope.
+- [x] Add focused B1 regression coverage and generator-entrypoint integration coverage.
+- [x] Add `scripts/check_operational_truth_consistency.py` separately from `check_runtime_doc_drift.py`.
+- [x] Include `docs/CANONICAL/00_INDEX.md` in active-lane consistency checking with stale-index regression.
+- [x] Synchronize A1/A2/B1 operational truth surfaces and Issue #343 checkpoint.
 
-B1 does not change the actual `connections_api.py` network behavior. The generated truth must expose the requests-based exception without pretending it is mediated, silently approving it, or claiming the scanner proves the absence of other network mechanisms.
+### Remaining B1 execution/proof gate
+
+Run in this order on the actual current B1 branch HEAD:
+
+```text
+[ ] verify branch / HEAD / clean working state
+[ ] run focused B1 tests
+[ ] run existing runtime-auditor + governance-doc structural tests
+[ ] run pre-generation operational consistency check
+[ ] run pre-generation runtime-doc drift check
+[ ] mechanically run scripts/generate_runtime_docs.py
+[ ] inspect CURRENT_RUNTIME_STATE.md
+[ ] inspect BYPASS_SURFACES.md
+[ ] inspect RUNTIME_FINGERPRINT.md
+[ ] rerun operational consistency check against post-generation state
+[ ] rerun runtime-doc drift check against post-generation state
+[ ] review exact A2-base -> actual final B1 HEAD diff
+[ ] open draft B1 PR only if every prior gate is clean
+```
+
+Generated runtime artifacts must not be edited manually.
+
+Required generated-output acceptance:
+
+```text
+CURRENT_RUNTIME_STATE.md
+  - KNOWN_DIRECT_NETWORK_EXCEPTION includes connections_api.py
+  - no false Discrepancies: None
+  - Phase 9 names live active symbols
+  - NetworkMediator/Governor/ledger wording is qualified
+
+BYPASS_SURFACES.md
+  - connections_api.py remains visible
+  - local_administrative_health_probe visible
+  - requests-scanner scope explicit
+  - no universal network-coverage claim
+
+RUNTIME_FINGERPRINT.md
+  - scope_version: behaviorally_active_v2
+  - runtime_surface_file_count present
+  - source_families present
+  - brain / connections / identity / memory / usage included
+```
+
+B1 does not change the actual `connections_api.py` network behavior. Reporting the exception does not approve or mediate it.
 
 ## Already Merged — Not Active TODOs
 
-Do not create new work merely to repeat these merged packages:
+Do not recreate or reopen these as pending implementation:
 
 ```text
 #337 / #338  P1-A commitment/capability truth
-#339         P1-B receipt-correlated session activity/outcome history
+#339         P1-B receipt-correlated session action/outcome history
 #340         Cap 19 outcome truth
 #341 / #344  explicit weather-location preservation / WebSocket repair
 #345         brightness outcome-truth repair
@@ -71,7 +111,7 @@ Do not create new work merely to repeat these merged packages:
 #355         Wave A2 strategy reconciliation
 ```
 
-A merged package may still have bounded live-proof limits. That does not make the implementation itself pending again.
+Merged implementation is not universal live-proof coverage.
 
 ## Open but Deferred
 
@@ -90,16 +130,14 @@ Do not modify, mark ready, or merge #335 during B1. It must later be reconstruct
 ```text
 STATUS: infrastructure/open
 IMPACT: hosted workflows currently provide no trustworthy behavioral evidence
-NEEDED BEFORE: Wave C validated-baseline proof
+NEEDED BEFORE: Wave C validated-baseline proof relies on hosted CI
 ```
 
-Keep this issue separate from B1 content/runtime semantics unless infrastructure diagnosis is explicitly selected.
+Keep #354 separate from B1 content/runtime semantics unless infrastructure diagnosis is explicitly selected.
 
 ### Front-door README truth cleanup
 
-`README.md` still contains stale sequencing/current-status language from before the present A1 → A2 → B1 stabilization state.
-
-This is explicitly separate from B1. Do not rewrite README inside the B1 instrumentation branch. Reconcile it in a later front-door documentation cleanup after the current lane is proven/merged.
+`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not rewrite README inside B1.
 
 ## Ordered After B1
 
@@ -127,7 +165,7 @@ This is explicitly separate from B1. Do not rewrite README inside the B1 instrum
 - choose one exact candidate commit;
 - regenerate repaired runtime truth;
 - run the strongest supported proof matrix per environment;
-- run the semantic-contract regression matrix;
+- run semantic-contract regression;
 - rebenchmark Issue #227 against the current local inference stack;
 - repair only reproduced defects;
 - record immutable `validated_baseline_sha` only after required proof passes;
@@ -154,20 +192,21 @@ connection != capability
 capability != authority
 OAuth scope != Nova authority
 recommendation != permission
-execution != verified outcome
+request acceptance != verified effect
 memory != Operational Continuity
+current HEAD != immutable validated baseline
 ```
 
 No control plane may silently increase authority available to another control plane.
 
 ## Explicitly Not Active
 
-Do not begin:
+Do not begin inside B1:
 
 ```text
-B2 capability narration inside B1
-B3 memory-governance behavior inside B1
-B4 dependency/reproducibility repair inside B1
+B2 capability narration
+B3 memory-governance behavior
+B4 dependency/reproducibility repair
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes
@@ -181,11 +220,7 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
-README/front-door rewrite inside B1
+README/front-door rewrite
 ```
 
-## Backlog / Planning Issues
-
-Issue #227 remains a current-hardware/model benchmark backlog item and must be re-evaluated in Wave C using the actual current model, context, latency, and hardware rather than May assumptions.
-
-Other old planning/future issues are not active merely because they remain open.
+Issue #227 remains a Wave C current-hardware/model benchmark item. Old planning/future issues are not active merely because they remain open.
