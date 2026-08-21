@@ -17,7 +17,7 @@ A2 base: 060380f2e8c6437ff888773f0078647547ff4622
 B1 implementation checkpoint: b43a3989527e1c20892694b307351948a6129727
 ```
 
-The A2 base is a planning/comparison checkpoint, not a validated baseline. `b43a398...` is the accepted implementation/truth-harness checkpoint from the third-pass static review. Handoff-only documentation commits may advance branch HEAD after it; the next proof run must verify and record the actual current branch HEAD rather than treating `b43a398...` as a permanent HEAD alias.
+The A2 base is a planning/comparison checkpoint, not a validated baseline. `b43a398...` is the accepted B1 implementation/truth-harness checkpoint from the third-pass static review. Handoff-only documentation commits may advance branch HEAD after it; the next proof run must verify and record the actual current branch HEAD rather than treating `b43a398...` as a permanent HEAD alias.
 
 ## Completed gates
 
@@ -57,7 +57,7 @@ Do **not** make additional B1 implementation changes unless the proof/generation
 
 The checked-in generated runtime artifacts are intentionally still pre-B1. Do not hand-edit them.
 
-## Next action — verify, execute, generate, inspect
+## Next action — verify, execute, generate, inspect, recheck
 
 From a usable local checkout:
 
@@ -75,7 +75,7 @@ codex/b1-runtime-truth-instrumentation-20260820
 
 Record the actual HEAD used for proof.
 
-Then run:
+Then run the pre-generation proof:
 
 ```bash
 export PYTHONPATH=nova_backend
@@ -83,7 +83,6 @@ python -m pytest nova_backend/tests/test_runtime_truth_b1.py
 python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
 python scripts/check_operational_truth_consistency.py
 python scripts/check_runtime_doc_drift.py
-python scripts/generate_runtime_docs.py
 ```
 
 If the environment is Windows PowerShell, set the equivalent environment variable before pytest:
@@ -92,7 +91,20 @@ If the environment is Windows PowerShell, set the equivalent environment variabl
 $env:PYTHONPATH = "nova_backend"
 ```
 
-After generation, rerun the consistency/drift checks if useful for final proof capture.
+Mechanically generate runtime truth:
+
+```bash
+python scripts/generate_runtime_docs.py
+```
+
+After generation, **mandatory final-state checks**:
+
+```bash
+python scripts/check_operational_truth_consistency.py
+python scripts/check_runtime_doc_drift.py
+```
+
+Do not treat the pre-generation checker results as proof of the post-generation branch state.
 
 ## Required generated-output inspection
 
@@ -128,7 +140,7 @@ RUNTIME_FINGERPRINT.md
 
 ## Final B1 gate after generation
 
-Only after successful execution and generated-output inspection:
+Only after successful execution, generated-output inspection, and the mandatory post-generation consistency/drift checks:
 
 ```text
 1. exact compare: A2 base 060380f... -> actual final B1 HEAD
