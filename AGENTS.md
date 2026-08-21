@@ -44,7 +44,7 @@ Wave A1 and A2 are complete:
        merge: f25c798c7cb488495a343068463e9214cab0a763
 
 #355  Wave A2 strategy reconciliation — MERGED
-       merge: 060380f2e8c6437ff888773f0078647547ff4622
+       merge/current main: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
 Current active lane:
@@ -53,9 +53,19 @@ Current active lane:
 Wave B1 — runtime-truth instrumentation
 branch: codex/b1-runtime-truth-instrumentation-20260820
 base: 060380f2e8c6437ff888773f0078647547ff4622
+substate: source/truth corrections complete; mechanical proof required
+implementation checkpoint: b43a3989527e1c20892694b307351948a6129727
 ```
 
-The base SHA is the B1 planning checkpoint, not a permanent alias for `main` and not a validated baseline.
+The base SHA is a planning/comparison checkpoint, not a validated baseline. `b43a398...` is the accepted B1 implementation/truth-harness checkpoint after third-pass static review. Handoff-only documentation commits may advance the branch after it; verify and record the actual branch HEAD used for proof.
+
+### Immediate worker instruction
+
+Do **not** spend the next session re-designing or extending B1 instrumentation.
+
+Unless the proof pass reproduces a concrete defect, treat the implementation as frozen and perform the mechanical proof/generation sequence recorded in `docs/status/DAILY_COMMAND_CENTER.md` and `.agent_context/current_priority.md`.
+
+The checked-in `docs/current_runtime/*` artifacts are still intentionally pre-B1. They must be regenerated mechanically; manual edits are forbidden.
 
 Merged stabilization work already includes:
 
@@ -92,7 +102,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ## Current Ordered Gate
 
 ```text
-Wave B1 — runtime-truth instrumentation
+Wave B1 — mechanical proof / generation / output inspection / exact diff / merge decision
 -> Wave B2 — capability narration
 -> Wave B3 — memory governance
 -> Wave B4 — reproducibility hygiene
@@ -113,13 +123,15 @@ Issue #354 separately tracks the zero-step GitHub Actions infrastructure failure
 B1 may change only what is required to make generated/runtime truth instrumentation accurately describe what it measures:
 
 - runtime-auditor instrumentation;
-- direct-network discrepancy/classification reporting;
+- requests-based network discrepancy/classification reporting;
 - Phase 9 implementation evidence checks;
 - runtime fingerprint scope;
 - generated runtime truth outputs required by those changes;
 - focused tests;
 - a separate operational-truth consistency checker;
-- minimal current-status synchronization needed to name B1 as the active lane.
+- minimal current-status synchronization needed to name B1 and its proof substate accurately.
+
+The B1 source/truth corrections above are currently complete. Do not add more implementation work merely because B1 remains open; remaining work is execution/proof unless a concrete failure is reproduced.
 
 B1 does **not** authorize:
 
@@ -136,17 +148,40 @@ Operational Continuity runtime
 OpenClaw authority expansion
 provider routing
 external-write behavior
+README/front-door rewrite
 ```
 
-The known direct-network checkpoint finding remains:
+The known requests-based network checkpoint finding remains:
 
 ```text
 nova_backend/src/api/connections_api.py
-classification: local administrative health probe
+classification: local_administrative_health_probe
 status: detected outside NetworkMediator; explicitly reported pending disposition
 ```
 
-B1 makes that fact visible in discrepancy/runtime truth. It does not silently treat the path as mediated and does not fix the network path itself.
+B1 makes that fact visible in discrepancy/runtime truth. It does not silently treat the path as mediated and does not fix the network path itself. The scanner is requests-based and does not prove absence of every possible network mechanism.
+
+## Mechanical Proof Gate
+
+Before any B1 PR is opened, use a usable local checkout and verify the exact branch/HEAD:
+
+```bash
+git branch --show-current
+git rev-parse HEAD
+git status --short
+```
+
+Then execute the proof sequence defined in `DAILY_COMMAND_CENTER.md` / `current_priority.md`, including focused B1 tests, existing auditor/governance-doc tests, operational consistency, runtime-doc drift, and `scripts/generate_runtime_docs.py`.
+
+After generation inspect:
+
+```text
+docs/current_runtime/CURRENT_RUNTIME_STATE.md
+docs/current_runtime/BYPASS_SURFACES.md
+docs/current_runtime/RUNTIME_FINGERPRINT.md
+```
+
+Only after successful execution, generated-output inspection, and exact A2-base → final-B1 diff review may a **draft** B1 PR be opened. A draft PR does not authorize merge.
 
 ## Permanent Control-Plane Distinction
 
@@ -186,8 +221,9 @@ connection != capability
 capability != authority
 OAuth scope != Nova authority
 recommendation != permission
-execution != verified outcome
+request acceptance != verified effect
 memory != Operational Continuity
+current HEAD != immutable validated baseline
 ```
 
 ## Evidence Discipline
@@ -207,7 +243,7 @@ authority_class
 
 `authorized` is not static capability metadata. Approval/authority is request-specific.
 
-Do not infer that a generated PASS proves behavior the generator does not measure. Do not infer that a historical proof packet is current proof. Do not call a candidate baseline validated until the required Wave C proof package has completed.
+Do not infer that a generated PASS proves behavior the generator does not measure. Do not infer that a historical proof packet is current proof. Do not mark unexecuted test definitions as passing evidence. Do not call a candidate baseline validated until the required Wave C proof package has completed.
 
 ## Continuity Boundary
 
@@ -242,6 +278,7 @@ Read:
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
 - start B2, B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime inside B1;
+- manually edit generated runtime artifacts;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
 
 ## Repo Truth Rule
