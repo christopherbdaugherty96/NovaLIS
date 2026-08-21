@@ -1,17 +1,28 @@
 # Daily Command Center
 
-## 2026-08-20 — Wave B1 runtime-truth instrumentation
+## 2026-08-20 — Wave B1 mechanical proof gate
 
 ```text
 ACTIVE LANE:
   Wave B1 — runtime-truth instrumentation only.
+
+SUBSTATE:
+  Source/truth corrections complete.
+  Mechanical execution + generation + inspection required.
 
 B1 BRANCH:
   codex/b1-runtime-truth-instrumentation-20260820
 
 POST-A2 BASE:
   060380f2e8c6437ff888773f0078647547ff4622
-  (planning checkpoint; not a permanent current-main alias or validated baseline)
+
+IMPLEMENTATION CHECKPOINT:
+  b43a3989527e1c20892694b307351948a6129727
+  Accepted after third-pass static review.
+  Later handoff-only doc commits may advance branch HEAD; verify current HEAD before proof.
+
+PR STATE:
+  No B1 PR exists. This is correct until proof/generation/output inspection completes.
 
 COMPLETED GATES:
   PR #353 / Wave A1 — MERGED
@@ -19,109 +30,173 @@ COMPLETED GATES:
   PR #355 / Wave A2 — MERGED
     060380f2e8c6437ff888773f0078647547ff4622
 
-MERGED STABILIZATION WORK — DO NOT REOPEN AS PENDING:
-  #337 / #338  P1-A commitment/capability truth
-  #339         P1-B receipt-correlated session action/outcome history
-  #340         Cap 19 outcome truth
-  #341 / #344  explicit weather-location preservation / WebSocket repair
-  #345         brightness outcome truth
-  #346         turn-down-volume routing/wording
-  #347         current-information freshness/source-boundary routing
-  #348         broad awareness follow-up interpretation
-  #349         Calendar source-selection overmatch repair
-  #350         Calendar tomorrow-scope preservation
-  #351         local schedule-cancellation routing
-  #352         private Drive source-selection truth
-
 GOOGLE FOUNDATION:
   PR #335 remains OPEN / DRAFT / UNMERGED.
   Head: befb69ef75881a9f418472549b64243219c138f9
   Historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
-  Scope: identity/auth foundation only.
-  Do not merge or extend the historical branch state.
+  Foundation/auth/identity only.
+  Do not modify, extend, mark ready, or merge it during B1.
+
+HOSTED CI:
+  Issue #354 = infrastructure/open.
+  Zero-step Actions are not behavioral proof.
+  #354 must be resolved before Wave C relies on hosted CI evidence.
 
 CURRENT ORDER:
-  B1 runtime-truth instrumentation
+  B1 mechanical proof / generation / output inspection / exact diff / merge decision
   -> B2 capability narration
   -> B3 memory governance
   -> B4 reproducibility hygiene
   -> C proof / semantic-contract stabilization / validated baseline
   -> reconstruct #335 onto exact validated baseline
-  -> independent review + separate merge decision
+  -> independent review + separate #335 merge decision
   -> Google identity-only live proof
-  -> Google Tasks READ / first real Google evidence vertical
-  -> separately warranted Continuity slice
+  -> Google Tasks READ / first provider-backed Google evidence vertical
+  -> evidence-based Continuity warrant
 
 B1 LOCK:
-  Instrumentation/proof-truth only.
-  No network behavior, capability narration, GeneralChat persistence,
-  capability-registry, OAuth, #335 implementation, Google domain-data,
-  Continuity runtime, OpenClaw-authority, provider-routing, or external-write change.
-
-KNOWN NETWORK FINDING:
-  nova_backend/src/api/connections_api.py
-  classification: local administrative health probe
-  detected outside NetworkMediator; B1 reports it but does not reroute it.
-
-HOSTED CI:
-  Issue #354 tracks repeated zero-step GitHub Actions failures.
-  Infrastructure state only; not behavioral pass/fail evidence.
-  Must be resolved before Wave C relies on hosted CI evidence.
-
-PERMANENT CONTROL-PLANE RULE:
-  Governed capability plane != local operator/admin plane != bounded agent/routine plane.
-  No control plane may silently increase authority available to another.
-
-PERMANENT DISTINCTIONS:
-  connection != capability
-  capability != authority
-  OAuth scope != Nova authority
-  recommendation != permission
-  execution != verified outcome
-  memory != Operational Continuity
+  No more design/code changes unless proof reproduces a concrete B1 defect.
+  No B2/B3/B4, Google domain work, #335, Continuity, OpenClaw authority,
+  provider routing, network-behavior changes, or README rewrite.
 ```
 
 Status: manual operational surface.
 
-## What matters today
+## What matters now
 
-1. **Finish B1 truth instrumentation.** One generated discrepancy system must expose direct-network findings that the bypass report already detects.
-2. **Replace weak Phase 9 evidence.** Retired placeholder-file existence must not establish Phase 9 runtime state; use import/symbol evidence for the active modules.
-3. **Expand fingerprint scope deliberately.** Behaviorally active source families used by generated truth must influence the runtime fingerprint without broadening unrelated network scans.
-4. **Qualify generated invariants.** Generated claims must say what the auditor actually proves rather than whole-repository absolutes.
-5. **Keep operational truth synchronized.** `check_runtime_doc_drift.py` remains narrow; the new operational checker verifies the active entry points agree on the stabilization lane and permanent truth boundaries.
-6. **Keep #335 untouched and B2 blocked.** B2 starts only after B1 merges.
+The B1 source package has completed static review. The next useful information must come from execution.
 
-## Current operational interpretation
+Do not spend the next session re-reviewing or re-designing the same instrumentation unless a proof step fails.
 
-A1 fixed repository/current-truth drift and A2 separately reconciled Product/Platform strategy. B1 now fixes the runtime truth machinery itself.
+### Step 1 — verify exact checkout
 
-The current B1 correction is epistemic instrumentation. It does not grant, remove, or reroute authority. In particular, reporting `connections_api.py` as a known direct-network exception is not equivalent to approving that path or moving it behind NetworkMediator.
-
-Operational Continuity remains strategic and inactive. It must stay non-authorizing and non-executing.
-
-## Current evidence rule
-
-A generated or historical artifact proves only what it actually measured at the recorded revision/environment.
-
-Use these distinctions:
-
-```text
-exists
-enabled
-configured
-available_on_this_path
-request_accepted
-effect_verified
-verification_status
-authority_class
+```bash
+git branch --show-current
+git rev-parse HEAD
+git status --short
 ```
 
-Do not flatten them into "real and working" or "authorized."
+Expected branch:
 
-If a test or acceptance scenario fails, classify the failure before assigning a cause. Evidence quality, semantic inference, routing/scope, narration, runtime behavior, and persistence/lifecycle behavior are distinct possible failure classes.
+```text
+codex/b1-runtime-truth-instrumentation-20260820
+```
 
-## Deferred until the stabilization gate exits
+The branch may contain handoff-only documentation commits after implementation checkpoint `b43a398...`; record the actual HEAD used for proof.
+
+### Step 2 — execute focused proof
+
+```bash
+export PYTHONPATH=nova_backend
+python -m pytest nova_backend/tests/test_runtime_truth_b1.py
+python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
+python scripts/check_operational_truth_consistency.py
+python scripts/check_runtime_doc_drift.py
+```
+
+Windows PowerShell:
+
+```powershell
+$env:PYTHONPATH = "nova_backend"
+```
+
+Do not mark any test/check green unless it actually executes successfully.
+
+### Step 3 — mechanically regenerate runtime truth
+
+```bash
+python scripts/generate_runtime_docs.py
+```
+
+Manual edits are forbidden for generated runtime artifacts.
+
+### Step 4 — inspect generated output
+
+Required files:
+
+```text
+docs/current_runtime/CURRENT_RUNTIME_STATE.md
+docs/current_runtime/BYPASS_SURFACES.md
+docs/current_runtime/RUNTIME_FINGERPRINT.md
+```
+
+Acceptance:
+
+```text
+CURRENT_RUNTIME_STATE.md
+  ✓ connections_api.py represented through KNOWN_DIRECT_NETWORK_EXCEPTION
+  ✓ no false Discrepancies: None
+  ✓ Phase 9 names real active symbols
+  ✓ NetworkMediator/Governor/ledger wording is qualified
+
+BYPASS_SURFACES.md
+  ✓ connections_api.py visible
+  ✓ local_administrative_health_probe visible
+  ✓ scanner scope explicitly requests-based
+  ✓ no claim of universal network coverage
+
+RUNTIME_FINGERPRINT.md
+  ✓ behaviorally_active_v2
+  ✓ runtime_surface_file_count present
+  ✓ source_families present
+  ✓ brain / connections / identity / memory / usage included
+```
+
+### Step 5 — final diff review
+
+```text
+base: 060380f2e8c6437ff888773f0078647547ff4622
+head: actual proof/generation HEAD
+```
+
+Verify:
+
+```text
+no B2 capability narration
+no B3 memory behavior
+no B4 dependency cleanup
+no #335 / OAuth / Google-domain implementation
+no Continuity runtime
+no OpenClaw authority expansion
+no provider-routing expansion
+no network-behavior change
+no README rewrite
+```
+
+If the proof/output/diff gate is clean, **then** open B1 as a draft PR. No merge is implied.
+
+## Known pending contradiction before generation
+
+The current checked-in generated artifacts are still intentionally pre-B1:
+
+```text
+CURRENT_RUNTIME_STATE.md
+  says universal NetworkMediator/Governor/ledger invariants
+  and Runtime Truth Discrepancies: None
+
+BYPASS_SURFACES.md
+  detects nova_backend/src/api/connections_api.py outside NetworkMediator
+
+RUNTIME_FINGERPRINT.md
+  still contains pre-B1 fields only
+```
+
+That contradiction is the reason the mechanical generation step remains mandatory. Do not repair it manually.
+
+## Permanent evidence discipline
+
+```text
+implementation != executed proof
+request accepted != effect verified
+generated structure != semantic correctness
+connection != capability
+capability != authority
+OAuth scope != Nova authority
+memory != Operational Continuity
+current HEAD != immutable validated baseline
+```
+
+## Deferred
 
 ```text
 B2 capability narration
@@ -140,8 +215,9 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
+README/front-door rewrite inside B1
 ```
 
 ## Next handoff
 
-After B1 is reviewed and merged, the next lane is **Wave B2 capability narration**. Do not begin it from this document before B1 closes.
+Start the next session at **Step 1 — verify exact checkout**, then execute the B1 proof sequence. Do not begin B2 merely because the B1 source code looks complete.
