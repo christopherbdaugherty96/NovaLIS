@@ -27,22 +27,28 @@ Wave A1 and A2 are already merged:
 
 B1 checklist:
 
-- [x] Reproduce the direct-network discrepancy inconsistency: `BYPASS_SURFACES.md` detects `connections_api.py` while the main discrepancy set can report none.
-- [x] Identify the known direct-network path as `nova_backend/src/api/connections_api.py`.
+- [x] Reproduce the requests-based network discrepancy inconsistency: `BYPASS_SURFACES.md` detects `connections_api.py` while the main discrepancy set can report none.
+- [x] Identify the known requests-based path as `nova_backend/src/api/connections_api.py`.
 - [x] Preserve its classification as a local administrative health probe pending explicit disposition.
-- [x] Add generated discrepancy representation for known and unclassified direct-network paths.
+- [x] Add generated discrepancy representation for known and unclassified requests-based network paths.
 - [x] Replace Phase 9 retired-placeholder evidence with live import/symbol checks against active modules.
-- [x] Expand runtime fingerprint scope over behaviorally active source families without broadening the direct-network scan allowlist.
+- [x] Expand runtime fingerprint scope over behaviorally active source families without broadening the existing requests scanner allowlist.
 - [x] Qualify generated NetworkMediator/Governor/ledger invariants to the scope actually measured.
 - [x] Add focused B1 regression coverage.
 - [x] Add `scripts/check_operational_truth_consistency.py` separately from `check_runtime_doc_drift.py`.
-- [x] Synchronize active operational surfaces to B1.
-- [ ] Regenerate the mechanically derived runtime truth documents on the B1 head.
+- [x] Synchronize the primary active operational surfaces to B1.
+- [x] Synchronize `docs/CANONICAL/00_INDEX.md` so A1/A2 are complete, B1 is active, and B2 is blocked.
+- [x] Make the operational consistency checker compare the canonical index lane and fail on stale A1-vs-B1 drift.
+- [x] Make `runtime_surface_file_count` use the exact path set consumed by the runtime-surface hash.
+- [x] Qualify network-scan wording to requests-based paths detectable by the existing scanner rather than universal network coverage.
+- [x] Update Issue #343 current checkpoint to post-A2 main and B1-active ordering.
+- [ ] Regenerate the mechanically derived runtime truth documents on the corrected B1 head.
 - [ ] Run the strongest locally available focused/runtime-doc/structural proof package.
-- [ ] Review the exact B1 diff for scope and generated-truth consistency.
+- [ ] Inspect generated `CURRENT_RUNTIME_STATE.md`, `BYPASS_SURFACES.md`, and `RUNTIME_FINGERPRINT.md` for the B1 acceptance conditions.
+- [ ] Review the exact A2-base → B1 diff for scope and generated-truth consistency.
 - [ ] Open a draft B1 PR; no merge is authorized merely by this checklist.
 
-B1 does not change the actual `connections_api.py` network behavior. The generated truth must expose the exception without pretending it is mediated or silently approving it.
+B1 does not change the actual `connections_api.py` network behavior. The generated truth must expose the requests-based exception without pretending it is mediated, silently approving it, or claiming the scanner proves the absence of other network mechanisms.
 
 ## Already Merged — Not Active TODOs
 
@@ -88,6 +94,12 @@ NEEDED BEFORE: Wave C validated-baseline proof
 ```
 
 Keep this issue separate from B1 content/runtime semantics unless infrastructure diagnosis is explicitly selected.
+
+### Front-door README truth cleanup
+
+`README.md` still contains stale sequencing/current-status language from before the present A1 → A2 → B1 stabilization state.
+
+This is explicitly separate from B1. Do not rewrite README inside the B1 instrumentation branch. Reconcile it in a later front-door documentation cleanup after the current lane is proven/merged.
 
 ## Ordered After B1
 
@@ -169,6 +181,7 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
+README/front-door rewrite inside B1
 ```
 
 ## Backlog / Planning Issues

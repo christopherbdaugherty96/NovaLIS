@@ -9,10 +9,10 @@ same active stabilization lane and preserve a few permanent truth boundaries.
 
 Checked here:
 - required presence of the active operational entry points;
-- active stabilization-lane agreement across AGENTS, priority/status/todo, and
-  the canonical roadmap marker;
-- the known ``connections_api.py`` direct-network exception and three-control-
-  plane boundary in canonical governance;
+- active stabilization-lane agreement across AGENTS, canonical index,
+  priority/status/todo, and the canonical roadmap marker;
+- the known ``connections_api.py`` requests-based network exception and
+  three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - PR #335 remaining explicitly UNMERGED near its reference in priority/roadmap.
 
@@ -66,6 +66,10 @@ LANE_PATTERNS = {
     ),
     "active_todo": re.compile(
         r"^### Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b", re.MULTILINE
+    ),
+    "canonical_index": re.compile(
+        r"^Current active stabilization lane:\s*(?P<lane>A1|A2|B1|B2|B3|B4|C)\b",
+        re.MULTILINE,
     ),
     "roadmap": re.compile(
         r"^Current active stabilization lane:\s*(?P<lane>A1|A2|B1|B2|B3|B4|C)\b",
@@ -131,7 +135,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
     governance = texts.get("governance", "")
     if "nova_backend/src/api/connections_api.py" not in governance:
         errors.append(
-            "canonical governance does not name the known connections_api.py direct-network exception"
+            "canonical governance does not name the known connections_api.py requests-based network exception"
         )
     for marker in (
         "Governed capability plane",

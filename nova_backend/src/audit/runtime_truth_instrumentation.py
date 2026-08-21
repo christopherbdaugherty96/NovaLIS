@@ -6,7 +6,7 @@ The existing ``src.audit.runtime_auditor`` remains the authoritative generator.
 This module installs narrow measurement repairs without duplicating or rewriting
 that mature implementation:
 
-- direct-network findings participate in discrepancy state;
+- requests-library network findings participate in discrepancy state;
 - known NetworkMediator exceptions are explicit and classified;
 - Phase 9 status uses import/symbol evidence instead of retired placeholder files;
 - runtime fingerprints cover behaviorally active source families;
@@ -27,8 +27,8 @@ KNOWN_NETWORK_MEDIATOR_EXCEPTIONS: dict[str, dict[str, str]] = {
         "disposition": "pending_explicit_runtime_governance_disposition",
         "reason": (
             "Provider-health requests are local administrative connection checks, "
-            "not registered governed capability execution. The direct network path "
-            "remains visible and does not become implicitly approved."
+            "not registered governed capability execution. The requests-based direct "
+            "network path remains visible and does not become implicitly approved."
         ),
     }
 }
@@ -90,6 +90,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
             known.append({"path": path, **metadata})
 
         return {
+            "scanner_scope": "requests-library usage over the existing runtime-auditor allowlist",
             "detected_paths": offenders,
             "known_exceptions": known,
             "unclassified_paths": unclassified,
@@ -122,10 +123,11 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                     severity="warning",
                     code="KNOWN_DIRECT_NETWORK_EXCEPTION",
                     message=(
-                        "Known direct-network path(s) exist outside NetworkMediator and "
+                        "Known direct requests-based network path(s) detectable by the "
+                        "existing requests scanner exist outside NetworkMediator and "
                         "remain explicitly classified pending disposition."
                     ),
-                    details={"exceptions": known},
+                    details={"scanner_scope": network["scanner_scope"], "exceptions": known},
                 )
             )
 
@@ -135,10 +137,11 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                     severity="hard_fail",
                     code="UNCLASSIFIED_DIRECT_NETWORK_PATH",
                     message=(
-                        "Direct requests/network usage was detected outside NetworkMediator "
-                        "without an explicit exception classification."
+                        "Direct requests-based network usage detectable by the existing "
+                        "requests scanner was found outside NetworkMediator without an "
+                        "explicit exception classification."
                     ),
-                    details={"paths": unknown},
+                    details={"scanner_scope": network["scanner_scope"], "paths": unknown},
                 )
             )
 
@@ -151,9 +154,9 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         lines = [
             base,
             "",
-            "## Direct-network classification",
+            "## requests-based direct-network classification",
             "",
-            "Detected direct-network paths are not silently treated as mediated. Known exceptions remain visible until explicitly disposed.",
+            "This classification covers paths detectable by the existing requests-library scanner over the auditor's existing allowlist. It does not prove the absence of every possible network mechanism.",
             "",
         ]
 
@@ -168,16 +171,18 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                     ]
                 )
         else:
-            lines.append("- Known exceptions: None detected.")
+            lines.append("- Known requests-based exceptions: None detected.")
 
         if classification["unclassified_paths"]:
             lines.append("")
-            lines.append("Unclassified direct-network paths:")
+            lines.append("Unclassified requests-based direct-network paths:")
             lines.extend(
                 f"- `{path}`" for path in classification["unclassified_paths"]
             )
         else:
-            lines.extend(["", "- Unclassified direct-network paths: None detected."])
+            lines.extend(
+                ["", "- Unclassified requests-based direct-network paths: None detected."]
+            )
 
         lines.append("")
         return "\n".join(lines)
@@ -236,14 +241,20 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         paths.add(Path(__file__).resolve())
         return frozenset(path.resolve() for path in paths)
 
+    def fingerprinted_runtime_surface_paths() -> frozenset[Path]:
+        """Return the exact path set consumed by the runtime-surface hash."""
+
+        runtime_doc_root = Path(auditor.RUNTIME_DOC_DIR).resolve()
+        return frozenset(
+            path.resolve()
+            for path in auditor._behaviorally_active_fingerprint_paths()
+            if not path.resolve().is_relative_to(runtime_doc_root)
+        )
+
     def runtime_surface_hash() -> str:
         digest = hashlib.sha256()
-        runtime_doc_root = Path(auditor.RUNTIME_DOC_DIR).resolve()
 
-        for path in sorted(auditor._behaviorally_active_fingerprint_paths()):
-            resolved = path.resolve()
-            if resolved.is_relative_to(runtime_doc_root):
-                continue
+        for resolved in sorted(auditor._fingerprinted_runtime_surface_paths()):
             try:
                 rel = resolved.relative_to(auditor.PROJECT_ROOT).as_posix()
             except ValueError:
@@ -261,7 +272,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         enabled_hash = hashlib.sha256(
             json.dumps(registry_enabled_ids, sort_keys=True).encode("utf-8")
         ).hexdigest()
-        paths = auditor._behaviorally_active_fingerprint_paths()
+        paths = auditor._fingerprinted_runtime_surface_paths()
         source_families = list(_FINGERPRINT_EXTRA_SOURCE_DIRS)
         payload = {
             "enabled_capability_ids": registry_enabled_ids,
@@ -309,7 +320,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         checks["fingerprint_scope"] = {
             "scope_version": FINGERPRINT_SCOPE_VERSION,
             "runtime_surface_file_count": len(
-                auditor._behaviorally_active_fingerprint_paths()
+                auditor._fingerprinted_runtime_surface_paths()
             ),
             "source_families": list(_FINGERPRINT_EXTRA_SOURCE_DIRS),
         }
@@ -346,13 +357,14 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
 
         replacements = {
             "Role: Enforced outbound HTTP control": (
-                "Role: Primary outbound HTTP control for mediated paths; detected exceptions are reported separately"
+                "Role: Primary outbound HTTP control for mediated paths; requests-based "
+                "exceptions detectable by the existing scanner are reported separately"
             ),
             "- All actions must pass GovernorMediator": (
                 "- Registered governed capability execution inspected here routes through GovernorMediator"
             ),
             "- All outbound HTTP must pass NetworkMediator": (
-                "- Outbound network paths are mediated where wired; detected direct-network exceptions are reported separately"
+                "- Outbound network paths are mediated where wired; requests-based direct paths detectable by the existing scanner are reported separately"
             ),
             "- All execution logged to ledger": (
                 "- Governed execution paths inspected by this auditor include ledger evidence; this is not a whole-repository persistence claim"
@@ -383,7 +395,8 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                 "",
                 "- This artifact reports only properties mechanically inspected by the runtime auditor.",
                 "- File/symbol presence is not treated as behavioral proof unless the corresponding check explicitly imports or exercises that surface.",
-                "- Known direct-network exceptions remain discrepancies/warnings until explicitly dispositioned; they are not hidden by global invariants.",
+                "- Requests-based direct-network findings are limited to paths detectable by the existing requests scanner over its existing allowlist; this does not prove absence of every network mechanism.",
+                "- Known requests-based exceptions remain discrepancies/warnings until explicitly dispositioned; they are not hidden by global invariants.",
                 "",
             ]
             lines[invariant_index:invariant_index] = scope_block
@@ -396,6 +409,7 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
     auditor._phase_9_live_evidence = phase_9_live_evidence
     auditor._phase_9_status = phase_9_status
     auditor._behaviorally_active_fingerprint_paths = behaviorally_active_fingerprint_paths
+    auditor._fingerprinted_runtime_surface_paths = fingerprinted_runtime_surface_paths
     auditor._runtime_surface_hash = runtime_surface_hash
     auditor._runtime_fingerprint = runtime_fingerprint
     auditor.render_runtime_fingerprint_markdown = render_runtime_fingerprint_markdown

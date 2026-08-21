@@ -25,6 +25,7 @@ def test_known_direct_network_exception_is_visible_warning(monkeypatch):
         ra,
         "_classify_direct_network_paths",
         lambda paths=None: {
+            "scanner_scope": "requests-library usage over the existing runtime-auditor allowlist",
             "detected_paths": ["nova_backend/src/api/connections_api.py"],
             "known_exceptions": [
                 {
@@ -48,6 +49,8 @@ def test_known_direct_network_exception_is_visible_warning(monkeypatch):
     assert match[0].details["exceptions"][0]["path"].endswith(
         "connections_api.py"
     )
+    assert "requests-library" in match[0].details["scanner_scope"]
+    assert "requests-based" in match[0].message
 
 
 def test_unclassified_direct_network_path_is_hard_fail(monkeypatch):
@@ -55,6 +58,7 @@ def test_unclassified_direct_network_path_is_hard_fail(monkeypatch):
         ra,
         "_classify_direct_network_paths",
         lambda paths=None: {
+            "scanner_scope": "requests-library usage over the existing runtime-auditor allowlist",
             "detected_paths": ["nova_backend/src/example.py"],
             "known_exceptions": [],
             "unclassified_paths": ["nova_backend/src/example.py"],
@@ -68,6 +72,7 @@ def test_unclassified_direct_network_path_is_hard_fail(monkeypatch):
 
     assert len(match) == 1
     assert match[0].severity == "hard_fail"
+    assert "requests-based" in match[0].message
 
 
 def test_phase9_status_uses_live_symbol_evidence_not_placeholder_paths(monkeypatch):
@@ -109,13 +114,22 @@ def test_runtime_fingerprint_declares_expanded_scope_without_broadening_scanner(
 
     assert fp["scope_version"] == "behaviorally_active_v2"
     assert fp["runtime_surface_file_count"] > 0
+    assert fp["runtime_surface_file_count"] == len(
+        ra._fingerprinted_runtime_surface_paths()
+    )
+
+    runtime_doc_root = Path(ra.RUNTIME_DOC_DIR).resolve()
+    assert all(
+        not path.resolve().is_relative_to(runtime_doc_root)
+        for path in ra._fingerprinted_runtime_surface_paths()
+    )
 
     required_families = {"brain", "connections", "identity", "memory", "usage"}
     assert required_families.issubset(set(fp["source_families"]))
 
     fingerprint_paths = {
         path.resolve().relative_to(ra.PROJECT_ROOT).as_posix()
-        for path in ra._behaviorally_active_fingerprint_paths()
+        for path in ra._fingerprinted_runtime_surface_paths()
         if path.resolve().is_relative_to(ra.PROJECT_ROOT)
     }
     for family in required_families:
@@ -151,15 +165,18 @@ def test_current_runtime_state_qualifies_network_and_execution_invariants():
     assert "All outbound HTTP must pass NetworkMediator" not in rendered
     assert "All actions must pass GovernorMediator" not in rendered
     assert "All execution logged to ledger" not in rendered
-    assert "detected direct-network exceptions are reported separately" in rendered
+    assert "requests-based direct paths detectable by the existing scanner" in rendered
     assert "## Generated Evidence Scope" in rendered
+    assert "requests scanner" in rendered
     assert "Runtime Surface Families:" in rendered
 
 
 def test_bypass_report_classifies_known_network_exception():
     rendered = ra.render_bypass_surfaces_markdown()
 
-    assert "## Direct-network classification" in rendered
+    assert "## requests-based direct-network classification" in rendered
+    assert "existing requests-library scanner" in rendered
+    assert "does not prove the absence of every possible network mechanism" in rendered
     assert "nova_backend/src/api/connections_api.py" in rendered
     assert "local_administrative_health_probe" in rendered
 
@@ -222,9 +239,11 @@ def test_generator_entrypoint_writes_instrumented_runtime_truth(tmp_path, monkey
         in current
     )
     assert "src.identity.nova_self_awareness.build_self_awareness_block" in current
+    assert "requests-based direct paths detectable by the existing scanner" in current
 
     assert "nova_backend/src/api/connections_api.py" in bypass
     assert "local_administrative_health_probe" in bypass
+    assert "existing requests-library scanner" in bypass
 
     assert "scope_version: behaviorally_active_v2" in fingerprint
     for family in ("brain", "connections", "identity", "memory", "usage"):
@@ -238,7 +257,11 @@ def _write_surface(root: Path, relative: str, content: str) -> None:
 
 
 def _minimal_operational_fixture(
-    root: Path, *, daily_lane: str = "B1", roadmap_lane: str = "B1"
+    root: Path,
+    *,
+    daily_lane: str = "B1",
+    roadmap_lane: str = "B1",
+    canonical_index_lane: str = "B1",
 ) -> None:
     _write_surface(root, "AGENTS.md", "## Wave B1 Current Development State\n")
     _write_surface(
@@ -265,7 +288,8 @@ def _minimal_operational_fixture(
         root,
         "docs/CANONICAL/00_INDEX.md",
         "**Implementation:** code\n**Automated/recorded evidence:** tests\n"
-        "current HEAD != immutable validated baseline\n",
+        "current HEAD != immutable validated baseline\n"
+        f"Current active stabilization lane: {canonical_index_lane}\n",
     )
     _write_surface(
         root,
@@ -287,6 +311,7 @@ def test_operational_truth_checker_accepts_consistent_lane(tmp_path):
 
     assert checker.check_operational_truth(tmp_path) == []
     assert "AGENTS.md" in checker.CHECKED_SURFACES
+    assert "docs/CANONICAL/00_INDEX.md" in checker.CHECKED_SURFACES
     assert "docs/CANONICAL/07_ROADMAP_TRUTH.md" in checker.CHECKED_SURFACES
     assert "generated runtime truth/runtime behavior" in checker.NON_GOALS
 
@@ -305,6 +330,15 @@ def test_operational_truth_checker_detects_roadmap_lane_drift(tmp_path):
 
     errors = checker.check_operational_truth(tmp_path)
     assert any("active stabilization lane mismatch" in error for error in errors)
+
+
+def test_operational_truth_checker_detects_canonical_index_lane_drift(tmp_path):
+    checker = _load_operational_checker()
+    _minimal_operational_fixture(tmp_path, canonical_index_lane="A1")
+
+    errors = checker.check_operational_truth(tmp_path)
+    assert any("active stabilization lane mismatch" in error for error in errors)
+    assert any("canonical_index=A1" in error for error in errors)
 
 
 def test_operational_truth_checker_requires_agents_surface(tmp_path):
