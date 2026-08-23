@@ -19,14 +19,14 @@ lane contract         -> what the lane may change
 implementation/proof  -> what actually changed and was verified
 ```
 
-## Current checkpoint — 2026-08-20
+## Current checkpoint — 2026-08-23
 
 Current active stabilization lane: B1
 
 ```text
 A1 — COMPLETE / MERGED via #353
 A2 — COMPLETE / MERGED via #355
-B1 — ACTIVE; source/truth corrections complete; mechanical proof required
+B1 — ACTIVE; final-review correction gate; PR #356 OPEN / DRAFT; merge not authorized
 B2 — BLOCKED
 B3 — BLOCKED
 B4 — BLOCKED
@@ -39,15 +39,22 @@ Current merged `main` / A2 comparison base:
 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-Accepted B1 implementation/truth-harness checkpoint after third-pass static review:
+First published/proven B1 candidate:
 
 ```text
-b43a3989527e1c20892694b307351948a6129727
+f44cb8b856345ddc573fe0cb56037104350ffeb4
 ```
 
-Handoff-only operational-document commits may advance the B1 branch after that implementation checkpoint. The mechanical proof pass must verify and record the actual branch HEAD used for execution.
+That candidate completed the first exact-head local proof, mechanical runtime-doc generation, artifact publication, final remote scope review, and draft PR #356 opening. It is not a `validated_baseline_sha` and it is not authorized for merge merely because that proof passed.
 
-Neither the current branch HEAD nor `b43a398...` is a `validated_baseline_sha`.
+Final release review then found two bounded B1 truth-integrity defects:
+
+```text
+P1 — active handoff surfaces still described the pre-generation/no-PR state
+P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
+```
+
+The P2 source/test correction now requires the exact fingerprint/hash/count set to contain existing files only. Operational-document synchronization is part of the same bounded correction pass. Later corrective commits may advance branch HEAD beyond the first published candidate.
 
 ## Merged stabilization state
 
@@ -97,7 +104,7 @@ WAVE A — truth reconciliation
   A2 strategy reconciliation                        COMPLETE
 
 WAVE B — truth-integrity repairs
-  B1 runtime-truth instrumentation                  ACTIVE / PROOF GATE
+  B1 runtime-truth instrumentation                  ACTIVE / FINAL-REVIEW CORRECTION GATE
   B2 capability narration                           BLOCKED
   B3 memory governance                              BLOCKED
   B4 reproducibility hygiene                        BLOCKED
@@ -151,35 +158,50 @@ Wave B is intentionally split into focused PRs rather than one broad stabilizati
 
 ### B1 — runtime-truth instrumentation
 
-**Current active lane; source changes frozen for mechanical proof unless execution reproduces a concrete defect.**
+**Current active lane; first proof/publication pass complete, bounded final-review corrections in progress.**
 
-B1 source/truth-harness work now covers:
+B1 source/truth-harness work covers:
 
 ```text
 requests-based network discrepancy visibility
 connections_api.py explicit local_administrative_health_probe classification
 Phase 9 live import/symbol evidence
 behaviorally_active_v2 fingerprint coverage
-exact hash/count path-set semantics
+existing-file exact hash/count path-set semantics
 qualified generated invariants/network wording
 operational-truth consistency checker
 canonical-index lane checking + regression
 generator-entrypoint integration regression
 ```
 
-The remaining B1 work is not more static design. It is:
+First publication evidence:
 
 ```text
-verify exact checkout / HEAD
--> execute focused B1 + existing auditor/governance-doc tests
--> run operational consistency + runtime-doc drift checks
--> mechanically run scripts/generate_runtime_docs.py
--> inspect CURRENT_RUNTIME_STATE.md / BYPASS_SURFACES.md / RUNTIME_FINGERPRINT.md
--> exact A2-base -> final-B1 diff review
--> only then open a draft B1 PR
+local Ruff / focused B1 tests / auditor-governance tests: PASS
+operational consistency + runtime-doc drift: PASS before/after generation
+generated-output review: PASS for f44cb8b8...
+three intended runtime artifacts committed
+_MOCs excluded
+draft PR #356 opened
+hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
 ```
 
-The checked-in generated runtime artifacts remain pre-B1 until that generator step actually executes. Manual edits are forbidden.
+Final release review found the P1/P2 defects above. The only remaining B1 work is therefore bounded corrective proof/publication:
+
+```text
+synchronize active handoff truth
+-> prove corrected exact head
+-> mechanically regenerate runtime docs
+-> inspect corrected file-count semantics and existing B1 acceptance conditions
+-> rerun final-state consistency/drift
+-> commit only the three generated runtime artifacts if changed
+-> verify _MOCs exclusion
+-> exact A2-base -> corrected final-B1 diff review
+-> review PR #356 at corrected final head
+-> separate merge decision
+```
+
+Do not manually edit generated runtime artifacts. Do not treat the passing `f44cb8b8...` proof as automatic proof of a later corrective head.
 
 ### B2 — capability narration
 
