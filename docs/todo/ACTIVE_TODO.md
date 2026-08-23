@@ -6,20 +6,20 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B2 — capability narration implementation
+### Wave B3 — memory governance authorization gate
 
 Current state:
 
 ```text
-current main: 864ceba9747384b3bdca4a693dca938b3899864e
+current main: e84a9d55f8575c687765b1df19e8f794b180599b
 B1 / PR #356: COMPLETE / MERGED
-B2: ACTIVE / IMPLEMENTATION AUTHORIZED
-B3: BLOCKED
+B2 / PR #358: COMPLETE / MERGED
+B3: NEXT / NOT IMPLEMENTATION-AUTHORIZED
 B4: BLOCKED
 Wave C: BLOCKED
 ```
 
-Wave A1, A2, and B1 are already merged:
+Wave A1, A2, B1, and B2 are already merged:
 
 ```text
 #353  A1 operational truth synchronization
@@ -33,10 +33,14 @@ Wave A1, A2, and B1 are already merged:
        squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 
 #357  post-B1 operational truth synchronization
-       merge/current main: 864ceba9747384b3bdca4a693dca938b3899864e
+       merge: 864ceba9747384b3bdca4a693dca938b3899864e
+
+#358  B2 capability narration truth
+       reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
+       squash merge/current main: e84a9d55f8575c687765b1df19e8f794b180599b
 ```
 
-Do not reopen B1 without concrete new evidence. Implement only the reviewed bounded B2 narration-truth package.
+Do not reopen B1 or B2 without concrete new evidence. Do not begin B3 until it receives separate reviewed owner authorization.
 
 ### Completed B1 source/truth work
 
@@ -76,14 +80,16 @@ Do not reopen B1 without concrete new evidence. Implement only the reviewed boun
 - [x] Merge PR #356 at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`.
 - [x] Verify B1 squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc`.
 
-### Current B2 lane
+### Completed B2 lane
 
 ```text
 [x] separate reviewed owner authorization for B2 implementation
 [x] implement one shared seven-field capability-truth projection
 [x] migrate the five authorized narration consumers
 [x] complete focused local proof and exact base-to-candidate diff review
-[ ] complete remote exact-head PR review and separate merge decision
+[x] complete remote exact-head PR review and separate merge decision
+[x] merge PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`
+[x] verify B2 squash merge `e84a9d55f8575c687765b1df19e8f794b180599b`
 ```
 
 Generated runtime artifacts must not be edited manually.
@@ -135,6 +141,7 @@ Do not recreate or reopen these as pending implementation:
 #353         Wave A1 operational truth synchronization
 #355         Wave A2 strategy reconciliation
 #356         Wave B1 runtime-truth instrumentation
+#358         Wave B2 capability narration truth
 ```
 
 Merged implementation is not universal live-proof coverage.
@@ -159,23 +166,25 @@ IMPACT: hosted workflows currently provide no trustworthy behavioral evidence
 NEEDED BEFORE: Wave C validated-baseline proof relies on hosted CI
 ```
 
-Keep #354 separate from B2 capability-narration work unless infrastructure diagnosis is explicitly selected.
+Keep #354 separate from B3 memory-governance work unless infrastructure diagnosis is explicitly selected.
 
 ### Front-door README truth cleanup
 
-`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not rewrite README inside this post-B1 sync or B2 without separate scope.
+`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not fold README cleanup into B3 without separate scope.
 
 ## Current Next Lane and Blocked Work
 
 ### Wave B2 — capability narration
 
-**ACTIVE / IMPLEMENTATION AUTHORIZED.** Implement and prove only the established scope:
+**COMPLETE / MERGED via PR #358.** The established projection keeps these distinctions:
 
 - separate `exists`, `enabled`, `configured`, `verification_status`, `available_on_this_path`, `requires_approval`, and `authority_class`;
 - do not model `authorized` as static capability metadata;
 - ensure OpenClaw self-awareness exposes only tools available to that execution path.
 
 ### Wave B3 — memory governance
+
+**NEXT / NOT IMPLEMENTATION-AUTHORIZED.** Preserve only the established high-level scope until separate authorization:
 
 - ordinary GeneralChat must not silently create durable personal memory;
 - define explicit/observed precedence and conflict rules;
@@ -229,7 +238,7 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin outside the active B2 package:
+Do not begin while B3 remains at the authorization gate:
 
 ```text
 B3 memory-governance behavior
