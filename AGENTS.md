@@ -35,42 +35,37 @@ Before selecting work, read:
 
 For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-## Wave B1 Current Development State — 2026-08-23
+## Wave B2 Current Development State — 2026-08-23
 
-Wave A1 and A2 are complete:
+Wave A1, A2, and B1 are complete:
 
 ```text
 #353  Wave A1 operational truth synchronization — MERGED
        merge: f25c798c7cb488495a343068463e9214cab0a763
 
 #355  Wave A2 strategy reconciliation — MERGED
-       merge/current main: 060380f2e8c6437ff888773f0078647547ff4622
+       merge: 060380f2e8c6437ff888773f0078647547ff4622
+
+#356  Wave B1 runtime-truth instrumentation — MERGED
+       reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
+       squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 ```
 
 Current active lane:
 
 ```text
-Wave B1 — runtime-truth instrumentation
-branch: codex/b1-runtime-truth-instrumentation-20260820
-base: 060380f2e8c6437ff888773f0078647547ff4622
-first published/proven candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-final corrected artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
-PR #356: OPEN / DRAFT
-substate: corrective proof and generation complete; final PR review / merge decision
-merge: NOT AUTHORIZED
+Wave B2 — capability narration
+status: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+B3: BLOCKED
+B4: BLOCKED
+Wave C: BLOCKED
 ```
 
-The base SHA is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first exact-head local proof, generated-artifact publication, final remote scope review, and draft PR #356 opening. Final release review then found two bounded truth-integrity defects: active B1 handoff surfaces still described the pre-generation/no-PR state, and `runtime_surface_file_count` included one nonexistent `ALLOWED_READ_PATHS` entry.
-
-Both defects are corrected. The corrected source proof passed, the runtime artifacts were mechanically regenerated and published at `e668ec0c...`, the existing-file fingerprint count is 230, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
+B1 is complete and merged. Its corrected source proof, generated artifacts, 230-file `behaviorally_active_v2` fingerprint, exact diff review, and operational synchronization are historical evidence for the merged B1 package.
 
 ### Immediate worker instruction
 
-Do **not** redesign or extend B1 instrumentation.
-
-The bounded B1 correction, exact-head proof, mechanical regeneration, final-state checks, and exact diff review are complete. The only current action is final PR #356 evidence assessment followed by a separate owner-authorized merge decision.
-
-Do not regenerate or edit generated runtime artifacts unless a concrete new generator defect is reproduced.
+This handoff does **not** authorize B2 implementation. Preserve the established B2 scope and wait for separate reviewed owner authorization before changing code, tests, schemas, registries, APIs, or runtime behavior.
 
 Merged stabilization work already includes:
 
@@ -107,8 +102,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ## Current Ordered Gate
 
 ```text
-Wave B1 — final PR #356 review / separate merge decision
--> Wave B2 — capability narration
+Wave B2 — capability narration / separate implementation authorization
 -> Wave B3 — memory governance
 -> Wave B4 — reproducibility hygiene
 -> Wave C — proof / validated-baseline checkpoint
@@ -123,9 +117,9 @@ Issue #343 remains the detailed stabilization ordering record.
 
 Issue #354 separately tracks the zero-step GitHub Actions infrastructure failure. That infrastructure state is not behavioral test evidence and must be resolved before Wave C certification evidence is relied on.
 
-## Wave B1 Lock
+## Completed Wave B1 Boundary
 
-B1 may change only what is required to make generated/runtime truth instrumentation accurately describe what it measures:
+B1 changed only what was required to make generated/runtime truth instrumentation accurately describe what it measures:
 
 - runtime-auditor instrumentation;
 - requests-based network discrepancy/classification reporting;
@@ -136,7 +130,7 @@ B1 may change only what is required to make generated/runtime truth instrumentat
 - a separate operational-truth consistency checker;
 - minimal current-status synchronization needed to name B1 and its proof/review substate accurately.
 
-The first B1 publication pass and the bounded P1/P2 correction pass are complete. Do not add implementation work to this branch.
+The B1 publication and bounded P1/P2 correction passes are complete and merged. Do not reopen B1 without concrete new evidence.
 
 B1 does **not** authorize:
 
@@ -166,7 +160,7 @@ status: detected outside NetworkMediator; explicitly reported pending dispositio
 
 B1 makes that fact visible in discrepancy/runtime truth. It does not silently treat the path as mediated and does not fix the network path itself. The scanner is requests-based and does not prove absence of every possible network mechanism.
 
-## Final PR Review Gate
+## B1 Completed Evidence
 
 Corrective evidence is complete:
 
@@ -187,7 +181,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 must remain open and draft pending final evidence assessment and a separate owner-authorized merge decision. B2, B3, B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`. B2 is next but not implementation-authorized. B3, B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -283,7 +277,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- start B2, B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime inside B1;
+- start B2 implementation, B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime from this post-B1 synchronization;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
