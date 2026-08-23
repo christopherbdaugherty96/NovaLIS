@@ -9,16 +9,16 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-WAVE B1 — runtime-truth instrumentation
-STATUS: CORRECTIVE PROOF / GENERATION COMPLETE; FINAL PR REVIEW / MERGE DECISION
-BRANCH: codex/b1-runtime-truth-instrumentation-20260820
-POST-A2 BASE: 060380f2e8c6437ff888773f0078647547ff4622
-FINAL CORRECTED ARTIFACT COMMIT: e668ec0c09df6e0d304427431e95a26619a9f507
-DRAFT PR: #356 — OPEN / DRAFT
-MERGE: NOT AUTHORIZED
+WAVE B2 — capability narration
+STATUS: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+CURRENT MAIN: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+B1: COMPLETE / MERGED via PR #356
+B3: BLOCKED
+B4: BLOCKED
+WAVE C: BLOCKED
 ```
 
-The A2 base is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first B1 publication pass. Final release review then found two bounded truth-integrity defects. Both are corrected, the corrected artifacts were published at `e668ec0c...`, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; the squash merge/current `main` is `969c369b...`. B1 proof and generated/runtime truth are historical evidence for that merged package.
 
 ## Completed Gates
 
@@ -31,7 +31,7 @@ Wave A2 — MERGED via PR #355
 
 Wave B1 first exact-head proof/publication pass
   candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-  draft PR #356 opened
+  PR #356 first publication occurred (historical)
   local Ruff / focused tests / auditor-governance tests / consistency / drift: PASS
   hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
 
@@ -44,9 +44,14 @@ Wave B1 corrected proof/publication pass
   operational consistency + runtime-doc drift: PASS before/after generation
   exact A2-to-B1 diff: CLEAN
   _MOCs: excluded
+
+Wave B1 merge
+  PR #356: MERGED
+  reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
+  squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 ```
 
-## B1 Current Substate
+## B1 Completed Evidence
 
 Final release review found and the bounded correction closed:
 
@@ -69,14 +74,15 @@ Completed correction and evidence:
 
 The generated runtime artifacts were mechanically regenerated on the corrected source state. `CURRENT_RUNTIME_STATE.md` and `RUNTIME_FINGERPRINT.md` changed; `BYPASS_SURFACES.md` regenerated identically. The artifact commit is `e668ec0c...`. Manual edits remain forbidden.
 
-## Remaining B1 Gate
+## Current B2 Gate
 
 ```text
-[ ] final PR #356 review / evidence assessment
-[ ] separate owner-authorized merge decision
+B2 — capability narration
+status — NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+required next action — separate reviewed owner authorization
 ```
 
-Hosted CI remains NOT EXECUTED because the Issue #354 jobs contain zero steps. That result is neither behavioral PASS nor behavioral FAIL. No known B1 code blocker remains.
+Hosted CI for B1 was NOT EXECUTED because the Issue #354 jobs contained zero steps. That result is neither behavioral PASS nor behavioral FAIL. Issue #354 remains open and separate from B2.
 
 ## Scope Lock
 
@@ -112,7 +118,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 during B1.
+Do not modify or merge #335 during the B2 authorization gate.
 
 Issue #354 remains:
 
@@ -126,8 +132,8 @@ must be resolved before Wave C relies on hosted CI
 ## Current Ordering
 
 ```text
-B1 final PR #356 review -> separate merge decision
--> B2 capability narration
+B1 COMPLETE / MERGED
+-> B2 capability narration / separate implementation authorization
 -> B3 memory governance
 -> B4 reproducibility hygiene
 -> Wave C semantic/proof stabilization and validated baseline
@@ -139,7 +145,7 @@ B1 final PR #356 review -> separate merge decision
 -> evidence-based Continuity warrant
 ```
 
-B2/B3/B4 remain blocked.
+B2 is next but not implementation-authorized. B3 and B4 remain blocked.
 
 ## Permanent Truth Boundaries
 
