@@ -97,6 +97,14 @@ Mechanically generate runtime truth:
 python scripts/generate_runtime_docs.py
 ```
 
+The generator also refreshes tracked `_MOCs/*` through `generate_obsidian_overlay.py`. That is an incidental overlay refresh, not B1 publication output. For B1, stage only:
+
+```bash
+git add -- docs/current_runtime/CURRENT_RUNTIME_STATE.md docs/current_runtime/BYPASS_SURFACES.md docs/current_runtime/RUNTIME_FINGERPRINT.md
+```
+
+Do not stage `_MOCs/*` in B1, and do not use `git add .`, `git add -A`, `git add --all`, or equivalent broad staging. Any `_MOCs` refresh requires separate review and explicit authorization.
+
 After generation, **mandatory final-state checks**:
 
 ```bash
@@ -146,8 +154,9 @@ Only after successful execution, generated-output inspection, and the mandatory 
 1. exact compare: A2 base 060380f... -> actual final B1 HEAD
 2. verify no B2/B3/B4/Google/#335/Continuity/OpenClaw-authority/provider-routing leakage
 3. verify generated files changed only through the generator
-4. record actual test/check results without inflating their scope
-5. only then open a DRAFT B1 PR
+4. verify _MOCs/* is excluded from B1 publication unless separately authorized
+5. record actual test/check results without inflating their scope
+6. only then open a DRAFT B1 PR
 ```
 
 No B1 PR should exist before this gate completes.
@@ -220,6 +229,7 @@ OpenClaw authority
 provider routing
 external-write behavior
 README/front-door rewrite
+_MOCs publication / Obsidian overlay refresh
 ```
 
 README sequencing drift is recorded separately and must not be folded into B1.
