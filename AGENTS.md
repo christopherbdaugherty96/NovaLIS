@@ -35,9 +35,9 @@ Before selecting work, read:
 
 For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-## Wave B2 Current Development State — 2026-08-23
+## Wave B3 Current Development State — 2026-08-23
 
-Wave A1, A2, and B1 are complete:
+Wave A1, A2, B1, and B2 are complete:
 
 ```text
 #353  Wave A1 operational truth synchronization — MERGED
@@ -51,24 +51,27 @@ Wave A1, A2, and B1 are complete:
        squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 
 #357  Post-B1 operational truth synchronization — MERGED
-       merge/current main: 864ceba9747384b3bdca4a693dca938b3899864e
+       merge: 864ceba9747384b3bdca4a693dca938b3899864e
+
+#358  Wave B2 capability narration truth — MERGED
+       reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
+       squash merge/current main: e84a9d55f8575c687765b1df19e8f794b180599b
 ```
 
-Current active lane:
+Current planning lane:
 
 ```text
-Wave B2 — capability narration
-status: ACTIVE / IMPLEMENTATION AUTHORIZED
-B3: BLOCKED
+Wave B2 — capability narration: COMPLETE / MERGED
+Wave B3 — memory governance: NEXT / NOT IMPLEMENTATION-AUTHORIZED
 B4: BLOCKED
 Wave C: BLOCKED
 ```
 
-B1 is complete and merged. Its corrected source proof, generated artifacts, 230-file `behaviorally_active_v2` fingerprint, exact diff review, and operational synchronization are historical evidence for the merged B1 package.
+B1 and B2 are complete and merged. Their proof and review records remain historical evidence for the revisions and environments actually exercised.
 
 ### Immediate worker instruction
 
-Implement only the reviewed B2 capability-narration truth projection. B2 may read existing registry, configuration, verification, runtime-setting, and path-availability evidence; it may not change authority or make capabilities available.
+Do not implement B3 until it receives separate reviewed owner authorization. The next lane is memory governance at the already-established high level: ordinary chat must not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics must be preserved. This handoff defines no new schema, storage system, memory API, or runtime behavior.
 
 Merged stabilization work already includes:
 
@@ -105,8 +108,8 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ## Current Ordered Gate
 
 ```text
-Wave B2 — capability narration / active bounded implementation
--> Wave B3 — memory governance
+Wave B2 — capability narration / COMPLETE / MERGED
+-> Wave B3 — memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
 -> Wave B4 — reproducibility hygiene
 -> Wave C — proof / validated-baseline checkpoint
 -> reconstruct/reconcile #335 onto the exact validated baseline
@@ -184,7 +187,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 then merged as current `main` `864ceba9747384b3bdca4a693dca938b3899864e`. B2 is active under its reviewed bounded authorization. B3, B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 then merged through PR #358 as current `main` `e84a9d55f8575c687765b1df19e8f794b180599b`. B3 is next but not implementation-authorized. B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -280,7 +283,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- expand B2 beyond capability narration truth, or start B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime;
+- reopen B2 without concrete new evidence, or start B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.

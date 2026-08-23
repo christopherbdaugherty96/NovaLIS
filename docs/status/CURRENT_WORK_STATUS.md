@@ -9,16 +9,16 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-WAVE B2 — capability narration
-STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
-CURRENT MAIN: 864ceba9747384b3bdca4a693dca938b3899864e
+WAVE B3 — memory governance
+STATUS: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+CURRENT MAIN: e84a9d55f8575c687765b1df19e8f794b180599b
 B1: COMPLETE / MERGED via PR #356
-B3: BLOCKED
+B2: COMPLETE / MERGED via PR #358
 B4: BLOCKED
 WAVE C: BLOCKED
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as current `main` `864ceba9...`. B1 proof and generated/runtime truth are historical evidence for that merged package.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge is current `main` `e84a9d55...`. B1 and B2 evidence remains revision- and environment-specific historical evidence.
 
 ## Completed Gates
 
@@ -49,6 +49,11 @@ Wave B1 merge
   PR #356: MERGED
   reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
   squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+
+Wave B2 merge
+  PR #358: MERGED
+  reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
+  squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
 ```
 
 ## B1 Completed Evidence
@@ -74,15 +79,15 @@ Completed correction and evidence:
 
 The generated runtime artifacts were mechanically regenerated on the corrected source state. `CURRENT_RUNTIME_STATE.md` and `RUNTIME_FINGERPRINT.md` changed; `BYPASS_SURFACES.md` regenerated identically. The artifact commit is `e668ec0c...`. Manual edits remain forbidden.
 
-## Current B2 Lane
+## Completed B2 Lane
 
 ```text
 B2 — capability narration
-status — ACTIVE / IMPLEMENTATION AUTHORIZED
-required action — implement and prove only the reviewed seven-field non-authorizing truth projection
+status — COMPLETE / MERGED via PR #358
+result — shared seven-field non-authorizing truth projection and reviewed consumer migration
 ```
 
-Hosted CI for B1 was NOT EXECUTED because the Issue #354 jobs contained zero steps. That result is neither behavioral PASS nor behavioral FAIL. Issue #354 remains open and separate from B2.
+Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open and separate from B3.
 
 ## Scope Lock
 
@@ -118,7 +123,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 during B2.
+Do not modify or merge #335 before the Wave C validated-baseline sequence.
 
 Issue #354 remains:
 
@@ -133,8 +138,8 @@ must be resolved before Wave C relies on hosted CI
 
 ```text
 B1 COMPLETE / MERGED
--> B2 capability narration / active bounded implementation
--> B3 memory governance
+-> B2 capability narration / COMPLETE / MERGED
+-> B3 memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
 -> B4 reproducibility hygiene
 -> Wave C semantic/proof stabilization and validated baseline
 -> reconstruct #335 onto exact validated baseline
@@ -145,7 +150,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B2 is active under separate reviewed implementation authorization. B3 and B4 remain blocked.
+B2 is complete and merged. B3 is next but not implementation-authorized; B4 remains blocked.
 
 ## Permanent Truth Boundaries
 
