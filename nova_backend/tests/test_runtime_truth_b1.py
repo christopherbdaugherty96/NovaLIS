@@ -111,31 +111,36 @@ def test_phase9_live_evidence_targets_active_modules_not_retired_placeholders():
 
 def test_runtime_fingerprint_declares_expanded_scope_without_broadening_scanner():
     fp = ra._runtime_fingerprint([])
+    fingerprint_paths = ra._fingerprinted_runtime_surface_paths()
 
     assert fp["scope_version"] == "behaviorally_active_v2"
     assert fp["runtime_surface_file_count"] > 0
-    assert fp["runtime_surface_file_count"] == len(
-        ra._fingerprinted_runtime_surface_paths()
-    )
+    assert fp["runtime_surface_file_count"] == len(fingerprint_paths)
+    assert all(path.exists() for path in fingerprint_paths)
+
+    missing_allowed_paths = {
+        path.resolve() for path in ra.ALLOWED_READ_PATHS if not path.resolve().exists()
+    }
+    assert fingerprint_paths.isdisjoint(missing_allowed_paths)
 
     runtime_doc_root = Path(ra.RUNTIME_DOC_DIR).resolve()
     assert all(
         not path.resolve().is_relative_to(runtime_doc_root)
-        for path in ra._fingerprinted_runtime_surface_paths()
+        for path in fingerprint_paths
     )
 
     required_families = {"brain", "connections", "identity", "memory", "usage"}
     assert required_families.issubset(set(fp["source_families"]))
 
-    fingerprint_paths = {
+    fingerprint_relpaths = {
         path.resolve().relative_to(ra.PROJECT_ROOT).as_posix()
-        for path in ra._fingerprinted_runtime_surface_paths()
+        for path in fingerprint_paths
         if path.resolve().is_relative_to(ra.PROJECT_ROOT)
     }
     for family in required_families:
         assert any(
             path.startswith(f"nova_backend/src/{family}/")
-            for path in fingerprint_paths
+            for path in fingerprint_relpaths
         )
 
     scanner_paths = {
