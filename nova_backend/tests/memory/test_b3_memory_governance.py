@@ -201,6 +201,27 @@ def test_governed_explicit_correction_supersedes_old_item(tmp_path):
     assert new_item["content_display"] == "my favorite color is green"
 
 
+def test_deleting_explicit_correction_does_not_resurface_superseded_memory(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    skill = MemorySkill(store=store)
+    saved = _run(skill.handle("remember that my favorite color is blue"))
+    old_id = str(saved.data["memory_item"]["id"])
+    updated = _run(skill.handle(f"update memory {old_id}: my favorite color is green"))
+    new_id = str(updated.data["memory_item"]["id"])
+
+    store.delete_item(new_id, confirmed=True)
+
+    overview = store.summarize_overview()
+    assert overview["total_count"] == 0
+    assert overview["tier_counts"] == {"active": 0, "locked": 0, "deferred": 0}
+    assert overview["recent_items"] == []
+    assert overview["superseded_history_count"] == 1
+    historical = store.get_item(old_id)
+    assert historical is not None
+    assert historical["lock"]["superseded_by"] == new_id
+    assert store.find_relevant_items("favorite color") == []
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(

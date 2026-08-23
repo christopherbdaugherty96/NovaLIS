@@ -301,7 +301,10 @@ class GovernedMemoryStore:
     def summarize_overview(self, *, recent_limit: int = 5, thread_limit: int = 5) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
-            items = [item for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+            retained_items = [item for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+
+        superseded_history_count = len([item for item in retained_items if _item_is_superseded(item)])
+        items = [item for item in retained_items if not _item_is_superseded(item)]
 
         ordered = sorted(items, key=lambda row: str(row.get("updated_at") or ""), reverse=True)
         tier_counts = {"active": 0, "locked": 0, "deferred": 0}
@@ -382,9 +385,10 @@ class GovernedMemoryStore:
             "scope_counts": scope_counts,
             "recent_items": recent_items,
             "linked_threads": top_threads,
+            "superseded_history_count": superseded_history_count,
             "inspectability_note": (
                 "Memory remains explicit, inspectable, and revocable. "
-                "Recent, linked, and superseded items stay visible without turning into silent autosave."
+                "Superseded history remains inspectable by ID or export, but is excluded from current-memory totals."
             ),
         }
 
