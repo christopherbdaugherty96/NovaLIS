@@ -20,28 +20,39 @@ Generated documents can become incomplete or misleading when their generators ha
 
 ## Current development interpretation
 
-Wave A1 is synchronizing operational truth after merged stabilization work through PR #352.
-
-The merged-main checkpoint at the start of Wave A1 was:
+Wave A1 operational truth synchronization is complete and merged through PR #353:
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+f25c798c7cb488495a343068463e9214cab0a763
 ```
 
-That SHA is a planning checkpoint, not a permanent alias for current HEAD.
+Wave A2 strategy reconciliation is complete and merged through PR #355. Current merged `main` is:
+
+```text
+060380f2e8c6437ff888773f0078647547ff4622
+```
+
+Current active stabilization lane: B1
+
+B1 is the runtime-truth instrumentation lane. It must make generated runtime evidence and the active operational truth surfaces accurately reflect what their mechanisms actually prove. B2 remains blocked until B1 receives its own completed proof/review and merge decision.
 
 Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 
 ```text
-Wave A1 operational truth sync
--> Wave A2 strategy reconciliation
--> Wave B truth-integrity repairs
+Wave A1 operational truth sync                 COMPLETE
+-> Wave A2 strategy reconciliation             COMPLETE
+-> B1 runtime-truth instrumentation             ACTIVE
+-> B2 capability narration                      BLOCKED
+-> B3 memory governance                         BLOCKED
+-> B4 reproducibility hygiene                   BLOCKED
 -> Wave C validated-baseline proof checkpoint
--> reconcile #335
+-> reconstruct/reconcile #335
 -> Google identity proof
 -> first Google READ/evidence vertical
 -> evidence-based Continuity warrant
 ```
+
+Issue #354 remains a separate hosted-CI infrastructure problem. It is not behavioral proof for or against B1 and must be resolved before Wave C depends on hosted CI.
 
 ## The canonical truth files
 
