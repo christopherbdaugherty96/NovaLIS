@@ -35,7 +35,7 @@ Before selecting work, read:
 
 For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-## Wave B1 Current Development State — 2026-08-20
+## Wave B1 Current Development State — 2026-08-23
 
 Wave A1 and A2 are complete:
 
@@ -53,19 +53,24 @@ Current active lane:
 Wave B1 — runtime-truth instrumentation
 branch: codex/b1-runtime-truth-instrumentation-20260820
 base: 060380f2e8c6437ff888773f0078647547ff4622
-substate: source/truth corrections complete; mechanical proof required
-implementation checkpoint: b43a3989527e1c20892694b307351948a6129727
+first published/proven candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
+source/test correction checkpoint: ecd4033928990c68663f2ef81b46236686043765
+PR #356: OPEN / DRAFT
+substate: bounded final-review corrections applied; corrected exact-head proof/regeneration required
+merge: NOT AUTHORIZED
 ```
 
-The base SHA is a planning/comparison checkpoint, not a validated baseline. `b43a398...` is the accepted B1 implementation/truth-harness checkpoint after third-pass static review. Handoff-only documentation commits may advance the branch after it; verify and record the actual branch HEAD used for proof.
+The base SHA is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first exact-head local proof, generated-artifact publication, final remote scope review, and draft PR #356 opening. Final release review then found two bounded truth-integrity defects: active B1 handoff surfaces still described the pre-generation/no-PR state, and `runtime_surface_file_count` included one nonexistent `ALLOWED_READ_PATHS` entry.
+
+The fingerprint source/test correction is now applied. Later operational-document commits may advance branch HEAD beyond `ecd403...`; verify and record the actual corrected HEAD used for proof.
 
 ### Immediate worker instruction
 
-Do **not** spend the next session re-designing or extending B1 instrumentation.
+Do **not** redesign or extend B1 instrumentation.
 
-Unless the proof pass reproduces a concrete defect, treat the implementation as frozen and perform the mechanical proof/generation sequence recorded in `docs/status/DAILY_COMMAND_CENTER.md` and `.agent_context/current_priority.md`.
+The final review reproduced concrete B1 truth-contract defects, so bounded correction is authorized only for those defects. The next step is corrective execution/proof, mechanical regeneration, final-state checks, exact diff review, and PR #356 reassessment.
 
-The checked-in `docs/current_runtime/*` artifacts are still intentionally pre-B1. They must be regenerated mechanically; manual edits are forbidden.
+The three generated runtime artifacts committed at `f44cb8b8...` were valid for that candidate but are now stale relative to the fingerprint correction. Regenerate them mechanically on the corrected head; manual edits are forbidden.
 
 Merged stabilization work already includes:
 
@@ -102,7 +107,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ## Current Ordered Gate
 
 ```text
-Wave B1 — mechanical proof / generation / output inspection / exact diff / merge decision
+Wave B1 — bounded correction / corrected exact-head proof / regeneration / final PR #356 review / separate merge decision
 -> Wave B2 — capability narration
 -> Wave B3 — memory governance
 -> Wave B4 — reproducibility hygiene
@@ -129,9 +134,9 @@ B1 may change only what is required to make generated/runtime truth instrumentat
 - generated runtime truth outputs required by those changes;
 - focused tests;
 - a separate operational-truth consistency checker;
-- minimal current-status synchronization needed to name B1 and its proof substate accurately.
+- minimal current-status synchronization needed to name B1 and its proof/review substate accurately.
 
-The B1 source/truth corrections above are currently complete. Do not add more implementation work merely because B1 remains open; remaining work is execution/proof unless a concrete failure is reproduced.
+The first B1 publication pass is complete. Final release review reproduced one P1 operational-truth defect and one P2 fingerprint-count defect. Do not add implementation work beyond those bounded corrections.
 
 B1 does **not** authorize:
 
@@ -161,9 +166,9 @@ status: detected outside NetworkMediator; explicitly reported pending dispositio
 
 B1 makes that fact visible in discrepancy/runtime truth. It does not silently treat the path as mediated and does not fix the network path itself. The scanner is requests-based and does not prove absence of every possible network mechanism.
 
-## Mechanical Proof Gate
+## Corrective Proof Gate
 
-Before any B1 PR is opened, use a usable local checkout and verify the exact branch/HEAD:
+PR #356 already exists and must remain draft while the corrected head is proved. Verify the exact branch/HEAD:
 
 ```bash
 git branch --show-current
@@ -171,7 +176,17 @@ git rev-parse HEAD
 git status --short
 ```
 
-Then execute the proof sequence defined in `DAILY_COMMAND_CENTER.md` / `current_priority.md`, including focused B1 tests, existing auditor/governance-doc tests, operational consistency, runtime-doc drift, and `scripts/generate_runtime_docs.py`.
+Then run:
+
+```bash
+export PYTHONPATH=nova_backend
+python -m ruff check nova_backend/src/audit/runtime_truth_instrumentation.py nova_backend/tests/test_runtime_truth_b1.py scripts/check_operational_truth_consistency.py
+python -m pytest nova_backend/tests/test_runtime_truth_b1.py
+python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
+python scripts/check_operational_truth_consistency.py
+python scripts/check_runtime_doc_drift.py
+python scripts/generate_runtime_docs.py
+```
 
 After generation inspect:
 
@@ -181,7 +196,11 @@ docs/current_runtime/BYPASS_SURFACES.md
 docs/current_runtime/RUNTIME_FINGERPRINT.md
 ```
 
-Only after successful execution, generated-output inspection, and exact A2-base → final-B1 diff review may a **draft** B1 PR be opened. A draft PR does not authorize merge.
+The fingerprint acceptance contract now additionally requires that `runtime_surface_file_count` equal the exact **existing-file** set consumed by the runtime-surface hash. Missing allowlist paths must not be counted as files.
+
+The generator also refreshes `_MOCs/*`; those side effects remain outside B1. Stage only the three runtime artifacts and do not use broad staging.
+
+After regeneration, rerun operational consistency and runtime-doc drift, review the exact A2-base → corrected final-B1 diff, then reassess PR #356. A clean result supports a **merge decision** only; it does not authorize merge.
 
 ## Permanent Control-Plane Distinction
 
@@ -243,7 +262,7 @@ authority_class
 
 `authorized` is not static capability metadata. Approval/authority is request-specific.
 
-Do not infer that a generated PASS proves behavior the generator does not measure. Do not infer that a historical proof packet is current proof. Do not mark unexecuted test definitions as passing evidence. Do not call a candidate baseline validated until the required Wave C proof package has completed.
+Do not infer that a generated PASS proves behavior the generator does not measure. Do not infer that a historical proof packet is current proof. Do not mark unexecuted test definitions as passing evidence. Do not call a candidate baseline validated until the required Wave C proof package has completed. Do not treat the PASS on `f44cb8b8...` as proof of a later corrected branch head.
 
 ## Continuity Boundary
 
@@ -279,6 +298,7 @@ Read:
 - use old PR test totals as proof of a reconciled branch;
 - start B2, B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime inside B1;
 - manually edit generated runtime artifacts;
+- publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
 
 ## Repo Truth Rule
