@@ -20,7 +20,6 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-
 KNOWN_NETWORK_MEDIATOR_EXCEPTIONS: dict[str, dict[str, str]] = {
     "nova_backend/src/api/connections_api.py": {
         "classification": "local_administrative_health_probe",
