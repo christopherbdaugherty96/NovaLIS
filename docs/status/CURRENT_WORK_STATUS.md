@@ -9,16 +9,16 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-WAVE B4 — reproducibility hygiene
-STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
-CURRENT MAIN / B4 BASE: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+WAVE C — proof / validated-baseline checkpoint
+STATUS: NEXT / NOT AUTHORIZED
+CURRENT MAIN / B4 SQUASH MERGE: 5c243a822f79ea09b0031124d4bafbf32d18842c
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
-WAVE C: BLOCKED
+B4: COMPLETE / MERGED via PR #362
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge is current `main` `8cc67213...`. B1, B2, and B3 evidence remains revision- and environment-specific historical evidence.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` is current `main`. B1 through B4 evidence remains revision- and environment-specific historical evidence.
 
 ## Completed Gates
 
@@ -62,7 +62,12 @@ Wave B3 merge
 
 Post-B3 operational truth synchronization
   PR #361: MERGED
-  merge/current B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+  merge/B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+
+Wave B4 merge
+  PR #362: MERGED
+  reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
+  squash merge/current main: 5c243a822f79ea09b0031124d4bafbf32d18842c
 ```
 
 ## B1 Completed Evidence
@@ -96,7 +101,7 @@ status — COMPLETE / MERGED via PR #358
 result — shared seven-field non-authorizing truth projection and reviewed consumer migration
 ```
 
-Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open and separate from B4.
+Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open and must be resolved before Wave C relies on hosted CI.
 
 ## Completed B3 Lane
 
@@ -108,6 +113,16 @@ result — ordinary chat does not silently create authoritative durable memory; 
 
 Historical B3 evidence remains valid for the reviewed revision and environment. Do not reopen or redesign B3 without concrete new evidence.
 
+## Completed B4 Lane
+
+```text
+B4 — reproducibility hygiene
+status — COMPLETE / MERGED via PR #362
+result — pyproject.toml is canonical dependency truth; requirements surfaces are mechanically checked compatibility projections; the historical python-multipart mismatch is resolved
+```
+
+Historical B4 proof remains valid for the reviewed revision and environment. Do not reopen packaging or dependency-source design without concrete new evidence.
+
 ## Scope Lock
 
 B1 does not change:
@@ -116,7 +131,7 @@ B1 does not change:
 network behavior / connections_api.py wiring
 capability narration semantics (B2)
 GeneralChat persistence behavior (B3)
-dependency-source truth (B4)
+dependency-source truth beyond completed B4
 capability registry
 OAuth / PR #335 implementation
 Google domain-data access
@@ -159,8 +174,8 @@ must be resolved before Wave C relies on hosted CI
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
--> B4 reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
--> Wave C semantic/proof stabilization and validated baseline
+-> B4 reproducibility hygiene / COMPLETE / MERGED
+-> Wave C semantic/proof stabilization and validated baseline / NEXT / NOT AUTHORIZED
 -> reconstruct #335 onto exact validated baseline
 -> independent security/architecture review
 -> separate #335 merge decision
@@ -169,7 +184,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B2 and B3 are complete and merged. B4 is active under bounded authorization.
+B1 through B4 are complete and merged. Wave C is next but not authorized.
 
 ## Permanent Truth Boundaries
 
