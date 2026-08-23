@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-20.
+Last reviewed: 2026-08-23.
 
 This is a hand-maintained operational status surface. It is not generated runtime truth.
 
@@ -10,14 +10,15 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE B1 — runtime-truth instrumentation
-STATUS: SOURCE/TRUTH CORRECTIONS COMPLETE; MECHANICAL PROOF REQUIRED
+STATUS: FINAL REVIEW CORRECTIONS IN PROGRESS; MERGE NOT AUTHORIZED
 BRANCH: codex/b1-runtime-truth-instrumentation-20260820
 POST-A2 BASE: 060380f2e8c6437ff888773f0078647547ff4622
-IMPLEMENTATION CHECKPOINT: b43a3989527e1c20892694b307351948a6129727
-PR: NONE — CORRECTLY WITHHELD
+PUBLISHED CANDIDATE: f44cb8b856345ddc573fe0cb56037104350ffeb4
+DRAFT PR: #356 — OPEN / DRAFT
+CORRECTION CHECKPOINT: ecd4033928990c68663f2ef81b46236686043765
 ```
 
-The A2 base is a planning/comparison checkpoint, not a validated baseline. `b43a398...` is the accepted B1 implementation/truth-harness checkpoint; later handoff-only documentation commits may advance branch HEAD. Verify `git rev-parse HEAD` before executing proof and record that exact revision with results.
+The A2 base is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first full B1 proof/publication pass and opened draft PR #356. Final release review then found two bounded truth-integrity defects: stale operational substate language and a fingerprint file-count set that included one nonexistent allowlist path. The source/test correction is now applied; later documentation commits may advance branch HEAD beyond `ecd403...`.
 
 ## Completed Gates
 
@@ -27,46 +28,41 @@ Wave A1 — MERGED via PR #353
 
 Wave A2 — MERGED via PR #355
   060380f2e8c6437ff888773f0078647547ff4622
+
+Wave B1 first exact-head proof/publication pass
+  candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
+  draft PR #356 opened
+  local Ruff / focused tests / auditor-governance tests / consistency / drift: PASS
+  hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
 ```
 
 ## B1 Current Substate
 
-B1 code/truth-harness design has completed three static review passes. No further code-design correction is justified before execution unless proof reproduces a concrete defect.
-
-Completed B1 source-level work:
+Final release review found:
 
 ```text
-✓ stable existing-auditor instrumentation path
-✓ requests-based network findings enter discrepancy state
-✓ connections_api.py classified local_administrative_health_probe
-✓ unclassified requests-based paths hard-fail
-✓ Phase 9 active evidence uses live imports/symbols
-✓ behaviorally_active_v2 fingerprint scope
-✓ source families include brain/connections/identity/memory/usage
-✓ runtime_surface_file_count uses exact hashed path set
-✓ generated invariant/network wording qualified to measured scope
-✓ separate operational-truth consistency checker
-✓ docs/CANONICAL/00_INDEX.md participates in lane consistency
-✓ stale canonical-index regression added
-✓ generator-entrypoint integration regression added
-✓ Issue #343 synchronized to A1/A2 complete, B1 active
+P1  active B1 handoff surfaces still described the pre-generation/no-PR state
+P2  runtime_surface_file_count counted one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Branch posture now:
+Bounded correction already applied at source/test level:
 
 ```text
-FREEZE B1 IMPLEMENTATION FOR PROOF
-Do not add more code unless execution reveals a reproduced defect.
+✓ fingerprinted runtime-surface set now requires path.exists()
+✓ runtime_surface_file_count therefore describes existing files in the exact hash set
+✓ focused regression requires every fingerprinted path to exist
+✓ missing ALLOWED_READ_PATHS entries are excluded from the fingerprinted set
 ```
+
+The generated runtime artifacts committed at `f44cb8b8...` were valid for that earlier source state but are now stale relative to the fingerprint correction. They must be mechanically regenerated on the corrected exact head. Manual edits remain forbidden.
 
 ## Remaining B1 Gate
 
-The checked-in generated runtime docs are still pre-B1. This is the remaining material gate.
-
-From a usable local checkout of current branch HEAD:
+From a usable local checkout of the corrected branch HEAD:
 
 ```bash
 export PYTHONPATH=nova_backend
+python -m ruff check nova_backend/src/audit/runtime_truth_instrumentation.py nova_backend/tests/test_runtime_truth_b1.py scripts/check_operational_truth_consistency.py
 python -m pytest nova_backend/tests/test_runtime_truth_b1.py
 python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
 python scripts/check_operational_truth_consistency.py
@@ -80,6 +76,14 @@ Windows PowerShell environment equivalent:
 $env:PYTHONPATH = "nova_backend"
 ```
 
+The generator also refreshes tracked `_MOCs/*`. That remains outside B1 publication scope. Stage only:
+
+```bash
+git add -- docs/current_runtime/CURRENT_RUNTIME_STATE.md docs/current_runtime/BYPASS_SURFACES.md docs/current_runtime/RUNTIME_FINGERPRINT.md
+```
+
+Do not use broad staging and do not publish `_MOCs/*` in B1.
+
 After generation inspect:
 
 ```text
@@ -88,7 +92,7 @@ docs/current_runtime/BYPASS_SURFACES.md
 docs/current_runtime/RUNTIME_FINGERPRINT.md
 ```
 
-Required acceptance:
+Required acceptance now includes:
 
 ```text
 CURRENT_RUNTIME_STATE.md
@@ -96,6 +100,7 @@ CURRENT_RUNTIME_STATE.md
   no false Discrepancies: None
   qualified NetworkMediator/Governor/ledger wording
   Phase 9 evidence references live active symbols
+  Runtime Surface Scope file count reflects existing fingerprinted files only
 
 BYPASS_SURFACES.md
   connections_api.py remains visible
@@ -105,30 +110,19 @@ BYPASS_SURFACES.md
 
 RUNTIME_FINGERPRINT.md
   scope_version: behaviorally_active_v2
-  runtime_surface_file_count present
+  runtime_surface_file_count present and equal to existing files in the exact hashed set
   source_families present
   brain/connections/identity/memory/usage included
 ```
 
-Then perform exact A2-base → final-B1 diff review and open a **draft** B1 PR only if the proof/output gate is clean.
+Then rerun:
 
-## Known Pre-Generation Contradiction
-
-Until the generator is actually run, checked-in generated artifacts still contain the known pre-B1 contradiction:
-
-```text
-CURRENT_RUNTIME_STATE.md
-  -> universal NetworkMediator/Governor/ledger claims
-  -> Runtime Truth Discrepancies: None
-
-BYPASS_SURFACES.md
-  -> nova_backend/src/api/connections_api.py detected outside NetworkMediator
-
-RUNTIME_FINGERPRINT.md
-  -> pre-B1 fingerprint fields only
+```bash
+python scripts/check_operational_truth_consistency.py
+python scripts/check_runtime_doc_drift.py
 ```
 
-Do not manually edit those generated artifacts.
+Finally perform an exact A2-base → corrected final-B1 diff review and reassess draft PR #356. Merge remains a separate decision and is not authorized by a clean rerun.
 
 ## Scope Lock
 
@@ -178,7 +172,7 @@ must be resolved before Wave C relies on hosted CI
 ## Current Ordering
 
 ```text
-B1 mechanical proof / generation / review / merge decision
+B1 bounded correction -> exact-head rerun -> regeneration -> final PR #356 review -> separate merge decision
 -> B2 capability narration
 -> B3 memory governance
 -> B4 reproducibility hygiene
@@ -205,4 +199,4 @@ memory != Operational Continuity
 current HEAD != immutable validated baseline
 ```
 
-Generated evidence is authoritative only for what the generator actually measures. Historical or unexecuted test definitions are not current proof.
+Generated evidence is authoritative only for what the generator actually measures. Historical or unexecuted test definitions are not current proof. A previously passing candidate does not automatically prove a later corrective head.
