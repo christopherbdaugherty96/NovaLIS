@@ -241,13 +241,14 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         return frozenset(path.resolve() for path in paths)
 
     def fingerprinted_runtime_surface_paths() -> frozenset[Path]:
-        """Return the exact path set consumed by the runtime-surface hash."""
+        """Return the exact existing-file set consumed by the runtime-surface hash."""
 
         runtime_doc_root = Path(auditor.RUNTIME_DOC_DIR).resolve()
         return frozenset(
             path.resolve()
             for path in auditor._behaviorally_active_fingerprint_paths()
-            if not path.resolve().is_relative_to(runtime_doc_root)
+            if path.resolve().exists()
+            and not path.resolve().is_relative_to(runtime_doc_root)
         )
 
     def runtime_surface_hash() -> str:
