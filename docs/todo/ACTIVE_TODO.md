@@ -1,20 +1,23 @@
 # Active TODO — Nova
 
-Last reviewed: 2026-08-20.
+Last reviewed: 2026-08-23.
 
 This file is the current actionable task inventory. Historical lane detail belongs in Git history and dated proof/strategy artifacts, not in the active queue.
 
 ## Active Now
 
-### Wave B1 — mechanical proof gate
+### Wave B1 — final review correction gate
 
 Current branch:
 
 ```text
 codex/b1-runtime-truth-instrumentation-20260820
 A2 base: 060380f2e8c6437ff888773f0078647547ff4622
-implementation checkpoint: b43a3989527e1c20892694b307351948a6129727
-substate: source/truth corrections complete; implementation frozen pending proof
+first published/proven candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
+source/test correction checkpoint: ecd4033928990c68663f2ef81b46236686043765
+PR #356: OPEN / DRAFT
+merge: NOT AUTHORIZED
+substate: bounded final-review corrections applied; corrected exact-head proof/regeneration required
 ```
 
 Wave A1 and A2 are already merged:
@@ -27,7 +30,7 @@ Wave A1 and A2 are already merged:
        merge: 060380f2e8c6437ff888773f0078647547ff4622
 ```
 
-Do not add more B1 implementation work unless execution reproduces a concrete defect.
+Do not redesign B1. Only reproduced B1 truth-contract defects may be corrected.
 
 ### Completed B1 source/truth work
 
@@ -37,31 +40,44 @@ Do not add more B1 implementation work unless execution reproduces a concrete de
 - [x] Add discrepancy representation for known and unclassified requests-based network paths.
 - [x] Replace Phase 9 retired-placeholder evidence with live import/symbol checks.
 - [x] Expand runtime fingerprint scope over behaviorally active source families, including `usage`.
-- [x] Make `runtime_surface_file_count` use the exact path set consumed by the runtime-surface hash.
 - [x] Qualify generated NetworkMediator/Governor/ledger and network-scan wording to measured scope.
 - [x] Add focused B1 regression coverage and generator-entrypoint integration coverage.
 - [x] Add `scripts/check_operational_truth_consistency.py` separately from `check_runtime_doc_drift.py`.
 - [x] Include `docs/CANONICAL/00_INDEX.md` in active-lane consistency checking with stale-index regression.
 - [x] Synchronize A1/A2/B1 operational truth surfaces and Issue #343 checkpoint.
+- [x] Complete first exact-head local proof pass.
+- [x] Mechanically generate and review the first B1 runtime artifacts.
+- [x] Commit only the three intended runtime artifacts; exclude `_MOCs/*`.
+- [x] Open draft PR #356.
+- [x] Complete final remote exact-head/scope review of `f44cb8b8...`.
+- [x] Final release review identified one P1 operational-doc substate defect and one P2 fingerprint-count defect.
+- [x] Correct fingerprint scope so the exact hashed/count set contains existing files only.
+- [x] Add focused regression asserting all fingerprinted paths exist and missing allowlist entries are excluded.
+- [x] Synchronize active B1 handoff documents to the correction/review state.
 
-### Remaining B1 execution/proof gate
+### Remaining B1 corrective proof/publication gate
 
-Run in this order on the actual current B1 branch HEAD:
+Run in this order on the actual current corrected B1 branch HEAD:
 
 ```text
-[ ] verify branch / HEAD / clean working state
-[ ] run focused B1 tests
-[ ] run existing runtime-auditor + governance-doc structural tests
+[ ] verify branch / corrected HEAD / clean working state
+[ ] rerun Ruff on the B1 correction surfaces
+[ ] rerun focused B1 tests
+[ ] rerun runtime-auditor + governance-doc structural tests
 [ ] run pre-generation operational consistency check
 [ ] run pre-generation runtime-doc drift check
 [ ] mechanically run scripts/generate_runtime_docs.py
 [ ] inspect CURRENT_RUNTIME_STATE.md
 [ ] inspect BYPASS_SURFACES.md
 [ ] inspect RUNTIME_FINGERPRINT.md
-[ ] rerun operational consistency check against post-generation state
-[ ] rerun runtime-doc drift check against post-generation state
-[ ] review exact A2-base -> actual final B1 HEAD diff
-[ ] open draft B1 PR only if every prior gate is clean
+[ ] verify runtime_surface_file_count reflects existing files in the exact hash set
+[ ] rerun operational consistency against post-generation state
+[ ] rerun runtime-doc drift against post-generation state
+[ ] stage/commit only the three generated runtime artifacts if changed
+[ ] verify `_MOCs/*` remains excluded
+[ ] review exact A2-base -> corrected final B1 HEAD diff
+[ ] review PR #356 at corrected final head
+[ ] produce merge-readiness verdict
 ```
 
 Generated runtime artifacts must not be edited manually.
@@ -74,6 +90,7 @@ CURRENT_RUNTIME_STATE.md
   - no false Discrepancies: None
   - Phase 9 names live active symbols
   - NetworkMediator/Governor/ledger wording is qualified
+  - Runtime Surface Scope count reflects existing fingerprinted files only
 
 BYPASS_SURFACES.md
   - connections_api.py remains visible
@@ -84,6 +101,7 @@ BYPASS_SURFACES.md
 RUNTIME_FINGERPRINT.md
   - scope_version: behaviorally_active_v2
   - runtime_surface_file_count present
+  - count equals the exact existing-file set consumed by the runtime-surface hash
   - source_families present
   - brain / connections / identity / memory / usage included
 ```
