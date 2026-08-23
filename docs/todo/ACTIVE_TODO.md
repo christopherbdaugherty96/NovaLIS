@@ -6,16 +6,16 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B4 — reproducibility hygiene next
+### Wave B4 — reproducibility hygiene active
 
 Current state:
 
 ```text
-current main / B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+current main / B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 B1 / PR #356: COMPLETE / MERGED
 B2 / PR #358: COMPLETE / MERGED
 B3 / PR #360: COMPLETE / MERGED
-B4: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B4: ACTIVE / IMPLEMENTATION AUTHORIZED
 Wave C: BLOCKED
 ```
 
@@ -44,10 +44,13 @@ Wave A1, A2, B1, B2, and B3 are already merged:
 
 #360  B3 memory governance
        reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
-       squash merge/current main: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+       squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+
+#361  post-B3 operational truth synchronization
+       merge/current B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 ```
 
-Do not reopen B1, B2, or B3 without concrete new evidence. B4 requires separate implementation authorization.
+Do not reopen B1, B2, or B3 without concrete new evidence. Keep B4 within its separately authorized dependency-truth boundary.
 
 ### Completed B1 source/truth work
 
@@ -212,7 +215,7 @@ Keep #354 separate from B4 reproducibility work unless infrastructure diagnosis 
 
 ### Wave B4 — reproducibility hygiene
 
-**NEXT / NOT IMPLEMENTATION-AUTHORIZED.** Established high-level scope only:
+**ACTIVE / IMPLEMENTATION AUTHORIZED.** Implement only the bounded dependency-truth scope:
 
 - make `pyproject.toml` canonical for dependencies;
 - resolve the `python-multipart` mismatch with `nova_backend/requirements.txt`;
@@ -263,7 +266,7 @@ Do not begin outside this post-B3 synchronization:
 
 ```text
 B3 memory architecture beyond the completed truth/provenance repair
-B4 dependency/reproducibility repair (not implementation-authorized)
+B4 dependency modernization, unrelated upgrades, or packaging redesign
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes

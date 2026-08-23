@@ -21,7 +21,7 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-23
 
-Current active stabilization lane: B4 — reproducibility hygiene, next but not implementation-authorized.
+Current active stabilization lane: B4 — reproducibility hygiene, active under bounded owner authorization.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -29,14 +29,14 @@ A2 — COMPLETE / MERGED via #355
 B1 — COMPLETE / MERGED via #356
 B2 — COMPLETE / MERGED via #358
 B3 — COMPLETE / MERGED via #360
-B4 — NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B4 — ACTIVE / IMPLEMENTATION AUTHORIZED
 C  — BLOCKED
 ```
 
 Current merged `main`:
 
 ```text
-8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 ```
 
 First published/proven B1 candidate:
@@ -54,7 +54,7 @@ P1 — active handoff surfaces still described the pre-generation/no-PR state
 P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` is current `main`.
+Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established current B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`.
 
 ## Merged stabilization state
 
@@ -110,7 +110,7 @@ WAVE B — truth-integrity repairs
   B1 runtime-truth instrumentation                  COMPLETE / MERGED
   B2 capability narration                           COMPLETE / MERGED
   B3 memory governance                              COMPLETE / MERGED
-  B4 reproducibility hygiene                        NEXT / NOT IMPLEMENTATION-AUTHORIZED
+  B4 reproducibility hygiene                        ACTIVE / IMPLEMENTATION AUTHORIZED
 
 WAVE C — proof and stabilization checkpoint         BLOCKED
   exact candidate baseline
@@ -228,9 +228,9 @@ B3 repaired ordinary GeneralChat persistence boundaries and explicit-vs-observed
 
 ### B4 — reproducibility hygiene
 
-**Next / not implementation-authorized.**
+**Active / implementation authorized within the bounded B4 contract.**
 
-The established high-level scope is to make `pyproject.toml` canonical dependency truth, resolve the current `python-multipart` declaration mismatch, and avoid independently maintained duplicate dependency pins. No dependency change is authorized by this synchronization.
+B4 is authorized only to make `pyproject.toml` canonical dependency truth, resolve the current `python-multipart` declaration mismatch, mechanically prevent duplicate dependency-pin drift, and prove the supported install path remains resolvable. It does not authorize broad dependency upgrades, packaging redesign, runtime behavior changes, or Wave C.
 
 ## Wave C — validated-baseline checkpoint
 

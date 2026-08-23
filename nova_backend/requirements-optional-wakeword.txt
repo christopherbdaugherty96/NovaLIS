@@ -1,2 +1,4 @@
+# Optional wake-word extension over the verified runtime compatibility projection.
+# Wake word is not part of Nova's default runtime dependency set.
 -r requirements.txt
 openwakeword==0.6.0

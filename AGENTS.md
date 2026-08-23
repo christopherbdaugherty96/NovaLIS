@@ -61,7 +61,10 @@ Wave A1, A2, B1, B2, and B3 are complete:
 
 #360  Wave B3 memory governance — MERGED
        reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
-       squash merge/current main: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+       squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+
+#361  Post-B3 operational truth synchronization — MERGED
+       merge/current B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 ```
 
 Current planning lane:
@@ -69,7 +72,7 @@ Current planning lane:
 ```text
 Wave B2 — capability narration: COMPLETE / MERGED
 Wave B3 — memory governance: COMPLETE / MERGED
-B4: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B4: ACTIVE / IMPLEMENTATION AUTHORIZED
 Wave C: BLOCKED
 ```
 
@@ -79,7 +82,7 @@ B1, B2, and B3 are complete and merged. Their proof and review records remain hi
 
 B3's bounded memory-governance contract is complete: ordinary chat does not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible; superseded history is not current memory.
 
-B4 is next but not implementation-authorized. Its established high-level scope is only dependency-source reproducibility: make `pyproject.toml` canonical, resolve the `python-multipart` mismatch, and avoid independently maintained duplicate dependency pins. Do not begin dependency changes without separate owner authorization.
+B4 has separate reviewed owner authorization. Implement only dependency-source reproducibility: make `pyproject.toml` canonical, resolve the `python-multipart` mismatch, mechanically prevent independently maintained duplicate dependency pins, and prove the supported install path remains resolvable. Do not broaden this lane into dependency modernization, packaging redesign, runtime behavior changes, Issue #354 repair, or Wave C.
 
 Merged stabilization work already includes:
 
@@ -118,7 +121,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ```text
 Wave B2 — capability narration / COMPLETE / MERGED
 -> Wave B3 — memory governance / COMPLETE / MERGED
--> Wave B4 — reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> Wave B4 — reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
 -> Wave C — proof / validated-baseline checkpoint
 -> reconstruct/reconcile #335 onto the exact validated baseline
 -> separate #335 review/merge decision
@@ -195,7 +198,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established the B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` is current `main`. B4 is next but not implementation-authorized. Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established the B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established current B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 is active under bounded authorization. Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -291,7 +294,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- reopen B2 or B3 without concrete new evidence, or start B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
+- reopen B2 or B3 without concrete new evidence, expand B4 beyond its bounded dependency-truth scope, or start Wave C, #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
