@@ -9,7 +9,7 @@ CURRENT PLANNING LANE:
 SUBSTATE:
   B1 COMPLETE / MERGED.
   B2 COMPLETE / MERGED.
-  B3 NEXT / NOT IMPLEMENTATION-AUTHORIZED.
+  B3 ACTIVE / IMPLEMENTATION AUTHORIZED.
   B4 / Wave C BLOCKED.
 
 B1 MERGE:
@@ -21,7 +21,8 @@ B1 MERGE:
 B2 MERGE:
   PR #358 — MERGED
   reviewed head — b95039c2dc483ad330205de5dac8e3b3f94d8836
-  squash merge/current main — e84a9d55f8575c687765b1df19e8f794b180599b
+  squash merge — e84a9d55f8575c687765b1df19e8f794b180599b
+  post-B2 sync/current B3 base — b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -52,7 +53,7 @@ HOSTED CI:
 
 CURRENT ORDER:
   B2 capability narration / COMPLETE / MERGED
-  -> B3 memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+  -> B3 memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
   -> B4 reproducibility hygiene
   -> C proof / semantic-contract stabilization / validated baseline
   -> reconstruct #335 onto exact validated baseline
@@ -74,7 +75,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3 is next but requires a separate reviewed owner authorization before any memory-governance implementation begins. Until then, no runtime lane is active.
+B3 has separate reviewed owner authorization. Only its bounded memory truth/provenance repair is active; B4 and Wave C remain blocked.
 
 ## Permanent evidence discipline
 
@@ -93,7 +94,7 @@ prior candidate PASS != corrected-head PASS
 ## Not active
 
 ```text
-B3 memory-governance implementation (next; separate authorization required)
+B3 memory architecture beyond the bounded truth/provenance repair
 B4 reproducibility hygiene
 Google Tasks domain work
 Gmail expansion

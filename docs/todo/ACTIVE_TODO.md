@@ -6,15 +6,15 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B3 — memory governance authorization gate
+### Wave B3 — active memory governance repair
 
 Current state:
 
 ```text
-current main: e84a9d55f8575c687765b1df19e8f794b180599b
+current main / B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 B1 / PR #356: COMPLETE / MERGED
 B2 / PR #358: COMPLETE / MERGED
-B3: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B3: ACTIVE / IMPLEMENTATION AUTHORIZED
 B4: BLOCKED
 Wave C: BLOCKED
 ```
@@ -37,10 +37,13 @@ Wave A1, A2, B1, and B2 are already merged:
 
 #358  B2 capability narration truth
        reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
-       squash merge/current main: e84a9d55f8575c687765b1df19e8f794b180599b
+       squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
+
+#359  post-B2 operational truth synchronization
+       merge/current B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 ```
 
-Do not reopen B1 or B2 without concrete new evidence. Do not begin B3 until it receives separate reviewed owner authorization.
+Do not reopen B1 or B2 without concrete new evidence. Keep B3 within its separately authorized memory truth/provenance boundary.
 
 ### Completed B1 source/truth work
 
@@ -184,7 +187,7 @@ Keep #354 separate from B3 memory-governance work unless infrastructure diagnosi
 
 ### Wave B3 — memory governance
 
-**NEXT / NOT IMPLEMENTATION-AUTHORIZED.** Preserve only the established high-level scope until separate authorization:
+**ACTIVE / IMPLEMENTATION AUTHORIZED.** Implement only the bounded memory truth/provenance scope:
 
 - ordinary GeneralChat must not silently create durable personal memory;
 - define explicit/observed precedence and conflict rules;
@@ -238,10 +241,10 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin while B3 remains at the authorization gate:
+Do not begin outside the active bounded B3 lane:
 
 ```text
-B3 memory-governance behavior
+B3 memory architecture beyond the authorized truth/provenance repair
 B4 dependency/reproducibility repair
 Google Tasks domain implementation
 Gmail expansion

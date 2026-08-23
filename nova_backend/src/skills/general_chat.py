@@ -301,65 +301,6 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?(?:last|final)\b|\b(?:the|that)\s+(?:last|final)\b", re.IGNORECASE), -1),
     )
 
-    # Auto-memory extraction patterns: (regex, category, key_name)
-    _MEMORY_PATTERNS: tuple[tuple[re.Pattern, str, str], ...] = (
-        (re.compile(r"\bmy name is (\w[\w ]{0,30})", re.I), "personal", "name"),
-        (re.compile(r"\bcall me (\w[\w ]{0,20})", re.I), "personal", "preferred_name"),
-        (re.compile(r"\bi (?:really )?(?:like|love|enjoy) (.{3,60}?)(?:\.|,|!|$)", re.I), "preferences", "likes"),
-        (re.compile(r"\bi (?:really )?(?:dislike|hate|don'?t like) (.{3,60}?)(?:\.|,|!|$)", re.I), "preferences", "dislikes"),
-        (re.compile(r"\bi (?:work|am working) (?:at|for|on) (.{3,60}?)(?:\.|,|!|$)", re.I), "work", "employer"),
-        (re.compile(r"\bi(?:'m| am) a (.{3,40}?)(?:\.|,|!|$)", re.I), "work", "role"),
-        (re.compile(r"\bi prefer (.{3,60}?)(?:\.|,|!|$)", re.I), "preferences", "preference"),
-        (re.compile(r"\bmy birthday is (.{3,30}?)(?:\.|,|!|$)", re.I), "important_dates", "birthday"),
-        (re.compile(r"\bmy (?:wife|husband|partner|spouse)(?:'s| is| name is)? (\w[\w ]{1,20})", re.I), "relationships", "partner"),
-    )
-    # False-positive blocklist for auto-extraction
-    _MEMORY_EXTRACT_BLOCKLIST = frozenset({
-        "that", "this", "it", "the way", "how", "what", "when",
-        "to", "the idea", "the concept", "the approach",
-    })
-
-    # Conservative relationship insight patterns.
-    # Each tuple: (regex, normalized_insight_string)
-    # Rules:
-    # - Only explicit, high-confidence feedback signals — not inferred
-    # - Insights are normalized so substring dedup in record_insight() works
-    # - "more detail about X" and "give me an example of X" are task requests,
-    #   not general preferences — excluded to avoid false positives
-    # - One-off / context-qualified signals ("for this", "just this time") are
-    #   filtered before patterns run (see _extract_relationship_signals guard)
-    _INSIGHT_PATTERNS: tuple[tuple[re.Pattern, str], ...] = (
-        # Length / verbosity preferences
-        (re.compile(r"\bkeep\s+it\s+(short|brief|concise|quick)\b", re.I), "User prefers concise responses"),
-        (re.compile(r"\b(too\s+long|too\s+verbose|too\s+wordy)\b", re.I), "User prefers concise responses"),
-        (re.compile(r"\bless\s+(detail|explanation|text|words)\b", re.I), "User prefers concise responses"),
-        (re.compile(r"\bshorter\s+(please|answer|response)?\b", re.I), "User prefers concise responses"),
-        # "more detail" only when NOT followed by "about/on/for/of/regarding" — those
-        # are topic requests ("more detail about the timeline"), not style preferences.
-        (re.compile(r"\bmore\s+detail(s|ed)?(?!\s+(?:about|on|for|of|regarding)\b)", re.I), "User wants more detailed responses"),
-        (re.compile(r"\bmore\s+(depth|thorough|comprehensive)\b", re.I), "User wants more detailed responses"),
-        # Formatting preferences
-        (re.compile(r"\b(don.t|no|stop)\s+use\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
-        (re.compile(r"\bstop\s+using\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
-        (re.compile(r"\bno\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
-        (re.compile(r"\buse\s+bullet\s*points?\b", re.I), "User prefers bullet point formatting"),
-        (re.compile(r"\buse\s+(?:a\s+)?list\b", re.I), "User prefers bullet point formatting"),
-        # Directness preferences
-        (re.compile(r"\bmore\s+direct(ly)?\b", re.I), "User prefers direct answers without preamble"),
-        (re.compile(r"\bget\s+to\s+the\s+point\b", re.I), "User prefers direct answers without preamble"),
-        (re.compile(r"\bskip\s+the\s+(intro|introduction|preamble|setup)\b", re.I), "User prefers direct answers without preamble"),
-        (re.compile(r"\bjust\s+answer\s+the\s+question\b", re.I), "User prefers direct answers without preamble"),
-        # Caveats / disclaimers
-        (re.compile(r"\bskip\s+the\s+(disclaimer|caveats?|warnings?)\b", re.I), "User dislikes excessive caveats"),
-        (re.compile(r"\bstop\s+(adding|with|the)\s+(disclaimer|caveats?|warnings?)\b", re.I), "User dislikes excessive caveats"),
-        (re.compile(r"\b(don.t|no)\s+(say|add|include)\s+(?:\w+\s+){0,2}caveats?\b", re.I), "User dislikes excessive caveats"),
-        # Examples — only general preference expressions, not task-specific requests.
-        # "give me an example of X" is a task; "I find examples helpful" is a preference.
-        (re.compile(r"\bi\s+(like|find|appreciate)\s+(?:\w+\s+){0,3}examples?\b", re.I), "User finds examples helpful"),
-        (re.compile(r"\bexamples?\s+(help|are\s+helpful|make\s+it\s+clearer)\b", re.I), "User finds examples helpful"),
-        (re.compile(r"\balways\s+(?:include|add|give)\s+(?:an?\s+)?example\b", re.I), "User finds examples helpful"),
-    )
-
     def __init__(
         self,
         policy_config: Optional[dict] = None,
@@ -432,13 +373,19 @@ class GeneralChatSkill(BaseSkill):
         try:
             user_ctx = self._user_memory.render_context_block(max_chars=300)
             if user_ctx:
-                parts.append(f"What you know about the user:\n{user_ctx}")
+                parts.append(
+                    "Persisted user memory (respect each epistemic label; "
+                    f"candidate memory is not fact):\n{user_ctx}"
+                )
         except Exception:
             pass
         try:
             relationship_ctx = self._nova_memory.get_relationship_context(max_chars=150)
             if relationship_ctx:
-                parts.append(f"Relationship context:\n{relationship_ctx}")
+                parts.append(
+                    "Legacy relationship observations (non-authoritative; do not "
+                    f"treat as fact):\n{relationship_ctx}"
+                )
         except Exception:
             pass
         return "\n\n".join(parts)
@@ -879,7 +826,13 @@ class GeneralChatSkill(BaseSkill):
                     continue
                 item_id = str(row.get("id") or "").strip()
                 thread_name = str(row.get("thread_name") or "").strip()
-                label = f"Relevant explicit memory {item_id}" if item_id else "Relevant explicit memory"
+                authority = str(row.get("authority_label") or "candidate_memory").strip()
+                if authority == "confirmed_project_memory":
+                    label = "Relevant confirmed memory"
+                else:
+                    label = "Relevant candidate memory (unconfirmed; do not treat as fact)"
+                if item_id:
+                    label += f" {item_id}"
                 if thread_name:
                     label += f" (thread: {thread_name})"
                 hints.append(f"{label}: {content}")
@@ -1734,15 +1687,6 @@ class GeneralChatSkill(BaseSkill):
                 tone_profile=tone_profile,
             )
 
-            # Fire-and-forget memory extraction from the user's query
-            self._extract_and_save_memories(normalized_query)
-
-            # Record topic so Nova builds awareness of what it engages with
-            self._record_query_topic(normalized_query)
-
-            # Detect explicit preference/feedback signals and record as relationship insights
-            self._extract_relationship_signals(normalized_query)
-
             return SkillResult(
                 success=True,
                 message=text,
@@ -1786,104 +1730,6 @@ class GeneralChatSkill(BaseSkill):
                 widget_data=None,
                 skill=self.name,
             )
-
-    def _extract_and_save_memories(self, query: str) -> None:
-        """Detect personal info in the user's message and save to user memory."""
-        try:
-            for pattern, category, key_name in self._MEMORY_PATTERNS:
-                match = pattern.search(query)
-                if not match:
-                    continue
-                value = match.group(1).strip().rstrip(".,!?")
-                if not value or len(value) < 2:
-                    continue
-                if value.lower() in self._MEMORY_EXTRACT_BLOCKLIST:
-                    continue
-                self._user_memory.save(
-                    category,
-                    key_name,
-                    value,
-                    context=query[:200],
-                    source="observed",
-                    confidence=0.85,
-                )
-        except Exception:
-            pass
-
-    def _record_query_topic(self, query: str) -> None:
-        """Record the topic of this query in Nova's self-memory for relationship awareness."""
-        try:
-            # Broad stopword set to produce meaningful topic labels.
-            # Common articles, prepositions, conjunctions, and high-frequency
-            # verbs that carry no domain signal are excluded.
-            stopwords = {
-                "a", "about", "an", "and", "are", "ask", "asked", "be", "been",
-                "being", "can", "could", "did", "do", "does", "for", "get", "give",
-                "got", "had", "has", "have", "help", "how", "i", "if", "in", "is",
-                "it", "just", "know", "let", "like", "make", "me", "my", "need",
-                "of", "ok", "okay", "on", "or", "please", "put", "say", "see",
-                "set", "show", "take", "tell", "the", "think", "to", "try", "up",
-                "use", "want", "was", "were", "what", "when", "where", "who",
-                "will", "with", "work", "would", "you",
-            }
-            words = [w.strip("?.,!:-") for w in query.lower().split()
-                     if w.strip("?.,!:-") and w.strip("?.,!:-") not in stopwords]
-            # Require at least 2 meaningful words — single-word affirmations
-            # ("thanks", "sure", "yep") produce noise in topic patterns.
-            if len(words) < 2:
-                return
-            topic = " ".join(words[:5]).strip()
-            if topic:
-                self._nova_memory.record_topic(topic)
-        except Exception:
-            pass
-
-    def _extract_relationship_signals(self, query: str) -> None:
-        """Detect explicit user preference or feedback signals and record as relationship insights.
-
-        Only runs on short messages (< 200 chars) that look like general feedback
-        rather than task requests. Conservative — explicit regex patterns only, never
-        infers. One insight per query to avoid noisy accumulation.
-
-        Guards applied in order:
-        1. Length — > 200 chars skipped (likely a task request, not meta-feedback)
-        2. Anchor check — must contain a known feedback signal word
-        3. Context qualifier check — skip if message is one-off/task-specific
-        4. Pattern match — one insight recorded on first match, then stop
-        """
-        try:
-            q = str(query or "").strip()
-            if not q or len(q) > 200:
-                return
-
-            q_lower = q.lower()
-
-            # Guard 1: require at least one feedback-signal word
-            _feedback_anchors = (
-                "keep", "less", "more", "shorter", "longer", "brief", "verbose",
-                "detail", "direct", "to the point", "bullet", "list", "example",
-                "skip", "stop", "don't", "dont", "caveat", "disclaimer",
-                "too long", "too wordy",
-            )
-            if not any(anchor in q_lower for anchor in _feedback_anchors):
-                return
-
-            # Guard 2: skip messages that qualify a one-off or task-specific request.
-            # These indicate the user wants a specific response changed, not a permanent
-            # style adjustment — e.g. "use bullet points for this one".
-            _one_off_qualifiers = (
-                "for this", "this one", "just this", "this time", "in this case",
-                "for now", "right now", "here", "in this response",
-            )
-            if any(qualifier in q_lower for qualifier in _one_off_qualifiers):
-                return
-
-            for pattern, insight in self._INSIGHT_PATTERNS:
-                if pattern.search(q):
-                    self._nova_memory.record_insight(insight, source="observed")
-                    return  # one insight per query
-        except Exception:
-            pass
 
     async def handle(
         self,

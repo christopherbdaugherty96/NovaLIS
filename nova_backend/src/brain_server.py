@@ -482,7 +482,7 @@ def _select_relevant_memory_context(
                 "content": content,
                 "scope": str(item.get("scope") or "").strip(),
                 "thread_name": str(links.get("project_thread_name") or "").strip(),
-                "source": str(item.get("source") or "explicit_user_save").strip(),
+                "source": str(item.get("source") or "unknown").strip(),
             }
         )
     return selected

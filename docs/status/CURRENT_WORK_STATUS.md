@@ -10,8 +10,8 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE B3 — memory governance
-STATUS: NEXT / NOT IMPLEMENTATION-AUTHORIZED
-CURRENT MAIN: e84a9d55f8575c687765b1df19e8f794b180599b
+STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
+CURRENT MAIN / B3 BASE: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B4: BLOCKED
@@ -139,7 +139,7 @@ must be resolved before Wave C relies on hosted CI
 ```text
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
--> B3 memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> B3 memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
 -> B4 reproducibility hygiene
 -> Wave C semantic/proof stabilization and validated baseline
 -> reconstruct #335 onto exact validated baseline
@@ -150,7 +150,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B2 is complete and merged. B3 is next but not implementation-authorized; B4 remains blocked.
+B2 is complete and merged. B3 is active under bounded authorization; B4 remains blocked.
 
 ## Permanent Truth Boundaries
 
