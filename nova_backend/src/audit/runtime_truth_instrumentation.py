@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Wave B1 instrumentation installed onto Nova's existing runtime auditor.
 
 The existing ``src.audit.runtime_auditor`` remains the authoritative generator.
@@ -12,6 +10,8 @@ that mature implementation:
 - runtime fingerprints cover behaviorally active source families;
 - generated runtime invariants are scoped to what the auditor actually proves.
 """
+
+from __future__ import annotations
 
 import hashlib
 import importlib
