@@ -122,7 +122,7 @@ from src.audit.runtime_auditor import (
 )
 from src.websocket.session_handler import run_websocket_session
 from src.websocket.intent_patterns import (
-    PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, HELP_ORIENT_RE,
+    PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, OPENCLAW_CAPABILITY_HELP_RE, HELP_ORIENT_RE,
     AMBIENT_CLARIFICATION_PATTERNS, EMAIL_INBOX_RE, EMAIL_INBOX_RESPONSE, TIME_QUERY_RE,
     SESSION_ACTIVITY_RECAP_RE,
     REMIND_ME_TIMELESS_RE, REMIND_ME_TIMELESS_RESPONSE,
@@ -1651,6 +1651,17 @@ def _capability_help_message() -> str:
     else:
         lines.append("- No external provider configuration is currently recorded.")
 
+    try:
+        from src.openclaw.agent_runner import freeform_goal_allowed_tools
+
+        exposed_tools = ", ".join(sorted(freeform_goal_allowed_tools()))
+    except Exception:
+        exposed_tools = "unknown"
+    lines.append(
+        "- OpenClaw freeform path tools exposed here: "
+        f"{exposed_tools}. Path exposure is not request authorization."
+    )
+
     if weather_live and calendar_live:
         lines.append(
             "- Weather and calendar provider health are verified for this runtime; "
@@ -1694,6 +1705,28 @@ def _capability_help_message() -> str:
     lines.append(
         "If you want, ask about a specific area like research, verification, story tracking, screen help, memory, or local controls."
     )
+    return "\n".join(lines)
+
+
+def _openclaw_capability_help_message() -> str:
+    """Describe only the tools exposed on the OpenClaw freeform path."""
+    try:
+        from src.openclaw.agent_runner import freeform_goal_allowed_tools
+
+        exposed_tools = sorted(freeform_goal_allowed_tools())
+    except Exception:
+        exposed_tools = []
+
+    lines = [
+        "OpenClaw freeform capability truth:",
+        "",
+        "Path exposure is not request authorization.",
+    ]
+    if exposed_tools:
+        lines.append(f"Tools exposed on this path: {', '.join(exposed_tools)}.")
+    else:
+        lines.append("Tools exposed on this path: unknown.")
+    lines.append("Mutation tools are not exposed on this freeform path.")
     return "\n".join(lines)
 
 

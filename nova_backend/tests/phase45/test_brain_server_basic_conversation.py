@@ -249,6 +249,75 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
     assert all("authorized=" not in msg for msg in chat_messages)
 
 
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "what can you do right now?",
+        "what tools can you use?",
+        "show your capabilities",
+        "what is connected?",
+        "what is configured?",
+        "what requires approval?",
+        "can you access Shopify?",
+        "can you draft an email?",
+        "can you change the volume?",
+        "can you change brightness?",
+        "can you search the web?",
+        "can you check the weather?",
+    ],
+)
+def test_b2_live_acceptance_phrasings_use_truth_narration_before_actions(monkeypatch, prompt):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([prompt])
+
+    with (
+        patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")),
+        patch.object(
+            brain_server,
+            "invoke_governed_capability",
+            side_effect=AssertionError("capability should not execute for a status question"),
+        ),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Here's Nova's capability truth right now" in msg for msg in chat_messages)
+    assert any("available_here=" in msg for msg in chat_messages)
+    assert any("approval_required=" in msg for msg in chat_messages)
+    assert all("authorized=" not in msg for msg in chat_messages)
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "what OpenClaw tools can you use?",
+        "what can OpenClaw do directly?",
+    ],
+)
+def test_b2_openclaw_status_phrasings_expose_only_freeform_allowlist(monkeypatch, prompt):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([prompt])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    response = "\n".join(_chat_messages(ws))
+    assert "OpenClaw freeform capability truth" in response
+    assert "news, weather, web_search" in response
+    assert "Mutation tools are not exposed" in response
+    assert "authorization" in response.lower()
+
+
 def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

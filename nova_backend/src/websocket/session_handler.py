@@ -479,6 +479,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _is_hard_action_command = deps._is_hard_action_command
     _topic_stack_message = deps._topic_stack_message
     CAPABILITY_HELP_RE = deps.CAPABILITY_HELP_RE
+    OPENCLAW_CAPABILITY_HELP_RE = deps.OPENCLAW_CAPABILITY_HELP_RE
     HELP_ORIENT_RE = deps.HELP_ORIENT_RE
     AMBIENT_CLARIFICATION_PATTERNS = deps.AMBIENT_CLARIFICATION_PATTERNS
     EMAIL_INBOX_RE = deps.EMAIL_INBOX_RE
@@ -496,6 +497,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     REMINDER_ACTION_REQUEST_RE = deps.REMINDER_ACTION_REQUEST_RE
     REMINDER_ACTION_UNPARSED_RESPONSE = deps.REMINDER_ACTION_UNPARSED_RESPONSE
     _capability_help_message = deps._capability_help_message
+    _openclaw_capability_help_message = deps._openclaw_capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     SESSION_ACTIVITY_RECAP_RE = deps.SESSION_ACTIVITY_RECAP_RE
     _render_local_time_message = deps._render_local_time_message
@@ -1552,6 +1554,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                     continue
 
+            # Capability-status questions are evaluated against the user's raw
+            # wording before SessionRouter removes polite question prefixes
+            # such as "can you".  This preserves the difference between asking
+            # whether a capability is available and instructing Nova to run it.
+            capability_question_text = re.sub(r"[.?!]+$", "", raw_text).strip()
+            if OPENCLAW_CAPABILITY_HELP_RE.match(capability_question_text):
+                await _complete_immediate_turn(
+                    _openclaw_capability_help_message(),
+                    remember_response=False,
+                )
+                continue
+            if CAPABILITY_HELP_RE.match(capability_question_text):
+                await _complete_immediate_turn(
+                    _capability_help_message(),
+                    suggested_actions=deps._capability_help_actions(),
+                )
+                continue
+
             route_context = SessionRouter.normalize_and_route(raw_text, session_state)
             if route_context.is_empty:
                 await _complete_immediate_turn(SessionRouter.ready_prompt(), remember_response=False)
@@ -1740,6 +1760,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             _arithmetic_answer = _try_arithmetic(command_text)
             if _arithmetic_answer is not None:
                 await _complete_immediate_turn(_arithmetic_answer)
+                continue
+
+            # Retain the normalized fallback for established typo correction
+            # (for example, "what can you di"). Raw capability questions have
+            # already been handled above before their question form was lost.
+            if CAPABILITY_HELP_RE.match(command_text):
+                await _complete_immediate_turn(
+                    _capability_help_message(),
+                    suggested_actions=deps._capability_help_actions(),
+                )
                 continue
 
             # ── Brief-phrasing intent normalization (deterministic, non-authorizing) ──
@@ -2149,13 +2179,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     REMINDER_ACTION_UNPARSED_RESPONSE,
                     remember_response=False,
                     tone_domain="system",
-                )
-                continue
-
-            if CAPABILITY_HELP_RE.match(command_text):
-                await _complete_immediate_turn(
-                    _capability_help_message(),
-                    suggested_actions=deps._capability_help_actions(),
                 )
                 continue
 
