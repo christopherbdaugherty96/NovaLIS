@@ -9,16 +9,16 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-WAVE B3 — memory governance
-STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
-CURRENT MAIN / B3 BASE: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+WAVE B4 — reproducibility hygiene
+STATUS: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+CURRENT MAIN / B3 SQUASH MERGE: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
-B4: BLOCKED
+B3: COMPLETE / MERGED via PR #360
 WAVE C: BLOCKED
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge is current `main` `e84a9d55...`. B1 and B2 evidence remains revision- and environment-specific historical evidence.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge is current `main` `8cc67213...`. B1, B2, and B3 evidence remains revision- and environment-specific historical evidence.
 
 ## Completed Gates
 
@@ -54,6 +54,11 @@ Wave B2 merge
   PR #358: MERGED
   reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
   squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
+
+Wave B3 merge
+  PR #360: MERGED
+  reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
+  squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 ```
 
 ## B1 Completed Evidence
@@ -87,7 +92,17 @@ status — COMPLETE / MERGED via PR #358
 result — shared seven-field non-authorizing truth projection and reviewed consumer migration
 ```
 
-Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open and separate from B3.
+Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open and separate from B4.
+
+## Completed B3 Lane
+
+```text
+B3 — memory governance
+status — COMPLETE / MERGED via PR #360
+result — ordinary chat does not silently create authoritative durable memory; explicit/observed provenance and precedence remain visible; superseded history is not current memory
+```
+
+Historical B3 evidence remains valid for the reviewed revision and environment. Do not reopen or redesign B3 without concrete new evidence.
 
 ## Scope Lock
 
@@ -139,8 +154,8 @@ must be resolved before Wave C relies on hosted CI
 ```text
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
--> B3 memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
--> B4 reproducibility hygiene
+-> B3 memory governance / COMPLETE / MERGED
+-> B4 reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
 -> Wave C semantic/proof stabilization and validated baseline
 -> reconstruct #335 onto exact validated baseline
 -> independent security/architecture review
@@ -150,7 +165,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B2 is complete and merged. B3 is active under bounded authorization; B4 remains blocked.
+B2 and B3 are complete and merged. B4 is next but not implementation-authorized.
 
 ## Permanent Truth Boundaries
 

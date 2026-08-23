@@ -1,16 +1,17 @@
 # Daily Command Center
 
-## 2026-08-23 — Post-B2 operational handoff
+## 2026-08-23 — Post-B3 operational handoff
 
 ```text
 CURRENT PLANNING LANE:
-  Wave B3 — memory governance.
+  Wave B4 — reproducibility hygiene.
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
   B2 COMPLETE / MERGED.
-  B3 ACTIVE / IMPLEMENTATION AUTHORIZED.
-  B4 / Wave C BLOCKED.
+  B3 COMPLETE / MERGED.
+  B4 NEXT / NOT IMPLEMENTATION-AUTHORIZED.
+  Wave C BLOCKED.
 
 B1 MERGE:
   PR #356 — MERGED
@@ -23,6 +24,11 @@ B2 MERGE:
   reviewed head — b95039c2dc483ad330205de5dac8e3b3f94d8836
   squash merge — e84a9d55f8575c687765b1df19e8f794b180599b
   post-B2 sync/current B3 base — b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+
+B3 MERGE:
+  PR #360 — MERGED
+  reviewed head — 3e8a68aa5d17712fbb2106f052e309a2f33e120e
+  squash merge/current main — 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -53,8 +59,8 @@ HOSTED CI:
 
 CURRENT ORDER:
   B2 capability narration / COMPLETE / MERGED
-  -> B3 memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
-  -> B4 reproducibility hygiene
+  -> B3 memory governance / COMPLETE / MERGED
+  -> B4 reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
   -> C proof / semantic-contract stabilization / validated baseline
   -> reconstruct #335 onto exact validated baseline
   -> independent review + separate #335 merge decision
@@ -63,7 +69,7 @@ CURRENT ORDER:
   -> evidence-based Continuity warrant
 
 BLOCKED:
-  B4 / Wave C
+  Wave C
   #335 reconstruction
   Google domain work
   Operational Continuity runtime
@@ -75,7 +81,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3 has separate reviewed owner authorization. Only its bounded memory truth/provenance repair is active; B4 and Wave C remain blocked.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4 is next but requires separate implementation authorization; Wave C remains blocked.
 
 ## Permanent evidence discipline
 
@@ -94,8 +100,8 @@ prior candidate PASS != corrected-head PASS
 ## Not active
 
 ```text
-B3 memory architecture beyond the bounded truth/provenance repair
-B4 reproducibility hygiene
+B3 memory architecture beyond the completed bounded truth/provenance repair
+B4 reproducibility hygiene implementation (not authorized)
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -109,9 +115,9 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
-README/front-door rewrite inside B3 without separate scope
+README/front-door rewrite without separate scope
 ```
 
 ## Next handoff
 
-Make the separate B3 implementation-authorization decision. If authorization is not given, do not begin runtime work.
+Make the separate B4 implementation-authorization decision. If authorization is not given, do not begin dependency work.
