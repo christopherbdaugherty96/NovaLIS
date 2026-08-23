@@ -1,16 +1,16 @@
 # Daily Command Center
 
-## 2026-08-23 — Wave B1 final-review correction gate
+## 2026-08-23 — Wave B1 final PR review gate
 
 ```text
 ACTIVE LANE:
   Wave B1 — runtime-truth instrumentation only.
 
 SUBSTATE:
-  First exact-head proof/publication completed.
-  Final release review found one P1 operational-truth defect and one P2 fingerprint-count defect.
-  Bounded source/test/doc corrections are in progress.
-  Corrected exact-head proof + regeneration + final PR review are required.
+  Corrective proof COMPLETE.
+  Corrected generation COMPLETE.
+  Generated artifacts PUBLISHED.
+  Exact A2-to-B1 diff CLEAN.
 
 B1 BRANCH:
   codex/b1-runtime-truth-instrumentation-20260820
@@ -18,43 +18,41 @@ B1 BRANCH:
 POST-A2 BASE:
   060380f2e8c6437ff888773f0078647547ff4622
 
-FIRST PUBLISHED CANDIDATE:
-  f44cb8b856345ddc573fe0cb56037104350ffeb4
-
-SOURCE/TEST CORRECTION CHECKPOINT:
-  ecd4033928990c68663f2ef81b46236686043765
-  Later operational-document commits may advance branch HEAD; verify current HEAD before proof.
+FINAL CORRECTED ARTIFACT COMMIT:
+  e668ec0c09df6e0d304427431e95a26619a9f507
 
 PR STATE:
-  PR #356 exists and is OPEN / DRAFT.
-  It must remain held while the corrected head is proved and regenerated.
+  PR #356 is OPEN / DRAFT.
+  Current gate = final PR review / separate merge decision.
   Merge is NOT authorized.
 
-COMPLETED GATES:
-  PR #353 / Wave A1 — MERGED
-    f25c798c7cb488495a343068463e9214cab0a763
-  PR #355 / Wave A2 — MERGED
-    060380f2e8c6437ff888773f0078647547ff4622
-  B1 first exact-head local proof — PASS
-  B1 first generated-artifact publication — f44cb8b8...
-  B1 draft PR #356 — OPEN
+CORRECTED PROOF:
+  Ruff — PASS
+  focused B1 tests — 13 PASS
+  auditor/governance tests — 29 PASS
+  operational consistency — PASS before/after generation
+  runtime-doc drift — PASS before/after generation
 
-FINAL-REVIEW FINDINGS:
-  P1 — active B1 handoff surfaces still described pre-generation/no-PR state.
-  P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry.
+FINGERPRINT:
+  scope — behaviorally_active_v2
+  existing-file count — 230
+  runtime surface hash — c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+  fingerprint hash — 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
+
+GENERATED OUTPUT:
+  CURRENT_RUNTIME_STATE.md — regenerated
+  RUNTIME_FINGERPRINT.md — regenerated
+  BYPASS_SURFACES.md — regenerated identically
+  _MOCs — excluded
 
 HOSTED CI:
   Issue #354 = infrastructure/open.
   Inspected Actions jobs executed zero steps.
-  This is not behavioral PASS or behavioral FAIL evidence.
+  This is neither behavioral PASS nor behavioral FAIL evidence.
 
 CURRENT ORDER:
-  bounded B1 correction
-  -> exact-head corrective proof
-  -> mechanical regeneration
-  -> final-state checks
-  -> exact diff / final PR #356 review
-  -> separate merge decision
+  final PR #356 evidence assessment
+  -> separate owner-authorized merge decision
   -> B2 capability narration
   -> B3 memory governance
   -> B4 reproducibility hygiene
@@ -65,141 +63,20 @@ CURRENT ORDER:
   -> Google Tasks READ / first provider-backed Google evidence vertical
   -> evidence-based Continuity warrant
 
-B1 LOCK:
-  No redesign.
-  Only correct reproduced B1 truth-contract defects.
-  No B2/B3/B4, Google domain work, #335, Continuity, OpenClaw authority,
-  provider routing, network-behavior changes, README rewrite, or _MOCs publication.
+BLOCKED:
+  B2 / B3 / B4 / Wave C
+  #335 reconstruction
+  Google domain work
+  Operational Continuity runtime
 ```
 
 Status: manual operational surface.
 
 ## What matters now
 
-The first B1 publication candidate passed its local proof and generated-output review, but final release review found two bounded truth-integrity defects. Those defects justify correction; they do not reopen B1 architecture or scope.
+B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, and exact diff review are complete. No known B1 code blocker remains.
 
-The fingerprint correction now requires the exact runtime-surface hash/count set to contain existing files only. The prior generated artifacts are therefore historical evidence for `f44cb8b8...`, not current evidence for the corrected branch head.
-
-### Step 1 — verify exact checkout
-
-```bash
-git branch --show-current
-git rev-parse HEAD
-git status --short
-```
-
-Expected branch:
-
-```text
-codex/b1-runtime-truth-instrumentation-20260820
-```
-
-Record the actual corrective HEAD.
-
-### Step 2 — execute corrective proof
-
-```bash
-export PYTHONPATH=nova_backend
-python -m ruff check nova_backend/src/audit/runtime_truth_instrumentation.py nova_backend/tests/test_runtime_truth_b1.py scripts/check_operational_truth_consistency.py
-python -m pytest nova_backend/tests/test_runtime_truth_b1.py
-python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-```
-
-Windows PowerShell:
-
-```powershell
-$env:PYTHONPATH = "nova_backend"
-```
-
-Do not mark any test/check green unless it actually executes successfully on the corrective head.
-
-### Step 3 — mechanically regenerate runtime truth
-
-```bash
-python scripts/generate_runtime_docs.py
-```
-
-Manual edits are forbidden for generated runtime artifacts.
-
-`generate_runtime_docs.py` also refreshes tracked `_MOCs/*`. That overlay refresh remains outside B1 publication scope.
-
-Stage only:
-
-```bash
-git add -- docs/current_runtime/CURRENT_RUNTIME_STATE.md docs/current_runtime/BYPASS_SURFACES.md docs/current_runtime/RUNTIME_FINGERPRINT.md
-```
-
-Do not stage `_MOCs/*`. Do not use broad staging.
-
-### Step 4 — inspect generated output
-
-Required files:
-
-```text
-docs/current_runtime/CURRENT_RUNTIME_STATE.md
-docs/current_runtime/BYPASS_SURFACES.md
-docs/current_runtime/RUNTIME_FINGERPRINT.md
-```
-
-Required acceptance conditions:
-
-```text
-CURRENT_RUNTIME_STATE.md
-  [ ] connections_api.py represented through KNOWN_DIRECT_NETWORK_EXCEPTION
-  [ ] no false Discrepancies: None
-  [ ] Phase 9 names real active symbols
-  [ ] NetworkMediator/Governor/ledger wording remains qualified
-  [ ] Runtime Surface Scope count reflects existing fingerprinted files only
-
-BYPASS_SURFACES.md
-  [ ] connections_api.py visible
-  [ ] local_administrative_health_probe visible
-  [ ] scanner scope explicitly requests-based
-  [ ] no claim of universal network coverage
-
-RUNTIME_FINGERPRINT.md
-  [ ] behaviorally_active_v2
-  [ ] runtime_surface_file_count present
-  [ ] count equals the exact existing-file set consumed by the hash
-  [ ] source_families present
-  [ ] brain / connections / identity / memory / usage included
-```
-
-### Step 5 — rerun mandatory final-state truth checks
-
-```bash
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-```
-
-Do not substitute the earlier `f44cb8b8...` results for this corrected final-state evidence.
-
-### Step 6 — final diff and PR review
-
-```text
-base: 060380f2e8c6437ff888773f0078647547ff4622
-head: actual corrected final B1 HEAD
-PR: #356 OPEN / DRAFT
-```
-
-Verify:
-
-```text
-no B2 capability narration
-no B3 memory behavior
-no B4 dependency cleanup
-no #335 / OAuth / Google-domain implementation
-no Continuity runtime
-no OpenClaw authority expansion
-no provider-routing expansion
-no network-behavior change
-no README rewrite
-no _MOCs publication inside B1
-```
-
-Then produce a merge-readiness verdict. Do not merge without separate owner authorization.
+The only remaining B1 tasks are final PR #356 evidence assessment and a separate owner-authorized merge decision. Do not regenerate, redesign B1, or begin a downstream lane without new evidence and authority.
 
 ## Permanent evidence discipline
 
@@ -239,4 +116,4 @@ README/front-door rewrite inside B1
 
 ## Next handoff
 
-Start at **Step 1 — verify the corrected exact head**, then run the bounded B1 proof/regeneration sequence. PR #356 remains draft and merge-blocked until that evidence is complete.
+Review PR #356 at the final docs-synchronized head. If the exact-head evidence remains clean, stop at the separate owner-authorized merge decision. Do not merge from this handoff.
