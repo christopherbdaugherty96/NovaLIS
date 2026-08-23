@@ -120,26 +120,26 @@ docs/current_runtime/BYPASS_SURFACES.md
 docs/current_runtime/RUNTIME_FINGERPRINT.md
 ```
 
-Acceptance:
+Required acceptance conditions — pending until Step 3 runs and Step 4 is inspected:
 
 ```text
 CURRENT_RUNTIME_STATE.md
-  ✓ connections_api.py represented through KNOWN_DIRECT_NETWORK_EXCEPTION
-  ✓ no false Discrepancies: None
-  ✓ Phase 9 names real active symbols
-  ✓ NetworkMediator/Governor/ledger wording is qualified
+  [ ] connections_api.py represented through KNOWN_DIRECT_NETWORK_EXCEPTION
+  [ ] no false Discrepancies: None
+  [ ] Phase 9 names real active symbols
+  [ ] NetworkMediator/Governor/ledger wording is qualified
 
 BYPASS_SURFACES.md
-  ✓ connections_api.py visible
-  ✓ local_administrative_health_probe visible
-  ✓ scanner scope explicitly requests-based
-  ✓ no claim of universal network coverage
+  [ ] connections_api.py visible
+  [ ] local_administrative_health_probe visible
+  [ ] scanner scope explicitly requests-based
+  [ ] no claim of universal network coverage
 
 RUNTIME_FINGERPRINT.md
-  ✓ behaviorally_active_v2
-  ✓ runtime_surface_file_count present
-  ✓ source_families present
-  ✓ brain / connections / identity / memory / usage included
+  [ ] behaviorally_active_v2
+  [ ] runtime_surface_file_count present
+  [ ] source_families present
+  [ ] brain / connections / identity / memory / usage included
 ```
 
 ### Step 5 — rerun mandatory final-state truth checks
