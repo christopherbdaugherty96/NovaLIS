@@ -1,2 +1,3 @@
 # Compatibility shim for existing tooling paths.
+# The included optional surface extends the canonical runtime projection.
 -r ../requirements-optional-wakeword.txt
