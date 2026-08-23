@@ -21,22 +21,22 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-23
 
-Current active stabilization lane: B1
+Current active stabilization lane: B2
 
 ```text
 A1 — COMPLETE / MERGED via #353
 A2 — COMPLETE / MERGED via #355
-B1 — ACTIVE; corrective proof/generation complete; final PR review / merge decision; PR #356 OPEN / DRAFT; merge not authorized
-B2 — BLOCKED
+B1 — COMPLETE / MERGED via #356
+B2 — NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
 B3 — BLOCKED
 B4 — BLOCKED
 C  — BLOCKED
 ```
 
-Current merged `main` / A2 comparison base:
+Current merged `main`:
 
 ```text
-060380f2e8c6437ff888773f0078647547ff4622
+969c369b453fffca0eb2b8dad65ff3f285df8fbc
 ```
 
 First published/proven B1 candidate:
@@ -45,7 +45,7 @@ First published/proven B1 candidate:
 f44cb8b856345ddc573fe0cb56037104350ffeb4
 ```
 
-That candidate completed the first exact-head local proof, mechanical runtime-doc generation, artifact publication, final remote scope review, and draft PR #356 opening. It is not a `validated_baseline_sha` and it is not authorized for merge merely because that proof passed.
+That candidate completed the first exact-head local proof, mechanical runtime-doc generation, artifact publication, and remote scope review. It remains historical evidence rather than a `validated_baseline_sha`; PR #356 later merged through the corrected final package recorded below.
 
 Final release review then found two bounded B1 truth-integrity defects:
 
@@ -54,7 +54,7 @@ P1 — active handoff surfaces still described the pre-generation/no-PR state
 P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Both bounded defects are corrected. The corrected source proof passed, mechanical generation completed, the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
+Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` is current `main`.
 
 ## Merged stabilization state
 
@@ -75,6 +75,7 @@ The following August truth/routing packages are already merged and are not pendi
 #352         private Drive source-selection truth
 #353         Wave A1 operational truth synchronization
 #355         Wave A2 strategy reconciliation
+#356         Wave B1 runtime-truth instrumentation
 ```
 
 Merged implementation is not identical to universal product readiness or unlimited live-proof scope. Capability verification must remain evidence-specific.
@@ -104,8 +105,8 @@ WAVE A — truth reconciliation
   A2 strategy reconciliation                        COMPLETE
 
 WAVE B — truth-integrity repairs
-  B1 runtime-truth instrumentation                  ACTIVE / FINAL PR REVIEW / MERGE DECISION
-  B2 capability narration                           BLOCKED
+  B1 runtime-truth instrumentation                  COMPLETE / MERGED
+  B2 capability narration                           NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
   B3 memory governance                              BLOCKED
   B4 reproducibility hygiene                        BLOCKED
 
@@ -158,7 +159,7 @@ Wave B is intentionally split into focused PRs rather than one broad stabilizati
 
 ### B1 — runtime-truth instrumentation
 
-**Current active lane; bounded corrections, proof, generation, and publication complete; final PR review / merge decision remains.**
+**Complete / merged via PR #356.**
 
 B1 source/truth-harness work covers:
 
@@ -188,22 +189,20 @@ runtime_surface_file_count: 230 existing files
 runtime_surface_hash: c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
 runtime_fingerprint_hash: 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
 _MOCs excluded
-draft PR #356 opened
+PR #356 merged at reviewed head 381dbaeca73786f789cc6e68fd3b6bf193296041
+squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
 ```
 
-The P1/P2 defects above are corrected. The only remaining B1 work is:
+The P1/P2 defects above are corrected and B1 is closed. Its evidence remains historical evidence for the merged B1 package.
 
-```text
-final PR #356 evidence assessment
--> separate owner-authorized merge decision
-```
-
-Do not manually edit or regenerate the generated runtime artifacts without a concrete new generator defect. `e668ec0c...` remains the final generated-artifact evidence commit even when a docs-only synchronization commit advances branch HEAD.
+Do not manually edit or regenerate the generated runtime artifacts without a concrete new generator defect. `e668ec0c...` remains the final B1 generated-artifact evidence commit.
 
 ### B2 — capability narration
 
-**Blocked until B1 completes its separate proof/review/merge decision.**
+**Next / not yet implementation-authorized.**
+
+This current-state synchronization preserves the established B2 scope but does not authorize implementation.
 
 Separate:
 
@@ -221,13 +220,13 @@ authority_class
 
 ### B3 — memory governance
 
-**Blocked until B1 completes.**
+**Blocked.**
 
 Define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance. This is a future runtime behavior repair, not B1 work.
 
 ### B4 — reproducibility hygiene
 
-**Blocked until B1 completes.**
+**Blocked.**
 
 Make dependency source-of-truth unambiguous, including the current `python-multipart` declaration mismatch.
 

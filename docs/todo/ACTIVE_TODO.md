@@ -6,21 +6,20 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B1 — final PR review gate
+### Wave B2 — authorization gate
 
-Current branch:
+Current state:
 
 ```text
-codex/b1-runtime-truth-instrumentation-20260820
-A2 base: 060380f2e8c6437ff888773f0078647547ff4622
-first published/proven candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-final corrected artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
-PR #356: OPEN / DRAFT
-merge: NOT AUTHORIZED
-substate: corrective proof/generation complete; final PR review / merge decision
+current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+B1 / PR #356: COMPLETE / MERGED
+B2: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+B3: BLOCKED
+B4: BLOCKED
+Wave C: BLOCKED
 ```
 
-Wave A1 and A2 are already merged:
+Wave A1, A2, and B1 are already merged:
 
 ```text
 #353  A1 operational truth synchronization
@@ -28,9 +27,13 @@ Wave A1 and A2 are already merged:
 
 #355  A2 strategy reconciliation
        merge: 060380f2e8c6437ff888773f0078647547ff4622
+
+#356  B1 runtime-truth instrumentation
+       reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
+       squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 ```
 
-Do not redesign B1. Only reproduced B1 truth-contract defects may be corrected.
+Do not reopen B1 without concrete new evidence. Do not implement B2 without separate reviewed owner authorization.
 
 ### Completed B1 source/truth work
 
@@ -66,12 +69,14 @@ Do not redesign B1. Only reproduced B1 truth-contract defects may be corrected.
 - [x] Commit corrected generated artifacts at `e668ec0c09df6e0d304427431e95a26619a9f507`.
 - [x] Exclude `_MOCs/*`.
 - [x] Review the exact A2-base to corrected-B1 diff; 14 paths, `+1,887/-447`, clean.
+- [x] Complete final PR #356 review / evidence assessment.
+- [x] Merge PR #356 at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`.
+- [x] Verify squash merge/current main `969c369b453fffca0eb2b8dad65ff3f285df8fbc`.
 
-### Remaining B1 gate
+### Current B2 gate
 
 ```text
-[ ] final PR #356 review / evidence assessment
-[ ] separate owner-authorized merge decision
+[ ] separate reviewed owner authorization for B2 implementation
 ```
 
 Generated runtime artifacts must not be edited manually.
@@ -122,6 +127,7 @@ Do not recreate or reopen these as pending implementation:
 #352         private Drive source-selection truth
 #353         Wave A1 operational truth synchronization
 #355         Wave A2 strategy reconciliation
+#356         Wave B1 runtime-truth instrumentation
 ```
 
 Merged implementation is not universal live-proof coverage.
@@ -146,15 +152,17 @@ IMPACT: hosted workflows currently provide no trustworthy behavioral evidence
 NEEDED BEFORE: Wave C validated-baseline proof relies on hosted CI
 ```
 
-Keep #354 separate from B1 content/runtime semantics unless infrastructure diagnosis is explicitly selected.
+Keep #354 separate from B2 capability-narration work unless infrastructure diagnosis is explicitly selected.
 
 ### Front-door README truth cleanup
 
-`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not rewrite README inside B1.
+`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not rewrite README inside this post-B1 sync or B2 without separate scope.
 
-## Ordered After B1
+## Current Next Lane and Blocked Work
 
 ### Wave B2 — capability narration
+
+**NEXT / NOT YET IMPLEMENTATION-AUTHORIZED.** Preserve the established scope only:
 
 - separate `exists`, `enabled`, `configured`, `verification_status`, `available_on_this_path`, `requires_approval`, and `authority_class`;
 - do not model `authorized` as static capability metadata;
@@ -214,10 +222,10 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin inside B1:
+Do not begin from this post-B1 synchronization:
 
 ```text
-B2 capability narration
+B2 capability-narration implementation
 B3 memory-governance behavior
 B4 dependency/reproducibility repair
 Google Tasks domain implementation

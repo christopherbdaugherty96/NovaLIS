@@ -1,28 +1,27 @@
 # Current Priority
 
-## Wave B1 — Final PR Review Gate — 2026-08-23
+## Wave B2 — Capability Narration Authorization Gate — 2026-08-23
 
 Current active lane:
 
 ```text
-WAVE B1 — runtime-truth instrumentation only
-SUBSTATE: corrective proof and generation complete; final PR review / merge decision
-PR: #356 OPEN / DRAFT
-MERGE: NOT AUTHORIZED
+WAVE B2 — capability narration
+STATUS: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+B3: BLOCKED
+B4: BLOCKED
+WAVE C: BLOCKED
 ```
 
 Handoff anchors:
 
 ```text
-branch: codex/b1-runtime-truth-instrumentation-20260820
-A2 base: 060380f2e8c6437ff888773f0078647547ff4622
-first published/proven B1 candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-final corrected artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
+current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
+B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
+B1 PR #356: MERGED
 ```
 
-The A2 base is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first exact-head proof, generated-artifact publication, and draft-PR opening. Final release review then found two bounded truth-integrity defects: active operational documents still described the pre-generation/no-PR state, and the fingerprint file count included one nonexistent allowlist path.
-
-Both bounded defects are corrected. Corrected proof passed, mechanical generation completed, the corrected artifacts were published at `e668ec0c...`, and the exact A2-to-B1 diff is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
+B1 is complete and merged. Its proof, generated truth, operational synchronization, and final review are historical evidence for the merged B1 package. B2 is the next planning lane, but this sync does not authorize B2 implementation.
 
 ## Completed gates
 
@@ -33,37 +32,15 @@ Wave A1 — MERGED via PR #353
 Wave A2 — MERGED via PR #355
   060380f2e8c6437ff888773f0078647547ff4622
 
-Wave B1 first publication pass
-  exact-head local proof: PASS on 3ec075fc...
-  generated artifacts committed: f44cb8b856345ddc573fe0cb56037104350ffeb4
-  draft PR #356: OPEN
-  final remote scope review: CLEAN before final-release review
+Wave B1 — MERGED via PR #356
+  reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
+  squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+  proof / generated truth / operational truth / final review: COMPLETE
 ```
 
-Hosted GitHub Actions on PR #356 remain zero-step failures tracked by Issue #354. They are infrastructure evidence only: neither behavioral PASS nor B1 behavioral FAIL.
+Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and does not silently authorize or block B2 implementation.
 
-## Corrected final-review findings
-
-```text
-P1  active B1 handoff docs described pre-generation / no-PR state
-P2  fingerprint runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
-```
-
-Applied correction:
-
-```text
-✓ _fingerprinted_runtime_surface_paths() now includes existing paths only
-✓ runtime_surface_file_count therefore counts existing files in the exact hash set
-✓ focused regression asserts every fingerprinted path exists
-✓ missing allowlist entries are excluded from the fingerprinted set
-✓ active B1 documents are synchronized to the correction/review state
-```
-
-Do not redesign B1. These changes are bounded truth-integrity corrections found by final review.
-
-## Current action — final PR review and separate merge decision
-
-Corrective evidence is complete:
+## B1 completed evidence
 
 ```text
 Ruff: PASS
@@ -80,7 +57,21 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-The only remaining B1 gate is final PR #356 evidence assessment followed by a separate owner-authorized merge decision. Do not regenerate, redesign B1, or begin a downstream lane.
+## Current action — await separate B2 authorization
+
+Preserve only the established B2 scope:
+
+```text
+exists
+enabled
+configured
+verification_status
+available_on_this_path
+requires_approval
+authority_class
+```
+
+`authorized` is request-specific, not static capability metadata. Connection, capability, OAuth scope, and Nova authority remain distinct. Do not design or implement B2 from this synchronization.
 
 ## Google Foundation / CI state
 
@@ -93,7 +84,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 during B1.
+Do not modify or merge #335 during the B2 authorization gate.
 
 Issue #354 remains:
 
@@ -104,11 +95,11 @@ not behavioral pass/fail evidence
 required before Wave C relies on hosted CI
 ```
 
-## Ordered sequence after B1
+## Ordered sequence
 
 ```text
-B1 final PR review / separate merge decision
--> B2 capability narration
+B1 COMPLETE / MERGED
+-> B2 capability narration / separate implementation authorization
 -> B3 memory governance
 -> B4 reproducibility hygiene
 -> Wave C proof / semantic-contract stabilization / validated baseline
@@ -119,11 +110,11 @@ B1 final PR review / separate merge decision
 -> evidence-based Operational Continuity warrant
 ```
 
-B2/B3/B4 remain blocked until B1 is separately merged.
+B2 is next but not implementation-authorized. B3 and B4 remain blocked.
 
 ## Scope lock
 
-Do not start or modify inside B1:
+Do not start or modify during the B2 authorization gate:
 
 ```text
 capability narration semantics (B2)
