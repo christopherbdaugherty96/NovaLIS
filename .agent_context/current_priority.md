@@ -1,12 +1,12 @@
 # Current Priority
 
-## Wave B3 — Memory Governance Authorization Gate — 2026-08-23
+## Wave B3 — Active Memory Governance Repair — 2026-08-23
 
 Current planning lane:
 
 ```text
 B2: COMPLETE / MERGED
-B3: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B3: ACTIVE / IMPLEMENTATION AUTHORIZED
 B4: BLOCKED
 WAVE C: BLOCKED
 ```
@@ -14,16 +14,17 @@ WAVE C: BLOCKED
 Handoff anchors:
 
 ```text
-current main: e84a9d55f8575c687765b1df19e8f794b180599b
+current main / B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
 B2 reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
 B2 PR #358: MERGED
 B2 squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
+post-B2 sync #359 merge: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 ```
 
-B1 and B2 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B3 is next, but implementation has not been authorized.
+B1 and B2 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B3 is active under a separate bounded owner authorization.
 
 ## Completed gates
 
@@ -64,7 +65,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — stop at the B3 authorization gate
+## Current action — implement the bounded B3 contract
 
 The merged B2 projection preserves these distinct fields:
 
@@ -80,7 +81,7 @@ authority_class
 
 `authorized` remains request-specific, not static capability metadata. Connection, capability, OAuth scope, and Nova authority remain distinct.
 
-B3 may be described only at its established high level until separately authorized: ordinary chat must not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics must remain visible. Do not design or implement new schemas, stores, APIs, or memory behavior in this synchronization.
+B3 is authorized only to make existing durable-memory behavior truthful: ordinary chat must not silently create authoritative personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible. Do not expand into new memory architecture, Continuity, authority, or capabilities.
 
 ## Google Foundation / CI state
 
@@ -109,7 +110,7 @@ required before Wave C relies on hosted CI
 ```text
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
--> B3 memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> B3 memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
 -> B4 reproducibility hygiene
 -> Wave C proof / semantic-contract stabilization / validated baseline
 -> reconstruct #335 onto exact validated baseline
@@ -119,14 +120,14 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B2 is complete and merged. B3 is next but not implementation-authorized; B4 remains blocked.
+B2 is complete and merged. B3 is active under bounded authorization; B4 remains blocked.
 
 ## Scope lock
 
-Do not start or modify outside the B3 authorization gate:
+Do not start or modify outside the bounded B3 lane:
 
 ```text
-GeneralChat durable-memory semantics (B3)
+memory architecture beyond the authorized B3 truth/provenance repair
 dependency-source truth (B4)
 network behavior / NetworkMediator wiring
 capability registry

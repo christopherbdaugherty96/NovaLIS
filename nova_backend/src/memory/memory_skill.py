@@ -10,9 +10,8 @@ Handles explicit, user-initiated memory operations:
 Non-authorizing:
   - Memory provides context; it never authorizes action.
   - All write operations are explicit (user-initiated only).
-  - Auto-extracted items (source='auto_extracted') are readable via
-    review and removable via forget, so auto-save is not permanent or
-    invisible.
+  - Legacy observed/candidate items remain readable and removable, but are
+    labeled non-authoritative. GeneralChat does not create new durable memory.
 
 No new capability is registered. No external effects.
 """
@@ -211,7 +210,12 @@ class MemorySkill(BaseSkill):
                     value = str(entry.get("value") or "")
                     source = str(entry.get("source") or "")
                     entry_id = str(entry.get("id") or "")
-                    lines.append(f"  [{source}] {key}: {value}  (id: {entry_id})")
+                    status = (
+                        "explicit; confirmed"
+                        if source == "explicit"
+                        else f"observed candidate; non-authoritative; source={source or 'unknown'}"
+                    )
+                    lines.append(f"  [{status}] {key}: {value}  (id: {entry_id})")
                 lines.append("")
                 lines.append("To remove a personal fact, say \"forget [id]\".")
                 return SkillResult(
@@ -374,7 +378,12 @@ class MemorySkill(BaseSkill):
                 value = str(entry.get("value") or "")
                 source = str(entry.get("source") or "")
                 entry_id = str(entry.get("id") or "")
-                lines.append(f"  [{source}] {key}: {value}  (id: {entry_id})")
+                status = (
+                    "explicit; confirmed"
+                    if source == "explicit"
+                    else f"observed candidate; non-authoritative; source={source or 'unknown'}"
+                )
+                lines.append(f"  [{status}] {key}: {value}  (id: {entry_id})")
             if len(user_entries) > 5:
                 lines.append(f"  ... and {len(user_entries) - 5} more")
             lines.append("")
@@ -388,10 +397,11 @@ class MemorySkill(BaseSkill):
             lines.append("")
 
         lines.append("How memory is selected:")
-        lines.append("  Personal facts: all stored facts are injected when a response is generated.")
+        lines.append("  Explicit personal facts are confirmed; observed/legacy items remain candidates.")
         lines.append("  Project memory: items are matched by relevance to the current query.")
         lines.append("  Source labels: 'explicit_user_save' = you saved it explicitly;")
-        lines.append("                 'auto_extracted' = extracted from your messages by pattern.")
+        lines.append("                 'observed'/'auto_extracted' = non-authoritative legacy candidate.")
+        lines.append("  Ordinary GeneralChat does not create durable memory.")
         lines.append("")
         lines.append("To remove any item, say \"forget [id]\".")
 

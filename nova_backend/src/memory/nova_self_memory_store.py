@@ -81,7 +81,7 @@ class NovaSelfMemoryStore:
         return dict(entry)
 
     def get_relationship_context(self, max_chars: int = 200) -> str:
-        """Render relationship notes as a compact context string."""
+        """Render legacy relationship observations without upgrading them to facts."""
         with self._lock:
             state = self._read_state()
         notes = list(state.get("relationship_notes") or [])
@@ -93,7 +93,8 @@ class NovaSelfMemoryStore:
             text = str(note.get("insight") or "").strip()
             if not text:
                 continue
-            line = f"- {text}"
+            source = str(note.get("source") or "unknown").strip()
+            line = f"- [observed candidate; non-authoritative; source={source}] {text}"
             if total + len(line) > max_chars:
                 break
             lines.append(line)
