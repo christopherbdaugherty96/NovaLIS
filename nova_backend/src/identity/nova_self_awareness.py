@@ -74,23 +74,26 @@ def _identity_block() -> str:
         "WHO YOU ARE RIGHT NOW:\n"
         "You are Nova, running locally on this computer. "
         "You are a real, functioning personal assistant — not a generic chatbot. "
-        "You have actual tools and capabilities you can use. "
-        "When someone asks what you can do, tell them from this list — these are real, not hypothetical."
+        "The capability list below is an evidence-scoped status view, not authorization. "
+        "Never turn existence or enablement into a claim that a capability is configured, verified, "
+        "available on the current path, or approved for a request."
     )
 
 
 def _capabilities_block() -> str:
-    """List active Governor capabilities grouped by function."""
+    """List Governor capabilities using the shared truth projection."""
     try:
-        from src.governor.capability_registry import CapabilityRegistry
-        registry = CapabilityRegistry()
-        caps = registry.all_capabilities()
+        from src.identity.capability_truth import (
+            capability_truth_status,
+            project_capability_truth,
+        )
+
+        caps = project_capability_truth()
     except Exception as exc:
-        logger.debug("Could not load capability registry: %s", exc)
+        logger.debug("Could not load capability truth: %s", exc)
         return ""
 
-    active = [c for c in caps if c.status == "active" and c.enabled]
-    if not active:
+    if not caps:
         return ""
 
     # Group by functional category
@@ -103,12 +106,11 @@ def _capabilities_block() -> str:
         "System": [],
     }
 
-    for cap in active:
+    for cap in caps:
         name = cap.name.replace("_", " ").title()
-        desc = cap.description[:150] if cap.description else ""
-        entry = f"{name}: {desc}" if desc else name
+        entry = f"{name}: {capability_truth_status(cap)}"
 
-        cid = cap.id
+        cid = cap.capability_id
         if cid in (16, 48, 49, 50, 51, 52, 53, 55, 56, 57):
             groups["Information & Research"].append(entry)
         elif cid in (17, 18, 19, 20, 21, 22):
@@ -124,7 +126,7 @@ def _capabilities_block() -> str:
         else:
             groups["System"].append(entry)
 
-    lines = ["YOUR ACTIVE CAPABILITIES (these are real and working):"]
+    lines = ["YOUR CAPABILITY TRUTH (status evidence; never static authorization):"]
     for group_name, entries in groups.items():
         if entries:
             lines.append(f"  {group_name}:")
@@ -135,11 +137,12 @@ def _capabilities_block() -> str:
 
 
 def _tools_block() -> str:
-    """List OpenClaw agent tools from the tool registry."""
+    """List only tools exposed by the actual OpenClaw freeform allowlist."""
     try:
+        from src.openclaw.agent_runner import freeform_goal_allowed_tools
         from src.openclaw.tool_registry import get_tool_registry
         registry = get_tool_registry()
-        tools = registry.all_capabilities()
+        tools = registry.filtered(allowed=freeform_goal_allowed_tools()).all_capabilities()
     except Exception as exc:
         logger.debug("Could not load tool registry: %s", exc)
         return ""
@@ -147,7 +150,7 @@ def _tools_block() -> str:
     if not tools:
         return ""
 
-    lines = ["YOUR QUICK-ACCESS TOOLS (you can use these directly):"]
+    lines = ["OPENCLAW FREEFORM TOOLS EXPOSED ON THAT PATH (not authorization):"]
     for name, meta in tools.items():
         desc = meta.get("description", "")
         category = meta.get("category", "")
@@ -157,7 +160,7 @@ def _tools_block() -> str:
 
 
 def _connections_block() -> str:
-    """Show which external services are connected."""
+    """Show configuration separately from last-known provider health."""
     try:
         from src.connections.connections_store import connections_store
         store = connections_store
@@ -166,19 +169,21 @@ def _connections_block() -> str:
         logger.debug("Could not load connections: %s", exc)
         return ""
 
-    connected = [p for p in providers if p.get("connected")]
-    disconnected = [p for p in providers if not p.get("connected")]
-
-    if not connected and not disconnected:
+    if not providers:
         return ""
 
-    lines = ["YOUR CONNECTIONS:"]
-    if connected:
-        for p in connected:
-            lines.append(f"  - {p['label']}: connected")
-    if disconnected:
-        names = ", ".join(p["label"] for p in disconnected)
-        lines.append(f"  - Not connected: {names}")
+    lines = ["YOUR CONNECTION CONFIGURATION (configuration is not capability or authority):"]
+    for provider in providers:
+        label = str(provider.get("label") or provider.get("id") or "Provider")
+        if not provider.get("has_key"):
+            state = "not configured"
+        elif provider.get("health_ok") is True:
+            state = "configured; provider health verified"
+        elif provider.get("health_ok") is False:
+            state = "configured; provider health check failed"
+        else:
+            state = "configured; provider health unverified"
+        lines.append(f"  - {label}: {state}")
 
     return "\n".join(lines)
 
@@ -220,9 +225,11 @@ def _status_block() -> str:
         home_agent = settings.is_permission_enabled("home_agent_enabled")
         scheduler = settings.is_permission_enabled("home_agent_scheduler_enabled")
         external = settings.is_permission_enabled("external_reasoning_enabled")
-        lines.append(f"  - Home agent: {'active' if home_agent else 'off'}")
-        lines.append(f"  - Scheduled tasks: {'active' if scheduler else 'off'}")
-        lines.append(f"  - External reasoning: {'available' if external else 'off'}")
+        lines.append(f"  - Home agent permission setting: {'enabled' if home_agent else 'disabled'}")
+        lines.append(f"  - Scheduler permission setting: {'enabled' if scheduler else 'disabled'}")
+        lines.append(
+            f"  - External reasoning permission setting: {'enabled' if external else 'disabled'}"
+        )
     except Exception:
         pass
 

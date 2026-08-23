@@ -241,12 +241,81 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
-    assert any("Everyday help" in msg for msg in chat_messages)
-    assert any("Double-check answers" in msg for msg in chat_messages)
-    assert any("Story tracking" in msg for msg in chat_messages)
-    assert any("Screen help" in msg for msg in chat_messages)
-    assert any("Memory" in msg for msg in chat_messages)
+    assert any("Here's Nova's capability truth right now" in msg for msg in chat_messages)
+    assert any("configured=" in msg for msg in chat_messages)
+    assert any("verification=" in msg for msg in chat_messages)
+    assert any("available_here=" in msg for msg in chat_messages)
+    assert any("approval_required=" in msg for msg in chat_messages)
+    assert all("authorized=" not in msg for msg in chat_messages)
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "what can you do right now?",
+        "what tools can you use?",
+        "show your capabilities",
+        "what is connected?",
+        "what is configured?",
+        "what requires approval?",
+        "can you access Shopify?",
+        "can you draft an email?",
+        "can you change the volume?",
+        "can you change brightness?",
+        "can you search the web?",
+        "can you check the weather?",
+    ],
+)
+def test_b2_live_acceptance_phrasings_use_truth_narration_before_actions(monkeypatch, prompt):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([prompt])
+
+    with (
+        patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")),
+        patch.object(
+            brain_server,
+            "invoke_governed_capability",
+            side_effect=AssertionError("capability should not execute for a status question"),
+        ),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Here's Nova's capability truth right now" in msg for msg in chat_messages)
+    assert any("available_here=" in msg for msg in chat_messages)
+    assert any("approval_required=" in msg for msg in chat_messages)
+    assert all("authorized=" not in msg for msg in chat_messages)
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "what OpenClaw tools can you use?",
+        "what can OpenClaw do directly?",
+    ],
+)
+def test_b2_openclaw_status_phrasings_expose_only_freeform_allowlist(monkeypatch, prompt):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([prompt])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    response = "\n".join(_chat_messages(ws))
+    assert "OpenClaw freeform capability truth" in response
+    assert "news, weather, web_search" in response
+    assert "Mutation tools are not exposed" in response
+    assert "authorization" in response.lower()
 
 
 def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
@@ -267,7 +336,7 @@ def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
         if msg.get("turn_id") == "ui-turn-test-1"
     ]
 
-    assert any(msg.get("type") == "chat" and "Here's what Nova can do right now" in msg.get("message", "") for msg in correlated)
+    assert any(msg.get("type") == "chat" and "Here's Nova's capability truth right now" in msg.get("message", "") for msg in correlated)
     assert any(msg.get("type") == "chat_done" for msg in correlated)
 
 
@@ -394,7 +463,7 @@ def test_help_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
+    assert any("Here's Nova's capability truth right now" in msg for msg in chat_messages)
 
 
 def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
@@ -410,7 +479,7 @@ def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Here's what Nova can do right now" in msg for msg in chat_messages)
+    assert any("Here's Nova's capability truth right now" in msg for msg in chat_messages)
 
 
 def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
@@ -432,8 +501,8 @@ def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Weather, news, and calendar can be connected in Settings" in msg for msg in chat_messages)
-    assert any("Even without extra connections" in msg for msg in chat_messages)
+    assert any("No external provider configuration is currently recorded" in msg for msg in chat_messages)
+    assert any("Provider-backed capability availability is not verified" in msg for msg in chat_messages)
 
 
 def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
@@ -446,11 +515,11 @@ def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
         brain_server.connections_store,
         "snapshot",
         lambda: [
-            {"id": "weather", "label": "Weather (Visual Crossing)", "connected": True},
-            {"id": "calendar", "label": "Calendar (ICS file)", "connected": True},
-            {"id": "news", "label": "News (NewsAPI)", "connected": True},
-            {"id": "brave", "label": "Brave Search", "connected": False},
-            {"id": "openai", "label": "OpenAI / GPT-4o", "connected": True},
+            {"id": "weather", "label": "Weather (Visual Crossing)", "caps": ["55"], "has_key": True, "health_ok": True},
+            {"id": "calendar", "label": "Calendar (ICS file)", "caps": ["57"], "has_key": True, "health_ok": True},
+            {"id": "news", "label": "News (NewsAPI)", "caps": ["48", "49", "50"], "has_key": True, "health_ok": True},
+            {"id": "brave", "label": "Brave Search", "caps": ["16"], "has_key": True, "health_ok": False},
+            {"id": "openai", "label": "OpenAI / GPT-4o", "caps": ["63"], "has_key": True, "health_ok": True},
         ],
     )
     monkeypatch.setattr(
@@ -468,12 +537,43 @@ def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Connected right now: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
-    assert any("full daily brief" in msg for msg in chat_messages)
+    assert any("Provider health verified: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
+    assert any("Configured but provider health not verified: Brave Search." in msg for msg in chat_messages)
+    assert all("Connected right now" not in msg for msg in chat_messages)
+    assert any("daily-brief route can use those sources" in msg for msg in chat_messages)
     assert any("Morning Brief is running now from the Run now flow." in msg for msg in chat_messages)
     chat_payloads = [item for item in ws.sent_messages if item.get("type") == "chat"]
     assert any(action.get("command") == "openclaw status" for item in chat_payloads for action in item.get("suggested_actions", []))
     assert any(action.get("command") == "daily brief" for item in chat_payloads for action in item.get("suggested_actions", []))
+
+
+def test_capability_help_does_not_call_unverified_configuration_connected(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.connections_store,
+        "snapshot",
+        lambda: [
+            {
+                "id": "brave",
+                "label": "Brave Search",
+                "caps": ["16"],
+                "has_key": True,
+                "health_ok": None,
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        brain_server.openclaw_agent_runtime_store,
+        "snapshot",
+        lambda: {"active_run": None},
+    )
+
+    message = brain_server._capability_help_message()
+
+    assert "Configured but provider health not verified: Brave Search." in message
+    assert "Connected right now" not in message
+    web_search_line = next(line for line in message.splitlines() if "Governed Web Search" in line)
+    assert "configured=yes" in web_search_line
+    assert "available_here=unknown" in web_search_line
 
 
 def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):

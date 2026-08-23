@@ -1,6 +1,6 @@
 # Daily Command Center
 
-## 2026-08-23 — Wave B2 authorization gate
+## 2026-08-23 — Wave B2 capability narration implementation
 
 ```text
 ACTIVE LANE:
@@ -8,13 +8,14 @@ ACTIVE LANE:
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
-  B2 NEXT / NOT YET IMPLEMENTATION-AUTHORIZED.
+  B2 ACTIVE / IMPLEMENTATION AUTHORIZED.
   B3 / B4 / Wave C BLOCKED.
 
 B1 MERGE:
   PR #356 — MERGED
   reviewed head — 381dbaeca73786f789cc6e68fd3b6bf193296041
-  squash merge/current main — 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+  squash merge — 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+  post-B1 sync #357/current main — 864ceba9747384b3bdca4a693dca938b3899864e
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -44,7 +45,7 @@ HOSTED CI:
   This is neither behavioral PASS nor behavioral FAIL evidence.
 
 CURRENT ORDER:
-  B2 capability narration / separate implementation authorization
+  B2 capability narration / active bounded implementation
   -> B3 memory governance
   -> B4 reproducibility hygiene
   -> C proof / semantic-contract stabilization / validated baseline
@@ -67,7 +68,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete.
 
-The only current action is a separate owner decision on whether to authorize B2 implementation. This post-merge sync does not authorize code, test, schema, registry, API, capability, or runtime changes.
+The current action is the reviewed B2 capability-narration truth implementation. It may change narration/projection code and focused tests, but it may not change authority, registry membership, capability behavior, provider routing, or execution.
 
 ## Permanent evidence discipline
 
@@ -106,4 +107,4 @@ README/front-door rewrite inside this post-B1 sync
 
 ## Next handoff
 
-Confirm this post-merge truth sync is clean, then stop at **READY FOR SEPARATE B2 AUTHORIZATION**. Do not begin B2 implementation from this handoff.
+Complete the bounded B2 implementation and proof, publish a draft PR only when clean, and stop before merge or B3.

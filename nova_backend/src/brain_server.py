@@ -46,6 +46,7 @@ from src.api.profile_api import build_profile_router
 from src.api.settings_api import build_settings_router
 from src.api.workspace_api import build_workspace_router
 from src.connections.connections_store import connections_store
+from src.identity.capability_truth import capability_truth_status, project_capability_truth
 from src.conversation.general_chat_runtime import (
     build_general_chat_skill,
     resolve_pending_escalation_reply,
@@ -121,7 +122,7 @@ from src.audit.runtime_auditor import (
 )
 from src.websocket.session_handler import run_websocket_session
 from src.websocket.intent_patterns import (
-    PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, HELP_ORIENT_RE,
+    PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, OPENCLAW_CAPABILITY_HELP_RE, HELP_ORIENT_RE,
     AMBIENT_CLARIFICATION_PATTERNS, EMAIL_INBOX_RE, EMAIL_INBOX_RESPONSE, TIME_QUERY_RE,
     SESSION_ACTIVITY_RECAP_RE,
     REMIND_ME_TIMELESS_RE, REMIND_ME_TIMELESS_RESPONSE,
@@ -1575,9 +1576,12 @@ def _capability_help_actions() -> list[dict[str, str]]:
     providers, runtime = _capability_help_runtime_snapshot()
     actions: list[dict[str, str]] = []
 
-    weather_live = bool((providers.get("weather") or {}).get("connected"))
-    calendar_live = bool((providers.get("calendar") or {}).get("connected"))
-    news_live = bool((providers.get("news") or {}).get("connected") or (providers.get("brave") or {}).get("connected"))
+    weather_live = (providers.get("weather") or {}).get("health_ok") is True
+    calendar_live = (providers.get("calendar") or {}).get("health_ok") is True
+    news_live = (
+        (providers.get("news") or {}).get("health_ok") is True
+        or (providers.get("brave") or {}).get("health_ok") is True
+    )
     active_run = dict(runtime.get("active_run") or {})
 
     def _add(label: str, command: str) -> None:
@@ -1606,49 +1610,74 @@ def _capability_help_message() -> str:
     providers, runtime = _capability_help_runtime_snapshot()
     active_run_summary = str(runtime.get("active_run_summary") or "No home-agent runs are active right now.").strip()
 
-    weather_live = bool((providers.get("weather") or {}).get("connected"))
-    calendar_live = bool((providers.get("calendar") or {}).get("connected"))
-    news_live = bool((providers.get("news") or {}).get("connected"))
-    brave_live = bool((providers.get("brave") or {}).get("connected"))
-    openai_live = bool((providers.get("openai") or {}).get("connected"))
+    weather_live = (providers.get("weather") or {}).get("health_ok") is True
+    calendar_live = (providers.get("calendar") or {}).get("health_ok") is True
+    news_live = (providers.get("news") or {}).get("health_ok") is True
+    brave_live = (providers.get("brave") or {}).get("health_ok") is True
+    openai_live = (providers.get("openai") or {}).get("health_ok") is True
 
-    connected_labels: list[str] = []
+    projection = project_capability_truth(provider_snapshot=list(providers.values()))
+    configured_labels: list[str] = []
+    verified_provider_labels: list[str] = []
+    unverified_provider_labels: list[str] = []
     for provider_id in ("weather", "calendar", "news", "brave", "openai", "bridge"):
         item = providers.get(provider_id) or {}
-        if bool(item.get("connected")):
-            connected_labels.append(str(item.get("label") or provider_id).strip())
+        label = str(item.get("label") or provider_id).strip()
+        if item.get("has_key"):
+            configured_labels.append(label)
+            if item.get("health_ok") is True:
+                verified_provider_labels.append(label)
+            else:
+                unverified_provider_labels.append(label)
 
     lines = [
-        "Here's what Nova can do right now:",
+        "Here's Nova's capability truth right now. This is status evidence, not authorization:",
         "",
-        "- Everyday help: ask questions, get explanations, save notes, open folders, check system status.",
-        "- Search and research: search the web for current info, pull headlines, build topic reports.",
-        "- Double-check answers: I can verify a claim or get a second opinion on something — without taking action.",
-        "- Story tracking: follow a topic over time, see how it shifts, compare sources.",
-        "- Explanation: explain what something is, walk through a file or page, break down complex topics.",
-        "- Screen help: capture your screen on request and explain what's on it.",
-        "- Memory: save things I should remember, list what I know, and pick up where we left off.",
-        "- Device basics: open websites, read text aloud, adjust volume, media, and brightness.",
+        "Enabled, configured, verified, path-available, and approved are separate states.",
     ]
 
-    if connected_labels:
-        lines.append(f"- Connected right now: {', '.join(connected_labels)}.")
+    for item in projection:
+        label = item.name.replace("_", " ").title()
+        lines.append(f"- {label}: {capability_truth_status(item)}")
+
+    if verified_provider_labels:
+        lines.append(f"- Provider health verified: {', '.join(verified_provider_labels)}.")
+    if unverified_provider_labels:
+        lines.append(
+            f"- Configured but provider health not verified: {', '.join(unverified_provider_labels)}."
+        )
+    if configured_labels:
+        lines.append("- Configuration alone is not a verified connection or Nova authority.")
     else:
-        lines.append("- Weather, news, and calendar can be connected in Settings for a richer daily view.")
+        lines.append("- No external provider configuration is currently recorded.")
+
+    try:
+        from src.openclaw.agent_runner import freeform_goal_allowed_tools
+
+        exposed_tools = ", ".join(sorted(freeform_goal_allowed_tools()))
+    except Exception:
+        exposed_tools = "unknown"
+    lines.append(
+        "- OpenClaw freeform path tools exposed here: "
+        f"{exposed_tools}. Path exposure is not request authorization."
+    )
 
     if weather_live and calendar_live:
-        lines.append("- With weather and calendar connected, I can do a full daily brief: weather, schedule, and headlines.")
+        lines.append(
+            "- Weather and calendar provider health are verified for this runtime; "
+            "the daily-brief route can use those sources."
+        )
     elif calendar_live:
-        lines.append("- Calendar is connected — try: today's schedule, tomorrow, or what's coming up this week.")
+        lines.append("- Calendar provider health is verified for this runtime.")
     elif weather_live:
-        lines.append("- Weather is connected — try: what's the weather, today's forecast, or this week's weather.")
+        lines.append("- Weather provider health is verified for this runtime.")
     elif news_live or brave_live:
-        lines.append("- News and search are live — try: latest news, search for X, or headlines.")
+        lines.append("- News or search provider health is verified for this runtime.")
     else:
-        lines.append("- Even without extra connections, I can explain things, help with projects, and keep track of what you're working on.")
+        lines.append("- Provider-backed capability availability is not verified in this snapshot.")
 
     if openai_live:
-        lines.append("- Cloud reasoning is available when you need it for harder problems.")
+        lines.append("- OpenAI provider health is verified; request authority is still evaluated separately.")
 
     lines.extend(
         [
@@ -1676,6 +1705,28 @@ def _capability_help_message() -> str:
     lines.append(
         "If you want, ask about a specific area like research, verification, story tracking, screen help, memory, or local controls."
     )
+    return "\n".join(lines)
+
+
+def _openclaw_capability_help_message() -> str:
+    """Describe only the tools exposed on the OpenClaw freeform path."""
+    try:
+        from src.openclaw.agent_runner import freeform_goal_allowed_tools
+
+        exposed_tools = sorted(freeform_goal_allowed_tools())
+    except Exception:
+        exposed_tools = []
+
+    lines = [
+        "OpenClaw freeform capability truth:",
+        "",
+        "Path exposure is not request authorization.",
+    ]
+    if exposed_tools:
+        lines.append(f"Tools exposed on this path: {', '.join(exposed_tools)}.")
+    else:
+        lines.append("Tools exposed on this path: unknown.")
+    lines.append("Mutation tools are not exposed on this freeform path.")
     return "\n".join(lines)
 
 
