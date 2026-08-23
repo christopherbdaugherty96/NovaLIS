@@ -48,14 +48,17 @@ Wave A1, A2, and B1 are complete:
 
 #356  Wave B1 runtime-truth instrumentation — MERGED
        reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
-       squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+       squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+
+#357  Post-B1 operational truth synchronization — MERGED
+       merge/current main: 864ceba9747384b3bdca4a693dca938b3899864e
 ```
 
 Current active lane:
 
 ```text
 Wave B2 — capability narration
-status: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+status: ACTIVE / IMPLEMENTATION AUTHORIZED
 B3: BLOCKED
 B4: BLOCKED
 Wave C: BLOCKED
@@ -65,7 +68,7 @@ B1 is complete and merged. Its corrected source proof, generated artifacts, 230-
 
 ### Immediate worker instruction
 
-This handoff does **not** authorize B2 implementation. Preserve the established B2 scope and wait for separate reviewed owner authorization before changing code, tests, schemas, registries, APIs, or runtime behavior.
+Implement only the reviewed B2 capability-narration truth projection. B2 may read existing registry, configuration, verification, runtime-setting, and path-availability evidence; it may not change authority or make capabilities available.
 
 Merged stabilization work already includes:
 
@@ -102,7 +105,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ## Current Ordered Gate
 
 ```text
-Wave B2 — capability narration / separate implementation authorization
+Wave B2 — capability narration / active bounded implementation
 -> Wave B3 — memory governance
 -> Wave B4 — reproducibility hygiene
 -> Wave C — proof / validated-baseline checkpoint
@@ -181,7 +184,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`. B2 is next but not implementation-authorized. B3, B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 then merged as current `main` `864ceba9747384b3bdca4a693dca938b3899864e`. B2 is active under its reviewed bounded authorization. B3, B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -277,7 +280,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- start B2 implementation, B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime from this post-B1 synchronization;
+- expand B2 beyond capability narration truth, or start B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.

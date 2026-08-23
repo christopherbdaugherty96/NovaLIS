@@ -12,15 +12,11 @@ Covers every intent branch:
 """
 from __future__ import annotations
 
-import json
-import unittest
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from src.conversation.meta_intent_handler import MetaIntentHandler
-
+from src.identity.capability_truth import CapabilityTruth
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -202,7 +198,9 @@ class TestWhatCanYouDo:
     def test_response_shows_active_status(self):
         result = _handle("what can you do")
         assert result is not None
-        assert "[on]" in result
+        assert "enabled=yes" in result
+        assert "available_here=" in result
+        assert "authorized=" not in result
 
     def test_response_shows_total_count(self):
         result = _handle("what can you do")
@@ -229,7 +227,7 @@ class TestWhatCanYouDo:
             result = _handle("what can you do")
             m._registry_cache = None  # clean up
             assert result is not None
-            assert "[off]" in result
+            assert "enabled=no" in result
 
     def test_registry_missing_graceful(self):
         """If registry is missing, should still return something useful."""
@@ -239,6 +237,29 @@ class TestWhatCanYouDo:
             result = _handle("what can you do")
         m._registry_cache = None
         assert result is not None  # does not crash
+
+    def test_category_help_does_not_claim_unavailable_capability_can_run(self):
+        unavailable = CapabilityTruth(
+            capability_id=16,
+            name="governed_web_search",
+            description="Search",
+            exists=True,
+            enabled=True,
+            configured=False,
+            verification_status="locked",
+            available_on_this_path=False,
+            requires_approval=False,
+            authority_class="read_only_network",
+        )
+        with patch(
+            "src.conversation.meta_intent_handler._caps_for_group_key",
+            return_value=[unavailable],
+        ):
+            result = _handle("what can you do with research")
+
+        assert result is not None
+        assert "current-path use is not established" in result
+        assert "I can search the web" not in result
 
 
 # ---------------------------------------------------------------------------

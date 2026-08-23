@@ -1,12 +1,12 @@
 # Current Priority
 
-## Wave B2 — Capability Narration Authorization Gate — 2026-08-23
+## Wave B2 — Capability Narration Implementation — 2026-08-23
 
 Current active lane:
 
 ```text
 WAVE B2 — capability narration
-STATUS: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
 B3: BLOCKED
 B4: BLOCKED
 WAVE C: BLOCKED
@@ -15,13 +15,13 @@ WAVE C: BLOCKED
 Handoff anchors:
 
 ```text
-current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+current main: 864ceba9747384b3bdca4a693dca938b3899864e
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
 ```
 
-B1 is complete and merged. Its proof, generated truth, operational synchronization, and final review are historical evidence for the merged B1 package. B2 is the next planning lane, but this sync does not authorize B2 implementation.
+B1 is complete and merged. Its proof, generated truth, operational synchronization, and final review are historical evidence for the merged B1 package. Post-B1 sync PR #357 is also merged. B2 capability narration is now active under a separate reviewed owner authorization.
 
 ## Completed gates
 
@@ -34,7 +34,7 @@ Wave A2 — MERGED via PR #355
 
 Wave B1 — MERGED via PR #356
   reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
-  squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+  squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
   proof / generated truth / operational truth / final review: COMPLETE
 ```
 
@@ -57,7 +57,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — await separate B2 authorization
+## Current action — implement bounded B2 capability narration truth
 
 Preserve only the established B2 scope:
 
@@ -71,7 +71,7 @@ requires_approval
 authority_class
 ```
 
-`authorized` is request-specific, not static capability metadata. Connection, capability, OAuth scope, and Nova authority remain distinct. Do not design or implement B2 from this synchronization.
+`authorized` is request-specific, not static capability metadata. Connection, capability, OAuth scope, and Nova authority remain distinct. Do not modify runtime authority, registry membership, enablement, confirmation requirements, or execution behavior.
 
 ## Google Foundation / CI state
 
@@ -84,7 +84,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 during the B2 authorization gate.
+Do not modify or merge #335 during B2.
 
 Issue #354 remains:
 
@@ -99,7 +99,7 @@ required before Wave C relies on hosted CI
 
 ```text
 B1 COMPLETE / MERGED
--> B2 capability narration / separate implementation authorization
+-> B2 capability narration / active bounded implementation
 -> B3 memory governance
 -> B4 reproducibility hygiene
 -> Wave C proof / semantic-contract stabilization / validated baseline
@@ -110,14 +110,13 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B2 is next but not implementation-authorized. B3 and B4 remain blocked.
+B2 is active and bounded. B3 and B4 remain blocked.
 
 ## Scope lock
 
-Do not start or modify during the B2 authorization gate:
+Do not start or modify outside the active bounded B2 lane:
 
 ```text
-capability narration semantics (B2)
 GeneralChat durable-memory semantics (B3)
 dependency-source truth (B4)
 network behavior / NetworkMediator wiring

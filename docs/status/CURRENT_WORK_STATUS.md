@@ -10,15 +10,15 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE B2 — capability narration
-STATUS: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
-CURRENT MAIN: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
+CURRENT MAIN: 864ceba9747384b3bdca4a693dca938b3899864e
 B1: COMPLETE / MERGED via PR #356
 B3: BLOCKED
 B4: BLOCKED
 WAVE C: BLOCKED
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; the squash merge/current `main` is `969c369b...`. B1 proof and generated/runtime truth are historical evidence for that merged package.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as current `main` `864ceba9...`. B1 proof and generated/runtime truth are historical evidence for that merged package.
 
 ## Completed Gates
 
@@ -48,7 +48,7 @@ Wave B1 corrected proof/publication pass
 Wave B1 merge
   PR #356: MERGED
   reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
-  squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+  squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 ```
 
 ## B1 Completed Evidence
@@ -74,12 +74,12 @@ Completed correction and evidence:
 
 The generated runtime artifacts were mechanically regenerated on the corrected source state. `CURRENT_RUNTIME_STATE.md` and `RUNTIME_FINGERPRINT.md` changed; `BYPASS_SURFACES.md` regenerated identically. The artifact commit is `e668ec0c...`. Manual edits remain forbidden.
 
-## Current B2 Gate
+## Current B2 Lane
 
 ```text
 B2 — capability narration
-status — NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
-required next action — separate reviewed owner authorization
+status — ACTIVE / IMPLEMENTATION AUTHORIZED
+required action — implement and prove only the reviewed seven-field non-authorizing truth projection
 ```
 
 Hosted CI for B1 was NOT EXECUTED because the Issue #354 jobs contained zero steps. That result is neither behavioral PASS nor behavioral FAIL. Issue #354 remains open and separate from B2.
@@ -118,7 +118,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 during the B2 authorization gate.
+Do not modify or merge #335 during B2.
 
 Issue #354 remains:
 
@@ -133,7 +133,7 @@ must be resolved before Wave C relies on hosted CI
 
 ```text
 B1 COMPLETE / MERGED
--> B2 capability narration / separate implementation authorization
+-> B2 capability narration / active bounded implementation
 -> B3 memory governance
 -> B4 reproducibility hygiene
 -> Wave C semantic/proof stabilization and validated baseline
@@ -145,7 +145,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B2 is next but not implementation-authorized. B3 and B4 remain blocked.
+B2 is active under separate reviewed implementation authorization. B3 and B4 remain blocked.
 
 ## Permanent Truth Boundaries
 
