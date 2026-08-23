@@ -1,12 +1,12 @@
 # Current Priority
 
-## Wave B1 — Final Review Correction Gate — 2026-08-23
+## Wave B1 — Final PR Review Gate — 2026-08-23
 
 Current active lane:
 
 ```text
 WAVE B1 — runtime-truth instrumentation only
-SUBSTATE: bounded final-review corrections applied; exact-head rerun + regeneration required
+SUBSTATE: corrective proof and generation complete; final PR review / merge decision
 PR: #356 OPEN / DRAFT
 MERGE: NOT AUTHORIZED
 ```
@@ -17,12 +17,12 @@ Handoff anchors:
 branch: codex/b1-runtime-truth-instrumentation-20260820
 A2 base: 060380f2e8c6437ff888773f0078647547ff4622
 first published/proven B1 candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-source/test correction checkpoint: ecd4033928990c68663f2ef81b46236686043765
+final corrected artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 ```
 
 The A2 base is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first exact-head proof, generated-artifact publication, and draft-PR opening. Final release review then found two bounded truth-integrity defects: active operational documents still described the pre-generation/no-PR state, and the fingerprint file count included one nonexistent allowlist path.
 
-The fingerprint source/test correction is now applied. Later handoff-document commits may advance branch HEAD beyond `ecd403...`; verify and record the actual HEAD used for the corrective proof.
+Both bounded defects are corrected. Corrected proof passed, mechanical generation completed, the corrected artifacts were published at `e668ec0c...`, and the exact A2-to-B1 diff is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
 
 ## Completed gates
 
@@ -42,7 +42,7 @@ Wave B1 first publication pass
 
 Hosted GitHub Actions on PR #356 remain zero-step failures tracked by Issue #354. They are infrastructure evidence only: neither behavioral PASS nor B1 behavioral FAIL.
 
-## Final-review findings being corrected
+## Corrected final-review findings
 
 ```text
 P1  active B1 handoff docs described pre-generation / no-PR state
@@ -61,104 +61,26 @@ Applied correction:
 
 Do not redesign B1. These changes are bounded truth-integrity corrections found by final review.
 
-## Next action — exact-head corrective proof and regeneration
+## Current action — final PR review and separate merge decision
 
-From a usable local checkout:
-
-```bash
-git branch --show-current
-git rev-parse HEAD
-git status --short
-```
-
-Expected branch:
+Corrective evidence is complete:
 
 ```text
-codex/b1-runtime-truth-instrumentation-20260820
+Ruff: PASS
+focused B1 tests: 13 PASS
+auditor/governance tests: 29 PASS
+operational consistency: PASS before/after generation
+runtime-doc drift: PASS before/after generation
+scope_version: behaviorally_active_v2
+runtime_surface_file_count: 230 existing files
+runtime_surface_hash: c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+runtime_fingerprint_hash: 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
+generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
+_MOCs: excluded
+exact A2-to-B1 diff: CLEAN
 ```
 
-Run:
-
-```bash
-export PYTHONPATH=nova_backend
-python -m ruff check nova_backend/src/audit/runtime_truth_instrumentation.py nova_backend/tests/test_runtime_truth_b1.py scripts/check_operational_truth_consistency.py
-python -m pytest nova_backend/tests/test_runtime_truth_b1.py
-python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-```
-
-Windows PowerShell:
-
-```powershell
-$env:PYTHONPATH = "nova_backend"
-```
-
-Then mechanically regenerate:
-
-```bash
-python scripts/generate_runtime_docs.py
-```
-
-The generator also refreshes tracked `_MOCs/*`. That remains an incidental overlay refresh, not B1 publication output. For B1 stage only:
-
-```bash
-git add -- docs/current_runtime/CURRENT_RUNTIME_STATE.md docs/current_runtime/BYPASS_SURFACES.md docs/current_runtime/RUNTIME_FINGERPRINT.md
-```
-
-Do not stage `_MOCs/*`, and do not use `git add .`, `git add -A`, `git add --all`, or equivalent broad staging.
-
-## Required generated-output inspection
-
-Inspect:
-
-```text
-docs/current_runtime/CURRENT_RUNTIME_STATE.md
-docs/current_runtime/BYPASS_SURFACES.md
-docs/current_runtime/RUNTIME_FINGERPRINT.md
-```
-
-Acceptance conditions:
-
-```text
-CURRENT_RUNTIME_STATE.md
-  - connections_api.py appears through KNOWN_DIRECT_NETWORK_EXCEPTION
-  - no false "Discrepancies: None" while the requests-based exception is detected
-  - universal NetworkMediator/Governor/ledger claims remain qualified
-  - Phase 9 evidence names real active symbols
-  - Runtime Surface Scope file count reflects existing fingerprinted files only
-
-BYPASS_SURFACES.md
-  - connections_api.py remains visible
-  - classification = local_administrative_health_probe
-  - wording states requests-scanner scope and does not claim universal network coverage
-
-RUNTIME_FINGERPRINT.md
-  - scope_version = behaviorally_active_v2
-  - runtime_surface_file_count present
-  - reported count equals the exact existing-file set consumed by the runtime-surface hash
-  - source_families present
-  - includes brain, connections, identity, memory, usage
-```
-
-After generation rerun:
-
-```bash
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-```
-
-Then:
-
-```text
-1. commit only the mechanically regenerated three runtime artifacts if changed
-2. verify _MOCs/* remains excluded
-3. exact compare A2 base -> corrected final B1 HEAD
-4. verify no B2/B3/B4/Google/#335/Continuity/OpenClaw-authority/provider-routing leakage
-5. review PR #356 at its new exact head
-6. produce merge-readiness verdict
-7. do not merge without separate owner authorization
-```
+The only remaining B1 gate is final PR #356 evidence assessment followed by a separate owner-authorized merge decision. Do not regenerate, redesign B1, or begin a downstream lane.
 
 ## Google Foundation / CI state
 
@@ -185,7 +107,7 @@ required before Wave C relies on hosted CI
 ## Ordered sequence after B1
 
 ```text
-B1 corrective proof/regeneration/final PR review/separate merge decision
+B1 final PR review / separate merge decision
 -> B2 capability narration
 -> B3 memory governance
 -> B4 reproducibility hygiene

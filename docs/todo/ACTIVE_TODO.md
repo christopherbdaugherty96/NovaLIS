@@ -6,7 +6,7 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B1 — final review correction gate
+### Wave B1 — final PR review gate
 
 Current branch:
 
@@ -14,10 +14,10 @@ Current branch:
 codex/b1-runtime-truth-instrumentation-20260820
 A2 base: 060380f2e8c6437ff888773f0078647547ff4622
 first published/proven candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-source/test correction checkpoint: ecd4033928990c68663f2ef81b46236686043765
+final corrected artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 PR #356: OPEN / DRAFT
 merge: NOT AUTHORIZED
-substate: bounded final-review corrections applied; corrected exact-head proof/regeneration required
+substate: corrective proof/generation complete; final PR review / merge decision
 ```
 
 Wave A1 and A2 are already merged:
@@ -54,35 +54,29 @@ Do not redesign B1. Only reproduced B1 truth-contract defects may be corrected.
 - [x] Correct fingerprint scope so the exact hashed/count set contains existing files only.
 - [x] Add focused regression asserting all fingerprinted paths exist and missing allowlist entries are excluded.
 - [x] Synchronize active B1 handoff documents to the correction/review state.
+- [x] Verify corrected branch/head/clean working state.
+- [x] Rerun Ruff on the B1 correction surfaces.
+- [x] Rerun 13 focused B1 tests.
+- [x] Rerun 29 runtime-auditor/governance-doc tests.
+- [x] Run operational consistency and runtime-doc drift before generation.
+- [x] Mechanically regenerate the bounded runtime artifacts.
+- [x] Inspect `CURRENT_RUNTIME_STATE.md`, `BYPASS_SURFACES.md`, and `RUNTIME_FINGERPRINT.md`.
+- [x] Verify `runtime_surface_file_count` equals 230 existing files in the exact hash set.
+- [x] Rerun operational consistency and runtime-doc drift after generation.
+- [x] Commit corrected generated artifacts at `e668ec0c09df6e0d304427431e95a26619a9f507`.
+- [x] Exclude `_MOCs/*`.
+- [x] Review the exact A2-base to corrected-B1 diff; 14 paths, `+1,887/-447`, clean.
 
-### Remaining B1 corrective proof/publication gate
-
-Run in this order on the actual current corrected B1 branch HEAD:
+### Remaining B1 gate
 
 ```text
-[ ] verify branch / corrected HEAD / clean working state
-[ ] rerun Ruff on the B1 correction surfaces
-[ ] rerun focused B1 tests
-[ ] rerun runtime-auditor + governance-doc structural tests
-[ ] run pre-generation operational consistency check
-[ ] run pre-generation runtime-doc drift check
-[ ] mechanically run scripts/generate_runtime_docs.py
-[ ] inspect CURRENT_RUNTIME_STATE.md
-[ ] inspect BYPASS_SURFACES.md
-[ ] inspect RUNTIME_FINGERPRINT.md
-[ ] verify runtime_surface_file_count reflects existing files in the exact hash set
-[ ] rerun operational consistency against post-generation state
-[ ] rerun runtime-doc drift against post-generation state
-[ ] stage/commit only the three generated runtime artifacts if changed
-[ ] verify `_MOCs/*` remains excluded
-[ ] review exact A2-base -> corrected final B1 HEAD diff
-[ ] review PR #356 at corrected final head
-[ ] produce merge-readiness verdict
+[ ] final PR #356 review / evidence assessment
+[ ] separate owner-authorized merge decision
 ```
 
 Generated runtime artifacts must not be edited manually.
 
-Required generated-output acceptance:
+Completed generated-output acceptance:
 
 ```text
 CURRENT_RUNTIME_STATE.md
@@ -100,8 +94,9 @@ BYPASS_SURFACES.md
 
 RUNTIME_FINGERPRINT.md
   - scope_version: behaviorally_active_v2
-  - runtime_surface_file_count present
-  - count equals the exact existing-file set consumed by the runtime-surface hash
+  - runtime_surface_file_count = 230 existing files
+  - runtime_surface_hash = c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+  - runtime_fingerprint_hash = 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
   - source_families present
   - brain / connections / identity / memory / usage included
 ```

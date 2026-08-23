@@ -10,15 +10,15 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE B1 — runtime-truth instrumentation
-STATUS: FINAL REVIEW CORRECTIONS IN PROGRESS; MERGE NOT AUTHORIZED
+STATUS: CORRECTIVE PROOF / GENERATION COMPLETE; FINAL PR REVIEW / MERGE DECISION
 BRANCH: codex/b1-runtime-truth-instrumentation-20260820
 POST-A2 BASE: 060380f2e8c6437ff888773f0078647547ff4622
-PUBLISHED CANDIDATE: f44cb8b856345ddc573fe0cb56037104350ffeb4
+FINAL CORRECTED ARTIFACT COMMIT: e668ec0c09df6e0d304427431e95a26619a9f507
 DRAFT PR: #356 — OPEN / DRAFT
-CORRECTION CHECKPOINT: ecd4033928990c68663f2ef81b46236686043765
+MERGE: NOT AUTHORIZED
 ```
 
-The A2 base is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first full B1 proof/publication pass and opened draft PR #356. Final release review then found two bounded truth-integrity defects: stale operational substate language and a fingerprint file-count set that included one nonexistent allowlist path. The source/test correction is now applied; later documentation commits may advance branch HEAD beyond `ecd403...`.
+The A2 base is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first B1 publication pass. Final release review then found two bounded truth-integrity defects. Both are corrected, the corrected artifacts were published at `e668ec0c...`, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
 
 ## Completed Gates
 
@@ -34,95 +34,49 @@ Wave B1 first exact-head proof/publication pass
   draft PR #356 opened
   local Ruff / focused tests / auditor-governance tests / consistency / drift: PASS
   hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
+
+Wave B1 corrected proof/publication pass
+  corrected source proof: PASS
+  generated artifacts: e668ec0c09df6e0d304427431e95a26619a9f507
+  Ruff: PASS
+  focused B1 tests: 13 PASS
+  auditor/governance tests: 29 PASS
+  operational consistency + runtime-doc drift: PASS before/after generation
+  exact A2-to-B1 diff: CLEAN
+  _MOCs: excluded
 ```
 
 ## B1 Current Substate
 
-Final release review found:
+Final release review found and the bounded correction closed:
 
 ```text
 P1  active B1 handoff surfaces still described the pre-generation/no-PR state
 P2  runtime_surface_file_count counted one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Bounded correction already applied at source/test level:
+Completed correction and evidence:
 
 ```text
 ✓ fingerprinted runtime-surface set now requires path.exists()
 ✓ runtime_surface_file_count therefore describes existing files in the exact hash set
 ✓ focused regression requires every fingerprinted path to exist
 ✓ missing ALLOWED_READ_PATHS entries are excluded from the fingerprinted set
+✓ corrected generation uses behaviorally_active_v2 over 230 existing files
+✓ runtime_surface_hash = c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+✓ runtime_fingerprint_hash = 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
 ```
 
-The generated runtime artifacts committed at `f44cb8b8...` were valid for that earlier source state but are now stale relative to the fingerprint correction. They must be mechanically regenerated on the corrected exact head. Manual edits remain forbidden.
+The generated runtime artifacts were mechanically regenerated on the corrected source state. `CURRENT_RUNTIME_STATE.md` and `RUNTIME_FINGERPRINT.md` changed; `BYPASS_SURFACES.md` regenerated identically. The artifact commit is `e668ec0c...`. Manual edits remain forbidden.
 
 ## Remaining B1 Gate
 
-From a usable local checkout of the corrected branch HEAD:
-
-```bash
-export PYTHONPATH=nova_backend
-python -m ruff check nova_backend/src/audit/runtime_truth_instrumentation.py nova_backend/tests/test_runtime_truth_b1.py scripts/check_operational_truth_consistency.py
-python -m pytest nova_backend/tests/test_runtime_truth_b1.py
-python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-python scripts/generate_runtime_docs.py
-```
-
-Windows PowerShell environment equivalent:
-
-```powershell
-$env:PYTHONPATH = "nova_backend"
-```
-
-The generator also refreshes tracked `_MOCs/*`. That remains outside B1 publication scope. Stage only:
-
-```bash
-git add -- docs/current_runtime/CURRENT_RUNTIME_STATE.md docs/current_runtime/BYPASS_SURFACES.md docs/current_runtime/RUNTIME_FINGERPRINT.md
-```
-
-Do not use broad staging and do not publish `_MOCs/*` in B1.
-
-After generation inspect:
-
 ```text
-docs/current_runtime/CURRENT_RUNTIME_STATE.md
-docs/current_runtime/BYPASS_SURFACES.md
-docs/current_runtime/RUNTIME_FINGERPRINT.md
+[ ] final PR #356 review / evidence assessment
+[ ] separate owner-authorized merge decision
 ```
 
-Required acceptance now includes:
-
-```text
-CURRENT_RUNTIME_STATE.md
-  KNOWN_DIRECT_NETWORK_EXCEPTION visible for connections_api.py
-  no false Discrepancies: None
-  qualified NetworkMediator/Governor/ledger wording
-  Phase 9 evidence references live active symbols
-  Runtime Surface Scope file count reflects existing fingerprinted files only
-
-BYPASS_SURFACES.md
-  connections_api.py remains visible
-  local_administrative_health_probe classification visible
-  requests-scanner scope is explicit
-  no universal network-coverage claim
-
-RUNTIME_FINGERPRINT.md
-  scope_version: behaviorally_active_v2
-  runtime_surface_file_count present and equal to existing files in the exact hashed set
-  source_families present
-  brain/connections/identity/memory/usage included
-```
-
-Then rerun:
-
-```bash
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-```
-
-Finally perform an exact A2-base → corrected final-B1 diff review and reassess draft PR #356. Merge remains a separate decision and is not authorized by a clean rerun.
+Hosted CI remains NOT EXECUTED because the Issue #354 jobs contain zero steps. That result is neither behavioral PASS nor behavioral FAIL. No known B1 code blocker remains.
 
 ## Scope Lock
 
@@ -172,7 +126,7 @@ must be resolved before Wave C relies on hosted CI
 ## Current Ordering
 
 ```text
-B1 bounded correction -> exact-head rerun -> regeneration -> final PR #356 review -> separate merge decision
+B1 final PR #356 review -> separate merge decision
 -> B2 capability narration
 -> B3 memory governance
 -> B4 reproducibility hygiene

@@ -26,7 +26,7 @@ Current active stabilization lane: B1
 ```text
 A1 — COMPLETE / MERGED via #353
 A2 — COMPLETE / MERGED via #355
-B1 — ACTIVE; final-review correction gate; PR #356 OPEN / DRAFT; merge not authorized
+B1 — ACTIVE; corrective proof/generation complete; final PR review / merge decision; PR #356 OPEN / DRAFT; merge not authorized
 B2 — BLOCKED
 B3 — BLOCKED
 B4 — BLOCKED
@@ -54,7 +54,7 @@ P1 — active handoff surfaces still described the pre-generation/no-PR state
 P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-The P2 source/test correction now requires the exact fingerprint/hash/count set to contain existing files only. Operational-document synchronization is part of the same bounded correction pass. Later corrective commits may advance branch HEAD beyond the first published candidate.
+Both bounded defects are corrected. The corrected source proof passed, mechanical generation completed, the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
 
 ## Merged stabilization state
 
@@ -104,7 +104,7 @@ WAVE A — truth reconciliation
   A2 strategy reconciliation                        COMPLETE
 
 WAVE B — truth-integrity repairs
-  B1 runtime-truth instrumentation                  ACTIVE / FINAL-REVIEW CORRECTION GATE
+  B1 runtime-truth instrumentation                  ACTIVE / FINAL PR REVIEW / MERGE DECISION
   B2 capability narration                           BLOCKED
   B3 memory governance                              BLOCKED
   B4 reproducibility hygiene                        BLOCKED
@@ -158,7 +158,7 @@ Wave B is intentionally split into focused PRs rather than one broad stabilizati
 
 ### B1 — runtime-truth instrumentation
 
-**Current active lane; first proof/publication pass complete, bounded final-review corrections in progress.**
+**Current active lane; bounded corrections, proof, generation, and publication complete; final PR review / merge decision remains.**
 
 B1 source/truth-harness work covers:
 
@@ -174,34 +174,32 @@ canonical-index lane checking + regression
 generator-entrypoint integration regression
 ```
 
-First publication evidence:
+Corrected final evidence:
 
 ```text
 local Ruff / focused B1 tests / auditor-governance tests: PASS
 operational consistency + runtime-doc drift: PASS before/after generation
-generated-output review: PASS for f44cb8b8...
-three intended runtime artifacts committed
+focused B1 tests: 13 PASS
+auditor/governance tests: 29 PASS
+generated-output review: PASS
+generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
+scope_version: behaviorally_active_v2
+runtime_surface_file_count: 230 existing files
+runtime_surface_hash: c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+runtime_fingerprint_hash: 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
 _MOCs excluded
 draft PR #356 opened
 hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
 ```
 
-Final release review found the P1/P2 defects above. The only remaining B1 work is therefore bounded corrective proof/publication:
+The P1/P2 defects above are corrected. The only remaining B1 work is:
 
 ```text
-synchronize active handoff truth
--> prove corrected exact head
--> mechanically regenerate runtime docs
--> inspect corrected file-count semantics and existing B1 acceptance conditions
--> rerun final-state consistency/drift
--> commit only the three generated runtime artifacts if changed
--> verify _MOCs exclusion
--> exact A2-base -> corrected final-B1 diff review
--> review PR #356 at corrected final head
--> separate merge decision
+final PR #356 evidence assessment
+-> separate owner-authorized merge decision
 ```
 
-Do not manually edit generated runtime artifacts. Do not treat the passing `f44cb8b8...` proof as automatic proof of a later corrective head.
+Do not manually edit or regenerate the generated runtime artifacts without a concrete new generator defect. `e668ec0c...` remains the final generated-artifact evidence commit even when a docs-only synchronization commit advances branch HEAD.
 
 ### B2 — capability narration
 

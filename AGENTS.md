@@ -54,23 +54,23 @@ Wave B1 — runtime-truth instrumentation
 branch: codex/b1-runtime-truth-instrumentation-20260820
 base: 060380f2e8c6437ff888773f0078647547ff4622
 first published/proven candidate: f44cb8b856345ddc573fe0cb56037104350ffeb4
-source/test correction checkpoint: ecd4033928990c68663f2ef81b46236686043765
+final corrected artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 PR #356: OPEN / DRAFT
-substate: bounded final-review corrections applied; corrected exact-head proof/regeneration required
+substate: corrective proof and generation complete; final PR review / merge decision
 merge: NOT AUTHORIZED
 ```
 
 The base SHA is a planning/comparison checkpoint, not a validated baseline. `f44cb8b8...` completed the first exact-head local proof, generated-artifact publication, final remote scope review, and draft PR #356 opening. Final release review then found two bounded truth-integrity defects: active B1 handoff surfaces still described the pre-generation/no-PR state, and `runtime_surface_file_count` included one nonexistent `ALLOWED_READ_PATHS` entry.
 
-The fingerprint source/test correction is now applied. Later operational-document commits may advance branch HEAD beyond `ecd403...`; verify and record the actual corrected HEAD used for proof.
+Both defects are corrected. The corrected source proof passed, the runtime artifacts were mechanically regenerated and published at `e668ec0c...`, the existing-file fingerprint count is 230, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
 
 ### Immediate worker instruction
 
 Do **not** redesign or extend B1 instrumentation.
 
-The final review reproduced concrete B1 truth-contract defects, so bounded correction is authorized only for those defects. The next step is corrective execution/proof, mechanical regeneration, final-state checks, exact diff review, and PR #356 reassessment.
+The bounded B1 correction, exact-head proof, mechanical regeneration, final-state checks, and exact diff review are complete. The only current action is final PR #356 evidence assessment followed by a separate owner-authorized merge decision.
 
-The three generated runtime artifacts committed at `f44cb8b8...` were valid for that candidate but are now stale relative to the fingerprint correction. Regenerate them mechanically on the corrected head; manual edits are forbidden.
+Do not regenerate or edit generated runtime artifacts unless a concrete new generator defect is reproduced.
 
 Merged stabilization work already includes:
 
@@ -107,7 +107,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 ## Current Ordered Gate
 
 ```text
-Wave B1 — bounded correction / corrected exact-head proof / regeneration / final PR #356 review / separate merge decision
+Wave B1 — final PR #356 review / separate merge decision
 -> Wave B2 — capability narration
 -> Wave B3 — memory governance
 -> Wave B4 — reproducibility hygiene
@@ -136,7 +136,7 @@ B1 may change only what is required to make generated/runtime truth instrumentat
 - a separate operational-truth consistency checker;
 - minimal current-status synchronization needed to name B1 and its proof/review substate accurately.
 
-The first B1 publication pass is complete. Final release review reproduced one P1 operational-truth defect and one P2 fingerprint-count defect. Do not add implementation work beyond those bounded corrections.
+The first B1 publication pass and the bounded P1/P2 correction pass are complete. Do not add implementation work to this branch.
 
 B1 does **not** authorize:
 
@@ -166,41 +166,28 @@ status: detected outside NetworkMediator; explicitly reported pending dispositio
 
 B1 makes that fact visible in discrepancy/runtime truth. It does not silently treat the path as mediated and does not fix the network path itself. The scanner is requests-based and does not prove absence of every possible network mechanism.
 
-## Corrective Proof Gate
+## Final PR Review Gate
 
-PR #356 already exists and must remain draft while the corrected head is proved. Verify the exact branch/HEAD:
-
-```bash
-git branch --show-current
-git rev-parse HEAD
-git status --short
-```
-
-Then run:
-
-```bash
-export PYTHONPATH=nova_backend
-python -m ruff check nova_backend/src/audit/runtime_truth_instrumentation.py nova_backend/tests/test_runtime_truth_b1.py scripts/check_operational_truth_consistency.py
-python -m pytest nova_backend/tests/test_runtime_truth_b1.py
-python -m pytest nova_backend/tests/test_runtime_auditor.py nova_backend/tests/test_runtime_governance_docs.py
-python scripts/check_operational_truth_consistency.py
-python scripts/check_runtime_doc_drift.py
-python scripts/generate_runtime_docs.py
-```
-
-After generation inspect:
+Corrective evidence is complete:
 
 ```text
-docs/current_runtime/CURRENT_RUNTIME_STATE.md
-docs/current_runtime/BYPASS_SURFACES.md
-docs/current_runtime/RUNTIME_FINGERPRINT.md
+Ruff: PASS
+focused B1 tests: 13 PASS
+auditor/governance tests: 29 PASS
+operational consistency: PASS before/after generation
+runtime-doc drift: PASS before/after generation
+scope: behaviorally_active_v2
+existing-file fingerprint count: 230
+runtime surface hash: c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+runtime fingerprint hash: 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
+generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
+exact A2-to-B1 diff: CLEAN
+_MOCs: excluded
 ```
 
-The fingerprint acceptance contract now additionally requires that `runtime_surface_file_count` equal the exact **existing-file** set consumed by the runtime-surface hash. Missing allowlist paths must not be counted as files.
+Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-The generator also refreshes `_MOCs/*`; those side effects remain outside B1. Stage only the three runtime artifacts and do not use broad staging.
-
-After regeneration, rerun operational consistency and runtime-doc drift, review the exact A2-base → corrected final-B1 diff, then reassess PR #356. A clean result supports a **merge decision** only; it does not authorize merge.
+PR #356 must remain open and draft pending final evidence assessment and a separate owner-authorized merge decision. B2, B3, B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
