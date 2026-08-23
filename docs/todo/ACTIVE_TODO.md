@@ -6,20 +6,20 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B3 — active memory governance repair
+### Wave B4 — reproducibility hygiene next
 
 Current state:
 
 ```text
-current main / B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+current main / B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 B1 / PR #356: COMPLETE / MERGED
 B2 / PR #358: COMPLETE / MERGED
-B3: ACTIVE / IMPLEMENTATION AUTHORIZED
-B4: BLOCKED
+B3 / PR #360: COMPLETE / MERGED
+B4: NEXT / NOT IMPLEMENTATION-AUTHORIZED
 Wave C: BLOCKED
 ```
 
-Wave A1, A2, B1, and B2 are already merged:
+Wave A1, A2, B1, B2, and B3 are already merged:
 
 ```text
 #353  A1 operational truth synchronization
@@ -41,9 +41,13 @@ Wave A1, A2, B1, and B2 are already merged:
 
 #359  post-B2 operational truth synchronization
        merge/current B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+
+#360  B3 memory governance
+       reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
+       squash merge/current main: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 ```
 
-Do not reopen B1 or B2 without concrete new evidence. Keep B3 within its separately authorized memory truth/provenance boundary.
+Do not reopen B1, B2, or B3 without concrete new evidence. B4 requires separate implementation authorization.
 
 ### Completed B1 source/truth work
 
@@ -93,6 +97,18 @@ Do not reopen B1 or B2 without concrete new evidence. Keep B3 within its separat
 [x] complete remote exact-head PR review and separate merge decision
 [x] merge PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`
 [x] verify B2 squash merge `e84a9d55f8575c687765b1df19e8f794b180599b`
+```
+
+### Completed B3 lane
+
+```text
+[x] complete the bounded memory-governance implementation
+[x] prove ordinary GeneralChat does not silently create authoritative durable memory
+[x] preserve explicit/observed provenance, precedence, conflict, supersession, and promotion semantics
+[x] keep superseded history out of current-memory results
+[x] complete focused automated and live proof
+[x] merge PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`
+[x] verify B3 squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064`
 ```
 
 Generated runtime artifacts must not be edited manually.
@@ -169,7 +185,7 @@ IMPACT: hosted workflows currently provide no trustworthy behavioral evidence
 NEEDED BEFORE: Wave C validated-baseline proof relies on hosted CI
 ```
 
-Keep #354 separate from B3 memory-governance work unless infrastructure diagnosis is explicitly selected.
+Keep #354 separate from B4 reproducibility work unless infrastructure diagnosis is explicitly selected.
 
 ### Front-door README truth cleanup
 
@@ -187,14 +203,16 @@ Keep #354 separate from B3 memory-governance work unless infrastructure diagnosi
 
 ### Wave B3 — memory governance
 
-**ACTIVE / IMPLEMENTATION AUTHORIZED.** Implement only the bounded memory truth/provenance scope:
+**COMPLETE / MERGED via PR #360.** The bounded memory truth/provenance scope established:
 
-- ordinary GeneralChat must not silently create durable personal memory;
-- define explicit/observed precedence and conflict rules;
-- preserve provenance/confidence/non-authoritative status;
-- preserve epistemic status when memory is consumed by reasoning.
+- ordinary GeneralChat does not silently create durable personal memory;
+- explicit/observed precedence and conflict rules are defined;
+- provenance/confidence/non-authoritative status is preserved;
+- epistemic status is preserved when memory is consumed by reasoning.
 
 ### Wave B4 — reproducibility hygiene
+
+**NEXT / NOT IMPLEMENTATION-AUTHORIZED.** Established high-level scope only:
 
 - make `pyproject.toml` canonical for dependencies;
 - resolve the `python-multipart` mismatch with `nova_backend/requirements.txt`;
@@ -241,11 +259,11 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin outside the active bounded B3 lane:
+Do not begin outside this post-B3 synchronization:
 
 ```text
-B3 memory architecture beyond the authorized truth/provenance repair
-B4 dependency/reproducibility repair
+B3 memory architecture beyond the completed truth/provenance repair
+B4 dependency/reproducibility repair (not implementation-authorized)
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes

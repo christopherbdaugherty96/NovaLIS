@@ -28,15 +28,15 @@ f25c798c7cb488495a343068463e9214cab0a763
 
 Wave A2 strategy reconciliation is complete and merged through PR #355.
 
-Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Wave B2 capability narration is complete and merged through PR #358. Current merged `main` is:
+Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Wave B2 capability narration is complete and merged through PR #358. Wave B3 memory governance is complete and merged through PR #360. Current merged `main` is:
 
 ```text
-b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 ```
 
-Current active stabilization lane: B3 — memory governance, active under bounded owner authorization.
+Current active stabilization lane: B4 — reproducibility hygiene, next but not implementation-authorized.
 
-B1 and B2 are complete. Their proof packages are historical evidence for the revisions and environments actually exercised. B3 now has separate reviewed authorization for its bounded truth/provenance repair.
+B1, B2, and B3 are complete. Their proof packages are historical evidence for the revisions and environments actually exercised. B4 requires separate reviewed implementation authorization.
 
 Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 
@@ -45,8 +45,8 @@ Wave A1 operational truth sync                 COMPLETE
 -> Wave A2 strategy reconciliation             COMPLETE
 -> B1 runtime-truth instrumentation             COMPLETE / MERGED
 -> B2 capability narration                      COMPLETE / MERGED
--> B3 memory governance                         ACTIVE / IMPLEMENTATION AUTHORIZED
--> B4 reproducibility hygiene                   BLOCKED
+-> B3 memory governance                         COMPLETE / MERGED
+-> B4 reproducibility hygiene                   NEXT / NOT IMPLEMENTATION-AUTHORIZED
 -> Wave C validated-baseline proof checkpoint   BLOCKED
 -> reconstruct/reconcile #335
 -> Google identity proof
@@ -54,7 +54,7 @@ Wave A1 operational truth sync                 COMPLETE
 -> evidence-based Continuity warrant
 ```
 
-Issue #354 remains a separate hosted-CI infrastructure problem. Its zero-step jobs are not behavioral pass/fail evidence, it is separate from B3, and it must be resolved before Wave C depends on hosted CI.
+Issue #354 remains a separate hosted-CI infrastructure problem. Its zero-step jobs are not behavioral pass/fail evidence, it is separate from B4, and it must be resolved before Wave C depends on hosted CI.
 
 ## The canonical truth files
 

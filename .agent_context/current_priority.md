@@ -1,20 +1,20 @@
 # Current Priority
 
-## Wave B3 — Active Memory Governance Repair — 2026-08-23
+## Wave B4 — Reproducibility Hygiene Next — 2026-08-23
 
 Current planning lane:
 
 ```text
 B2: COMPLETE / MERGED
-B3: ACTIVE / IMPLEMENTATION AUTHORIZED
-B4: BLOCKED
+B3: COMPLETE / MERGED
+B4: NEXT / NOT IMPLEMENTATION-AUTHORIZED
 WAVE C: BLOCKED
 ```
 
 Handoff anchors:
 
 ```text
-current main / B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+current main / B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
@@ -22,9 +22,12 @@ B2 reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
 B2 PR #358: MERGED
 B2 squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
 post-B2 sync #359 merge: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
+B3 reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
+B3 PR #360: MERGED
+B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 ```
 
-B1 and B2 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B3 is active under a separate bounded owner authorization.
+B1, B2, and B3 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B4 is next but is not implementation-authorized.
 
 ## Completed gates
 
@@ -44,9 +47,14 @@ Wave B2 — MERGED via PR #358
   reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
   squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
   capability narration projection / consumer migration / review: COMPLETE
+
+Wave B3 — MERGED via PR #360
+  reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
+  squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+  bounded memory truth / provenance / review: COMPLETE
 ```
 
-Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and does not authorize B3 implementation.
+Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and does not authorize B4 implementation.
 
 ## B1 completed evidence
 
@@ -65,7 +73,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — implement the bounded B3 contract
+## Current action — await separate B4 authorization
 
 The merged B2 projection preserves these distinct fields:
 
@@ -81,7 +89,9 @@ authority_class
 
 `authorized` remains request-specific, not static capability metadata. Connection, capability, OAuth scope, and Nova authority remain distinct.
 
-B3 is authorized only to make existing durable-memory behavior truthful: ordinary chat must not silently create authoritative personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible. Do not expand into new memory architecture, Continuity, authority, or capabilities.
+B3 is complete: ordinary chat no longer silently creates authoritative personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible. Superseded history is not current memory.
+
+B4's established high-level scope is limited to making `pyproject.toml` canonical dependency truth, resolving the `python-multipart` mismatch, and avoiding independently maintained duplicate dependency pins. No B4 implementation is authorized by this synchronization.
 
 ## Google Foundation / CI state
 
@@ -110,8 +120,8 @@ required before Wave C relies on hosted CI
 ```text
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
--> B3 memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
--> B4 reproducibility hygiene
+-> B3 memory governance / COMPLETE / MERGED
+-> B4 reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
 -> Wave C proof / semantic-contract stabilization / validated baseline
 -> reconstruct #335 onto exact validated baseline
 -> independent #335 review + separate merge decision
@@ -120,15 +130,15 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B2 is complete and merged. B3 is active under bounded authorization; B4 remains blocked.
+B2 and B3 are complete and merged. B4 is next but not implementation-authorized.
 
 ## Scope lock
 
-Do not start or modify outside the bounded B3 lane:
+Do not start or modify outside this post-B3 synchronization:
 
 ```text
-memory architecture beyond the authorized B3 truth/provenance repair
-dependency-source truth (B4)
+memory architecture beyond the completed B3 truth/provenance repair
+dependency-source truth (B4; not implementation-authorized)
 network behavior / NetworkMediator wiring
 capability registry
 OAuth / #335
