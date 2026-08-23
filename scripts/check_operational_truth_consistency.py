@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Narrow consistency check for Nova's active operational truth surfaces.
 
 This is intentionally separate from ``check_runtime_doc_drift.py``. The runtime
@@ -25,6 +23,8 @@ Not checked here:
 A green result is therefore a bounded consistency signal, not a repository or
 runtime certification.
 """
+
+from __future__ import annotations
 
 import re
 from pathlib import Path
