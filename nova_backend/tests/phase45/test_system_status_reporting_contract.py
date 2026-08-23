@@ -1,5 +1,4 @@
 import pytest
-
 from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor
 
 pytestmark = pytest.mark.slow
@@ -24,9 +23,9 @@ def test_system_status_includes_model_and_capability_fields():
     assert "disk_percent" in data
     assert "active_capabilities_count" in data
     assert "active_capability_ids" in data
-    assert "available_capability_surface" in data
-    assert "available_capability_surface_count" in data
-    assert "available_capability_action_count" in data
+    assert "capability_truth_surface" in data
+    assert "capability_truth_group_count" in data
+    assert "capability_action_surface_count" in data
     assert "capability_surface_summary" in data
     assert "capability_surface_source" in data
     assert "recent_runtime_activity" in data
@@ -55,12 +54,12 @@ def test_system_status_includes_model_and_capability_fields():
     assert "operator_health_summary" in data
 
 
-def test_system_status_exposes_live_capability_groups():
+def test_system_status_exposes_evidence_scoped_capability_groups():
     executor = OSDiagnosticsExecutor()
     result = executor.execute(_Request())
 
     assert result.success is True
-    groups = result.data.get("available_capability_surface") or []
+    groups = result.data.get("capability_truth_surface") or []
 
     assert isinstance(groups, list)
     assert groups
@@ -68,3 +67,34 @@ def test_system_status_exposes_live_capability_groups():
     assert any(group.get("category") == "Screen" for group in groups)
     assert any(group.get("category") == "Computer" for group in groups)
     assert any(group.get("items") for group in groups)
+    item = next(item for group in groups for item in group.get("items") or [])
+    assert "configured" in item
+    assert "verification_status" in item
+    assert "available_on_this_path" in item
+    assert "requires_approval" in item
+    assert "authority_class" in item
+    assert "authorized" not in item
+    assert result.data["capability_surface_source"] == "shared_capability_truth_projection"
+
+
+def test_capability_surface_preserves_unknown_path_availability() -> None:
+    surface, summary, count = OSDiagnosticsExecutor._capability_surface(
+        [
+            {
+                "id": 16,
+                "name": "governed_web_search",
+                "exists": True,
+                "enabled": True,
+                "configured": True,
+                "verification_status": "unverified",
+                "available_on_this_path": None,
+                "requires_approval": False,
+                "authority_class": "read_only_network",
+            }
+        ]
+    )
+
+    item = surface[0]["items"][0]
+    assert item["available_on_this_path"] is None
+    assert "live" not in summary.lower()
+    assert count == 1

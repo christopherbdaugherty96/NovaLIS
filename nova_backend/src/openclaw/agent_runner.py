@@ -59,6 +59,11 @@ _FREEFORM_GOAL_ALLOWED_TOOLS: frozenset[str] = frozenset({
     "web_search",  # network read — mediated by NetworkMediator + MeteredNetworkProxy
 })
 
+
+def freeform_goal_allowed_tools() -> frozenset[str]:
+    """Return the exact freeform path allowlist for read-only truth projection."""
+    return _FREEFORM_GOAL_ALLOWED_TOOLS
+
 # PATCH C — Conservative network call budget for freeform goal path.
 # The template path enforces this via TaskEnvelope + RunBudgetMeter.
 # run_goal() now mirrors that pattern.

@@ -28,15 +28,15 @@ f25c798c7cb488495a343068463e9214cab0a763
 
 Wave A2 strategy reconciliation is complete and merged through PR #355.
 
-Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Current merged `main` is:
+Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Current merged `main` is:
 
 ```text
-969c369b453fffca0eb2b8dad65ff3f285df8fbc
+864ceba9747384b3bdca4a693dca938b3899864e
 ```
 
 Current active stabilization lane: B2
 
-B1 is complete and its proof/generated-truth package is historical evidence for the merged B1 revision. B2 capability narration is next but is **not yet implementation-authorized**.
+B1 is complete and its proof/generated-truth package is historical evidence for the merged B1 revision. B2 capability narration is **active under separate reviewed implementation authorization**.
 
 Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 
@@ -44,7 +44,7 @@ Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 Wave A1 operational truth sync                 COMPLETE
 -> Wave A2 strategy reconciliation             COMPLETE
 -> B1 runtime-truth instrumentation             COMPLETE / MERGED
--> B2 capability narration                      NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> B2 capability narration                      ACTIVE / IMPLEMENTATION AUTHORIZED
 -> B3 memory governance                         BLOCKED
 -> B4 reproducibility hygiene                   BLOCKED
 -> Wave C validated-baseline proof checkpoint

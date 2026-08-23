@@ -27,7 +27,7 @@ Current active stabilization lane: B2
 A1 — COMPLETE / MERGED via #353
 A2 — COMPLETE / MERGED via #355
 B1 — COMPLETE / MERGED via #356
-B2 — NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+B2 — ACTIVE / IMPLEMENTATION AUTHORIZED
 B3 — BLOCKED
 B4 — BLOCKED
 C  — BLOCKED
@@ -36,7 +36,7 @@ C  — BLOCKED
 Current merged `main`:
 
 ```text
-969c369b453fffca0eb2b8dad65ff3f285df8fbc
+864ceba9747384b3bdca4a693dca938b3899864e
 ```
 
 First published/proven B1 candidate:
@@ -54,7 +54,7 @@ P1 — active handoff surfaces still described the pre-generation/no-PR state
 P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` is current `main`.
+Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as current `main` `864ceba9747384b3bdca4a693dca938b3899864e`.
 
 ## Merged stabilization state
 
@@ -106,7 +106,7 @@ WAVE A — truth reconciliation
 
 WAVE B — truth-integrity repairs
   B1 runtime-truth instrumentation                  COMPLETE / MERGED
-  B2 capability narration                           NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+  B2 capability narration                           ACTIVE / IMPLEMENTATION AUTHORIZED
   B3 memory governance                              BLOCKED
   B4 reproducibility hygiene                        BLOCKED
 
@@ -190,7 +190,7 @@ runtime_surface_hash: c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361f
 runtime_fingerprint_hash: 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
 _MOCs excluded
 PR #356 merged at reviewed head 381dbaeca73786f789cc6e68fd3b6bf193296041
-squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
 ```
 
@@ -200,9 +200,9 @@ Do not manually edit or regenerate the generated runtime artifacts without a con
 
 ### B2 — capability narration
 
-**Next / not yet implementation-authorized.**
+**Active under separate reviewed implementation authorization.**
 
-This current-state synchronization preserves the established B2 scope but does not authorize implementation.
+The current B2 package implements only the established non-authorizing narration projection and its five consumers.
 
 Separate:
 

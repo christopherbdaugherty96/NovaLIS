@@ -13,6 +13,7 @@ import psutil
 
 from src.actions.action_result import ActionResult
 from src.build_phase import BUILD_PHASE
+from src.identity.capability_truth import project_capability_truth
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
@@ -86,42 +87,41 @@ class OSDiagnosticsExecutor:
         return overall, note
 
     @staticmethod
-    def _enabled_capability_entries() -> list[dict[str, object]]:
-        registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
+    def _capability_truth_entries() -> list[dict[str, object]]:
         try:
-            payload = json.loads(registry_path.read_text(encoding="utf-8"))
+            return [
+                {
+                    "id": item.capability_id,
+                    "name": item.name,
+                    **{key: value for key, value in item.as_dict().items() if key not in {"capability_id", "name", "description"}},
+                }
+                for item in project_capability_truth()
+            ]
         except Exception:
             return []
 
-        enabled: list[dict[str, object]] = []
-        for item in payload.get("capabilities", []):
-            if item.get("enabled") is True and item.get("id") is not None:
-                try:
-                    enabled.append(
-                        {
-                            "id": int(item.get("id")),
-                            "name": str(item.get("name") or "").strip(),
-                            "risk_level": str(item.get("risk_level") or "").strip().lower(),
-                            "status": str(item.get("status") or "").strip().lower(),
-                        }
-                    )
-                except Exception:
-                    continue
-        return sorted(enabled, key=lambda item: int(item.get("id") or 0))
+    @staticmethod
+    def _enabled_capability_entries() -> list[dict[str, object]]:
+        """Compatibility view for internal consumers that need enabled IDs."""
+        return [
+            item
+            for item in OSDiagnosticsExecutor._capability_truth_entries()
+            if item.get("enabled") is True
+        ]
 
     @staticmethod
     def _enabled_capabilities() -> list[int]:
         return sorted(
             {
                 int(item.get("id"))
-                for item in OSDiagnosticsExecutor._enabled_capability_entries()
-                if item.get("id") is not None
+                for item in OSDiagnosticsExecutor._capability_truth_entries()
+                if item.get("id") is not None and item.get("enabled") is True
             }
         )
 
     @staticmethod
     def _capability_surface(
-        enabled_entries: list[dict[str, object]],
+        capability_entries: list[dict[str, object]],
     ) -> tuple[list[dict[str, object]], str, int]:
         capability_map = {
             "governed_web_search": {
@@ -257,7 +257,7 @@ class OSDiagnosticsExecutor:
         ]
 
         grouped: dict[str, dict[str, object]] = {}
-        for item in enabled_entries:
+        for item in capability_entries:
             name = str(item.get("name") or "").strip()
             mapping = capability_map.get(name)
             if not mapping:
@@ -287,6 +287,13 @@ class OSDiagnosticsExecutor:
                         "prompt": prompt,
                         "capability_id": capability_id,
                         "capability_name": name,
+                        "exists": bool(item.get("exists")),
+                        "enabled": bool(item.get("enabled")),
+                        "configured": item.get("configured"),
+                        "verification_status": str(item.get("verification_status") or "unknown"),
+                        "available_on_this_path": item.get("available_on_this_path"),
+                        "requires_approval": item.get("requires_approval"),
+                        "authority_class": str(item.get("authority_class") or "unknown"),
                     }
                 )
             capability_ids = bucket["capability_ids"]
@@ -305,11 +312,11 @@ class OSDiagnosticsExecutor:
         total_actions = sum(len(list(group.get("actions") or [])) for group in surface)
         if surface:
             summary = (
-                f"{total_actions} live actions across {len(surface)} areas are currently "
-                "available through the Governor."
+                f"{total_actions} capability action surfaces across {len(surface)} areas. "
+                "Each item reports configuration, verification, path availability, approval, and authority separately."
             )
         else:
-            summary = "No governed capabilities are currently exposed in the active runtime."
+            summary = "No capability truth entries are available from the shared projection."
 
         return surface, summary, total_actions
 
@@ -1471,19 +1478,19 @@ class OSDiagnosticsExecutor:
         swap_used_gb = round(swap.used / (1024 ** 3), 2)
         swap_percent = round(float(swap.percent), 1)
         health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
-        enabled_capability_entries = self._enabled_capability_entries()
+        capability_truth_entries = self._capability_truth_entries()
         enabled_capability_ids = [
             int(item.get("id"))
-            for item in enabled_capability_entries
-            if item.get("id") is not None
+            for item in capability_truth_entries
+            if item.get("id") is not None and item.get("enabled") is True
         ]
         (
-            available_capability_surface,
+            capability_truth_surface,
             capability_surface_summary,
-            available_capability_action_count,
-        ) = self._capability_surface(enabled_capability_entries)
+            capability_action_surface_count,
+        ) = self._capability_surface(capability_truth_entries)
         recent_runtime_activity, trust_review_summary = self._recent_runtime_activity(
-            enabled_capability_entries
+            capability_truth_entries
         )
         model_availability, model_note, model_remediation, model_ready = self._model_status_details()
         tone_global_profile, tone_summary, tone_updated_at, tone_override_count = self._tone_status_details()
@@ -1554,11 +1561,11 @@ class OSDiagnosticsExecutor:
             "active_capabilities_count": len(enabled_capability_ids),
             "active_capability_ids": enabled_capability_ids,
             "capability_registry_status": "loaded" if enabled_capability_ids else "unavailable",
-            "available_capability_surface": available_capability_surface,
-            "available_capability_surface_count": len(available_capability_surface),
-            "available_capability_action_count": available_capability_action_count,
+            "capability_truth_surface": capability_truth_surface,
+            "capability_truth_group_count": len(capability_truth_surface),
+            "capability_action_surface_count": capability_action_surface_count,
             "capability_surface_summary": capability_surface_summary,
-            "capability_surface_source": "registry_enabled_capabilities",
+            "capability_surface_source": "shared_capability_truth_projection",
             "recent_runtime_activity": recent_runtime_activity,
             "recent_runtime_activity_count": len(recent_runtime_activity),
             "trust_review_summary": trust_review_summary,

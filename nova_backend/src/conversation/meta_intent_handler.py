@@ -30,6 +30,12 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from src.identity.capability_truth import (
+    CapabilityTruth,
+    capability_truth_status,
+    project_capability_truth,
+)
+
 # ---------------------------------------------------------------------------
 # Registry path
 # ---------------------------------------------------------------------------
@@ -450,62 +456,47 @@ def _load_registry() -> dict:
     return _registry_cache
 
 
-def _all_caps_by_group() -> dict[str, list[tuple[str, bool, str, bool]]]:
+def _all_caps_by_group() -> dict[str, list[CapabilityTruth]]:
     """
-    Return {group_label: [(label, is_active, cap_name, requires_confirmation), ...]}
-    for ALL capabilities so responses can show status, descriptions, and confirmation notes.
+    Return grouped capabilities from the shared narration-safe projection.
     """
     reg = _load_registry()
-    caps_by_id: dict[int, dict] = {int(c["id"]): c for c in reg.get("capabilities", [])}
+    projected = {item.capability_id: item for item in project_capability_truth(registry_payload=reg)}
     groups: dict[str, list[int]] = reg.get("capability_groups", {})
 
-    result: dict[str, list[tuple[str, bool, str, bool]]] = {}
+    result: dict[str, list[CapabilityTruth]] = {}
     seen: set[int] = set()
 
     for group_key, cap_ids in groups.items():
         label = _GROUP_LABELS.get(group_key, group_key.replace("_", " ").title())
-        entries: list[tuple[str, bool, str, bool]] = []
+        entries: list[CapabilityTruth] = []
         for cid in cap_ids:
-            if cid in caps_by_id and cid not in seen:
+            if cid in projected and cid not in seen:
                 seen.add(cid)
-                cap = caps_by_id[cid]
-                name = cap.get("name", "")
-                is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
-                needs_confirm = bool(cap.get("requires_confirmation"))
-                entries.append((_CAP_LABELS.get(name, name.replace("_", " ").title()),
-                                 is_active, name, needs_confirm))
+                entries.append(projected[cid])
         if entries:
             result[label] = entries
 
-    ungrouped: list[tuple[str, bool, str, bool]] = []
-    for cid, cap in caps_by_id.items():
+    ungrouped: list[CapabilityTruth] = []
+    for cid, cap in projected.items():
         if cid not in seen:
-            name = cap.get("name", "")
-            is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
-            needs_confirm = bool(cap.get("requires_confirmation"))
-            ungrouped.append((_CAP_LABELS.get(name, name.replace("_", " ").title()),
-                               is_active, name, needs_confirm))
+            ungrouped.append(cap)
     if ungrouped:
         result.setdefault("Other", []).extend(ungrouped)
 
     return result
 
 
-def _caps_for_group_key(group_key: str) -> list[tuple[str, bool, str, bool]]:
+def _caps_for_group_key(group_key: str) -> list[CapabilityTruth]:
     """Return the capability entries for a specific group key."""
     reg = _load_registry()
-    caps_by_id: dict[int, dict] = {int(c["id"]): c for c in reg.get("capabilities", [])}
+    projected = {item.capability_id: item for item in project_capability_truth(registry_payload=reg)}
     cap_ids: list[int] = reg.get("capability_groups", {}).get(group_key, [])
 
-    entries: list[tuple[str, bool, str, bool]] = []
+    entries: list[CapabilityTruth] = []
     for cid in cap_ids:
-        if cid in caps_by_id:
-            cap = caps_by_id[cid]
-            name = cap.get("name", "")
-            is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
-            needs_confirm = bool(cap.get("requires_confirmation"))
-            entries.append((_CAP_LABELS.get(name, name.replace("_", " ").title()),
-                             is_active, name, needs_confirm))
+        if cid in projected:
+            entries.append(projected[cid])
     return entries
 
 
@@ -616,22 +607,21 @@ def _build_what_can_you_do() -> str:
             "controlling your computer, and more. Just tell me what you need."
         )
 
-    active_total = sum(1 for entries in groups.values() for _, active, _, _ in entries if active)
-    inactive_total = sum(1 for entries in groups.values() for _, active, _, _ in entries if not active)
+    enabled_total = sum(1 for entries in groups.values() for item in entries if item.enabled)
+    disabled_total = sum(1 for entries in groups.values() for item in entries if not item.enabled)
 
     lines: list[str] = [
-        f"Here's everything I can do — {active_total} things are ready to use"
-        + (f", {inactive_total} are currently off" if inactive_total else "")
-        + ":",
+        f"Here's Nova's capability status — {enabled_total} enabled"
+        + (f", {disabled_total} off" if disabled_total else "")
+        + ". Enabled does not by itself mean configured, verified, available here, or authorized:",
         "",
     ]
 
     for group_label, entries in groups.items():
         lines.append(f"{group_label}:")
-        for cap_label, is_active, cap_name, needs_confirm in entries:
-            marker = "[on] " if is_active else "[off]"
-            confirm_note = "  (asks for confirmation)" if needs_confirm and is_active else ""
-            lines.append(f"  {marker}  {cap_label}{confirm_note}")
+        for item in entries:
+            cap_label = _CAP_LABELS.get(item.name, item.name.replace("_", " ").title())
+            lines.append(f"  - {cap_label} — {capability_truth_status(item)}")
         lines.append("")
 
     lines.append(
@@ -652,18 +642,17 @@ def _build_category_help(group_key: str, topic_word: str) -> str:
             'Say "what can you do" to see the full list.'
         )
 
-    lines: list[str] = [f"Here's what I can do in the {group_label} area:\n"]
-    for cap_label, is_active, cap_name, needs_confirm in entries:
-        desc = _CAP_DESCRIPTIONS.get(cap_name, f"({cap_label})")
-        if not is_active:
-            lines.append(f"  [off]  {cap_label} — not active right now")
-        elif needs_confirm:
-            lines.append(f"  [on]   {cap_label} — {desc} (I'll ask you to confirm first)")
+    lines: list[str] = [f"Here's the evidence-scoped capability status for {group_label}:\n"]
+    for item in entries:
+        cap_label = _CAP_LABELS.get(item.name, item.name.replace("_", " ").title())
+        if item.available_on_this_path is True:
+            description = _CAP_DESCRIPTIONS.get(item.name, f"({cap_label})")
         else:
-            lines.append(f"  [on]   {cap_label} — {desc}")
+            description = "Registered capability; current-path use is not established by the evidence."
+        lines.append(f"  - {cap_label} — {description} [{capability_truth_status(item)}]")
 
     lines.append("")
-    lines.append("Just say what you want and I'll take care of it.")
+    lines.append("Tell me what you want to do; any authority decision is evaluated for that request.")
     return "\n".join(lines).strip()
 
 
