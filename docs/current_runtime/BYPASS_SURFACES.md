@@ -37,3 +37,14 @@ Read-only truth report of detectable bypass indicators from allowlisted runtime 
 - nova_backend/src/executors/volume_executor.py
 - nova_backend/src/executors/web_search_executor.py
 - nova_backend/src/executors/webpage_launch_executor.py
+
+## requests-based direct-network classification
+
+This classification covers paths detectable by the existing requests-library scanner over the auditor's existing allowlist. It does not prove the absence of every possible network mechanism.
+
+- `nova_backend/src/api/connections_api.py`
+  - classification: `local_administrative_health_probe`
+  - disposition: `pending_explicit_runtime_governance_disposition`
+  - reason: Provider-health requests are local administrative connection checks, not registered governed capability execution. The requests-based direct network path remains visible and does not become implicitly approved.
+
+- Unclassified requests-based direct-network paths: None detected.

@@ -19,15 +19,42 @@ lane contract         -> what the lane may change
 implementation/proof  -> what actually changed and was verified
 ```
 
-## Current checkpoint — 2026-08-20
+## Current checkpoint — 2026-08-23
 
-Merged `main` when Wave A1 began:
+Current active stabilization lane: B1
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+A1 — COMPLETE / MERGED via #353
+A2 — COMPLETE / MERGED via #355
+B1 — ACTIVE; corrective proof/generation complete; final PR review / merge decision; PR #356 OPEN / DRAFT; merge not authorized
+B2 — BLOCKED
+B3 — BLOCKED
+B4 — BLOCKED
+C  — BLOCKED
 ```
 
-This is an A1 planning checkpoint, not a permanent alias for current HEAD and not yet a `validated_baseline_sha`.
+Current merged `main` / A2 comparison base:
+
+```text
+060380f2e8c6437ff888773f0078647547ff4622
+```
+
+First published/proven B1 candidate:
+
+```text
+f44cb8b856345ddc573fe0cb56037104350ffeb4
+```
+
+That candidate completed the first exact-head local proof, mechanical runtime-doc generation, artifact publication, final remote scope review, and draft PR #356 opening. It is not a `validated_baseline_sha` and it is not authorized for merge merely because that proof passed.
+
+Final release review then found two bounded B1 truth-integrity defects:
+
+```text
+P1 — active handoff surfaces still described the pre-generation/no-PR state
+P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
+```
+
+Both bounded defects are corrected. The corrected source proof passed, mechanical generation completed, the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`, and the exact A2-to-B1 diff review is clean. A later docs-only synchronization commit may advance branch HEAD; `e668ec0c...` remains the generated-artifact evidence commit.
 
 ## Merged stabilization state
 
@@ -46,6 +73,8 @@ The following August truth/routing packages are already merged and are not pendi
 #350         Calendar tomorrow-scope preservation
 #351         local schedule-cancellation routing
 #352         private Drive source-selection truth
+#353         Wave A1 operational truth synchronization
+#355         Wave A2 strategy reconciliation
 ```
 
 Merged implementation is not identical to universal product readiness or unlimited live-proof scope. Capability verification must remain evidence-specific.
@@ -65,22 +94,22 @@ Foundation/auth/identity only
 
 It must not be merged in its historical branch state. It will be reconstructed/reconciled only after Wave C establishes an exact validated baseline, then undergo exact-head proof and independent review before a separate merge decision.
 
-## Current three-wave stabilization gate
+## Current stabilization gate
 
 The roadmap itself remains intact. The current gate is:
 
 ```text
 WAVE A — truth reconciliation
-  A1 operational truth synchronization
-  A2 strategy reconciliation
+  A1 operational truth synchronization              COMPLETE
+  A2 strategy reconciliation                        COMPLETE
 
 WAVE B — truth-integrity repairs
-  B1 runtime-truth instrumentation
-  B2 capability narration
-  B3 memory governance
-  B4 reproducibility hygiene
+  B1 runtime-truth instrumentation                  ACTIVE / FINAL PR REVIEW / MERGE DECISION
+  B2 capability narration                           BLOCKED
+  B3 memory governance                              BLOCKED
+  B4 reproducibility hygiene                        BLOCKED
 
-WAVE C — proof and stabilization checkpoint
+WAVE C — proof and stabilization checkpoint         BLOCKED
   exact candidate baseline
   repaired runtime-truth regeneration
   supported proof matrix
@@ -103,37 +132,17 @@ Google identity-only live proof
 -> evidence-based Operational Continuity warrant
 ```
 
-## Wave A1 — current active lane
+## Wave A1 — completed gate
 
-A1 exists because active operational docs still described the August 12 pre-#337 sequence after #337–#352 had merged.
+A1 synchronized active operational/canonical truth against the already-merged August stabilization work and corrected the three-control-plane/current-truth doctrine.
 
-A1 changes documentation/current-truth surfaces only.
+A1 changed documentation/current-truth surfaces only. It did not authorize later runtime lanes.
 
-It must not modify:
+## Wave A2 — completed strategy reconciliation
 
-```text
-runtime behavior
-runtime auditor
-GeneralChat persistence behavior
-self-awareness behavior
-capability registry
-Google #335 implementation
-OAuth behavior
-Operational Continuity runtime
-OpenClaw authority
-provider routing
-external-write behavior
-```
+A2 separately reconciled the consolidated August Product/Platform strategy against the truthful operational baseline while keeping strategy and current-state documentation distinct.
 
-A1 exits only when a worker starting from `AGENTS.md` is not directed toward completed stabilization work and the current operational/canonical surfaces agree on the active gate.
-
-## Wave A2 — separate strategy reconciliation
-
-A2 occurs only after A1 merges.
-
-Its purpose is to reconcile the consolidated August Product/Platform strategy against the now-truthful operational baseline while keeping strategy and current-state documentation distinct.
-
-The intended durable strategy package is:
+The durable strategy package is:
 
 ```text
 NOVA_PRODUCT_PLATFORM_DIRECTION_2026-08-17.md
@@ -141,9 +150,7 @@ NOVA_PRODUCT_VALIDATION_PROTOCOL_2026-08-17.md
 NOVA_STRATEGIC_DOCUMENT_STATUS_INDEX_2026-08-17.md
 ```
 
-The governed-protection-wall concept is long-term security/digital-sovereignty reference material. It must not silently become present roadmap authority or replace Nova's current product identity.
-
-A1 records the existence and intended reconciliation target of this package only. Product and validation doctrine from that package remains outside current A1 truth until Wave A2 deliberately reviews it.
+The governed-protection-wall concept remains long-term security/digital-sovereignty reference material. It does not silently become present roadmap authority or replace Nova's current product identity.
 
 ## Wave B — truth-integrity repairs
 
@@ -151,11 +158,52 @@ Wave B is intentionally split into focused PRs rather than one broad stabilizati
 
 ### B1 — runtime-truth instrumentation
 
-Repair what Nova/generated artifacts claim to know about runtime state before changing unrelated runtime behavior.
+**Current active lane; bounded corrections, proof, generation, and publication complete; final PR review / merge decision remains.**
 
-Target classes include direct-network discrepancy visibility, NetworkMediator exception representation, Phase 9 evidence quality, fingerprint coverage over behaviorally active modules, generated-invariant scope, and a separate operational-truth consistency check.
+B1 source/truth-harness work covers:
+
+```text
+requests-based network discrepancy visibility
+connections_api.py explicit local_administrative_health_probe classification
+Phase 9 live import/symbol evidence
+behaviorally_active_v2 fingerprint coverage
+existing-file exact hash/count path-set semantics
+qualified generated invariants/network wording
+operational-truth consistency checker
+canonical-index lane checking + regression
+generator-entrypoint integration regression
+```
+
+Corrected final evidence:
+
+```text
+local Ruff / focused B1 tests / auditor-governance tests: PASS
+operational consistency + runtime-doc drift: PASS before/after generation
+focused B1 tests: 13 PASS
+auditor/governance tests: 29 PASS
+generated-output review: PASS
+generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
+scope_version: behaviorally_active_v2
+runtime_surface_file_count: 230 existing files
+runtime_surface_hash: c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+runtime_fingerprint_hash: 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
+_MOCs excluded
+draft PR #356 opened
+hosted behavioral proof: NOT EXECUTED because Issue #354 jobs ran zero steps
+```
+
+The P1/P2 defects above are corrected. The only remaining B1 work is:
+
+```text
+final PR #356 evidence assessment
+-> separate owner-authorized merge decision
+```
+
+Do not manually edit or regenerate the generated runtime artifacts without a concrete new generator defect. `e668ec0c...` remains the final generated-artifact evidence commit even when a docs-only synchronization commit advances branch HEAD.
 
 ### B2 — capability narration
+
+**Blocked until B1 completes its separate proof/review/merge decision.**
 
 Separate:
 
@@ -173,9 +221,13 @@ authority_class
 
 ### B3 — memory governance
 
-Define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance. This is a future runtime behavior repair, not an A1 documentation change.
+**Blocked until B1 completes.**
+
+Define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance. This is a future runtime behavior repair, not B1 work.
 
 ### B4 — reproducibility hygiene
+
+**Blocked until B1 completes.**
 
 Make dependency source-of-truth unambiguous, including the current `python-multipart` declaration mismatch.
 
@@ -194,6 +246,18 @@ The validated baseline is immutable evidence for a verification package. It is n
 Wave C also re-evaluates Issue #227 using current model/context/hardware/latency evidence rather than May assumptions.
 
 Only reproduced failures are repaired. Acceptance failure must be classified before root cause is assigned.
+
+## Issue #354 — hosted CI infrastructure
+
+Issue #354 remains:
+
+```text
+infrastructure/open
+zero-step hosted GitHub Actions
+not behavioral pass/fail evidence
+```
+
+This is separate from B1 content/runtime semantics. It must be resolved before Wave C depends on hosted CI for the validated-baseline proof package.
 
 ## Operational Continuity strategic ordering
 
@@ -251,8 +315,10 @@ broad SaaS productization
 Protection Wall runtime expansion
 ```
 
+README/front-door sequencing cleanup is separate documentation debt and must not be folded into the B1 instrumentation branch.
+
 ## Historical context
 
-The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the three-wave gate above.
+The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the stabilization gate above.
 
 Historical records remain evidence of what was decided or proven at their date. Do not use their old current-main SHAs or pending-work language to select today's work.

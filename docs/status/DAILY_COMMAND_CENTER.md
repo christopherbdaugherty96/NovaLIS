@@ -1,115 +1,103 @@
 # Daily Command Center
 
-## 2026-08-20 — Wave A1 operational truth synchronization
+## 2026-08-23 — Wave B1 final PR review gate
 
 ```text
 ACTIVE LANE:
-  Wave A1 — documentation / operational truth reconciliation only.
+  Wave B1 — runtime-truth instrumentation only.
 
-A1 BRANCH:
-  codex/wave-a1-operational-truth-sync-20260820
+SUBSTATE:
+  Corrective proof COMPLETE.
+  Corrected generation COMPLETE.
+  Generated artifacts PUBLISHED.
+  Exact A2-to-B1 diff CLEAN.
 
-MERGED-MAIN CHECKPOINT WHEN A1 STARTED:
-  1a517d8832a2c834c80b10a7062bed878f6312cc
-  (planning checkpoint; verify current GitHub HEAD before future work)
+B1 BRANCH:
+  codex/b1-runtime-truth-instrumentation-20260820
 
-MERGED STABILIZATION WORK — DO NOT REOPEN AS PENDING:
-  #337 / #338  P1-A commitment/capability truth
-  #339         P1-B receipt-correlated session action/outcome history
-  #340         Cap 19 outcome truth
-  #341 / #344  explicit weather-location preservation / WebSocket repair
-  #345         brightness outcome truth
-  #346         turn-down-volume routing/wording
-  #347         current-information freshness/source-boundary routing
-  #348         broad awareness follow-up interpretation
-  #349         Calendar source-selection overmatch repair
-  #350         Calendar tomorrow-scope preservation
-  #351         local schedule-cancellation routing
-  #352         private Drive source-selection truth
+POST-A2 BASE:
+  060380f2e8c6437ff888773f0078647547ff4622
 
-GOOGLE FOUNDATION:
-  PR #335 remains OPEN / DRAFT / UNMERGED.
-  Head: befb69ef75881a9f418472549b64243219c138f9
-  Historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
-  Scope: identity/auth foundation only.
-  Do not merge or extend the historical branch state.
+FINAL CORRECTED ARTIFACT COMMIT:
+  e668ec0c09df6e0d304427431e95a26619a9f507
+
+PR STATE:
+  PR #356 is OPEN / DRAFT.
+  Current gate = final PR review / separate merge decision.
+  Merge is NOT authorized.
+
+CORRECTED PROOF:
+  Ruff — PASS
+  focused B1 tests — 13 PASS
+  auditor/governance tests — 29 PASS
+  operational consistency — PASS before/after generation
+  runtime-doc drift — PASS before/after generation
+
+FINGERPRINT:
+  scope — behaviorally_active_v2
+  existing-file count — 230
+  runtime surface hash — c5cadfeff5db3e22fea0f1c2efeb05016765c20bb7cd24e33ad758361fd9acd9
+  fingerprint hash — 9c0d4ee90572e3356811436bc490de13fb82fc1393c63aa5774b36fd05154f34
+
+GENERATED OUTPUT:
+  CURRENT_RUNTIME_STATE.md — regenerated
+  RUNTIME_FINGERPRINT.md — regenerated
+  BYPASS_SURFACES.md — regenerated identically
+  _MOCs — excluded
+
+HOSTED CI:
+  Issue #354 = infrastructure/open.
+  Inspected Actions jobs executed zero steps.
+  This is neither behavioral PASS nor behavioral FAIL evidence.
 
 CURRENT ORDER:
-  A1 operational truth sync
-  -> A2 strategy reconciliation
-  -> B1 runtime-truth instrumentation
+  final PR #356 evidence assessment
+  -> separate owner-authorized merge decision
   -> B2 capability narration
   -> B3 memory governance
   -> B4 reproducibility hygiene
   -> C proof / semantic-contract stabilization / validated baseline
   -> reconstruct #335 onto exact validated baseline
-  -> independent review + separate merge decision
+  -> independent review + separate #335 merge decision
   -> Google identity-only live proof
-  -> Google Tasks READ / first real Google evidence vertical
-  -> separately warranted Continuity slice
+  -> Google Tasks READ / first provider-backed Google evidence vertical
+  -> evidence-based Continuity warrant
 
-A1 LOCK:
-  Documentation/current-truth reconciliation only.
-  No runtime behavior, runtime-auditor, GeneralChat persistence,
-  self-awareness, capability-registry, OAuth, #335 implementation,
-  Google domain-data, Continuity runtime, OpenClaw-authority,
-  provider-routing, or external-write change.
-
-PERMANENT CONTROL-PLANE RULE:
-  Governed capability plane != local operator/admin plane != bounded agent/routine plane.
-  No control plane may silently increase authority available to another.
-
-PERMANENT DISTINCTIONS:
-  connection != capability
-  capability != authority
-  OAuth scope != Nova authority
-  recommendation != permission
-  execution != verified outcome
-  memory != Operational Continuity
+BLOCKED:
+  B2 / B3 / B4 / Wave C
+  #335 reconstruction
+  Google domain work
+  Operational Continuity runtime
 ```
 
 Status: manual operational surface.
 
-## What matters today
+## What matters now
 
-1. **Finish A1 truth synchronization.** Every active instruction/status surface must stop directing agents toward completed #337–#352 work.
-2. **Keep #335 untouched.** Its historical test totals and generated fingerprints are not proof for a future reconciled branch.
-3. **Keep strategy separate.** The August Product/Platform strategy and validation package is A2 input, not A1 current truth.
-4. **Prepare for Wave B, not Google domain expansion.** B1–B4 address truth instrumentation, capability narration, memory governance, and reproducibility.
-5. **Do not call a baseline validated before Wave C.** Candidate HEAD and immutable validated baseline are distinct concepts.
+B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, and exact diff review are complete. No known B1 code blocker remains.
 
-## Current operational interpretation
+The only remaining B1 tasks are final PR #356 evidence assessment and a separate owner-authorized merge decision. Do not regenerate, redesign B1, or begin a downstream lane without new evidence and authority.
 
-Nova's governed execution and authority-separation foundation is existing implementation. Wave A1 is reconciling current instructions and evidence semantics; it does not adopt or revise Product/Platform strategy.
-
-Operational Continuity remains strategic and inactive. It must stay non-authorizing and non-executing.
-
-The separate August Product/Platform strategy and validation package remains deferred to Wave A2.
-
-## Current evidence rule
-
-A generated or historical artifact proves only what it actually measured at the recorded revision/environment.
-
-Use these distinctions:
+## Permanent evidence discipline
 
 ```text
-exists
-enabled
-configured
-available_on_this_path
-request_accepted
-effect_verified
-verification_status
-authority_class
+implementation != executed proof
+request accepted != effect verified
+generated structure != semantic correctness
+connection != capability
+capability != authority
+OAuth scope != Nova authority
+memory != Operational Continuity
+current HEAD != immutable validated baseline
+prior candidate PASS != corrected-head PASS
 ```
 
-Do not flatten them into "real and working" or "authorized."
-
-If a test or acceptance scenario fails, classify the failure before assigning a cause. Evidence quality, semantic inference, routing/scope, narration, runtime behavior, and persistence/lifecycle behavior are distinct possible failure classes.
-
-## Deferred until the stabilization gate exits
+## Deferred
 
 ```text
+B2 capability narration
+B3 memory governance
+B4 reproducibility hygiene
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -123,8 +111,9 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
+README/front-door rewrite inside B1
 ```
 
 ## Next handoff
 
-When A1 is reviewed and merged, the next lane is **Wave A2 strategy reconciliation**, not a runtime implementation package.
+Review PR #356 at the final docs-synchronized head. If the exact-head evidence remains clean, stop at the separate owner-authorized merge decision. Do not merge from this handoff.
