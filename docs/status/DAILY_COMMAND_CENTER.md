@@ -1,21 +1,27 @@
 # Daily Command Center
 
-## 2026-08-23 — Wave B2 capability narration implementation
+## 2026-08-23 — Post-B2 operational handoff
 
 ```text
-ACTIVE LANE:
-  Wave B2 — capability narration.
+CURRENT PLANNING LANE:
+  Wave B3 — memory governance.
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
-  B2 ACTIVE / IMPLEMENTATION AUTHORIZED.
-  B3 / B4 / Wave C BLOCKED.
+  B2 COMPLETE / MERGED.
+  B3 NEXT / NOT IMPLEMENTATION-AUTHORIZED.
+  B4 / Wave C BLOCKED.
 
 B1 MERGE:
   PR #356 — MERGED
   reviewed head — 381dbaeca73786f789cc6e68fd3b6bf193296041
   squash merge — 969c369b453fffca0eb2b8dad65ff3f285df8fbc
-  post-B1 sync #357/current main — 864ceba9747384b3bdca4a693dca938b3899864e
+  post-B1 sync #357 merge — 864ceba9747384b3bdca4a693dca938b3899864e
+
+B2 MERGE:
+  PR #358 — MERGED
+  reviewed head — b95039c2dc483ad330205de5dac8e3b3f94d8836
+  squash merge/current main — e84a9d55f8575c687765b1df19e8f794b180599b
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -45,8 +51,8 @@ HOSTED CI:
   This is neither behavioral PASS nor behavioral FAIL evidence.
 
 CURRENT ORDER:
-  B2 capability narration / active bounded implementation
-  -> B3 memory governance
+  B2 capability narration / COMPLETE / MERGED
+  -> B3 memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
   -> B4 reproducibility hygiene
   -> C proof / semantic-contract stabilization / validated baseline
   -> reconstruct #335 onto exact validated baseline
@@ -56,7 +62,7 @@ CURRENT ORDER:
   -> evidence-based Continuity warrant
 
 BLOCKED:
-  B3 / B4 / Wave C
+  B4 / Wave C
   #335 reconstruction
   Google domain work
   Operational Continuity runtime
@@ -66,9 +72,9 @@ Status: manual operational surface.
 
 ## What matters now
 
-B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete.
+B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-The current action is the reviewed B2 capability-narration truth implementation. It may change narration/projection code and focused tests, but it may not change authority, registry membership, capability behavior, provider routing, or execution.
+B3 is next but requires a separate reviewed owner authorization before any memory-governance implementation begins. Until then, no runtime lane is active.
 
 ## Permanent evidence discipline
 
@@ -84,10 +90,10 @@ current HEAD != immutable validated baseline
 prior candidate PASS != corrected-head PASS
 ```
 
-## Deferred
+## Not active
 
 ```text
-B3 memory governance
+B3 memory-governance implementation (next; separate authorization required)
 B4 reproducibility hygiene
 Google Tasks domain work
 Gmail expansion
@@ -102,9 +108,9 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
-README/front-door rewrite inside this post-B1 sync
+README/front-door rewrite inside B3 without separate scope
 ```
 
 ## Next handoff
 
-Complete the bounded B2 implementation and proof, publish a draft PR only when clean, and stop before merge or B3.
+Make the separate B3 implementation-authorization decision. If authorization is not given, do not begin runtime work.
