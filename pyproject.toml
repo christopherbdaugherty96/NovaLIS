@@ -23,6 +23,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
+# Canonical runtime dependency source. Compatibility requirements are verified
+# by `python scripts/check_dependency_consistency.py`.
 dependencies = [
     "fastapi==0.127.0",
     "uvicorn[standard]==0.40.0",

@@ -1,3 +1,4 @@
 # Compatibility shim for existing workflow paths.
-# Canonical runtime dependencies now live in `nova_backend/requirements.txt`.
+# Canonical runtime dependencies live in `pyproject.toml`; the included file is
+# a mechanically checked compatibility projection.
 -r ../requirements.txt

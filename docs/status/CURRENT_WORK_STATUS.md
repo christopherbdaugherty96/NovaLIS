@@ -10,8 +10,8 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE B4 — reproducibility hygiene
-STATUS: NEXT / NOT IMPLEMENTATION-AUTHORIZED
-CURRENT MAIN / B3 SQUASH MERGE: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+STATUS: ACTIVE / IMPLEMENTATION AUTHORIZED
+CURRENT MAIN / B4 BASE: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
@@ -59,6 +59,10 @@ Wave B3 merge
   PR #360: MERGED
   reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
   squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+
+Post-B3 operational truth synchronization
+  PR #361: MERGED
+  merge/current B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 ```
 
 ## B1 Completed Evidence
@@ -155,7 +159,7 @@ must be resolved before Wave C relies on hosted CI
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
--> B4 reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> B4 reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
 -> Wave C semantic/proof stabilization and validated baseline
 -> reconstruct #335 onto exact validated baseline
 -> independent security/architecture review
@@ -165,7 +169,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B2 and B3 are complete and merged. B4 is next but not implementation-authorized.
+B2 and B3 are complete and merged. B4 is active under bounded authorization.
 
 ## Permanent Truth Boundaries
 
