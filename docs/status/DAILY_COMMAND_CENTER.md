@@ -1,30 +1,23 @@
 # Daily Command Center
 
-## 2026-08-23 — Wave B1 final PR review gate
+## 2026-08-23 — Wave B2 authorization gate
 
 ```text
 ACTIVE LANE:
-  Wave B1 — runtime-truth instrumentation only.
+  Wave B2 — capability narration.
 
 SUBSTATE:
-  Corrective proof COMPLETE.
-  Corrected generation COMPLETE.
-  Generated artifacts PUBLISHED.
-  Exact A2-to-B1 diff CLEAN.
+  B1 COMPLETE / MERGED.
+  B2 NEXT / NOT YET IMPLEMENTATION-AUTHORIZED.
+  B3 / B4 / Wave C BLOCKED.
 
-B1 BRANCH:
-  codex/b1-runtime-truth-instrumentation-20260820
+B1 MERGE:
+  PR #356 — MERGED
+  reviewed head — 381dbaeca73786f789cc6e68fd3b6bf193296041
+  squash merge/current main — 969c369b453fffca0eb2b8dad65ff3f285df8fbc
 
-POST-A2 BASE:
-  060380f2e8c6437ff888773f0078647547ff4622
-
-FINAL CORRECTED ARTIFACT COMMIT:
+B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
-
-PR STATE:
-  PR #356 is OPEN / DRAFT.
-  Current gate = final PR review / separate merge decision.
-  Merge is NOT authorized.
 
 CORRECTED PROOF:
   Ruff — PASS
@@ -51,9 +44,7 @@ HOSTED CI:
   This is neither behavioral PASS nor behavioral FAIL evidence.
 
 CURRENT ORDER:
-  final PR #356 evidence assessment
-  -> separate owner-authorized merge decision
-  -> B2 capability narration
+  B2 capability narration / separate implementation authorization
   -> B3 memory governance
   -> B4 reproducibility hygiene
   -> C proof / semantic-contract stabilization / validated baseline
@@ -64,7 +55,7 @@ CURRENT ORDER:
   -> evidence-based Continuity warrant
 
 BLOCKED:
-  B2 / B3 / B4 / Wave C
+  B3 / B4 / Wave C
   #335 reconstruction
   Google domain work
   Operational Continuity runtime
@@ -74,9 +65,9 @@ Status: manual operational surface.
 
 ## What matters now
 
-B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, and exact diff review are complete. No known B1 code blocker remains.
+B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete.
 
-The only remaining B1 tasks are final PR #356 evidence assessment and a separate owner-authorized merge decision. Do not regenerate, redesign B1, or begin a downstream lane without new evidence and authority.
+The only current action is a separate owner decision on whether to authorize B2 implementation. This post-merge sync does not authorize code, test, schema, registry, API, capability, or runtime changes.
 
 ## Permanent evidence discipline
 
@@ -95,7 +86,6 @@ prior candidate PASS != corrected-head PASS
 ## Deferred
 
 ```text
-B2 capability narration
 B3 memory governance
 B4 reproducibility hygiene
 Google Tasks domain work
@@ -111,9 +101,9 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
-README/front-door rewrite inside B1
+README/front-door rewrite inside this post-B1 sync
 ```
 
 ## Next handoff
 
-Review PR #356 at the final docs-synchronized head. If the exact-head evidence remains clean, stop at the separate owner-authorized merge decision. Do not merge from this handoff.
+Confirm this post-merge truth sync is clean, then stop at **READY FOR SEPARATE B2 AUTHORIZATION**. Do not begin B2 implementation from this handoff.

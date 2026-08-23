@@ -1,6 +1,6 @@
 # Nova Canonical Truth — Index
 
-Last reconciled: 2026-08-20.
+Last reconciled: 2026-08-23.
 
 This folder is a thin **navigation and reconciliation layer**. It does not create runtime facts. Each canonical file summarizes one kind of truth and points to the implementation, generated artifact, proof, or maintained status surface that supports it.
 
@@ -26,23 +26,25 @@ Wave A1 operational truth synchronization is complete and merged through PR #353
 f25c798c7cb488495a343068463e9214cab0a763
 ```
 
-Wave A2 strategy reconciliation is complete and merged through PR #355. Current merged `main` is:
+Wave A2 strategy reconciliation is complete and merged through PR #355.
+
+Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Current merged `main` is:
 
 ```text
-060380f2e8c6437ff888773f0078647547ff4622
+969c369b453fffca0eb2b8dad65ff3f285df8fbc
 ```
 
-Current active stabilization lane: B1
+Current active stabilization lane: B2
 
-B1 is the runtime-truth instrumentation lane. It must make generated runtime evidence and the active operational truth surfaces accurately reflect what their mechanisms actually prove. B2 remains blocked until B1 receives its own completed proof/review and merge decision.
+B1 is complete and its proof/generated-truth package is historical evidence for the merged B1 revision. B2 capability narration is next but is **not yet implementation-authorized**.
 
 Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 
 ```text
 Wave A1 operational truth sync                 COMPLETE
 -> Wave A2 strategy reconciliation             COMPLETE
--> B1 runtime-truth instrumentation             ACTIVE
--> B2 capability narration                      BLOCKED
+-> B1 runtime-truth instrumentation             COMPLETE / MERGED
+-> B2 capability narration                      NEXT / NOT IMPLEMENTATION-AUTHORIZED
 -> B3 memory governance                         BLOCKED
 -> B4 reproducibility hygiene                   BLOCKED
 -> Wave C validated-baseline proof checkpoint
@@ -52,7 +54,7 @@ Wave A1 operational truth sync                 COMPLETE
 -> evidence-based Continuity warrant
 ```
 
-Issue #354 remains a separate hosted-CI infrastructure problem. It is not behavioral proof for or against B1 and must be resolved before Wave C depends on hosted CI.
+Issue #354 remains a separate hosted-CI infrastructure problem. Its zero-step jobs are not behavioral pass/fail evidence, it is separate from B2, and it must be resolved before Wave C depends on hosted CI.
 
 ## The canonical truth files
 
