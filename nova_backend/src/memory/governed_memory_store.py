@@ -524,7 +524,9 @@ class GovernedMemoryStore:
             if not replacement_body:
                 raise ValueError("Superseding memory body cannot be empty.")
             if not replacement_title:
-                replacement_title = _clean_text(item.get("title") or "", limit=120) or _clean_text(replacement_body, limit=60)
+                replacement_title = _clean_text(replacement_body, limit=60) or _clean_text(
+                    item.get("title") or "", limit=120
+                )
 
             now = _utc_now()
             replacement = {

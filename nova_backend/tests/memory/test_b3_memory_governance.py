@@ -196,6 +196,9 @@ def test_governed_explicit_correction_supersedes_old_item(tmp_path):
     assert old_item["lock"]["superseded_by"] == new_item["id"]
     assert new_item["lock"]["supersedes"] == [old_id]
     assert new_item["source"] == "explicit_user_edit"
+    assert new_item["title"] == "my favorite color is green"
+    assert new_item["body"] == "my favorite color is green"
+    assert new_item["content_display"] == "my favorite color is green"
 
 
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
