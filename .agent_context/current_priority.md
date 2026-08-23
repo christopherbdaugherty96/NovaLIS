@@ -1,20 +1,20 @@
 # Current Priority
 
-## Wave B4 — Active Reproducibility Hygiene — 2026-08-23
+## Wave C — Next Validated-Baseline Proof — 2026-08-23
 
 Current planning lane:
 
 ```text
 B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
-B4: ACTIVE / IMPLEMENTATION AUTHORIZED
-WAVE C: BLOCKED
+B4: COMPLETE / MERGED
+WAVE C: NEXT / NOT AUTHORIZED
 ```
 
 Handoff anchors:
 
 ```text
-current main / B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+current main / B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
@@ -26,9 +26,12 @@ B3 reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
 B3 PR #360: MERGED
 B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 post-B3 sync #361 merge: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+B4 reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
+B4 PR #362: MERGED
+B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
 ```
 
-B1, B2, and B3 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B4 is active under separate bounded owner authorization.
+B1, B2, B3, and B4 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. Wave C is next but is not authorized by this synchronization.
 
 ## Completed gates
 
@@ -53,9 +56,14 @@ Wave B3 — MERGED via PR #360
   reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
   squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
   bounded memory truth / provenance / review: COMPLETE
+
+Wave B4 — MERGED via PR #362
+  reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
+  squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
+  canonical dependency truth / compatibility projection / install proof: COMPLETE
 ```
 
-Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and is not part of B4.
+Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and must be resolved before Wave C relies on hosted CI.
 
 ## B1 completed evidence
 
@@ -74,7 +82,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — implement the bounded B4 contract
+## Current action — await separate Wave C authorization
 
 The merged B2 projection preserves these distinct fields:
 
@@ -92,7 +100,9 @@ authority_class
 
 B3 is complete: ordinary chat no longer silently creates authoritative personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible. Superseded history is not current memory.
 
-B4 is authorized only to make `pyproject.toml` canonical dependency truth, align or mechanically verify requirements-style compatibility surfaces, resolve the `python-multipart` mismatch, and prove supported installation remains resolvable. Do not modernize dependencies broadly, redesign packaging, change runtime behavior, repair Issue #354, or begin Wave C.
+B4 is complete: `pyproject.toml` is canonical dependency truth; requirements-style compatibility surfaces are mechanically checked; the historical `python-multipart` mismatch is resolved; and the supported install path was proven on the reviewed B4 revision. Do not reopen or redesign packaging without new evidence.
+
+Wave C remains only an established high-level proof checkpoint. Candidate freezing, runtime-truth regeneration, semantic-contract regression, Issue #227 revalidation, defect repair, and `validated_baseline_sha` establishment all require separate owner authorization.
 
 ## Google Foundation / CI state
 
@@ -122,8 +132,8 @@ required before Wave C relies on hosted CI
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
--> B4 reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
--> Wave C proof / semantic-contract stabilization / validated baseline
+-> B4 reproducibility hygiene / COMPLETE / MERGED
+-> Wave C proof / semantic-contract stabilization / NEXT / NOT AUTHORIZED
 -> reconstruct #335 onto exact validated baseline
 -> independent #335 review + separate merge decision
 -> Google identity-only live proof
@@ -131,15 +141,16 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B2 and B3 are complete and merged. B4 is active under bounded authorization.
+B1 through B4 are complete and merged. Wave C is next but not authorized.
 
 ## Scope lock
 
-Do not start or modify outside this post-B3 synchronization:
+Do not start or modify outside this post-B4 synchronization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
-dependency modernization, unrelated upgrades, or packaging redesign beyond B4
+dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
+Wave C proof, candidate freezing, semantic testing, or runtime revalidation
 network behavior / NetworkMediator wiring
 capability registry
 OAuth / #335

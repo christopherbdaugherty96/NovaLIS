@@ -6,20 +6,20 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B4 — reproducibility hygiene active
+### Wave C — proof and stabilization checkpoint next
 
 Current state:
 
 ```text
-current main / B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+current main / B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
 B1 / PR #356: COMPLETE / MERGED
 B2 / PR #358: COMPLETE / MERGED
 B3 / PR #360: COMPLETE / MERGED
-B4: ACTIVE / IMPLEMENTATION AUTHORIZED
-Wave C: BLOCKED
+B4 / PR #362: COMPLETE / MERGED
+Wave C: NEXT / NOT AUTHORIZED
 ```
 
-Wave A1, A2, B1, B2, and B3 are already merged:
+Wave A1, A2, B1, B2, B3, and B4 are already merged:
 
 ```text
 #353  A1 operational truth synchronization
@@ -47,10 +47,14 @@ Wave A1, A2, B1, B2, and B3 are already merged:
        squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
 
 #361  post-B3 operational truth synchronization
-       merge/current B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+       merge/B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+
+#362  B4 reproducibility hygiene
+       reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
+       squash merge/current main: 5c243a822f79ea09b0031124d4bafbf32d18842c
 ```
 
-Do not reopen B1, B2, or B3 without concrete new evidence. Keep B4 within its separately authorized dependency-truth boundary.
+Do not reopen B1 through B4 without concrete new evidence. Wave C requires separate authorization.
 
 ### Completed B1 source/truth work
 
@@ -188,11 +192,11 @@ IMPACT: hosted workflows currently provide no trustworthy behavioral evidence
 NEEDED BEFORE: Wave C validated-baseline proof relies on hosted CI
 ```
 
-Keep #354 separate from B4 reproducibility work unless infrastructure diagnosis is explicitly selected.
+Keep #354 separate from this synchronization. It must be resolved before Wave C relies on hosted CI, but this task does not authorize that repair.
 
 ### Front-door README truth cleanup
 
-`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not fold README cleanup into B3 without separate scope.
+`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not fold README cleanup into this synchronization or Wave C without separate scope.
 
 ## Current Next Lane and Blocked Work
 
@@ -215,13 +219,15 @@ Keep #354 separate from B4 reproducibility work unless infrastructure diagnosis 
 
 ### Wave B4 — reproducibility hygiene
 
-**ACTIVE / IMPLEMENTATION AUTHORIZED.** Implement only the bounded dependency-truth scope:
+**COMPLETE / MERGED via PR #362.** The bounded dependency-truth scope established:
 
 - make `pyproject.toml` canonical for dependencies;
 - resolve the `python-multipart` mismatch with `nova_backend/requirements.txt`;
 - stop maintaining independent manual dependency pin lists.
 
 ### Wave C — proof and stabilization checkpoint
+
+**NEXT / NOT AUTHORIZED.** Established high-level scope only:
 
 - choose one exact candidate commit;
 - regenerate repaired runtime truth;
@@ -262,11 +268,12 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin outside this post-B3 synchronization:
+Do not begin outside this post-B4 synchronization:
 
 ```text
 B3 memory architecture beyond the completed truth/provenance repair
-B4 dependency modernization, unrelated upgrades, or packaging redesign
+B4 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
+Wave C proof, candidate freezing, semantic testing, or runtime revalidation
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes

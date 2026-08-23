@@ -1,17 +1,17 @@
 # Daily Command Center
 
-## 2026-08-23 — Post-B3 operational handoff
+## 2026-08-23 — Post-B4 operational handoff
 
 ```text
 CURRENT PLANNING LANE:
-  Wave B4 — reproducibility hygiene.
+  Wave C — proof / validated-baseline checkpoint.
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
   B2 COMPLETE / MERGED.
   B3 COMPLETE / MERGED.
-  B4 ACTIVE / IMPLEMENTATION AUTHORIZED.
-  Wave C BLOCKED.
+  B4 COMPLETE / MERGED.
+  Wave C NEXT / NOT AUTHORIZED.
 
 B1 MERGE:
   PR #356 — MERGED
@@ -29,7 +29,12 @@ B3 MERGE:
   PR #360 — MERGED
   reviewed head — 3e8a68aa5d17712fbb2106f052e309a2f33e120e
   squash merge — 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
-  post-B3 sync #361/current B4 base — bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+  post-B3 sync #361/B4 base — bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
+
+B4 MERGE:
+  PR #362 — MERGED
+  reviewed head — 7b70a91b3a294e829a36edac067da7e4b567774e
+  squash merge/current main — 5c243a822f79ea09b0031124d4bafbf32d18842c
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -61,8 +66,8 @@ HOSTED CI:
 CURRENT ORDER:
   B2 capability narration / COMPLETE / MERGED
   -> B3 memory governance / COMPLETE / MERGED
-  -> B4 reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
-  -> C proof / semantic-contract stabilization / validated baseline
+  -> B4 reproducibility hygiene / COMPLETE / MERGED
+  -> C proof / semantic-contract stabilization / validated baseline / NEXT / NOT AUTHORIZED
   -> reconstruct #335 onto exact validated baseline
   -> independent review + separate #335 merge decision
   -> Google identity-only live proof
@@ -70,7 +75,6 @@ CURRENT ORDER:
   -> evidence-based Continuity warrant
 
 BLOCKED:
-  Wave C
   #335 reconstruction
   Google domain work
   Operational Continuity runtime
@@ -82,7 +86,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4 is active under separate bounded authorization; Wave C remains blocked.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Wave C is next but not authorized.
 
 ## Permanent evidence discipline
 
@@ -102,7 +106,8 @@ prior candidate PASS != corrected-head PASS
 
 ```text
 B3 memory architecture beyond the completed bounded truth/provenance repair
-B4 dependency modernization or packaging redesign beyond the bounded repair
+B4 dependency modernization or packaging redesign beyond the completed repair
+Wave C proof, candidate freezing, semantic testing, or runtime revalidation
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -121,4 +126,4 @@ README/front-door rewrite without separate scope
 
 ## Next handoff
 
-Implement and prove only the bounded B4 dependency-truth repair. Stop before merge and do not begin Wave C.
+Await separate Wave C authorization. Do not freeze a candidate, begin proof, or modify #335 from this synchronization.
