@@ -1,11 +1,8 @@
-"""
-Persistent user memory store — preferences, personal details, and observed patterns.
+"""Persistent user memory with explicit-versus-observed provenance.
 
-This is Nova's long-term memory about the user. Entries are either explicitly
-stated by the user ("remember that I...") or observed from conversation
-("I like coffee", "my name is Chris").
-
-Entries are keyed by (category, key) to prevent duplicates.
+Entries are keyed by ``(category, key)``. Explicit entries are confirmed user
+memory. Observed and legacy entries are non-authoritative candidates and cannot
+silently replace explicit entries.
 """
 from __future__ import annotations
 
@@ -48,6 +45,49 @@ def _clean(value: Any, limit: int = 200) -> str:
     return text[:limit] if len(text) <= limit else text[: limit - 3].rstrip() + "..."
 
 
+def _normalized_source(value: Any) -> str:
+    return "explicit" if str(value or "").strip().lower() == "explicit" else "observed"
+
+
+def _history_snapshot(entry: dict[str, Any], *, replaced_at: str) -> dict[str, Any]:
+    provenance = dict(entry.get("provenance") or {})
+    if not provenance:
+        provenance = {
+            "source": str(entry.get("source") or "unknown").strip() or "unknown",
+            "context": str(entry.get("context") or "").strip(),
+            "recorded_at": str(entry.get("created_at") or "").strip(),
+        }
+    return {
+        "value": str(entry.get("value") or ""),
+        "source": _normalized_source(entry.get("source")),
+        "confidence": max(0.0, min(float(entry.get("confidence") or 0.0), 1.0)),
+        "provenance": provenance,
+        "revision": max(1, int(entry.get("revision") or 1)),
+        "replaced_at": replaced_at,
+    }
+
+
+def _normalized_entry(entry: dict[str, Any]) -> dict[str, Any]:
+    """Return a read-safe entry without upgrading missing provenance."""
+    normalized = dict(entry)
+    raw_source = str(entry.get("source") or "").strip().lower()
+    source = _normalized_source(raw_source)
+    normalized["source"] = source
+    normalized["epistemic_status"] = (
+        "confirmed_explicit" if source == "explicit" else "observed_candidate"
+    )
+    normalized["provenance"] = dict(entry.get("provenance") or {}) or {
+        "source": raw_source or "unknown",
+        "context": str(entry.get("context") or "").strip(),
+        "recorded_at": str(entry.get("created_at") or "").strip(),
+    }
+    normalized["conflict_state"] = str(entry.get("conflict_state") or "none")
+    normalized["revision"] = max(1, int(entry.get("revision") or 1))
+    normalized["supersession_history"] = list(entry.get("supersession_history") or [])
+    normalized["observed_conflicts"] = list(entry.get("observed_conflicts") or [])
+    return normalized
+
+
 class UserMemoryStore:
     """Persistent store for user preferences, personal details, and patterns."""
 
@@ -77,7 +117,15 @@ class UserMemoryStore:
         source: str = "observed",
         confidence: float = 0.85,
     ) -> dict[str, Any]:
-        """Upsert a memory entry. Deduplicates by (category, key)."""
+        """Upsert memory while preserving authority, provenance, and conflicts.
+
+        Precedence is explicit and intentionally conservative:
+
+        - explicit -> observed: preserve the explicit record unchanged
+        - observed -> explicit: promote through a recorded supersession
+        - observed -> observed conflict: retain both candidates without promotion
+        - explicit -> explicit conflict: replace explicitly and retain history
+        """
         cat = _clean(category, 40).lower()
         k = _clean(key, 80).lower()
         v = _clean(value, 300)
@@ -87,32 +135,102 @@ class UserMemoryStore:
             cat = "preferences"
 
         now = _utc_now()
+        source_value = _normalized_source(source)
+        context_value = _clean(context, 200)
+        confidence_value = max(0.0, min(float(confidence), 1.0))
         entry = {
             "id": f"UM-{uuid4().hex[:8]}",
             "category": cat,
             "key": k,
             "value": v,
-            "context": _clean(context, 200),
+            "context": context_value,
             "created_at": now,
             "updated_at": now,
-            "source": source if source in {"explicit", "observed"} else "observed",
-            "confidence": max(0.0, min(float(confidence), 1.0)),
+            "source": source_value,
+            "confidence": confidence_value,
+            "epistemic_status": (
+                "confirmed_explicit" if source_value == "explicit" else "observed_candidate"
+            ),
+            "provenance": {
+                "source": source_value,
+                "context": context_value,
+                "recorded_at": now,
+            },
+            "conflict_state": "none",
+            "revision": 1,
+            "supersession_history": [],
+            "observed_conflicts": [],
         }
 
         with self._lock:
             state = self._read_state()
             entries = list(state.get("entries") or [])
 
-            # Upsert: update existing entry with same category + key
+            # Upsert with authority-aware precedence for the same category + key.
             found = False
             for i, existing in enumerate(entries):
                 if (
                     str(existing.get("category") or "").strip() == cat
                     and str(existing.get("key") or "").strip() == k
                 ):
-                    entry["id"] = existing["id"]
+                    existing_normalized = _normalized_entry(dict(existing))
+                    existing_source = str(existing_normalized.get("source") or "observed")
+
+                    if existing_source == "explicit" and source_value == "observed":
+                        preserved = dict(existing_normalized)
+                        preserved["write_disposition"] = "preserved_explicit"
+                        return preserved
+
+                    entry["id"] = existing.get("id") or entry["id"]
                     entry["created_at"] = existing.get("created_at", now)
-                    entries[i] = entry
+                    entry["revision"] = int(existing_normalized.get("revision") or 1) + 1
+                    entry["supersession_history"] = list(
+                        existing_normalized.get("supersession_history") or []
+                    )
+                    entry["observed_conflicts"] = list(
+                        existing_normalized.get("observed_conflicts") or []
+                    )
+
+                    values_conflict = str(existing.get("value") or "") != v
+                    if existing_source == "observed" and source_value == "observed" and values_conflict:
+                        conflict = {
+                            "value": v,
+                            "confidence": confidence_value,
+                            "provenance": dict(entry["provenance"]),
+                            "observed_at": now,
+                        }
+                        existing_normalized["observed_conflicts"] = [
+                            *list(existing_normalized.get("observed_conflicts") or []),
+                            conflict,
+                        ][-10:]
+                        existing_normalized["conflict_state"] = "observed_conflict"
+                        existing_normalized["updated_at"] = now
+                        existing_normalized["revision"] = entry["revision"]
+                        entries[i] = existing_normalized
+                        entry = {
+                            **existing_normalized,
+                            "write_disposition": "recorded_observed_conflict",
+                        }
+                    else:
+                        is_explicit_promotion = (
+                            existing_source == "observed" and source_value == "explicit"
+                        )
+                        if values_conflict or is_explicit_promotion:
+                            entry["supersession_history"] = [
+                                *entry["supersession_history"],
+                                _history_snapshot(existing_normalized, replaced_at=now),
+                            ][-20:]
+                            if values_conflict and source_value == "explicit":
+                                entry["conflict_state"] = "resolved_by_explicit_supersession"
+                            elif is_explicit_promotion:
+                                entry["conflict_state"] = "resolved_by_explicit_promotion"
+                        elif existing_normalized.get("conflict_state") == "observed_conflict" and source_value == "explicit":
+                            entry["supersession_history"] = [
+                                *entry["supersession_history"],
+                                _history_snapshot(existing_normalized, replaced_at=now),
+                            ][-20:]
+                            entry["conflict_state"] = "resolved_by_explicit_promotion"
+                        entries[i] = entry
                     found = True
                     break
 
@@ -133,14 +251,14 @@ class UserMemoryStore:
             state["entries"] = entries
             state["updated_at"] = now
             self._write_state(state)
-        return dict(entry)
+        return _normalized_entry(dict(entry))
 
     def get_by_category(self, category: str, limit: int = 20) -> list[dict[str, Any]]:
         cat = _clean(category, 40).lower()
         with self._lock:
             state = self._read_state()
         return [
-            dict(e)
+            _normalized_entry(dict(e))
             for e in list(state.get("entries") or [])
             if str(e.get("category") or "").strip() == cat
         ][:limit]
@@ -150,7 +268,7 @@ class UserMemoryStore:
             state = self._read_state()
         entries = list(state.get("entries") or [])
         entries.sort(key=lambda e: e.get("updated_at") or "", reverse=True)
-        return [dict(e) for e in entries[:limit]]
+        return [_normalized_entry(dict(e)) for e in entries[:limit]]
 
     def search(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
         tokens = _search_tokens(query)
@@ -163,7 +281,7 @@ class UserMemoryStore:
             blob = f"{entry.get('key', '')} {entry.get('value', '')} {entry.get('context', '')}".lower()
             hits = sum(1 for t in tokens if t in blob)
             if hits > 0:
-                scored.append((hits / len(tokens), dict(entry)))
+                scored.append((hits / len(tokens), _normalized_entry(dict(entry))))
         scored.sort(key=lambda pair: pair[0], reverse=True)
         return [item for _, item in scored[:limit]]
 
@@ -187,7 +305,7 @@ class UserMemoryStore:
         """Render a compact context string for prompt injection."""
         with self._lock:
             state = self._read_state()
-        entries = list(state.get("entries") or [])
+        entries = [_normalized_entry(dict(entry)) for entry in list(state.get("entries") or [])]
         if not entries:
             return ""
 
@@ -204,21 +322,31 @@ class UserMemoryStore:
             if not items:
                 continue
             label = _CATEGORY_LABELS.get(cat, cat.title())
-            parts: list[str] = []
             for item in items:
                 k = str(item.get("key") or "").strip()
                 v = str(item.get("value") or "").strip()
-                if k and v:
-                    parts.append(f"{k}: {v}")
-                elif v:
-                    parts.append(v)
-            if not parts:
-                continue
-            line = f"- {label}: {'; '.join(parts)}"
-            if total + len(line) > max_chars:
-                break
-            lines.append(line)
-            total += len(line) + 1
+                if not v:
+                    continue
+                source = str(item.get("source") or "observed")
+                if source == "explicit":
+                    status = "explicit; confirmed"
+                else:
+                    confidence = float(item.get("confidence") or 0.0)
+                    provenance = dict(item.get("provenance") or {})
+                    provenance_source = str(provenance.get("source") or "unknown")
+                    status = (
+                        "observed candidate; non-authoritative; "
+                        f"confidence={confidence:.2f}; provenance={provenance_source}"
+                    )
+                conflict_state = str(item.get("conflict_state") or "none")
+                if conflict_state != "none":
+                    status += f"; conflict={conflict_state}"
+                value_text = f"{k}: {v}" if k else v
+                line = f"- [{status}] {label} — {value_text}"
+                if total + len(line) > max_chars:
+                    return "\n".join(lines)
+                lines.append(line)
+                total += len(line) + 1
         return "\n".join(lines)
 
     def snapshot(self) -> dict[str, Any]:

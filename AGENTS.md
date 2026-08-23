@@ -55,14 +55,16 @@ Wave A1, A2, B1, and B2 are complete:
 
 #358  Wave B2 capability narration truth — MERGED
        reviewed head: b95039c2dc483ad330205de5dac8e3b3f94d8836
-       squash merge/current main: e84a9d55f8575c687765b1df19e8f794b180599b
+       squash merge: e84a9d55f8575c687765b1df19e8f794b180599b
+#359  Post-B2 operational truth sync — MERGED
+       merge/current B3 base: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 ```
 
 Current planning lane:
 
 ```text
 Wave B2 — capability narration: COMPLETE / MERGED
-Wave B3 — memory governance: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+Wave B3 — memory governance: ACTIVE / IMPLEMENTATION AUTHORIZED
 B4: BLOCKED
 Wave C: BLOCKED
 ```
@@ -71,7 +73,7 @@ B1 and B2 are complete and merged. Their proof and review records remain histori
 
 ### Immediate worker instruction
 
-Do not implement B3 until it receives separate reviewed owner authorization. The next lane is memory governance at the already-established high level: ordinary chat must not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics must be preserved. This handoff defines no new schema, storage system, memory API, or runtime behavior.
+B3 has separate reviewed owner authorization. Implement only its bounded memory-governance contract: ordinary chat must not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible. Do not expand this lane into new memory architecture, Continuity, authority, or capability work.
 
 Merged stabilization work already includes:
 
@@ -109,7 +111,7 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 
 ```text
 Wave B2 — capability narration / COMPLETE / MERGED
--> Wave B3 — memory governance / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> Wave B3 — memory governance / ACTIVE / IMPLEMENTATION AUTHORIZED
 -> Wave B4 — reproducibility hygiene
 -> Wave C — proof / validated-baseline checkpoint
 -> reconstruct/reconcile #335 onto the exact validated baseline
@@ -187,7 +189,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 then merged through PR #358 as current `main` `e84a9d55f8575c687765b1df19e8f794b180599b`. B3 is next but not implementation-authorized. B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established current `main` `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 is active under separate bounded authorization. B4, Wave C, #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -283,7 +285,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- reopen B2 without concrete new evidence, or start B3, B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
+- reopen B2 without concrete new evidence, expand B3 beyond its bounded authorization, or start B4, Wave C, #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.

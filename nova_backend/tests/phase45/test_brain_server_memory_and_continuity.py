@@ -851,6 +851,7 @@ def test_general_chat_receives_relevant_explicit_memory_context(monkeypatch):
                 "id": "MEM-00020",
                 "content": "Client supplies alcohol; Pour Social does not sell alcohol.",
                 "thread_name": "Pour Social",
+                "source": "explicit_user_save",
             }
         ],
     )
@@ -859,4 +860,4 @@ def test_general_chat_receives_relevant_explicit_memory_context(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert prompts
-    assert "Relevant explicit memory MEM-00020 (thread: Pour Social): Client supplies alcohol; Pour Social does not sell alcohol." in prompts[-1]
+    assert "Relevant confirmed memory MEM-00020 (thread: Pour Social): Client supplies alcohol; Pour Social does not sell alcohol." in prompts[-1]
