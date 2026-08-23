@@ -21,14 +21,14 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-23
 
-Current active stabilization lane: B3 — memory governance, next but not implementation-authorized.
+Current active stabilization lane: B3 — memory governance, active under bounded owner authorization.
 
 ```text
 A1 — COMPLETE / MERGED via #353
 A2 — COMPLETE / MERGED via #355
 B1 — COMPLETE / MERGED via #356
 B2 — COMPLETE / MERGED via #358
-B3 — NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B3 — ACTIVE / IMPLEMENTATION AUTHORIZED
 B4 — BLOCKED
 C  — BLOCKED
 ```
@@ -36,7 +36,7 @@ C  — BLOCKED
 Current merged `main`:
 
 ```text
-e84a9d55f8575c687765b1df19e8f794b180599b
+b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 ```
 
 First published/proven B1 candidate:
@@ -54,7 +54,7 @@ P1 — active handoff surfaces still described the pre-generation/no-PR state
 P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` is current `main`.
+Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established current `main` `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`.
 
 ## Merged stabilization state
 
@@ -108,7 +108,7 @@ WAVE A — truth reconciliation
 WAVE B — truth-integrity repairs
   B1 runtime-truth instrumentation                  COMPLETE / MERGED
   B2 capability narration                           COMPLETE / MERGED
-  B3 memory governance                              NEXT / NOT IMPLEMENTATION-AUTHORIZED
+  B3 memory governance                              ACTIVE / IMPLEMENTATION AUTHORIZED
   B4 reproducibility hygiene                        BLOCKED
 
 WAVE C — proof and stabilization checkpoint         BLOCKED
@@ -221,9 +221,9 @@ authority_class
 
 ### B3 — memory governance
 
-**Next / not implementation-authorized.**
+**Active / implementation authorized within the bounded B3 contract.**
 
-At the established high level, B3 must define ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance while preserving confidence, conflict, supersession, promotion, and non-authoritative observed state. This synchronization does not authorize implementation or define schemas, storage systems, APIs, or runtime behavior.
+B3 repairs ordinary GeneralChat persistence boundaries and explicit-vs-observed precedence/provenance while preserving confidence, conflict, supersession, promotion, and non-authoritative observed state. Authorization does not extend to new memory architecture, Continuity, authority, capabilities, or autonomous learning.
 
 ### B4 — reproducibility hygiene
 

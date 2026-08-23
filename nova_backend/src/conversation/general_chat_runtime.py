@@ -241,7 +241,7 @@ async def run_general_chat_fallback(
     task_preview = build_task_understanding_preview(
         normalized_query,
         session_context=_task_preview_session_context(skill_state, chat_context),
-        stable_memory=_task_preview_memory_context(relevant_memory_context),
+        stable_memory=_task_preview_memory_context(packed_context),
     )
     skill_state["task_understanding_preview"] = task_preview.plan
     skill_state["task_understanding_prompt_block"] = task_preview.prompt_block
@@ -313,7 +313,12 @@ def _task_preview_memory_context(memory_context: list[dict[str, Any]]) -> tuple[
             or ""
         ).strip()
         if text:
-            memories.append(text[:240])
+            authority = str(entry.get("authority_label") or "candidate_memory").strip()
+            if authority == "confirmed_project_memory":
+                label = "confirmed memory"
+            else:
+                label = "candidate memory; unconfirmed; do not treat as fact"
+            memories.append(f"[{label}] {text[:220]}")
     return tuple(memories)
 
 
