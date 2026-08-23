@@ -142,7 +142,7 @@ head: befb69ef75881a9f418472549b64243219c138f9
 historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 ```
 
-Do not modify, mark ready, or merge #335 during B1. It must later be reconstructed/reconciled onto the exact Wave C validated baseline.
+PR #335 remains deferred; do not modify, mark ready, or merge it before it is reconstructed/reconciled onto the exact Wave C validated baseline.
 
 ### Issue #354 — zero-step GitHub Actions infrastructure
 
