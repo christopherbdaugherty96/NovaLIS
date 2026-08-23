@@ -6,14 +6,14 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave B2 — authorization gate
+### Wave B2 — capability narration implementation
 
 Current state:
 
 ```text
-current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+current main: 864ceba9747384b3bdca4a693dca938b3899864e
 B1 / PR #356: COMPLETE / MERGED
-B2: NEXT / NOT YET IMPLEMENTATION-AUTHORIZED
+B2: ACTIVE / IMPLEMENTATION AUTHORIZED
 B3: BLOCKED
 B4: BLOCKED
 Wave C: BLOCKED
@@ -30,10 +30,13 @@ Wave A1, A2, and B1 are already merged:
 
 #356  B1 runtime-truth instrumentation
        reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
-       squash merge/current main: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+       squash merge: 969c369b453fffca0eb2b8dad65ff3f285df8fbc
+
+#357  post-B1 operational truth synchronization
+       merge/current main: 864ceba9747384b3bdca4a693dca938b3899864e
 ```
 
-Do not reopen B1 without concrete new evidence. Do not implement B2 without separate reviewed owner authorization.
+Do not reopen B1 without concrete new evidence. Implement only the reviewed bounded B2 narration-truth package.
 
 ### Completed B1 source/truth work
 
@@ -71,12 +74,16 @@ Do not reopen B1 without concrete new evidence. Do not implement B2 without sepa
 - [x] Review the exact A2-base to corrected-B1 diff; 14 paths, `+1,887/-447`, clean.
 - [x] Complete final PR #356 review / evidence assessment.
 - [x] Merge PR #356 at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`.
-- [x] Verify squash merge/current main `969c369b453fffca0eb2b8dad65ff3f285df8fbc`.
+- [x] Verify B1 squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc`.
 
-### Current B2 gate
+### Current B2 lane
 
 ```text
-[ ] separate reviewed owner authorization for B2 implementation
+[x] separate reviewed owner authorization for B2 implementation
+[x] implement one shared seven-field capability-truth projection
+[x] migrate the five authorized narration consumers
+[x] complete focused local proof and exact base-to-candidate diff review
+[ ] complete remote exact-head PR review and separate merge decision
 ```
 
 Generated runtime artifacts must not be edited manually.
@@ -162,7 +169,7 @@ Keep #354 separate from B2 capability-narration work unless infrastructure diagn
 
 ### Wave B2 — capability narration
 
-**NEXT / NOT YET IMPLEMENTATION-AUTHORIZED.** Preserve the established scope only:
+**ACTIVE / IMPLEMENTATION AUTHORIZED.** Implement and prove only the established scope:
 
 - separate `exists`, `enabled`, `configured`, `verification_status`, `available_on_this_path`, `requires_approval`, and `authority_class`;
 - do not model `authorized` as static capability metadata;
@@ -222,10 +229,9 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin from this post-B1 synchronization:
+Do not begin outside the active B2 package:
 
 ```text
-B2 capability-narration implementation
 B3 memory-governance behavior
 B4 dependency/reproducibility repair
 Google Tasks domain implementation

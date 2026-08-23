@@ -2241,24 +2241,24 @@ function renderOperatorHealthWidget(data = {}) {
 
 function renderCapabilitySurfaceWidget(data = {}) {
   capabilityDiscoveryState.snapshot = (data && typeof data === "object") ? { ...data } : {};
-  capabilityDiscoveryState.summary = String((data && data.capability_surface_summary) || "Loading live capabilities...").trim();
+  capabilityDiscoveryState.summary = String((data && data.capability_surface_summary) || "Loading capability truth...").trim();
 
   const summary = $("capability-surface-summary");
   const groupsHost = $("capability-surface-groups");
   if (summary) {
-    const groupsCount = Array.isArray(data.available_capability_surface) ? data.available_capability_surface.length : 0;
+    const groupsCount = Array.isArray(data.capability_truth_surface) ? data.capability_truth_surface.length : 0;
     summary.textContent = groupsCount
-      ? `${groupsCount} capability group${groupsCount === 1 ? "" : "s"} are available right now.`
-      : "Capabilities will appear here when Nova is ready to use them.";
+      ? `${groupsCount} capability group${groupsCount === 1 ? "" : "s"} have evidence-scoped status.`
+      : "Capability truth is unavailable; readiness is not inferred.";
   }
   if (!groupsHost) return;
 
   clear(groupsHost);
-  const groups = Array.isArray(data.available_capability_surface) ? data.available_capability_surface : [];
+  const groups = Array.isArray(data.capability_truth_surface) ? data.capability_truth_surface : [];
   if (!groups.length) {
     const empty = document.createElement("div");
     empty.className = "capability-surface-empty";
-    empty.textContent = "No live capability groups are available right now.";
+    empty.textContent = "No capability truth groups are available from this runtime snapshot.";
     groupsHost.appendChild(empty);
     return;
   }
@@ -2278,7 +2278,7 @@ function renderCapabilitySurfaceWidget(data = {}) {
     const count = document.createElement("span");
     count.className = "confidence-badge";
     const actionCount = Array.isArray(group.actions) ? group.actions.length : 0;
-    count.textContent = `${actionCount} live`;
+    count.textContent = `${actionCount} listed`;
     header.appendChild(count);
     card.appendChild(header);
 
@@ -2295,9 +2295,24 @@ function renderCapabilitySurfaceWidget(data = {}) {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "capability-surface-action";
-        button.textContent = labelText;
-        if (promptText) {
-          button.title = promptText;
+        const availability = item.available_on_this_path;
+        const configured = item.configured;
+        const verification = String(item.verification_status || "unknown").trim();
+        const approval = item.requires_approval === true
+          ? "approval required"
+          : item.requires_approval === false
+            ? "approval not required by static capability metadata"
+            : "approval requirement unknown";
+        button.textContent = `${labelText} · available here: ${availability === true ? "yes" : availability === false ? "no" : "unknown"}`;
+        button.title = [
+          `Exists: ${item.exists === true ? "yes" : "no"}`,
+          `Enabled: ${item.enabled === true ? "yes" : "no"}`,
+          `Configured: ${configured === true ? "yes" : configured === false ? "no" : "unknown"}`,
+          `Verification: ${verification}`,
+          `Authority: ${String(item.authority_class || "unknown")}`,
+          approval,
+        ].join(" · ");
+        if (promptText && availability === true) {
           button.addEventListener("click", () => runCapabilityPrompt(promptText));
         } else {
           button.disabled = true;
@@ -2318,7 +2333,7 @@ function renderCapabilitySurfaceWidget(data = {}) {
 
       if (!list.childNodes.length) {
         const item = document.createElement("li");
-        item.textContent = "No live actions listed.";
+        item.textContent = "No capability action surfaces listed.";
         list.appendChild(item);
       }
 
@@ -3217,10 +3232,10 @@ function renderTrustCenterPage() {
     healthGrid.appendChild(createOverviewChip(label, value));
   });
 
-  capabilitySummary.textContent = capabilityDiscoveryState.summary || "Loading live capabilities...";
+  capabilitySummary.textContent = capabilityDiscoveryState.summary || "Loading capability truth...";
   clear(capabilityHost);
-  const groups = Array.isArray(capabilityDiscoveryState.snapshot && capabilityDiscoveryState.snapshot.available_capability_surface)
-    ? capabilityDiscoveryState.snapshot.available_capability_surface
+  const groups = Array.isArray(capabilityDiscoveryState.snapshot && capabilityDiscoveryState.snapshot.capability_truth_surface)
+    ? capabilityDiscoveryState.snapshot.capability_truth_surface
     : [];
   if (!groups.length) {
     const empty = document.createElement("div");
@@ -3242,7 +3257,7 @@ function renderTrustCenterPage() {
       const entries = Array.isArray(group.items)
         ? group.items.slice(0, 4).map((item) => String(item.action || item.label || item.name || "").trim()).filter(Boolean)
         : [];
-      copy.textContent = entries.length ? entries.join(" · ") : "Live governed actions appear here.";
+      copy.textContent = entries.length ? entries.join(" · ") : "Evidence-scoped capability status appears here.";
       card.appendChild(copy);
 
       capabilityHost.appendChild(card);

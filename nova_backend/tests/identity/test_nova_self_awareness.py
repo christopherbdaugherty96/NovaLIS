@@ -1,10 +1,10 @@
 """Tests for Nova self-awareness context builder."""
 
 from src.identity.nova_self_awareness import (
-    build_self_awareness_block,
     _identity_block,
-    _tools_block,
     _status_block,
+    _tools_block,
+    build_self_awareness_block,
 )
 
 
@@ -18,9 +18,13 @@ def test_identity_block_contains_nova():
 def test_tools_block_lists_registered_tools():
     block = _tools_block()
     assert "weather" in block.lower()
-    assert "calendar" in block.lower()
-    assert "volume" in block.lower()
+    assert "news" in block.lower()
     assert "web_search" in block.lower() or "web search" in block.lower()
+    assert "volume" not in block.lower()
+    assert "brightness" not in block.lower()
+    assert "open_webpage" not in block.lower()
+    assert "calendar" not in block.lower()
+    assert "not authorization" in block.lower()
 
 
 def test_status_block_has_platform_and_model():
@@ -30,6 +34,17 @@ def test_status_block_has_platform_and_model():
     assert "model" in block.lower()
 
 
+def test_status_block_does_not_turn_permission_settings_into_availability(monkeypatch):
+    from src.settings.runtime_settings_store import runtime_settings_store
+
+    monkeypatch.setattr(runtime_settings_store, "is_permission_enabled", lambda _name: True)
+
+    block = _status_block()
+    assert "External reasoning permission setting: enabled" in block
+    assert "External reasoning: available" not in block
+    assert "Home agent: active" not in block
+
+
 def test_full_block_assembles_all_sections():
     block = build_self_awareness_block()
     assert "WHO YOU ARE" in block
@@ -37,6 +52,16 @@ def test_full_block_assembles_all_sections():
     assert "STATUS" in block
     # Should be substantial — not just a few lines
     assert len(block) > 200
+
+
+def test_capability_block_uses_shared_truth_dimensions():
+    block = build_self_awareness_block()
+    assert "configured=" in block
+    assert "verification=" in block
+    assert "available_here=" in block
+    assert "approval_required=" in block
+    assert "authority=" in block
+    assert "authorized=" not in block
 
 
 def test_full_block_does_not_crash_on_missing_dependencies():
@@ -71,3 +96,25 @@ def test_full_block_refreshes_volatile_sections_each_call(monkeypatch):
     block_two = build_self_awareness_block()
     assert "Brave Search: disconnected" in block_two
     assert block_one != block_two
+
+
+def test_connection_block_does_not_promote_configuration_to_connection(monkeypatch):
+    from src.connections.connections_store import connections_store
+    from src.identity.nova_self_awareness import _connections_block
+
+    monkeypatch.setattr(
+        connections_store,
+        "snapshot",
+        lambda: [
+            {
+                "id": "brave",
+                "label": "Brave Search",
+                "has_key": True,
+                "health_ok": None,
+            }
+        ],
+    )
+
+    block = _connections_block()
+    assert "configured; provider health unverified" in block
+    assert "connected" not in block.lower()
