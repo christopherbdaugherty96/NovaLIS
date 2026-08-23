@@ -56,7 +56,7 @@ Applied correction:
 ✓ runtime_surface_file_count therefore counts existing files in the exact hash set
 ✓ focused regression asserts every fingerprinted path exists
 ✓ missing allowlist entries are excluded from the fingerprinted set
-✓ active B1 documents are being synchronized to the correction/review state
+✓ active B1 documents are synchronized to the correction/review state
 ```
 
 Do not redesign B1. These changes are bounded truth-integrity corrections found by final review.
