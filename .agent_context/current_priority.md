@@ -1,20 +1,20 @@
 # Current Priority
 
-## Wave B4 — Reproducibility Hygiene Next — 2026-08-23
+## Wave B4 — Active Reproducibility Hygiene — 2026-08-23
 
 Current planning lane:
 
 ```text
 B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
-B4: NEXT / NOT IMPLEMENTATION-AUTHORIZED
+B4: ACTIVE / IMPLEMENTATION AUTHORIZED
 WAVE C: BLOCKED
 ```
 
 Handoff anchors:
 
 ```text
-current main / B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+current main / B4 base: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
@@ -25,9 +25,10 @@ post-B2 sync #359 merge: b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e
 B3 reviewed head: 3e8a68aa5d17712fbb2106f052e309a2f33e120e
 B3 PR #360: MERGED
 B3 squash merge: 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+post-B3 sync #361 merge: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 ```
 
-B1, B2, and B3 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B4 is next but is not implementation-authorized.
+B1, B2, and B3 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. B4 is active under separate bounded owner authorization.
 
 ## Completed gates
 
@@ -54,7 +55,7 @@ Wave B3 — MERGED via PR #360
   bounded memory truth / provenance / review: COMPLETE
 ```
 
-Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and does not authorize B4 implementation.
+Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and is not part of B4.
 
 ## B1 completed evidence
 
@@ -73,7 +74,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — await separate B4 authorization
+## Current action — implement the bounded B4 contract
 
 The merged B2 projection preserves these distinct fields:
 
@@ -91,7 +92,7 @@ authority_class
 
 B3 is complete: ordinary chat no longer silently creates authoritative personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible. Superseded history is not current memory.
 
-B4's established high-level scope is limited to making `pyproject.toml` canonical dependency truth, resolving the `python-multipart` mismatch, and avoiding independently maintained duplicate dependency pins. No B4 implementation is authorized by this synchronization.
+B4 is authorized only to make `pyproject.toml` canonical dependency truth, align or mechanically verify requirements-style compatibility surfaces, resolve the `python-multipart` mismatch, and prove supported installation remains resolvable. Do not modernize dependencies broadly, redesign packaging, change runtime behavior, repair Issue #354, or begin Wave C.
 
 ## Google Foundation / CI state
 
@@ -121,7 +122,7 @@ required before Wave C relies on hosted CI
 B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
--> B4 reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+-> B4 reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
 -> Wave C proof / semantic-contract stabilization / validated baseline
 -> reconstruct #335 onto exact validated baseline
 -> independent #335 review + separate merge decision
@@ -130,7 +131,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B2 and B3 are complete and merged. B4 is next but not implementation-authorized.
+B2 and B3 are complete and merged. B4 is active under bounded authorization.
 
 ## Scope lock
 
@@ -138,7 +139,7 @@ Do not start or modify outside this post-B3 synchronization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
-dependency-source truth (B4; not implementation-authorized)
+dependency modernization, unrelated upgrades, or packaging redesign beyond B4
 network behavior / NetworkMediator wiring
 capability registry
 OAuth / #335

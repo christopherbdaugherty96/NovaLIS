@@ -10,7 +10,7 @@ SUBSTATE:
   B1 COMPLETE / MERGED.
   B2 COMPLETE / MERGED.
   B3 COMPLETE / MERGED.
-  B4 NEXT / NOT IMPLEMENTATION-AUTHORIZED.
+  B4 ACTIVE / IMPLEMENTATION AUTHORIZED.
   Wave C BLOCKED.
 
 B1 MERGE:
@@ -28,7 +28,8 @@ B2 MERGE:
 B3 MERGE:
   PR #360 — MERGED
   reviewed head — 3e8a68aa5d17712fbb2106f052e309a2f33e120e
-  squash merge/current main — 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+  squash merge — 8cc67213bd7e06e862d50bc2c1bf29d8ac72f064
+  post-B3 sync #361/current B4 base — bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -60,7 +61,7 @@ HOSTED CI:
 CURRENT ORDER:
   B2 capability narration / COMPLETE / MERGED
   -> B3 memory governance / COMPLETE / MERGED
-  -> B4 reproducibility hygiene / NEXT / NOT IMPLEMENTATION-AUTHORIZED
+  -> B4 reproducibility hygiene / ACTIVE / IMPLEMENTATION AUTHORIZED
   -> C proof / semantic-contract stabilization / validated baseline
   -> reconstruct #335 onto exact validated baseline
   -> independent review + separate #335 merge decision
@@ -81,7 +82,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4 is next but requires separate implementation authorization; Wave C remains blocked.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4 is active under separate bounded authorization; Wave C remains blocked.
 
 ## Permanent evidence discipline
 
@@ -101,7 +102,7 @@ prior candidate PASS != corrected-head PASS
 
 ```text
 B3 memory architecture beyond the completed bounded truth/provenance repair
-B4 reproducibility hygiene implementation (not authorized)
+B4 dependency modernization or packaging redesign beyond the bounded repair
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -120,4 +121,4 @@ README/front-door rewrite without separate scope
 
 ## Next handoff
 
-Make the separate B4 implementation-authorization decision. If authorization is not given, do not begin dependency work.
+Implement and prove only the bounded B4 dependency-truth repair. Stop before merge and do not begin Wave C.

@@ -1,5 +1,5 @@
 # Local Setup And Startup
-Updated: 2026-04-20
+Updated: 2026-08-23
 
 ## Purpose
 This guide explains Nova's current local setup paths.
@@ -11,8 +11,8 @@ For Windows end users, Nova now has a real installer path under `installer/`.
 That installer path is not fully signed off yet because clean-VM validation is still open.
 
 For source-based local setup, Nova has:
-- packaging metadata in `pyproject.toml`
-- a pinned base dependency file
+- canonical packaging and runtime dependency metadata in `pyproject.toml`
+- a mechanically checked compatibility requirements file
 - an optional wake-word dependency file
 - startup scripts for Windows and Unix-like systems
 
@@ -96,13 +96,20 @@ If you prefer the repo startup scripts instead, note that they look first for:
 
 If that backend-local venv does not exist, the scripts fall back to `python` or `python3` on PATH.
 
-## Optional Pinned Requirements Path
+## Compatibility Requirements Path
 
-The canonical pinned dependency file is:
+The canonical runtime dependency definition is:
+- `pyproject.toml` under `[project].dependencies`
+
+The compatibility projection is:
 - `nova_backend/requirements.txt`
 
-If you want the direct requirements-based route instead of `pip install -e .`, use that file.
-It stays aligned with the current live runtime surface.
+If existing tooling requires a direct requirements-based route instead of
+`pip install -e .`, use that file. Its pins are not independently authoritative;
+they must remain an exact projection of the canonical project dependencies.
+
+Verify the relationship with:
+- `python scripts/check_dependency_consistency.py`
 
 ## Optional Wake Word Install
 

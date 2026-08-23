@@ -63,6 +63,12 @@ python -c "from src.brain_server import main; assert callable(main)"
 if ($LASTEXITCODE -ne 0) { Write-Fail "entry point check failed" }
 Write-Pass "entry point resolves"
 
+# --- Dependency source consistency ---
+Write-Step "Verify dependency source consistency"
+python scripts/check_dependency_consistency.py
+if ($LASTEXITCODE -ne 0) { Write-Fail "dependency consistency check failed" }
+Write-Pass "dependency sources agree"
+
 # --- Ruff lint ---
 Write-Step "Ruff lint"
 python -m ruff check $NOVA_BACKEND\src

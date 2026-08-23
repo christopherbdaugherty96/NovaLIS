@@ -1,12 +1,18 @@
 # Backend Runtime Guide
-Updated: 2026-03-13
+Updated: 2026-08-23
 
 ## Purpose
 This guide explains the backend in human language.
 
 ## Practical Runtime Note
-The canonical base dependency file is now:
+The canonical runtime dependency definition is:
+- `pyproject.toml` under `[project].dependencies`
+
+The compatibility requirements projection is:
 - `nova_backend/requirements.txt`
+
+The compatibility projection is mechanically checked with:
+- `python scripts/check_dependency_consistency.py`
 
 Wake word is split out into an optional file:
 - `nova_backend/requirements-optional-wakeword.txt`
