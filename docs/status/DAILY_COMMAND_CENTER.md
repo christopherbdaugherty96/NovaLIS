@@ -110,6 +110,16 @@ python scripts/generate_runtime_docs.py
 
 Manual edits are forbidden for generated runtime artifacts.
 
+`generate_runtime_docs.py` also refreshes the tracked `_MOCs/*` overlay through `generate_obsidian_overlay.py`. That overlay refresh is an incidental generator side effect and is **not part of the B1 publication scope**.
+
+For B1 publication, stage only the three runtime-truth artifacts produced for this lane:
+
+```bash
+git add -- docs/current_runtime/CURRENT_RUNTIME_STATE.md docs/current_runtime/BYPASS_SURFACES.md docs/current_runtime/RUNTIME_FINGERPRINT.md
+```
+
+Do **not** stage `_MOCs/*` changes in B1. Do **not** use `git add .`, `git add -A`, `git add --all`, or equivalent broad staging. Any `_MOCs` refresh requires separate review and explicit authorization outside this B1 package.
+
 ### Step 4 — inspect generated output
 
 Required files:
@@ -172,6 +182,7 @@ no OpenClaw authority expansion
 no provider-routing expansion
 no network-behavior change
 no README rewrite
+no _MOCs publication inside B1
 ```
 
 If the proof/output/final-state-check/diff gate is clean, **then** open B1 as a draft PR. No merge is implied.
