@@ -1,6 +1,6 @@
 # Current Priority
 
-## Wave C — Active Validated-Baseline Proof — 2026-08-24
+## Wave C — Validated Baseline Complete — 2026-08-24
 
 Current planning lane:
 
@@ -8,14 +8,14 @@ Current planning lane:
 B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
 B4: COMPLETE / MERGED
-WAVE C: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
-validated_baseline_sha: NOT ESTABLISHED
+WAVE C: COMPLETE / MERGED / VALIDATED
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
 Handoff anchors:
 
 ```text
-current main / post-B4 sync / Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
+Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
@@ -31,11 +31,12 @@ B4 reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
 B4 PR #362: MERGED
 B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
 post-B4 sync #363 merge: 404689ef07f42480966c59ba30c07db5c4f101e1
-Wave C PR #364: OPEN / DRAFT / UNMERGED
-PR #364 published review head before current bounded correction: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
+Wave C PR #364: MERGED
+PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
+PR #364 squash merge / current main / validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-B1, B2, B3, and B4 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. Wave C is active under its reviewed authorization. PR #364 remains draft and unmerged; its published review head above identifies the pre-correction review state and does not claim later correction commits have the same SHA.
+B1 through B4 and Wave C are complete and merged. Their proof, generated truth, operational synchronization, and review records remain evidence only for the revisions and environments actually exercised. The exact-main Wave C proof passed on `ec20a714...`; the owner waived GitHub-hosted Actions as a required evidence source while preserving their `NOT EXECUTED` classification.
 
 ## Completed gates
 
@@ -67,7 +68,7 @@ Wave B4 — MERGED via PR #362
   canonical dependency truth / compatibility projection / install proof: COMPLETE
 ```
 
-Issue #354 remains open as a separate zero-step hosted-Actions infrastructure issue. It is neither behavioral PASS nor behavioral FAIL evidence and must be resolved before Wave C relies on hosted CI.
+Issue #354 remains open as a separate account/billing infrastructure issue. Its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The owner waived hosted execution as a mandatory Wave C exit source; the issue is not Nova runtime evidence.
 
 ## B1 completed evidence
 
@@ -86,7 +87,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — close bounded PR #364 review findings
+## Current action — await separate #335 reconstruction authorization
 
 The merged B2 projection preserves these distinct fields:
 
@@ -106,7 +107,7 @@ B3 is complete: ordinary chat no longer silently creates authoritative personal 
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; requirements-style compatibility surfaces are mechanically checked; the historical `python-multipart` mismatch is resolved; and the supported install path was proven on the reviewed B4 revision. Do not reopen or redesign packaging without new evidence.
 
-Wave C is active. Correct only reproduced, in-scope stabilization findings; rerun the required proof on one exact corrected candidate. `validated_baseline_sha` remains unestablished until the full exit proof passes, including genuine hosted execution after Issue #354 is resolved.
+Wave C is complete. Exact-main proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Do not reconstruct or modify #335 until a separate authorization is given.
 
 ## Google Foundation / CI state
 
@@ -119,7 +120,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 before the Wave C validated-baseline sequence.
+Do not modify or merge #335 without the next separate reconstruction authorization.
 
 Issue #354 remains:
 
@@ -127,7 +128,8 @@ Issue #354 remains:
 infrastructure/open
 zero-step hosted Actions
 not behavioral pass/fail evidence
-required before Wave C relies on hosted CI
+external account/billing limitation
+owner-waived as mandatory Wave C exit evidence
 ```
 
 ## Ordered sequence
@@ -137,24 +139,24 @@ B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
 -> B4 reproducibility hygiene / COMPLETE / MERGED
--> Wave C proof / semantic-contract stabilization / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
--> reconstruct #335 onto exact validated baseline
+-> Wave C proof / semantic-contract stabilization / COMPLETE / MERGED / VALIDATED
+-> reconstruct #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
 -> independent #335 review + separate merge decision
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4 are complete and merged. Wave C is active; PR #364 is draft and under review.
+B1 through B4 and Wave C are complete and merged. PR #335 reconstruction is next but requires separate authorization.
 
 ## Scope lock
 
-Do not start or modify outside the bounded Wave C authorization:
+Wave C authorization is complete and closed. Do not reopen Wave C or begin post-Wave-C work without separate authorization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
-Wave C redesign, capability expansion, or repairs without reproduced evidence
+Wave C reopening, capability expansion, or repairs without reproduced evidence
 network behavior / NetworkMediator wiring
 capability registry
 OAuth / #335

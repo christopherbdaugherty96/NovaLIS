@@ -10,18 +10,18 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE C — proof / validated-baseline checkpoint
-STATUS: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
-CURRENT MAIN / POST-B4 SYNC / INITIAL CANDIDATE: 404689ef07f42480966c59ba30c07db5c4f101e1
-PR #364: OPEN / DRAFT / UNMERGED
-PUBLISHED REVIEW HEAD BEFORE CURRENT BOUNDED CORRECTION: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
-VALIDATED_BASELINE_SHA: NOT ESTABLISHED
+STATUS: COMPLETE / MERGED / VALIDATED
+INITIAL CANDIDATE: 404689ef07f42480966c59ba30c07db5c4f101e1
+PR #364: MERGED
+REVIEWED HEAD: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
+CURRENT MAIN / VALIDATED_BASELINE_SHA: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
 B4: COMPLETE / MERGED via PR #362
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` completed B4. Post-B4 sync #363 established `404689ef...` as current `main` and the Wave C initial candidate. B1 through B4 evidence remains revision- and environment-specific historical evidence.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` completed B4. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; `ec20a714...` is current `main` and the validated baseline. Earlier evidence remains revision- and environment-specific historical evidence.
 
 ## Completed Gates
 
@@ -74,12 +74,14 @@ Wave B4 merge
 
 Post-B4 operational truth synchronization
   PR #363: MERGED
-  merge/current main/Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
+  merge/Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
 
-Wave C draft review
-  PR #364: OPEN / DRAFT / UNMERGED
-  published review head before current bounded correction: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
-  validated_baseline_sha: NOT ESTABLISHED
+Wave C validated baseline
+  PR #364: MERGED
+  reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
+  squash merge/current main/validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+  exact-main non-hosted proof: PASS
+  hosted Actions: NOT EXECUTED / owner-waived as mandatory Wave C exit evidence
 ```
 
 ## B1 Completed Evidence
@@ -113,7 +115,7 @@ status — COMPLETE / MERGED via PR #358
 result — shared seven-field non-authorizing truth projection and reviewed consumer migration
 ```
 
-Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open and must be resolved before Wave C relies on hosted CI.
+Hosted CI remains governed by Issue #354: its zero-step jobs are neither behavioral PASS nor behavioral FAIL. The issue remains open as an external account/billing limitation. The owner waived this evidence source for Wave C without marking it PASS.
 
 ## Completed B3 Lane
 
@@ -169,7 +171,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 before the Wave C validated-baseline sequence.
+Do not modify or merge #335 before a separate reconstruction authorization.
 
 Issue #354 remains:
 
@@ -177,7 +179,8 @@ Issue #354 remains:
 infrastructure/open
 zero-step hosted GitHub Actions
 not behavioral pass/fail evidence
-must be resolved before Wave C relies on hosted CI
+external account/billing limitation
+owner-waived as mandatory Wave C exit evidence
 ```
 
 ## Current Ordering
@@ -187,8 +190,8 @@ B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
 -> B4 reproducibility hygiene / COMPLETE / MERGED
--> Wave C semantic/proof stabilization and validated baseline / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
--> reconstruct #335 onto exact validated baseline
+-> Wave C semantic/proof stabilization and validated baseline / COMPLETE / MERGED / VALIDATED
+-> reconstruct #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
 -> independent security/architecture review
 -> separate #335 merge decision
 -> Google identity-only live proof
@@ -196,7 +199,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B1 through B4 are complete and merged. Wave C is active; PR #364 remains draft and unmerged, and no validated baseline exists yet.
+B1 through B4 and Wave C are complete and merged. `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` is the validated baseline. #335 reconstruction is next but not implementation-authorized.
 
 ## Permanent Truth Boundaries
 

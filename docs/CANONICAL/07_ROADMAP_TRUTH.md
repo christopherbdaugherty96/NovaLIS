@@ -21,7 +21,9 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-24
 
-Current active stabilization lane: C — proof / validated-baseline checkpoint, active and owner-authorized through draft PR #364.
+Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
+
+Wave C proof / validated-baseline checkpoint is complete and merged through PR #364. #335 reconstruction is next but not authorized by this synchronization.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -30,13 +32,13 @@ B1 — COMPLETE / MERGED via #356
 B2 — COMPLETE / MERGED via #358
 B3 — COMPLETE / MERGED via #360
 B4 — COMPLETE / MERGED via #362
-C  — ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
+C  — COMPLETE / MERGED / VALIDATED
 ```
 
 Current merged `main`:
 
 ```text
-404689ef07f42480966c59ba30c07db5c4f101e1
+ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
 First published/proven B1 candidate:
@@ -54,9 +56,9 @@ P1 — active handoff surfaces still described the pre-generation/no-PR state
 P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS entry
 ```
 
-Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the current `main` and Wave C initial candidate.
+Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the Wave C initial candidate.
 
-Wave C is active through PR #364, which is open, draft, and unmerged. Its published review head before the current bounded correction was `5b2a64dfb69581040ed19a773c1ab5d40d298ab4`. That SHA is review provenance, not a self-updating claim about later correction commits. `validated_baseline_sha` remains unestablished.
+Wave C merged through PR #364 at reviewed head `786c048df6dc4ed8f3c8245c5b365d4296f342f4`. Its squash merge/current `main`, `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`, passed the complete non-hosted proof and is the immutable `validated_baseline_sha`. GitHub-hosted jobs remained `NOT EXECUTED` due to the account-billing restriction in Issue #354; the owner explicitly waived that evidence source without classifying it as PASS.
 
 ## Merged stabilization state
 
@@ -114,7 +116,7 @@ WAVE B — truth-integrity repairs
   B3 memory governance                              COMPLETE / MERGED
   B4 reproducibility hygiene                        COMPLETE / MERGED
 
-WAVE C — proof and stabilization checkpoint         ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
+WAVE C — proof and stabilization checkpoint         COMPLETE / MERGED / VALIDATED
   exact candidate baseline
   repaired runtime-truth regeneration
   supported proof matrix
@@ -122,6 +124,8 @@ WAVE C — proof and stabilization checkpoint         ACTIVE / AUTHORIZED / DRAF
   current local-inference benchmark / Issue #227
   reproduced-defect-only fixes
   immutable validated baseline
+
+POST-WAVE-C — Google Foundation reconciliation      NEXT / NOT AUTHORIZED
   reconstruct #335
   OAuth hardening cases
   exact-head #335 verification
@@ -236,9 +240,9 @@ B4 established `pyproject.toml` as canonical dependency truth, made `nova_backen
 
 ## Wave C — validated-baseline checkpoint
 
-**Active / authorized / draft PR under review.**
+**Complete / merged / validated.**
 
-Wave C turns a candidate commit into a validated baseline only after the required proof completes. The current draft-PR correction pass is limited to reproduced review findings and does not itself establish the baseline.
+Wave C turned the initial candidate into a validated baseline after reproduced repairs merged and the complete non-hosted proof passed on exact merged main `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. The owner waived GitHub-hosted execution as a mandatory exit source because Issue #354 is an external account/billing restriction; those zero-step jobs remain `NOT EXECUTED`, not PASS.
 
 Important distinction:
 
@@ -257,12 +261,13 @@ Only reproduced failures are repaired. Acceptance failure must be classified bef
 Issue #354 remains:
 
 ```text
-infrastructure/open
-zero-step hosted GitHub Actions
+external account/billing infrastructure/open
+zero-step hosted GitHub Actions / NOT EXECUTED
 not behavioral pass/fail evidence
+owner-waived as mandatory Wave C exit evidence
 ```
 
-This is separate from B1 content/runtime semantics. It must be resolved before Wave C depends on hosted CI for the validated-baseline proof package.
+This is separate from Nova content/runtime semantics. The owner waiver removed it as a Wave C exit dependency without resolving the account restriction or upgrading hosted jobs to PASS.
 
 ## Operational Continuity strategic ordering
 
@@ -300,7 +305,7 @@ OAuth proves provider permission/technical eligibility, not Nova authorization f
 
 Google evidence/actions must reuse Nova's provenance, request-acceptance, effect-verification, and outcome distinctions rather than introduce a second success model.
 
-## Deferred until Wave C exits
+## Deferred until separate post-Wave-C authorization
 
 Do not begin:
 
