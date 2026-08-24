@@ -107,6 +107,11 @@ class SystemControlExecutor:
         return False
 
     @classmethod
+    def is_path_allowed(cls, path: Path) -> bool:
+        """Expose the existing local-root boundary for routed preflight checks."""
+        return cls._is_allowed_path(path)
+
+    @classmethod
     def _send_windows_volume_key(cls, vk_code: int, presses: int = 1) -> bool:
         try:
             user32 = ctypes.windll.user32  # type: ignore[attr-defined]

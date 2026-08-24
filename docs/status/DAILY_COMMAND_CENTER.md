@@ -1,6 +1,6 @@
 # Daily Command Center
 
-## 2026-08-23 — Post-B4 operational handoff
+## 2026-08-24 — Wave C draft review
 
 ```text
 CURRENT PLANNING LANE:
@@ -11,7 +11,8 @@ SUBSTATE:
   B2 COMPLETE / MERGED.
   B3 COMPLETE / MERGED.
   B4 COMPLETE / MERGED.
-  Wave C NEXT / NOT AUTHORIZED.
+  Wave C ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW.
+  validated_baseline_sha NOT ESTABLISHED.
 
 B1 MERGE:
   PR #356 — MERGED
@@ -34,7 +35,13 @@ B3 MERGE:
 B4 MERGE:
   PR #362 — MERGED
   reviewed head — 7b70a91b3a294e829a36edac067da7e4b567774e
-  squash merge/current main — 5c243a822f79ea09b0031124d4bafbf32d18842c
+  squash merge — 5c243a822f79ea09b0031124d4bafbf32d18842c
+
+POST-B4 SYNC / WAVE C:
+  PR #363 — MERGED
+  merge/current main/initial candidate — 404689ef07f42480966c59ba30c07db5c4f101e1
+  PR #364 — OPEN / DRAFT / UNMERGED
+  published review head before current bounded correction — 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -67,7 +74,7 @@ CURRENT ORDER:
   B2 capability narration / COMPLETE / MERGED
   -> B3 memory governance / COMPLETE / MERGED
   -> B4 reproducibility hygiene / COMPLETE / MERGED
-  -> C proof / semantic-contract stabilization / validated baseline / NEXT / NOT AUTHORIZED
+  -> C proof / semantic-contract stabilization / validated baseline / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
   -> reconstruct #335 onto exact validated baseline
   -> independent review + separate #335 merge decision
   -> Google identity-only live proof
@@ -86,7 +93,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Wave C is next but not authorized.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as current `main` and the Wave C initial candidate. Wave C is active through draft PR #364; no validated baseline has been established.
 
 ## Permanent evidence discipline
 
@@ -107,7 +114,7 @@ prior candidate PASS != corrected-head PASS
 ```text
 B3 memory architecture beyond the completed bounded truth/provenance repair
 B4 dependency modernization or packaging redesign beyond the completed repair
-Wave C proof, candidate freezing, semantic testing, or runtime revalidation
+Wave C redesign, capability expansion, or repairs without reproduced evidence
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -126,4 +133,4 @@ README/front-door rewrite without separate scope
 
 ## Next handoff
 
-Await separate Wave C authorization. Do not freeze a candidate, begin proof, or modify #335 from this synchronization.
+Close only the reproduced PR #364 review findings, rerun the required proof on one exact corrected head, and keep the PR draft. Do not declare a validated baseline, modify #335, or begin Google or Continuity work.

@@ -1,6 +1,6 @@
 # Nova Canonical Truth — Index
 
-Last reconciled: 2026-08-23.
+Last reconciled: 2026-08-24.
 
 This folder is a thin **navigation and reconciliation layer**. It does not create runtime facts. Each canonical file summarizes one kind of truth and points to the implementation, generated artifact, proof, or maintained status surface that supports it.
 
@@ -28,15 +28,15 @@ f25c798c7cb488495a343068463e9214cab0a763
 
 Wave A2 strategy reconciliation is complete and merged through PR #355.
 
-Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Wave B2 capability narration is complete and merged through PR #358. Wave B3 memory governance is complete and merged through PR #360. Wave B4 reproducibility hygiene is complete and merged through PR #362. Current merged `main` is:
+Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Wave B2 capability narration is complete and merged through PR #358. Wave B3 memory governance is complete and merged through PR #360. Wave B4 reproducibility hygiene is complete and merged through PR #362. Post-B4 operational truth sync #363 established current merged `main` and the Wave C initial candidate:
 
 ```text
-5c243a822f79ea09b0031124d4bafbf32d18842c
+404689ef07f42480966c59ba30c07db5c4f101e1
 ```
 
-Current active stabilization lane: C — proof / validated-baseline checkpoint, next but not authorized.
+Current active stabilization lane: C — proof / validated-baseline checkpoint, active and owner-authorized through draft PR #364. PR #364's published review head before its current bounded correction was `5b2a64dfb69581040ed19a773c1ab5d40d298ab4`. No `validated_baseline_sha` has been established.
 
-B1 through B4 are complete. Their proof packages are historical evidence for the revisions and environments actually exercised. Wave C requires separate reviewed authorization before candidate freezing or proof begins.
+B1 through B4 are complete. Their proof packages are historical evidence for the revisions and environments actually exercised. Wave C is limited to its reviewed validation and reproduced-defect-repair authorization.
 
 Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 
@@ -47,7 +47,7 @@ Wave A1 operational truth sync                 COMPLETE
 -> B2 capability narration                      COMPLETE / MERGED
 -> B3 memory governance                         COMPLETE / MERGED
 -> B4 reproducibility hygiene                   COMPLETE / MERGED
--> Wave C validated-baseline proof checkpoint   NEXT / NOT AUTHORIZED
+-> Wave C validated-baseline proof checkpoint   ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
 -> reconstruct/reconcile #335
 -> Google identity proof
 -> first Google READ/evidence vertical

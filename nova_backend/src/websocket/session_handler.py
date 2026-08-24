@@ -6,6 +6,7 @@ import os
 import re
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -23,6 +24,7 @@ from src.conversation.brief_followup_grounding import (
 from src.conversation.brief_intent_resolver import resolve_brief_intent
 from src.llm.llm_gateway import model_status_snapshot
 from src.openclaw.run_state_machine import run_event_hub
+from src.system_control.system_control_executor import SystemControlExecutor
 from src.trust.session_activity import (
     TRUSTED_ACTIVITY_ORIGIN_PARAM,
     TRUSTED_SESSION_ID_PARAM,
@@ -263,7 +265,55 @@ def governance_refusal_for(text: str) -> str:
     return ""
 
 
-def natural_memory_correction_command(text: str, last_memory_item_id: str) -> str:
+_NATURAL_MEMORY_CORRECTION_RE = re.compile(
+    r"^\s*actually\s+(?:change|update|correct)\s+"
+    r"(?P<subject>(?:my|the)\s+.+?)\s+to\s+(?P<value>.+?)\s*[.!]?\s*$",
+    re.IGNORECASE,
+)
+
+
+def _natural_memory_correction_parts(text: str) -> tuple[str, str]:
+    match = _NATURAL_MEMORY_CORRECTION_RE.match(str(text or ""))
+    if not match:
+        return "", ""
+    subject = re.sub(
+        r"^(?:my|the)\s+",
+        "",
+        match.group("subject"),
+        flags=re.IGNORECASE,
+    ).strip()
+    value = match.group("value").strip(" .")
+    return subject, value
+
+
+def is_natural_memory_correction_request(text: str) -> bool:
+    """Return whether text uses the one supported natural correction shape."""
+    subject, value = _natural_memory_correction_parts(text)
+    return bool(subject and value)
+
+
+def _normalized_memory_reference(value: str) -> str:
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", str(value or "").casefold()).split())
+
+
+def _natural_memory_subject_matches(subject: str, last_memory_item: dict[str, Any] | None) -> bool:
+    subject_key = _normalized_memory_reference(subject)
+    if not subject_key:
+        return False
+    memory_item = dict(last_memory_item or {})
+    grounded_text = " ".join(
+        str(memory_item.get(field) or "")
+        for field in ("title", "body", "content_display", "content_raw")
+    )
+    grounded_key = _normalized_memory_reference(grounded_text)
+    return bool(grounded_key and f" {subject_key} " in f" {grounded_key} ")
+
+
+def natural_memory_correction_command(
+    text: str,
+    last_memory_item_id: str,
+    last_memory_item: dict[str, Any] | None = None,
+) -> str:
     """Translate one explicit correction shape only when a memory is grounded.
 
     This is deliberately session-bound. Without a concrete last-memory ID the
@@ -271,20 +321,26 @@ def natural_memory_correction_command(text: str, last_memory_item_id: str) -> st
     """
     if not str(last_memory_item_id or "").strip():
         return ""
-    match = re.match(
-        r"^\s*actually\s+(?:change|update|correct)\s+"
-        r"(?P<subject>(?:my|the)\s+.+?)\s+to\s+(?P<value>.+?)\s*[.!]?\s*$",
-        str(text or ""),
-        re.IGNORECASE,
-    )
-    if not match:
-        return ""
-    subject = re.sub(r"^(?:my|the)\s+", "", match.group("subject"), flags=re.IGNORECASE).strip()
-    value = match.group("value").strip(" .")
+    subject, value = _natural_memory_correction_parts(text)
     if not subject or not value:
+        return ""
+    if not _natural_memory_subject_matches(subject, last_memory_item):
         return ""
     body = f"{subject[0].upper()}{subject[1:]} is {value}."
     return f"edit last memory: {body}"
+
+
+def cap22_path_preflight_message(params: dict[str, Any]) -> str:
+    """Reject a known-prohibited explicit path before asking for approval."""
+    explicit_path = str(dict(params or {}).get("path") or "").strip()
+    if not explicit_path:
+        return ""
+    if SystemControlExecutor.is_path_allowed(Path(explicit_path).expanduser()):
+        return ""
+    return (
+        "I can't open that path because it is outside Nova's allowed local roots. "
+        "No open request was attempted."
+    )
 
 
 def is_headline_summary_request(text: str) -> bool:
@@ -4493,7 +4549,26 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             natural_memory_edit = natural_memory_correction_command(
                 raw_text,
                 str(session_state.get("last_memory_item_id") or ""),
+                dict(session_state.get("last_memory_item") or {}),
             )
+            if (
+                not natural_memory_edit
+                and str(session_state.get("last_memory_item_id") or "").strip()
+                and is_natural_memory_correction_request(raw_text)
+            ):
+                message = (
+                    "I couldn't tie that correction to the last grounded memory item, "
+                    "so I didn't change memory. Open the matching memory or name its ID first."
+                )
+                record_rejected_or_unsupported(
+                    session_state,
+                    label="Memory correction request",
+                    reason="The correction subject did not match the grounded memory item; no memory was changed.",
+                )
+                await send_chat_message(ws, message, tone_domain="continuity")
+                await send_chat_done(ws)
+                session_state["turn_count"] += 1
+                continue
             governed_parse_text = (
                 natural_memory_edit
                 if natural_memory_edit
@@ -4645,6 +4720,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         continue
 
                 if capability_id == 22:
+                    preflight_message = cap22_path_preflight_message(params)
+                    if preflight_message:
+                        record_rejected_or_unsupported(
+                            session_state,
+                            label="File or folder open request",
+                            reason=preflight_message,
+                        )
+                        await send_chat_message(ws, preflight_message)
+                        await send_chat_done(ws)
+                        continue
                     target = str(params.get("target") or "").strip()
                     path = str(params.get("path") or "").strip()
                     resource = path or target or "that location"
