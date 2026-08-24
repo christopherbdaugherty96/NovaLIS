@@ -6,23 +6,23 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Wave C — proof and stabilization checkpoint active
+### Wave C — validated baseline complete
 
 Current state:
 
 ```text
-current main / post-B4 sync / Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
+Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
 B1 / PR #356: COMPLETE / MERGED
 B2 / PR #358: COMPLETE / MERGED
 B3 / PR #360: COMPLETE / MERGED
 B4 / PR #362: COMPLETE / MERGED
-Wave C: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
-PR #364: OPEN / DRAFT / UNMERGED
-PR #364 published review head before current bounded correction: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
-validated_baseline_sha: NOT ESTABLISHED
+Wave C: COMPLETE / MERGED / VALIDATED
+PR #364: MERGED
+PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
+current main / validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-Wave A1, A2, B1, B2, B3, and B4 are already merged:
+Wave A1, A2, B1, B2, B3, B4, and Wave C are already merged:
 
 ```text
 #353  A1 operational truth synchronization
@@ -57,11 +57,16 @@ Wave A1, A2, B1, B2, B3, and B4 are already merged:
        squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
 
 #363  post-B4 operational truth synchronization
-       merge/current main/Wave C initial candidate:
+       merge/Wave C initial candidate:
        404689ef07f42480966c59ba30c07db5c4f101e1
+
+#364  Wave C validation and reproduced-defect repairs
+       reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
+       squash merge/current main/validated_baseline_sha:
+       ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-Do not reopen B1 through B4 without concrete new evidence. Wave C is active under its reviewed authorization; do not expand its scope or declare a validated baseline before the complete exit proof passes on one exact candidate.
+Do not reopen B1 through B4 or Wave C without concrete new evidence. The Wave C exit proof passed on exact merged main under the explicit owner evidence waiver; do not reinterpret waived hosted jobs as PASS.
 
 ### Completed B1 source/truth work
 
@@ -189,17 +194,18 @@ head: befb69ef75881a9f418472549b64243219c138f9
 historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 ```
 
-PR #335 remains deferred; do not modify, mark ready, or merge it before it is reconstructed/reconciled onto the exact Wave C validated baseline.
+PR #335 remains deferred; reconstruction/reconciliation onto the exact Wave C validated baseline is next but requires separate owner authorization.
 
 ### Issue #354 — zero-step GitHub Actions infrastructure
 
 ```text
 STATUS: infrastructure/open
 IMPACT: hosted workflows currently provide no trustworthy behavioral evidence
-NEEDED BEFORE: Wave C validated-baseline proof relies on hosted CI
+CAUSE: external GitHub account billing / Actions spending restriction
+WAVE C DISPOSITION: owner-waived as a mandatory exit evidence source
 ```
 
-Keep #354 separate from this synchronization. It must be resolved before Wave C relies on hosted CI, but this task does not authorize that repair.
+Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not PASS or behavioral FAIL; the owner waiver removed it as a Wave C exit dependency without fixing the account restriction.
 
 ### Front-door README truth cleanup
 
@@ -234,7 +240,7 @@ Keep #354 separate from this synchronization. It must be resolved before Wave C 
 
 ### Wave C — proof and stabilization checkpoint
 
-**ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW.** Frozen scope:
+**COMPLETE / MERGED / VALIDATED.** Exit evidence:
 
 - choose one exact candidate commit;
 - regenerate repaired runtime truth;
@@ -242,8 +248,8 @@ Keep #354 separate from this synchronization. It must be resolved before Wave C 
 - run semantic-contract regression;
 - rebenchmark Issue #227 against the current local inference stack;
 - repair only reproduced defects;
-- record immutable `validated_baseline_sha` only after required proof passes;
-- reconstruct #335 on that exact baseline;
+- immutable `validated_baseline_sha`: `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`;
+- reconstruct #335 on that exact baseline only after separate authorization;
 - harden post-token identity-failure cleanup and invalid callback consumption;
 - rerun exact-head #335 verification;
 - perform independent security/architecture review;
@@ -275,12 +281,12 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin outside the bounded Wave C authorization:
+Do not begin outside the next separately authorized lane:
 
 ```text
 B3 memory architecture beyond the completed truth/provenance repair
 B4 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
-Wave C redesign, capability expansion, or repairs without reproduced evidence
+Wave C reopening, capability expansion, or repairs without reproduced evidence
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes
@@ -297,4 +303,4 @@ Protection Wall runtime expansion
 README/front-door rewrite
 ```
 
-Issue #227 remains a Wave C current-hardware/model benchmark item. Old planning/future issues are not active merely because they remain open.
+Issue #227's Wave C current-hardware/model revalidation is historical evidence from the completed Wave C package. Old planning/future issues are not active merely because they remain open.

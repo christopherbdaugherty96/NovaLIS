@@ -28,15 +28,17 @@ f25c798c7cb488495a343068463e9214cab0a763
 
 Wave A2 strategy reconciliation is complete and merged through PR #355.
 
-Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Wave B2 capability narration is complete and merged through PR #358. Wave B3 memory governance is complete and merged through PR #360. Wave B4 reproducibility hygiene is complete and merged through PR #362. Post-B4 operational truth sync #363 established current merged `main` and the Wave C initial candidate:
+Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Post-B1 operational truth sync #357 is also merged. Wave B2 capability narration is complete and merged through PR #358. Wave B3 memory governance is complete and merged through PR #360. Wave B4 reproducibility hygiene is complete and merged through PR #362. Post-B4 operational truth sync #363 established the Wave C initial candidate. Wave C then merged through PR #364 at reviewed head `786c048df6dc4ed8f3c8245c5b365d4296f342f4`; its squash merge is current `main` and the immutable validated baseline:
 
 ```text
-404689ef07f42480966c59ba30c07db5c4f101e1
+ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-Current active stabilization lane: C — proof / validated-baseline checkpoint, active and owner-authorized through draft PR #364. PR #364's published review head before its current bounded correction was `5b2a64dfb69581040ed19a773c1ab5d40d298ab4`. No `validated_baseline_sha` has been established.
+Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
 
-B1 through B4 are complete. Their proof packages are historical evidence for the revisions and environments actually exercised. Wave C is limited to its reviewed validation and reproduced-defect-repair authorization.
+Wave C is complete and merged. Exact-main non-hosted proof passed on `ec20a714...`; GitHub-hosted jobs did not execute because of the external account-billing restriction recorded in Issue #354. The owner explicitly waived hosted execution as a Wave C exit requirement without classifying those jobs as PASS. `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+
+B1 through B4 and Wave C are complete. Their proof packages remain evidence only for the revisions, environments, and mechanisms actually exercised.
 
 Current order is summarized in `07_ROADMAP_TRUTH.md` and detailed in Issue #343:
 
@@ -47,14 +49,14 @@ Wave A1 operational truth sync                 COMPLETE
 -> B2 capability narration                      COMPLETE / MERGED
 -> B3 memory governance                         COMPLETE / MERGED
 -> B4 reproducibility hygiene                   COMPLETE / MERGED
--> Wave C validated-baseline proof checkpoint   ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
--> reconstruct/reconcile #335
+-> Wave C validated-baseline proof checkpoint   COMPLETE / MERGED
+-> reconstruct/reconcile #335                   NEXT / NOT AUTHORIZED
 -> Google identity proof
 -> first Google READ/evidence vertical
 -> evidence-based Continuity warrant
 ```
 
-Issue #354 remains a separate hosted-CI infrastructure problem. Its zero-step jobs are not behavioral pass/fail evidence, it is separate from B4, and it must be resolved before Wave C depends on hosted CI.
+Issue #354 remains an external account/billing infrastructure issue. Its zero-step jobs are `NOT EXECUTED`, not behavioral PASS or FAIL. The owner waived that evidence source for the Wave C baseline; the issue remains separate from Nova runtime truth.
 
 ## The canonical truth files
 
