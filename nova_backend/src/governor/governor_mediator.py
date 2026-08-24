@@ -247,7 +247,12 @@ OPEN_WEBSITE_RE = re.compile(
     re.IGNORECASE,
 )
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
-OPEN_SOURCE_INDEX_RE = re.compile(r"^\s*open\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
+OPEN_SOURCE_INDEX_RE = re.compile(
+    r"^\s*open\s+(?:the\s+)?(?:(?:source|result)\s*#?\s*(?P<idx>\d{1,2})|"
+    r"(?P<ordinal>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+"
+    r"(?:source|result))\s*$",
+    re.IGNORECASE,
+)
 PREVIEW_SOURCE_INDEX_RE = re.compile(r"^\s*preview\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
 OPEN_ARTICLE_INDEX_RE = re.compile(
     r"^\s*open\s+(?:the\s+)?(?:(?:article|story)\s*#?\s*(?P<idx>\d{1,2})|"
@@ -1234,7 +1239,11 @@ class GovernorMediator:
 
         m = OPEN_SOURCE_INDEX_RE.match(t)
         if m:
-            return _invocation_if_enabled(17, {"source_index": int(m.group("idx"))})
+            source_index = int(m.group("idx")) if m.group("idx") else ORDINAL_WORD_TO_INDEX.get(
+                str(m.group("ordinal") or "").strip().lower()
+            )
+            if source_index:
+                return _invocation_if_enabled(17, {"source_index": source_index})
 
         m = OPEN_ARTICLE_INDEX_RE.match(t)
         if m:

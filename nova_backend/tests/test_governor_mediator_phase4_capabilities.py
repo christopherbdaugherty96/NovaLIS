@@ -82,6 +82,10 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 17
     assert inv.params["source_index"] == 2
+    inv = GovernorMediator.parse_governed_invocation("open the first result")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["source_index"] == 1
     inv = GovernorMediator.parse_governed_invocation("preview source 1")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 17
