@@ -353,6 +353,7 @@ SCREEN_CAPTURE_RE = re.compile(
 )
 SCREEN_ANALYSIS_RE = re.compile(
     r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen|help\s+me\s+understand\s+this\s+screen|read\s+this\s+screen"
+    r"|explain\s+what(?:'?s|\s+is)\s+on\s+(?:my\s+|the\s+)?screen"
     r"|what(?:'?s| is)?\s+on\s+(?:my\s+|the\s+)?screen|whats\s+on\s+(?:my\s+|the\s+)?screen|what\s+do\s+(?:i|you)\s+see\s+on\s+(?:the\s+|my\s+)?screen|help\s+me\s+read\s+this\s+screen"
     r"|describe\s+(?:what'?s?\s+on\s+)?(?:the\s+|my\s+)?screen|look\s+at\s+(?:my\s+|the\s+)?screen"
     r"|scan\s+(?:the\s+|my\s+)?screen|read\s+(?:what(?:'s|\s+is|s)\s+on\s+)?(?:the\s+|my\s+)?screen"
@@ -683,7 +684,7 @@ MORNING_BRIEF_RE = re.compile(
 SHOPIFY_REPORT_RE = re.compile(
     r"^\s*(?:shopify\s+(?:report|stats|status|intelligence|summary|snapshot|brief|overview|store)"
     r"|(?:store|shop)\s+(?:report|stats|status|intelligence|summary|snapshot)"
-    r"|(?:show|get|fetch|pull)\s+(?:my\s+)?shopify\s+(?:data|metrics|orders?|products?|store)"
+    r"|(?:show|get|fetch|pull)\s+(?:my\s+)?shopify\s+(?:data|metrics|orders?|products?|store|status|report|summary|overview)"
     r"|how(?:'s|\s+is)\s+(?:my\s+)?(?:shopify\s+)?store\s+doing"
     r")\b.*$",
     re.IGNORECASE,

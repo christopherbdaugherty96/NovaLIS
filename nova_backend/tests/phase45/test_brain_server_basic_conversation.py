@@ -330,6 +330,7 @@ def test_b2_live_acceptance_phrasings_use_truth_narration_before_actions(monkeyp
     "prompt",
     [
         "what OpenClaw tools can you use?",
+        "what OpenClaw actions can you do?",
         "what can OpenClaw do directly?",
         "can you use OpenClaw?",
     ],

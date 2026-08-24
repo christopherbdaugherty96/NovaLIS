@@ -540,6 +540,8 @@ class TestGovernorRoutingPipeline:
         ("should i bring an umbrella", 55),
         ("search for AI news", 16),
         ("open the first result", 17),
+        ("explain what's on my screen", 59),
+        ("show Shopify status", 65),
         ("look up quantum computing", 16),
         ("find me a recipe for pasta", 16),
         ("verify this", 31),
