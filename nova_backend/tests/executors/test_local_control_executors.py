@@ -19,7 +19,29 @@ def test_media_executor_uses_system_control(monkeypatch):
 
     assert result.success is True
     assert seen["action"] == "pause"
-    assert result.message == "Playback paused."
+    assert result.message == (
+        "Pause request sent. I couldn't verify the resulting playback state."
+    )
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
+
+
+@pytest.mark.parametrize("action", ["play", "pause", "resume"])
+def test_media_executor_does_not_claim_an_unverified_effect(monkeypatch, action):
+    executor = MediaExecutor()
+    monkeypatch.setattr(executor.system_control, "control_media", lambda *_args: True)
+
+    result = executor.execute(ActionRequest(capability_id=20, params={"action": action}))
+
+    assert result.success is True
+    assert result.status == "completed"
+    assert "request sent" in result.message.lower()
+    assert "couldn't verify" in result.message.lower()
+    assert result.outcome_reason.endswith("could not be verified.")
+    assert result.structured_data["outcome_state"] == "accepted_unverified"
+    assert result.structured_data["request_accepted"] is True
+    assert result.structured_data["effect_verified"] is False
 
 
 def test_brightness_executor_uses_system_control_for_set(monkeypatch):

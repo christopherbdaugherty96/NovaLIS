@@ -548,6 +548,10 @@ class TestGovernorRoutingPipeline:
         ("how is the AI story doing", 52),
         ("send an email", 64),
         ("can you help me write an email", 64),
+        ("open the Nova project folder", 22),
+        ("create an analysis document about today's AI news", 54),
+        ("summarize the analysis document", 54),
+        ("what documents did you create this session?", 54),
     ])
     def test_governor_cap(self, raw: str, expected_cap: int):
         assert _pipeline(raw) == expected_cap, (

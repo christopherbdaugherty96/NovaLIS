@@ -14,6 +14,7 @@ from src.conversation.brief_followup_grounding import (
     active_news_surface_clusters,
     answer_grounded_brief_followup,
     is_discussion_shaped_brief_followup,
+    is_explicit_news_reference_action,
     schedule_commitment_guard,
     store_active_news_surface,
     store_awareness_brief_surface,
@@ -65,6 +66,11 @@ def _apply_news_synthesis_ready_state(
     active_surface = session_state.get("active_news_surface")
     if not isinstance(active_surface, dict) or active_surface.get("surface_type") == "brief":
         store_active_news_surface(session_state, "brief", clusters)
+
+
+def _summary_replaces_active_news_surface(selection: str) -> bool:
+    """Only a rendered collection may replace the numbered news surface."""
+    return str(selection or "").strip().lower() == "category"
 _QUOTED_CONTENT_REQUEST_RE = re.compile(
     r"\b(?:summari[sz]e|analy[sz]e|explain|review)\b.{0,80}"
     r"\b(?:article|text|content|search result|result|snippet|quote|quoted)\b",
@@ -202,7 +208,9 @@ def governance_refusal_for(text: str) -> str:
             "No execution was performed and no authority was granted."
         )
     if re.search(r"\bopenclaw\b", normalized) and re.search(
-        r"\b(?:automate|automation|execute|run|delegate|control|operate|autonomous)\b", normalized
+        r"\b(?:automate|automation|execute|run|delegate|control|operate|autonomous"
+        r"|delete|remove|move|rename|write|edit|change|send|post|purchase|buy)\b",
+        normalized,
     ):
         return (
             "Blocked: broad OpenClaw automation is not approved here. "
@@ -253,6 +261,30 @@ def governance_refusal_for(text: str) -> str:
             "No email, calendar, Shopify, account, or external change was made."
         )
     return ""
+
+
+def natural_memory_correction_command(text: str, last_memory_item_id: str) -> str:
+    """Translate one explicit correction shape only when a memory is grounded.
+
+    This is deliberately session-bound. Without a concrete last-memory ID the
+    same sentence remains ordinary conversation and cannot mutate memory.
+    """
+    if not str(last_memory_item_id or "").strip():
+        return ""
+    match = re.match(
+        r"^\s*actually\s+(?:change|update|correct)\s+"
+        r"(?P<subject>(?:my|the)\s+.+?)\s+to\s+(?P<value>.+?)\s*[.!]?\s*$",
+        str(text or ""),
+        re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    subject = re.sub(r"^(?:my|the)\s+", "", match.group("subject"), flags=re.IGNORECASE).strip()
+    value = match.group("value").strip(" .")
+    if not subject or not value:
+        return ""
+    body = f"{subject[0].upper()}{subject[1:]} is {value}."
+    return f"edit last memory: {body}"
 
 
 def is_headline_summary_request(text: str) -> bool:
@@ -485,7 +517,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     EMAIL_INBOX_RE = deps.EMAIL_INBOX_RE
     EMAIL_INBOX_RESPONSE = deps.EMAIL_INBOX_RESPONSE
     PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE = deps.PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE
+    PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE = deps.PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE
     is_private_google_drive_search = deps.is_private_google_drive_search
+    is_private_google_calendar_search = deps.is_private_google_calendar_search
     REMIND_ME_TIMELESS_RE = deps.REMIND_ME_TIMELESS_RE
     CALENDAR_WRITE_REQUEST_RE = deps.CALENDAR_WRITE_REQUEST_RE
     REMINDER_BODY_FIRST_RE = deps.REMINDER_BODY_FIRST_RE
@@ -1554,6 +1588,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                     continue
 
+            no_pending_confirmation = SessionRouter.route_pending_web_confirmation(raw_text)
+            if (
+                no_pending_confirmation.action in {"confirm", "cancel"}
+                and not session_state.get("pending_escalation")
+            ):
+                await _complete_immediate_turn(
+                    "No action is waiting for confirmation.",
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
             # Capability-status questions are evaluated against the user's raw
             # wording before SessionRouter removes polite question prefixes
             # such as "can you".  This preserves the difference between asking
@@ -1654,6 +1700,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 await _complete_immediate_turn(
                     PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE,
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            if is_private_google_calendar_search(text.rstrip(".?!")):
+                record_rejected_or_unsupported(
+                    session_state,
+                    label="Google Calendar search",
+                    reason=(
+                        "Google Calendar access is not enabled; no private calendar data or "
+                        "public web search was attempted."
+                    ),
+                )
+                await _complete_immediate_turn(
+                    PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE,
                     remember_response=False,
                     tone_domain="system",
                 )
@@ -2998,10 +3060,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     continue
 
             # --- Phase 2 immediate commands ---
-            if lowered == "stop":
+            if lowered in {"stop", "stop speaking", "stop talking", "be quiet"}:
                 speech_state.stop()
                 stop_speaking()
-                await send_chat_message(ws, "Okay.")
+                await send_chat_message(ws, "Speech stop request applied.")
                 await send_chat_done(ws)
                 continue
 
@@ -3258,7 +3320,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {"system", "system status", "system check"}:
+            if lowered in {
+                "system",
+                "system status",
+                "system check",
+                "is nova healthy",
+                "is the model ready",
+                "how is my computer doing",
+                "how's my computer doing",
+                "show runtime status",
+                "show diagnostics",
+                "run diagnostics",
+            }:
                 _, action_result = await invoke_governed_text_command(
                     governor,
                     "system status",
@@ -4411,9 +4484,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
-            grounded_brief_followup = is_discussion_shaped_brief_followup(mediated_text, session_state)
+            explicit_news_reference = is_explicit_news_reference_action(raw_text)
+            grounded_brief_followup = (
+                False
+                if explicit_news_reference
+                else is_discussion_shaped_brief_followup(mediated_text, session_state)
+            )
+            natural_memory_edit = natural_memory_correction_command(
+                raw_text,
+                str(session_state.get("last_memory_item_id") or ""),
+            )
             governed_parse_text = (
-                raw_text
+                natural_memory_edit
+                if natural_memory_edit
+                else raw_text
+                if explicit_news_reference
+                else raw_text
                 if re.match(
                     r"^\s*(?:edit|update)\s+(?:(?:that|last|recent)\s+memory|memory\s+[A-Za-z0-9\-_]+)\s*:",
                     raw_text,
@@ -4505,34 +4591,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             params["brief_clusters"] = active_news_surface_clusters(session_state)
                         else:
                             params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
-                        if params.get("read_sources"):
-                            _synthesis_loop = asyncio.get_running_loop()
-
-                            async def _deliver_news_synthesis_ready(payload: dict) -> None:
-                                _apply_news_synthesis_ready_state(session_state, payload)
-                                await ws_send(ws, payload)
-
-                            def _on_news_synthesis_ready(payload: dict) -> None:
-                                if not isinstance(payload, dict):
-                                    return
-                                future = asyncio.run_coroutine_threadsafe(
-                                    _deliver_news_synthesis_ready(payload),
-                                    _synthesis_loop,
-                                )
-
-                                def _consume_ready_send_result(done_future: Any) -> None:
-                                    try:
-                                        done_future.result()
-                                    except Exception:
-                                        log.debug("News synthesis ready event was not delivered", exc_info=True)
-
-                                future.add_done_callback(_consume_ready_send_result)
-
-                            params.setdefault("synthesis_ready_callback", _on_news_synthesis_ready)
-                            params.setdefault(
-                                "foreground_model_busy_callback",
-                                lambda: bool(session_state.get("foreground_model_busy")),
-                            )
+                        # Governor action parameters are immutable, auditable data.
+                        # WebSocket callbacks are process-local behavior and must
+                        # never cross that boundary as capability parameters.
                 if capability_id == 17:
                     source_index = params.get("source_index")
                     if source_index is not None:
@@ -4728,10 +4789,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                                 news_items = list(session_state.get("news_cache") or [])
                                 if 0 <= item_index < len(news_items) and isinstance(news_items[item_index], dict):
                                     selected_items.append(dict(news_items[item_index]))
-                        if selected_items:
+                        if selected_items and _summary_replaces_active_news_surface(selection):
                             store_active_news_surface(
                                 session_state,
-                                "category" if selection == "category" else "headline_summary",
+                                "category",
                                 selected_items,
                                 category_key=category_key,
                             )

@@ -10,8 +10,7 @@ written directly rather than re-exported.
 """
 from __future__ import annotations
 
-import pytest
-
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -50,6 +49,14 @@ def test_open_documents_routes_to_cap22():
 def test_open_pictures_routes_to_cap22():
     inv = _invocation("open my pictures folder")
     assert inv.capability_id == 22
+
+
+def test_open_nova_project_folder_routes_to_cap22_with_repo_path():
+    from src.governor import governor_mediator
+
+    inv = _invocation("open the Nova project folder")
+    assert inv.capability_id == 22
+    assert Path(inv.params["path"]) == Path(governor_mediator.__file__).resolve().parents[3]
 
 
 # ---------------------------------------------------------------------------

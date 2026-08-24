@@ -67,6 +67,23 @@ _NON_CALENDAR_REFERENCE_TARGET_RE = re.compile(
     r"(?:documents?|files?|pages?|servers?|desks?|folders?|drives?|projects?|tasks?|notes?)\b",
     re.I,
 )
+_EXPLICIT_LOCAL_PATH_ACTION_RE = re.compile(
+    r"^\s*(?:open|show|read|inspect|summarize|delete|remove|move|rename)\b"
+    r"[^\r\n]{0,180}(?:[A-Za-z]:[\\/]|\\\\|/(?:[^\s/]+/)+)",
+    re.I,
+)
+_EXPLICIT_NEWS_REFERENCE_ACTION_RE = re.compile(
+    r"^\s*(?:"
+    r"(?:tell\s+me\s+more\s+about|summarize|summary\s+of|details?\s+(?:on|about))\s+"
+    r"(?:the\s+)?(?:story|article|headline)?\s*#?\s*(?:\d{1,2}|first|second|third|fourth|fifth)(?:\s+one)?"
+    r"|what\s+sources?\s+(?:support|are\s+behind|back)\s+(?:story|article)\s*#?\s*\d{1,2}"
+    r"|open\s+(?:the\s+)?(?:first|second|third|fourth|fifth)\s+(?:one|story|article|headline)"
+    r"|compare\s+(?:the\s+)?(?:first|second|third|fourth|fifth)\s+(?:and|vs)\s+"
+    r"(?:the\s+)?(?:first|second|third|fourth|fifth)(?:\s+(?:stories|headlines|articles))?"
+    r"|what\s+was\s+(?:story|headline|article)\s*#?\s*\d{1,2}\s+again"
+    r")\s*\??\s*$",
+    re.I,
+)
 
 # Schedule / calendar / commitment questions. Kept specific to avoid over-capturing
 # ordinary chat: explicit schedule nouns, "am I free/busy", or "what do I have <when>".
@@ -100,6 +117,16 @@ ORDINALS = {
 def is_fetch_shaped_brief_request(text: str) -> bool:
     clean = str(text or "").strip()
     return bool(clean and any(pattern.match(clean) for pattern in FETCH_SHAPES))
+
+
+def is_explicit_news_reference_action(text: str) -> bool:
+    """Return whether the turn explicitly targets a numbered news item.
+
+    These action-shaped references must reach the governed news parser with
+    their original number intact; generic follow-up normalization must not
+    rewrite them into a vague "that" reference.
+    """
+    return bool(_EXPLICIT_NEWS_REFERENCE_ACTION_RE.match(str(text or "").strip()))
 
 
 def is_schedule_commitment_question(text: str) -> bool:
@@ -142,7 +169,12 @@ def schedule_commitment_guard(text: str, session_state: dict[str, Any] | None) -
 
 def is_discussion_shaped_brief_followup(text: str, session_state: dict[str, Any] | None) -> bool:
     clean = str(text or "").strip()
-    if not clean or is_fetch_shaped_brief_request(clean):
+    if (
+        not clean
+        or is_fetch_shaped_brief_request(clean)
+        or _EXPLICIT_LOCAL_PATH_ACTION_RE.search(clean)
+        or is_explicit_news_reference_action(clean)
+    ):
         return False
     state = session_state or {}
     if not _has_grounding(state):
