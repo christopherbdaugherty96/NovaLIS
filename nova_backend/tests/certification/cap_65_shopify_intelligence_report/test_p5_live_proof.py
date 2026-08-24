@@ -37,6 +37,15 @@ if os.path.isfile(_env_path):
             key, _, val = line.partition("=")
             os.environ.setdefault(key.strip(), val.strip())
 
+if not (
+    str(os.environ.get("NOVA_SHOPIFY_SHOP_DOMAIN") or "").strip()
+    and str(os.environ.get("NOVA_SHOPIFY_ACCESS_TOKEN") or "").strip()
+):
+    pytestmark = [
+        pytest.mark.live_shopify,
+        pytest.mark.skip(reason="Shopify P5 live credentials are not configured."),
+    ]
+
 _backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 os.chdir(_backend_root)
 sys.path.insert(0, _backend_root)

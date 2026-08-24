@@ -1,6 +1,6 @@
 # Current Priority
 
-## Wave C — Next Validated-Baseline Proof — 2026-08-23
+## Wave C — Active Validated-Baseline Proof — 2026-08-24
 
 Current planning lane:
 
@@ -8,13 +8,14 @@ Current planning lane:
 B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
 B4: COMPLETE / MERGED
-WAVE C: NEXT / NOT AUTHORIZED
+WAVE C: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
+validated_baseline_sha: NOT ESTABLISHED
 ```
 
 Handoff anchors:
 
 ```text
-current main / B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
+current main / post-B4 sync / Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
 B1 reviewed head: 381dbaeca73786f789cc6e68fd3b6bf193296041
 B1 generated-artifact commit: e668ec0c09df6e0d304427431e95a26619a9f507
 B1 PR #356: MERGED
@@ -29,9 +30,12 @@ post-B3 sync #361 merge: bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1
 B4 reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
 B4 PR #362: MERGED
 B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
+post-B4 sync #363 merge: 404689ef07f42480966c59ba30c07db5c4f101e1
+Wave C PR #364: OPEN / DRAFT / UNMERGED
+PR #364 published review head before current bounded correction: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
 ```
 
-B1, B2, B3, and B4 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. Wave C is next but is not authorized by this synchronization.
+B1, B2, B3, and B4 are complete and merged. Their proof, generated truth, operational synchronization, and review records are historical evidence for the revisions and environments actually exercised. Wave C is active under its reviewed authorization. PR #364 remains draft and unmerged; its published review head above identifies the pre-correction review state and does not claim later correction commits have the same SHA.
 
 ## Completed gates
 
@@ -82,7 +86,7 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — await separate Wave C authorization
+## Current action — close bounded PR #364 review findings
 
 The merged B2 projection preserves these distinct fields:
 
@@ -102,7 +106,7 @@ B3 is complete: ordinary chat no longer silently creates authoritative personal 
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; requirements-style compatibility surfaces are mechanically checked; the historical `python-multipart` mismatch is resolved; and the supported install path was proven on the reviewed B4 revision. Do not reopen or redesign packaging without new evidence.
 
-Wave C remains only an established high-level proof checkpoint. Candidate freezing, runtime-truth regeneration, semantic-contract regression, Issue #227 revalidation, defect repair, and `validated_baseline_sha` establishment all require separate owner authorization.
+Wave C is active. Correct only reproduced, in-scope stabilization findings; rerun the required proof on one exact corrected candidate. `validated_baseline_sha` remains unestablished until the full exit proof passes, including genuine hosted execution after Issue #354 is resolved.
 
 ## Google Foundation / CI state
 
@@ -133,7 +137,7 @@ B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
 -> B4 reproducibility hygiene / COMPLETE / MERGED
--> Wave C proof / semantic-contract stabilization / NEXT / NOT AUTHORIZED
+-> Wave C proof / semantic-contract stabilization / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
 -> reconstruct #335 onto exact validated baseline
 -> independent #335 review + separate merge decision
 -> Google identity-only live proof
@@ -141,16 +145,16 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4 are complete and merged. Wave C is next but not authorized.
+B1 through B4 are complete and merged. Wave C is active; PR #364 is draft and under review.
 
 ## Scope lock
 
-Do not start or modify outside this post-B4 synchronization:
+Do not start or modify outside the bounded Wave C authorization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
-Wave C proof, candidate freezing, semantic testing, or runtime revalidation
+Wave C redesign, capability expansion, or repairs without reproduced evidence
 network behavior / NetworkMediator wiring
 capability registry
 OAuth / #335

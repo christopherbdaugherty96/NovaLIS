@@ -2,15 +2,12 @@ from __future__ import annotations
 
 """Tests for ConnectionsStore."""
 
-import os
 import json
-import tempfile
+import os
 from pathlib import Path
 
 import pytest
-
-from src.connections.connections_store import ConnectionsStore, PROVIDER_REGISTRY, _mask_key
-
+from src.connections.connections_store import PROVIDER_REGISTRY, ConnectionsStore, _mask_key
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -87,6 +84,19 @@ class TestSnapshot:
         store.save_key("openai", "sk-secretsecret")
         for p in store.snapshot():
             assert "sk-secretsecret" not in str(p)
+
+    def test_environment_configuration_is_reported_without_exposing_secret(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("BRAVE_API_KEY", "environment-secret-value")
+        store = _make_store(tmp_path)
+
+        brave = {p["id"]: p for p in store.snapshot()}["brave"]
+
+        assert brave["has_key"] is False
+        assert brave["configured"] is True
+        assert brave["environment_configured"] is True
+        assert brave["configuration_source"] == "environment"
+        assert "environment-secret-value" not in str(brave)
+        assert brave["connected"] is False
 
 
 # ---------------------------------------------------------------------------

@@ -31,9 +31,11 @@ class WeatherSkill(BaseSkill):
         self,
         network: NetworkMediator | None = None,
         location: str | None = None,
+        scope: str = "today",
     ):
         self.requested_location = str(location or "").strip()
-        self.service = WeatherService(location=location, network=network)
+        self.scope = "tomorrow" if str(scope).strip().lower() == "tomorrow" else "today"
+        self.service = WeatherService(location=location, network=network, scope=self.scope)
 
     def can_handle(self, text: str) -> bool:
         query = str(text or "").strip().lower()
@@ -128,10 +130,16 @@ class WeatherSkill(BaseSkill):
 
     def _format(self, data: dict) -> str:
         timestamp = datetime.now().strftime("%I:%M %p").lstrip("0")
-        base = (
-            f"From the last update at {timestamp}: "
-            f"{round(data['temperature'])} degrees F and {data['condition']} in {data['location']}."
-        )
+        if self.scope == "tomorrow":
+            base = (
+                f"Tomorrow's forecast for {data['location']}: "
+                f"about {round(data['temperature'])} degrees F and {data['condition']}."
+            )
+        else:
+            base = (
+                f"From the last update at {timestamp}: "
+                f"{round(data['temperature'])} degrees F and {data['condition']} in {data['location']}."
+            )
         alerts = list(data.get("alerts") or [])
         if alerts:
             return f"{base} Alert active: {alerts[0]}"

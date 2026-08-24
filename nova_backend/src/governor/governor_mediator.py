@@ -7,6 +7,7 @@ import platform
 import re
 import threading
 from dataclasses import dataclass
+from pathlib import Path
 from time import monotonic
 from typing import Any, Dict, Optional, Union
 
@@ -148,6 +149,18 @@ PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE = (
     "Google Drive access isn't enabled in Nova yet. I didn't search the public web, "
     "and no Drive data was accessed."
 )
+PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE = (
+    "Google Calendar access isn't enabled in Nova yet. I didn't search the public web, "
+    "and no private Calendar data was accessed."
+)
+PRIVATE_GOOGLE_CALENDAR_SOURCE_RE = re.compile(
+    r"\bgoogle\s+calendar\b",
+    re.IGNORECASE,
+)
+PUBLIC_GOOGLE_CALENDAR_INFO_RE = re.compile(
+    r"\b(?:pricing|price|cost|software|app|api|features?|documentation|docs|help|tutorial|integration)\b",
+    re.IGNORECASE,
+)
 
 
 def is_private_google_drive_search(text: str) -> bool:
@@ -157,6 +170,18 @@ def is_private_google_drive_search(text: str) -> bool:
         return False
     query = _normalize_search_query(search_match.group("q"))
     return bool(PRIVATE_GOOGLE_DRIVE_SOURCE_RE.search(query))
+
+
+def is_private_google_calendar_search(text: str) -> bool:
+    """Identify a private Google Calendar data request without claiming access."""
+    clean = str(text or "").strip()
+    search_match = SEARCH_RE.match(clean)
+    if not search_match:
+        return False
+    query = _normalize_search_query(search_match.group("q"))
+    if not PRIVATE_GOOGLE_CALENDAR_SOURCE_RE.search(query):
+        return False
+    return not bool(PUBLIC_GOOGLE_CALENDAR_INFO_RE.search(query))
 
 
 SOURCE_RELIABILITY_RE = re.compile(
@@ -176,7 +201,7 @@ WHY_RESEARCH_RE = re.compile(
     re.IGNORECASE,
 )
 CURRENT_INFO_QUESTION_RE = re.compile(
-    r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|news|update|updates|happening|happened|price|forecast|status|(?:live|on)\s+right\s+now)\b.*\s*$",
+    r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|yesterday|news|update|updates|changed|happening|happened|price|forecast|status|(?:live|on)\s+right\s+now)\b.*\s*$",
     re.IGNORECASE,
 )
 # Availability questions need both an explicit time marker and an availability
@@ -194,6 +219,14 @@ CURRENT_INFO_LOCAL_SOURCE_RE = re.compile(
 )
 FIND_CURRENT_INFO_RE = re.compile(
     r"^\s*find\s+(?:current|recent|latest)\s+information\s+(?:about|on|for)\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
+TOPICAL_LATEST_NEWS_RE = re.compile(
+    r"^\s*(?:latest|current|recent)\s+(?P<q>.+?)\s+news\s*$",
+    re.IGNORECASE,
+)
+VAGUE_CURRENT_HISTORY_RE = re.compile(
+    r"^\s*what\s+(?:happened\s+(?:today|yesterday)|changed\s+since\s+yesterday)\s*\??\s*$",
     re.IGNORECASE,
 )
 CLAIM_CHECK_RE = re.compile(
@@ -214,12 +247,27 @@ OPEN_WEBSITE_RE = re.compile(
     re.IGNORECASE,
 )
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
-OPEN_SOURCE_INDEX_RE = re.compile(r"^\s*open\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
+OPEN_SOURCE_INDEX_RE = re.compile(
+    r"^\s*open\s+(?:the\s+)?(?:(?:source|result)\s*#?\s*(?P<idx>\d{1,2})|"
+    r"(?P<ordinal>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+"
+    r"(?:source|result))\s*$",
+    re.IGNORECASE,
+)
 PREVIEW_SOURCE_INDEX_RE = re.compile(r"^\s*preview\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
+OPEN_ARTICLE_INDEX_RE = re.compile(
+    r"^\s*open\s+(?:the\s+)?(?:(?:article|story)\s*#?\s*(?P<idx>\d{1,2})|"
+    r"(?P<ordinal>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+"
+    r"(?:article|story|one))\s*$",
+    re.IGNORECASE,
+)
 PREVIEW_WEBSITE_RE = re.compile(r"^\s*preview\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
 OPEN_FOLDER_FRIENDLY_RE = re.compile(
     r"^\s*open\s+(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
+    re.IGNORECASE,
+)
+OPEN_NOVA_PROJECT_FOLDER_RE = re.compile(
+    r"^\s*open\s+(?:the\s+)?nova\s+project(?:\s+folder)?\s*$",
     re.IGNORECASE,
 )
 SHOW_FOLDER_RE = re.compile(
@@ -245,8 +293,9 @@ BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.
 WEATHER_RE = re.compile(
     r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|check (?:the )?weather|check weather"
     r"|weather (?:in [a-z0-9 ,.\-]+)"
+    r"|weather (?:today|now|tomorrow|tonight) in [a-z0-9 ,.\-]+"
     r"|weather (?:today|now|tomorrow|tonight)|todays? weather|tonight'?s? weather|tomorrow'?s? weather"
-    r"|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
+    r"|how(?:'s| is) the weather(?: (?:today|now|tomorrow|tonight))?(?: in [a-z0-9 ,.\-]+)?|what(?:'s| is) (?:the )?weather(?: (?:today|now|tomorrow|tonight))?(?: in [a-z0-9 ,.\-]+)?|forecast(?: today| tomorrow)?"
     r"|what'?s? the forecast|whats the forecast|the forecast|forecast (?:for )?today|forecast (?:for )?tomorrow"
     r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather"
     r"|(?:is it|will it) (?:going to )?(?:rain|snow|hail|sleet|storm)(?: today| tomorrow| this week)?"
@@ -260,12 +309,13 @@ WEATHER_RE = re.compile(
 )
 EXPLICIT_WEATHER_LOCATION_RE = re.compile(
     r"^\s*(?:weather|how(?:'s| is) the weather|what(?:'s| is) (?:the )?weather)"
+    r"(?:\s+(?P<scope_before>today|now|tomorrow|tonight))?"
     r"\s+in\s+(?P<location>[a-z0-9][a-z0-9 ,.'\-]{0,119}?)"
-    r"(?:\s+(?:today|now|tomorrow|tonight))?\s*$",
+    r"(?:\s+(?P<scope_after>today|now|tomorrow|tonight))?\s*$",
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
-    r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|whats (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
+    r"^\s*(?:news|news\s+(?:today|this\s+week)|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now| this\s+week)?|whats (?:the )?news(?: today| now| this\s+week)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
     r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news"
     r"|news headlines|top stories(?: today| now)?|show me today'?s? news|what(?:'s| is) (?:the )?top stories"
     r"|morning news|evening news|any news(?: today| now)?|what'?s? happening(?: in the world)?(?: today)?"
@@ -291,17 +341,19 @@ SYSTEM_RE = re.compile(
     r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the |my )?system status"
     r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status"
     r"|how am i doing|how(?:'s| is) everything|whats my system status|what(?:'s| is) my system status"
-    r"|is nova running|is everything (?:ok|okay|working|fine)|everything ok|status check"
+    r"|is nova running|is nova healthy|is the model ready|how(?:'s| is) my computer doing|show runtime status"
+    r"|is everything (?:ok|okay|working|fine)|everything ok|status check|show diagnostics|run diagnostics"
     r"|check disk space|how much storage|disk space|storage space|free space|storage usage"
     r"|battery(?: status| level| life| charge)?|check battery|how(?:'s| is) (?:my )?battery|battery percentage)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
-    r"^\s*(?:screenshot|take\s+(?:a\s+)?screenshot|take\s+(?:a\s+)?(?:picture|photo|snap)\s+of\s+(?:the\s+)?screen|capture\s+(?:the\s+)?screen|capture\s+this\s+screen|grab\s+(?:the\s+)?screen|snap\s+(?:the\s+)?screen)\s*$",
+    r"^\s*(?:screenshot|screen\s+snapshot|take\s+(?:a\s+)?screenshot|take\s+(?:a\s+)?(?:picture|photo|snap)\s+of\s+(?:the\s+)?screen|capture\s+(?:(?:the|my)\s+)?screen|capture\s+this\s+screen|grab\s+(?:the\s+)?screen|snap\s+(?:the\s+)?screen)\s*$",
     re.IGNORECASE,
 )
 SCREEN_ANALYSIS_RE = re.compile(
     r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen|help\s+me\s+understand\s+this\s+screen|read\s+this\s+screen"
+    r"|explain\s+what(?:'?s|\s+is)\s+on\s+(?:my\s+|the\s+)?screen"
     r"|what(?:'?s| is)?\s+on\s+(?:my\s+|the\s+)?screen|whats\s+on\s+(?:my\s+|the\s+)?screen|what\s+do\s+(?:i|you)\s+see\s+on\s+(?:the\s+|my\s+)?screen|help\s+me\s+read\s+this\s+screen"
     r"|describe\s+(?:what'?s?\s+on\s+)?(?:the\s+|my\s+)?screen|look\s+at\s+(?:my\s+|the\s+)?screen"
     r"|scan\s+(?:the\s+|my\s+)?screen|read\s+(?:what(?:'s|\s+is|s)\s+on\s+)?(?:the\s+|my\s+)?screen"
@@ -418,7 +470,7 @@ COMPARE_HEADLINE_INDEX_RE = re.compile(
     re.IGNORECASE,
 )
 STORY_PAGE_SUMMARY_RE = re.compile(
-    r"^\s*(?:summary(?:\s+of)?|summarize|details?|more(?:\s+on)?)\s+"
+    r"^\s*(?:summary(?:\s+of)?|summarize|details?|more(?:\s+on)?|tell\s+me\s+more\s+about)\s+"
     r"(?:story|article)\s*#?\s*(?P<idx>\d{1,2})(?:\s+please)?\s*$",
     re.IGNORECASE,
 )
@@ -430,11 +482,32 @@ STORY_PAGE_SUMMARY_ALT_RE = re.compile(
 ORDINAL_STORY_PAGE_SUMMARY_RE = re.compile(
     r"^\s*(?:tell\s+me\s+more\s+about|more\s+on|details?\s+(?:on|about)|summarize|summary\s+of)\s+"
     r"(?:the\s+)?(?P<ordinal>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+"
-    r"(?:story|headline|article)\s*$",
+    r"(?:story|headline|article|one)\s*$",
+    re.IGNORECASE,
+)
+COMPARE_ORDINAL_STORIES_RE = re.compile(
+    r"^\s*compare\s+(?:the\s+)?"
+    r"(?P<left>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+"
+    r"(?:and|vs)\s+(?:the\s+)?"
+    r"(?P<right>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)"
+    r"(?:\s+(?:story|stories|headline|headlines|article|articles))?\s*$",
+    re.IGNORECASE,
+)
+RECALL_STORY_INDEX_RE = re.compile(
+    r"^\s*what\s+was\s+(?:story|headline|article)\s*#?\s*(?P<idx>\d{1,2})\s+again\s*\??\s*$",
     re.IGNORECASE,
 )
 TRACK_STORY_INDEX_RE = re.compile(
     r"^\s*track\s+story\s+(?P<idx>\d{1,2})\s*$",
+    re.IGNORECASE,
+)
+SOURCE_SUPPORT_STORY_RE = re.compile(
+    r"^\s*what\s+sources?\s+(?:support|are\s+behind|back)\s+"
+    r"(?:story|article)\s*#?\s*(?P<idx>\d{1,2})\s*\??\s*$",
+    re.IGNORECASE,
+)
+FULL_SYNTHESIS_RE = re.compile(
+    r"^\s*(?:give\s+me\s+)?(?:a\s+)?full\s+synthesis\s*$",
     re.IGNORECASE,
 )
 ORDINAL_WORD_TO_INDEX = {
@@ -460,11 +533,14 @@ SECOND_OPINION_RE = re.compile(
     re.IGNORECASE,
 )
 DOC_CREATE_RE = re.compile(
-    r"^\s*(?:write|create|generate|make)\s+(?:a\s+)?(?:detailed\s+)?(?:analysis(?:\s+report)?|report|document|write[- ]?up)\s+(?:on|about)\s+(?P<topic>.+?)\s*$",
+    r"^\s*(?:write|create|generate|make)\s+(?:an?\s+)?(?:detailed\s+)?"
+    r"(?:analysis(?:\s+(?:report|document))?|report|document|write[- ]?up)\s+"
+    r"(?:on|about)\s+(?P<topic>.+?)\s*$",
     re.IGNORECASE,
 )
 DOC_SUMMARIZE_RE = re.compile(
-    r"^\s*(?:summarize|sum\s+up)\s+doc(?:ument)?\s+(?P<doc_id>\d+)\s*$",
+    r"^\s*(?:summarize|sum\s+up)\s+"
+    r"(?:(?:the|my|last)\s+)?(?:analysis\s+)?doc(?:ument)?(?:\s+(?P<doc_id>\d+))?\s*$",
     re.IGNORECASE,
 )
 DOC_EXPLAIN_SECTION_RE = re.compile(
@@ -475,6 +551,7 @@ DOC_LIST_RE = re.compile(
     r"^\s*(?:"
     r"(?:list|show)\s+(?:my\s+)?(?:(?:analysis\s+)?docs?(?:uments)?|analysis\s+reports?)"
     r"|open\s+(?:my\s+)?(?:analysis\s+docs?(?:uments)?|analysis\s+reports?)"
+    r"|what\s+(?:analysis\s+)?documents?\s+did\s+you\s+create\s+(?:in\s+)?this\s+session\??"
     r")\s*$",
     re.IGNORECASE,
 )
@@ -607,7 +684,7 @@ MORNING_BRIEF_RE = re.compile(
 SHOPIFY_REPORT_RE = re.compile(
     r"^\s*(?:shopify\s+(?:report|stats|status|intelligence|summary|snapshot|brief|overview|store)"
     r"|(?:store|shop)\s+(?:report|stats|status|intelligence|summary|snapshot)"
-    r"|(?:show|get|fetch|pull)\s+(?:my\s+)?shopify\s+(?:data|metrics|orders?|products?|store)"
+    r"|(?:show|get|fetch|pull)\s+(?:my\s+)?shopify\s+(?:data|metrics|orders?|products?|store|status|report|summary|overview)"
     r"|how(?:'s|\s+is)\s+(?:my\s+)?(?:shopify\s+)?store\s+doing"
     r")\b.*$",
     re.IGNORECASE,
@@ -968,7 +1045,11 @@ class GovernorMediator:
                 if weather_location
                 else ""
             )
-            return _invocation_if_enabled(55, {"location": location} if location else {})
+            weather_scope = "tomorrow" if re.search(r"\btomorrow\b", t, re.IGNORECASE) else "today"
+            weather_params = {"scope": "tomorrow"} if weather_scope == "tomorrow" else {}
+            if location:
+                weather_params["location"] = location
+            return _invocation_if_enabled(55, weather_params)
 
         # TODAY_NEWS_RE must fire before NEWS_RE — "today's news" is specific to Cap 50
         if TODAY_NEWS_RE.match(t):
@@ -1082,6 +1163,19 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(16, {"query": m.group("q").strip()})
 
+        if VAGUE_CURRENT_HISTORY_RE.match(t):
+            return Clarification(
+                capability_id=16,
+                message=(
+                    "What topic or place should I check? I won't treat an unrelated result "
+                    "as evidence for a broad 'what happened' question."
+                ),
+            )
+
+        m = TOPICAL_LATEST_NEWS_RE.match(t)
+        if m:
+            return _invocation_if_enabled(16, {"query": f"latest {m.group('q').strip()} news"})
+
         m = CLAIM_CHECK_RE.match(t)
         if m:
             return _invocation_if_enabled(16, {"query": m.group("q").strip()})
@@ -1109,6 +1203,11 @@ class GovernorMediator:
                     capability_id=16,
                     message=PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE,
                 )
+            if is_private_google_calendar_search(t):
+                return Clarification(
+                    capability_id=16,
+                    message=PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE,
+                )
             lowered_query = search_query.lower()
             if lowered_query.startswith(("memories for ", "memory for ", "memory ", "memories ")):
                 memory_query = re.sub(r"^(?:my\s+)?memories?\s+for\s+", "", search_query, flags=re.IGNORECASE)
@@ -1125,6 +1224,10 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(22, {"target": m.group("folder").strip().lower()})
 
+        if OPEN_NOVA_PROJECT_FOLDER_RE.match(t):
+            project_root = Path(__file__).resolve().parents[3]
+            return _invocation_if_enabled(22, {"path": str(project_root)})
+
         m = GO_TO_SITE_RE.match(t)
         if m:
             target = _normalize_web_target(m.group("target"))
@@ -1137,7 +1240,19 @@ class GovernorMediator:
 
         m = OPEN_SOURCE_INDEX_RE.match(t)
         if m:
-            return _invocation_if_enabled(17, {"source_index": int(m.group("idx"))})
+            source_index = int(m.group("idx")) if m.group("idx") else ORDINAL_WORD_TO_INDEX.get(
+                str(m.group("ordinal") or "").strip().lower()
+            )
+            if source_index:
+                return _invocation_if_enabled(17, {"source_index": source_index})
+
+        m = OPEN_ARTICLE_INDEX_RE.match(t)
+        if m:
+            source_index = int(m.group("idx")) if m.group("idx") else ORDINAL_WORD_TO_INDEX.get(
+                str(m.group("ordinal") or "").strip().lower()
+            )
+            if source_index:
+                return _invocation_if_enabled(17, {"source_index": source_index})
 
         m = PREVIEW_SOURCE_INDEX_RE.match(t)
         if m:
@@ -1185,6 +1300,14 @@ class GovernorMediator:
                     f"Say 'open website {target}' or 'open file {target}'."
                 ),
             )
+
+        speak_text_match = re.match(
+            r"^\s*(?:speak|say|read(?:\s+aloud)?)\s*:\s*(?P<text>.+?)\s*$",
+            t,
+            re.IGNORECASE,
+        )
+        if speak_text_match:
+            return _invocation_if_enabled(18, {"text": speak_text_match.group("text").strip()})
 
         if re.match(r"^\s*(speak that|read that|say it|read this out loud|say this out loud|read that to me)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(18, {})
@@ -1237,13 +1360,19 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(21, {"action": "set", "level": int(m.group("level"))})
 
-        if re.match(r"^\s*(play|pause|resume)\s*$", t, re.IGNORECASE):
-            if not _platform_supports_media_action(t.lower()):
+        media_action_match = re.match(
+            r"^\s*(?P<action>play|pause|resume)(?:\s+(?:the\s+)?(?:music|song|playback|audio))?\s*$",
+            t,
+            re.IGNORECASE,
+        )
+        if media_action_match:
+            media_action = media_action_match.group("action").lower()
+            if not _platform_supports_media_action(media_action):
                 return Clarification(
                     capability_id=20,
                     message="Explicit play, pause, and resume are not available on this device yet.",
                 )
-            return _invocation_if_enabled(20, {"action": t.lower()})
+            return _invocation_if_enabled(20, {"action": media_action})
 
         if re.match(r"^\s*(?:stop|pause)\s+(?:the\s+)?(?:music|song|playback|audio)\s*$", t, re.IGNORECASE):
             if _platform_supports_media_action("pause"):
@@ -1251,6 +1380,9 @@ class GovernorMediator:
 
         if INTEL_BRIEF_RE.match(t):
             return _invocation_if_enabled(50, {})
+
+        if FULL_SYNTHESIS_RE.match(t):
+            return _invocation_if_enabled(50, {"read_sources": True})
 
         # TODAY_NEWS_RE check removed: unreachable — early pre-check at L902 returns first.
 
@@ -1279,6 +1411,16 @@ class GovernorMediator:
                 },
             )
 
+        m = SOURCE_SUPPORT_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                49,
+                {
+                    "action": "story_page_summary",
+                    "story_index": int(m.group("idx")),
+                },
+            )
+
         m = ORDINAL_STORY_PAGE_SUMMARY_RE.match(t)
         if m:
             story_index = ORDINAL_WORD_TO_INDEX.get(str(m.group("ordinal") or "").strip().lower())
@@ -1291,11 +1433,45 @@ class GovernorMediator:
                     },
                 )
 
-        m = COMPARE_STORY_INDEX_RE.match(t)
+        m = COMPARE_ORDINAL_STORIES_RE.match(t)
+        if m:
+            left_index = ORDINAL_WORD_TO_INDEX.get(str(m.group("left") or "").strip().lower())
+            right_index = ORDINAL_WORD_TO_INDEX.get(str(m.group("right") or "").strip().lower())
+            if left_index and right_index:
+                return _invocation_if_enabled(
+                    49,
+                    {
+                        "action": "compare_indices",
+                        "left_index": left_index,
+                        "right_index": right_index,
+                    },
+                )
+
+        m = RECALL_STORY_INDEX_RE.match(t)
         if m:
             return _invocation_if_enabled(
-                50,
-                {"action": "compare_clusters", "left_story_id": int(m.group("left")), "right_story_id": int(m.group("right"))},
+                49,
+                {"selection": "indices", "indices": [int(m.group("idx"))]},
+            )
+
+        m = COMPARE_STORY_INDEX_RE.match(t)
+        if m:
+            if not re.search(r"\bstory\b", t, re.IGNORECASE):
+                return _invocation_if_enabled(
+                    50,
+                    {
+                        "action": "compare_clusters",
+                        "left_story_id": int(m.group("left")),
+                        "right_story_id": int(m.group("right")),
+                    },
+                )
+            return _invocation_if_enabled(
+                49,
+                {
+                    "action": "compare_indices",
+                    "left_index": int(m.group("left")),
+                    "right_index": int(m.group("right")),
+                },
             )
 
         m = TRACK_STORY_INDEX_RE.match(t)
@@ -1358,7 +1534,10 @@ class GovernorMediator:
 
         m = DOC_SUMMARIZE_RE.match(t)
         if m:
-            return _invocation_if_enabled(54, {"action": "summarize_doc", "doc_id": int(m.group("doc_id"))})
+            params: Dict[str, Any] = {"action": "summarize_doc"}
+            if m.group("doc_id"):
+                params["doc_id"] = int(m.group("doc_id"))
+            return _invocation_if_enabled(54, params)
 
         m = DOC_EXPLAIN_SECTION_RE.match(t)
         if m:

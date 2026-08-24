@@ -6,9 +6,9 @@ and non-Shopify phrases do not.
 """
 from __future__ import annotations
 
-import pytest
 from unittest.mock import patch
 
+import pytest
 from src.governor.governor_mediator import GovernorMediator, Invocation
 
 _ENABLED = frozenset({16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51,
@@ -31,6 +31,7 @@ def _parse(text: str, session_id: str = "s1") -> object:
     "shopify report",
     "shopify stats",
     "shopify status",
+    "show Shopify status",
     "shopify intelligence",
     "shopify summary",
     "shopify snapshot",

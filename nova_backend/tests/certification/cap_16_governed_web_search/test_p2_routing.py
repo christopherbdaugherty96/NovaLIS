@@ -124,6 +124,33 @@ def test_right_now_routes_to_cap16():
 @pytest.mark.parametrize(
     "text",
     [
+        "latest OpenAI news",
+        "what changed with OpenAI since yesterday?",
+    ],
+)
+def test_wave_c_current_information_phrasings_route_to_cap16(text: str):
+    inv = _invocation(text)
+    assert inv.capability_id == 16
+
+
+@pytest.mark.parametrize("text", ["what happened yesterday?", "what changed since yesterday?"])
+def test_vague_yesterday_history_requires_a_topic(text: str):
+    from src.governor.governor_mediator import Clarification
+
+    result = _parse(text)
+    assert isinstance(result, Clarification)
+    assert result.capability_id == 16
+    assert "what topic or place" in result.message.lower()
+
+
+def test_news_this_week_keeps_news_precedence():
+    inv = _invocation("news this week")
+    assert inv.capability_id == 56
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
         "is there any sports on live today?",
         "are there any games on today?",
         "is there any live transit coverage tonight?",

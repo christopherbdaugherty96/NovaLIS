@@ -21,6 +21,7 @@ WEB_OPEN_CONFIRM_YES = {
     "okay",
     "confirm",
     "do it",
+    "do that",
     "sure",
 }
 

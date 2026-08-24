@@ -40,7 +40,7 @@ _RECEIPT_WORTHY: frozenset[str] = frozenset(
 )
 
 _DEFAULT_LIMIT = 20
-_READ_TAIL = 500  # max ledger lines to scan for receipts
+_READ_TAIL = 5000  # bounded scan that survives capability-registry event bursts
 _SESSION_READ_TAIL = 5000
 _SESSION_ACTION_EVENTS: frozenset[str] = frozenset(
     {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}

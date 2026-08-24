@@ -34,6 +34,7 @@ def _resolve(text: str, *, news_loaded: bool = False) -> BriefIntent:
         ("will it rain later?", "weather", "weather"),
         ("anyhting on my schedule?", "calendar", "agenda for today"),
         ("tomorrow's schedule", "calendar", "agenda for tomorrow"),
+        ("what do I have scheduled tomorrow?", "calendar", "agenda for tomorrow"),
         ("what is my upcoming schedule?", "calendar", "upcoming events"),
         ("am I free after that?", "calendar", "agenda for today"),
         ("what are my plans?", "calendar", "agenda for today"),
@@ -126,6 +127,21 @@ def test_exact_or_unrelated_commands_are_untouched(text):
     else:
         assert intent.confidence == "low"
         assert intent.capability is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "take a screenshot",
+        "screen snapshot",
+        "capture my screen",
+        "show me the hotkey settings",
+    ],
+)
+def test_weather_terms_require_token_boundaries(text):
+    intent = _resolve(text)
+
+    assert intent.capability != "weather"
 
 
 # --- Purity / contract ------------------------------------------------------
