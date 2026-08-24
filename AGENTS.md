@@ -35,7 +35,9 @@ Before selecting work, read:
 
 For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-## Wave C Current Development State — 2026-08-24
+## Wave C Current Development State — Validated Baseline — 2026-08-24
+
+Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
 
 Wave A1, A2, B1, B2, B3, and B4 are complete:
 
@@ -71,12 +73,14 @@ Wave A1, A2, B1, B2, B3, and B4 are complete:
        squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
 
 #363  Post-B4 operational truth synchronization — MERGED
-       merge / Wave C initial candidate / current main:
+       merge / Wave C initial candidate:
        404689ef07f42480966c59ba30c07db5c4f101e1
 
-#364  Wave C validation and reproduced-defect repairs — OPEN / DRAFT / UNMERGED
-       published review head before the current bounded correction:
-       5b2a64dfb69581040ed19a773c1ab5d40d298ab4
+#364  Wave C validation and reproduced-defect repairs — MERGED
+       reviewed head:
+       786c048df6dc4ed8f3c8245c5b365d4296f342f4
+       squash merge / current main / validated_baseline_sha:
+       ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
 Current planning lane:
@@ -85,8 +89,8 @@ Current planning lane:
 Wave B2 — capability narration: COMPLETE / MERGED
 Wave B3 — memory governance: COMPLETE / MERGED
 B4: COMPLETE / MERGED
-Wave C: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
-validated_baseline_sha: NOT ESTABLISHED
+Wave C: COMPLETE / MERGED / VALIDATED
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
 B1 through B4 are complete and merged. Their proof and review records remain historical evidence for the revisions and environments actually exercised.
@@ -97,7 +101,7 @@ B3's bounded memory-governance contract is complete: ordinary chat does not sile
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; `nova_backend/requirements.txt` is a mechanically checked compatibility projection; the historical `python-multipart` mismatch is resolved; and supported installation was proven on the reviewed B4 revision. Do not reopen packaging without concrete new evidence.
 
-Wave C is active under its reviewed authorization. PR #364 remains draft and unmerged while bounded, reproduced review findings are corrected and the required same-SHA proof is rerun. The published review head above is provenance for the pre-correction review state, not a claim that later correction commits reuse that SHA. Do not establish `validated_baseline_sha` until the complete Wave C exit proof, including genuine hosted execution after Issue #354 is resolved, passes on one exact candidate.
+Wave C is complete and merged. Exact-main non-hosted proof passed on `ec20a714...`: source Ruff, 20 adversarial tests, 289 certification tests with five expected skips, 4,294 backend tests with five expected skips, structural/truth/dependency checks, and live `nova-start` smoke. GitHub-hosted jobs remained `NOT EXECUTED` because of the account-billing restriction in Issue #354. The owner explicitly waived that evidence source as a Wave C exit requirement; it is not recorded as PASS.
 
 Merged stabilization work already includes:
 
@@ -129,7 +133,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not merge or extend PR #335 in its historical state. It is deferred until the Wave C validated-baseline checkpoint.
+Do not merge or extend PR #335 in its historical state. Reconstructing it on the validated baseline requires separate authorization.
 
 ## Current Ordered Gate
 
@@ -137,8 +141,8 @@ Do not merge or extend PR #335 in its historical state. It is deferred until the
 Wave B2 — capability narration / COMPLETE / MERGED
 -> Wave B3 — memory governance / COMPLETE / MERGED
 -> Wave B4 — reproducibility hygiene / COMPLETE / MERGED
--> Wave C — proof / validated-baseline checkpoint / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
--> reconstruct/reconcile #335 onto the exact validated baseline
+-> Wave C — proof / validated-baseline checkpoint / COMPLETE / MERGED / VALIDATED
+-> reconstruct/reconcile #335 onto the exact validated baseline / NEXT / NOT AUTHORIZED
 -> separate #335 review/merge decision
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
@@ -147,7 +151,7 @@ Wave B2 — capability narration / COMPLETE / MERGED
 
 Issue #343 remains the detailed stabilization ordering record.
 
-Issue #354 separately tracks the zero-step GitHub Actions infrastructure failure. That infrastructure state is not behavioral test evidence and must be resolved before Wave C certification evidence is relied on.
+Issue #354 separately tracks the zero-step GitHub Actions account/billing failure. That infrastructure state is not behavioral test evidence. The owner waived it as a mandatory Wave C exit source without reclassifying it as PASS.
 
 ## Completed Wave B1 Boundary
 
@@ -213,7 +217,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established the B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the current `main` and Wave C initial candidate. Wave C is active through draft PR #364; #335 reconstruction, Google domain work, and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established the B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the Wave C initial candidate. Wave C merged through PR #364; `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` is current `main` and `validated_baseline_sha`. #335 reconstruction is next but not authorized; Google domain work and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -309,7 +313,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- reopen B2, B3, or B4 without concrete new evidence, exceed the bounded Wave C authorization, or start #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
+- reopen B2, B3, B4, or Wave C without concrete new evidence, or start #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.

@@ -1,18 +1,19 @@
 # Daily Command Center
 
-## 2026-08-24 — Wave C draft review
+## 2026-08-24 — Wave C validated baseline established
 
 ```text
 CURRENT PLANNING LANE:
-  Wave C — proof / validated-baseline checkpoint.
+  Wave C — COMPLETE / MERGED / VALIDATED.
+  PR #335 reconstruction — NEXT / NOT AUTHORIZED.
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
   B2 COMPLETE / MERGED.
   B3 COMPLETE / MERGED.
   B4 COMPLETE / MERGED.
-  Wave C ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW.
-  validated_baseline_sha NOT ESTABLISHED.
+  Wave C COMPLETE / MERGED / VALIDATED.
+  validated_baseline_sha ec20a7146f7d6d55b8983cb7d6d3918d5fad9915.
 
 B1 MERGE:
   PR #356 — MERGED
@@ -39,9 +40,10 @@ B4 MERGE:
 
 POST-B4 SYNC / WAVE C:
   PR #363 — MERGED
-  merge/current main/initial candidate — 404689ef07f42480966c59ba30c07db5c4f101e1
-  PR #364 — OPEN / DRAFT / UNMERGED
-  published review head before current bounded correction — 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
+  merge/initial candidate — 404689ef07f42480966c59ba30c07db5c4f101e1
+  PR #364 — MERGED
+  reviewed head — 786c048df6dc4ed8f3c8245c5b365d4296f342f4
+  squash merge/current main/validated baseline — ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -66,16 +68,17 @@ GENERATED OUTPUT:
   _MOCs — excluded
 
 HOSTED CI:
-  Issue #354 = infrastructure/open.
+  Issue #354 = external account/billing infrastructure/open.
   Inspected Actions jobs executed zero steps.
   This is neither behavioral PASS nor behavioral FAIL evidence.
+  Owner waiver accepted for the Wave C exit; hosted jobs remain NOT EXECUTED.
 
 CURRENT ORDER:
   B2 capability narration / COMPLETE / MERGED
   -> B3 memory governance / COMPLETE / MERGED
   -> B4 reproducibility hygiene / COMPLETE / MERGED
-  -> C proof / semantic-contract stabilization / validated baseline / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
-  -> reconstruct #335 onto exact validated baseline
+  -> C proof / semantic-contract stabilization / validated baseline / COMPLETE / MERGED / VALIDATED
+  -> reconstruct #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
   -> independent review + separate #335 merge decision
   -> Google identity-only live proof
   -> Google Tasks READ / first provider-backed Google evidence vertical
@@ -93,7 +96,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as current `main` and the Wave C initial candidate. Wave C is active through draft PR #364; no validated baseline has been established.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; exact-main non-hosted proof passed and `ec20a714...` is the validated baseline under the explicit owner evidence waiver.
 
 ## Permanent evidence discipline
 
@@ -133,4 +136,4 @@ README/front-door rewrite without separate scope
 
 ## Next handoff
 
-Close only the reproduced PR #364 review findings, rerun the required proof on one exact corrected head, and keep the PR draft. Do not declare a validated baseline, modify #335, or begin Google or Continuity work.
+Do not begin #335 reconstruction, Google, or Continuity work from this synchronization. The next consequential action requires separate owner authorization for #335 reconstruction on exact baseline `ec20a714...`.
