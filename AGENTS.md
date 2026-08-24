@@ -313,7 +313,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- reopen B2, B3, or B4 without concrete new evidence, exceed the bounded Wave C authorization, or start #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
+- reopen B2, B3, B4, or Wave C without concrete new evidence, or start #335 reconstruction, Google domain work, or Continuity runtime without separate authorization;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.

@@ -249,6 +249,11 @@ Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not 
 - rebenchmark Issue #227 against the current local inference stack;
 - repair only reproduced defects;
 - immutable `validated_baseline_sha`: `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`;
+
+### Post-Wave-C / Google Foundation reconciliation
+
+**NEXT / NOT AUTHORIZED.** Requires separate owner authorization before any branch or implementation change:
+
 - reconstruct #335 on that exact baseline only after separate authorization;
 - harden post-token identity-failure cleanup and invalid callback consumption;
 - rerun exact-head #335 verification;

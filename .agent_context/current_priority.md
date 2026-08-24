@@ -151,12 +151,12 @@ B1 through B4 and Wave C are complete and merged. PR #335 reconstruction is next
 
 ## Scope lock
 
-Do not start or modify outside the bounded Wave C authorization:
+Wave C authorization is complete and closed. Do not reopen Wave C or begin post-Wave-C work without separate authorization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
-Wave C redesign, capability expansion, or repairs without reproduced evidence
+Wave C reopening, capability expansion, or repairs without reproduced evidence
 network behavior / NetworkMediator wiring
 capability registry
 OAuth / #335
