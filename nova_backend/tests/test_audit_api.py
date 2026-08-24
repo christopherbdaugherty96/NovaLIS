@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 from src import brain_server
@@ -62,6 +63,24 @@ def test_runtime_build_identity_degrades_when_git_is_unavailable(monkeypatch):
     assert identity["commit_sha"] is None
     assert identity["working_tree_dirty"] is None
     assert identity["source_root"]
+
+
+def test_runtime_build_identity_uses_content_and_untracked_state(monkeypatch):
+    results = iter(
+        [
+            SimpleNamespace(stdout="a" * 40 + "\n", returncode=0),
+            SimpleNamespace(stdout="", returncode=0),
+            SimpleNamespace(stdout="", returncode=0),
+            SimpleNamespace(stdout="", returncode=0),
+        ]
+    )
+    monkeypatch.setattr(audit_api.subprocess, "run", lambda *args, **kwargs: next(results))
+
+    identity = audit_api._runtime_build_identity()
+
+    assert identity["git_available"] is True
+    assert identity["commit_sha"] == "a" * 40
+    assert identity["working_tree_dirty"] is False
 
 
 def test_audit_runtime_truth_returns_structured_report():
