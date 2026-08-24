@@ -105,6 +105,30 @@ def test_hello_uses_deterministic_local_response(monkeypatch):
     assert any("working on" in msg.lower() or "hello" in msg.lower() or "hey" in msg.lower() for msg in chat_messages)
 
 
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "is Nova healthy?",
+        "show diagnostics",
+        "how is my computer doing?",
+        "is the model ready?",
+        "show runtime status",
+    ],
+)
+def test_system_diagnostics_natural_aliases_use_governed_websocket_path(monkeypatch, prompt):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    ws = _ScriptedWebSocket([prompt])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert any("system checks complete" in msg.lower() for msg in _chat_messages(ws))
+
+
 def test_disconnect_during_startup_greeting_does_not_raise(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -253,15 +277,25 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
     "prompt",
     [
         "what can you do right now?",
+        "what can you actually do right now?",
         "what tools can you use?",
         "show your capabilities",
+        "what capabilities are active?",
         "what is connected?",
         "what is configured?",
+        "what are you configured to do?",
+        "what is enabled?",
+        "what is unavailable right now?",
         "what requires approval?",
         "can you access Shopify?",
         "can you draft an email?",
         "can you change the volume?",
         "can you change brightness?",
+        "can you change my volume?",
+        "can you change my brightness?",
+        "can you open files?",
+        "can you access my calendar?",
+        "can you remember things?",
         "can you search the web?",
         "can you check the weather?",
     ],
@@ -297,6 +331,7 @@ def test_b2_live_acceptance_phrasings_use_truth_narration_before_actions(monkeyp
     [
         "what OpenClaw tools can you use?",
         "what can OpenClaw do directly?",
+        "can you use OpenClaw?",
     ],
 )
 def test_b2_openclaw_status_phrasings_expose_only_freeform_allowlist(monkeypatch, prompt):
@@ -574,6 +609,55 @@ def test_capability_help_does_not_call_unverified_configuration_connected(monkey
     web_search_line = next(line for line in message.splitlines() if "Governed Web Search" in line)
     assert "configured=yes" in web_search_line
     assert "available_here=unknown" in web_search_line
+
+
+def test_full_news_synthesis_keeps_process_callbacks_out_of_governed_params(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    captured: list[tuple[int, dict]] = []
+
+    async def _fake_invoke(_governor, capability_id, params, **_authority):
+        captured.append((capability_id, dict(params)))
+        if capability_id == 56:
+            return ActionResult.ok(
+                "Loaded current headlines.",
+                data={
+                    "widget": {
+                        "type": "news_list",
+                        "items": [
+                            {
+                                "title": "Example headline",
+                                "source": "Example News",
+                                "url": "https://example.com/story",
+                            }
+                        ],
+                        "categories": {},
+                    }
+                },
+                request_id="news-snapshot",
+            )
+        assert capability_id == 50
+        return ActionResult.ok(
+            "Full source synthesis ready.",
+            data={"brief_clusters": [], "sources": []},
+            request_id="news-synthesis",
+        )
+
+    ws = _ScriptedWebSocket(["full synthesis"])
+    with patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke,
+    ), patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    synthesis_params = next(params for cap_id, params in captured if cap_id == 50)
+    assert synthesis_params["read_sources"] is True
+    assert "synthesis_ready_callback" not in synthesis_params
+    assert "foreground_model_busy_callback" not in synthesis_params
+    assert any("Full source synthesis ready" in msg for msg in _chat_messages(ws))
 
 
 def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):

@@ -1,5 +1,6 @@
 from src.conversation.session_router import SessionRouter
 from src.websocket.session_handler import (
+    _summary_replaces_active_news_surface,
     governance_refusal_for,
     is_headline_summary_request,
     pending_confirmation_resolution_action,
@@ -8,10 +9,17 @@ from src.websocket.session_handler import (
 )
 
 
+def test_single_headline_summary_does_not_replace_numbered_news_collection():
+    assert _summary_replaces_active_news_surface("indices") is False
+    assert _summary_replaces_active_news_surface("story_page") is False
+    assert _summary_replaces_active_news_surface("category") is True
+
+
 def test_pending_confirmation_resolution_only_accepts_explicit_yes_no_cancel():
     assert pending_confirmation_resolution_action(SessionRouter, "yes, open it") == "confirm"
     assert pending_confirmation_resolution_action(SessionRouter, "cancel that") == "cancel"
     assert pending_confirmation_resolution_action(SessionRouter, "show me the weather") == ""
+    assert pending_confirmation_resolution_action(SessionRouter, "do that") == "confirm"
 
 
 def test_headline_summary_uses_loaded_news_cache():
@@ -49,6 +57,8 @@ def test_headline_summary_requires_loaded_context():
 def test_governance_refusal_for_blocked_authority_requests():
     cases = [
         ("use OpenClaw to automate my browser", "broad OpenClaw automation"),
+        ("use OpenClaw to delete a file", "broad OpenClaw automation"),
+        ("use OpenClaw to rename a folder", "broad OpenClaw automation"),
         ("open browser tabs and click around", "browser/computer-use"),
         ("send an email to the client", "external writes"),
         ("run this as an autonomous workflow", "autonomous workflow execution"),

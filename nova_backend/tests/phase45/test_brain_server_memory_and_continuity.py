@@ -829,6 +829,63 @@ def test_edit_that_memory_requires_confirmation_then_supersedes(monkeypatch):
     assert any("Updated memory with replacement item MEM-00013." in msg for msg in chat_messages)
 
 
+def test_natural_memory_correction_requires_grounding_and_confirmation(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.websocket.session_handler import natural_memory_correction_command
+
+    assert natural_memory_correction_command(
+        "actually change my Wave C test color to green",
+        "",
+    ) == ""
+    assert natural_memory_correction_command(
+        "actually change my Wave C test color to green",
+        "MEM-00014",
+    ) == "edit last memory: Wave C test color is green."
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    ws = _ScriptedWebSocket(
+        [
+            "remember this: My Wave C test color is blue.",
+            "actually change my Wave C test color to green",
+            "yes",
+        ]
+    )
+    calls: list[tuple[int, dict]] = []
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params, **authority):
+        calls.append((capability_id, dict(params)))
+        if len(calls) == 1:
+            return ActionResult.ok(
+                "Saved memory MEM-00014.",
+                data={"memory_item": {"id": "MEM-00014", "title": "Wave C test color"}},
+                request_id="memory-save-test",
+            )
+        assert capability_id == 61
+        assert params.get("action") == "supersede"
+        assert params.get("item_id") == "MEM-00014"
+        assert params.get("new_body") == "Wave C test color is green."
+        assert authority.get("approval_id")
+        return ActionResult.ok(
+            "Updated memory with replacement item MEM-00015.",
+            data={"memory_item": {"id": "MEM-00015", "source": "explicit_user_edit"}},
+            request_id="memory-edit-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Update memory MEM-00014" in msg for msg in chat_messages)
+    assert any("Updated memory with replacement item MEM-00015." in msg for msg in chat_messages)
+
+
 def test_general_chat_receives_relevant_explicit_memory_context(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

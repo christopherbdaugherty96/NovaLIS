@@ -35,6 +35,29 @@ def test_weather_without_explicit_location_preserves_default_behavior():
     assert invocation.params == {}
 
 
+@pytest.mark.parametrize(
+    ("text", "location"),
+    [
+        ("weather tomorrow in Detroit", "Detroit"),
+        ("what's the weather tomorrow in Battle Creek?", "Battle Creek"),
+    ],
+)
+def test_tomorrow_weather_preserves_scope_and_explicit_location(text, location):
+    invocation = GovernorMediator.parse_governed_invocation(text)
+
+    assert isinstance(invocation, Invocation)
+    assert invocation.capability_id == 55
+    assert invocation.params == {"scope": "tomorrow", "location": location}
+
+
+def test_tomorrow_weather_without_location_preserves_default_location_contract():
+    invocation = GovernorMediator.parse_governed_invocation("will it rain tomorrow?")
+
+    assert isinstance(invocation, Invocation)
+    assert invocation.capability_id == 55
+    assert invocation.params == {"scope": "tomorrow"}
+
+
 @pytest.mark.parametrize("location", ["Detroit", "Chicago", "Battle Creek"])
 def test_weather_executor_queries_and_reports_explicit_location(monkeypatch, location):
     observed_locations = []
@@ -107,6 +130,39 @@ def test_weather_service_uses_explicit_location_in_provider_request(monkeypatch)
     assert "Battle%20Creek/today" in requested_urls[0]
     assert "Ann%20Arbor" not in requested_urls[0]
     assert data["location"] == "Battle Creek"
+
+
+def test_weather_service_uses_tomorrow_provider_scope(monkeypatch):
+    monkeypatch.setenv("WEATHER_API_KEY", "test-key")
+    requested_urls = []
+
+    def fake_request(self, capability_id, method, url, **kwargs):
+        del self, capability_id, method, kwargs
+        requested_urls.append(url)
+        return {
+            "status_code": 200,
+            "data": {
+                "currentConditions": {"temp": 99, "conditions": "Current"},
+                "resolvedAddress": "Detroit, MI, USA",
+                "days": [
+                    {"tempmax": 70, "tempmin": 50, "conditions": "Rain"},
+                ],
+                "alerts": [],
+            },
+        }
+
+    monkeypatch.setattr("src.governor.network_mediator.NetworkMediator.request", fake_request)
+
+    data = asyncio.run(
+        WeatherService(location="Detroit", scope="tomorrow").get_current_weather()
+    )
+
+    assert requested_urls == [
+        "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Detroit/tomorrow"
+    ]
+    assert data["temperature"] == 60
+    assert data["condition"] == "Rain"
+    assert data["forecast"] == "Tomorrow: 70F/50F, Rain"
 
 
 def test_explicit_location_provider_error_never_retries_with_default(monkeypatch):

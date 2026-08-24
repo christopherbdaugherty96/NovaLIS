@@ -97,7 +97,10 @@ def _configuration_state(
     providers: Sequence[Mapping[str, Any]],
 ) -> bool | None:
     if providers:
-        return any(bool(provider.get("has_key")) for provider in providers)
+        return any(
+            bool(provider.get("configured") or provider.get("has_key"))
+            for provider in providers
+        )
     if capability_id in NO_EXTERNAL_CONFIGURATION_REQUIRED_IDS:
         return True
     return None
@@ -140,7 +143,11 @@ def _path_availability(
     if configured is None:
         return None
     if providers:
-        health_states = [provider.get("health_ok") for provider in providers if provider.get("has_key")]
+        health_states = [
+            provider.get("health_ok")
+            for provider in providers
+            if provider.get("configured") or provider.get("has_key")
+        ]
         if not health_states:
             return False
         if any(state is True for state in health_states):

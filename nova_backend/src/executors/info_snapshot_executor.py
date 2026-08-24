@@ -112,11 +112,15 @@ class WeatherSnapshotExecutor:
             " ",
             str(request.params.get("location") or ""),
         ).strip(" ,.")[:120]
+        requested_scope = str(request.params.get("scope") or "today").strip().lower()
+        if requested_scope not in {"today", "tomorrow"}:
+            requested_scope = "today"
         skill = WeatherSkill(
             network=self._network,
             location=requested_location or None,
+            scope=requested_scope,
         )
-        result = _run_skill(skill, "weather")
+        result = _run_skill(skill, "weather tomorrow" if requested_scope == "tomorrow" else "weather")
         if result is None:
             widget = _fallback_widget(55)
             if requested_location:

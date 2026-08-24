@@ -125,6 +125,7 @@ class ConnectionsStore:
         for pid, meta in PROVIDER_REGISTRY.items():
             entry = providers.get(pid) or {}
             raw_key = entry.get("key") or ""
+            environment_configured = bool(str(os.getenv(meta["env_var"]) or "").strip())
             is_connected = bool(raw_key and entry.get("health_ok") is not False)
             result.append({
                 "id": pid,
@@ -135,6 +136,11 @@ class ConnectionsStore:
                 "privacy_note": meta["privacy_note"],
                 "caps": meta["caps"],
                 "has_key": bool(raw_key),
+                "configured": bool(raw_key or environment_configured),
+                "environment_configured": environment_configured,
+                "configuration_source": (
+                    "stored" if raw_key else "environment" if environment_configured else "none"
+                ),
                 "key_hint": _mask_key(raw_key) if raw_key else "",
                 "connected": is_connected,
                 "health_ok": entry.get("health_ok"),          # True/False/None
@@ -281,10 +287,16 @@ class ConnectionsStore:
         meta = PROVIDER_REGISTRY[provider_id]
         entry = (state.get("providers") or {}).get(provider_id) or {}
         raw_key = entry.get("key") or ""
+        environment_configured = bool(str(os.getenv(meta["env_var"]) or "").strip())
         return {
             "id": provider_id,
             "label": meta["label"],
             "has_key": bool(raw_key),
+            "configured": bool(raw_key or environment_configured),
+            "environment_configured": environment_configured,
+            "configuration_source": (
+                "stored" if raw_key else "environment" if environment_configured else "none"
+            ),
             "key_hint": _mask_key(raw_key) if raw_key else "",
             "connected": bool(raw_key and entry.get("health_ok") is not False),
             "health_ok": entry.get("health_ok"),

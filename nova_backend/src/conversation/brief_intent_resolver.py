@@ -50,7 +50,15 @@ class BriefIntent:
 
 # --- Owner-supplied v1 lexicon (the entire matcher; extend only with a test) ---
 _WEATHER_TERMS = ("hot", "cold", "rain", "jacket", "stay cool", "outside", "heat alert", "umbrella")
-_CALENDAR_TERMS = ("what am i doing", "plans", "free", "busy", "schedule", "after that")
+_CALENDAR_TERMS = (
+    "what am i doing",
+    "plans",
+    "free",
+    "busy",
+    "schedule",
+    "scheduled",
+    "after that",
+)
 _NEWS_TERMS = ("anything happening", "headlines", "what should i know", "what matters today")
 
 _CANONICAL = {"weather": "weather", "news": "news", "calendar": "agenda for today"}
@@ -105,7 +113,11 @@ def _has_search_intent(q: str) -> bool:
 def _domain_hits(q: str) -> dict[str, tuple[str, ...]]:
     hits: dict[str, tuple[str, ...]] = {}
     for domain, terms in (("weather", _WEATHER_TERMS), ("calendar", _CALENDAR_TERMS), ("news", _NEWS_TERMS)):
-        matched = tuple(term for term in terms if term in q)
+        matched = tuple(
+            term
+            for term in terms
+            if re.search(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])", q)
+        )
         if matched:
             hits[domain] = matched
     return hits

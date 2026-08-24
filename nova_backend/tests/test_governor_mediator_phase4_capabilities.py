@@ -1,10 +1,9 @@
 import json
-import platform
 from pathlib import Path
 
 
 def test_volume_media_brightness_parsing():
-    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+    from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 
     inv = GovernorMediator.parse_governed_invocation("volume up")
     assert isinstance(inv, Invocation)
@@ -335,8 +334,7 @@ def test_turn_down_volume_routes_to_cap19_down_action():
 
 
 def test_news_intelligence_parsing():
-    from src.governor.governor_mediator import GovernorMediator, Invocation
-    from src.governor.governor_mediator import Clarification
+    from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 
     inv = GovernorMediator.parse_governed_invocation("summarize headline 2")
     assert isinstance(inv, Invocation)
@@ -420,10 +418,10 @@ def test_news_intelligence_parsing():
 
     inv = GovernorMediator.parse_governed_invocation("compare story 1 and story 2")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 50
-    assert inv.params["action"] == "compare_clusters"
-    assert inv.params["left_story_id"] == 1
-    assert inv.params["right_story_id"] == 2
+    assert inv.capability_id == 49
+    assert inv.params["action"] == "compare_indices"
+    assert inv.params["left_index"] == 1
+    assert inv.params["right_index"] == 2
 
     inv = GovernorMediator.parse_governed_invocation("compare headlines 1 and 3")
     assert isinstance(inv, Invocation)
@@ -443,6 +441,53 @@ def test_news_intelligence_parsing():
     assert inv.capability_id == 49
     assert inv.params["action"] == "story_page_summary"
     assert inv.params["story_index"] == 3
+
+    inv = GovernorMediator.parse_governed_invocation("tell me more about story 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["action"] == "story_page_summary"
+    assert inv.params["story_index"] == 2
+
+    inv = GovernorMediator.parse_governed_invocation("tell me more about the second one")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["action"] == "story_page_summary"
+    assert inv.params["story_index"] == 2
+
+    inv = GovernorMediator.parse_governed_invocation("compare the first and third stories")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["action"] == "compare_indices"
+    assert inv.params["left_index"] == 1
+    assert inv.params["right_index"] == 3
+
+    inv = GovernorMediator.parse_governed_invocation("what was story 1 again?")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "indices"
+    assert inv.params["indices"] == [1]
+
+    inv = GovernorMediator.parse_governed_invocation("what sources support story 1?")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["action"] == "story_page_summary"
+    assert inv.params["story_index"] == 1
+
+    for phrase, expected_index in (
+        ("open article 1", 1),
+        ("open the second article", 2),
+        ("open the first one", 1),
+    ):
+        inv = GovernorMediator.parse_governed_invocation(phrase)
+        assert isinstance(inv, Invocation)
+        assert inv.capability_id == 17
+        assert inv.params["source_index"] == expected_index
+
+    for phrase in ("give me a full synthesis", "full synthesis"):
+        inv = GovernorMediator.parse_governed_invocation(phrase)
+        assert isinstance(inv, Invocation)
+        assert inv.capability_id == 50
+        assert inv.params["read_sources"] is True
 
     inv = GovernorMediator.parse_governed_invocation("track story 2")
     assert isinstance(inv, Invocation)
@@ -614,11 +659,27 @@ def test_news_intelligence_parsing():
     assert inv.capability_id == 54
     assert inv.params["action"] == "create"
 
+    inv = GovernorMediator.parse_governed_invocation("create an analysis document about today's AI news")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "create"
+    assert inv.params["topic"] == "today's AI news"
+
     inv = GovernorMediator.parse_governed_invocation("summarize doc 2")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 54
     assert inv.params["action"] == "summarize_doc"
     assert inv.params["doc_id"] == 2
+
+    inv = GovernorMediator.parse_governed_invocation("summarize the analysis document")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params == {"action": "summarize_doc"}
+
+    inv = GovernorMediator.parse_governed_invocation("what documents did you create this session?")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params == {"action": "list"}
 
     inv = GovernorMediator.parse_governed_invocation("explain section 3 of doc 2")
     assert isinstance(inv, Invocation)
@@ -629,7 +690,7 @@ def test_news_intelligence_parsing():
 
 
 def test_governor_mediator_accepts_more_natural_capability_phrases():
-    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+    from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 
     inv = GovernorMediator.parse_governed_invocation("Hey Nova, can you show me the weather please?")
     assert isinstance(inv, Invocation)
@@ -801,7 +862,7 @@ def test_governor_mediator_uses_capability_registry_profile_overrides(monkeypatc
 
 
 def test_search_clarification_roundtrip_by_session():
-    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+    from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 
     session_id = "unit-session-search-clarification"
     GovernorMediator.clear_session(session_id)
@@ -858,3 +919,23 @@ def test_mediator_keeps_supported_volume_and_media_actions_on_supported_platform
     assert isinstance(pause, Invocation)
     assert pause.capability_id == 20
     assert pause.params["action"] == "pause"
+
+
+def test_wave_c_screen_and_diagnostics_natural_variants_route_deterministically():
+    from src.governor.governor_mediator import GovernorMediator, Invocation
+
+    for prompt in ("screen snapshot", "capture my screen"):
+        inv = GovernorMediator.parse_governed_invocation(prompt)
+        assert isinstance(inv, Invocation), prompt
+        assert inv.capability_id == 58, prompt
+
+    for prompt in (
+        "is Nova healthy?",
+        "show diagnostics",
+        "how is my computer doing?",
+        "is the model ready?",
+        "show runtime status",
+    ):
+        inv = GovernorMediator.parse_governed_invocation(prompt)
+        assert isinstance(inv, Invocation), prompt
+        assert inv.capability_id == 32, prompt
