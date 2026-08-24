@@ -135,7 +135,7 @@ AMBIENT_CLARIFICATION_PATTERNS = [
 # -------------------------------------------------
 CAPABILITY_HELP_RE = re.compile(
     r"^\s*(?:"
-    r"what can (?:you|nova) do(?: right now)?"
+    r"what can (?:you|nova) (?:actually )?do(?: right now)?"
     r"|what can u do"
     r"|nova what can you do"
     r"|tell me what you can do"
@@ -145,13 +145,18 @@ CAPABILITY_HELP_RE = re.compile(
     r"|show me your capabilities"
     r"|what capabilities do you have"
     r"|what capabilities can you do"
+    r"|what capabilities are active"
     r"|what tools can (?:you|nova) use"
-    r"|what is (?:connected|configured)"
+    r"|what (?:is|are) (?:connected|configured|enabled|unavailable)(?: right now)?"
+    r"|what (?:are you|is nova) configured to do"
     r"|what requires approval"
     r"|can you access shopify"
     r"|can you draft an email"
-    r"|can you change (?:the )?volume"
-    r"|can you change (?:the )?brightness"
+    r"|can you change (?:my|the)?\s*volume"
+    r"|can you change (?:my|the)?\s*brightness"
+    r"|can you open (?:my )?(?:files?|folders?)"
+    r"|can you access (?:my )?calendar"
+    r"|can you remember (?:things|information|this)"
     r"|can you search (?:the )?web"
     r"|can you check (?:the )?weather"
     r"|capabilities"
@@ -164,7 +169,9 @@ CAPABILITY_HELP_RE = re.compile(
 OPENCLAW_CAPABILITY_HELP_RE = re.compile(
     r"^\s*(?:"
     r"what openclaw tools can (?:you|nova) use"
+    r"|what openclaw actions can (?:you|nova) do"
     r"|what can openclaw do directly"
+    r"|can (?:you|nova) use openclaw"
     r")\s*$",
     re.IGNORECASE,
 )

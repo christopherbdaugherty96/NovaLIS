@@ -38,14 +38,28 @@ class MediaExecutor:
             )
 
         if action == "play":
-            msg = "Playback started."
+            label = "Play"
         elif action == "pause":
-            msg = "Playback paused."
+            label = "Pause"
         else:
-            msg = "Playback resumed."
+            label = "Resume"
+
+        outcome_reason = (
+            "The operating system accepted the media-control request, but "
+            "the resulting playback state could not be verified."
+        )
 
         return ActionResult.ok(
-            message=msg,
-            data={"action": action},
+            message=(
+                f"{label} request sent. "
+                "I couldn't verify the resulting playback state."
+            ),
+            data={
+                "action": action,
+                "outcome_state": "accepted_unverified",
+                "request_accepted": True,
+                "effect_verified": False,
+            },
+            outcome_reason=outcome_reason,
             **common_meta,
         )

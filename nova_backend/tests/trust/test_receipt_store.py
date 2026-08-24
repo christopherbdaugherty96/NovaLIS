@@ -120,6 +120,23 @@ class TestReceiptWorthy:
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
         assert len(get_recent_receipts(limit=1)) == 1
 
+    def test_registry_event_burst_does_not_hide_recent_action_receipt(self, monkeypatch, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        entries = [
+            _entry("ACTION_COMPLETED", request_id="req-visible", capability_id=19),
+            *[
+                _entry("CAPABILITY_INSTALLED", capability_id=index)
+                for index in range(700)
+            ],
+        ]
+        _write_ledger(ledger, entries)
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
+
+        result = get_recent_receipts(limit=1)
+
+        assert result[0]["event_type"] == "ACTION_COMPLETED"
+        assert result[0]["request_id"] == "req-visible"
+
 
 class TestMalformedLines:
     def test_invalid_json_line_skipped(self, monkeypatch, tmp_path):

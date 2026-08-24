@@ -53,10 +53,12 @@ from src.conversation.general_chat_runtime import (
     run_general_chat_fallback,
 )
 from src.governor.governor_mediator import (
+    PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE,
     PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE,
     Clarification,
     GovernorMediator,
     Invocation,
+    is_private_google_calendar_search,
     is_private_google_drive_search,
 )
 from src.utils.web_target_planner import plan_web_open
@@ -1623,7 +1625,7 @@ def _capability_help_message() -> str:
     for provider_id in ("weather", "calendar", "news", "brave", "openai", "bridge"):
         item = providers.get(provider_id) or {}
         label = str(item.get("label") or provider_id).strip()
-        if item.get("has_key"):
+        if item.get("configured") or item.get("has_key"):
             configured_labels.append(label)
             if item.get("health_ok") is True:
                 verified_provider_labels.append(label)

@@ -88,11 +88,8 @@ if ($LASTEXITCODE -ne 0) { Write-Fail "certification tests failed" }
 Write-Pass "certification suite green"
 
 # --- Full test suite ---
-# Exclude tests/simulation: contains a pre-existing path-resolution failure
-# (test_nova_trial_runner hardcodes a relative path that resolves incorrectly
-# when PYTHONPATH=nova_backend is set). Not introduced by this session.
-Write-Step "Full test suite (excluding simulation)"
-python -m pytest "$NOVA_BACKEND\tests" -q --maxfail=10 --ignore="$NOVA_BACKEND\tests\simulation"
+Write-Step "Full test suite"
+python -m pytest "$NOVA_BACKEND\tests" -q --maxfail=10
 if ($LASTEXITCODE -ne 0) { Write-Fail "full test suite failed" }
 Write-Pass "full suite green"
 

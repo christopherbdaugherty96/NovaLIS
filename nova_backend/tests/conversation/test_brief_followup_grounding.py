@@ -8,6 +8,7 @@ from src.conversation.brief_followup_grounding import (
     answer_grounded_brief_followup,
     build_grounded_brief_context,
     is_discussion_shaped_brief_followup,
+    is_explicit_news_reference_action,
     is_fetch_shaped_brief_request,
     is_schedule_commitment_question,
     schedule_commitment_guard,
@@ -353,6 +354,8 @@ def test_explicit_domain_unrelated_prompts_are_not_captured():
     assert is_discussion_shaped_brief_followup("Should I create a weather-themed product?", state) is False
     assert is_discussion_shaped_brief_followup("Why does my news-themed advertisement look bad?", state) is False
     assert is_discussion_shaped_brief_followup("What do you think of my calendar logo?", state) is False
+    assert is_discussion_shaped_brief_followup("tell me more about story 2", state) is False
+    assert is_discussion_shaped_brief_followup("what sources support story 1?", state) is False
 
 
 def test_background_widget_refresh_does_not_change_conversation_focus():
@@ -368,6 +371,16 @@ def test_background_widget_refresh_does_not_change_conversation_focus():
     )
 
     assert state["active_brief_item"] == "news"
+
+
+def test_exact_news_aliases_remain_explicit_typed_references():
+    for prompt in (
+        "tell me more about the second one",
+        "compare the first and third stories",
+        "open the first one",
+        "what was story 1 again?",
+    ):
+        assert is_explicit_news_reference_action(prompt) is True
 
 
 def test_negative_rain_wording_is_not_inverted():

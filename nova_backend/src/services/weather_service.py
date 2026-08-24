@@ -52,6 +52,15 @@ class WeatherService:
         today = days[0] if isinstance(days[0], dict) else {}
         tomorrow = days[1] if len(days) > 1 and isinstance(days[1], dict) else {}
 
+        if self.scope == "tomorrow":
+            if not today:
+                return ""
+            return (
+                "Tomorrow: "
+                f"{self._format_temp(today.get('tempmax'))}/{self._format_temp(today.get('tempmin'))}, "
+                f"{self._clean_text(today.get('conditions') or 'Unknown conditions', limit=70)}"
+            )
+
         if today:
             segments.append(
                 "Today: "
@@ -91,9 +100,15 @@ class WeatherService:
                 break
         return alerts
 
-    def __init__(self, location: Optional[str] = None, network: Optional[NetworkMediator] = None):
+    def __init__(
+        self,
+        location: Optional[str] = None,
+        network: Optional[NetworkMediator] = None,
+        scope: str = "today",
+    ):
         self.location = location or self.DEFAULT_LOCATION
         self.network = network or NetworkMediator()
+        self.scope = "tomorrow" if str(scope).strip().lower() == "tomorrow" else "today"
 
     def _build_request_url(self) -> str:
         normalized_location = self._clean_text(self.location, limit=120) or self.DEFAULT_LOCATION
@@ -101,7 +116,7 @@ class WeatherService:
         return (
             "https://weather.visualcrossing.com/"
             "VisualCrossingWebServices/rest/services/timeline/"
-            f"{encoded_location}/today"
+            f"{encoded_location}/{self.scope}"
         )
 
     async def _request_weather_payload(self, url: str, params: dict) -> dict:
@@ -155,11 +170,24 @@ class WeatherService:
 
         payload = await self._request_weather_payload(url, params)
         current = payload.get("currentConditions", {}) or {}
+        days = payload.get("days") or []
+        target_day = days[0] if isinstance(days, list) and days and isinstance(days[0], dict) else {}
+        if self.scope == "tomorrow" and target_day:
+            current = target_day
         resolved = self._clean_text(payload.get("resolvedAddress", "Unknown location"), limit=80)
         forecast = self._build_forecast(payload)
         alerts = self._extract_alerts(payload)
 
-        raw_temp = current.get("temp", 0)
+        raw_temp = current.get("temp")
+        if raw_temp is None and self.scope == "tomorrow":
+            high = current.get("tempmax")
+            low = current.get("tempmin")
+            try:
+                raw_temp = (float(high) + float(low)) / 2
+            except (TypeError, ValueError):
+                raw_temp = high if high is not None else low
+        if raw_temp is None:
+            raw_temp = 0
         try:
             temperature = float(raw_temp)
         except Exception:
