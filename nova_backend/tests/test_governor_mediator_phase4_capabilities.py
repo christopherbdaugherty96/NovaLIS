@@ -933,6 +933,10 @@ def test_wave_c_screen_and_diagnostics_natural_variants_route_deterministically(
         assert isinstance(inv, Invocation), prompt
         assert inv.capability_id == 58, prompt
 
+    inv = GovernorMediator.parse_governed_invocation("explain what's on my screen")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 59
+
     for prompt in (
         "is Nova healthy?",
         "show diagnostics",

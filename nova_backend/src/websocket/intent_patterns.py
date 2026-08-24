@@ -169,6 +169,7 @@ CAPABILITY_HELP_RE = re.compile(
 OPENCLAW_CAPABILITY_HELP_RE = re.compile(
     r"^\s*(?:"
     r"what openclaw tools can (?:you|nova) use"
+    r"|what openclaw actions can (?:you|nova) do"
     r"|what can openclaw do directly"
     r"|can (?:you|nova) use openclaw"
     r")\s*$",
