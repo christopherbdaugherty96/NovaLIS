@@ -1,22 +1,25 @@
 # Active TODO — Nova
 
-Last reviewed: 2026-08-23.
+Last reviewed: 2026-08-24.
 
 This file is the current actionable task inventory. Historical lane detail belongs in Git history and dated proof/strategy artifacts, not in the active queue.
 
 ## Active Now
 
-### Wave C — proof and stabilization checkpoint next
+### Wave C — proof and stabilization checkpoint active
 
 Current state:
 
 ```text
-current main / B4 squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
+current main / post-B4 sync / Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
 B1 / PR #356: COMPLETE / MERGED
 B2 / PR #358: COMPLETE / MERGED
 B3 / PR #360: COMPLETE / MERGED
 B4 / PR #362: COMPLETE / MERGED
-Wave C: NEXT / NOT AUTHORIZED
+Wave C: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
+PR #364: OPEN / DRAFT / UNMERGED
+PR #364 published review head before current bounded correction: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
+validated_baseline_sha: NOT ESTABLISHED
 ```
 
 Wave A1, A2, B1, B2, B3, and B4 are already merged:
@@ -51,10 +54,14 @@ Wave A1, A2, B1, B2, B3, and B4 are already merged:
 
 #362  B4 reproducibility hygiene
        reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
-       squash merge/current main: 5c243a822f79ea09b0031124d4bafbf32d18842c
+       squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
+
+#363  post-B4 operational truth synchronization
+       merge/current main/Wave C initial candidate:
+       404689ef07f42480966c59ba30c07db5c4f101e1
 ```
 
-Do not reopen B1 through B4 without concrete new evidence. Wave C requires separate authorization.
+Do not reopen B1 through B4 without concrete new evidence. Wave C is active under its reviewed authorization; do not expand its scope or declare a validated baseline before the complete exit proof passes on one exact candidate.
 
 ### Completed B1 source/truth work
 
@@ -227,7 +234,7 @@ Keep #354 separate from this synchronization. It must be resolved before Wave C 
 
 ### Wave C — proof and stabilization checkpoint
 
-**NEXT / NOT AUTHORIZED.** Established high-level scope only:
+**ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW.** Frozen scope:
 
 - choose one exact candidate commit;
 - regenerate repaired runtime truth;
@@ -268,12 +275,12 @@ No control plane may silently increase authority available to another control pl
 
 ## Explicitly Not Active
 
-Do not begin outside this post-B4 synchronization:
+Do not begin outside the bounded Wave C authorization:
 
 ```text
 B3 memory architecture beyond the completed truth/provenance repair
 B4 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
-Wave C proof, candidate freezing, semantic testing, or runtime revalidation
+Wave C redesign, capability expansion, or repairs without reproduced evidence
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes

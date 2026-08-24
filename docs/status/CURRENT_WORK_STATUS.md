@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-23.
+Last reviewed: 2026-08-24.
 
 This is a hand-maintained operational status surface. It is not generated runtime truth.
 
@@ -10,15 +10,18 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 
 ```text
 WAVE C — proof / validated-baseline checkpoint
-STATUS: NEXT / NOT AUTHORIZED
-CURRENT MAIN / B4 SQUASH MERGE: 5c243a822f79ea09b0031124d4bafbf32d18842c
+STATUS: ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
+CURRENT MAIN / POST-B4 SYNC / INITIAL CANDIDATE: 404689ef07f42480966c59ba30c07db5c4f101e1
+PR #364: OPEN / DRAFT / UNMERGED
+PUBLISHED REVIEW HEAD BEFORE CURRENT BOUNDED CORRECTION: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
+VALIDATED_BASELINE_SHA: NOT ESTABLISHED
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
 B4: COMPLETE / MERGED via PR #362
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` is current `main`. B1 through B4 evidence remains revision- and environment-specific historical evidence.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` completed B4. Post-B4 sync #363 established `404689ef...` as current `main` and the Wave C initial candidate. B1 through B4 evidence remains revision- and environment-specific historical evidence.
 
 ## Completed Gates
 
@@ -67,7 +70,16 @@ Post-B3 operational truth synchronization
 Wave B4 merge
   PR #362: MERGED
   reviewed head: 7b70a91b3a294e829a36edac067da7e4b567774e
-  squash merge/current main: 5c243a822f79ea09b0031124d4bafbf32d18842c
+  squash merge: 5c243a822f79ea09b0031124d4bafbf32d18842c
+
+Post-B4 operational truth synchronization
+  PR #363: MERGED
+  merge/current main/Wave C initial candidate: 404689ef07f42480966c59ba30c07db5c4f101e1
+
+Wave C draft review
+  PR #364: OPEN / DRAFT / UNMERGED
+  published review head before current bounded correction: 5b2a64dfb69581040ed19a773c1ab5d40d298ab4
+  validated_baseline_sha: NOT ESTABLISHED
 ```
 
 ## B1 Completed Evidence
@@ -175,7 +187,7 @@ B1 COMPLETE / MERGED
 -> B2 capability narration / COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
 -> B4 reproducibility hygiene / COMPLETE / MERGED
--> Wave C semantic/proof stabilization and validated baseline / NEXT / NOT AUTHORIZED
+-> Wave C semantic/proof stabilization and validated baseline / ACTIVE / AUTHORIZED / DRAFT PR UNDER REVIEW
 -> reconstruct #335 onto exact validated baseline
 -> independent security/architecture review
 -> separate #335 merge decision
@@ -184,7 +196,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B1 through B4 are complete and merged. Wave C is next but not authorized.
+B1 through B4 are complete and merged. Wave C is active; PR #364 remains draft and unmerged, and no validated baseline exists yet.
 
 ## Permanent Truth Boundaries
 

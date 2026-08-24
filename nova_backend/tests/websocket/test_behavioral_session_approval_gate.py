@@ -63,7 +63,7 @@ def _install_session_gate_baseline(monkeypatch, routes: dict[str, Invocation]) -
 def test_cap22_session_request_creates_pending_state_without_execution(monkeypatch):
     calls: list[tuple[int, dict]] = []
     ledger = _RecordingLedger()
-    _install_session_gate_baseline(
+    parse_calls = _install_session_gate_baseline(
         monkeypatch,
         {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
     )
@@ -80,10 +80,48 @@ def test_cap22_session_request_creates_pending_state_without_execution(monkeypat
     with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
+    assert parse_calls == ["open documents"]
     assert calls == []
     assert "ACTION_ATTEMPTED" not in _event_types(ledger)
     assert "ACTION_COMPLETED" not in _event_types(ledger)
     assert any("?" in message and ("open_file_folder" in message or "Cap 22" in message) for message in _chat_messages(ws))
+
+
+def test_cap22_outside_root_path_is_refused_before_confirmation(monkeypatch):
+    calls: list[tuple[int, dict]] = []
+    outside_root = Path(Path.cwd().anchor) / "nova-wave-c-outside-root"
+    routed = GovernorMediator.parse_governed_invocation(f"open file {outside_root}")
+    assert isinstance(routed, Invocation)
+    assert routed.capability_id == 22
+    assert routed.params["path"] == str(outside_root)
+
+    command = "open documents"
+    parse_calls = _install_session_gate_baseline(
+        monkeypatch,
+        {
+            command.lower(): Invocation(
+                capability_id=22,
+                params=dict(routed.params),
+            )
+        },
+    )
+
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **_authority):
+        calls.append((capability_id, dict(params)))
+        return ActionResult.ok("should not run", request_id="outside-root-should-not-run")
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke)
+
+    ws = _ScriptedWebSocket([command])
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert parse_calls == [command.lower()]
+    assert calls == []
+    messages = _chat_messages(ws)
+    assert any("outside Nova's allowed local roots" in message for message in messages), messages
+    assert any("No open request was attempted" in message for message in messages)
+    assert not any("?" in message and ("open_file_folder" in message or "Cap 22" in message) for message in messages)
 
 
 def test_cap64_session_request_creates_pending_state_without_execution(monkeypatch):
