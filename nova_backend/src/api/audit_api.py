@@ -24,8 +24,22 @@ def _runtime_build_identity() -> dict[str, object]:
             text=True,
             timeout=2,
         ).stdout.strip()
-        status = subprocess.run(
-            ["git", "-C", str(source_root), "status", "--porcelain=v1"],
+        unstaged = subprocess.run(
+            ["git", "-C", str(source_root), "diff", "--quiet", "--ignore-submodules", "--"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        staged = subprocess.run(
+            ["git", "-C", str(source_root), "diff", "--cached", "--quiet", "--ignore-submodules", "--"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        untracked = subprocess.run(
+            ["git", "-C", str(source_root), "ls-files", "--others", "--exclude-standard"],
             check=True,
             capture_output=True,
             text=True,
@@ -34,10 +48,15 @@ def _runtime_build_identity() -> dict[str, object]:
     except (OSError, subprocess.SubprocessError):
         return identity
 
+    if unstaged.returncode not in {0, 1} or staged.returncode not in {0, 1}:
+        return identity
+
     identity.update(
         {
             "commit_sha": commit or None,
-            "working_tree_dirty": bool(status.strip()),
+            "working_tree_dirty": bool(
+                unstaged.returncode or staged.returncode or untracked.strip()
+            ),
             "git_available": True,
         }
     )
