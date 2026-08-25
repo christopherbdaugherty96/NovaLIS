@@ -396,14 +396,18 @@ def test_checker_accepts_structured_multiline_335_unmerged_status():
     positive = (
         "PR #335 remains:\n\n"
         "```text\n"
-        "OPEN / DRAFT / UNMERGED\n"
+        "OPEN\n"
+        "DRAFT\n"
+        "UNMERGED\n"
         "head: befb69ef\n"
         "```\n"
     )
     negative = (
         "PR #335 remains:\n\n"
         "```text\n"
-        "OPEN / DRAFT / MERGED\n"
+        "OPEN\n"
+        "DRAFT\n"
+        "MERGED\n"
         "```\n"
         "unrelated historical branch: UNMERGED\n"
     )
