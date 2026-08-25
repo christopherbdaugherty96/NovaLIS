@@ -41,9 +41,9 @@ post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-`d5b0dc66...` is durable provenance for PR #365 and the Sequence-1 branch base, not a forever-current `main` claim. Current HEAD must be resolved from Git/repository state when needed.
+`d5b0dc66...` is durable provenance for PR #365 and the PR #366 branch base, not a forever-current `main` claim. Current HEAD must be resolved from Git/repository state when needed.
 
-Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
+Current active lane: **PR #366 post-Wave-C truth hygiene — OPEN / DRAFT / documentation-current-truth only**. Wave C remains COMPLETE / MERGED / VALIDATED.
 
 Wave C is complete and merged. The complete non-hosted proof passed on exact validated baseline `ec20a714...`; GitHub-hosted jobs did not execute because of the external account-billing restriction recorded in Issue #354. The owner explicitly waived hosted execution as a Wave C exit requirement without classifying those jobs as PASS. The later documentation-only #365 commit does not extend that runtime proof to a new baseline.
 
@@ -58,7 +58,8 @@ Wave A1 operational truth sync                 COMPLETE
 -> B2 capability narration                      COMPLETE / MERGED
 -> B3 memory governance                         COMPLETE / MERGED
 -> B4 reproducibility hygiene                   COMPLETE / MERGED
--> Wave C validated-baseline proof checkpoint   COMPLETE / MERGED
+-> Wave C validated-baseline proof checkpoint   COMPLETE / MERGED / VALIDATED
+-> PR #366 post-Wave-C truth hygiene            ACTIVE / DRAFT
 -> reconstruct/reconcile #335                   NEXT / NOT AUTHORIZED
 -> Google identity proof
 -> first Google READ/evidence vertical
