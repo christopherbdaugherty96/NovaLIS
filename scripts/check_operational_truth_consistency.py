@@ -17,8 +17,8 @@ Checked here:
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
-- PR #335 remaining explicitly UNMERGED / NEXT / NOT AUTHORIZED near its
-  priority/roadmap references;
+- PR #335 remaining explicitly UNMERGED / NEXT / NOT AUTHORIZED on its
+  priority/roadmap status lines;
 - completed closeout preserving a separate owner-authorization decision before
   #335 reconstruction/reconciliation.
 
@@ -185,36 +185,43 @@ def _extract_lane(name: str, text: str) -> str | None:
     return None
 
 
+def _lines_for_pr(text: str, pr_number: int) -> tuple[str, ...]:
+    """Return only lines that contain the exact target PR reference."""
+
+    pr_ref = re.compile(rf"(?:\bPR\s*)?#{pr_number}\b", re.IGNORECASE)
+    return tuple(line for line in text.splitlines() if pr_ref.search(line))
+
+
 def _preserves_pr_335_unmerged(text: str) -> bool:
-    for match in re.finditer(r"#335\b", text, re.IGNORECASE):
-        nearby = text[match.start() : match.start() + 600].upper()
-        if "UNMERGED" in nearby:
+    for line in _lines_for_pr(text, 335):
+        upper = line.upper()
+        if "UNMERGED" in upper and not re.search(r"\bMERGED\b", upper):
             return True
     return False
 
 
 def _preserves_pr_335_next_not_authorized(text: str) -> bool:
-    for match in re.finditer(r"#335\b", text, re.IGNORECASE):
-        nearby = text[match.start() : match.start() + 800].upper()
-        if "NEXT" in nearby and "NOT AUTHORIZED" in nearby:
+    for line in _lines_for_pr(text, 335):
+        upper = line.upper()
+        if (
+            re.search(r"\bNEXT\b", upper)
+            and "NOT AUTHORIZED" in upper
+            and "NOT NEXT" not in upper
+        ):
             return True
     return False
 
 
 def _preserves_merged_pr(text: str, pr_number: int) -> bool:
-    """Require MERGED to be structurally attached to the target PR reference."""
+    """Require an affirmative MERGED state on the target PR's own line."""
 
-    pr_ref = rf"(?:\bPR\s*)?#{pr_number}\b"
-    other_pr_ref = r"(?:\bPR\s*)?#\d+\b"
-    merged_after = re.compile(
-        rf"{pr_ref}(?:(?!{other_pr_ref})[^\n]){{0,140}}\bMERGED\b",
-        re.IGNORECASE,
-    )
-    merged_before = re.compile(
-        rf"\bMERGED\b(?:(?!{other_pr_ref})[^\n]){{0,140}}{pr_ref}",
-        re.IGNORECASE,
-    )
-    return bool(merged_after.search(text) or merged_before.search(text))
+    for line in _lines_for_pr(text, pr_number):
+        upper = line.upper()
+        if "NOT MERGED" in upper or "UNMERGED" in upper:
+            continue
+        if re.search(r"\bMERGED\b", upper):
+            return True
+    return False
 
 
 def _preserves_validated_baseline(text: str) -> bool:
@@ -320,11 +327,11 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
     for name, text in (("current priority", priority), ("canonical roadmap", roadmap)):
         if not _preserves_pr_335_unmerged(text):
             errors.append(
-                f"{name} does not preserve PR #335 as explicitly UNMERGED near its reference"
+                f"{name} does not preserve PR #335 as explicitly UNMERGED on its status line"
             )
         if not _preserves_pr_335_next_not_authorized(text):
             errors.append(
-                f"{name} does not preserve PR #335 as NEXT / NOT AUTHORIZED near its reference"
+                f"{name} does not preserve PR #335 as NEXT / NOT AUTHORIZED on its status line"
             )
 
     return errors
