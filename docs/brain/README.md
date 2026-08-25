@@ -49,6 +49,8 @@ Implemented today:
 - read-only EnvironmentRequest schema scaffold
 - static Capability Contract catalog for Cap 16, Cap 64, Cap 65, and Cap 63
 - deterministic Search Evidence Synthesis for structuring Cap 16 governed-search evidence metadata
+- bounded Context Pack implemented and wired into general-chat prompt assembly with source/authority labels, budgets, and non-authorizing behavior
+- Brain mode contracts and non-authorizing BrainTrace implemented and wired; mode/trace visibility is not yet fully surfaced per turn in the UI
 - Brain live proof package under `docs/demo_proof/brain_live_test/`
 
 Not fully implemented yet:
@@ -60,7 +62,7 @@ Not fully implemented yet:
 - persistent RunManager storage
 - RunManager integration with dashboard / Co-Work page
 - persistent Run Preview history
-- Brain Trace UI
+- Brain Trace UI / fuller user-facing trace visibility
 - Co-Work page
 - project context engine
 - suggestion buffer runtime
@@ -70,9 +72,13 @@ Not fully implemented yet:
 - OpenClaw centralized execution guard
 - OpenClaw boundary detector for browser/computer-use expansion
 - OpenClaw run/step/boundary cleanup receipt set
-- full model router / context assembler / intention parser stack
+- full model router / Context Assembler / intention parser stack
+
+The implemented bounded Context Pack is not the future full Context Assembler. It is a narrower labeled context bridge and does not authorize execution.
 
 Search Evidence Synthesis is not an authority path. It structures results already collected by the governed web-search executor; it does not search, browse, call OpenClaw, authorize action, or add a capability.
+
+BrainTrace is also non-authorizing. Its implementation does not imply the fuller Brain Trace UI or broad observability surface is complete.
 
 ## OpenClaw Boundary
 

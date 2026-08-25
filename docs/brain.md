@@ -40,7 +40,7 @@ The Brain is designed to make Nova more helpful and adaptive without turning int
 
 ## Current Runtime Status
 
-Current live Brain behavior:
+Current live Brain behavior/substrate:
 
 - Task Clarifier is implemented for tested ambiguous/high-boundary prompts.
 - Task Understanding / Simple Task Mode / Task Envelope exist as planning-only scaffolds.
@@ -49,7 +49,9 @@ Current live Brain behavior:
 - General-chat fallback can create a session-local planning Run Preview for task-like requests.
 - EnvironmentRequest schema exists as read-only scaffold.
 - Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
-- Search Evidence Synthesis exists as deterministic Cap 16 evidence structuring for governed web-search output.
+- Search Evidence Synthesis exists as deterministic Cap 16 evidence structuring for governed web-search output; it is not a general Brain planner.
+- Context Pack is implemented and wired into general-chat prompt assembly as a bounded, labeled, non-authorizing context bridge. It is not the future full Context Assembler.
+- Brain mode contracts and non-authorizing BrainTrace are implemented and wired; trace/mode visibility is not yet fully surfaced per turn in the UI.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
 
 Still future / not fully live:
@@ -57,7 +59,7 @@ Still future / not fully live:
 - full Task Environment Router
 - live Capability Contract lookup in runtime routing/Governor
 - Dry Run / Plan Preview API
-- Brain Trace UI
+- Brain Trace UI / fuller user-facing trace visibility
 - Co-Work page
 - persistent RunManager storage
 - RunManager execution integration
@@ -68,6 +70,8 @@ Still future / not fully live:
 - full small-model runtime stack: Context Assembler, Model Router, Intention Parser, Sandbox Boundary Enforcer, and Persona Filter
 
 Search Evidence Synthesis is not an authority path. It does not search, browse, call OpenClaw, add a capability, or authorize action.
+
+Context Pack and BrainTrace are also non-authorizing. Implemented reasoning/context substrate does not grant execution authority.
 
 ## Scope Guard For This Preview
 
@@ -104,7 +108,7 @@ Task Intake
 
 ## Task Clarifier
 
-The first live Brain behavior is the Task Clarifier.
+Task Clarifier is one implemented narrow Brain behavior; it is not the only live Brain substrate.
 
 It pauses before Nova implies action when a prompt is ambiguous, underspecified, account-related, browser-related, or outside current capability.
 
@@ -183,6 +187,8 @@ Task Clarifier
 
 This stack is documented in [`docs/brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md`](brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md).
 
+The current bounded Context Pack should not be confused with this future full Context Assembler.
+
 ## EnvironmentRequest
 
 `nova_backend/src/brain/environment_request.py` defines the first read-only schema scaffold for Brain planning objects.
@@ -244,9 +250,11 @@ It lets the user inspect a plan before the Governor is asked to authorize any ac
 
 ## Brain Trace
 
-Brain Trace is planned operational metadata, not hidden chain-of-thought.
+BrainTrace contracts/data are implemented as non-authorizing structural metadata. They are designed to expose safe mode/trace information without exposing private chain-of-thought.
 
-A future trace should show:
+What remains future/incomplete is the fuller Brain Trace UI and expanded user-facing trace/observability surface.
+
+A fuller trace surface may show bounded metadata such as:
 
 ```text
 task received
@@ -260,7 +268,7 @@ receipt created
 fallback used if needed
 ```
 
-The purpose is inspectability, not exposing private reasoning.
+The purpose is inspectability, not exposing private reasoning. BrainTrace itself does not authorize or execute anything.
 
 ## Memory Boundary
 
@@ -307,27 +315,19 @@ Use these files for implementation guidance:
 
 ## Current Priority
 
-This section previously listed Cap 16 search reliability as the active P1
-blocker. That note is superseded.
+Do not use this architecture overview as current work-order authority.
 
-For current priority and authorized implementation scope, defer to
-`.agent_context/current_priority.md`.
+For current priority and authorized implementation scope, defer to:
 
-As of the latest continuity sync, Second Brain Slice 1 is the accepted next
-implementation lane and remains limited to:
+- `.agent_context/current_priority.md`
+- `docs/status/DAILY_COMMAND_CENTER.md`
+- `docs/status/CURRENT_WORK_STATUS.md`
+- `docs/CANONICAL/07_ROADMAP_TRUTH.md`
+- Issue #343
 
-```text
-schema
-frontmatter parser
-wikilink extraction
-vault health/lint
-no-mutation tests
-non-authorizing tests
-```
+Historical Brain/Second-Brain implementation sequences may remain useful architecture references, but they do not override the current post-Wave-C ordering or authorize a lane.
 
-This Brain document remains architecture guidance. It does not authorize
-runtime behavior, capability expansion, memory authority, OpenClaw integration,
-or execution integration.
+This Brain document remains architecture guidance. It does not authorize runtime behavior, capability expansion, memory authority, OpenClaw integration, Google/#335 work, Operational Continuity implementation, or execution integration.
 
 ## Final Framing
 
