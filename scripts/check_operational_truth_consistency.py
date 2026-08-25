@@ -116,7 +116,7 @@ POST_WAVE_C_PATTERNS = {
         re.MULTILINE | re.IGNORECASE,
     ),
     "roadmap": re.compile(
-        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane.*post-Wave-C truth-hygiene.*PR #(?P<pr>\d+)",
+        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane.*post-Wave-C truth-hygiene.*?PR #(?P<pr>\d+)",
         re.MULTILINE | re.IGNORECASE,
     ),
 }
