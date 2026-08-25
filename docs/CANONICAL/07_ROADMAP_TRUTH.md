@@ -19,11 +19,9 @@ lane contract         -> what the lane may change
 implementation/proof  -> what actually changed and was verified
 ```
 
-## Current checkpoint — 2026-08-24
+## Current checkpoint — 2026-08-25
 
-Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
-
-Wave C proof / validated-baseline checkpoint is complete and merged through PR #364. #335 reconstruction is next but not authorized by this synchronization.
+Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is the documentation-only post-Wave-C truth-hygiene pass in draft PR #366. PR #335 reconstruction remains next but not authorized by this synchronization.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -33,13 +31,24 @@ B2 — COMPLETE / MERGED via #358
 B3 — COMPLETE / MERGED via #360
 B4 — COMPLETE / MERGED via #362
 C  — COMPLETE / MERGED / VALIDATED
+#365 — MERGED post-Wave-C documentation sync
+#366 — ACTIVE / DRAFT / documentation-current-truth only
+#335 reconstruction — NEXT / NOT AUTHORIZED
 ```
 
-Current merged `main`:
+Immutable runtime validation evidence:
 
 ```text
-ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
+
+Post-Wave-C documentation provenance:
+
+```text
+PR #365 merge / PR #366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+```
+
+`d5b0dc66...` is durable provenance for PR #365 and this truth-hygiene branch base, not a forever-current `main` claim. Resolve current HEAD from Git/repository state when needed. `ec20a714...` remains the immutable Wave C validated baseline unless a separately warranted future validation package establishes another baseline.
 
 First published/proven B1 candidate:
 
@@ -58,7 +67,7 @@ P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS en
 
 Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the Wave C initial candidate.
 
-Wave C merged through PR #364 at reviewed head `786c048df6dc4ed8f3c8245c5b365d4296f342f4`. Its squash merge/current `main`, `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`, passed the complete non-hosted proof and is the immutable `validated_baseline_sha`. GitHub-hosted jobs remained `NOT EXECUTED` due to the account-billing restriction in Issue #354; the owner explicitly waived that evidence source without classifying it as PASS.
+Wave C merged through PR #364 at reviewed head `786c048df6dc4ed8f3c8245c5b365d4296f342f4`. Its squash merge `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` passed the complete non-hosted proof and is the immutable `validated_baseline_sha`. GitHub-hosted jobs remained `NOT EXECUTED` due to the account-billing restriction in Issue #354; the owner explicitly waived that evidence source without classifying it as PASS. PR #365 then merged documentation-only synchronization at `d5b0dc66...`; it did not change or extend the validated runtime evidence.
 
 ## Merged stabilization state
 
@@ -82,6 +91,9 @@ The following August truth/routing packages are already merged and are not pendi
 #356         Wave B1 runtime-truth instrumentation
 #358         Wave B2 capability narration truth
 #360         Wave B3 memory governance
+#362         Wave B4 reproducibility hygiene
+#364         Wave C validation / validated baseline
+#365         post-Wave-C validated-baseline/evidence-waiver documentation sync
 ```
 
 Merged implementation is not identical to universal product readiness or unlimited live-proof scope. Capability verification must remain evidence-specific.
@@ -99,7 +111,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-It must not be merged in its historical branch state. It will be reconstructed/reconciled only after Wave C establishes an exact validated baseline, then undergo exact-head proof and independent review before a separate merge decision.
+It must not be merged in its historical branch state. After PR #366 truth hygiene is reviewed and a separate owner authorization is given, #335 may be reconstructed/reconciled against exact validated baseline `ec20a714...`, then undergo exact-head proof and independent review before a separate merge decision.
 
 ## Current stabilization gate
 
@@ -125,6 +137,11 @@ WAVE C — proof and stabilization checkpoint         COMPLETE / MERGED / VALIDA
   reproduced-defect-only fixes
   immutable validated baseline
 
+POST-WAVE-C — truth hygiene                         ACTIVE / DRAFT #366
+  separate current HEAD/provenance from validated baseline
+  reconcile active operational/roadmap surfaces
+  no runtime, generated-runtime, authority, or Google implementation changes
+
 POST-WAVE-C — Google Foundation reconciliation      NEXT / NOT AUTHORIZED
   reconstruct #335
   OAuth hardening cases
@@ -133,7 +150,7 @@ POST-WAVE-C — Google Foundation reconciliation      NEXT / NOT AUTHORIZED
   separate merge decision
 ```
 
-After Wave C and only after a separate #335 merge decision:
+After truth hygiene and only after a separate #335 merge decision:
 
 ```text
 Google identity-only live proof
@@ -242,7 +259,7 @@ B4 established `pyproject.toml` as canonical dependency truth, made `nova_backen
 
 **Complete / merged / validated.**
 
-Wave C turned the initial candidate into a validated baseline after reproduced repairs merged and the complete non-hosted proof passed on exact merged main `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. The owner waived GitHub-hosted execution as a mandatory exit source because Issue #354 is an external account/billing restriction; those zero-step jobs remain `NOT EXECUTED`, not PASS.
+Wave C turned the initial candidate into a validated baseline after reproduced repairs merged and the complete non-hosted proof passed on exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. The owner waived GitHub-hosted execution as a mandatory exit source because Issue #354 is an external account/billing restriction; those zero-step jobs remain `NOT EXECUTED`, not PASS.
 
 Important distinction:
 
@@ -252,9 +269,9 @@ current HEAD != candidate baseline != validated baseline
 
 The validated baseline is immutable evidence for a verification package. It is not expected to remain current HEAD forever.
 
-Wave C also re-evaluates Issue #227 using current model/context/hardware/latency evidence rather than May assumptions.
+Wave C also re-evaluated Issue #227 using current model/context/hardware/latency evidence rather than May assumptions.
 
-Only reproduced failures are repaired. Acceptance failure must be classified before root cause is assigned.
+Only reproduced failures were repaired. Acceptance failure must be classified before root cause is assigned.
 
 ## Issue #354 — hosted CI infrastructure
 
@@ -325,10 +342,10 @@ broad SaaS productization
 Protection Wall runtime expansion
 ```
 
-README/front-door sequencing cleanup is separate documentation debt and must not be folded into the B1 instrumentation branch.
+README/front-door sequencing cleanup is separate documentation debt and must not be folded into PR #366 unless separately scoped.
 
 ## Historical context
 
-The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the stabilization gate above.
+The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the gate above.
 
 Historical records remain evidence of what was decided or proven at their date. Do not use their old current-main SHAs or pending-work language to select today's work.
