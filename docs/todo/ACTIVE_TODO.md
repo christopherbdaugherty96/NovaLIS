@@ -1,12 +1,12 @@
 # Active TODO — Nova
 
-Last reviewed: 2026-08-24.
+Last reviewed: 2026-08-25.
 
 This file is the current actionable task inventory. Historical lane detail belongs in Git history and dated proof/strategy artifacts, not in the active queue.
 
 ## Active Now
 
-### Wave C — validated baseline complete
+### Post-Wave-C documentation closeout
 
 Current state:
 
@@ -19,7 +19,11 @@ B4 / PR #362: COMPLETE / MERGED
 Wave C: COMPLETE / MERGED / VALIDATED
 PR #364: MERGED
 PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
-current main / validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+PR #365 merge / PR #366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+truth-hygiene contract package: PR #366
+documentation closeout: REQUIRED BEFORE #335 AUTHORIZATION
+#335 reconstruction: NEXT / NOT AUTHORIZED
 ```
 
 Wave A1, A2, B1, B2, B3, B4, and Wave C are already merged:
@@ -62,11 +66,16 @@ Wave A1, A2, B1, B2, B3, B4, and Wave C are already merged:
 
 #364  Wave C validation and reproduced-defect repairs
        reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
-       squash merge/current main/validated_baseline_sha:
+       squash merge/validated_baseline_sha:
        ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+
+#365  post-Wave-C validated-baseline/evidence-waiver documentation sync
+       merge/PR #366 branch base:
+       d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+       runtime validated-baseline change: NONE
 ```
 
-Do not reopen B1 through B4 or Wave C without concrete new evidence. The Wave C exit proof passed on exact merged main under the explicit owner evidence waiver; do not reinterpret waived hosted jobs as PASS.
+Do not reopen B1 through B4 or Wave C without concrete new evidence. The Wave C exit proof passed on exact validated baseline `ec20a714...` under the explicit owner evidence waiver; do not reinterpret waived hosted jobs as PASS. PR #365 is later documentation provenance, not a new runtime validated baseline.
 
 ### Completed B1 source/truth work
 
@@ -180,6 +189,10 @@ Do not recreate or reopen these as pending implementation:
 #355         Wave A2 strategy reconciliation
 #356         Wave B1 runtime-truth instrumentation
 #358         Wave B2 capability narration truth
+#360         Wave B3 memory governance
+#362         Wave B4 reproducibility hygiene
+#364         Wave C validation / validated baseline
+#365         post-Wave-C baseline/evidence-waiver documentation sync
 ```
 
 Merged implementation is not universal live-proof coverage.
@@ -194,7 +207,7 @@ head: befb69ef75881a9f418472549b64243219c138f9
 historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 ```
 
-PR #335 remains deferred; reconstruction/reconciliation onto the exact Wave C validated baseline is next but requires separate owner authorization.
+PR #335 remains deferred; reconstruction/reconciliation onto the exact Wave C validated baseline is next but requires documentation closeout plus separate owner authorization.
 
 ### Issue #354 — zero-step GitHub Actions infrastructure
 
@@ -207,11 +220,15 @@ WAVE C DISPOSITION: owner-waived as a mandatory exit evidence source
 
 Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not PASS or behavioral FAIL; the owner waiver removed it as a Wave C exit dependency without fixing the account restriction.
 
-### Front-door README truth cleanup
+### Front-door and narration documentation closeout
 
-`README.md` still contains stale sequencing/current-status language. This is separate documentation debt. Do not fold README cleanup into this synchronization or Wave C without separate scope.
+README, START_HERE, historical-guide lifecycle, and Brain/operating-model narration cleanup remain separate reviewed documentation follow-ups. They do not authorize runtime or #335 work.
 
 ## Current Next Lane and Blocked Work
+
+### Post-Wave-C documentation closeout
+
+**CURRENT GATE.** PR #366 is the truth-hygiene contract package. Remaining front-door/narration follow-ups stay separately reviewed. The closeout must be reviewed and merged before any separate #335 reconstruction authorization. This gate must not alter runtime code, generated runtime artifacts, capability state, authority, Google implementation, or #335.
 
 ### Wave B2 — capability narration
 
@@ -252,7 +269,7 @@ Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not 
 
 ### Post-Wave-C / Google Foundation reconciliation
 
-**NEXT / NOT AUTHORIZED.** Requires separate owner authorization before any branch or implementation change:
+**NEXT / NOT AUTHORIZED.** Requires documentation closeout review+merge and separate owner authorization before any branch or implementation change:
 
 - reconstruct #335 on that exact baseline only after separate authorization;
 - harden post-token identity-failure cleanup and invalid callback consumption;
@@ -262,7 +279,7 @@ Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not 
 
 ## Post-Stabilization Order
 
-Only after Wave C and a separate #335 decision:
+Only after post-Wave-C documentation closeout is reviewed and merged, and after a separate #335 decision:
 
 ```text
 Google identity-only live proof
@@ -305,7 +322,6 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
-README/front-door rewrite
 ```
 
 Issue #227's Wave C current-hardware/model revalidation is historical evidence from the completed Wave C package. Old planning/future issues are not active merely because they remain open.
