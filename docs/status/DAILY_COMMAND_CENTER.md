@@ -1,10 +1,11 @@
 # Daily Command Center
 
-## 2026-08-25 — Post-Wave-C truth hygiene
+## 2026-08-25 — Post-Wave-C documentation closeout
 
 ```text
 CURRENT PLANNING LANE:
-  Post-Wave-C truth hygiene — ACTIVE / DRAFT PR #366.
+  Post-Wave-C documentation closeout — truth-hygiene contract PR #366.
+  Documentation closeout reviewed + merged — REQUIRED BEFORE #335 AUTHORIZATION.
   PR #335 reconstruction — NEXT / NOT AUTHORIZED.
 
 SUBSTATE:
@@ -81,7 +82,9 @@ HOSTED CI:
 
 CURRENT ORDER:
   A1 / A2 / B1 / B2 / B3 / B4 / Wave C — COMPLETE.
-  -> post-Wave-C truth hygiene / PR #366 — ACTIVE / DRAFT.
+  -> post-Wave-C documentation closeout / truth-hygiene contract PR #366.
+  -> remaining front-door/narration follow-ups — separately reviewed documentation only.
+  -> documentation closeout reviewed + merged — REQUIRED BEFORE #335 AUTHORIZATION.
   -> reconstruct #335 onto exact validated baseline — NEXT / NOT AUTHORIZED.
   -> independent review + separate #335 merge decision.
   -> Google identity-only live proof.
@@ -89,7 +92,7 @@ CURRENT ORDER:
   -> evidence-based Continuity warrant.
 
 BLOCKED:
-  #335 reconstruction until separate authorization.
+  #335 reconstruction until documentation closeout is reviewed + merged and separately authorized.
   Google domain work.
   Operational Continuity runtime.
 ```
@@ -100,7 +103,7 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; the complete non-hosted proof passed on exact baseline `ec20a714...`, which remains the immutable validated baseline under the explicit owner evidence waiver. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; it did not establish a new runtime validated baseline. PR #366 is correcting the resulting current-state wording in small documentation-only sequences.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; the complete non-hosted proof passed on exact baseline `ec20a714...`, which remains the immutable validated baseline under the explicit owner evidence waiver. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; it did not establish a new runtime validated baseline. PR #366 carries the foundational truth-hygiene contract for the current documentation-closeout gate; remaining front-door/narration follow-ups stay separately reviewed.
 
 ## Permanent evidence discipline
 
@@ -135,9 +138,8 @@ expanded OpenClaw autonomy
 autonomous business operation
 broad SaaS productization
 Protection Wall runtime expansion
-README/front-door rewrite without separate scope
 ```
 
 ## Next handoff
 
-Complete and review PR #366 truth hygiene first. That documentation-only work does not authorize #335. The next consequential engineering action still requires separate owner authorization for #335 reconstruction against exact validated baseline `ec20a714...`.
+Finish the post-Wave-C documentation closeout through separate review/merge decisions. That documentation-only work does not authorize #335. The next consequential engineering action still requires a separate owner authorization for #335 reconstruction against exact validated baseline `ec20a714...` after documentation closeout is reviewed and merged.
