@@ -180,6 +180,24 @@ def test_completed_state_binds_truth_hygiene_provenance_not_ui_state():
     )
 
 
+def test_completed_state_ignores_nearby_365_provenance_collision():
+    checker = _load_checker()
+    text = (
+        "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
+        "PR #365 merge / PR #366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c\n"
+        "PR #366 truth-hygiene package: MERGED\n"
+        "PR #378 narration/front-door package: MERGED / VERIFIED\n"
+        f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
+        "#335 reconstruction: NEXT / NOT AUTHORIZED\n"
+        "next decision: separate owner authorization for #335 reconstruction/reconciliation\n"
+    )
+
+    assert checker._extract_truth_hygiene_pr(text) == "366"
+    assert checker._extract_lane("active_todo", text) == (
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE:PR#366"
+    )
+
+
 def test_canonical_index_accepts_completion_without_current_gate_wording():
     checker = _load_checker()
     text = (
