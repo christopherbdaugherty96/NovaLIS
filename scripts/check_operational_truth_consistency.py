@@ -182,7 +182,9 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         rendered = ", ".join(
             f"{name}={lane}" for name, lane in sorted(lanes.items())
         )
-        errors.append(f"stabilization/current-truth gate mismatch: {rendered}")
+        errors.append(
+            f"active stabilization lane mismatch / stabilization/current-truth gate mismatch: {rendered}"
+        )
 
     governance = texts.get("governance", "")
     if "nova_backend/src/api/connections_api.py" not in governance:
