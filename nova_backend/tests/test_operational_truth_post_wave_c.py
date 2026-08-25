@@ -391,6 +391,27 @@ def test_checker_does_not_borrow_unmerged_for_335_from_other_line(tmp_path):
     assert any("current priority does not preserve PR #335 as explicitly UNMERGED" in error for error in errors)
 
 
+def test_checker_accepts_structured_multiline_335_unmerged_status():
+    checker = _load_checker()
+    positive = (
+        "PR #335 remains:\n\n"
+        "```text\n"
+        "OPEN / DRAFT / UNMERGED\n"
+        "head: befb69ef\n"
+        "```\n"
+    )
+    negative = (
+        "PR #335 remains:\n\n"
+        "```text\n"
+        "OPEN / DRAFT / MERGED\n"
+        "```\n"
+        "unrelated historical branch: UNMERGED\n"
+    )
+
+    assert checker._preserves_pr_335_unmerged(positive) is True
+    assert checker._preserves_pr_335_unmerged(negative) is False
+
+
 def test_checker_does_not_borrow_not_authorized_for_335_from_other_line(tmp_path):
     checker = _load_checker()
     text = (
