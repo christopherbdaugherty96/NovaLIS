@@ -49,7 +49,8 @@ def _post_wave_c_fixture(root: Path) -> None:
     _write(
         root,
         "docs/todo/ACTIVE_TODO.md",
-        "## Active Now\n### Post-Wave-C truth hygiene — active\n",
+        "## Active Now\n### Post-Wave-C truth hygiene — active\n"
+        "Current state:\n```text\nPR #366: ACTIVE / DRAFT / documentation-current-truth only\n```\n",
     )
     _write(
         root,
@@ -98,3 +99,25 @@ def test_checker_detects_post_wave_c_to_legacy_lane_drift(tmp_path):
 
     assert any("lane mismatch" in error for error in errors)
     assert any("roadmap=C" in error for error in errors)
+
+
+def test_checker_detects_post_wave_c_pr_identity_drift(tmp_path):
+    checker = _load_checker()
+    _post_wave_c_fixture(tmp_path)
+    _write(
+        tmp_path,
+        "docs/CANONICAL/00_INDEX.md",
+        "**Implementation:** code\n"
+        "**Automated/recorded evidence:** tests\n"
+        "current HEAD != immutable validated baseline\n"
+        "Current active lane: **PR #999 post-Wave-C truth hygiene — OPEN / DRAFT / "
+        "documentation-current-truth only**.\n",
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any("lane mismatch" in error for error in errors)
+    assert any(
+        "canonical_index=POST_WAVE_C_TRUTH_HYGIENE:PR#999" in error
+        for error in errors
+    )
