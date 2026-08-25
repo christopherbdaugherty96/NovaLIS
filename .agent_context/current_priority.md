@@ -1,6 +1,6 @@
 # Current Priority
 
-## Wave C — Validated Baseline Complete — 2026-08-25
+## Post-Wave-C Truth Hygiene — PR #366 Active — 2026-08-25
 
 Current planning lane:
 
@@ -9,6 +9,8 @@ B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
 B4: COMPLETE / MERGED
 WAVE C: COMPLETE / MERGED / VALIDATED
+PR #366: ACTIVE / DRAFT / documentation-current-truth only
+PR #335 reconstruction: NEXT / NOT AUTHORIZED
 post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
@@ -36,6 +38,7 @@ Wave C PR #364: MERGED
 PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
 PR #364 squash merge / validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 PR #365 documentation sync / Sequence-1 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+PR #366 post-Wave-C truth hygiene: OPEN / DRAFT
 ```
 
 B1 through B4 and Wave C are complete and merged. Their proof, generated truth, operational synchronization, and review records remain evidence only for the revisions and environments actually exercised. The complete Wave C non-hosted proof passed on exact validated baseline `ec20a714...`; the owner waived GitHub-hosted Actions as a required evidence source while preserving their `NOT EXECUTED` classification. PR #365 later advanced `main` with documentation-only synchronization and did not establish a new runtime validated baseline.
@@ -89,7 +92,9 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — await separate #335 reconstruction authorization
+## Current action — complete PR #366 truth hygiene
+
+PR #366 is the active documentation/current-truth reconciliation lane. It does not authorize runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
 
 The merged B2 projection preserves these distinct fields:
 
@@ -142,6 +147,7 @@ B1 COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
 -> B4 reproducibility hygiene / COMPLETE / MERGED
 -> Wave C proof / semantic-contract stabilization / COMPLETE / MERGED / VALIDATED
+-> PR #366 post-Wave-C truth hygiene / ACTIVE / DRAFT
 -> reconstruct #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
 -> independent #335 review + separate merge decision
 -> Google identity-only live proof
@@ -149,11 +155,11 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4 and Wave C are complete and merged. PR #335 reconstruction is next but requires separate authorization.
+B1 through B4 and Wave C are complete and merged. PR #366 is the current bounded documentation lane. PR #335 reconstruction remains next and requires separate authorization.
 
 ## Scope lock
 
-Wave C authorization is complete and closed. Do not reopen Wave C or begin post-Wave-C work without separate authorization:
+Wave C authorization is complete and closed. PR #366 may reconcile documentation/current-truth only. Do not reopen Wave C or begin broader post-Wave-C work without separate authorization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
