@@ -274,9 +274,11 @@ The Brain includes:
 - Reflection
 - Brain Trace
 
-The first live Brain behavior is the Task Clarifier.
+Task Clarifier is one implemented narrow Brain behavior. Brain mode contracts and the non-authorizing BrainTrace are also implemented and wired; the selected mode/trace remains mostly an internal visibility surface rather than a fully surfaced per-turn UI feature.
 
-It helps Nova pause before acting or implying action when a request is ambiguous, account-related, browser-related, or outside current capability.
+Task Clarifier helps Nova pause before acting or implying action when a request is ambiguous, account-related, browser-related, or outside current capability.
+
+Context Pack is also implemented and wired into general-chat prompt assembly as a bounded, labeled context bridge. It is not the future full Context Assembler and it does not authorize execution.
 
 The full Brain is not the same as broad autonomy.
 
@@ -309,7 +311,9 @@ This runtime stack is future architecture, not current full runtime behavior.
 
 Its purpose is to let Nova use local small/medium models effectively while keeping privacy, authority, and proof visible.
 
-Current implementation includes the Task Clarifier and read-only Brain schema scaffold. The Context Assembler, Model Router, Intention Parser, Tool Bridge, Search Synthesis module, Sandbox Boundary Enforcer, Persona Filter, and full live Capability Contract lookup remain future work.
+Current implementation already includes more than the Task Clarifier: EnvironmentRequest and task-understanding/task-envelope planning scaffolds; planning-only RunManager and Run Preview surfaces; a static Capability Contract catalog for Cap 16/63/64/65; deterministic Search Evidence Synthesis for the existing Cap 16 path; the bounded Context Pack wired into general chat; and Brain mode contracts with non-authorizing BrainTrace. These are partial governed substrate, not the full future stack.
+
+The full Context Assembler, Model Router / Tier Manager, Intention Parser, Tool / Function Calling Bridge, Sandbox Boundary Enforcer, Persona Filter, live runtime Capability Contract lookup, full Task Environment Router, Dry Run API, and general Brain planner remain future work. Deterministic Cap 16 Search Evidence Synthesis should not be described as that general planner.
 
 ---
 
@@ -621,6 +625,14 @@ Current strengths include:
 - proof packages
 - runtime truth docs
 - Task Clarifier
+- bounded Context Pack implemented and wired into general chat
+- Brain mode contracts and non-authorizing BrainTrace implemented and wired, with UI visibility still incomplete
+- EnvironmentRequest and task-understanding/task-envelope planning scaffolds
+- planning-only RunManager / Run Preview surfaces
+- deterministic Cap 16 Search Evidence Synthesis
+- static Capability Contract catalog for Cap 16/63/64/65
+- Daily Brief MVP wrapped in non-authorizing RoutineGraph v0
+- Plan My Week proposal/approval-record routine, without execution authority
 - Cap 64 email draft confirmation boundary
 - Cap 65 Shopify read-only direction
 - Brain architecture and schema scaffold
@@ -628,20 +640,20 @@ Current strengths include:
 
 Current in-progress or incomplete areas include:
 
-- Cap 16 search reliability
+- Cap 16 search reliability and provider/environment quality
 - full Brain runtime routing
-- live Capability Contracts
-- Context Assembler
+- live runtime Capability Contract lookup
+- full Context Assembler
 - Model Router / Tier Manager
 - Intention Parser / structured output validation
 - Tool / Function Calling Bridge
-- Search Synthesis module
+- general Brain search synthesis/planning beyond the implemented deterministic Cap 16 Search Evidence Synthesis
 - Sandbox Boundary Enforcer
 - Persona / Identity Filter
-- Dry Run / Plan Preview API
+- Dry Run API and fuller plan-preview product surface
 - Brain Trace UI
-- daily brief MVP
-- automation envelopes / approved routines
+- Daily Brief product polish and fuller daily operating layer
+- automation envelopes / approved recurring routines
 - project context engine
 - full OpenClaw environment planning
 - mainstream onboarding
