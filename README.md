@@ -141,9 +141,9 @@ Current grounded status:
 - GitHub-hosted Wave C jobs remained NOT EXECUTED because of the external account/billing
   restriction tracked in Issue #354; the owner waived that source as mandatory exit evidence
   without classifying it as PASS
-- post-Wave-C documentation closeout is the documentation prerequisite immediately before any
-  separate PR #335 reconstruction authorization decision; resolve whether that prerequisite is
-  complete from the current canonical/status surfaces and Issue #343
+- POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE via merged/verified PR #380
+- current decision: separate owner authorization for PR #335 reconstruction/reconciliation;
+  authorization is NOT GRANTED
 - PR #335 Google Workspace Foundation remains draft/unmerged historical Foundation/auth/identity code;
   it is not a current capability and must be reconstructed/reviewed separately before any merge
 - Google Tasks and Gmail are not built as current Nova capabilities
@@ -160,16 +160,16 @@ Historical sequencing references (May 2026; superseded by the master roadmap for
 [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
 [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
 
-Gate sequence (resolve the live position from current truth surfaces):
+Current decision sequence:
 
 ```text
-1. Post-Wave-C documentation closeout must be reviewed and merged before any separate PR #335
-   reconstruction authorization decision.
-2. After that prerequisite, the owner may separately authorize reconstruction/reconciliation of
-   PR #335 against exact validated baseline
+1. Post-Wave-C documentation closeout is COMPLETE via PR #380; this satisfies the documentation
+   prerequisite but does not authorize PR #335.
+2. The owner may separately decide whether to authorize reconstruction/reconciliation of PR #335
+   against exact validated baseline
    ec20a7146f7d6d55b8983cb7d6d3918d5fad9915.
-3. Harden the bounded Google Foundation lifecycle defects identified during review, then rerun
-   exact-head verification and independent security/architecture review.
+3. If separately authorized, harden the bounded Google Foundation lifecycle/security defects
+   identified during review, then rerun exact-head verification and independent security/architecture review.
 4. Make the #335 merge decision separately.
 5. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
 6. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove
