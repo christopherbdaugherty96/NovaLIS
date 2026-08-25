@@ -21,7 +21,7 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-25
 
-Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is the documentation-only post-Wave-C truth-hygiene pass in draft PR #366. PR #335 reconstruction remains next but not authorized by this synchronization.
+Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366. Wave C is COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains next but not authorized until the documentation closeout is reviewed and merged and separate owner authorization is given.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -32,7 +32,8 @@ B3 — COMPLETE / MERGED via #360
 B4 — COMPLETE / MERGED via #362
 C  — COMPLETE / MERGED / VALIDATED
 #365 — MERGED post-Wave-C documentation sync
-#366 — ACTIVE / DRAFT / documentation-current-truth only
+#366 — truth-hygiene contract package / documentation-current-truth only
+documentation closeout — REQUIRED BEFORE #335 AUTHORIZATION
 #335 reconstruction — NEXT / NOT AUTHORIZED
 ```
 
@@ -111,7 +112,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-It must not be merged in its historical branch state. After PR #366 truth hygiene is reviewed and a separate owner authorization is given, #335 may be reconstructed/reconciled against exact validated baseline `ec20a714...`, then undergo exact-head proof and independent review before a separate merge decision.
+It must not be merged in its historical branch state. Only after the post-Wave-C documentation closeout is reviewed and merged, and after separate owner authorization is given, may #335 be reconstructed/reconciled against exact validated baseline `ec20a714...`; it must then undergo exact-head proof and independent review before a separate merge decision.
 
 ## Current stabilization gate
 
@@ -137,9 +138,10 @@ WAVE C — proof and stabilization checkpoint         COMPLETE / MERGED / VALIDA
   reproduced-defect-only fixes
   immutable validated baseline
 
-POST-WAVE-C — truth hygiene                         ACTIVE / DRAFT #366
-  separate current HEAD/provenance from validated baseline
-  reconcile active operational/roadmap surfaces
+POST-WAVE-C — documentation closeout                CURRENT GATE
+  truth-hygiene contract package: PR #366
+  remaining front-door/narration follow-ups: separately reviewed
+  documentation closeout review+merge required before #335 authorization
   no runtime, generated-runtime, authority, or Google implementation changes
 
 POST-WAVE-C — Google Foundation reconciliation      NEXT / NOT AUTHORIZED
@@ -150,7 +152,7 @@ POST-WAVE-C — Google Foundation reconciliation      NEXT / NOT AUTHORIZED
   separate merge decision
 ```
 
-After truth hygiene and only after a separate #335 merge decision:
+After documentation closeout and only after a separate #335 merge decision:
 
 ```text
 Google identity-only live proof
@@ -342,7 +344,7 @@ broad SaaS productization
 Protection Wall runtime expansion
 ```
 
-README/front-door sequencing cleanup is separate documentation debt and must not be folded into PR #366 unless separately scoped.
+README/front-door and narration sequencing cleanup is part of the separately reviewed documentation closeout and must not be converted into runtime scope.
 
 ## Historical context
 
