@@ -59,7 +59,7 @@ def _post_wave_c_fixture(root: Path) -> None:
         "**Automated/recorded evidence:** tests\n"
         "current HEAD != immutable validated baseline\n"
         "Current gate: **post-Wave-C documentation closeout — truth-hygiene contract "
-        "package PR #366**.\n",
+        "package PR #366**. PR #335 remains next/not authorized until closeout is merged.\n",
     )
     _write(
         root,
@@ -85,6 +85,30 @@ def test_checker_accepts_merge_safe_documentation_closeout_gate(tmp_path):
 
     assert checker.check_operational_truth(tmp_path) == []
     assert checker.POST_WAVE_C_LANE == "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
+
+
+def test_agents_binds_truth_hygiene_contract_pr():
+    checker = _load_checker()
+    text = (
+        "Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366. "
+        "PR #335 reconstruction remains next but not authorized until closeout is merged.\n"
+    )
+
+    assert checker._extract_lane("agents", text) == (
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT:PR#366"
+    )
+
+
+def test_canonical_index_binds_truth_hygiene_contract_pr():
+    checker = _load_checker()
+    text = (
+        "Current gate: post-Wave-C documentation closeout — truth-hygiene contract package "
+        "PR #366. PR #335 remains next but not authorized until closeout is merged.\n"
+    )
+
+    assert checker._extract_lane("canonical_index", text) == (
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT:PR#366"
+    )
 
 
 def test_roadmap_binds_truth_hygiene_contract_pr():
