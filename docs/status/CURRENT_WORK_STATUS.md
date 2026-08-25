@@ -9,8 +9,9 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-POST-WAVE-C TRUTH HYGIENE
-STATUS: ACTIVE / DRAFT PR #366
+POST-WAVE-C DOCUMENTATION CLOSEOUT
+TRUTH-HYGIENE CONTRACT: PR #366
+AUTHORIZATION CONDITION: documentation closeout reviewed + merged before #335
 SCOPE: documentation/current-truth reconciliation only
 PR #365 MERGE / #366 BASE: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 VALIDATED_BASELINE_SHA: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
@@ -146,7 +147,7 @@ Historical B4 proof remains valid for the reviewed revision and environment. Do 
 
 ## Scope Lock
 
-This PR #366 truth-hygiene lane does not change:
+The post-Wave-C documentation-closeout gate does not change:
 
 ```text
 runtime behavior
@@ -164,7 +165,7 @@ external-write behavior
 generated runtime artifacts
 ```
 
-README sequencing drift is separate documentation debt and must not be folded into this sequence without separate scope.
+README/front-door and narration cleanup may proceed only as separately reviewed documentation closeout; it does not widen this gate into runtime work.
 
 ## PR #335 / Issue #354
 
@@ -179,7 +180,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 before a separate reconstruction authorization.
+Do not modify or merge #335 before documentation closeout is reviewed and merged and a separate reconstruction authorization is given.
 
 Issue #354 remains:
 
@@ -195,8 +196,11 @@ owner-waived as mandatory Wave C exit evidence
 
 ```text
 A1 / A2 / B1 / B2 / B3 / B4 / Wave C        COMPLETE
--> post-Wave-C truth hygiene / PR #366        ACTIVE / DRAFT
--> reconstruct #335 onto validated baseline   NEXT / NOT AUTHORIZED
+-> post-Wave-C documentation closeout          CURRENT GATE
+   truth-hygiene contract package: PR #366
+   remaining front-door/narration follow-ups: separately reviewed
+-> documentation closeout reviewed + merged    REQUIRED BEFORE #335 AUTHORIZATION
+-> reconstruct #335 onto validated baseline     NEXT / NOT AUTHORIZED
 -> independent security/architecture review
 -> separate #335 merge decision
 -> Google identity-only live proof
@@ -204,7 +208,7 @@ A1 / A2 / B1 / B2 / B3 / B4 / Wave C        COMPLETE
 -> evidence-based Continuity warrant
 ```
 
-`ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` remains the immutable validated baseline. PR #366 is documentation/current-truth reconciliation only and does not authorize #335 reconstruction.
+`ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` remains the immutable validated baseline. PR #366 is the truth-hygiene contract package inside the documentation-closeout gate and does not authorize #335 reconstruction.
 
 ## Permanent Truth Boundaries
 
