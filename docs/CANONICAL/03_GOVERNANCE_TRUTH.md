@@ -153,6 +153,7 @@ The current doctrine is narrower and testable:
 
 - persistence must be explicit in the behavior contract;
 - provenance/authority status must survive persistence where relevant;
+- ordinary GeneralChat must not silently create durable personal memory under the current B3 memory-governance contract;
 - persisted state never becomes action authority merely because it exists.
 
 Wave B3 memory governance is COMPLETE / MERGED. Current memory behavior must be read from the B3/runtime truth and evidence for the exact revision; this canonical boundary preserves the permanent rule that memory does not grant execution authority. Any future memory expansion or Operational Continuity implementation requires its own evidence and authorization.
