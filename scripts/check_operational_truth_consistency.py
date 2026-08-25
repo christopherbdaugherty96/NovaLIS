@@ -202,11 +202,19 @@ def _preserves_pr_335_next_not_authorized(text: str) -> bool:
 
 
 def _preserves_merged_pr(text: str, pr_number: int) -> bool:
-    for match in re.finditer(rf"#{pr_number}\b", text, re.IGNORECASE):
-        nearby = text[max(0, match.start() - 220) : match.end() + 220].upper()
-        if "MERGED" in nearby:
-            return True
-    return False
+    """Require MERGED to be structurally attached to the target PR reference."""
+
+    pr_ref = rf"(?:\bPR\s*)?#{pr_number}\b"
+    other_pr_ref = r"(?:\bPR\s*)?#\d+\b"
+    merged_after = re.compile(
+        rf"{pr_ref}(?:(?!{other_pr_ref})[^\n]){{0,140}}\bMERGED\b",
+        re.IGNORECASE,
+    )
+    merged_before = re.compile(
+        rf"\bMERGED\b(?:(?!{other_pr_ref})[^\n]){{0,140}}{pr_ref}",
+        re.IGNORECASE,
+    )
+    return bool(merged_after.search(text) or merged_before.search(text))
 
 
 def _preserves_validated_baseline(text: str) -> bool:
