@@ -1,12 +1,15 @@
 # Daily Command Center
 
-## 2026-08-25 — Post-Wave-C documentation closeout
+## 2026-08-25 — Post-Wave-C documentation closeout complete
 
 ```text
-CURRENT PLANNING LANE:
-  Post-Wave-C documentation closeout — truth-hygiene contract PR #366.
-  Documentation closeout reviewed + merged — REQUIRED BEFORE #335 AUTHORIZATION.
+CURRENT PLANNING STATE:
+  Post-Wave-C documentation closeout — COMPLETE.
+  Truth-hygiene provenance — PR #366 MERGED.
+  Narration/front-door package — PR #378 MERGED / VERIFIED.
   PR #335 reconstruction — NEXT / NOT AUTHORIZED.
+  Authorization state — NOT GRANTED.
+  Next decision — separate owner authorization for #335 reconstruction/reconciliation.
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
@@ -16,6 +19,8 @@ SUBSTATE:
   Wave C COMPLETE / MERGED / VALIDATED.
   validated_baseline_sha ec20a7146f7d6d55b8983cb7d6d3918d5fad9915.
   PR #365 merge / #366 branch base d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c.
+  PR #366 squash merge 4ddd46ad0c3e3c5db55e006680f4a426956581c1.
+  PR #378 squash merge 67c3d8fd10e013eef466769cd4c8d96f75d27845.
 
 B1 MERGE:
   PR #356 — MERGED
@@ -47,10 +52,15 @@ POST-B4 SYNC / WAVE C:
   reviewed head — 786c048df6dc4ed8f3c8245c5b365d4296f342f4
   squash merge/validated baseline — ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
-POST-WAVE-C SYNC:
+POST-WAVE-C DOCUMENTATION SYNC:
   PR #365 — MERGED
   merge/#366 branch base — d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
   runtime baseline change — NONE
+  PR #366 — MERGED / truth-hygiene provenance
+  squash merge — 4ddd46ad0c3e3c5db55e006680f4a426956581c1
+  PR #378 — MERGED / narration-front-door package
+  squash merge — 67c3d8fd10e013eef466769cd4c8d96f75d27845
+  runtime validated-baseline change — NONE
 
 B1 GENERATED-ARTIFACT EVIDENCE COMMIT:
   e668ec0c09df6e0d304427431e95a26619a9f507
@@ -82,18 +92,20 @@ HOSTED CI:
 
 CURRENT ORDER:
   A1 / A2 / B1 / B2 / B3 / B4 / Wave C — COMPLETE.
-  -> post-Wave-C documentation closeout / truth-hygiene contract PR #366.
-  -> remaining front-door/narration follow-ups — separately reviewed documentation only.
-  -> documentation closeout reviewed + merged — REQUIRED BEFORE #335 AUTHORIZATION.
-  -> reconstruct #335 onto exact validated baseline — NEXT / NOT AUTHORIZED.
+  -> post-Wave-C documentation closeout — COMPLETE.
+  -> PR #366 truth-hygiene provenance — MERGED.
+  -> PR #378 narration/front-door package — MERGED / VERIFIED.
+  -> #335 reconstruction decision — NEXT / NOT AUTHORIZED.
+  -> separate owner authorization required before reconstruction/reconciliation.
+  -> if separately authorized, reconstruct #335 onto exact validated baseline ec20a714....
   -> independent review + separate #335 merge decision.
   -> Google identity-only live proof.
   -> Google Tasks READ / first provider-backed Google evidence vertical.
   -> evidence-based Continuity warrant.
 
 BLOCKED:
-  #335 reconstruction until documentation closeout is reviewed + merged and separately authorized.
-  Google domain work.
+  #335 reconstruction until separate owner authorization is granted.
+  Google domain work beyond separately authorized future evidence lanes.
   Operational Continuity runtime.
 ```
 
@@ -103,7 +115,9 @@ Status: manual operational surface.
 
 B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact publication, exact diff review, operational synchronization, and merge are complete. B2's capability-narration projection, consumer migration, review, and merge through PR #358 are also complete.
 
-B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; the complete non-hosted proof passed on exact baseline `ec20a714...`, which remains the immutable validated baseline under the explicit owner evidence waiver. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; it did not establish a new runtime validated baseline. PR #366 carries the foundational truth-hygiene contract for the current documentation-closeout gate; remaining front-door/narration follow-ups stay separately reviewed.
+B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; the complete non-hosted proof passed on exact baseline `ec20a714...`, which remains the immutable validated baseline under the explicit owner evidence waiver. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; PR #366 merged the truth-hygiene contract at `4ddd46ad...`; PR #378 merged and was verified at `67c3d8fd...`. None of those documentation/truth commits established a new runtime validated baseline.
+
+The post-Wave-C documentation closeout is complete in this operational-truth transition. The next repository decision is whether the owner separately authorizes reconstruction/reconciliation of PR #335 against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Until that separate authorization exists, #335 remains `NEXT / NOT AUTHORIZED` and is not an active engineering lane.
 
 ## Permanent evidence discipline
 
@@ -125,6 +139,7 @@ prior candidate PASS != corrected-head PASS
 B3 memory architecture beyond the completed bounded truth/provenance repair
 B4 dependency modernization or packaging redesign beyond the completed repair
 Wave C redesign, capability expansion, or repairs without reproduced evidence
+PR #335 reconstruction before separate owner authorization
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -142,4 +157,4 @@ Protection Wall runtime expansion
 
 ## Next handoff
 
-Finish the post-Wave-C documentation closeout through separate review/merge decisions. That documentation-only work does not authorize #335. The next consequential engineering action still requires a separate owner authorization for #335 reconstruction against exact validated baseline `ec20a714...` after documentation closeout is reviewed and merged.
+Post-Wave-C documentation closeout is complete. Do not reinterpret that completion as authorization for Google work. The next consequential decision is a separate owner authorization decision for PR #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. If authorization is not granted, #335 remains deferred and no Google implementation begins.

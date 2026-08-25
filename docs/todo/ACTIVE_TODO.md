@@ -6,7 +6,7 @@ This file is the current actionable task inventory. Historical lane detail belon
 
 ## Active Now
 
-### Post-Wave-C documentation closeout
+### Post-Wave-C documentation closeout — COMPLETE
 
 Current state:
 
@@ -21,9 +21,14 @@ PR #364: MERGED
 PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 PR #365 merge / PR #366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
-truth-hygiene contract package: PR #366
-documentation closeout: REQUIRED BEFORE #335 AUTHORIZATION
+PR #366 truth-hygiene package: MERGED
+PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
+PR #378 narration/front-door package: MERGED / VERIFIED
+PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
+documentation closeout: COMPLETE
 #335 reconstruction: NEXT / NOT AUTHORIZED
+authorization state: NOT GRANTED
+next decision: separate owner authorization for #335 reconstruction/reconciliation
 ```
 
 Wave A1, A2, B1, B2, B3, B4, and Wave C are already merged:
@@ -73,9 +78,21 @@ Wave A1, A2, B1, B2, B3, B4, and Wave C are already merged:
        merge/PR #366 branch base:
        d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
        runtime validated-baseline change: NONE
+
+#366  post-Wave-C truth-hygiene contract package
+       squash merge:
+       4ddd46ad0c3e3c5db55e006680f4a426956581c1
+       runtime validated-baseline change: NONE
+
+#378  consolidated narration/front-door documentation package
+       reviewed head:
+       84222288335c399c1ffa73186858e8ba84e9a64a
+       squash merge:
+       67c3d8fd10e013eef466769cd4c8d96f75d27845
+       runtime validated-baseline change: NONE
 ```
 
-Do not reopen B1 through B4 or Wave C without concrete new evidence. The Wave C exit proof passed on exact validated baseline `ec20a714...` under the explicit owner evidence waiver; do not reinterpret waived hosted jobs as PASS. PR #365 is later documentation provenance, not a new runtime validated baseline.
+Do not reopen B1 through B4 or Wave C without concrete new evidence. The Wave C exit proof passed on exact validated baseline `ec20a714...` under the explicit owner evidence waiver; do not reinterpret waived hosted jobs as PASS. PRs #365, #366, and #378 are later documentation/truth provenance, not new runtime validated baselines.
 
 ### Completed B1 source/truth work
 
@@ -193,6 +210,8 @@ Do not recreate or reopen these as pending implementation:
 #362         Wave B4 reproducibility hygiene
 #364         Wave C validation / validated baseline
 #365         post-Wave-C baseline/evidence-waiver documentation sync
+#366         post-Wave-C truth-hygiene contract package
+#378         consolidated narration/front-door documentation package
 ```
 
 Merged implementation is not universal live-proof coverage.
@@ -205,9 +224,11 @@ Merged implementation is not universal live-proof coverage.
 OPEN / DRAFT / UNMERGED
 head: befb69ef75881a9f418472549b64243219c138f9
 historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
+reconstruction: NEXT / NOT AUTHORIZED
+authorization state: NOT GRANTED
 ```
 
-PR #335 remains deferred; reconstruction/reconciliation onto the exact Wave C validated baseline is next but requires documentation closeout plus separate owner authorization.
+The documentation-closeout prerequisite is complete. PR #335 still remains deferred because reconstruction/reconciliation requires a separate owner authorization. If authorized later, reconstruction remains pinned to exact Wave C validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`; do not substitute a later documentation-only `main` revision.
 
 ### Issue #354 — zero-step GitHub Actions infrastructure
 
@@ -220,15 +241,17 @@ WAVE C DISPOSITION: owner-waived as a mandatory exit evidence source
 
 Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not PASS or behavioral FAIL; the owner waiver removed it as a Wave C exit dependency without fixing the account restriction.
 
-### Front-door and narration documentation closeout
+## Completed Documentation Closeout
 
-README, START_HERE, historical-guide lifecycle, and Brain/operating-model narration cleanup remain separate reviewed documentation follow-ups. They do not authorize runtime or #335 work.
+README, START_HERE, historical-guide lifecycle, and Brain/operating-model narration cleanup were consolidated and merged through PR #378. The post-Wave-C truth-hygiene contract was merged through PR #366. This completion state does not authorize runtime or #335 work.
 
-## Current Next Lane and Blocked Work
+## Current Next Decision and Blocked Work
 
-### Post-Wave-C documentation closeout
+### #335 reconstruction/reconciliation decision
 
-**CURRENT GATE.** PR #366 is the truth-hygiene contract package. Remaining front-door/narration follow-ups stay separately reviewed. The closeout must be reviewed and merged before any separate #335 reconstruction authorization. This gate must not alter runtime code, generated runtime artifacts, capability state, authority, Google implementation, or #335.
+**NEXT / NOT AUTHORIZED.** Documentation closeout is complete, but no Google engineering lane becomes active automatically. The next consequential step is a separate owner decision whether to authorize bounded #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+
+Until that separate authorization is granted, do not create or modify the #335 reconstruction branch, implement Google Foundation changes, or treat #335 as an active capability lane.
 
 ### Wave B2 — capability narration
 
@@ -269,9 +292,9 @@ README, START_HERE, historical-guide lifecycle, and Brain/operating-model narrat
 
 ### Post-Wave-C / Google Foundation reconciliation
 
-**NEXT / NOT AUTHORIZED.** Requires documentation closeout review+merge and separate owner authorization before any branch or implementation change:
+**NEXT / NOT AUTHORIZED.** The documentation prerequisite is satisfied, but a separate owner authorization is still required before any branch or implementation change:
 
-- reconstruct #335 on that exact baseline only after separate authorization;
+- reconstruct #335 on the exact validated baseline only after separate authorization;
 - harden post-token identity-failure cleanup and invalid callback consumption;
 - rerun exact-head #335 verification;
 - perform independent security/architecture review;
@@ -279,7 +302,7 @@ README, START_HERE, historical-guide lifecycle, and Brain/operating-model narrat
 
 ## Post-Stabilization Order
 
-Only after post-Wave-C documentation closeout is reviewed and merged, and after a separate #335 decision:
+Only after a separate #335 reconstruction decision and the subsequent separately reviewed/merged work:
 
 ```text
 Google identity-only live proof
@@ -309,6 +332,7 @@ Do not begin outside the next separately authorized lane:
 B3 memory architecture beyond the completed truth/provenance repair
 B4 dependency modernization, unrelated upgrades, or packaging redesign beyond completed B4
 Wave C reopening, capability expansion, or repairs without reproduced evidence
+PR #335 reconstruction/reconciliation without separate owner authorization
 Google Tasks domain implementation
 Gmail expansion
 Google Calendar writes

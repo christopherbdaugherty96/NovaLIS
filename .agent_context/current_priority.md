@@ -1,6 +1,6 @@
 # Current Priority
 
-## Post-Wave-C Documentation Closeout — PR #366 Truth-Hygiene Contract — 2026-08-25
+## Post-Wave-C Documentation Closeout — COMPLETE — 2026-08-25
 
 Current planning lane:
 
@@ -9,11 +9,14 @@ B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
 B4: COMPLETE / MERGED
 WAVE C: COMPLETE / MERGED / VALIDATED
-POST-WAVE-C DOCUMENTATION CLOSEOUT
-truth-hygiene contract package: PR #366
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
+truth-hygiene provenance: PR #366 MERGED
+narration/front-door package: PR #378 MERGED
 PR #335 reconstruction: NEXT / NOT AUTHORIZED
-authorization condition: documentation closeout reviewed + merged
+authorization state: NOT GRANTED
+next decision: separate owner authorization for #335 reconstruction/reconciliation
 post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+post_closeout_narration_merge_sha: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
@@ -40,10 +43,14 @@ Wave C PR #364: MERGED
 PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
 PR #364 squash merge / validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 PR #365 documentation sync / PR #366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
-PR #366: post-Wave-C truth-hygiene contract package
+PR #366: MERGED / post-Wave-C truth-hygiene contract package
+PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
+PR #378 reviewed head: 84222288335c399c1ffa73186858e8ba84e9a64a
+PR #378: MERGED / narration-front-door closeout package
+PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 ```
 
-B1 through B4 and Wave C are complete and merged. Their proof, generated truth, operational synchronization, and review records remain evidence only for the revisions and environments actually exercised. The complete Wave C non-hosted proof passed on exact validated baseline `ec20a714...`; the owner waived GitHub-hosted Actions as a required evidence source while preserving their `NOT EXECUTED` classification. PR #365 later advanced `main` with documentation-only synchronization and did not establish a new runtime validated baseline.
+B1 through B4 and Wave C are complete and merged. Their proof, generated truth, operational synchronization, and review records remain evidence only for the revisions and environments actually exercised. The complete Wave C non-hosted proof passed on exact validated baseline `ec20a714...`; the owner waived GitHub-hosted Actions as a required evidence source while preserving their `NOT EXECUTED` classification. PR #365, PR #366, and PR #378 later advanced `main` with documentation/truth synchronization only and did not establish a new runtime validated baseline.
 
 ## Completed gates
 
@@ -94,9 +101,11 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — complete post-Wave-C documentation closeout
+## Current action — separate #335 authorization decision
 
-PR #366 carries the bounded truth-hygiene contract for the documentation closeout. Remaining front-door/narration documentation follow-ups stay separately reviewed. The documentation closeout must be reviewed and merged before any separate #335 reconstruction authorization. This gate does not authorize runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
+This completion-sync revision records the post-Wave-C documentation closeout as complete. PR #366 provides truth-hygiene provenance and PR #378 provides the merged narration/front-door package. The next repository decision is whether the owner separately authorizes reconstruction/reconciliation of #335 against the exact validated baseline. Until that separate authorization exists, #335 remains `NEXT / NOT AUTHORIZED` and no Google/Foundation engineering lane is active.
+
+This state transition does not authorize runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
 
 The merged B2 projection preserves these distinct fields:
 
@@ -116,7 +125,7 @@ B3 is complete: ordinary chat no longer silently creates authoritative personal 
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; requirements-style compatibility surfaces are mechanically checked; the historical `python-multipart` mismatch is resolved; and the supported install path was proven on the reviewed B4 revision. Do not reopen or redesign packaging without new evidence.
 
-Wave C is complete. Exact validated-baseline proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. PR #365 merged at `d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c` as documentation-only synchronization and is the PR #366 branch base; it is not a new runtime validated baseline. Do not reconstruct or modify #335 until documentation closeout is reviewed and merged and a separate authorization is given.
+Wave C is complete. Exact validated-baseline proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. PR #365, #366, and #378 are later documentation/truth provenance and are not new runtime validated baselines. Documentation closeout is complete at this revision, but #335 reconstruction still requires a separate owner authorization.
 
 ## Google Foundation / CI state
 
@@ -129,7 +138,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 without documentation closeout and the next separate reconstruction authorization.
+Do not modify, reconstruct, rebase, or merge #335 without the next separate reconstruction authorization.
 
 Issue #354 remains:
 
@@ -149,20 +158,22 @@ B1 COMPLETE / MERGED
 -> B3 memory governance / COMPLETE / MERGED
 -> B4 reproducibility hygiene / COMPLETE / MERGED
 -> Wave C proof / semantic-contract stabilization / COMPLETE / MERGED / VALIDATED
--> post-Wave-C documentation closeout / PR #366 truth-hygiene contract + remaining reviewed documentation follow-ups
--> documentation closeout reviewed + merged / REQUIRED BEFORE #335 AUTHORIZATION
--> reconstruct #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
+-> post-Wave-C truth-hygiene provenance / PR #366 / COMPLETE / MERGED
+-> narration/front-door closeout package / PR #378 / COMPLETE / MERGED
+-> post-Wave-C documentation closeout / COMPLETE
+-> separate owner authorization decision for #335 / CURRENT DECISION / NOT AUTHORIZED
+-> if authorized, reconstruct #335 onto exact validated baseline
 -> independent #335 review + separate merge decision
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4 and Wave C are complete and merged. PR #366 is the truth-hygiene contract package inside the current documentation-closeout gate. PR #335 reconstruction remains next and requires both documentation closeout and separate authorization.
+B1 through B4, Wave C, and the post-Wave-C documentation closeout are complete. PR #335 remains the next substantive engineering lane only if the owner separately authorizes reconstruction/reconciliation against the exact validated baseline.
 
 ## Scope lock
 
-Wave C authorization is complete and closed. The post-Wave-C documentation-closeout gate may reconcile documentation/current-truth only. Do not reopen Wave C or begin broader post-Wave-C work without separate authorization:
+Wave C authorization and the bounded documentation-closeout work are complete and closed at this revision. This completion sync does not authorize broader post-Wave-C work. Do not reopen Wave C or begin the next substantive engineering lane without separate authorization:
 
 ```text
 memory architecture beyond the completed B3 truth/provenance repair
