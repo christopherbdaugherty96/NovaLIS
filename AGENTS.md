@@ -83,7 +83,7 @@ Wave A1, A2, B1, B2, B3, and B4 are complete:
        ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
 #365  Post-Wave-C validated-baseline/evidence-waiver documentation sync — MERGED
-       current main before this branch:
+       merge / Sequence-1 branch base:
        d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 ```
 
@@ -94,9 +94,11 @@ Wave B2 — capability narration: COMPLETE / MERGED
 Wave B3 — memory governance: COMPLETE / MERGED
 B4: COMPLETE / MERGED
 Wave C: COMPLETE / MERGED / VALIDATED
-current_main_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
+
+`post_wave_c_sync_sha` is durable provenance for PR #365 and this truth-hygiene branch base, not a forever-current `main` claim. Resolve current HEAD from Git/repository state when that distinction matters.
 
 B1 through B4 are complete and merged. Their proof and review records remain historical evidence for the revisions and environments actually exercised.
 
@@ -106,7 +108,7 @@ B3's bounded memory-governance contract is complete: ordinary chat does not sile
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; `nova_backend/requirements.txt` is a mechanically checked compatibility projection; the historical `python-multipart` mismatch is resolved; and supported installation was proven on the reviewed B4 revision. Do not reopen packaging without concrete new evidence.
 
-Wave C is complete and merged. The complete non-hosted proof passed on exact validated baseline `ec20a714...`: source Ruff, 20 adversarial tests, 289 certification tests with five expected skips, 4,294 backend tests with five expected skips, structural/truth/dependency checks, and live `nova-start` smoke. GitHub-hosted jobs remained `NOT EXECUTED` because of the account-billing restriction in Issue #354. The owner explicitly waived that evidence source as a Wave C exit requirement; it is not recorded as PASS. PR #365 later advanced `main` with documentation-only synchronization; it did not establish a new runtime validated baseline.
+Wave C is complete and merged. The complete non-hosted proof passed on exact validated baseline `ec20a714...`: source Ruff, 20 adversarial tests, 289 certification tests with five expected skips, 4,294 backend tests with five expected skips, structural/truth/dependency checks, and live `nova-start` smoke. GitHub-hosted jobs remained `NOT EXECUTED` because of the account-billing restriction in Issue #354. The owner explicitly waived that evidence source as a Wave C exit requirement; it is not recorded as PASS. PR #365 later advanced repository `main` with documentation-only synchronization; it did not establish a new runtime validated baseline.
 
 Merged stabilization work already includes:
 
