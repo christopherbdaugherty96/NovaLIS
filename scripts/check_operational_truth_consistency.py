@@ -3,16 +3,22 @@
 This is intentionally separate from ``check_runtime_doc_drift.py``. The runtime
 checker prevents broad runtime facts from leaking into navigation docs; this
 script checks that the hand-maintained *operational* entry points agree on the
-same active stabilization lane and preserve a few permanent truth boundaries.
+same active stabilization/current-truth lane and preserve a few permanent truth
+boundaries.
 
 Checked here:
 - required presence of the active operational entry points;
-- active stabilization-lane agreement across AGENTS, canonical index,
-  priority/status/todo, and the canonical roadmap marker;
+- active stabilization/current-truth lane agreement across AGENTS, canonical
+  index, priority/status/todo, and the canonical roadmap marker;
 - the known ``connections_api.py`` requests-based network exception and
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - PR #335 remaining explicitly UNMERGED near its reference in priority/roadmap.
+
+The checker supports both the historical Wave A1-C representation and the
+post-Wave-C truth-hygiene representation. This is a consistency check, not a
+claim that either representation is currently active unless the checked files
+say so.
 
 Not checked here:
 - semantic correctness of the documents;
@@ -49,6 +55,10 @@ NON_GOALS = (
     "test/capability/authority certification",
 )
 
+POST_WAVE_C_LANE = "POST_WAVE_C_TRUTH_HYGIENE"
+
+# Historical stabilization-lane markers. Keep these for compatibility with the
+# already-proven A1-C operational fixtures and historical checked revisions.
 LANE_PATTERNS = {
     "agents": re.compile(
         r"^## Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b.*Current Development State",
@@ -76,14 +86,56 @@ LANE_PATTERNS = {
     ),
 }
 
+# Current post-Wave-C representation. These patterns intentionally require
+# active-lane context rather than accepting any historical mention of
+# "post-Wave-C" in the document.
+POST_WAVE_C_PATTERNS = {
+    "agents": re.compile(
+        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane is .*post-Wave-C truth hygiene",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+    "priority": re.compile(
+        r"^## Post-Wave-C Truth Hygiene\s+[—-]\s+PR #\d+ Active\b",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+    "work_status": re.compile(
+        r"^POST-WAVE-C TRUTH HYGIENE\s*$",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+    "command_center": re.compile(
+        r"^\s*Post-Wave-C truth hygiene\s+[—-]\s+ACTIVE\b",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+    "active_todo": re.compile(
+        r"^### Post-Wave-C truth hygiene\s+[—-]\s+active\b",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+    "canonical_index": re.compile(
+        r"^Current active lane:.*post-Wave-C truth hygiene",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+    "roadmap": re.compile(
+        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane.*post-Wave-C truth-hygiene",
+        re.MULTILINE | re.IGNORECASE,
+    ),
+}
+
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
 def _extract_lane(name: str, text: str) -> str | None:
-    match = LANE_PATTERNS[name].search(text[:8000])
-    return match.group("lane") if match else None
+    scoped = text[:8000]
+    post_wave_c_match = POST_WAVE_C_PATTERNS[name].search(scoped)
+    if post_wave_c_match:
+        return POST_WAVE_C_LANE
+
+    legacy_match = LANE_PATTERNS[name].search(scoped)
+    if legacy_match:
+        return legacy_match.group("lane")
+
+    return None
 
 
 def _preserves_pr_335_unmerged(text: str) -> bool:
@@ -121,7 +173,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             continue
         lane = _extract_lane(name, text)
         if lane is None:
-            errors.append(f"{paths[name]}: active stabilization lane marker not found")
+            errors.append(f"{paths[name]}: active stabilization/current-truth lane marker not found")
         else:
             lanes[name] = lane
 
@@ -129,7 +181,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         rendered = ", ".join(
             f"{name}={lane}" for name, lane in sorted(lanes.items())
         )
-        errors.append(f"active stabilization lane mismatch: {rendered}")
+        errors.append(f"active stabilization/current-truth lane mismatch: {rendered}")
 
     governance = texts.get("governance", "")
     if "nova_backend/src/api/connections_api.py" not in governance:
