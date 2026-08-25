@@ -136,17 +136,31 @@ POST_WAVE_C_COMPLETE_MARKER = re.compile(
     re.IGNORECASE,
 )
 
+TRUTH_HYGIENE_PROVENANCE_PATTERNS = (
+    re.compile(
+        r"\btruth-hygiene(?:\s+contract)?\s+(?:provenance|package)\s*"
+        r"(?:[:—-]\s*)?(?:PR\s*)?#(?P<pr>\d+)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\bPR\s*#(?P<pr>\d+)\b"
+        r"(?:(?!\bPR\s*#)[^\n]){0,100}\btruth-hygiene"
+        r"(?:\s+contract)?\s+(?:provenance|package)\b",
+        re.IGNORECASE,
+    ),
+)
+
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
 def _extract_truth_hygiene_pr(text: str) -> str | None:
-    """Return the PR number used as nearby truth-hygiene provenance."""
+    """Return the PR number structurally bound to truth-hygiene provenance."""
 
-    for match in re.finditer(r"PR #(?P<pr>\d+)\b", text, re.IGNORECASE):
-        nearby = text[max(0, match.start() - 220) : match.end() + 220].upper()
-        if "TRUTH-HYGIENE" in nearby:
+    for pattern in TRUTH_HYGIENE_PROVENANCE_PATTERNS:
+        match = pattern.search(text)
+        if match:
             return match.group("pr")
     return None
 
