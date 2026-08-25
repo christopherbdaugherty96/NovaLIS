@@ -43,7 +43,7 @@ validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
 `d5b0dc66...` is durable provenance for PR #365 and the PR #366 branch base, not a forever-current `main` claim. Current HEAD must be resolved from Git/repository state when needed.
 
-Current active lane: **PR #366 post-Wave-C truth hygiene — OPEN / DRAFT / documentation-current-truth only**. Wave C remains COMPLETE / MERGED / VALIDATED.
+Current gate: **post-Wave-C documentation closeout — truth-hygiene contract package PR #366**. Wave C remains COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED until documentation closeout is reviewed and merged and separate authorization is given.
 
 Wave C is complete and merged. The complete non-hosted proof passed on exact validated baseline `ec20a714...`; GitHub-hosted jobs did not execute because of the external account-billing restriction recorded in Issue #354. The owner explicitly waived hosted execution as a Wave C exit requirement without classifying those jobs as PASS. The later documentation-only #365 commit does not extend that runtime proof to a new baseline.
 
@@ -59,7 +59,10 @@ Wave A1 operational truth sync                 COMPLETE
 -> B3 memory governance                         COMPLETE / MERGED
 -> B4 reproducibility hygiene                   COMPLETE / MERGED
 -> Wave C validated-baseline proof checkpoint   COMPLETE / MERGED / VALIDATED
--> PR #366 post-Wave-C truth hygiene            ACTIVE / DRAFT
+-> post-Wave-C documentation closeout           CURRENT GATE
+   truth-hygiene contract package: PR #366
+   remaining front-door/narration follow-ups: separately reviewed
+-> documentation closeout reviewed + merged     REQUIRED BEFORE #335 AUTHORIZATION
 -> reconstruct/reconcile #335                   NEXT / NOT AUTHORIZED
 -> Google identity proof
 -> first Google READ/evidence vertical
