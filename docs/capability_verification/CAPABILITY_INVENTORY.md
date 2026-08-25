@@ -14,7 +14,7 @@ The immutable Wave C validated runtime baseline is:
 ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-The later PR #365 documentation sync merged at `d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c` and is the base of draft PR #366. That later documentation commit did not establish a new runtime validated baseline.
+The later PR #365 documentation sync merged at `d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c` and is the branch base for the PR #366 truth-hygiene contract package. That later documentation commit did not establish a new runtime validated baseline.
 
 At the Wave C validated baseline, generated runtime state reports **27 active capabilities**. Current HEAD must be resolved from Git/repository state rather than inferred from this evidence SHA.
 
@@ -58,7 +58,7 @@ These rows mean the named implementation defects are not current pending work. T
 | Local reminder schedules | ✅ | persistent SCH records/retrieval exist; cancellation routing repair merged through #351; dependable background alert delivery is not established by this contract |
 | Governed web search | ✅ | capability exists; live execution depends on configured provider/key/runtime availability |
 | General chat / local inference | ✅ | exists; Wave C covered semantic-contract regression, but semantic quality and local-model throughput remain environment/evidence-specific concerns |
-| Google Workspace Foundation | ❌ on current main | PR #335 remains draft/unmerged Foundation-only code; reconstruction is next but separately authorization-gated |
+| Google Workspace Foundation | ❌ on current main | PR #335 remains draft/unmerged Foundation-only code; reconstruction is next but requires documentation closeout plus separate authorization |
 | Google Tasks | ❌ | not built |
 | Gmail | ❌ | not built |
 | Google Reminders | ❌ | not built |
@@ -156,7 +156,7 @@ PR #335 does not change that because it remains draft/unmerged and is Foundation
 
 ## Google evidence order
 
-After PR #366 truth hygiene is reviewed, #335 reconstruction receives separate authorization/review, and a separate #335 merge decision is made:
+Only after the post-Wave-C documentation closeout is reviewed and merged, #335 reconstruction receives separate authorization/review, and a separate #335 merge decision is made:
 
 ```text
 Google identity-only live proof
