@@ -312,6 +312,37 @@ def test_checker_detects_missing_merged_378_provenance(tmp_path):
     assert any("PR #378 as MERGED" in error for error in errors)
 
 
+def test_checker_does_not_borrow_366_merged_state_for_378(tmp_path):
+    checker = _load_checker()
+    negative = (
+        "PR #366 truth-hygiene package: MERGED\n"
+        "PR #378 narration/front-door package: OPEN / DRAFT\n"
+    )
+    positive = (
+        "PR #366 truth-hygiene package: MERGED\n"
+        "PR #378 narration/front-door package: MERGED / VERIFIED\n"
+    )
+
+    assert checker._preserves_merged_pr(negative, 378) is False
+    assert checker._preserves_merged_pr(positive, 378) is True
+
+    _post_wave_c_complete_fixture(tmp_path)
+    _write(
+        tmp_path,
+        "docs/status/CURRENT_WORK_STATUS.md",
+        _completed_state_text().replace(
+            "truth-hygiene provenance: PR #366 MERGED\n"
+            "narration/front-door package: PR #378 MERGED\n",
+            "PR #366 truth-hygiene package: MERGED\n"
+            "PR #378 narration/front-door package: OPEN / DRAFT\n",
+        ),
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any("PR #378 as MERGED" in error for error in errors)
+
+
 def test_checker_detects_validated_baseline_drift(tmp_path):
     checker = _load_checker()
     _post_wave_c_complete_fixture(tmp_path)
