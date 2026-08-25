@@ -164,7 +164,7 @@ is not authorized to pursue broad goals or expand its own authority.
 Resolve the live position in this sequence from the current canonical/status surfaces and Issue #343:
 
 1. Post-Wave-C documentation closeout must be reviewed and merged before any separate PR #335 reconstruction authorization decision.
-2. After that prerequisite, the owner may separately authorize reconstruction of PR #335 onto the approved current main / immutable Wave C validated lineage.
+2. After that prerequisite, the owner may separately authorize reconstruction/reconciliation of PR #335 against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
 3. Perform independent #335 security/architecture review and make its merge decision separately.
 4. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
 5. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove provenance/freshness/evidence boundaries.
