@@ -25,32 +25,32 @@ def _post_wave_c_fixture(root: Path) -> None:
         root,
         "AGENTS.md",
         "## Post-Wave-C Current Development State — 2026-08-25\n"
-        "Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is "
-        "**PR #366 post-Wave-C truth hygiene — documentation/current-truth only**.\n",
+        "Post-Wave-C documentation closeout gate: truth-hygiene contract package "
+        "PR #366. #335 remains next/not authorized until closeout is reviewed and merged.\n",
     )
     _write(
         root,
         ".agent_context/current_priority.md",
-        "## Post-Wave-C Truth Hygiene — PR #366 Active — 2026-08-25\n"
+        "## Post-Wave-C Documentation Closeout — PR #366 Truth-Hygiene Contract — 2026-08-25\n"
         "#335 OPEN / DRAFT / UNMERGED\n",
     )
     _write(
         root,
         "docs/status/CURRENT_WORK_STATUS.md",
-        "## Current Development Lane\n```text\nPOST-WAVE-C TRUTH HYGIENE\n"
-        "STATUS: ACTIVE / DRAFT PR #366\n```\n",
+        "## Current Development Lane\n```text\nPOST-WAVE-C DOCUMENTATION CLOSEOUT\n"
+        "TRUTH-HYGIENE CONTRACT: PR #366\n```\n",
     )
     _write(
         root,
         "docs/status/DAILY_COMMAND_CENTER.md",
         "CURRENT PLANNING LANE:\n"
-        "  Post-Wave-C truth hygiene — ACTIVE / DRAFT PR #366.\n",
+        "  Post-Wave-C documentation closeout — truth-hygiene contract PR #366.\n",
     )
     _write(
         root,
         "docs/todo/ACTIVE_TODO.md",
-        "## Active Now\n### Post-Wave-C truth hygiene — active\n"
-        "Current state:\n```text\nPR #366: ACTIVE / DRAFT / documentation-current-truth only\n```\n",
+        "## Active Now\n### Post-Wave-C documentation closeout\n"
+        "Current state:\n```text\ntruth-hygiene contract package: PR #366\n```\n",
     )
     _write(
         root,
@@ -58,8 +58,8 @@ def _post_wave_c_fixture(root: Path) -> None:
         "**Implementation:** code\n"
         "**Automated/recorded evidence:** tests\n"
         "current HEAD != immutable validated baseline\n"
-        "Current active lane: **PR #366 post-Wave-C truth hygiene — OPEN / DRAFT / "
-        "documentation-current-truth only**.\n",
+        "Current gate: **post-Wave-C documentation closeout — truth-hygiene contract "
+        "package PR #366**.\n",
     )
     _write(
         root,
@@ -72,31 +72,30 @@ def _post_wave_c_fixture(root: Path) -> None:
     _write(
         root,
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
-        "Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is the "
-        "documentation-only post-Wave-C truth-hygiene pass in draft PR #366. "
-        "PR #335 reconstruction remains next but not authorized by this synchronization.\n"
+        "Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366. "
+        "PR #335 reconstruction remains next but not authorized until documentation "
+        "closeout is reviewed and merged.\n"
         "#335 OPEN / DRAFT / UNMERGED\n",
     )
 
 
-def test_checker_accepts_post_wave_c_truth_hygiene_lane(tmp_path):
+def test_checker_accepts_merge_safe_documentation_closeout_gate(tmp_path):
     checker = _load_checker()
     _post_wave_c_fixture(tmp_path)
 
     assert checker.check_operational_truth(tmp_path) == []
-    assert checker.POST_WAVE_C_LANE == "POST_WAVE_C_TRUTH_HYGIENE"
+    assert checker.POST_WAVE_C_LANE == "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
 
 
-def test_roadmap_binds_first_pr_after_truth_hygiene_phrase():
+def test_roadmap_binds_truth_hygiene_contract_pr():
     checker = _load_checker()
     text = (
-        "Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is the "
-        "documentation-only post-Wave-C truth-hygiene pass in draft PR #366. "
-        "PR #335 reconstruction remains next but not authorized.\n"
+        "Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366. "
+        "PR #335 reconstruction remains next but not authorized until closeout is merged.\n"
     )
 
     assert checker._extract_lane("roadmap", text) == (
-        "POST_WAVE_C_TRUTH_HYGIENE:PR#366"
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT:PR#366"
     )
 
 
@@ -111,7 +110,7 @@ def test_checker_detects_post_wave_c_to_legacy_lane_drift(tmp_path):
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("lane mismatch" in error for error in errors)
+    assert any("gate mismatch" in error for error in errors)
     assert any("roadmap=C" in error for error in errors)
 
 
@@ -124,14 +123,14 @@ def test_checker_detects_post_wave_c_pr_identity_drift(tmp_path):
         "**Implementation:** code\n"
         "**Automated/recorded evidence:** tests\n"
         "current HEAD != immutable validated baseline\n"
-        "Current active lane: **PR #999 post-Wave-C truth hygiene — OPEN / DRAFT / "
-        "documentation-current-truth only**.\n",
+        "Current gate: **post-Wave-C documentation closeout — truth-hygiene contract "
+        "package PR #999**.\n",
     )
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("lane mismatch" in error for error in errors)
+    assert any("gate mismatch" in error for error in errors)
     assert any(
-        "canonical_index=POST_WAVE_C_TRUTH_HYGIENE:PR#999" in error
+        "canonical_index=POST_WAVE_C_DOCUMENTATION_CLOSEOUT:PR#999" in error
         for error in errors
     )
