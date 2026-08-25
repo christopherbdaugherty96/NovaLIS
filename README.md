@@ -165,8 +165,9 @@ Gate sequence (resolve the live position from current truth surfaces):
 ```text
 1. Post-Wave-C documentation closeout must be reviewed and merged before any separate PR #335
    reconstruction authorization decision.
-2. After that prerequisite, the owner may separately authorize reconstruction of PR #335 onto
-   the approved current main / immutable Wave C validated lineage.
+2. After that prerequisite, the owner may separately authorize reconstruction/reconciliation of
+   PR #335 against exact validated baseline
+   ec20a7146f7d6d55b8983cb7d6d3918d5fad9915.
 3. Harden the bounded Google Foundation lifecycle defects identified during review, then rerun
    exact-head verification and independent security/architecture review.
 4. Make the #335 merge decision separately.
