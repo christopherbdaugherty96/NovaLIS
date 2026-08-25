@@ -34,12 +34,14 @@ Wave B1 runtime-truth instrumentation is complete and merged through PR #356. Po
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-PR #365 then recorded the validated-baseline/evidence-waiver state in documentation and advanced repository `main` without changing the validated runtime baseline:
+PR #365 then recorded the validated-baseline/evidence-waiver state in documentation without changing the validated runtime baseline:
 
 ```text
-current_main_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
+
+`d5b0dc66...` is durable provenance for PR #365 and the Sequence-1 branch base, not a forever-current `main` claim. Current HEAD must be resolved from Git/repository state when needed.
 
 Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
 
