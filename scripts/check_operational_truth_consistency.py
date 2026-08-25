@@ -196,6 +196,11 @@ def _preserves_pr_335_unmerged(text: str) -> bool:
     lines = text.splitlines()
     pr_ref = re.compile(r"(?:\bPR\s*)?#335\b", re.IGNORECASE)
     block_header = re.compile(r"\bPR\s*#335\s+remains\s*:\s*$", re.IGNORECASE)
+    standalone_state = re.compile(
+        r"^(?:OPEN|DRAFT|UNMERGED|MERGED|CLOSED)"
+        r"(?:\s*/\s*(?:OPEN|DRAFT|UNMERGED|MERGED|CLOSED))*$",
+        re.IGNORECASE,
+    )
 
     for index, line in enumerate(lines):
         if not pr_ref.search(line):
@@ -204,14 +209,31 @@ def _preserves_pr_335_unmerged(text: str) -> bool:
         if "UNMERGED" in upper and not re.search(r"\bMERGED\b", upper):
             return True
         if block_header.search(line):
-            for status_line in lines[index + 1 : index + 6]:
+            in_fence = False
+            for status_line in lines[index + 1 : index + 12]:
                 stripped = status_line.strip()
-                if not stripped or stripped.startswith("```"):
+                if not stripped:
                     continue
+                if stripped.startswith("```"):
+                    if in_fence:
+                        break
+                    in_fence = True
+                    continue
+
                 status_upper = stripped.upper()
-                return "UNMERGED" in status_upper and not re.search(
+                if "UNMERGED" in status_upper and not re.search(
                     r"\bMERGED\b", status_upper
-                )
+                ):
+                    return True
+                if re.search(r"\bMERGED\b", status_upper):
+                    return False
+
+                if in_fence:
+                    continue
+                if standalone_state.fullmatch(stripped):
+                    continue
+                break
+            return False
     return False
 
 
