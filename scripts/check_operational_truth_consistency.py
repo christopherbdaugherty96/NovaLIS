@@ -16,9 +16,9 @@ Checked here:
 - PR #335 remaining explicitly UNMERGED near its reference in priority/roadmap.
 
 The checker supports both the historical Wave A1-C representation and the
-post-Wave-C truth-hygiene representation. This is a consistency check, not a
-claim that either representation is currently active unless the checked files
-say so.
+post-Wave-C truth-hygiene representation. For the post-Wave-C representation,
+the active PR number is part of the normalized lane identity so two surfaces
+cannot silently point at different PRs while still passing consistency.
 
 Not checked here:
 - semantic correctness of the documents;
@@ -88,34 +88,35 @@ LANE_PATTERNS = {
 
 # Current post-Wave-C representation. These patterns intentionally require
 # active-lane context rather than accepting any historical mention of
-# "post-Wave-C" in the document.
+# "post-Wave-C" in the document. Each pattern captures the active PR number so
+# agreement means both lane semantics and PR identity agree.
 POST_WAVE_C_PATTERNS = {
     "agents": re.compile(
-        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane is .*post-Wave-C truth hygiene",
+        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane is .*PR #(?P<pr>\d+).*post-Wave-C truth hygiene",
         re.MULTILINE | re.IGNORECASE,
     ),
     "priority": re.compile(
-        r"^## Post-Wave-C Truth Hygiene\s+[—-]\s+PR #\d+ Active\b",
+        r"^## Post-Wave-C Truth Hygiene\s+[—-]\s+PR #(?P<pr>\d+) Active\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "work_status": re.compile(
-        r"^POST-WAVE-C TRUTH HYGIENE\s*$",
+        r"^POST-WAVE-C TRUTH HYGIENE[ \t]*\nSTATUS:.*PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "command_center": re.compile(
-        r"^\s*Post-Wave-C truth hygiene\s+[—-]\s+ACTIVE\b",
+        r"^\s*Post-Wave-C truth hygiene\s+[—-]\s+ACTIVE\b.*PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "active_todo": re.compile(
-        r"^### Post-Wave-C truth hygiene\s+[—-]\s+active\b",
+        r"^### Post-Wave-C truth hygiene\s+[—-]\s+active\b[\s\S]{0,2000}?^PR #(?P<pr>\d+):\s+ACTIVE\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "canonical_index": re.compile(
-        r"^Current active lane:.*post-Wave-C truth hygiene",
+        r"^Current active lane:.*PR #(?P<pr>\d+).*post-Wave-C truth hygiene",
         re.MULTILINE | re.IGNORECASE,
     ),
     "roadmap": re.compile(
-        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane.*post-Wave-C truth-hygiene",
+        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane.*post-Wave-C truth-hygiene.*PR #(?P<pr>\d+)",
         re.MULTILINE | re.IGNORECASE,
     ),
 }
@@ -129,7 +130,7 @@ def _extract_lane(name: str, text: str) -> str | None:
     scoped = text[:8000]
     post_wave_c_match = POST_WAVE_C_PATTERNS[name].search(scoped)
     if post_wave_c_match:
-        return POST_WAVE_C_LANE
+        return f"{POST_WAVE_C_LANE}:PR#{post_wave_c_match.group('pr')}"
 
     legacy_match = LANE_PATTERNS[name].search(scoped)
     if legacy_match:
