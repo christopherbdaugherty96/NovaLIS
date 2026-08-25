@@ -130,7 +130,8 @@ However:
 
 - Nova is not a finished continuously reliable consumer product
 - GitHub-hosted Wave C jobs remain `NOT EXECUTED` under the external account/billing limitation in Issue #354; the owner waived that source as mandatory Wave C exit evidence without calling it PASS
-- post-Wave-C documentation closeout is the documentation prerequisite immediately before any separate PR #335 reconstruction authorization decision; resolve whether that prerequisite is complete from the current canonical/status surfaces and Issue #343
+- `POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE` via merged/verified PR #380
+- the current decision is whether the owner separately authorizes PR #335 reconstruction/reconciliation; authorization is `NOT GRANTED`
 - PR #335 remains draft/unmerged historical Google Foundation/auth/identity code and is not a current Nova capability
 - Google Tasks, Gmail, Calendar OAuth/domain data, Drive, Docs, and Sheets are not current Nova capabilities through PR #335
 - Operational Continuity is strategically accepted but implementation-inactive and non-authorizing
@@ -159,15 +160,16 @@ is not authorized to pursue broad goals or expand its own authority.
 
 ---
 
-## Gate Sequence
+## Current Decision Sequence
 
-Resolve the live position in this sequence from the current canonical/status surfaces and Issue #343:
+The documentation prerequisite is complete. The current sequence is:
 
-1. Post-Wave-C documentation closeout must be reviewed and merged before any separate PR #335 reconstruction authorization decision.
-2. After that prerequisite, the owner may separately authorize reconstruction/reconciliation of PR #335 against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
-3. Perform independent #335 security/architecture review and make its merge decision separately.
-4. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
-5. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove provenance/freshness/evidence boundaries.
-6. Only then evaluate an evidence-based Operational Continuity implementation warrant.
+1. Post-Wave-C documentation closeout is COMPLETE via PR #380; this does not authorize PR #335.
+2. The owner may separately decide whether to authorize reconstruction/reconciliation of PR #335 against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+3. If separately authorized, harden the bounded #335 OAuth/identity lifecycle defects, perform exact-head verification, and complete an independent security/architecture review.
+4. Make the #335 merge decision separately.
+5. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
+6. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove provenance/freshness/evidence boundaries.
+7. Only then evaluate an evidence-based Operational Continuity implementation warrant.
 
 This page records the navigation path and durable boundary. It does not activate any lane.
