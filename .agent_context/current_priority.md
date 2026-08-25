@@ -9,7 +9,7 @@ B2: COMPLETE / MERGED
 B3: COMPLETE / MERGED
 B4: COMPLETE / MERGED
 WAVE C: COMPLETE / MERGED / VALIDATED
-current_main_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
@@ -35,7 +35,7 @@ post-B4 sync #363 merge: 404689ef07f42480966c59ba30c07db5c4f101e1
 Wave C PR #364: MERGED
 PR #364 reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
 PR #364 squash merge / validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
-PR #365 documentation sync / current main before this branch: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+PR #365 documentation sync / Sequence-1 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 ```
 
 B1 through B4 and Wave C are complete and merged. Their proof, generated truth, operational synchronization, and review records remain evidence only for the revisions and environments actually exercised. The complete Wave C non-hosted proof passed on exact validated baseline `ec20a714...`; the owner waived GitHub-hosted Actions as a required evidence source while preserving their `NOT EXECUTED` classification. PR #365 later advanced `main` with documentation-only synchronization and did not establish a new runtime validated baseline.
@@ -109,7 +109,7 @@ B3 is complete: ordinary chat no longer silently creates authoritative personal 
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; requirements-style compatibility surfaces are mechanically checked; the historical `python-multipart` mismatch is resolved; and the supported install path was proven on the reviewed B4 revision. Do not reopen or redesign packaging without new evidence.
 
-Wave C is complete. Exact validated-baseline proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Current repository `main` before this branch is the later documentation-only #365 merge `d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c`. Do not reconstruct or modify #335 until a separate authorization is given.
+Wave C is complete. Exact validated-baseline proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. PR #365 merged at `d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c` as documentation-only synchronization and is the Sequence-1 branch base; it is not a new runtime validated baseline. Do not reconstruct or modify #335 until a separate authorization is given.
 
 ## Google Foundation / CI state
 
