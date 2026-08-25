@@ -1,6 +1,6 @@
 # Start Here
 
-Last reviewed: 2026-08-06
+Last reviewed: 2026-08-25
 
 This is the shortest human path through NovaLIS.
 
@@ -123,18 +123,21 @@ Nova has a real governed runtime and verified awareness surfaces:
 - governed information retrieval, weather, news, calendar, arithmetic, and morning awareness
 - capability registry, authority checks, receipts, runtime-truth generation, and drift verification
 - bounded/manual-first OpenClaw runtime surfaces, without broad autonomous authority
-- Authorization Integrity Slice 1 merged through PR #325
+- stabilization Waves A1, A2, B1, B2, B3, B4, and Wave C are complete and merged
+- immutable Wave C validated runtime baseline: `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`
 
 However:
 
 - Nova is not a finished continuously reliable consumer product
-- Slice 2A is not implemented on main
-- Slice 2B is deferred and separately gated
-- formal post-#312 acceptance provenance is unresolved in repository truth
+- GitHub-hosted Wave C jobs remain `NOT EXECUTED` under the external account/billing limitation in Issue #354; the owner waived that source as mandatory Wave C exit evidence without calling it PASS
+- post-Wave-C documentation closeout is the current gate; this page is one front-door follow-up and does not by itself complete or authorize that closeout
+- PR #335 remains draft/unmerged historical Google Foundation/auth/identity code and is not a current Nova capability
+- Google Tasks, Gmail, Calendar OAuth/domain data, Drive, Docs, and Sheets are not current Nova capabilities through PR #335
+- Operational Continuity is strategically accepted but implementation-inactive and non-authorizing
 - economic, browser/computer-use, financial-write, outreach, posting, contracting,
-  autonomous-business, and delegation lanes remain inactive
+  autonomous-business, and broad delegation lanes remain inactive
 
-Do not infer permission from capability, a roadmap, memory, prior approval, Issue #326, or PR #327.
+Do not infer permission from capability, a roadmap, memory, prior approval, OAuth scope, connection state, or a future issue/PR.
 
 ---
 
@@ -149,8 +152,10 @@ is not authorized to pursue broad goals or expand its own authority.
 ## What Nova Is Not Yet
 
 - not an autonomous agent
-- not a workflow automation system
+- not a broad workflow automation system
 - not a polished daily-use product
+- not a Google Workspace personal-operations layer yet
+- not an implemented Operational Continuity system
 
 ---
 
@@ -158,10 +163,13 @@ is not authorized to pursue broad goals or expand its own authority.
 
 Current remaining order:
 
-1. Resolve post-#312 acceptance provenance honestly.
-2. Continue only separately owner-approved bounded local Slice 2A work within its exact boundary.
-3. Select one product-usability lane independently from real-use evidence.
-4. Separately authorize any later read-first economic proof.
-5. Consider a typed OpenClaw execution vertical only under a later separate lock.
+1. Complete the post-Wave-C documentation closeout through separately reviewed front-door,
+   historical-guide, operating-model, and Brain narration changes or an equivalent consolidation.
+2. After documentation closeout is reviewed and merged, separately authorize reconstruction of
+   PR #335 onto the immutable Wave C validated baseline.
+3. Perform independent #335 security/architecture review and make its merge decision separately.
+4. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
+5. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove provenance/freshness/evidence boundaries.
+6. Only then evaluate an evidence-based Operational Continuity implementation warrant.
 
 This page records the navigation path and current boundary. It does not activate any lane.
