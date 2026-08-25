@@ -2,21 +2,21 @@
 
 **Canonical human-maintained capability verification surface.**
 
-Last reconciled: **2026-08-20**.
+Last reconciled: **2026-08-25**.
 
 For exact capability existence/enabled-state at a revision, compare this file with the capability registry and generated runtime state. For live reliability claims, require observed evidence. Do not treat `exists`, `enabled`, `configured`, `live-proven`, `available_on_this_path`, and `authorized` as synonyms.
 
 ## Current repository checkpoint
 
-Merged `main` when Wave A1 began:
+The immutable Wave C validated runtime baseline is:
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-This is an A1 planning checkpoint, not an immutable validated baseline.
+The later PR #365 documentation sync merged at `d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c` and is the branch base for the PR #366 truth-hygiene contract package. That later documentation commit did not establish a new runtime validated baseline.
 
-At the A1 planning checkpoint, generated runtime state reports **27 active capabilities**.
+At the Wave C validated baseline, generated runtime state reports **27 active capabilities**. Current HEAD must be resolved from Git/repository state rather than inferred from this evidence SHA.
 
 ## August stabilization update
 
@@ -36,24 +36,29 @@ The following previously observed truth/routing defects now have merged repairs:
 | Calendar `tomorrow` scope | #350 | temporal-scope preservation repair merged |
 | Local schedule cancellation | #351 | cancellation routing repair merged |
 | Private Drive source selection | #352 | private-source/public-web separation repair merged |
+| Runtime-truth instrumentation | #356 | B1 repair and generated-truth instrumentation merged |
+| Capability narration | #358 | B2 shared non-authorizing projection merged |
+| Memory governance | #360 | B3 ordinary-chat persistence/provenance repair merged |
+| Reproducibility hygiene | #362 | B4 canonical dependency truth merged |
+| Validated-baseline proof | #364 | Wave C complete; exact-baseline non-hosted proof passed under explicit hosted-evidence waiver |
 
-These rows mean the named implementation defects are not current pending work. They do **not** mean every capability has been broadly re-live-verified after every later merge.
+These rows mean the named implementation defects are not current pending work. They do **not** mean every capability has been broadly re-live-verified after every later merge. PR #365/#366 documentation work does not extend Wave C runtime proof to later repository revisions.
 
 ## Current high-level readiness
 
 | Surface | Exists | Current truth |
 | --- | :---: | --- |
-| Governed execution / authority spine | ✅ | core architecture present and heavily tested; Wave B/C will improve truth instrumentation/proof semantics |
-| Runtime truth / health surfaces | ✅ | generated surfaces exist; Wave B1 is required because some generator claims/coverage are broader than the mechanisms actually prove |
-| Governed memory | ✅ | explicit memory capability exists; ordinary GeneralChat durable-persistence semantics require Wave B3 governance repair |
+| Governed execution / authority spine | ✅ | core architecture present and heavily tested; Wave C validated-baseline proof is complete for the exercised revision/environment |
+| Runtime truth / health surfaces | ✅ | B1 truth-instrumentation repair is complete; generated claims remain limited to what their mechanisms mechanically inspect |
+| Governed memory | ✅ | explicit memory capability exists; B3 ordinary-GeneralChat durable-persistence/provenance repair is complete and merged |
 | Awareness brief | ✅ | grounded brief/category routing exists; broader semantic usefulness remains a product-quality concern |
 | Weather | ✅ | configured/default path exists; explicit-location preservation repair is merged through #341/#344 |
 | News | ✅ | sourced RSS/news surface exists; any remaining parameter/relevance defect must be reproduced before being treated as active |
 | Calendar | ✅ | local `.ics` read surface exists; source-selection and tomorrow-scope repairs are merged through #349/#350 |
 | Local reminder schedules | ✅ | persistent SCH records/retrieval exist; cancellation routing repair merged through #351; dependable background alert delivery is not established by this contract |
 | Governed web search | ✅ | capability exists; live execution depends on configured provider/key/runtime availability |
-| General chat / local inference | ✅ | exists; semantic quality, reference binding, and current local-model throughput remain validation targets |
-| Google Workspace Foundation | ❌ on current main | PR #335 is draft/unmerged Foundation-only code; not current capability |
+| General chat / local inference | ✅ | exists; Wave C covered semantic-contract regression, but semantic quality and local-model throughput remain environment/evidence-specific concerns |
+| Google Workspace Foundation | ❌ on current main | PR #335 remains draft/unmerged Foundation-only code; reconstruction is next but requires documentation closeout plus separate authorization |
 | Google Tasks | ❌ | not built |
 | Gmail | ❌ | not built |
 | Google Reminders | ❌ | not built |
@@ -61,7 +66,7 @@ These rows mean the named implementation defects are not current pending work. T
 
 ## Active capability registry
 
-At the A1 planning checkpoint, generated runtime state reports these active capability IDs:
+At the Wave C validated baseline, generated runtime state reports these active capability IDs:
 
 ```text
 16 governed_web_search
@@ -128,7 +133,7 @@ A lock means the bounded certified scope is locked. It does not authorize expans
 
 ### Important qualifications
 
-- merged routing repairs are not a substitute for one clean Wave C validated-baseline proof package;
+- Wave C provides one clean validated-baseline proof package for `ec20a714...`; later commits do not silently inherit that proof;
 - successful OS-command dispatch may remain `accepted_unverified` if no trusted observer establishes the final physical state;
 - GeneralChat remains a semantic-quality risk surface and must not manufacture capability or execution truth;
 - private-source requests must not silently upgrade to public web search;
@@ -151,7 +156,7 @@ PR #335 does not change that because it remains draft/unmerged and is Foundation
 
 ## Google evidence order
 
-After the Wave A/B/C stabilization gate and a separate #335 merge decision:
+Only after the post-Wave-C documentation closeout is reviewed and merged, #335 reconstruction receives separate authorization/review, and a separate #335 merge decision is made:
 
 ```text
 Google identity-only live proof
@@ -187,7 +192,7 @@ Do not say a capability is simply "real and working" when the relevant truth is 
 
 Do not model `authorized` as static capability metadata. Exact-request authority/approval is contextual and consumable.
 
-Wave B2 is the implementation lane for this narration repair.
+Wave B2 implemented and merged this shared non-authorizing narration projection through PR #358. Do not reopen or redesign it without concrete new evidence.
 
 ## Verification discipline
 

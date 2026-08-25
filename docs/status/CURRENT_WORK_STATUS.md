@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-24.
+Last reviewed: 2026-08-25.
 
 This is a hand-maintained operational status surface. It is not generated runtime truth.
 
@@ -9,19 +9,22 @@ For exact runtime implementation facts, use code plus the generated runtime surf
 ## Current Development Lane
 
 ```text
-WAVE C — proof / validated-baseline checkpoint
-STATUS: COMPLETE / MERGED / VALIDATED
-INITIAL CANDIDATE: 404689ef07f42480966c59ba30c07db5c4f101e1
-PR #364: MERGED
-REVIEWED HEAD: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
-CURRENT MAIN / VALIDATED_BASELINE_SHA: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+POST-WAVE-C DOCUMENTATION CLOSEOUT
+TRUTH-HYGIENE CONTRACT: PR #366
+AUTHORIZATION CONDITION: documentation closeout reviewed + merged before #335
+SCOPE: documentation/current-truth reconciliation only
+PR #365 MERGE / #366 BASE: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+VALIDATED_BASELINE_SHA: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+WAVE C: COMPLETE / MERGED / VALIDATED
+PR #364 REVIEWED HEAD: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
 B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
 B4: COMPLETE / MERGED via PR #362
+#335 RECONSTRUCTION: NEXT / NOT AUTHORIZED
 ```
 
-B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` completed B4. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; `ec20a714...` is current `main` and the validated baseline. Earlier evidence remains revision- and environment-specific historical evidence.
+B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` completed B4. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364 and established `ec20a714...` as the immutable validated runtime baseline. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; that SHA is provenance and the PR #366 branch base, not a new validated runtime baseline and not a forever-current HEAD claim.
 
 ## Completed Gates
 
@@ -79,9 +82,14 @@ Post-B4 operational truth synchronization
 Wave C validated baseline
   PR #364: MERGED
   reviewed head: 786c048df6dc4ed8f3c8245c5b365d4296f342f4
-  squash merge/current main/validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
-  exact-main non-hosted proof: PASS
+  squash merge/validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+  exact-baseline non-hosted proof: PASS
   hosted Actions: NOT EXECUTED / owner-waived as mandatory Wave C exit evidence
+
+Post-Wave-C documentation synchronization
+  PR #365: MERGED
+  merge/#366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+  runtime baseline change: NONE
 ```
 
 ## B1 Completed Evidence
@@ -139,13 +147,14 @@ Historical B4 proof remains valid for the reviewed revision and environment. Do 
 
 ## Scope Lock
 
-B1 does not change:
+The post-Wave-C documentation-closeout gate does not change:
 
 ```text
+runtime behavior
 network behavior / connections_api.py wiring
-capability narration semantics (B2)
-GeneralChat persistence behavior (B3)
-dependency-source truth beyond completed B4
+capability narration semantics
+GeneralChat persistence behavior
+dependency-source truth
 capability registry
 OAuth / PR #335 implementation
 Google domain-data access
@@ -153,10 +162,10 @@ Operational Continuity runtime
 OpenClaw authority
 provider routing
 external-write behavior
-README/front-door rewrite
+generated runtime artifacts
 ```
 
-README sequencing drift is separate documentation debt and must not be folded into B1.
+README/front-door and narration cleanup may proceed only as separately reviewed documentation closeout; it does not widen this gate into runtime work.
 
 ## PR #335 / Issue #354
 
@@ -171,7 +180,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify or merge #335 before a separate reconstruction authorization.
+Do not modify or merge #335 before documentation closeout is reviewed and merged and a separate reconstruction authorization is given.
 
 Issue #354 remains:
 
@@ -186,12 +195,12 @@ owner-waived as mandatory Wave C exit evidence
 ## Current Ordering
 
 ```text
-B1 COMPLETE / MERGED
--> B2 capability narration / COMPLETE / MERGED
--> B3 memory governance / COMPLETE / MERGED
--> B4 reproducibility hygiene / COMPLETE / MERGED
--> Wave C semantic/proof stabilization and validated baseline / COMPLETE / MERGED / VALIDATED
--> reconstruct #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
+A1 / A2 / B1 / B2 / B3 / B4 / Wave C        COMPLETE
+-> post-Wave-C documentation closeout          CURRENT GATE
+   truth-hygiene contract package: PR #366
+   remaining front-door/narration follow-ups: separately reviewed
+-> documentation closeout reviewed + merged    REQUIRED BEFORE #335 AUTHORIZATION
+-> reconstruct #335 onto validated baseline     NEXT / NOT AUTHORIZED
 -> independent security/architecture review
 -> separate #335 merge decision
 -> Google identity-only live proof
@@ -199,7 +208,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Continuity warrant
 ```
 
-B1 through B4 and Wave C are complete and merged. `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` is the validated baseline. #335 reconstruction is next but not implementation-authorized.
+`ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` remains the immutable validated baseline. PR #366 is the truth-hygiene contract package inside the documentation-closeout gate and does not authorize #335 reconstruction.
 
 ## Permanent Truth Boundaries
 
