@@ -21,7 +21,7 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-25
 
-Post-Wave-C documentation closeout is COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED; the current decision is whether the owner separately authorizes reconstruction/reconciliation.
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED; the current decision is whether the owner separately authorizes reconstruction/reconciliation.
 
 ```text
 A1 — COMPLETE / MERGED via #353
