@@ -343,6 +343,81 @@ def test_checker_does_not_borrow_366_merged_state_for_378(tmp_path):
     assert any("PR #378 as MERGED" in error for error in errors)
 
 
+def test_checker_rejects_explicit_negative_378_merge_state(tmp_path):
+    checker = _load_checker()
+
+    assert checker._preserves_merged_pr("PR #378 NOT MERGED\n", 378) is False
+    assert checker._preserves_merged_pr("PR #378 UNMERGED\n", 378) is False
+    assert checker._preserves_merged_pr("PR #378 MERGED / VERIFIED\n", 378) is True
+
+    _post_wave_c_complete_fixture(tmp_path)
+    _write(
+        tmp_path,
+        "docs/status/CURRENT_WORK_STATUS.md",
+        _completed_state_text().replace(
+            "narration/front-door package: PR #378 MERGED\n",
+            "narration/front-door package: PR #378 NOT MERGED\n",
+        ),
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any("PR #378 as MERGED" in error for error in errors)
+
+
+def test_checker_does_not_borrow_unmerged_for_335_from_other_line(tmp_path):
+    checker = _load_checker()
+    text = (
+        "PR #335 remains: OPEN / DRAFT / MERGED\n"
+        "unrelated historical branch: UNMERGED\n"
+        "PR #335 reconstruction: NEXT / NOT AUTHORIZED\n"
+    )
+
+    assert checker._preserves_pr_335_unmerged(text) is False
+    assert checker._preserves_pr_335_unmerged("PR #335 remains: OPEN / DRAFT / UNMERGED\n") is True
+
+    _post_wave_c_complete_fixture(tmp_path)
+    _write(
+        tmp_path,
+        ".agent_context/current_priority.md",
+        _completed_state_text(include_unmerged=True).replace(
+            "#335 OPEN / DRAFT / UNMERGED\n",
+            "#335 OPEN / DRAFT / MERGED\nunrelated historical branch: UNMERGED\n",
+        ),
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any("current priority does not preserve PR #335 as explicitly UNMERGED" in error for error in errors)
+
+
+def test_checker_does_not_borrow_not_authorized_for_335_from_other_line(tmp_path):
+    checker = _load_checker()
+    text = (
+        "#335 reconstruction: NEXT / AUTHORIZED\n"
+        "unrelated lane: NOT AUTHORIZED\n"
+    )
+
+    assert checker._preserves_pr_335_next_not_authorized(text) is False
+    assert checker._preserves_pr_335_next_not_authorized(
+        "#335 reconstruction: NEXT / NOT AUTHORIZED\n"
+    ) is True
+
+    _post_wave_c_complete_fixture(tmp_path)
+    _write(
+        tmp_path,
+        "docs/CANONICAL/07_ROADMAP_TRUTH.md",
+        _completed_state_text(include_unmerged=True).replace(
+            "#335 reconstruction: NEXT / NOT AUTHORIZED\n",
+            "#335 reconstruction: NEXT / AUTHORIZED\nunrelated lane: NOT AUTHORIZED\n",
+        ),
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any("NEXT / NOT AUTHORIZED" in error for error in errors)
+
+
 def test_checker_detects_validated_baseline_drift(tmp_path):
     checker = _load_checker()
     _post_wave_c_complete_fixture(tmp_path)
