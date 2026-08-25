@@ -43,9 +43,21 @@ validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
 `d5b0dc66...` is durable provenance for PR #365 and the PR #366 branch base, not a forever-current `main` claim. Current HEAD must be resolved from Git/repository state when needed.
 
-Current gate: **post-Wave-C documentation closeout — truth-hygiene contract package PR #366**. Wave C remains COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED until documentation closeout is reviewed and merged and separate authorization is given.
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package:
 
-Wave C is complete and merged. The complete non-hosted proof passed on exact validated baseline `ec20a714...`; GitHub-hosted jobs did not execute because of the external account-billing restriction recorded in Issue #354. The owner explicitly waived hosted execution as a Wave C exit requirement without classifying those jobs as PASS. The later documentation-only #365 commit does not extend that runtime proof to a new baseline.
+```text
+PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
+PR #378 reviewed head: 84222288335c399c1ffa73186858e8ba84e9a64a
+PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+#335 reconstruction: NEXT / NOT AUTHORIZED
+authorization state: NOT GRANTED
+next decision: separate owner authorization for #335 reconstruction/reconciliation
+```
+
+Neither PR #366 nor PR #378 establishes a new runtime validated baseline. Documentation closeout completion does not authorize #335 reconstruction, Google implementation, or any authority expansion.
+
+Wave C is complete and merged. The complete non-hosted proof passed on exact validated baseline `ec20a714...`; GitHub-hosted jobs did not execute because of the external account-billing restriction recorded in Issue #354. The owner explicitly waived hosted execution as a Wave C exit requirement without classifying those jobs as PASS. The later documentation-only #365/#366/#378 commits do not extend that runtime proof to a new baseline.
 
 B1 through B4 and Wave C are complete. Their proof packages remain evidence only for the revisions, environments, and mechanisms actually exercised.
 
@@ -59,11 +71,13 @@ Wave A1 operational truth sync                 COMPLETE
 -> B3 memory governance                         COMPLETE / MERGED
 -> B4 reproducibility hygiene                   COMPLETE / MERGED
 -> Wave C validated-baseline proof checkpoint   COMPLETE / MERGED / VALIDATED
--> post-Wave-C documentation closeout           CURRENT GATE
-   truth-hygiene contract package: PR #366
-   remaining front-door/narration follow-ups: separately reviewed
--> documentation closeout reviewed + merged     REQUIRED BEFORE #335 AUTHORIZATION
--> reconstruct/reconcile #335                   NEXT / NOT AUTHORIZED
+-> post-Wave-C documentation closeout           COMPLETE
+   truth-hygiene provenance: PR #366 MERGED
+   narration/front-door package: PR #378 MERGED / VERIFIED
+-> #335 reconstruction decision                 NEXT / NOT AUTHORIZED
+   authorization state: NOT GRANTED
+   next decision: separate owner authorization
+-> reconstruct/reconcile #335                   ONLY AFTER SEPARATE AUTHORIZATION
 -> Google identity proof
 -> first Google READ/evidence vertical
 -> evidence-based Continuity warrant

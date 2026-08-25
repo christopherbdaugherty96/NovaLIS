@@ -2,7 +2,7 @@
 
 **Status: current ordering summary.**
 
-This file does not redesign Nova's roadmap. It reconciles the current stabilization gate around the existing roadmap and points to the master ordering document.
+This file does not redesign Nova's roadmap. It reconciles the current post-Wave-C decision boundary around the existing roadmap and points to the master ordering document.
 
 ## Ordering authority
 
@@ -21,7 +21,7 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-25
 
-Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366. Wave C is COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains next but not authorized until the documentation closeout is reviewed and merged and separate owner authorization is given.
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED; the current decision is whether the owner separately authorizes reconstruction/reconciliation.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -32,9 +32,12 @@ B3 — COMPLETE / MERGED via #360
 B4 — COMPLETE / MERGED via #362
 C  — COMPLETE / MERGED / VALIDATED
 #365 — MERGED post-Wave-C documentation sync
-#366 — truth-hygiene contract package / documentation-current-truth only
-documentation closeout — REQUIRED BEFORE #335 AUTHORIZATION
+#366 — MERGED truth-hygiene provenance
+#378 — MERGED / VERIFIED narration/front-door package
+documentation closeout — COMPLETE
 #335 reconstruction — NEXT / NOT AUTHORIZED
+authorization state — NOT GRANTED
+next decision — separate owner authorization for #335 reconstruction/reconciliation
 ```
 
 Immutable runtime validation evidence:
@@ -47,9 +50,12 @@ Post-Wave-C documentation provenance:
 
 ```text
 PR #365 merge / PR #366 branch base: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
+PR #378 reviewed head: 84222288335c399c1ffa73186858e8ba84e9a64a
+PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 ```
 
-`d5b0dc66...` is durable provenance for PR #365 and this truth-hygiene branch base, not a forever-current `main` claim. Resolve current HEAD from Git/repository state when needed. `ec20a714...` remains the immutable Wave C validated baseline unless a separately warranted future validation package establishes another baseline.
+These later documentation/truth commits are durable provenance, not replacements for the runtime-validated baseline and not forever-current `main` claims. Resolve current HEAD from Git/repository state when needed. `ec20a714...` remains the immutable Wave C validated baseline unless a separately warranted future validation package establishes another baseline.
 
 First published/proven B1 candidate:
 
@@ -68,7 +74,7 @@ P2 — runtime_surface_file_count included one nonexistent ALLOWED_READ_PATHS en
 
 Both bounded defects were corrected. The corrected source proof passed, mechanical generation completed, and the generated artifacts were published at `e668ec0c09df6e0d304427431e95a26619a9f507`. PR #356 merged at reviewed head `381dbaeca73786f789cc6e68fd3b6bf193296041`; squash merge `969c369b453fffca0eb2b8dad65ff3f285df8fbc` completed B1. Post-B1 operational truth sync #357 then merged as `864ceba9747384b3bdca4a693dca938b3899864e`. B2 merged through PR #358 at reviewed head `b95039c2dc483ad330205de5dac8e3b3f94d8836`; squash merge `e84a9d55f8575c687765b1df19e8f794b180599b` completed B2. Post-B2 sync #359 established B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the Wave C initial candidate.
 
-Wave C merged through PR #364 at reviewed head `786c048df6dc4ed8f3c8245c5b365d4296f342f4`. Its squash merge `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` passed the complete non-hosted proof and is the immutable `validated_baseline_sha`. GitHub-hosted jobs remained `NOT EXECUTED` due to the account-billing restriction in Issue #354; the owner explicitly waived that evidence source without classifying it as PASS. PR #365 then merged documentation-only synchronization at `d5b0dc66...`; it did not change or extend the validated runtime evidence.
+Wave C merged through PR #364 at reviewed head `786c048df6dc4ed8f3c8245c5b365d4296f342f4`. Its squash merge `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` passed the complete non-hosted proof and is the immutable `validated_baseline_sha`. GitHub-hosted jobs remained `NOT EXECUTED` due to the account-billing restriction in Issue #354; the owner explicitly waived that evidence source without classifying it as PASS. PR #365 then merged documentation-only synchronization at `d5b0dc66...`; PR #366 and PR #378 later completed truth-hygiene and narration/front-door synchronization. None changed or extended the validated runtime evidence.
 
 ## Merged stabilization state
 
@@ -95,6 +101,8 @@ The following August truth/routing packages are already merged and are not pendi
 #362         Wave B4 reproducibility hygiene
 #364         Wave C validation / validated baseline
 #365         post-Wave-C validated-baseline/evidence-waiver documentation sync
+#366         post-Wave-C truth-hygiene contract package
+#378         narration/front-door documentation closeout package
 ```
 
 Merged implementation is not identical to universal product readiness or unlimited live-proof scope. Capability verification must remain evidence-specific.
@@ -112,11 +120,11 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-It must not be merged in its historical branch state. Only after the post-Wave-C documentation closeout is reviewed and merged, and after separate owner authorization is given, may #335 be reconstructed/reconciled against exact validated baseline `ec20a714...`; it must then undergo exact-head proof and independent review before a separate merge decision.
+It must not be merged in its historical branch state. Documentation closeout is now complete, but that completion does not authorize #335. Only after separate owner authorization may #335 be reconstructed/reconciled against exact validated baseline `ec20a714...`; it must then undergo exact-head proof and independent review before a separate merge decision.
 
-## Current stabilization gate
+## Current stabilization / decision boundary
 
-The roadmap itself remains intact. The current gate is:
+The roadmap itself remains intact. The current state is:
 
 ```text
 WAVE A — truth reconciliation
@@ -138,21 +146,25 @@ WAVE C — proof and stabilization checkpoint         COMPLETE / MERGED / VALIDA
   reproduced-defect-only fixes
   immutable validated baseline
 
-POST-WAVE-C — documentation closeout                CURRENT GATE
-  truth-hygiene contract package: PR #366
-  remaining front-door/narration follow-ups: separately reviewed
-  documentation closeout review+merge required before #335 authorization
+POST-WAVE-C — documentation closeout                COMPLETE
+  PR #366 truth-hygiene provenance: MERGED
+  PR #378 narration/front-door package: MERGED / VERIFIED
   no runtime, generated-runtime, authority, or Google implementation changes
 
-POST-WAVE-C — Google Foundation reconciliation      NEXT / NOT AUTHORIZED
-  reconstruct #335
+POST-WAVE-C — #335 authorization decision           CURRENT DECISION BOUNDARY
+  #335 reconstruction: NEXT / NOT AUTHORIZED
+  authorization state: NOT GRANTED
+  separate owner authorization required
+
+POST-WAVE-C — Google Foundation reconciliation      PENDING SEPARATE AUTHORIZATION
+  reconstruct #335 against exact validated baseline
   OAuth hardening cases
   exact-head #335 verification
   independent security/architecture review
   separate merge decision
 ```
 
-After documentation closeout and only after a separate #335 merge decision:
+Only after separate #335 authorization, reconstruction, review, and a separate #335 merge decision:
 
 ```text
 Google identity-only live proof
@@ -344,10 +356,10 @@ broad SaaS productization
 Protection Wall runtime expansion
 ```
 
-README/front-door and narration sequencing cleanup is part of the separately reviewed documentation closeout and must not be converted into runtime scope.
+The README/front-door, historical-guide, Brain, and operating-model narration cleanup completed through merged PR #378. It remains documentation provenance only and must not be converted into runtime scope.
 
 ## Historical context
 
-The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the gate above.
+The seven-morning observation threshold, grounded brief/category routing, Commitment Truth, Local Action Outcome Truth, Semantic Substrate Slice 1, and the August 12 acceptance-derived P1 repairs are historical inputs to the current state. Their old `current` or `next` wording is superseded by the decision boundary above.
 
 Historical records remain evidence of what was decided or proven at their date. Do not use their old current-main SHAs or pending-work language to select today's work.
