@@ -3,22 +3,23 @@
 This is intentionally separate from ``check_runtime_doc_drift.py``. The runtime
 checker prevents broad runtime facts from leaking into navigation docs; this
 script checks that the hand-maintained *operational* entry points agree on the
-same active stabilization/current-truth lane and preserve a few permanent truth
+same stabilization/current-truth gate and preserve a few permanent truth
 boundaries.
 
 Checked here:
 - required presence of the active operational entry points;
-- active stabilization/current-truth lane agreement across AGENTS, canonical
-  index, priority/status/todo, and the canonical roadmap marker;
+- stabilization/current-truth gate agreement across AGENTS, canonical index,
+  priority/status/todo, and the canonical roadmap marker;
 - the known ``connections_api.py`` requests-based network exception and
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - PR #335 remaining explicitly UNMERGED near its reference in priority/roadmap.
 
 The checker supports both the historical Wave A1-C representation and the
-post-Wave-C truth-hygiene representation. For the post-Wave-C representation,
-the active PR number is part of the normalized lane identity so two surfaces
-cannot silently point at different PRs while still passing consistency.
+post-Wave-C documentation-closeout representation. For the post-Wave-C
+representation, PR #366 is durable provenance for the truth-hygiene contract
+package; temporary GitHub workflow states such as OPEN, DRAFT, READY, or ACTIVE
+are intentionally not part of the machine-readable gate identity.
 
 Not checked here:
 - semantic correctness of the documents;
@@ -55,7 +56,7 @@ NON_GOALS = (
     "test/capability/authority certification",
 )
 
-POST_WAVE_C_LANE = "POST_WAVE_C_TRUTH_HYGIENE"
+POST_WAVE_C_LANE = "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
 
 # Historical stabilization-lane markers. Keep these for compatibility with the
 # already-proven A1-C operational fixtures and historical checked revisions.
@@ -86,37 +87,36 @@ LANE_PATTERNS = {
     ),
 }
 
-# Current post-Wave-C representation. These patterns intentionally require
-# active-lane context rather than accepting any historical mention of
-# "post-Wave-C" in the document. Each pattern captures the active PR number so
-# agreement means both lane semantics and PR identity agree.
+# Merge-safe post-Wave-C representation. These patterns require the durable
+# documentation-closeout gate and bind PR #366 only as truth-hygiene contract
+# provenance. They intentionally do not depend on temporary PR workflow state.
 POST_WAVE_C_PATTERNS = {
     "agents": re.compile(
-        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane is .*PR #(?P<pr>\d+).*post-Wave-C truth hygiene",
+        r"^Post-Wave-C documentation closeout gate:.*truth-hygiene contract.*PR #(?P<pr>\d+)",
         re.MULTILINE | re.IGNORECASE,
     ),
     "priority": re.compile(
-        r"^## Post-Wave-C Truth Hygiene\s+[—-]\s+PR #(?P<pr>\d+) Active\b",
+        r"^## Post-Wave-C Documentation Closeout\s+[—-]\s+PR #(?P<pr>\d+) Truth-Hygiene Contract\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "work_status": re.compile(
-        r"^POST-WAVE-C TRUTH HYGIENE[ \t]*\nSTATUS:.*PR #(?P<pr>\d+)\b",
+        r"^POST-WAVE-C DOCUMENTATION CLOSEOUT[ \t]*\nTRUTH-HYGIENE CONTRACT:\s*PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "command_center": re.compile(
-        r"^\s*Post-Wave-C truth hygiene\s+[—-]\s+ACTIVE\b.*PR #(?P<pr>\d+)\b",
+        r"^\s*Post-Wave-C documentation closeout\s+[—-]\s+truth-hygiene contract PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "active_todo": re.compile(
-        r"^### Post-Wave-C truth hygiene\s+[—-]\s+active\b[\s\S]{0,2000}?^PR #(?P<pr>\d+):\s+ACTIVE\b",
+        r"^### Post-Wave-C documentation closeout\b[\s\S]{0,2000}?^truth-hygiene contract package:\s*PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "canonical_index": re.compile(
-        r"^Current active lane:.*PR #(?P<pr>\d+).*post-Wave-C truth hygiene",
+        r"^Current gate:.*post-Wave-C documentation closeout.*truth-hygiene contract.*PR #(?P<pr>\d+)",
         re.MULTILINE | re.IGNORECASE,
     ),
     "roadmap": re.compile(
-        r"^Wave C is COMPLETE / MERGED / VALIDATED\..*current active lane.*post-Wave-C truth-hygiene.*?PR #(?P<pr>\d+)",
+        r"^Post-Wave-C documentation closeout gate:.*truth-hygiene contract.*PR #(?P<pr>\d+)",
         re.MULTILINE | re.IGNORECASE,
     ),
 }
@@ -174,7 +174,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             continue
         lane = _extract_lane(name, text)
         if lane is None:
-            errors.append(f"{paths[name]}: active stabilization/current-truth lane marker not found")
+            errors.append(f"{paths[name]}: stabilization/current-truth gate marker not found")
         else:
             lanes[name] = lane
 
@@ -182,7 +182,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         rendered = ", ".join(
             f"{name}={lane}" for name, lane in sorted(lanes.items())
         )
-        errors.append(f"active stabilization/current-truth lane mismatch: {rendered}")
+        errors.append(f"stabilization/current-truth gate mismatch: {rendered}")
 
     governance = texts.get("governance", "")
     if "nova_backend/src/api/connections_api.py" not in governance:
