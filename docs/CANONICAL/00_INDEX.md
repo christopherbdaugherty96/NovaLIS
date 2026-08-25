@@ -43,7 +43,7 @@ validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
 `d5b0dc66...` is durable provenance for PR #365 and the PR #366 branch base, not a forever-current `main` claim. Current HEAD must be resolved from Git/repository state when needed.
 
-Post-Wave-C documentation closeout is COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package:
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package:
 
 ```text
 PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
