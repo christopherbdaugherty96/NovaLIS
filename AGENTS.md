@@ -35,9 +35,9 @@ Before selecting work, read:
 
 For exact runtime-existence claims, inspect code and the generated runtime surfaces that mechanically measure the relevant claim. Generated documents are authoritative only for the properties their generators actually inspect.
 
-## Wave C Current Development State — Validated Baseline — 2026-08-25
+## Post-Wave-C Current Development State — 2026-08-25
 
-Current active stabilization lane: C — COMPLETE / MERGED / VALIDATED.
+Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is **PR #366 post-Wave-C truth hygiene — documentation/current-truth only**.
 
 Wave A1, A2, B1, B2, B3, and B4 are complete:
 
@@ -83,8 +83,11 @@ Wave A1, A2, B1, B2, B3, and B4 are complete:
        ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 
 #365  Post-Wave-C validated-baseline/evidence-waiver documentation sync — MERGED
-       merge / Sequence-1 branch base:
+       merge / PR #366 branch base:
        d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
+
+#366  Post-Wave-C truth hygiene — OPEN / DRAFT
+       documentation/current-truth only
 ```
 
 Current planning lane:
@@ -94,15 +97,19 @@ Wave B2 — capability narration: COMPLETE / MERGED
 Wave B3 — memory governance: COMPLETE / MERGED
 B4: COMPLETE / MERGED
 Wave C: COMPLETE / MERGED / VALIDATED
+PR #366: ACTIVE / DRAFT / documentation-current-truth only
+PR #335 reconstruction: NEXT / NOT AUTHORIZED
 post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-`post_wave_c_sync_sha` is durable provenance for PR #365 and this truth-hygiene branch base, not a forever-current `main` claim. Resolve current HEAD from Git/repository state when that distinction matters.
+`post_wave_c_sync_sha` is durable provenance for PR #365 and the PR #366 branch base, not a forever-current `main` claim. Resolve current HEAD from Git/repository state when that distinction matters.
 
 B1 through B4 are complete and merged. Their proof and review records remain historical evidence for the revisions and environments actually exercised.
 
 ### Immediate worker instruction
+
+PR #366 is the active bounded documentation/current-truth lane. Do not treat that status as authorization for runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
 
 B3's bounded memory-governance contract is complete: ordinary chat does not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible; superseded history is not current memory.
 
@@ -149,6 +156,7 @@ Wave B2 — capability narration / COMPLETE / MERGED
 -> Wave B3 — memory governance / COMPLETE / MERGED
 -> Wave B4 — reproducibility hygiene / COMPLETE / MERGED
 -> Wave C — proof / validated-baseline checkpoint / COMPLETE / MERGED / VALIDATED
+-> PR #366 post-Wave-C truth hygiene / ACTIVE / DRAFT
 -> reconstruct/reconcile #335 onto the exact validated baseline / NEXT / NOT AUTHORIZED
 -> separate #335 review/merge decision
 -> Google identity-only live proof
