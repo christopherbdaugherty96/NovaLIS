@@ -73,7 +73,8 @@ def _post_wave_c_fixture(root: Path) -> None:
         root,
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
         "Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is the "
-        "documentation-only post-Wave-C truth-hygiene pass in draft PR #366.\n"
+        "documentation-only post-Wave-C truth-hygiene pass in draft PR #366. "
+        "PR #335 reconstruction remains next but not authorized by this synchronization.\n"
         "#335 OPEN / DRAFT / UNMERGED\n",
     )
 
@@ -84,6 +85,19 @@ def test_checker_accepts_post_wave_c_truth_hygiene_lane(tmp_path):
 
     assert checker.check_operational_truth(tmp_path) == []
     assert checker.POST_WAVE_C_LANE == "POST_WAVE_C_TRUTH_HYGIENE"
+
+
+def test_roadmap_binds_first_pr_after_truth_hygiene_phrase():
+    checker = _load_checker()
+    text = (
+        "Wave C is COMPLETE / MERGED / VALIDATED. The current active lane is the "
+        "documentation-only post-Wave-C truth-hygiene pass in draft PR #366. "
+        "PR #335 reconstruction remains next but not authorized.\n"
+    )
+
+    assert checker._extract_lane("roadmap", text) == (
+        "POST_WAVE_C_TRUTH_HYGIENE:PR#366"
+    )
 
 
 def test_checker_detects_post_wave_c_to_legacy_lane_drift(tmp_path):
