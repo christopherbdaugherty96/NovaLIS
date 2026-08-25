@@ -92,7 +92,7 @@ LANE_PATTERNS = {
 # provenance. They intentionally do not depend on temporary PR workflow state.
 POST_WAVE_C_PATTERNS = {
     "agents": re.compile(
-        r"^Post-Wave-C documentation closeout gate:.*truth-hygiene contract.*PR #(?P<pr>\d+)",
+        r"^Post-Wave-C documentation closeout gate:.*?truth-hygiene contract.*?PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "priority": re.compile(
@@ -112,11 +112,11 @@ POST_WAVE_C_PATTERNS = {
         re.MULTILINE | re.IGNORECASE,
     ),
     "canonical_index": re.compile(
-        r"^Current gate:.*post-Wave-C documentation closeout.*truth-hygiene contract.*PR #(?P<pr>\d+)",
+        r"^Current gate:.*?post-Wave-C documentation closeout.*?truth-hygiene contract.*?PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
     "roadmap": re.compile(
-        r"^Post-Wave-C documentation closeout gate:.*truth-hygiene contract.*PR #(?P<pr>\d+)",
+        r"^Post-Wave-C documentation closeout gate:.*?truth-hygiene contract.*?PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
     ),
 }
