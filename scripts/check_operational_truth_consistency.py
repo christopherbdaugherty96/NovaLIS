@@ -18,7 +18,7 @@ Checked here:
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
 - PR #335 remaining explicitly UNMERGED / NEXT / NOT AUTHORIZED on its
-  priority/roadmap status lines;
+  priority/roadmap status representation;
 - completed closeout preserving a separate owner-authorization decision before
   #335 reconstruction/reconciliation.
 
@@ -193,10 +193,25 @@ def _lines_for_pr(text: str, pr_number: int) -> tuple[str, ...]:
 
 
 def _preserves_pr_335_unmerged(text: str) -> bool:
-    for line in _lines_for_pr(text, 335):
+    lines = text.splitlines()
+    pr_ref = re.compile(r"(?:\bPR\s*)?#335\b", re.IGNORECASE)
+    block_header = re.compile(r"\bPR\s*#335\s+remains\s*:\s*$", re.IGNORECASE)
+
+    for index, line in enumerate(lines):
+        if not pr_ref.search(line):
+            continue
         upper = line.upper()
         if "UNMERGED" in upper and not re.search(r"\bMERGED\b", upper):
             return True
+        if block_header.search(line):
+            for status_line in lines[index + 1 : index + 6]:
+                stripped = status_line.strip()
+                if not stripped or stripped.startswith("```"):
+                    continue
+                status_upper = stripped.upper()
+                return "UNMERGED" in status_upper and not re.search(
+                    r"\bMERGED\b", status_upper
+                )
     return False
 
 
@@ -327,7 +342,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
     for name, text in (("current priority", priority), ("canonical roadmap", roadmap)):
         if not _preserves_pr_335_unmerged(text):
             errors.append(
-                f"{name} does not preserve PR #335 as explicitly UNMERGED on its status line"
+                f"{name} does not preserve PR #335 as explicitly UNMERGED in its status representation"
             )
         if not _preserves_pr_335_next_not_authorized(text):
             errors.append(
