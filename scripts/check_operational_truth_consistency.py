@@ -11,7 +11,7 @@ Checked here:
 - stabilization/current-truth gate agreement across AGENTS, canonical index,
   priority/status/todo, and the canonical roadmap marker;
 - active-vs-complete post-Wave-C documentation-closeout lifecycle agreement;
-- durable PR #366 truth-hygiene provenance and merged PR #378 narration provenance
+- merged PR #366 truth-hygiene provenance and merged PR #378 narration provenance
   for completed closeout state;
 - the known ``connections_api.py`` requests-based network exception and
   three-control-plane boundary in canonical governance;
@@ -316,6 +316,10 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
     }
     for name in sorted(completed_surfaces):
         text = texts[name]
+        if not _preserves_merged_pr(text, 366):
+            errors.append(
+                f"{paths[name]}: completed closeout does not preserve PR #366 as MERGED truth-hygiene provenance"
+            )
         if not _preserves_merged_pr(text, 378):
             errors.append(
                 f"{paths[name]}: completed closeout does not preserve PR #378 as MERGED narration/front-door provenance"

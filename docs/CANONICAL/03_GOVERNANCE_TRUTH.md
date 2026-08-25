@@ -95,7 +95,7 @@ known exceptions -> mechanically visible and explicitly justified
 new direct-network paths -> treated as governance discrepancies until reviewed
 ```
 
-Known detected exception at the A1 planning checkpoint:
+Known detected exception, originally identified at the A1 planning checkpoint:
 
 ```text
 nova_backend/src/api/connections_api.py performs provider-health
@@ -105,10 +105,12 @@ Classification:
 local administrative health probe
 
 Status:
-pending B1 runtime-truth instrumentation and explicit disposition
+B1 runtime-truth instrumentation: COMPLETE / MERGED.
+The exception is mechanically visible and explicitly classified.
+Any future path disposition or mediation change requires separate review.
 ```
 
-This is recorded as documentation truth, not as a runtime fix.
+This is current documentation truth about the known exception and its instrumentation state; it is not a claim that the exception has been removed or that all outbound network paths are universally mediated.
 
 A generated report must not simultaneously detect a relevant direct-network exception and summarize the relevant discrepancy set as empty.
 
@@ -147,14 +149,14 @@ A capability may require approval without being currently authorized for a parti
 
 Nova contains intentional persistence surfaces, including governed memory and other explicit stores. Therefore an absolute repository-level rule of "no persistence" or "no silent persistence anywhere" is too broad unless scoped to a specific contract.
 
-The active stabilization doctrine is narrower and testable:
+The current doctrine is narrower and testable:
 
 - persistence must be explicit in the behavior contract;
 - provenance/authority status must survive persistence where relevant;
-- ordinary GeneralChat must not silently create durable personal memory once the Wave B3 contract is implemented;
+- ordinary GeneralChat must not silently create durable personal memory under the current B3 memory-governance contract;
 - persisted state never becomes action authority merely because it exists.
 
-Memory governance repair is a future Wave B3 implementation lane, not a Wave A1 behavior change.
+Wave B3 memory governance is COMPLETE / MERGED. Current memory behavior must be read from the B3/runtime truth and evidence for the exact revision; this canonical boundary preserves the permanent rule that memory does not grant execution authority. Any future memory expansion or Operational Continuity implementation requires its own evidence and authorization.
 
 ## Local and remote route protection
 
