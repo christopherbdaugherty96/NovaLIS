@@ -128,27 +128,32 @@ Current grounded status:
 ```text
 - local-first governed awareness and decision-support system
 - bounded execution infrastructure exists
-- active runtime capabilities exist
-- active != certified != locked
-- Cap 16 web search is P1-P5 certification-locked (2026-05-10)
-- Cap 22 file-folder access is P1-P5 certification-locked (2026-05-20)
-- Cap 64 email draft is P1-P5 certification-locked (2026-05-20) and remains local mailto draft only
-- Cap 65 Shopify intelligence is P1-P5 certification-locked (2026-05-22), read-only, not Shopify writes
-- OpenClaw exists as runtime code with bounded/manual-first execution surfaces
-- PR #154 narrowed the OpenClaw freeform-goal path to read-only allowlisted tools and metered network access
-- Authorization Integrity Slice 1 is merged through PR #325
-- Slice 2A is not implemented on main; its separate bounded local approval is not activation by this README
-- Slice 2B remains deferred and separately gated
-- Issue #326 and PR #327 are non-authorizing
-- post-#312 acceptance provenance remains unresolved in repository truth
-- no economic-value, expanded OpenClaw, browser/computer-use, financial-write, outreach,
-  posting, contracting, autonomous-business, or delegation lane is active
-- generated runtime docs are current as of the latest recorded drift check
+- generated runtime state reports 27 active capability surfaces
+- active != certified != locked != configured != authorized
+- Cap 16 web search is P1-P5 certification-locked
+- Cap 22 file-folder access is P1-P5 certification-locked
+- Cap 64 email draft is P1-P5 certification-locked and remains local mailto draft only
+- Cap 65 Shopify intelligence is P1-P5 certification-locked, read-only, not Shopify writes
+- OpenClaw exists as bounded/manual-first runtime infrastructure; presence does not imply broad autonomy
+- Wave A1, A2, B1, B2, B3, B4, and Wave C stabilization are complete and merged
+- immutable Wave C validated_baseline_sha:
+  ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
+- GitHub-hosted Wave C jobs remained NOT EXECUTED because of the external account/billing
+  restriction tracked in Issue #354; the owner waived that source as mandatory exit evidence
+  without classifying it as PASS
+- post-Wave-C documentation closeout is the current gate; this README is one reviewed
+  front-door follow-up and does not by itself complete or authorize the closeout
+- PR #335 Google Workspace Foundation remains draft/unmerged historical Foundation/auth/identity code;
+  it is not a current capability and must be reconstructed/reviewed separately before any merge
+- Google Tasks and Gmail are not built as current Nova capabilities
+- Operational Continuity is strategically accepted but implementation-inactive and non-authorizing
+- no broad browser/computer-use, financial-write, autonomous outreach, contracting,
+  autonomous-business, broad provider-routing, or expanded OpenClaw authority lane is active
 ```
 
 For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
 
-For current human-readable work continuity, including the current active task, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
+For current human-readable work continuity, including the current gate, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
 
 Historical sequencing references (May 2026; superseded by the master roadmap for ordering):
 [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
@@ -157,15 +162,20 @@ Historical sequencing references (May 2026; superseded by the master roadmap for
 Current remaining order:
 
 ```text
-1. Resolve post-#312 acceptance provenance honestly; do not fabricate a retrospective record.
-2. Continue only the separately owner-approved bounded local Slice 2A work within its exact
-   scope and publication stop.
-3. Select one product-usability lane independently from real-use evidence.
-4. Only after Slice 2A and product evidence, separately authorize one read-first economic proof.
-5. Only later consider one separately locked, typed OpenClaw execution vertical.
+1. Complete the post-Wave-C documentation closeout through separately reviewed front-door,
+   historical-guide, operating-model, and Brain narration changes or an equivalent consolidation.
+2. After documentation closeout is reviewed and merged, separately authorize reconstruction of
+   PR #335 onto the immutable Wave C validated baseline.
+3. Harden the bounded Google Foundation lifecycle defects identified during review, then rerun
+   exact-head verification and independent security/architecture review.
+4. Make the #335 merge decision separately.
+5. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
+6. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove
+   provenance/freshness/evidence boundaries.
+7. Only then evaluate an evidence-based Operational Continuity implementation warrant.
 
-This summary authorizes nothing. The Daily Command Center and master roadmap hold current detail
-and ordering; lane locks hold implementation scope.
+This summary authorizes nothing. The Daily Command Center, canonical roadmap truth, Issue #343,
+and lane-specific locks hold current ordering and implementation scope.
 ```
 
 ## Future Directions

@@ -1,13 +1,17 @@
 # Current Stage Guide — Stages 3, 4, 5, and 6
 Updated: 2026-05-03
 
+> **Historical/reference guide.** This file preserves the May 2026 Stage 3–6 frame and is not current roadmap or work-order authority. Its later `What comes next (corrected)` section records the sequence understood at that time and is superseded for current ordering. For current work order, use `docs/CANONICAL/07_ROADMAP_TRUTH.md`, `docs/status/CURRENT_WORK_STATUS.md`, `docs/status/DAILY_COMMAND_CENTER.md`, `.agent_context/current_priority.md`, and Issue #343.
+
 ## What This File Is
 A plain-language explanation of what Stages 3, 4, 5, and 6 mean in human terms.
 
-For the authoritative implementation status, see:
+For current implementation status, use the current truth surfaces first:
 - `docs/status/CURRENT_WORK_STATUS.md`
-- `docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02.md`
+- `docs/status/DAILY_COMMAND_CENTER.md`
 - `docs/todo/ACTIVE_TODO.md`
+
+`docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02.md` remains historical Stage-era context, not current ordering authority.
 
 ---
 
@@ -83,6 +87,8 @@ The system foundation is now wired. Stage 6 introduces routines built on top of 
 - Build a visible workflow layer (Daily Operator / business workflow demo)
 - Surface Brain Mode, Context Pack, and Routine outputs in UI
 - Introduce governed workflow workspace shell
+
+The three bullets above are preserved as May 2026 historical sequence context. They are not the current roadmap order.
 
 ---
 
