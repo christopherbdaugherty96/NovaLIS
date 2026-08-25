@@ -10,16 +10,23 @@ Checked here:
 - required presence of the active operational entry points;
 - stabilization/current-truth gate agreement across AGENTS, canonical index,
   priority/status/todo, and the canonical roadmap marker;
+- active-vs-complete post-Wave-C documentation-closeout lifecycle agreement;
+- durable PR #366 truth-hygiene provenance and merged PR #378 narration provenance
+  for completed closeout state;
 - the known ``connections_api.py`` requests-based network exception and
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
-- PR #335 remaining explicitly UNMERGED near its reference in priority/roadmap.
+- exact Wave C validated-baseline preservation for completed closeout state;
+- PR #335 remaining explicitly UNMERGED / NEXT / NOT AUTHORIZED near its
+  priority/roadmap references;
+- completed closeout preserving a separate owner-authorization decision before
+  #335 reconstruction/reconciliation.
 
-The checker supports both the historical Wave A1-C representation and the
-post-Wave-C documentation-closeout representation. For the post-Wave-C
-representation, PR #366 is durable provenance for the truth-hygiene contract
-package; temporary GitHub workflow states such as OPEN, DRAFT, READY, or ACTIVE
-are intentionally not part of the machine-readable gate identity.
+The checker supports historical Wave A1-C representations, the active
+post-Wave-C documentation-closeout representation, and the completed
+post-Wave-C documentation-closeout representation. PR #366 remains durable
+truth-hygiene provenance; temporary GitHub workflow states such as OPEN, DRAFT,
+READY, or ACTIVE are intentionally not part of the normalized PR identity.
 
 Not checked here:
 - semantic correctness of the documents;
@@ -57,6 +64,9 @@ NON_GOALS = (
 )
 
 POST_WAVE_C_LANE = "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
+POST_WAVE_C_ACTIVE_LANE = f"{POST_WAVE_C_LANE}_ACTIVE"
+POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
+VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 
 # Historical stabilization-lane markers. Keep these for compatibility with the
 # already-proven A1-C operational fixtures and historical checked revisions.
@@ -87,10 +97,10 @@ LANE_PATTERNS = {
     ),
 }
 
-# Merge-safe post-Wave-C representation. These patterns require the durable
-# documentation-closeout gate and bind PR #366 only as truth-hygiene contract
-# provenance. They intentionally do not depend on temporary PR workflow state.
-POST_WAVE_C_PATTERNS = {
+# Merge-safe active post-Wave-C representation. These patterns bind PR #366
+# only as truth-hygiene provenance and intentionally ignore temporary PR UI
+# state such as OPEN/DRAFT/READY/ACTIVE.
+POST_WAVE_C_ACTIVE_PATTERNS = {
     "agents": re.compile(
         r"^Post-Wave-C documentation closeout gate:.*?truth-hygiene contract.*?PR #(?P<pr>\d+)\b",
         re.MULTILINE | re.IGNORECASE,
@@ -121,16 +131,38 @@ POST_WAVE_C_PATTERNS = {
     ),
 }
 
+POST_WAVE_C_COMPLETE_MARKER = re.compile(
+    r"POST-WAVE-C DOCUMENTATION CLOSEOUT(?:\s*:\s*|\s+[—-]\s*)COMPLETE\b",
+    re.IGNORECASE,
+)
+
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _extract_truth_hygiene_pr(text: str) -> str | None:
+    """Return the PR number used as nearby truth-hygiene provenance."""
+
+    for match in re.finditer(r"PR #(?P<pr>\d+)\b", text, re.IGNORECASE):
+        nearby = text[max(0, match.start() - 220) : match.end() + 220].upper()
+        if "TRUTH-HYGIENE" in nearby:
+            return match.group("pr")
+    return None
+
+
 def _extract_lane(name: str, text: str) -> str | None:
-    scoped = text[:8000]
-    post_wave_c_match = POST_WAVE_C_PATTERNS[name].search(scoped)
-    if post_wave_c_match:
-        return f"{POST_WAVE_C_LANE}:PR#{post_wave_c_match.group('pr')}"
+    scoped = text[:12000]
+
+    if POST_WAVE_C_COMPLETE_MARKER.search(scoped):
+        provenance_pr = _extract_truth_hygiene_pr(scoped)
+        if provenance_pr is not None:
+            return f"{POST_WAVE_C_COMPLETE_LANE}:PR#{provenance_pr}"
+        return None
+
+    active_match = POST_WAVE_C_ACTIVE_PATTERNS[name].search(scoped)
+    if active_match:
+        return f"{POST_WAVE_C_ACTIVE_LANE}:PR#{active_match.group('pr')}"
 
     legacy_match = LANE_PATTERNS[name].search(scoped)
     if legacy_match:
@@ -141,10 +173,35 @@ def _extract_lane(name: str, text: str) -> str | None:
 
 def _preserves_pr_335_unmerged(text: str) -> bool:
     for match in re.finditer(r"#335\b", text, re.IGNORECASE):
-        nearby = text[match.start() : match.start() + 500].upper()
+        nearby = text[match.start() : match.start() + 600].upper()
         if "UNMERGED" in nearby:
             return True
     return False
+
+
+def _preserves_pr_335_next_not_authorized(text: str) -> bool:
+    for match in re.finditer(r"#335\b", text, re.IGNORECASE):
+        nearby = text[match.start() : match.start() + 800].upper()
+        if "NEXT" in nearby and "NOT AUTHORIZED" in nearby:
+            return True
+    return False
+
+
+def _preserves_merged_pr(text: str, pr_number: int) -> bool:
+    for match in re.finditer(rf"#{pr_number}\b", text, re.IGNORECASE):
+        nearby = text[max(0, match.start() - 220) : match.end() + 220].upper()
+        if "MERGED" in nearby:
+            return True
+    return False
+
+
+def _preserves_validated_baseline(text: str) -> bool:
+    return VALIDATED_BASELINE_SHA in text
+
+
+def _preserves_separate_335_authorization_decision(text: str) -> bool:
+    upper = text.upper()
+    return "SEPARATE OWNER AUTHORIZATION" in upper and "#335" in upper
 
 
 def check_operational_truth(root: Path = ROOT) -> list[str]:
@@ -186,6 +243,30 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             f"active stabilization lane mismatch / stabilization/current-truth gate mismatch: {rendered}"
         )
 
+    completed_surfaces = {
+        name
+        for name, lane in lanes.items()
+        if lane.startswith(f"{POST_WAVE_C_COMPLETE_LANE}:")
+    }
+    for name in sorted(completed_surfaces):
+        text = texts[name]
+        if not _preserves_merged_pr(text, 378):
+            errors.append(
+                f"{paths[name]}: completed closeout does not preserve PR #378 as MERGED narration/front-door provenance"
+            )
+        if not _preserves_validated_baseline(text):
+            errors.append(
+                f"{paths[name]}: completed closeout does not preserve exact validated_baseline_sha {VALIDATED_BASELINE_SHA}"
+            )
+        if not _preserves_pr_335_next_not_authorized(text):
+            errors.append(
+                f"{paths[name]}: completed closeout does not preserve #335 as NEXT / NOT AUTHORIZED"
+            )
+        if not _preserves_separate_335_authorization_decision(text):
+            errors.append(
+                f"{paths[name]}: completed closeout does not preserve a separate owner authorization decision before #335 reconstruction"
+            )
+
     governance = texts.get("governance", "")
     if "nova_backend/src/api/connections_api.py" not in governance:
         errors.append(
@@ -218,6 +299,10 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         if not _preserves_pr_335_unmerged(text):
             errors.append(
                 f"{name} does not preserve PR #335 as explicitly UNMERGED near its reference"
+            )
+        if not _preserves_pr_335_next_not_authorized(text):
+            errors.append(
+                f"{name} does not preserve PR #335 as NEXT / NOT AUTHORIZED near its reference"
             )
 
     return errors
