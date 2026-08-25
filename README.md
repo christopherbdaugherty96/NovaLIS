@@ -141,8 +141,9 @@ Current grounded status:
 - GitHub-hosted Wave C jobs remained NOT EXECUTED because of the external account/billing
   restriction tracked in Issue #354; the owner waived that source as mandatory exit evidence
   without classifying it as PASS
-- post-Wave-C documentation closeout is the current gate; this README is one reviewed
-  front-door follow-up and does not by itself complete or authorize the closeout
+- post-Wave-C documentation closeout is the documentation prerequisite immediately before any
+  separate PR #335 reconstruction authorization decision; resolve whether that prerequisite is
+  complete from the current canonical/status surfaces and Issue #343
 - PR #335 Google Workspace Foundation remains draft/unmerged historical Foundation/auth/identity code;
   it is not a current capability and must be reconstructed/reviewed separately before any merge
 - Google Tasks and Gmail are not built as current Nova capabilities
@@ -159,13 +160,13 @@ Historical sequencing references (May 2026; superseded by the master roadmap for
 [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
 [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
 
-Current remaining order:
+Gate sequence (resolve the live position from current truth surfaces):
 
 ```text
-1. Complete the post-Wave-C documentation closeout through separately reviewed front-door,
-   historical-guide, operating-model, and Brain narration changes or an equivalent consolidation.
-2. After documentation closeout is reviewed and merged, separately authorize reconstruction of
-   PR #335 onto the immutable Wave C validated baseline.
+1. Post-Wave-C documentation closeout must be reviewed and merged before any separate PR #335
+   reconstruction authorization decision.
+2. After that prerequisite, the owner may separately authorize reconstruction of PR #335 onto
+   the approved current main / immutable Wave C validated lineage.
 3. Harden the bounded Google Foundation lifecycle defects identified during review, then rerun
    exact-head verification and independent security/architecture review.
 4. Make the #335 merge decision separately.
