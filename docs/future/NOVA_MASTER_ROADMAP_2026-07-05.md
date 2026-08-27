@@ -37,78 +37,127 @@ This roadmap still determines ordering; lane locks still determine scope; owner 
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Current Ordering — 2026-08-20
+## Current Ordering — 2026-08-27
 
-Wave A1 began from merged-main checkpoint:
+Current repository HEAD is moving state and must be resolved from Git when needed. Issue #387 was
+executed from `main@4fc7ab2de1047c49d4649d7239cafc9174e8f5fc`, after PR #391 closed Issue
+#368. That SHA is execution provenance for this docs-only synchronization; it is not a permanent
+alias for current HEAD and is not the validated runtime baseline.
+
+The immutable Wave C runtime-validated baseline remains:
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-That SHA is a planning checkpoint, not a permanent alias for current HEAD and not a validated
-baseline.
+Later documentation, truth-checker, terminology, and roadmap merges do not establish a new
+runtime-validated baseline.
 
-The August 12 stabilization sequence has materially advanced. The following packages are merged
-and must not be selected again as pending work:
+### Completed stabilization and truth-hardening chain
 
 ```text
-#337 / #338  P1-A commitment/capability truth
-#339         P1-B receipt-correlated session action/outcome history
-#340         Cap 19 outcome truth
-#341 / #344  explicit weather-location preservation / WebSocket repair
-#345         brightness outcome truth
-#346         turn-down-volume routing/wording
-#347         current-information freshness/source-boundary routing
-#348         broad awareness follow-up interpretation
-#349         Calendar source-selection overmatch repair
-#350         Calendar tomorrow-scope preservation
-#351         local schedule-cancellation routing
-#352         private Drive source-selection truth
+Wave A1 operational truth synchronization       COMPLETE / MERGED
+Wave A2 strategy reconciliation                 COMPLETE / MERGED
+Wave B1 runtime-truth instrumentation           COMPLETE / MERGED
+Wave B2 capability narration                    COMPLETE / MERGED
+Wave B3 memory governance                       COMPLETE / MERGED
+Wave B4 reproducibility hygiene                 COMPLETE / MERGED
+Wave C full-system validation                   COMPLETE / MERGED / VALIDATED
+post-Wave-C documentation and truth hardening   COMPLETE through PR #385
+Issue #388 truth/checker prerequisite            COMPLETE / CLOSED via PR #390
+Issue #368 workspace/session terminology proof  COMPLETE / CLOSED via PR #391
+Issue #387 long-lived roadmap synchronization   COMPLETE / DOCS-ONLY (this block)
 ```
 
-The current stabilization checkpoint is Issue #343. It **does not rewrite this roadmap**; it
-places a truth/proof gate around the existing Google-evidence -> Continuity sequence so Nova
-resumes that roadmap from a coherent baseline rather than from stale operational instructions.
+The August 12 P1/P2 stabilization packages (#337 through #352) are also merged and historical.
+They must not be selected again as pending work without new reproduced evidence. Issue #388 was a
+truth/checker correction, not a runtime lane. Issue #368 qualified existing workspace/session
+continuity wording; it did not implement Operational Continuity or authorize Google work.
 
-Current order:
+### Current decision order
 
 ```text
-WAVE A — truth reconciliation
-  A1 operational truth synchronization
-  A2 strategy reconciliation
+COMPLETED BOUNDED CONSISTENCY WORK
+  #388
+  -> #368
+  -> #387
 
-WAVE B — truth-integrity repairs
-  B1 runtime-truth instrumentation
-  B2 capability narration
-  B3 memory governance
-  B4 reproducibility hygiene
+NEXT PROOF-PATH / PROCESS DEBT
+  establish a trustworthy executable proof path
+  -> resolve Issue #354 if practical, or preserve an explicitly accepted exact-head local/Codex path
+  -> revisit branch/review protection and required-check policy with that proof path
 
-WAVE C — proof and stabilization checkpoint
-  exact candidate commit
-  repaired runtime-truth regeneration
-  supported proof matrix
-  semantic-contract regression
-  current Issue #227/local-inference benchmark
-  reproduced-defect-only fixes
-  immutable validated baseline
-  reconstruct/reconcile #335
-  OAuth hardening cases
-  exact-head #335 verification
-  independent security/architecture review
-  separate merge decision
+SEPARATE OWNER DECISION
+  PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 
-POST-STABILIZATION
-  Google identity-only live proof
+ONLY IF LATER AUTHORIZED
+  reconstruct/reconcile #335 against exact validated baseline ec20a714...
+  -> reconcile later bounded main deltas deliberately
+  -> repair the four confirmed OAuth/identity/credential lifecycle findings
+  -> exact-head executable proof
+  -> independent security/architecture review
+  -> separate #335 merge decision
+  -> Google identity-only live proof
   -> Google Tasks READ / first provider-backed Google evidence vertical
-  -> separately warranted Operational Continuity slice
+  -> later Google READ/evidence verticals
+  -> evidence-based Operational Continuity warrant
 ```
 
-PR #335 remains **OPEN / DRAFT / UNMERGED** at
+Issue #354 remains open proof-path infrastructure debt. GitHub-hosted jobs that execute zero steps
+are `NOT EXECUTED`, not behavioral PASS or behavioral FAIL. The Wave C owner waiver remains valid
+for the immutable baseline above; it does not make those hosted jobs successful and does not
+automatically waive proof requirements for security-sensitive #335 reconstruction.
+
+PR #335 remains **OPEN / DRAFT / UNMERGED** at historical head
 `befb69ef75881a9f418472549b64243219c138f9`, with historical base
-`c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`. Its Foundation/auth/identity-only implementation
-must not be merged in that historical state. It is reconstructed/reconciled only after Wave C
-records an exact validated baseline; historical #335 fingerprints and test totals are not reused
-as proof for the reconciled branch.
+`c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`. It is not the current task and must not be merged,
+rebased wholesale, or modified without a later separate owner decision. Connection Foundation,
+OAuth scope, or an existing draft branch do not grant Nova capability or authority.
+
+If reconstruction is later authorized, the four confirmed lifecycle findings remain required:
+
+1. invalid OAuth callbacks must not consume a legitimate authorization attempt;
+2. post-token identity lookup failure must best-effort revoke issued refresh/access credentials
+   and avoid external/local lifecycle mismatch;
+3. identity proof must require explicit `email_verified is True` rather than accepting a missing
+   claim; and
+4. insufficient-scope grants must not silently retain reusable provider credentials; prefer
+   best-effort revocation and metadata-only `SCOPE_INSUFFICIENT` unless retention is separately
+   justified and security-reviewed.
+
+### Public / Product Readiness Track — Issue #386
+
+Issue #386 is a parallel, planned, non-runtime, and **non-authorizing** readiness track. It does
+not displace the technical order above. It permits planning/preparation only; actual publication,
+outreach, data collection, access grants, visibility changes, licensing changes, or telemetry each
+require a separate owner decision.
+
+```text
+NOW / PARALLEL, NON-RUNTIME PREPARATION
+  public-story / landing-page draft
+  -> naming and brand review
+  -> early-access design
+  -> design-partner candidate identification
+  -> Google onboarding / OAuth ownership decision planning
+  -> separate owner decision for actual publication, outreach, or data collection
+
+PUBLIC-ALPHA GATE AFTER ORDERED TECHNICAL PROOF
+  Google identity + first provider-backed read evidence
+  -> publication audit of source, Git history, and GitHub metadata
+  -> licensing and third-party redistribution review
+  -> applicable Google external-user / OAuth production readiness
+  -> local attack-surface and supply-chain/reproducibility proof
+  -> newcomer and community-health surfaces
+  -> visibility-transition and protection plan
+  -> clean-machine and outside-user hero-flow proof
+  -> tagged immutable alpha release
+  -> separate owner decision on public/source-available repository release
+```
+
+Operational Continuity is not a prerequisite for technical public alpha. Public preparation is
+not publication authority; a public story is not a public repository; source-available is not
+open source; outside-user evidence is not runtime authority; local observability is not outbound
+telemetry; and repository visibility is not release readiness.
 
 Operational Continuity remains **STRATEGICALLY ACCEPTED / INACTIVE / NOT
 IMPLEMENTATION-AUTHORIZED**. It surrounds Awareness, Decision, Authority, Execution, and Outcome
@@ -119,9 +168,14 @@ The future governed-protection-wall concept is long-term security/digital-sovere
 material. It does not replace Nova's current product identity, activate a runtime lane, or displace
 the current Google-evidence -> Continuity ordering.
 
-Permanent boundary:
+Permanent boundaries:
 
 ```text
+current HEAD != immutable validated runtime baseline
+completed stabilization != authorization for #335
+#388 prerequisite truth correction != runtime lane
+#368 technical completion != #335 authorization
+#335 pending decision != #335 next task
 connection != capability
 capability != authority
 Google capability != Google authorization != Nova authority
@@ -129,11 +183,19 @@ connected != evidence collected != action permitted
 recommendation != permission
 request acceptance != verified effect
 memory != Operational Continuity
+public story != public repository
+source-available != open source
+public preparation != public publication authorization
+outside-user evidence != runtime authority
+local observability != outbound telemetry
+repository visibility != release readiness
 ```
 
-This current block ORDERS work. It does not itself authorize Wave B implementation, #335 mutation
-or merge, Google domain-data access, external writes, capability/authority expansion, Operational
-Continuity runtime, broad OpenClaw expansion, or provider expansion.
+This current block orders work but authorizes no runtime/source change, generated-runtime-artifact
+edit, #335 mutation or merge, Google/OAuth implementation, Google domain-data access, external
+write, capability/authority expansion, Operational Continuity runtime, public publication or
+outreach, private-repository collaborator grant, repository visibility change, license change,
+telemetry transmission, broad OpenClaw expansion, provider expansion, or new stabilization wave.
 
 ## Historical Ordering — 2026-08-12 (superseded by the block above)
 
