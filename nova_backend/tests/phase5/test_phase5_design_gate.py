@@ -7,7 +7,11 @@ RUNTIME_STATE_PATH = PROJECT_ROOT / "docs" / "current_runtime" / "CURRENT_RUNTIM
 def test_phase5_runtime_slices_are_reflected_in_runtime_truth():
     content = RUNTIME_STATE_PATH.read_text(encoding="utf-8")
     assert "| Phase 5 | COMPLETE |" in content
-    assert "governed memory, continuity, tone, scheduling, and pattern-review surfaces are complete and sealed" in content.lower()
+    assert (
+        "governed memory, workspace/session continuity, tone, scheduling, and "
+        "pattern-review surfaces are complete and sealed"
+    ) in content.lower()
+    assert "governed memory, continuity," not in content.lower()
 
 
 def test_runtime_invariants_preserve_non_autonomous_boundary():
