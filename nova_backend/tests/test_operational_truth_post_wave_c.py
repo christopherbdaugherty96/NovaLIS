@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import shutil
 from pathlib import Path
-
 
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 
@@ -35,6 +35,8 @@ def _governance_fixture(root: Path) -> None:
 
 
 def _post_wave_c_active_fixture(root: Path) -> None:
+    _write(root, "README.md", "Historical active closeout fixture.\n")
+    _write(root, "START_HERE.md", "Historical active closeout fixture.\n")
     _write(
         root,
         "AGENTS.md",
@@ -97,14 +99,18 @@ def _completed_state_text(*, include_unmerged: bool = False) -> str:
         lines.append("#335 OPEN / DRAFT / UNMERGED")
     lines.extend(
         [
-            "#335 reconstruction: NEXT / NOT AUTHORIZED",
-            "next decision: separate owner authorization for #335 reconstruction/reconciliation",
+            "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED",
+            "#368: NEXT BOUNDED TECHNICAL LANE",
+            "#387: AFTER #368 / DOCS-ONLY",
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED",
         ]
     )
     return "\n".join(lines) + "\n"
 
 
 def _post_wave_c_complete_fixture(root: Path) -> None:
+    _write(root, "README.md", _completed_state_text())
+    _write(root, "START_HERE.md", _completed_state_text())
     _write(root, "AGENTS.md", _completed_state_text())
     _write(
         root,
@@ -171,12 +177,14 @@ def test_completed_state_binds_truth_hygiene_provenance_not_ui_state():
         "narration/front-door package: PR #378 MERGED\n"
         f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
         "#335 OPEN / DRAFT / UNMERGED\n"
-        "#335 reconstruction: NEXT / NOT AUTHORIZED\n"
-        "next decision: separate owner authorization for #335 reconstruction/reconciliation\n"
+        "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED\n"
+        "#368: NEXT BOUNDED TECHNICAL LANE\n"
+        "#387: AFTER #368 / DOCS-ONLY\n"
+        "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     )
 
     assert checker._extract_lane("priority", text) == (
-        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE:PR#366"
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE"
     )
 
 
@@ -188,13 +196,18 @@ def test_completed_state_ignores_nearby_365_provenance_collision():
         "PR #366 truth-hygiene package: MERGED\n"
         "PR #378 narration/front-door package: MERGED / VERIFIED\n"
         f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
-        "#335 reconstruction: NEXT / NOT AUTHORIZED\n"
-        "next decision: separate owner authorization for #335 reconstruction/reconciliation\n"
+        "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED\n"
+        "#368: NEXT BOUNDED TECHNICAL LANE\n"
+        "#387: AFTER #368 / DOCS-ONLY\n"
+        "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     )
 
-    assert checker._extract_truth_hygiene_pr(text) == "366"
+    assert checker._preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",))
+    assert checker._preserves_merged_pr_role(
+        text, 378, ("NARRATION", "FRONT-DOOR")
+    )
     assert checker._extract_lane("active_todo", text) == (
-        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE:PR#366"
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE"
     )
 
 
@@ -209,7 +222,7 @@ def test_canonical_index_accepts_completion_without_current_gate_wording():
 
     assert "Current gate:" not in text
     assert checker._extract_lane("canonical_index", text) == (
-        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE:PR#366"
+        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE"
     )
 
 
@@ -282,16 +295,16 @@ def test_checker_detects_completed_truth_hygiene_pr_identity_drift(tmp_path):
         "truth-hygiene provenance: PR #999 MERGED\n"
         "narration/front-door package: PR #378 MERGED\n"
         f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
-        "#335 reconstruction: NEXT / NOT AUTHORIZED\n"
-        "next decision: separate owner authorization for #335 reconstruction/reconciliation\n",
+        "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED\n"
+        "#368: NEXT BOUNDED TECHNICAL LANE\n"
+        "#387: AFTER #368 / DOCS-ONLY\n"
+        "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
     )
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("gate mismatch" in error for error in errors)
     assert any(
-        "canonical_index=POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE:PR#999"
-        in error
+        "PR #366 as MERGED truth-hygiene provenance" in error
         for error in errors
     )
 
@@ -370,7 +383,7 @@ def test_checker_does_not_borrow_unmerged_for_335_from_other_line(tmp_path):
     text = (
         "PR #335 remains: OPEN / DRAFT / MERGED\n"
         "unrelated historical branch: UNMERGED\n"
-        "PR #335 reconstruction: NEXT / NOT AUTHORIZED\n"
+        "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     )
 
     assert checker._preserves_pr_335_unmerged(text) is False
@@ -416,16 +429,18 @@ def test_checker_accepts_structured_multiline_335_unmerged_status():
     assert checker._preserves_pr_335_unmerged(negative) is False
 
 
-def test_checker_does_not_borrow_not_authorized_for_335_from_other_line(tmp_path):
+def test_checker_does_not_borrow_pending_not_authorized_for_335_from_other_line(
+    tmp_path,
+):
     checker = _load_checker()
     text = (
-        "#335 reconstruction: NEXT / AUTHORIZED\n"
-        "unrelated lane: NOT AUTHORIZED\n"
+        "#335 reconstruction: AUTHORIZED\n"
+        "unrelated lane: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     )
 
-    assert checker._preserves_pr_335_next_not_authorized(text) is False
-    assert checker._preserves_pr_335_next_not_authorized(
-        "#335 reconstruction: NEXT / NOT AUTHORIZED\n"
+    assert checker._preserves_pr_335_pending_not_authorized(text) is False
+    assert checker._preserves_pr_335_pending_not_authorized(
+        "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     ) is True
 
     _post_wave_c_complete_fixture(tmp_path)
@@ -433,14 +448,15 @@ def test_checker_does_not_borrow_not_authorized_for_335_from_other_line(tmp_path
         tmp_path,
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
         _completed_state_text(include_unmerged=True).replace(
-            "#335 reconstruction: NEXT / NOT AUTHORIZED\n",
-            "#335 reconstruction: NEXT / AUTHORIZED\nunrelated lane: NOT AUTHORIZED\n",
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
+            "PR #335 reconstruction: AUTHORIZED\n"
+            "unrelated lane: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
         ),
     )
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("NEXT / NOT AUTHORIZED" in error for error in errors)
+    assert any("PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED" in error for error in errors)
 
 
 def test_checker_detects_validated_baseline_drift(tmp_path):
@@ -471,37 +487,39 @@ def test_checker_detects_missing_335_unmerged_in_priority(tmp_path):
     assert any("current priority does not preserve PR #335 as explicitly UNMERGED" in error for error in errors)
 
 
-def test_checker_detects_missing_335_next_not_authorized(tmp_path):
+def test_checker_detects_missing_335_pending_not_authorized(tmp_path):
     checker = _load_checker()
     _post_wave_c_complete_fixture(tmp_path)
     _write(
         tmp_path,
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
         _completed_state_text(include_unmerged=True).replace(
-            "#335 reconstruction: NEXT / NOT AUTHORIZED\n", ""
-        ),
-    )
-
-    errors = checker.check_operational_truth(tmp_path)
-
-    assert any("NEXT / NOT AUTHORIZED" in error for error in errors)
-
-
-def test_checker_detects_missing_separate_owner_authorization_decision(tmp_path):
-    checker = _load_checker()
-    _post_wave_c_complete_fixture(tmp_path)
-    _write(
-        tmp_path,
-        "docs/todo/ACTIVE_TODO.md",
-        _completed_state_text().replace(
-            "next decision: separate owner authorization for #335 reconstruction/reconciliation\n",
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
             "",
         ),
     )
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("separate owner authorization decision" in error for error in errors)
+    assert any("PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED" in error for error in errors)
+
+
+def test_checker_detects_unrelated_separate_owner_decision(tmp_path):
+    checker = _load_checker()
+    _post_wave_c_complete_fixture(tmp_path)
+    _write(
+        tmp_path,
+        "docs/todo/ACTIVE_TODO.md",
+        _completed_state_text().replace(
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
+            "PR #335 reconstruction: PENDING / NOT AUTHORIZED\n"
+            "#368: SEPARATE OWNER DECISION\n",
+        ),
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any("separate owner decision to #335 reconstruction" in error for error in errors)
 
 
 def test_checker_still_requires_current_head_vs_validated_baseline_boundary(tmp_path):
@@ -518,3 +536,61 @@ def test_checker_still_requires_current_head_vs_validated_baseline_boundary(tmp_
     errors = checker.check_operational_truth(tmp_path)
 
     assert any("current HEAD from immutable validated baseline" in error for error in errors)
+
+
+def _copy_current_checked_surfaces(checker, destination: Path) -> None:
+    for relative in checker.CHECKED_SURFACES:
+        source = checker.ROOT / relative
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def test_current_repository_operational_truth_is_consistent():
+    checker = _load_checker()
+
+    assert checker.check_operational_truth(checker.ROOT) == []
+
+
+def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
+    checker = _load_checker()
+    _post_wave_c_complete_fixture(tmp_path)
+    agents = tmp_path / "AGENTS.md"
+    agents.write_text(
+        agents.read_text(encoding="utf-8").replace(
+            "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED",
+            "#388: IMMEDIATE / P1 PREREQUISITE",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any(
+        "AGENTS.md: current ordering does not preserve #388 COMPLETE -> #368 NEXT -> #387 AFTER #368"
+        in error
+        for error in errors
+    )
+
+
+def test_current_repository_shape_rejects_corrupted_front_door_order(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    original = readme.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "#368: NEXT BOUNDED TECHNICAL LANE",
+        "#368: BLOCKED",
+        1,
+    )
+    assert corrupted != original
+    readme.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any(
+        "README.md: current ordering does not preserve #388 COMPLETE -> #368 NEXT -> #387 AFTER #368"
+        in error
+        for error in errors
+    )

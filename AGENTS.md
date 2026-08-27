@@ -37,7 +37,7 @@ For exact runtime-existence claims, inspect code and the generated runtime surfa
 
 ## Post-Wave-C Current Development State — 2026-08-25
 
-Post-Wave-C documentation closeout is COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged narration/front-door package. Wave C is COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED; the next consequential step is a separate owner authorization decision.
+Post-Wave-C documentation closeout is COMPLETE. PR #366 is MERGED truth-hygiene provenance and PR #378 is the MERGED narration/front-door package. Wave C is COMPLETE / MERGED / VALIDATED. Issue #388 is COMPLETE and its truth-checker prerequisite is SATISFIED; Issue #368 is the next bounded technical lane, then Issue #387 performs the docs-only master-roadmap sync. PR #335 remains pending a separate owner decision and is not authorized.
 
 Wave A1, A2, B1, B2, B3, and B4 are complete:
 
@@ -105,9 +105,11 @@ Wave C: COMPLETE / MERGED / VALIDATED
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 truth-hygiene provenance: PR #366 MERGED
 narration/front-door package: PR #378 MERGED / VERIFIED
-PR #335 reconstruction: NEXT / NOT AUTHORIZED
-authorization state: NOT GRANTED
-next decision: separate owner authorization for #335 reconstruction/reconciliation
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
+#387: AFTER #368 / DOCS-ONLY
+PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+PR #335 state: OPEN / DRAFT / UNMERGED
 post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 post_closeout_narration_merge_sha: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
@@ -119,7 +121,7 @@ B1 through B4 are complete and merged. Their proof and review records remain his
 
 ### Immediate worker instruction
 
-The post-Wave-C documentation closeout is complete. Do not treat completion as authorization to start #335. The next consequential step is a separate owner decision on whether to authorize #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Until that authorization is explicit, do not begin runtime, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity implementation work.
+The post-Wave-C documentation closeout and Issue #388 truth-checker prerequisite are complete. The next bounded technical lane is Issue #368; Issue #387 follows #368 as docs-only synchronization. Do not treat that ordering as authorization for #335. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Do not begin OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity implementation work from this state.
 
 B3's bounded memory-governance contract is complete: ordinary chat does not silently create authoritative durable personal memory; explicit and observed memory remain distinct; provenance, confidence, conflict, supersession, and promotion semantics remain visible; superseded history is not current memory.
 
@@ -157,7 +159,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not merge or extend PR #335 in its historical state. Reconstructing it on the exact validated baseline requires separate owner authorization; documentation closeout completion does not provide that authorization.
+Do not merge or extend PR #335 in its historical state. Reconstructing it on the exact validated baseline requires a later authorizing owner decision; documentation closeout completion does not provide that authorization.
 
 ## Current Ordered Gate
 
@@ -169,8 +171,10 @@ Wave B2 — capability narration / COMPLETE / MERGED
 -> post-Wave-C documentation closeout / COMPLETE
    truth-hygiene provenance: PR #366 MERGED
    narration/front-door package: PR #378 MERGED / VERIFIED
--> separate owner decision whether to authorize #335 reconstruction / CURRENT DECISION BOUNDARY
--> reconstruct/reconcile #335 onto exact validated baseline / NEXT / NOT AUTHORIZED
+-> #388 / COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+-> #368 / NEXT BOUNDED TECHNICAL LANE
+-> #387 / AFTER #368 / DOCS-ONLY
+-> PR #335 reconstruction / PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 -> separate #335 review/merge decision
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
@@ -245,7 +249,7 @@ _MOCs: excluded
 
 Hosted CI did not execute because the Issue #354 jobs contain zero steps. That is infrastructure evidence only: neither behavioral PASS nor behavioral FAIL.
 
-PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established the B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the Wave C initial candidate. Wave C merged through PR #364; `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` is the immutable `validated_baseline_sha`. PR #365, PR #366, and PR #378 subsequently advanced documentation/truth state only. #335 reconstruction remains next but not authorized; Google domain work and Operational Continuity runtime remain blocked.
+PR #356 merged as `969c369b453fffca0eb2b8dad65ff3f285df8fbc`; post-B1 sync #357 merged as `864ceba9747384b3bdca4a693dca938b3899864e`; B2 merged through PR #358 as `e84a9d55f8575c687765b1df19e8f794b180599b`; post-B2 sync #359 established the B3 base `b1dad94e08e2d01b1cd7f0cf43981cff80b0de2e`. B3 merged through PR #360 at reviewed head `3e8a68aa5d17712fbb2106f052e309a2f33e120e`; squash merge `8cc67213bd7e06e862d50bc2c1bf29d8ac72f064` completed B3. Post-B3 sync #361 established B4 base `bb99a5edbc9397d6b96b91fe0e9fe01bf57f9bd1`. B4 merged through PR #362 at reviewed head `7b70a91b3a294e829a36edac067da7e4b567774e`; squash merge `5c243a822f79ea09b0031124d4bafbf32d18842c` completed B4. Post-B4 sync #363 merged as `404689ef07f42480966c59ba30c07db5c4f101e1`, the Wave C initial candidate. Wave C merged through PR #364; `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` is the immutable `validated_baseline_sha`. PR #365, PR #366, and PR #378 subsequently advanced documentation/truth state only. #388 is complete and its truth-checker prerequisite is satisfied; #368 is next, and #387 follows #368. PR #335 reconstruction remains pending a separate owner decision and is not authorized; Google domain work and Operational Continuity runtime remain blocked.
 
 ## Permanent Control-Plane Distinction
 
@@ -341,7 +345,7 @@ Read:
 - infer broad autonomy from OpenClaw runtime presence;
 - expand Google domain-data access before the ordered gate permits it;
 - use old PR test totals as proof of a reconciled branch;
-- reopen B2, B3, B4, or Wave C without concrete new evidence, or start #335 reconstruction, Google domain work, or Continuity runtime without separate owner authorization;
+- reopen B2, B3, B4, or Wave C without concrete new evidence, or start #335 reconstruction, Google domain work, or Continuity runtime without a later authorizing owner decision;
 - manually edit generated runtime artifacts;
 - publish `_MOCs/*` as part of B1 without separate review/authorization;
 - direct work from a stale `current`, `next`, or `active` statement without checking the current truth surfaces first.
