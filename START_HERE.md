@@ -133,8 +133,8 @@ However:
 - `POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE`; truth/checker hardening is merged through PR #385
 - PR #366 truth-hygiene provenance: MERGED
 - PR #378 narration/front-door package: MERGED / VERIFIED
-- #388: IMMEDIATE / P1 PREREQUISITE
-- #368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+- #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+- #368: NEXT BOUNDED TECHNICAL LANE
 - #387: AFTER #368 / DOCS-ONLY
 - PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 - PR #335 remains draft/unmerged historical Google Foundation/auth/identity code and is not a current Nova capability
@@ -169,8 +169,8 @@ is not authorized to pursue broad goals or expand its own authority.
 
 The documentation prerequisite is complete. The current sequence is:
 
-1. Issue #388 is the IMMEDIATE / P1 PREREQUISITE truth/checker repair.
-2. Issue #368 is the NEXT BOUNDED TECHNICAL LANE AFTER #388.
+1. Issue #388 is COMPLETE; its TRUTH-CHECKER PREREQUISITE is SATISFIED.
+2. Issue #368 is the NEXT BOUNDED TECHNICAL LANE.
 3. Issue #387 is AFTER #368 / DOCS-ONLY.
 4. PR #335 reconstruction remains PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.
 5. The owner may later decide whether to authorize reconstruction/reconciliation of PR #335 against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.

@@ -7,8 +7,8 @@ CURRENT PLANNING STATE:
   Post-Wave-C documentation closeout — COMPLETE.
   Truth-hygiene provenance — PR #366 MERGED.
   Narration/front-door package — PR #378 MERGED / VERIFIED.
-  #388 — IMMEDIATE / P1 PREREQUISITE.
-  #368 — NEXT BOUNDED TECHNICAL LANE AFTER #388.
+  #388 — COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED.
+  #368 — NEXT BOUNDED TECHNICAL LANE.
   #387 — AFTER #368 / DOCS-ONLY.
   PR #335 reconstruction — PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.
   PR #335 state — OPEN / DRAFT / UNMERGED.
@@ -97,8 +97,8 @@ CURRENT ORDER:
   -> post-Wave-C documentation closeout — COMPLETE.
   -> PR #366 truth-hygiene provenance — MERGED.
   -> PR #378 narration/front-door package — MERGED / VERIFIED.
-  -> #388 — IMMEDIATE / P1 PREREQUISITE.
-  -> #368 — NEXT BOUNDED TECHNICAL LANE AFTER #388.
+  -> #388 — COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED.
+  -> #368 — NEXT BOUNDED TECHNICAL LANE.
   -> #387 — AFTER #368 / DOCS-ONLY.
   -> PR #335 reconstruction — PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.
   -> if later authorized, reconstruct #335 onto exact validated baseline ec20a714....
@@ -121,7 +121,7 @@ B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact
 
 B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; the complete non-hosted proof passed on exact baseline `ec20a714...`, which remains the immutable validated baseline under the explicit owner evidence waiver. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; PR #366 merged the truth-hygiene contract at `4ddd46ad...`; PR #378 merged and was verified at `67c3d8fd...`. None of those documentation/truth commits established a new runtime validated baseline.
 
-The post-Wave-C documentation closeout is complete in this operational-truth transition. Issue #388 is the immediate P1 prerequisite, Issue #368 is the next bounded technical lane after #388, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`; it is not an active engineering lane.
+The post-Wave-C documentation closeout is complete in this operational-truth transition. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`; it is not an active engineering lane.
 
 ## Permanent evidence discipline
 

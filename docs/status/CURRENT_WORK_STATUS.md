@@ -20,8 +20,8 @@ B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
 B4: COMPLETE / MERGED via PR #362
-#388: IMMEDIATE / P1 PREREQUISITE
-#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
 #387: AFTER #368 / DOCS-ONLY
 PR #335 RECONSTRUCTION: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 PR #335 STATE: OPEN / DRAFT / UNMERGED
@@ -193,7 +193,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Documentation closeout is complete. Issue #388 is the immediate P1 prerequisite, Issue #368 is the next bounded technical lane after #388, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+Documentation closeout is complete. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
 
 Issue #354 remains:
 
@@ -212,8 +212,8 @@ A1 / A2 / B1 / B2 / B3 / B4 / Wave C        COMPLETE
 post-Wave-C truth-hygiene / PR #366             COMPLETE / MERGED
 post-Wave-C narration/front-door / PR #378      COMPLETE / MERGED / VERIFIED
 post-Wave-C documentation closeout              COMPLETE
-#388                                             IMMEDIATE / P1 PREREQUISITE
-#368                                             NEXT BOUNDED TECHNICAL LANE AFTER #388
+#388                                             COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368                                             NEXT BOUNDED TECHNICAL LANE
 #387                                             AFTER #368 / DOCS-ONLY
 PR #335 reconstruction                           PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 ```

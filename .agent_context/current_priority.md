@@ -12,8 +12,8 @@ WAVE C: COMPLETE / MERGED / VALIDATED
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 truth-hygiene provenance: PR #366 MERGED
 narration/front-door package: PR #378 MERGED
-#388: IMMEDIATE / P1 PREREQUISITE
-#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
 #387: AFTER #368 / DOCS-ONLY
 PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 PR #335 state: OPEN / DRAFT / UNMERGED
@@ -103,9 +103,9 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — Issue #388 prerequisite truth/checker repair
+## Current action — Issue #368 bounded technical lane
 
-This completion-sync revision records the post-Wave-C documentation closeout as complete. PR #366 provides MERGED truth-hygiene provenance and PR #378 provides the MERGED narration/front-door package. Issue #388 is the immediate P1 prerequisite; Issue #368 is the next bounded technical lane after #388, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against the exact validated baseline. No Google/Foundation engineering lane is active.
+This completion-sync revision records the post-Wave-C documentation closeout as complete. PR #366 provides MERGED truth-hygiene provenance and PR #378 provides the MERGED narration/front-door package. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against the exact validated baseline. No Google/Foundation engineering lane is active.
 
 This state transition does not authorize runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
 
@@ -163,8 +163,8 @@ B1 COMPLETE / MERGED
 -> post-Wave-C truth-hygiene provenance / PR #366 / COMPLETE / MERGED
 -> narration/front-door closeout package / PR #378 / COMPLETE / MERGED
 -> post-Wave-C documentation closeout / COMPLETE
--> #388 / IMMEDIATE / P1 PREREQUISITE
--> #368 / NEXT BOUNDED TECHNICAL LANE AFTER #388
+-> #388 / COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+-> #368 / NEXT BOUNDED TECHNICAL LANE
 -> #387 / AFTER #368 / DOCS-ONLY
 -> PR #335 reconstruction / PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 -> if later authorized, reconstruct #335 onto exact validated baseline
@@ -174,7 +174,7 @@ B1 COMPLETE / MERGED
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4, Wave C, and the post-Wave-C documentation closeout are complete. Issue #388 is immediate, Issue #368 follows, and Issue #387 follows #368. PR #335 is not the current lane; reconstruction remains pending a separate owner decision against the exact validated baseline.
+B1 through B4, Wave C, the post-Wave-C documentation closeout, and Issue #388 are complete. Issue #368 is next, and Issue #387 follows #368. PR #335 is not the current lane; reconstruction remains pending a separate owner decision against the exact validated baseline.
 
 ## Scope lock
 

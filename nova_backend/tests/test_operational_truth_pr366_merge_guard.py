@@ -33,8 +33,8 @@ def _completed_state_text(*, include_unmerged: bool = False) -> str:
         lines.append("#335 OPEN / DRAFT / UNMERGED")
     lines.extend(
         [
-            "#388: IMMEDIATE / P1 PREREQUISITE",
-            "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388",
+            "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED",
+            "#368: NEXT BOUNDED TECHNICAL LANE",
             "#387: AFTER #368 / DOCS-ONLY",
             "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED",
         ]

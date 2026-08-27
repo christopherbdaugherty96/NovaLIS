@@ -17,8 +17,7 @@ Checked here:
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
-- the current #388 -> #368 -> #387 ordering on operational and front-door
-  surfaces;
+- the post-#388 #368 -> #387 ordering on operational and front-door surfaces;
 - PR #335 remaining explicitly UNMERGED where represented and PENDING A
   SEPARATE OWNER DECISION / NOT AUTHORIZED;
 - completed closeout structurally binding that separate decision to #335
@@ -303,8 +302,10 @@ def _ordering_line_index(
 
 
 def _preserves_current_order(text: str) -> bool:
-    prerequisite = _ordering_line_index(text, 388, ("IMMEDIATE", "P1", "PREREQUISITE"))
-    technical = _ordering_line_index(text, 368, ("NEXT", "AFTER #388"))
+    prerequisite = _ordering_line_index(
+        text, 388, ("COMPLETE", "TRUTH-CHECKER", "PREREQUISITE", "SATISFIED")
+    )
+    technical = _ordering_line_index(text, 368, ("NEXT", "BOUNDED", "TECHNICAL", "LANE"))
     roadmap = _ordering_line_index(text, 387, ("AFTER #368", "DOCS-ONLY"))
     return (
         prerequisite is not None
@@ -390,7 +391,7 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
                 continue
             if not _preserves_current_order(text):
                 errors.append(
-                    f"{paths[name]}: current ordering does not preserve #388 IMMEDIATE -> #368 NEXT -> #387 AFTER #368"
+                    f"{paths[name]}: current ordering does not preserve #388 COMPLETE -> #368 NEXT -> #387 AFTER #368"
                 )
             if not _preserves_pr_335_pending_not_authorized(text):
                 errors.append(

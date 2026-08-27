@@ -26,8 +26,8 @@ PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
 PR #378 narration/front-door package: MERGED / VERIFIED
 PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 documentation closeout: COMPLETE
-#388: IMMEDIATE / P1 PREREQUISITE
-#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
 #387: AFTER #368 / DOCS-ONLY
 PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 PR #335 state: OPEN / DRAFT / UNMERGED
@@ -248,16 +248,16 @@ README, START_HERE, historical-guide lifecycle, and Brain/operating-model narrat
 
 ## Current Ordered Work and Blocked Work
 
-### #388 prerequisite, then #368, then #387
+### #388 complete; #368 next; then #387
 
 ```text
-#388: IMMEDIATE / P1 PREREQUISITE
-#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
 #387: AFTER #368 / DOCS-ONLY
 PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 ```
 
-Documentation closeout is complete, but no Google engineering lane becomes active automatically. After the bounded #388, #368, and #387 sequence, the owner may separately decide whether to authorize #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+Documentation closeout and Issue #388 are complete, but no Google engineering lane becomes active automatically. After the bounded #368 and #387 sequence, the owner may separately decide whether to authorize #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
 
 Until a later separate owner decision grants authorization, do not create or modify the #335 reconstruction branch, implement Google Foundation changes, or treat #335 as an active capability lane.
 
@@ -300,7 +300,7 @@ Until a later separate owner decision grants authorization, do not create or mod
 
 ### Post-Wave-C / Google Foundation reconciliation — deferred
 
-**PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.** Issues #388, #368, and #387 precede this decision. A later owner decision is still required before any branch or implementation change:
+**PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.** Issue #388 is complete; Issues #368 and #387 precede this decision. A later owner decision is still required before any branch or implementation change:
 
 - reconstruct #335 on the exact validated baseline only after an authorizing owner decision;
 - harden post-token identity-failure cleanup and invalid callback consumption;

@@ -50,8 +50,8 @@ PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
 PR #378 reviewed head: 84222288335c399c1ffa73186858e8ba84e9a64a
 PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
-#388: IMMEDIATE / P1 PREREQUISITE
-#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
 #387: AFTER #368 / DOCS-ONLY
 PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 PR #335 state: OPEN / DRAFT / UNMERGED
@@ -76,8 +76,8 @@ Wave A1 operational truth sync                 COMPLETE
 -> post-Wave-C documentation closeout           COMPLETE
    truth-hygiene provenance: PR #366 MERGED
    narration/front-door package: PR #378 MERGED / VERIFIED
--> #388                                         IMMEDIATE / P1 PREREQUISITE
--> #368                                         NEXT BOUNDED TECHNICAL LANE AFTER #388
+-> #388                                         COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+-> #368                                         NEXT BOUNDED TECHNICAL LANE
 -> #387                                         AFTER #368 / DOCS-ONLY
 -> PR #335 reconstruction                       PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 -> reconstruct/reconcile #335                   ONLY AFTER A LATER AUTHORIZING OWNER DECISION
