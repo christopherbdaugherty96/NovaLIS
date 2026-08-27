@@ -767,7 +767,7 @@ def _phase_5_status(registry: dict[str, Any]) -> str:
         and "renderMemoryOverviewWidget" in dashboard_src
         and 'id="page-memory"' in index_src
     )
-    continuity_surface_present = (
+    workspace_session_continuity_surface_present = (
         "workspace home" in command_runtime_src
         and "renderWorkspaceHomeWidget" in dashboard_src
         and 'id="page-home"' in index_src
@@ -793,7 +793,7 @@ def _phase_5_status(registry: dict[str, Any]) -> str:
             phase_5_foundation_present,
             memory_capability_enabled,
             memory_surface_present,
-            continuity_surface_present,
+            workspace_session_continuity_surface_present,
             tone_surface_present,
             scheduling_surface_present,
             pattern_review_surface_present,
@@ -1680,18 +1680,21 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_45_note = "Experience layer remains design-only"
     if phase_5_status == "COMPLETE":
         phase_5_note = (
-            "Governed memory, continuity, tone, scheduling, and pattern-review "
+            "Governed memory, workspace/session continuity, tone, scheduling, and pattern-review "
             "surfaces are complete and sealed"
         )
     elif phase_5_status == "ACTIVE":
         phase_5_note = (
-            "Governed memory, continuity, tone, scheduling, and pattern-review "
+            "Governed memory, workspace/session continuity, tone, scheduling, and pattern-review "
             "surfaces active; closure state tracked in Phase-5 proof packet"
         )
     elif phase_5_status == "PARTIAL":
-        phase_5_note = "Build phase promoted with partial memory/continuity runtime activation"
+        phase_5_note = (
+            "Build phase promoted with partial memory and workspace/session continuity "
+            "runtime activation"
+        )
     else:
-        phase_5_note = "Memory continuity planned"
+        phase_5_note = "Memory and workspace/session continuity planned"
     if phase_6_status == "COMPLETE":
         phase_6_note = (
             "Trust loop, policy review, capability authority map, and manual policy executor gate "
