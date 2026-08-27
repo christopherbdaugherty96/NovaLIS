@@ -21,7 +21,7 @@ implementation/proof  -> what actually changed and was verified
 
 ## Current checkpoint — 2026-08-25
 
-POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is merged truth-hygiene provenance and PR #378 is the merged/verified narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. PR #335 reconstruction remains NEXT / NOT AUTHORIZED; the current decision is whether the owner separately authorizes reconstruction/reconciliation.
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is MERGED truth-hygiene provenance and PR #378 is the MERGED/VERIFIED narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane; Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction remains pending a separate owner decision and is not authorized.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -35,9 +35,11 @@ C  — COMPLETE / MERGED / VALIDATED
 #366 — MERGED truth-hygiene provenance
 #378 — MERGED / VERIFIED narration/front-door package
 documentation closeout — COMPLETE
-#335 reconstruction — NEXT / NOT AUTHORIZED
-authorization state — NOT GRANTED
-next decision — separate owner authorization for #335 reconstruction/reconciliation
+#388 — COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368 — NEXT BOUNDED TECHNICAL LANE
+#387 — AFTER #368 / DOCS-ONLY
+PR #335 reconstruction — PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+PR #335 state — OPEN / DRAFT / UNMERGED
 ```
 
 Immutable runtime validation evidence:
@@ -120,7 +122,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-It must not be merged in its historical branch state. Documentation closeout is now complete, but that completion does not authorize #335. Only after separate owner authorization may #335 be reconstructed/reconciled against exact validated baseline `ec20a714...`; it must then undergo exact-head proof and independent review before a separate merge decision.
+It must not be merged in its historical branch state. Documentation closeout is now complete, but that completion does not authorize #335. Only after a later authorizing owner decision may #335 be reconstructed/reconciled against exact validated baseline `ec20a714...`; it must then undergo exact-head proof and independent review before a separate merge decision.
 
 ## Current stabilization / decision boundary
 
@@ -151,12 +153,14 @@ POST-WAVE-C — documentation closeout                COMPLETE
   PR #378 narration/front-door package: MERGED / VERIFIED
   no runtime, generated-runtime, authority, or Google implementation changes
 
-POST-WAVE-C — #335 authorization decision           CURRENT DECISION BOUNDARY
-  #335 reconstruction: NEXT / NOT AUTHORIZED
-  authorization state: NOT GRANTED
-  separate owner authorization required
+POST-WAVE-C — #388 truth/checker prerequisite complete
+  #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+  #368: NEXT BOUNDED TECHNICAL LANE
+  #387: AFTER #368 / DOCS-ONLY
+  PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+  PR #335 state: OPEN / DRAFT / UNMERGED
 
-POST-WAVE-C — Google Foundation reconciliation      PENDING SEPARATE AUTHORIZATION
+POST-WAVE-C — Google Foundation reconciliation      PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
   reconstruct #335 against exact validated baseline
   OAuth hardening cases
   exact-head #335 verification
@@ -164,7 +168,7 @@ POST-WAVE-C — Google Foundation reconciliation      PENDING SEPARATE AUTHORIZA
   separate merge decision
 ```
 
-Only after separate #335 authorization, reconstruction, review, and a separate #335 merge decision:
+Only after a later authorizing owner decision, #335 reconstruction, review, and a separate #335 merge decision:
 
 ```text
 Google identity-only live proof

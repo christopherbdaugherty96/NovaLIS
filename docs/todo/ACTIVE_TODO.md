@@ -26,9 +26,11 @@ PR #366 squash merge: 4ddd46ad0c3e3c5db55e006680f4a426956581c1
 PR #378 narration/front-door package: MERGED / VERIFIED
 PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 documentation closeout: COMPLETE
-#335 reconstruction: NEXT / NOT AUTHORIZED
-authorization state: NOT GRANTED
-next decision: separate owner authorization for #335 reconstruction/reconciliation
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
+#387: AFTER #368 / DOCS-ONLY
+PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+PR #335 state: OPEN / DRAFT / UNMERGED
 ```
 
 Wave A1, A2, B1, B2, B3, B4, and Wave C are already merged:
@@ -224,11 +226,10 @@ Merged implementation is not universal live-proof coverage.
 OPEN / DRAFT / UNMERGED
 head: befb69ef75881a9f418472549b64243219c138f9
 historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
-reconstruction: NEXT / NOT AUTHORIZED
-authorization state: NOT GRANTED
+PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 ```
 
-The documentation-closeout prerequisite is complete. PR #335 still remains deferred because reconstruction/reconciliation requires a separate owner authorization. If authorized later, reconstruction remains pinned to exact Wave C validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`; do not substitute a later documentation-only `main` revision.
+The documentation-closeout prerequisite is complete. PR #335 still remains deferred because reconstruction/reconciliation requires a later separate owner decision. If authorized later, reconstruction remains pinned to exact Wave C validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`; do not substitute a later documentation-only `main` revision.
 
 ### Issue #354 — zero-step GitHub Actions infrastructure
 
@@ -245,13 +246,20 @@ Keep #354 separate from Nova runtime truth. Its jobs remain `NOT EXECUTED`, not 
 
 README, START_HERE, historical-guide lifecycle, and Brain/operating-model narration cleanup were consolidated and merged through PR #378. The post-Wave-C truth-hygiene contract was merged through PR #366. This completion state does not authorize runtime or #335 work.
 
-## Current Next Decision and Blocked Work
+## Current Ordered Work and Blocked Work
 
-### #335 reconstruction/reconciliation decision
+### #388 complete; #368 next; then #387
 
-**NEXT / NOT AUTHORIZED.** Documentation closeout is complete, but no Google engineering lane becomes active automatically. The next consequential step is a separate owner decision whether to authorize bounded #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+```text
+#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
+#368: NEXT BOUNDED TECHNICAL LANE
+#387: AFTER #368 / DOCS-ONLY
+PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+```
 
-Until that separate authorization is granted, do not create or modify the #335 reconstruction branch, implement Google Foundation changes, or treat #335 as an active capability lane.
+Documentation closeout and Issue #388 are complete, but no Google engineering lane becomes active automatically. After the bounded #368 and #387 sequence, the owner may separately decide whether to authorize #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+
+Until a later separate owner decision grants authorization, do not create or modify the #335 reconstruction branch, implement Google Foundation changes, or treat #335 as an active capability lane.
 
 ### Wave B2 — capability narration
 
@@ -290,11 +298,11 @@ Until that separate authorization is granted, do not create or modify the #335 r
 - repair only reproduced defects;
 - immutable `validated_baseline_sha`: `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`;
 
-### Post-Wave-C / Google Foundation reconciliation
+### Post-Wave-C / Google Foundation reconciliation — deferred
 
-**NEXT / NOT AUTHORIZED.** The documentation prerequisite is satisfied, but a separate owner authorization is still required before any branch or implementation change:
+**PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.** Issue #388 is complete; Issues #368 and #387 precede this decision. A later owner decision is still required before any branch or implementation change:
 
-- reconstruct #335 on the exact validated baseline only after separate authorization;
+- reconstruct #335 on the exact validated baseline only after an authorizing owner decision;
 - harden post-token identity-failure cleanup and invalid callback consumption;
 - rerun exact-head #335 verification;
 - perform independent security/architecture review;

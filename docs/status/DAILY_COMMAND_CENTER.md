@@ -7,9 +7,11 @@ CURRENT PLANNING STATE:
   Post-Wave-C documentation closeout — COMPLETE.
   Truth-hygiene provenance — PR #366 MERGED.
   Narration/front-door package — PR #378 MERGED / VERIFIED.
-  PR #335 reconstruction — NEXT / NOT AUTHORIZED.
-  Authorization state — NOT GRANTED.
-  Next decision — separate owner authorization for #335 reconstruction/reconciliation.
+  #388 — COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED.
+  #368 — NEXT BOUNDED TECHNICAL LANE.
+  #387 — AFTER #368 / DOCS-ONLY.
+  PR #335 reconstruction — PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.
+  PR #335 state — OPEN / DRAFT / UNMERGED.
 
 SUBSTATE:
   B1 COMPLETE / MERGED.
@@ -95,16 +97,18 @@ CURRENT ORDER:
   -> post-Wave-C documentation closeout — COMPLETE.
   -> PR #366 truth-hygiene provenance — MERGED.
   -> PR #378 narration/front-door package — MERGED / VERIFIED.
-  -> #335 reconstruction decision — NEXT / NOT AUTHORIZED.
-  -> separate owner authorization required before reconstruction/reconciliation.
-  -> if separately authorized, reconstruct #335 onto exact validated baseline ec20a714....
+  -> #388 — COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED.
+  -> #368 — NEXT BOUNDED TECHNICAL LANE.
+  -> #387 — AFTER #368 / DOCS-ONLY.
+  -> PR #335 reconstruction — PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.
+  -> if later authorized, reconstruct #335 onto exact validated baseline ec20a714....
   -> independent review + separate #335 merge decision.
   -> Google identity-only live proof.
   -> Google Tasks READ / first provider-backed Google evidence vertical.
   -> evidence-based Continuity warrant.
 
 BLOCKED:
-  #335 reconstruction until separate owner authorization is granted.
+  #335 reconstruction until a later separate owner decision grants authorization.
   Google domain work beyond separately authorized future evidence lanes.
   Operational Continuity runtime.
 ```
@@ -117,7 +121,7 @@ B1's bounded P1/P2 corrections, exact-head proof, corrected generation, artifact
 
 B3's bounded memory truth/provenance repair is complete and merged through PR #360. B4's bounded dependency-truth repair is complete and merged through PR #362. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364; the complete non-hosted proof passed on exact baseline `ec20a714...`, which remains the immutable validated baseline under the explicit owner evidence waiver. PR #365 later merged documentation-only synchronization at `d5b0dc66...`; PR #366 merged the truth-hygiene contract at `4ddd46ad...`; PR #378 merged and was verified at `67c3d8fd...`. None of those documentation/truth commits established a new runtime validated baseline.
 
-The post-Wave-C documentation closeout is complete in this operational-truth transition. The next repository decision is whether the owner separately authorizes reconstruction/reconciliation of PR #335 against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Until that separate authorization exists, #335 remains `NEXT / NOT AUTHORIZED` and is not an active engineering lane.
+The post-Wave-C documentation closeout is complete in this operational-truth transition. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`; it is not an active engineering lane.
 
 ## Permanent evidence discipline
 
@@ -139,7 +143,7 @@ prior candidate PASS != corrected-head PASS
 B3 memory architecture beyond the completed bounded truth/provenance repair
 B4 dependency modernization or packaging redesign beyond the completed repair
 Wave C redesign, capability expansion, or repairs without reproduced evidence
-PR #335 reconstruction before separate owner authorization
+PR #335 reconstruction before a later authorizing owner decision
 Google Tasks domain work
 Gmail expansion
 Google Calendar writes
@@ -157,4 +161,4 @@ Protection Wall runtime expansion
 
 ## Next handoff
 
-Post-Wave-C documentation closeout is complete. Do not reinterpret that completion as authorization for Google work. The next consequential decision is a separate owner authorization decision for PR #335 reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. If authorization is not granted, #335 remains deferred and no Google implementation begins.
+Post-Wave-C documentation closeout is complete. Do not reinterpret that completion or the #388/#368/#387 ordering as authorization for Google work. PR #335 reconstruction remains pending a later separate owner decision against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. Unless that decision grants authorization, #335 remains deferred and no Google implementation begins.
