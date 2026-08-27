@@ -12,9 +12,11 @@ WAVE C: COMPLETE / MERGED / VALIDATED
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 truth-hygiene provenance: PR #366 MERGED
 narration/front-door package: PR #378 MERGED
-PR #335 reconstruction: NEXT / NOT AUTHORIZED
-authorization state: NOT GRANTED
-next decision: separate owner authorization for #335 reconstruction/reconciliation
+#388: IMMEDIATE / P1 PREREQUISITE
+#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#387: AFTER #368 / DOCS-ONLY
+PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+PR #335 state: OPEN / DRAFT / UNMERGED
 post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 post_closeout_narration_merge_sha: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
@@ -101,9 +103,9 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — separate #335 authorization decision
+## Current action — Issue #388 prerequisite truth/checker repair
 
-This completion-sync revision records the post-Wave-C documentation closeout as complete. PR #366 provides truth-hygiene provenance and PR #378 provides the merged narration/front-door package. The next repository decision is whether the owner separately authorizes reconstruction/reconciliation of #335 against the exact validated baseline. Until that separate authorization exists, #335 remains `NEXT / NOT AUTHORIZED` and no Google/Foundation engineering lane is active.
+This completion-sync revision records the post-Wave-C documentation closeout as complete. PR #366 provides MERGED truth-hygiene provenance and PR #378 provides the MERGED narration/front-door package. Issue #388 is the immediate P1 prerequisite; Issue #368 is the next bounded technical lane after #388, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against the exact validated baseline. No Google/Foundation engineering lane is active.
 
 This state transition does not authorize runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
 
@@ -125,7 +127,7 @@ B3 is complete: ordinary chat no longer silently creates authoritative personal 
 
 B4 is complete: `pyproject.toml` is canonical dependency truth; requirements-style compatibility surfaces are mechanically checked; the historical `python-multipart` mismatch is resolved; and the supported install path was proven on the reviewed B4 revision. Do not reopen or redesign packaging without new evidence.
 
-Wave C is complete. Exact validated-baseline proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. PR #365, #366, and #378 are later documentation/truth provenance and are not new runtime validated baselines. Documentation closeout is complete at this revision, but #335 reconstruction still requires a separate owner authorization.
+Wave C is complete. Exact validated-baseline proof passed and `validated_baseline_sha` is `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`. PR #365, #366, and #378 are later documentation/truth provenance and are not new runtime validated baselines. Documentation closeout is complete at this revision, but #335 reconstruction still requires a later separate owner decision.
 
 ## Google Foundation / CI state
 
@@ -138,7 +140,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify, reconstruct, rebase, or merge #335 without the next separate reconstruction authorization.
+Do not modify, reconstruct, rebase, or merge #335 without a later separate owner decision authorizing that reconstruction.
 
 Issue #354 remains:
 
@@ -161,15 +163,18 @@ B1 COMPLETE / MERGED
 -> post-Wave-C truth-hygiene provenance / PR #366 / COMPLETE / MERGED
 -> narration/front-door closeout package / PR #378 / COMPLETE / MERGED
 -> post-Wave-C documentation closeout / COMPLETE
--> separate owner authorization decision for #335 / CURRENT DECISION / NOT AUTHORIZED
--> if authorized, reconstruct #335 onto exact validated baseline
+-> #388 / IMMEDIATE / P1 PREREQUISITE
+-> #368 / NEXT BOUNDED TECHNICAL LANE AFTER #388
+-> #387 / AFTER #368 / DOCS-ONLY
+-> PR #335 reconstruction / PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+-> if later authorized, reconstruct #335 onto exact validated baseline
 -> independent #335 review + separate merge decision
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4, Wave C, and the post-Wave-C documentation closeout are complete. PR #335 remains the next substantive engineering lane only if the owner separately authorizes reconstruction/reconciliation against the exact validated baseline.
+B1 through B4, Wave C, and the post-Wave-C documentation closeout are complete. Issue #388 is immediate, Issue #368 follows, and Issue #387 follows #368. PR #335 is not the current lane; reconstruction remains pending a separate owner decision against the exact validated baseline.
 
 ## Scope lock
 

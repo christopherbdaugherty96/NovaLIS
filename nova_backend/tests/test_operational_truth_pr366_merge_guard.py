@@ -3,7 +3,6 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 
 
@@ -34,14 +33,18 @@ def _completed_state_text(*, include_unmerged: bool = False) -> str:
         lines.append("#335 OPEN / DRAFT / UNMERGED")
     lines.extend(
         [
-            "#335 reconstruction: NEXT / NOT AUTHORIZED",
-            "next decision: separate owner authorization for #335 reconstruction/reconciliation",
+            "#388: IMMEDIATE / P1 PREREQUISITE",
+            "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388",
+            "#387: AFTER #368 / DOCS-ONLY",
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED",
         ]
     )
     return "\n".join(lines) + "\n"
 
 
 def _complete_fixture(root: Path) -> None:
+    _write(root, "README.md", _completed_state_text())
+    _write(root, "START_HERE.md", _completed_state_text())
     _write(root, "AGENTS.md", _completed_state_text())
     _write(
         root,
