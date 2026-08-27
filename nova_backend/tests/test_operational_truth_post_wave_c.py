@@ -99,8 +99,8 @@ def _completed_state_text(*, include_unmerged: bool = False) -> str:
         lines.append("#335 OPEN / DRAFT / UNMERGED")
     lines.extend(
         [
-            "#388: IMMEDIATE / P1 PREREQUISITE",
-            "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388",
+            "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED",
+            "#368: NEXT BOUNDED TECHNICAL LANE",
             "#387: AFTER #368 / DOCS-ONLY",
             "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED",
         ]
@@ -177,8 +177,8 @@ def test_completed_state_binds_truth_hygiene_provenance_not_ui_state():
         "narration/front-door package: PR #378 MERGED\n"
         f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
         "#335 OPEN / DRAFT / UNMERGED\n"
-        "#388: IMMEDIATE / P1 PREREQUISITE\n"
-        "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388\n"
+        "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED\n"
+        "#368: NEXT BOUNDED TECHNICAL LANE\n"
         "#387: AFTER #368 / DOCS-ONLY\n"
         "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     )
@@ -196,8 +196,8 @@ def test_completed_state_ignores_nearby_365_provenance_collision():
         "PR #366 truth-hygiene package: MERGED\n"
         "PR #378 narration/front-door package: MERGED / VERIFIED\n"
         f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
-        "#388: IMMEDIATE / P1 PREREQUISITE\n"
-        "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388\n"
+        "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED\n"
+        "#368: NEXT BOUNDED TECHNICAL LANE\n"
         "#387: AFTER #368 / DOCS-ONLY\n"
         "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
     )
@@ -295,8 +295,8 @@ def test_checker_detects_completed_truth_hygiene_pr_identity_drift(tmp_path):
         "truth-hygiene provenance: PR #999 MERGED\n"
         "narration/front-door package: PR #378 MERGED\n"
         f"validated_baseline_sha: {VALIDATED_BASELINE_SHA}\n"
-        "#388: IMMEDIATE / P1 PREREQUISITE\n"
-        "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388\n"
+        "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED\n"
+        "#368: NEXT BOUNDED TECHNICAL LANE\n"
         "#387: AFTER #368 / DOCS-ONLY\n"
         "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
     )
@@ -552,13 +552,35 @@ def test_current_repository_operational_truth_is_consistent():
     assert checker.check_operational_truth(checker.ROOT) == []
 
 
+def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
+    checker = _load_checker()
+    _post_wave_c_complete_fixture(tmp_path)
+    agents = tmp_path / "AGENTS.md"
+    agents.write_text(
+        agents.read_text(encoding="utf-8").replace(
+            "#388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED",
+            "#388: IMMEDIATE / P1 PREREQUISITE",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_operational_truth(tmp_path)
+
+    assert any(
+        "AGENTS.md: current ordering does not preserve #388 COMPLETE -> #368 NEXT -> #387 AFTER #368"
+        in error
+        for error in errors
+    )
+
+
 def test_current_repository_shape_rejects_corrupted_front_door_order(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     readme = tmp_path / "README.md"
     original = readme.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "#368: NEXT BOUNDED TECHNICAL LANE AFTER #388",
+        "#368: NEXT BOUNDED TECHNICAL LANE",
         "#368: BLOCKED",
         1,
     )
@@ -568,7 +590,7 @@ def test_current_repository_shape_rejects_corrupted_front_door_order(tmp_path):
     errors = checker.check_operational_truth(tmp_path)
 
     assert any(
-        "README.md: current ordering does not preserve #388 IMMEDIATE -> #368 NEXT -> #387 AFTER #368"
+        "README.md: current ordering does not preserve #388 COMPLETE -> #368 NEXT -> #387 AFTER #368"
         in error
         for error in errors
     )
