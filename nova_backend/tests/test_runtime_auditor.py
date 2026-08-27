@@ -110,7 +110,11 @@ def test_render_current_runtime_state_uses_phase5_complete_note():
 
     rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
 
-    assert "Governed memory, continuity, tone, scheduling, and pattern-review surfaces are complete and sealed" in rendered
+    assert (
+        "Governed memory, workspace/session continuity, tone, scheduling, and "
+        "pattern-review surfaces are complete and sealed"
+    ) in rendered
+    assert "Governed memory, continuity," not in rendered
 
 
 def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkeypatch):
