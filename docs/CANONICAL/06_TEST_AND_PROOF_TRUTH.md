@@ -28,32 +28,35 @@ These remain intentionally separate:
 
 Do not merge these genres merely for tidiness; the distinction preserves epistemic meaning.
 
-## Current stabilization proof posture — 2026-08-20
+## Current validated-baseline proof posture — 2026-08-27
 
-The August stabilization implementation packages through PR #352 have merged. Their PR bodies/tests provide bounded package-level evidence, including P1-A/P1-B truth repairs, local outcome-truth repairs, weather/location routing, current-information routing, Calendar scope/selection, schedule cancellation, and private Drive source selection.
-
-That is **not yet one unified validated baseline**.
-
-At the start of Wave A1, merged `main` was:
+Wave A1/A2, Wave B1-B4, and Wave C are complete. Wave C established one immutable validated
+runtime baseline after its required exact-revision non-hosted proof package:
 
 ```text
-1a517d8832a2c834c80b10a7062bed878f6312cc
+validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 ```
 
-This SHA is the A1 planning checkpoint only. It must not be labeled `validated_baseline_sha` merely because it is current or because individual PR checks passed.
+That SHA is evidence for the revision, environments, and proof package actually exercised. It is
+not a permanent alias for current HEAD. Later documentation, truth-checker, terminology, and
+roadmap merges do not create a new runtime-validated baseline.
 
-Wave C will later choose an exact candidate commit and run the required proof matrix. Only after those checks complete may Nova record:
+GitHub-hosted Actions did not execute because of the external account/billing restriction tracked
+in Issue #354. The owner waived hosted execution as mandatory Wave C exit evidence without
+classifying those zero-step jobs as PASS. The complete required non-hosted package passed on the
+exact baseline above.
 
 ```text
-validated_baseline_sha
-validated_at
-verification package
-supported-environment scope
-known exceptions
-remaining defects
+hosted proof: NOT EXECUTED
+behavioral PASS from hosted jobs: NO
+behavioral FAIL from hosted jobs: NO
+repository workflow defect indicated: NO
+Issue #354: OPEN / DEFERRED
 ```
 
-That record is immutable evidence for the tested baseline. Future HEAD may move beyond it.
+The waiver is historical Wave C disposition, not a blanket waiver for future security-sensitive
+work. PR #335 remains open/draft/unmerged and pending a separate owner decision; this proof posture
+does not authorize its reconstruction, Google work, or any merge.
 
 ## Historical full-suite evidence
 
@@ -90,11 +93,13 @@ Use the script for what it measures; do not inflate its meaning.
 
 `python scripts/check_runtime_doc_drift.py` remains useful for the narrow document/runtime relationship it checks. It must not be represented as complete consistency across all operational/canonical instructions.
 
-Wave B1 is expected to add a separate operational-truth consistency check.
+Wave B1 added the separate bounded operational-truth consistency check at
+`python scripts/check_operational_truth_consistency.py`. Its PASS remains limited to the surfaces
+and invariants the checker explicitly reports.
 
-## Wave C required proof shape
+## Wave C proof shape — completed historical contract
 
-After A1, A2, and the Wave B repairs, Wave C should:
+Wave C used the following proof shape to establish the immutable baseline above:
 
 1. freeze one exact candidate code commit;
 2. regenerate repaired runtime truth against that exact candidate;
@@ -104,6 +109,10 @@ After A1, A2, and the Wave B repairs, Wave C should:
 6. re-evaluate Issue #227 against the actual current local inference stack;
 7. fix only defects that reproduce;
 8. record an immutable validated baseline only after the required package passes.
+
+Future work may reuse this evidence discipline, but it must execute and record the checks required
+for its own exact revision. It may not inherit behavioral PASS merely because it descends from the
+Wave C baseline.
 
 ## Failure classification rule
 
@@ -160,6 +169,42 @@ live local environment:
 ```
 
 Do not label unexecuted/zero-step CI as passing or failing test evidence. Infrastructure status is a separate fact.
+
+## Accepted non-hosted exact-head proof path
+
+When hosted CI is unavailable for external infrastructure/account reasons, a bounded package may
+use the following owner-accepted proof path. Every applicable item must refer to the same exact
+candidate revision:
+
+1. record the exact candidate SHA;
+2. use a clean isolated worktree;
+3. define and execute focused tests appropriate to the change;
+4. define and execute broader regression tests where applicable;
+5. run Ruff on the applicable source/test scope;
+6. run structural/runtime proof where applicable;
+7. run dependency consistency where applicable;
+8. run operational-truth consistency;
+9. run runtime-document drift;
+10. run diff hygiene and review the exact changed-path scope;
+11. retain recorded outputs tied to the same candidate SHA;
+12. perform an independent exact-head review;
+13. merge only with expected-head protection;
+14. classify unavailable hosted CI explicitly as `NOT EXECUTED`, never PASS; and
+15. require separate owner merge authorization.
+
+Applicability must be stated rather than silently omitted. A docs-only package may have no focused
+runtime tests; a security-sensitive runtime package requires stronger focused, broader, and live
+evidence. Proof from different SHAs must not be assembled into one final-candidate claim.
+
+Issue #354 remains open/deferred as external account/billing infrastructure debt. Current evidence
+does not indicate a repository workflow defect, so this policy authorizes no workflow rewrite.
+Required hosted checks must not be enabled while those jobs are guaranteed to execute zero steps;
+that would create a permanently blocked gate rather than trustworthy proof. Revisit branch/review
+protection and required checks when an actually executable hosted or self-hosted CI path exists.
+
+This process policy does not authorize PR #335 reconstruction, Google/OAuth implementation,
+Operational Continuity, capability or authority expansion, GitHub billing changes, branch-setting
+changes, or any merge.
 
 ## Proof currency rule
 
