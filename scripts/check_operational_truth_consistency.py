@@ -17,10 +17,12 @@ Checked here:
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
-- PR #335 remaining explicitly UNMERGED / NEXT / NOT AUTHORIZED on its
-  priority/roadmap status representation;
-- completed closeout preserving a separate owner-authorization decision before
-  #335 reconstruction/reconciliation.
+- the current #388 -> #368 -> #387 ordering on operational and front-door
+  surfaces;
+- PR #335 remaining explicitly UNMERGED where represented and PENDING A
+  SEPARATE OWNER DECISION / NOT AUTHORIZED;
+- completed closeout structurally binding that separate decision to #335
+  reconstruction/reconciliation.
 
 The checker supports historical Wave A1-C representations, the active
 post-Wave-C documentation-closeout representation, and the completed
@@ -46,6 +48,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 CHECKED_SURFACES = (
+    "README.md",
+    "START_HERE.md",
     "AGENTS.md",
     ".agent_context/current_priority.md",
     "docs/status/CURRENT_WORK_STATUS.md",
@@ -67,6 +71,18 @@ POST_WAVE_C_LANE = "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
 POST_WAVE_C_ACTIVE_LANE = f"{POST_WAVE_C_LANE}_ACTIVE"
 POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
+
+CURRENT_ORDERING_SURFACES = (
+    "readme",
+    "start_here",
+    "agents",
+    "priority",
+    "work_status",
+    "command_center",
+    "active_todo",
+    "canonical_index",
+    "roadmap",
+)
 
 # Historical stabilization-lane markers. Keep these for compatibility with the
 # already-proven A1-C operational fixtures and historical checked revisions.
@@ -136,43 +152,15 @@ POST_WAVE_C_COMPLETE_MARKER = re.compile(
     re.IGNORECASE,
 )
 
-TRUTH_HYGIENE_PROVENANCE_PATTERNS = (
-    re.compile(
-        r"\btruth-hygiene(?:\s+contract)?\s+(?:provenance|package)\s*"
-        r"(?:[:—-]\s*)?(?:PR\s*)?#(?P<pr>\d+)\b",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"\bPR\s*#(?P<pr>\d+)\b"
-        r"(?:(?!\bPR\s*#)[^\n]){0,100}\btruth-hygiene"
-        r"(?:\s+contract)?\s+(?:provenance|package)\b",
-        re.IGNORECASE,
-    ),
-)
-
-
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
-
-
-def _extract_truth_hygiene_pr(text: str) -> str | None:
-    """Return the PR number structurally bound to truth-hygiene provenance."""
-
-    for pattern in TRUTH_HYGIENE_PROVENANCE_PATTERNS:
-        match = pattern.search(text)
-        if match:
-            return match.group("pr")
-    return None
 
 
 def _extract_lane(name: str, text: str) -> str | None:
     scoped = text[:12000]
 
     if POST_WAVE_C_COMPLETE_MARKER.search(scoped):
-        provenance_pr = _extract_truth_hygiene_pr(scoped)
-        if provenance_pr is not None:
-            return f"{POST_WAVE_C_COMPLETE_LANE}:PR#{provenance_pr}"
-        return None
+        return POST_WAVE_C_COMPLETE_LANE
 
     active_match = POST_WAVE_C_ACTIVE_PATTERNS[name].search(scoped)
     if active_match:
@@ -237,18 +225,6 @@ def _preserves_pr_335_unmerged(text: str) -> bool:
     return False
 
 
-def _preserves_pr_335_next_not_authorized(text: str) -> bool:
-    for line in _lines_for_pr(text, 335):
-        upper = line.upper()
-        if (
-            re.search(r"\bNEXT\b", upper)
-            and "NOT AUTHORIZED" in upper
-            and "NOT NEXT" not in upper
-        ):
-            return True
-    return False
-
-
 def _preserves_merged_pr(text: str, pr_number: int) -> bool:
     """Require an affirmative MERGED state on the target PR's own line."""
 
@@ -261,17 +237,87 @@ def _preserves_merged_pr(text: str, pr_number: int) -> bool:
     return False
 
 
+def _preserves_merged_pr_role(
+    text: str, pr_number: int, required_terms: tuple[str, ...]
+) -> bool:
+    """Require MERGED and the expected provenance role on the target PR line."""
+
+    for line in _lines_for_pr(text, pr_number):
+        upper = line.upper()
+        if "NOT MERGED" in upper or "UNMERGED" in upper:
+            continue
+        if not re.search(r"\bMERGED\b", upper):
+            continue
+        if all(term.upper() in upper for term in required_terms):
+            return True
+    return False
+
+
 def _preserves_validated_baseline(text: str) -> bool:
     return VALIDATED_BASELINE_SHA in text
 
 
+def _preserves_pr_335_pending_not_authorized(text: str) -> bool:
+    """Bind pending/not-authorized state to the #335 reconstruction line."""
+
+    for line in _lines_for_pr(text, 335):
+        upper = line.upper()
+        if (
+            "RECONSTRUCTION" in upper
+            and "PENDING" in upper
+            and "SEPARATE OWNER DECISION" in upper
+            and "NOT AUTHORIZED" in upper
+            and not re.search(r"\bNEXT\b", upper)
+        ):
+            return True
+    return False
+
+
 def _preserves_separate_335_authorization_decision(text: str) -> bool:
-    upper = text.upper()
-    return "SEPARATE OWNER AUTHORIZATION" in upper and "#335" in upper
+    """Require the separate owner decision on the #335 reconstruction line."""
+
+    for line in _lines_for_pr(text, 335):
+        upper = line.upper()
+        if "RECONSTRUCTION" in upper and "SEPARATE OWNER DECISION" in upper:
+            return True
+    return False
+
+
+def _ordering_line_index(
+    text: str, issue_number: int, required_terms: tuple[str, ...]
+) -> int | None:
+    issue_ref = re.compile(rf"(?<!\d)#{issue_number}(?!\d)")
+    ordered_issue_ref = re.compile(r"(?<!\d)#(?:388|368|387)(?!\d)")
+    for index, line in enumerate(text.splitlines()):
+        upper = line.upper()
+        target = issue_ref.search(line)
+        if target is None:
+            continue
+        first_ordered_issue = ordered_issue_ref.search(line)
+        if first_ordered_issue is None or first_ordered_issue.start() != target.start():
+            continue
+        if all(term.upper() in upper for term in required_terms):
+            return index
+        return None
+    return None
+
+
+def _preserves_current_order(text: str) -> bool:
+    prerequisite = _ordering_line_index(text, 388, ("IMMEDIATE", "P1", "PREREQUISITE"))
+    technical = _ordering_line_index(text, 368, ("NEXT", "AFTER #388"))
+    roadmap = _ordering_line_index(text, 387, ("AFTER #368", "DOCS-ONLY"))
+    return (
+        prerequisite is not None
+        and technical is not None
+        and roadmap is not None
+        and prerequisite < technical < roadmap
+    )
 
 
 def check_operational_truth(root: Path = ROOT) -> list[str]:
     paths = {
+        "readme": root / "README.md",
+        "start_here": root / "START_HERE.md",
         "agents": root / "AGENTS.md",
         "priority": root / ".agent_context" / "current_priority.md",
         "work_status": root / "docs" / "status" / "CURRENT_WORK_STATUS.md",
@@ -312,15 +358,15 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
     completed_surfaces = {
         name
         for name, lane in lanes.items()
-        if lane.startswith(f"{POST_WAVE_C_COMPLETE_LANE}:")
+        if lane == POST_WAVE_C_COMPLETE_LANE
     }
     for name in sorted(completed_surfaces):
         text = texts[name]
-        if not _preserves_merged_pr(text, 366):
+        if not _preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",)):
             errors.append(
                 f"{paths[name]}: completed closeout does not preserve PR #366 as MERGED truth-hygiene provenance"
             )
-        if not _preserves_merged_pr(text, 378):
+        if not _preserves_merged_pr_role(text, 378, ("NARRATION", "FRONT-DOOR")):
             errors.append(
                 f"{paths[name]}: completed closeout does not preserve PR #378 as MERGED narration/front-door provenance"
             )
@@ -328,14 +374,32 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             errors.append(
                 f"{paths[name]}: completed closeout does not preserve exact validated_baseline_sha {VALIDATED_BASELINE_SHA}"
             )
-        if not _preserves_pr_335_next_not_authorized(text):
+        if not _preserves_pr_335_pending_not_authorized(text):
             errors.append(
-                f"{paths[name]}: completed closeout does not preserve #335 as NEXT / NOT AUTHORIZED"
+                f"{paths[name]}: completed closeout does not preserve #335 reconstruction as PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED"
             )
         if not _preserves_separate_335_authorization_decision(text):
             errors.append(
-                f"{paths[name]}: completed closeout does not preserve a separate owner authorization decision before #335 reconstruction"
+                f"{paths[name]}: completed closeout does not bind the separate owner decision to #335 reconstruction"
             )
+
+    if completed_surfaces:
+        for name in CURRENT_ORDERING_SURFACES:
+            text = texts.get(name)
+            if text is None:
+                continue
+            if not _preserves_current_order(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not preserve #388 IMMEDIATE -> #368 NEXT -> #387 AFTER #368"
+                )
+            if not _preserves_pr_335_pending_not_authorized(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not bind #335 reconstruction to PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED"
+                )
+            if not _preserves_separate_335_authorization_decision(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not bind the separate owner decision to #335 reconstruction"
+                )
 
     governance = texts.get("governance", "")
     if "nova_backend/src/api/connections_api.py" not in governance:
@@ -369,10 +433,6 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         if not _preserves_pr_335_unmerged(text):
             errors.append(
                 f"{name} does not preserve PR #335 as explicitly UNMERGED in its status representation"
-            )
-        if not _preserves_pr_335_next_not_authorized(text):
-            errors.append(
-                f"{name} does not preserve PR #335 as NEXT / NOT AUTHORIZED on its status line"
             )
 
     return errors

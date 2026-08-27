@@ -20,9 +20,11 @@ B1: COMPLETE / MERGED via PR #356
 B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
 B4: COMPLETE / MERGED via PR #362
-#335 RECONSTRUCTION: NEXT / NOT AUTHORIZED
-AUTHORIZATION STATE: NOT GRANTED
-NEXT DECISION: separate owner authorization for #335 reconstruction/reconciliation
+#388: IMMEDIATE / P1 PREREQUISITE
+#368: NEXT BOUNDED TECHNICAL LANE AFTER #388
+#387: AFTER #368 / DOCS-ONLY
+PR #335 RECONSTRUCTION: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+PR #335 STATE: OPEN / DRAFT / UNMERGED
 ```
 
 B1 is complete and merged. PR #356's reviewed head was `381dbaec...`; its generated-artifact evidence commit remains `e668ec0c...`; its squash merge was `969c369b...`. Post-B1 operational truth sync #357 merged as `864ceba9...`. B2 then merged through PR #358 at reviewed head `b95039c2...`; its squash merge was `e84a9d55...`. Post-B2 sync #359 merged as `b1dad94e...`. B3 merged through PR #360 at reviewed head `3e8a68aa...`; its squash merge was `8cc67213...`. Post-B3 sync #361 established B4 base `bb99a5ed...`. B4 merged through PR #362 at reviewed head `7b70a91b...`; squash merge `5c243a82...` completed B4. Post-B4 sync #363 established `404689ef...` as the Wave C initial candidate. Wave C merged through PR #364 and established `ec20a714...` as the immutable validated runtime baseline. PR #365, PR #366, and PR #378 later advanced `main` with documentation/truth synchronization only. None established a new runtime validated baseline; PR #378's squash merge `67c3d8fd...` is post-closeout narration provenance, not a replacement for `validated_baseline_sha`.
@@ -191,7 +193,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Documentation closeout is complete, but #335 reconstruction is still `NEXT / NOT AUTHORIZED`. Do not modify, rebase, reconstruct, or merge #335 until the owner separately authorizes reconstruction/reconciliation against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+Documentation closeout is complete. Issue #388 is the immediate P1 prerequisite, Issue #368 is the next bounded technical lane after #388, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
 
 Issue #354 remains:
 
@@ -210,11 +212,13 @@ A1 / A2 / B1 / B2 / B3 / B4 / Wave C        COMPLETE
 post-Wave-C truth-hygiene / PR #366             COMPLETE / MERGED
 post-Wave-C narration/front-door / PR #378      COMPLETE / MERGED / VERIFIED
 post-Wave-C documentation closeout              COMPLETE
-#335 reconstruction                             NEXT / NOT AUTHORIZED
-next repository decision                        SEPARATE OWNER AUTHORIZATION
+#388                                             IMMEDIATE / P1 PREREQUISITE
+#368                                             NEXT BOUNDED TECHNICAL LANE AFTER #388
+#387                                             AFTER #368 / DOCS-ONLY
+PR #335 reconstruction                           PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
 ```
 
-Only after that separate owner authorization may #335 be reconstructed/reconciled against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`, followed by bounded hardening, exact-head verification, independent security/architecture review, and a separate merge decision. Google identity-only live proof, Google Tasks READ, and any evidence-based Operational Continuity warrant remain later steps; none is activated by documentation closeout.
+Only after that later separate owner decision may #335 be reconstructed/reconciled against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`, followed by bounded hardening, exact-head verification, independent security/architecture review, and a separate merge decision. Google identity-only live proof, Google Tasks READ, and any evidence-based Operational Continuity warrant remain later steps; none is activated by documentation closeout or Issues #388/#368/#387.
 
 `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` remains the immutable validated runtime baseline. PR #366 and PR #378 are later documentation/truth provenance and do not establish a new runtime validation baseline or authorize #335 reconstruction.
 
