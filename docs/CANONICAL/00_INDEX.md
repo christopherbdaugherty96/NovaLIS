@@ -1,6 +1,6 @@
 # Nova Canonical Truth — Index
 
-Last reconciled: 2026-08-25.
+Last reconciled: 2026-08-28.
 
 This folder is a thin **navigation and reconciliation layer**. It does not create runtime facts. Each canonical file summarizes one kind of truth and points to the implementation, generated artifact, proof, or maintained status surface that supports it.
 
@@ -19,6 +19,29 @@ Use the source appropriate to the claim:
 Generated documents can become incomplete or misleading when their generators have incomplete coverage. A generated PASS must not be expanded into a claim the generator did not test.
 
 ## Current development interpretation
+
+The current post-#394 boundary supersedes older ordering language later in this file:
+
+```text
+#388 COMPLETE
+#368 COMPLETE
+#387 COMPLETE / DOCS-ONLY
+#393 COMPLETE / EXACT-HEAD PROOF POLICY
+#394 GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+main at reconciliation start: 691a397d14e93c1e0607a73de2ab54b9bbfc3cc2
+
+PR #335: OPEN / DRAFT / UNMERGED / UNTOUCHED
+PR #335 implementation path: SUPERSEDED BY MERGED PR #394
+
+NEXT: Google identity-only live proof
+LATER, SEPARATELY AUTHORIZED: Google Tasks READ -> minimal Continuity -> owner daily-use proof
+```
+
+This synchronization adds no capability or authority. The identity proof is provider-backed
+verification of the merged foundation only. Issue #343 must use this same boundary; its older
+#368/#387/#335 sequence is obsolete.
+
+### Historical pre-#394 development interpretation
 
 Wave A1 operational truth synchronization is complete and merged through PR #353:
 
@@ -51,9 +74,9 @@ PR #378 reviewed head: 84222288335c399c1ffa73186858e8ba84e9a64a
 PR #378 squash merge: 67c3d8fd10e013eef466769cd4c8d96f75d27845
 validated_baseline_sha: ec20a7146f7d6d55b8983cb7d6d3918d5fad9915
 #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-#368: NEXT BOUNDED TECHNICAL LANE
-#387: AFTER #368 / DOCS-ONLY
-PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+#368: COMPLETE
+#387: COMPLETE / DOCS-ONLY
+PR #335 implementation path: SUPERSEDED BY MERGED PR #394
 PR #335 state: OPEN / DRAFT / UNMERGED
 ```
 
@@ -77,10 +100,11 @@ Wave A1 operational truth sync                 COMPLETE
    truth-hygiene provenance: PR #366 MERGED
    narration/front-door package: PR #378 MERGED / VERIFIED
 -> #388                                         COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
--> #368                                         NEXT BOUNDED TECHNICAL LANE
--> #387                                         AFTER #368 / DOCS-ONLY
--> PR #335 reconstruction                       PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
--> reconstruct/reconcile #335                   ONLY AFTER A LATER AUTHORIZING OWNER DECISION
+-> #368                                         COMPLETE
+-> #387                                         COMPLETE / DOCS-ONLY
+-> #393                                         COMPLETE / EXACT-HEAD PROOF POLICY
+-> #394                                         GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+-> historical PR #335 implementation path       SUPERSEDED BY MERGED PR #394
 -> Google identity proof
 -> first Google READ/evidence vertical
 -> evidence-based Continuity warrant

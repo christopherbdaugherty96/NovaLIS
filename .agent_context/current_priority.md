@@ -1,5 +1,31 @@
 # Current Priority
 
+## Post-#394 truth — 2026-08-28
+
+```text
+#388: COMPLETE
+#368: COMPLETE
+#387: COMPLETE / DOCS-ONLY
+#393: COMPLETE / EXACT-HEAD PROOF POLICY
+#394: GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+verified repository head at sync start: 691a397d14e93c1e0607a73de2ab54b9bbfc3cc2
+
+Historical PR #335: OPEN / DRAFT / UNMERGED / UNTOUCHED
+Implementation path: SUPERSEDED BY MERGED PR #394
+Use #335 as historical reference only; do not reconstruct or merge it.
+
+NEXT AUTHORIZED INPUT: Google identity-only live proof against the merged #394 foundation.
+LATER, SEPARATELY AUTHORIZED: Google Tasks READ -> minimal Continuity -> owner daily-use proof.
+```
+
+The identity proof is proof-only: connect, confirm account identity and exact scopes, verify
+encrypted credential storage and status, exercise refresh/reconnect/revoke/disconnect, and check
+that tokens never leak. It adds no capability and authorizes no Google domain-data access.
+Google Tasks READ, Continuity implementation, Gmail, Google writes, external writes, and broader
+authority remain unstarted and require their own reviewed authorization.
+
+## Historical pre-#394 handoff (superseded by the block above)
+
 ## Post-Wave-C Documentation Closeout — COMPLETE — 2026-08-25
 
 Current planning lane:
@@ -13,9 +39,9 @@ POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 truth-hygiene provenance: PR #366 MERGED
 narration/front-door package: PR #378 MERGED
 #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-#368: NEXT BOUNDED TECHNICAL LANE
-#387: AFTER #368 / DOCS-ONLY
-PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+#368: COMPLETE
+#387: COMPLETE / DOCS-ONLY
+PR #335 implementation path: SUPERSEDED BY MERGED PR #394
 PR #335 state: OPEN / DRAFT / UNMERGED
 post_wave_c_sync_sha: d5b0dc66259274076b8b7e1a8501bc8fee6b2e2c
 post_closeout_narration_merge_sha: 67c3d8fd10e013eef466769cd4c8d96f75d27845
@@ -103,9 +129,9 @@ _MOCs: excluded
 exact A2-to-B1 diff: CLEAN
 ```
 
-## Current action — Issue #368 bounded technical lane
+## Historical action — Issue #368 bounded technical lane (complete)
 
-This completion-sync revision records the post-Wave-C documentation closeout as complete. PR #366 provides MERGED truth-hygiene provenance and PR #378 provides the MERGED narration/front-door package. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against the exact validated baseline. No Google/Foundation engineering lane is active.
+This historical section records the pre-#394 decision boundary. Issues #368 and #387 are now complete, and merged PR #394 superseded PR #335 as the implementation path.
 
 This state transition does not authorize runtime, generated-artifact, capability, OAuth/Google, #335, Google domain-data, OpenClaw-authority, provider-routing, external-write, or Operational Continuity changes.
 
@@ -140,7 +166,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Do not modify, reconstruct, rebase, or merge #335 without a later separate owner decision authorizing that reconstruction.
+Do not modify, reconstruct, rebase, or merge historical PR #335; merged PR #394 supersedes that implementation path.
 
 Issue #354 remains:
 
@@ -164,17 +190,17 @@ B1 COMPLETE / MERGED
 -> narration/front-door closeout package / PR #378 / COMPLETE / MERGED
 -> post-Wave-C documentation closeout / COMPLETE
 -> #388 / COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
--> #368 / NEXT BOUNDED TECHNICAL LANE
--> #387 / AFTER #368 / DOCS-ONLY
--> PR #335 reconstruction / PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
--> if later authorized, reconstruct #335 onto exact validated baseline
--> independent #335 review + separate merge decision
+-> #368 / COMPLETE
+-> #387 / COMPLETE / DOCS-ONLY
+-> #393 / COMPLETE / EXACT-HEAD PROOF POLICY
+-> #394 / GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+-> historical PR #335 implementation path / SUPERSEDED BY MERGED PR #394
 -> Google identity-only live proof
 -> Google Tasks READ / first provider-backed Google evidence vertical
 -> evidence-based Operational Continuity warrant
 ```
 
-B1 through B4, Wave C, the post-Wave-C documentation closeout, and Issue #388 are complete. Issue #368 is next, and Issue #387 follows #368. PR #335 is not the current lane; reconstruction remains pending a separate owner decision against the exact validated baseline.
+B1 through B4, Wave C, the post-Wave-C documentation closeout, Issues #388/#368/#387, the #393 proof policy, and the #394 Google Workspace Foundation are complete. Historical PR #335 is not a current lane and must not be reconstructed.
 
 ## Scope lock
 

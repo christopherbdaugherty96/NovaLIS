@@ -19,9 +19,34 @@ lane contract         -> what the lane may change
 implementation/proof  -> what actually changed and was verified
 ```
 
-## Current checkpoint — 2026-08-25
+## Current checkpoint — 2026-08-28
 
-POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is MERGED truth-hygiene provenance and PR #378 is the MERGED/VERIFIED narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane; Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction remains pending a separate owner decision and is not authorized.
+The current bounded sequence is:
+
+```text
+#388 — COMPLETE
+#368 — COMPLETE
+#387 — COMPLETE / DOCS-ONLY
+#393 — COMPLETE / EXACT-HEAD PROOF POLICY
+#394 — GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+main at reconciliation start — 691a397d14e93c1e0607a73de2ab54b9bbfc3cc2
+
+Historical PR #335 — OPEN / DRAFT / UNMERGED / UNTOUCHED
+Historical PR #335 implementation path — SUPERSEDED BY MERGED PR #394
+
+NEXT — Google identity-only live proof
+THEN, ONLY WITH SEPARATE REVIEWED AUTHORIZATION — Google Tasks READ
+THEN — minimal Continuity and owner daily-use proof, each evidence-gated
+```
+
+The next item is proof, not implementation: validate the merged #394 lifecycle against a real
+Google account without adding scopes, domain-data access, or authority. Google Tasks READ and
+all later lanes remain unauthorized until separately reviewed. Issue #343's older ordering must
+be reconciled to this boundary.
+
+### Historical pre-#394 checkpoint (superseded)
+
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE. PR #366 is MERGED truth-hygiene provenance and PR #378 is the MERGED/VERIFIED narration/front-door package. Wave C remains COMPLETE / MERGED / VALIDATED. Issues #388, #368, and #387 are complete; #393 established the exact-head proof policy; and #394 merged the Google Workspace Foundation. Historical PR #335 is superseded as an implementation path.
 
 ```text
 A1 — COMPLETE / MERGED via #353
@@ -36,9 +61,11 @@ C  — COMPLETE / MERGED / VALIDATED
 #378 — MERGED / VERIFIED narration/front-door package
 documentation closeout — COMPLETE
 #388 — COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-#368 — NEXT BOUNDED TECHNICAL LANE
-#387 — AFTER #368 / DOCS-ONLY
-PR #335 reconstruction — PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+#368 — COMPLETE
+#387 — COMPLETE / DOCS-ONLY
+#393 — COMPLETE / EXACT-HEAD PROOF POLICY
+#394 — GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+PR #335 implementation path — SUPERSEDED BY MERGED PR #394
 PR #335 state — OPEN / DRAFT / UNMERGED
 ```
 
@@ -122,7 +149,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-It must not be merged in its historical branch state. Documentation closeout is now complete, but that completion does not authorize #335. Only after a later authorizing owner decision may #335 be reconstructed/reconciled against exact validated baseline `ec20a714...`; it must then undergo exact-head proof and independent review before a separate merge decision.
+It must not be merged, reconstructed, or rebased. Merged PR #394 supersedes it as the implementation path; retain #335 only as historical reference.
 
 ## Current stabilization / decision boundary
 
@@ -155,9 +182,11 @@ POST-WAVE-C — documentation closeout                COMPLETE
 
 POST-WAVE-C — #388 truth/checker prerequisite complete
   #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-  #368: NEXT BOUNDED TECHNICAL LANE
-  #387: AFTER #368 / DOCS-ONLY
-  PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+  #368: COMPLETE
+  #387: COMPLETE / DOCS-ONLY
+  #393: COMPLETE / EXACT-HEAD PROOF POLICY
+  #394: GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+  PR #335 implementation path: SUPERSEDED BY MERGED PR #394
   PR #335 state: OPEN / DRAFT / UNMERGED
 
 POST-WAVE-C — Google Foundation reconciliation      PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
