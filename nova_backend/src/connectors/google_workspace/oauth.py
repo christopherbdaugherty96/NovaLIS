@@ -240,7 +240,7 @@ class GoogleOAuthNetworkTransport:
 
     def revoke_token(self, token: str) -> None:
         try:
-            self._mediator.connection_request(
+            response = self._mediator.connection_request(
                 "google_workspace",
                 "revoke",
                 "POST",
@@ -251,6 +251,8 @@ class GoogleOAuthNetworkTransport:
             )
         except ProviderConnectionNetworkError as error:
             raise GoogleOAuthProtocolError(error.error_code) from None
+        if response.get("status_code") != 200:
+            raise GoogleOAuthProtocolError("unexpected_revocation_status")
 
 
 def create_authorization_session(

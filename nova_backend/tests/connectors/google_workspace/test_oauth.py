@@ -165,6 +165,27 @@ def test_revocation_invalid_token_remains_an_unverified_provider_error():
     assert captured.value.error_code == "invalid_token"
 
 
+def test_revocation_requires_exact_http_200_for_verified_success():
+    class _NoContentMediator(_FakeMediator):
+        def connection_request(self, provider_id, operation, method, url, **kwargs):
+            if operation == "revoke":
+                return {"status_code": 204, "text": ""}
+            return super().connection_request(
+                provider_id,
+                operation,
+                method,
+                url,
+                **kwargs,
+            )
+
+    transport = GoogleOAuthNetworkTransport(mediator=_NoContentMediator())
+
+    with pytest.raises(GoogleOAuthProtocolError) as captured:
+        transport.revoke_token("fake-token")
+
+    assert captured.value.error_code == "unexpected_revocation_status"
+
+
 def test_code_exchange_uses_requested_scopes_when_google_omits_identical_scope():
     mediator = _FakeMediator()
     original_request = mediator.connection_request
