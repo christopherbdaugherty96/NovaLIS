@@ -220,7 +220,7 @@ def test_refresh_failure_is_safe_and_does_not_log_tokens(caplog):
     assert "fake-refresh-token" not in caplog.text
 
 
-def test_refresh_invalid_grant_marks_revoked_and_clears_tokens():
+def test_refresh_invalid_grant_requires_reconnect_without_claiming_revocation():
     manager, vault, transport, receivers, _ = _manager()
     request = manager.begin_connection()
     _complete(manager, receivers, request)
@@ -228,7 +228,11 @@ def test_refresh_invalid_grant_marks_revoked_and_clears_tokens():
 
     status = manager.refresh()
 
-    assert status.state is GoogleConnectionState.REVOKED
+    assert status.state is GoogleConnectionState.DISCONNECTED
+    assert status.safe_reason == (
+        "refresh_credential_expired_or_invalidated_reconnect_required"
+    )
+    assert status.scope_inventory.granted == ()
     assert vault.credential.access_token == ""
     assert vault.credential.refresh_token == ""
 
