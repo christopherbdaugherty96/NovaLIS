@@ -268,6 +268,8 @@ def _minimal_operational_fixture(
     roadmap_lane: str = "B1",
     canonical_index_lane: str = "B1",
 ) -> None:
+    _write_surface(root, "README.md", "Historical Wave B1 fixture.\n")
+    _write_surface(root, "START_HERE.md", "Historical Wave B1 fixture.\n")
     _write_surface(root, "AGENTS.md", "## Wave B1 Current Development State\n")
     _write_surface(
         root,
