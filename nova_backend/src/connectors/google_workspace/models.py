@@ -186,6 +186,12 @@ class GoogleStoredCredential:
         } and not (self.access_token or self.refresh_token):
             raise ValueError("Credential-bearing connection state requires stored authorization.")
         if self.state in {
+            GoogleConnectionState.CONNECTED,
+            GoogleConnectionState.EXPIRED,
+            GoogleConnectionState.REFRESH_FAILED,
+        } and self.account is None:
+            raise ValueError("Credential-bearing connection state requires account identity.")
+        if self.state in {
             GoogleConnectionState.REVOKED,
             GoogleConnectionState.DISCONNECTED,
             GoogleConnectionState.SCOPE_INSUFFICIENT,

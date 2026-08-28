@@ -124,11 +124,35 @@ def test_token_fields_are_redacted_from_repr():
         access_token="test-access-token",
         refresh_token="test-refresh-token",
         expires_at=NOW + timedelta(hours=1),
+        account=GoogleWorkspaceAccount(
+            subject="google-subject-123",
+            email="christopher@gmail.com",
+        ),
     )
 
     rendered = repr(credential)
     assert "test-access-token" not in rendered
     assert "test-refresh-token" not in rendered
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        GoogleConnectionState.CONNECTED,
+        GoogleConnectionState.EXPIRED,
+        GoogleConnectionState.REFRESH_FAILED,
+    ],
+)
+def test_credential_bearing_state_requires_account_identity(state):
+    with pytest.raises(ValueError, match="requires account identity"):
+        GoogleStoredCredential(
+            state=state,
+            grant_profile_id="identity",
+            requested_scopes=("openid", "email"),
+            granted_scopes=("openid", "email"),
+            access_token="test-access-token",
+            expires_at=NOW + timedelta(hours=1),
+        )
 
 
 def test_scope_insufficient_state_is_metadata_only():
