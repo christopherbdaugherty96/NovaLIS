@@ -208,3 +208,39 @@ def test_router_keeps_session_context_statements_out_of_followup_mode():
     assert out.continuation_detected is False
     assert out.needs_clarification is False
     assert out.mode.value != "action"
+
+
+def test_router_types_bounded_personal_operations_questions():
+    from src.conversation.personal_operations_intent import PersonalOperationsIntent
+
+    prompts = {
+        "What do I have next?": PersonalOperationsIntent.NEXT,
+        "What changed?": PersonalOperationsIntent.CHANGED,
+        "What am I waiting on?": PersonalOperationsIntent.WAITING_ON,
+        "What did I need to finish?": PersonalOperationsIntent.NEED_TO_FINISH,
+        "What did I say I needed to finish?": PersonalOperationsIntent.NEED_TO_FINISH,
+        "What should I do next?": PersonalOperationsIntent.RECOMMENDED_NEXT,
+        "What did I finish today?": PersonalOperationsIntent.COMPLETED_TODAY,
+    }
+
+    for prompt, expected in prompts.items():
+        out = ConversationRouter.route(prompt)
+        assert out.personal_operations_intent == expected, prompt
+        assert out.intent_family == "personal_operations", prompt
+        assert out.mode.value == "direct", prompt
+        assert out.needs_clarification is False, prompt
+        assert out.should_escalate is False, prompt
+
+
+def test_personal_operations_questions_do_not_inherit_prior_followup_context():
+    from src.conversation.personal_operations_intent import PersonalOperationsIntent
+
+    out = ConversationRouter.route(
+        "What changed?",
+        {"last_response": "Public research result", "last_intent_family": "research"},
+    )
+
+    assert out.personal_operations_intent == PersonalOperationsIntent.CHANGED
+    assert out.continuation_detected is False
+    assert out.intent_family == "personal_operations"
+    assert out.should_escalate is False
