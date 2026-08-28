@@ -212,7 +212,18 @@ class GoogleWorkspaceConnectionManager:
             )
         except GoogleOAuthProtocolError as error:
             if error.error_code in {"invalid_grant", "invalid_token"}:
-                self._vault.save(self._tombstone(GoogleConnectionState.REVOKED))
+                self._vault.save(
+                    GoogleStoredCredential(
+                        state=GoogleConnectionState.DISCONNECTED,
+                        grant_profile_id=credential.grant_profile_id,
+                        requested_scopes=credential.requested_scopes,
+                        granted_scopes=(),
+                        safe_reason=(
+                            "refresh_credential_expired_or_invalidated_"
+                            "reconnect_required"
+                        ),
+                    )
+                )
                 return self.status()
             self._save_refresh_failed(credential)
             return self.status()
