@@ -574,23 +574,58 @@ def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
     )
 
 
-def test_current_repository_shape_rejects_corrupted_front_door_order(tmp_path):
+def test_current_repository_shape_rejects_corrupted_post_394_order(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    readme = tmp_path / "README.md"
-    original = readme.read_text(encoding="utf-8")
+    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    copied_master.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(master, copied_master)
+    priority = tmp_path / ".agent_context/current_priority.md"
+    original = priority.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "#368: NEXT BOUNDED TECHNICAL LANE",
+        "#368: COMPLETE",
         "#368: BLOCKED",
         1,
     )
     assert corrupted != original
-    readme.write_text(corrupted, encoding="utf-8")
+    priority.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(tmp_path)
 
     assert any(
-        "README.md: current ordering does not preserve #388 COMPLETE -> #368 NEXT -> #387 AFTER #368"
+        "current ordering does not preserve the post-#394 completion and proof-first boundary"
         in error
         for error in errors
+    )
+
+
+def test_post_394_boundary_accepts_new_state_and_rejects_obsolete_directives():
+    checker = _load_checker()
+    current = (
+        "#388 COMPLETE\n"
+        "#368 COMPLETE\n"
+        "#387 COMPLETE / DOCS-ONLY\n"
+        "#393 COMPLETE / EXACT-HEAD PROOF POLICY\n"
+        "#394 GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED\n"
+        "691a397d14e93c1e0607a73de2ab54b9bbfc3cc2\n"
+        "PR #335 OPEN / DRAFT / UNMERGED / UNTOUCHED\n"
+        "PR #335 implementation path: SUPERSEDED BY MERGED PR #394\n"
+        "NEXT: Google identity-only live proof\n"
+        "NOT YET AUTHORIZED: Google Tasks READ\n"
+    )
+
+    assert checker._preserves_post_394_boundary(current) is True
+
+    obsolete_variants = (
+        current.replace("#368 COMPLETE", "#368 NEXT BOUNDED TECHNICAL LANE"),
+        current.replace("#387 COMPLETE / DOCS-ONLY", "#387 AFTER #368 / DOCS-ONLY"),
+        current.replace(
+            "PR #335 implementation path: SUPERSEDED BY MERGED PR #394",
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED",
+        ),
+    )
+    assert all(
+        checker._preserves_post_394_boundary(candidate) is False
+        for candidate in obsolete_variants
     )

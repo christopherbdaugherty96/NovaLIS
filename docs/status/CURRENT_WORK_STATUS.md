@@ -1,6 +1,29 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-25.
+Last reviewed: 2026-08-28.
+
+## Current post-#394 status
+
+```text
+#388 COMPLETE
+#368 COMPLETE
+#387 COMPLETE / DOCS-ONLY
+#393 COMPLETE / EXACT-HEAD PROOF POLICY
+#394 GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+main at reconciliation start: 691a397d14e93c1e0607a73de2ab54b9bbfc3cc2
+
+PR #335: OPEN / DRAFT / UNMERGED / UNTOUCHED
+PR #335 implementation path: SUPERSEDED BY MERGED PR #394
+
+NEXT AUTHORIZED INPUT: Google identity-only live proof
+FUTURE, NOT YET AUTHORIZED: Google Tasks READ -> minimal Continuity -> owner daily-use proof
+```
+
+No new capability, Google domain-data access, external write, or authority expansion is active.
+The remainder of this document is retained as historical evidence; where its older current/next
+language conflicts with this block, this block wins.
+
+## Historical pre-#394 work status
 
 This is a hand-maintained operational status surface. It is not generated runtime truth.
 
@@ -21,9 +44,11 @@ B2: COMPLETE / MERGED via PR #358
 B3: COMPLETE / MERGED via PR #360
 B4: COMPLETE / MERGED via PR #362
 #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-#368: NEXT BOUNDED TECHNICAL LANE
-#387: AFTER #368 / DOCS-ONLY
-PR #335 RECONSTRUCTION: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+#368: COMPLETE
+#387: COMPLETE / DOCS-ONLY
+#393: COMPLETE / EXACT-HEAD PROOF POLICY
+#394: GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+PR #335 IMPLEMENTATION PATH: SUPERSEDED BY MERGED PR #394
 PR #335 STATE: OPEN / DRAFT / UNMERGED
 ```
 
@@ -193,7 +218,7 @@ historical base: c44b6d0cd72f0f91a6ec517427ad3fe2076beb30
 Foundation/auth/identity only
 ```
 
-Documentation closeout is complete. Issue #388 is complete and its truth-checker prerequisite is satisfied; Issue #368 is the next bounded technical lane, and Issue #387 follows #368 as docs-only synchronization. PR #335 reconstruction is pending a separate owner decision and remains not authorized against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`.
+Documentation closeout, Issues #388/#368/#387, the #393 proof policy, and the merged #394 Google Workspace Foundation are complete. Historical PR #335 is superseded as an implementation path.
 
 Issue #354 remains:
 
@@ -213,12 +238,14 @@ post-Wave-C truth-hygiene / PR #366             COMPLETE / MERGED
 post-Wave-C narration/front-door / PR #378      COMPLETE / MERGED / VERIFIED
 post-Wave-C documentation closeout              COMPLETE
 #388                                             COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-#368                                             NEXT BOUNDED TECHNICAL LANE
-#387                                             AFTER #368 / DOCS-ONLY
-PR #335 reconstruction                           PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+#368                                             COMPLETE
+#387                                             COMPLETE / DOCS-ONLY
+#393                                             COMPLETE / EXACT-HEAD PROOF POLICY
+#394                                             GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+PR #335 implementation path                      SUPERSEDED BY MERGED PR #394
 ```
 
-Only after that later separate owner decision may #335 be reconstructed/reconciled against exact validated baseline `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915`, followed by bounded hardening, exact-head verification, independent security/architecture review, and a separate merge decision. Google identity-only live proof, Google Tasks READ, and any evidence-based Operational Continuity warrant remain later steps; none is activated by documentation closeout or Issues #388/#368/#387.
+Historical PR #335 must not be reconstructed or merged; PR #394 is the merged implementation path. Google identity-only live proof is next. Google Tasks READ and any evidence-based Operational Continuity warrant remain later, separately authorized steps.
 
 `ec20a7146f7d6d55b8983cb7d6d3918d5fad9915` remains the immutable validated runtime baseline. PR #366 and PR #378 are later documentation/truth provenance and do not establish a new runtime validation baseline or authorize #335 reconstruction.
 
