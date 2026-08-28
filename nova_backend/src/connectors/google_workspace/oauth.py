@@ -250,8 +250,7 @@ class GoogleOAuthNetworkTransport:
                 timeout=10,
             )
         except ProviderConnectionNetworkError as error:
-            if error.error_code not in {"invalid_grant", "invalid_token"}:
-                raise GoogleOAuthProtocolError(error.error_code) from None
+            raise GoogleOAuthProtocolError(error.error_code) from None
 
 
 def create_authorization_session(

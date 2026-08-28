@@ -16,8 +16,10 @@ from src.connectors.google_workspace.oauth import (
     GoogleOAuthClientConfig,
     GoogleOAuthError,
     GoogleOAuthNetworkTransport,
+    GoogleOAuthProtocolError,
     create_authorization_session,
 )
+from src.governor.exceptions import ProviderConnectionNetworkError
 
 NOW = datetime(2026, 8, 10, 10, 0, tzinfo=timezone.utc)
 
@@ -137,6 +139,30 @@ def test_oauth_transport_uses_only_auth_endpoints_and_preserves_actual_scopes():
         USERINFO_ENDPOINT,
         REVOCATION_ENDPOINT,
     ]
+
+
+def test_revocation_invalid_token_remains_an_unverified_provider_error():
+    class _InvalidTokenMediator(_FakeMediator):
+        def connection_request(self, provider_id, operation, method, url, **kwargs):
+            if operation == "revoke":
+                raise ProviderConnectionNetworkError(
+                    status_code=400,
+                    error_code="invalid_token",
+                )
+            return super().connection_request(
+                provider_id,
+                operation,
+                method,
+                url,
+                **kwargs,
+            )
+
+    transport = GoogleOAuthNetworkTransport(mediator=_InvalidTokenMediator())
+
+    with pytest.raises(GoogleOAuthProtocolError) as captured:
+        transport.revoke_token("fake-expired-or-revoked-token")
+
+    assert captured.value.error_code == "invalid_token"
 
 
 def test_code_exchange_uses_requested_scopes_when_google_omits_identical_scope():
