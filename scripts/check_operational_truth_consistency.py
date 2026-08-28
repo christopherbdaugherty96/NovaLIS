@@ -17,11 +17,11 @@ Checked here:
   three-control-plane boundary in canonical governance;
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
-- the post-#388 #368 -> #387 ordering on operational and front-door surfaces;
-- PR #335 remaining explicitly UNMERGED where represented and PENDING A
-  SEPARATE OWNER DECISION / NOT AUTHORIZED;
-- completed closeout structurally binding that separate decision to #335
-  reconstruction/reconciliation.
+- the post-#394 completion boundary on active operational surfaces;
+- PR #335 remaining explicitly historical and UNMERGED while its implementation
+  path is marked SUPERSEDED BY MERGED PR #394;
+- Google identity-only live proof remaining the next proof input, without
+  authorizing Google Tasks READ or later implementation.
 
 The checker supports historical Wave A1-C representations, the active
 post-Wave-C documentation-closeout representation, and the completed
@@ -70,6 +70,15 @@ POST_WAVE_C_LANE = "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
 POST_WAVE_C_ACTIVE_LANE = f"{POST_WAVE_C_LANE}_ACTIVE"
 POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
+
+POST_394_ORDERING_SURFACES = (
+    "priority",
+    "work_status",
+    "command_center",
+    "canonical_index",
+    "roadmap",
+    "master_roadmap",
+)
 
 CURRENT_ORDERING_SURFACES = (
     "readme",
@@ -301,6 +310,33 @@ def _ordering_line_index(
     return None
 
 
+def _preserves_post_394_boundary(text: str) -> bool:
+    """Require completed prerequisites, merged #394, and the proof-first next input."""
+
+    upper = text.upper().split("HISTORICAL PRE-#394", 1)[0]
+    required = (
+        "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED",
+        "691A397D14E93C1E0607A73DE2AB54B9BBFC3CC2",
+        "SUPERSEDED BY MERGED PR #394",
+        "GOOGLE IDENTITY-ONLY LIVE PROOF",
+        "GOOGLE TASKS READ",
+    )
+    completed = all(
+        re.search(rf"(?m)^\s*#{issue}\s*(?::|—|-)?\s*COMPLETE\b", upper)
+        for issue in (388, 368, 387, 393)
+    )
+    tasks_gated = any(
+        marker in upper
+        for marker in (
+            "SEPARATELY AUTHORIZED: GOOGLE TASKS READ",
+            "NOT YET AUTHORIZED: GOOGLE TASKS READ",
+            "SEPARATE AUTHORIZATION REQUIRED: GOOGLE TASKS READ",
+            "ONLY WITH SEPARATE REVIEWED AUTHORIZATION — GOOGLE TASKS READ",
+        )
+    )
+    return completed and tasks_gated and all(marker in upper for marker in required)
+
+
 def _preserves_current_order(text: str) -> bool:
     prerequisite = _ordering_line_index(
         text, 388, ("COMPLETE", "TRUTH-CHECKER", "PREREQUISITE", "SATISFIED")
@@ -361,6 +397,10 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         for name, lane in lanes.items()
         if lane == POST_WAVE_C_COMPLETE_LANE
     }
+    post_394_mode = any(
+        "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED" in text.upper()
+        for text in texts.values()
+    )
     for name in sorted(completed_surfaces):
         text = texts[name]
         if not _preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",)):
@@ -375,6 +415,8 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             errors.append(
                 f"{paths[name]}: completed closeout does not preserve exact validated_baseline_sha {VALIDATED_BASELINE_SHA}"
             )
+        if post_394_mode:
+            continue
         if not _preserves_pr_335_pending_not_authorized(text):
             errors.append(
                 f"{paths[name]}: completed closeout does not preserve #335 reconstruction as PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED"
@@ -384,7 +426,22 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
                 f"{paths[name]}: completed closeout does not bind the separate owner decision to #335 reconstruction"
             )
 
-    if completed_surfaces:
+    if completed_surfaces and post_394_mode:
+        master_path = root / "docs" / "future" / "NOVA_MASTER_ROADMAP_2026-07-05.md"
+        if not master_path.exists():
+            errors.append(f"{master_path}: required post-#394 ordering surface missing")
+        else:
+            texts["master_roadmap"] = _read(master_path)
+            paths["master_roadmap"] = master_path
+        for name in POST_394_ORDERING_SURFACES:
+            text = texts.get(name)
+            if text is None:
+                continue
+            if not _preserves_post_394_boundary(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not preserve the post-#394 completion and proof-first boundary"
+                )
+    elif completed_surfaces:
         for name in CURRENT_ORDERING_SURFACES:
             text = texts.get(name)
             if text is None:

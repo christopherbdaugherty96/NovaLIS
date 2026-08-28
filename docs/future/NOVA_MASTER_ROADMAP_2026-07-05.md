@@ -37,7 +37,31 @@ This roadmap still determines ordering; lane locks still determine scope; owner 
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Current Ordering — 2026-08-27
+## Current Ordering — 2026-08-28
+
+The post-#394 boundary is now:
+
+```text
+#388 COMPLETE
+#368 COMPLETE
+#387 COMPLETE / DOCS-ONLY
+#393 COMPLETE / EXACT-HEAD PROOF POLICY
+#394 GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+main at reconciliation start: 691a397d14e93c1e0607a73de2ab54b9bbfc3cc2
+
+Historical PR #335: OPEN / DRAFT / UNMERGED / UNTOUCHED
+Historical PR #335 implementation path: SUPERSEDED BY MERGED PR #394
+
+NEXT: Google identity-only live proof
+LATER / SEPARATE AUTHORIZATION REQUIRED: Google Tasks READ -> minimal Continuity -> owner daily-use proof
+```
+
+The next item is a real-provider proof of the already merged foundation, not a new implementation
+lane. It authorizes no additional scope, Google domain-data access, or capability. The pre-#394
+ordering below is retained as historical decision provenance and is superseded where it conflicts
+with this block.
+
+### Historical pre-#394 ordering
 
 Current repository HEAD is moving state and must be resolved from Git when needed. Issue #387 was
 executed from `main@4fc7ab2de1047c49d4649d7239cafc9174e8f5fc`, after PR #391 closed Issue
@@ -74,7 +98,7 @@ They must not be selected again as pending work without new reproduced evidence.
 truth/checker correction, not a runtime lane. Issue #368 qualified existing workspace/session
 continuity wording; it did not implement Operational Continuity or authorize Google work.
 
-### Current decision order
+### Historical pre-#394 decision order
 
 ```text
 COMPLETED BOUNDED CONSISTENCY WORK
@@ -87,17 +111,12 @@ NEXT PROOF-PATH / PROCESS DEBT
   -> resolve Issue #354 if practical, or preserve an explicitly accepted exact-head local/Codex path
   -> revisit branch/review protection and required-check policy with that proof path
 
-SEPARATE OWNER DECISION
-  PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
+SUPERSEDED IMPLEMENTATION PATH
+  historical PR #335: OPEN / DRAFT / UNMERGED / UNTOUCHED
+  -> superseded by merged PR #394
 
-ONLY IF LATER AUTHORIZED
-  reconstruct/reconcile #335 against exact validated baseline ec20a714...
-  -> reconcile later bounded main deltas deliberately
-  -> repair the four confirmed OAuth/identity/credential lifecycle findings
-  -> exact-head executable proof
-  -> independent security/architecture review
-  -> separate #335 merge decision
-  -> Google identity-only live proof
+CURRENT PROOF INPUT
+  Google identity-only live proof
   -> Google Tasks READ / first provider-backed Google evidence vertical
   -> later Google READ/evidence verticals
   -> evidence-based Operational Continuity warrant
@@ -108,10 +127,10 @@ are `NOT EXECUTED`, not behavioral PASS or behavioral FAIL. The Wave C owner wai
 for the immutable baseline above; it does not make those hosted jobs successful and does not
 automatically waive proof requirements for security-sensitive #335 reconstruction.
 
-PR #335 remains **OPEN / DRAFT / UNMERGED** at historical head
+PR #335 remains **OPEN / DRAFT / UNMERGED / UNTOUCHED** at historical head
 `befb69ef75881a9f418472549b64243219c138f9`, with historical base
 `c44b6d0cd72f0f91a6ec517427ad3fe2076beb30`. It is not the current task and must not be merged,
-rebased wholesale, or modified without a later separate owner decision. Connection Foundation,
+reconstructed, rebased, or modified; PR #394 supersedes it as the implementation path. Connection Foundation,
 OAuth scope, or an existing draft branch do not grant Nova capability or authority.
 
 If reconstruction is later authorized, the four confirmed lifecycle findings remain required:
