@@ -83,6 +83,7 @@ class _FakeTransport:
         self.fail_refresh = False
         self.fail_identity = False
         self.fail_revoke = False
+        self.revoke_error_code = ""
         self.revoked_refresh = False
         self.revoked_tokens: list[str] = []
         self.calls: list[str] = []
@@ -108,6 +109,8 @@ class _FakeTransport:
     def revoke_token(self, token):
         self.calls.append("revoke_token")
         self.revoked_tokens.append(token)
+        if self.revoke_error_code:
+            raise GoogleOAuthProtocolError(self.revoke_error_code)
         if self.fail_revoke:
             raise RuntimeError("revocation unavailable")
 
@@ -254,6 +257,18 @@ def test_revoke_clears_tokens_and_disconnect_is_local_only():
     assert transport.calls == calls_before_disconnect
 
 
+def test_explicit_revoke_invalid_token_does_not_claim_revoked():
+    manager, vault, transport, receivers, _ = _manager()
+    _complete(manager, receivers, manager.begin_connection())
+    transport.revoke_error_code = "invalid_token"
+
+    with pytest.raises(GoogleWorkspaceFoundationError, match="revocation failed"):
+        manager.revoke()
+
+    assert vault.credential.state is GoogleConnectionState.CONNECTED
+    assert vault.credential.refresh_token == "fake-refresh-token"
+
+
 def test_insufficient_grant_is_revoked_and_recorded_without_reusable_tokens():
     manager, vault, transport, receivers, _ = _manager()
     transport.exchange_grant = GoogleTokenGrant(
@@ -275,9 +290,9 @@ def test_insufficient_grant_is_revoked_and_recorded_without_reusable_tokens():
     assert vault.credential.refresh_token == ""
 
 
-def test_insufficient_grant_discards_tokens_when_revocation_cannot_be_verified():
+def test_insufficient_grant_invalid_token_keeps_revocation_unverified():
     manager, vault, transport, receivers, _ = _manager()
-    transport.fail_revoke = True
+    transport.revoke_error_code = "invalid_token"
     transport.exchange_grant = GoogleTokenGrant(
         access_token="fake-access-token",
         refresh_token="fake-refresh-token",
@@ -333,7 +348,7 @@ def test_identity_lookup_failure_revokes_issued_grant_and_keeps_no_tokens():
 def test_identity_lookup_failure_records_unverified_revocation_without_tokens():
     manager, vault, transport, receivers, _ = _manager()
     transport.fail_identity = True
-    transport.fail_revoke = True
+    transport.revoke_error_code = "invalid_token"
 
     with pytest.raises(GoogleWorkspaceFoundationError, match="identity lookup failed"):
         _complete(manager, receivers, manager.begin_connection())
