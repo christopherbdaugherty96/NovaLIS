@@ -1791,7 +1791,47 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 continue
 
-            gate = SessionRouter.evaluate_gate(decision, session_state, session_state["turn_count"])
+            daily_loop_projection = None
+            if decision.personal_operations_intent is not None:
+                from src.brief.daily_loop import compose_daily_loop_projection
+                from src.memory.governed_memory_store import GovernedMemoryStore
+                from src.trust.receipt_store import get_recent_receipts
+
+                daily_loop_memory: list[dict[str, Any]] = []
+                daily_loop_reminders: list[dict[str, Any]] = []
+                daily_loop_receipts: list[dict[str, Any]] = []
+                memory_available = True
+                reminders_available = True
+                receipts_available = True
+                try:
+                    daily_loop_memory = GovernedMemoryStore().list_items(limit=100)
+                except Exception:
+                    memory_available = False
+                try:
+                    daily_loop_reminders = notification_schedules.list_schedules(limit=25)
+                except Exception:
+                    reminders_available = False
+                try:
+                    daily_loop_receipts = get_recent_receipts(limit=50)
+                except Exception:
+                    receipts_available = False
+
+                daily_loop_projection = compose_daily_loop_projection(
+                    session_state=session_state,
+                    memory_items=daily_loop_memory,
+                    reminders=daily_loop_reminders,
+                    receipts=daily_loop_receipts,
+                    memory_available=memory_available,
+                    reminders_available=reminders_available,
+                    receipts_available=receipts_available,
+                )
+
+            gate = SessionRouter.evaluate_gate(
+                decision,
+                session_state,
+                session_state["turn_count"],
+                daily_loop_projection=daily_loop_projection,
+            )
             if gate.handled:
                 if gate.apply_override:
                     session_state["session_mode_override"] = gate.apply_override

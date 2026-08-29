@@ -214,6 +214,7 @@ def test_router_types_bounded_personal_operations_questions():
     from src.conversation.personal_operations_intent import PersonalOperationsIntent
 
     prompts = {
+        "What matters today?": PersonalOperationsIntent.MATTERS_TODAY,
         "What do I have next?": PersonalOperationsIntent.NEXT,
         "What changed?": PersonalOperationsIntent.CHANGED,
         "What am I waiting on?": PersonalOperationsIntent.WAITING_ON,

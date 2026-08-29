@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.brain.task_clarifier import clarify_task
+from src.brief.daily_loop import DailyLoopProjection, render_daily_loop_answer
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.conversation_decision import ConversationDecision
 from src.conversation.conversation_router import ConversationRouter
@@ -102,8 +103,17 @@ class SessionRouter:
         decision: ConversationDecision,
         session_state: dict[str, Any],
         turn_count: int,
+        daily_loop_projection: DailyLoopProjection | None = None,
     ) -> GateResult:
         if decision.personal_operations_intent is not None:
+            if daily_loop_projection is not None:
+                return GateResult(
+                    handled=True,
+                    message=render_daily_loop_answer(
+                        decision.personal_operations_intent,
+                        daily_loop_projection,
+                    ),
+                )
             return GateResult(
                 handled=True,
                 message=unavailable_personal_operations_response(decision.personal_operations_intent),
