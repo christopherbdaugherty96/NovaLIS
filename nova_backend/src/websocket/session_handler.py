@@ -1804,7 +1804,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 reminders_available = True
                 receipts_available = True
                 try:
-                    daily_loop_memory = GovernedMemoryStore().list_current_items(limit=100)
+                    memory_read = GovernedMemoryStore.read_current_items(limit=100)
+                    daily_loop_memory = list(memory_read.items)
+                    memory_available = memory_read.available
                 except Exception:
                     memory_available = False
                 try:
