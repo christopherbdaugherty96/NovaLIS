@@ -129,6 +129,21 @@ def _calendar_payload(session_state: dict[str, Any]) -> tuple[bool, list[dict[st
     return (bool(events), events)
 
 
+def _weather_payload(session_state: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    widget = session_state.get("brief_weather")
+    if not isinstance(widget, dict):
+        return False, {}
+    data = widget.get("data") if isinstance(widget.get("data"), dict) else widget
+    status = str(data.get("status") or "").strip().lower()
+    connected = data.get("connected") is True and status not in {
+        "error",
+        "not_connected",
+        "not_configured",
+        "unavailable",
+    }
+    return connected, dict(data) if connected else {}
+
+
 def compose_daily_loop_projection(
     *,
     session_state: dict[str, Any] | None = None,
@@ -253,9 +268,8 @@ def compose_daily_loop_projection(
         _append(open_loops, loop, "session_context")
     sources.append(DailyLoopSource("session_context", "available", "Current-session state inspected."))
 
-    weather = state.get("brief_weather")
-    if isinstance(weather, dict):
-        weather_data = weather.get("data") if isinstance(weather.get("data"), dict) else weather
+    weather_connected, weather_data = _weather_payload(state)
+    if weather_connected:
         summary = _clean(weather_data.get("summary") or weather_data.get("forecast"))
         if summary:
             _append(context, summary, "weather")
