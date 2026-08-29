@@ -27,7 +27,8 @@ def test_projection_assembles_existing_state_with_provenance_without_mutation():
             "event_type": "ACTION_COMPLETED",
             "timestamp_utc": "2026-08-29T10:00:00Z",
             "capability_name": "calendar_snapshot",
-            "outcome_state": "completed",
+            "outcome_state": "visible_verified",
+            "visible_effect_verified": True,
             "success": True,
         }
     ]
@@ -61,6 +62,7 @@ def test_accepted_unverified_receipt_is_unresolved_never_completed():
                 "timestamp_utc": "2026-08-29T10:00:00Z",
                 "capability_name": "volume_control",
                 "outcome_state": "accepted_unverified",
+                "launch_request_accepted": True,
                 "success": True,
             }
         ],
@@ -81,6 +83,8 @@ def test_completed_actions_correlate_attempt_receipts_and_remain_distinguishable
                 "request_id": "REQ-2",
                 "capability_id": 22,
                 "status": "completed",
+                "outcome_state": "visible_verified",
+                "visible_effect_verified": True,
                 "success": True,
             },
             {
@@ -96,6 +100,8 @@ def test_completed_actions_correlate_attempt_receipts_and_remain_distinguishable
                 "request_id": "REQ-1",
                 "capability_id": 19,
                 "status": "completed",
+                "outcome_state": "visible_verified",
+                "visible_effect_verified": True,
                 "success": True,
             },
             {
@@ -188,6 +194,8 @@ def test_correlated_attempt_and_completion_produce_one_change_entry():
                 "capability_id": 19,
                 "activity_origin": "user_action",
                 "status": "completed",
+                "outcome_state": "visible_verified",
+                "visible_effect_verified": True,
                 "success": True,
             },
             {
@@ -203,6 +211,58 @@ def test_correlated_attempt_and_completion_produce_one_change_entry():
     )
 
     assert [item.text for item in projection.changed] == ["Completed: volume_control"]
+
+
+def test_orphan_attempt_is_preserved_once_as_unknown_unverified():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-INTERRUPTED",
+                "capability_id": 19,
+                "capability_name": "volume_control",
+                "activity_origin": "user_action",
+            }
+        ],
+        now=NOW,
+    )
+
+    expected = "Outcome unknown; not verified: volume_control"
+    assert [item.text for item in projection.unresolved_outcomes] == [expected]
+    assert [item.text for item in projection.changed] == [expected]
+    assert projection.completed_today == ()
+
+
+def test_partial_failure_uses_canonical_failed_outcome_semantics():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:01:00Z",
+                "request_id": "REQ-PARTIAL",
+                "capability_id": 22,
+                "activity_origin": "user_action",
+                "status": "completed_degraded",
+                "outcome_state": "partial_failure",
+                "partial_failure": True,
+                "success": False,
+            },
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-PARTIAL",
+                "capability_id": 22,
+                "capability_name": "open_file_folder",
+                "activity_origin": "user_action",
+            },
+        ],
+        now=NOW,
+    )
+
+    assert [item.text for item in projection.changed] == ["Failed: open_file_folder"]
+    assert projection.completed_today == ()
+    assert projection.unresolved_outcomes == ()
 
 
 def test_projection_excludes_verified_completions_from_other_days():
