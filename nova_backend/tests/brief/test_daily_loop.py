@@ -154,6 +154,25 @@ def test_calendar_requires_positive_connection_evidence():
     assert calendar.detail == "Calendar is not loaded in this session."
 
 
+def test_weather_requires_positive_connection_evidence():
+    projection = compose_daily_loop_projection(
+        session_state={
+            "brief_weather": {
+                "summary": "Weather is currently unavailable.",
+                "condition": "Unavailable",
+                "status": "unavailable",
+                "connected": False,
+            }
+        },
+        now=NOW,
+    )
+
+    assert not any(item.source == "weather" for item in projection.context_today)
+    weather = next(source for source in projection.sources if source.source == "weather")
+    assert weather.status == "not_loaded"
+    assert weather.detail == "Weather is not loaded in this session."
+
+
 def test_waiting_answer_counts_unresolved_outcomes_separately():
     projection = compose_daily_loop_projection(
         memory_items=[{"content_raw": "Approval", "tags": ["waiting"]}],

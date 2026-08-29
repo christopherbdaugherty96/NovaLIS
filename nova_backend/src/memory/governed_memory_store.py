@@ -244,14 +244,21 @@ class GovernedMemoryStore:
     def list_current_items(self, *, limit: int = 25) -> list[dict[str, Any]]:
         """Return only current, user-visible memory eligible for operational use."""
 
-        items = self.list_items(limit=100)
+        with self._lock:
+            state = self._read_state()
+            retained = [
+                dict(item)
+                for item in list(state.get("items") or [])
+                if not bool(item.get("deleted"))
+            ]
         current = [
             item
-            for item in items
+            for item in retained
             if bool(item.get("user_visible", True))
             and not _item_is_superseded(item)
             and str(item.get("tier") or "").strip().lower() in {"active", "locked"}
         ]
+        current.sort(key=lambda row: str(row.get("updated_at") or ""), reverse=True)
         safe_limit = max(1, min(int(limit or 25), 100))
         return [dict(item) for item in current[:safe_limit]]
 

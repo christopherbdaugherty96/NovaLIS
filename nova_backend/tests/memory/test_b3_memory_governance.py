@@ -244,6 +244,18 @@ def test_list_current_items_excludes_hidden_deferred_and_superseded(tmp_path):
     assert superseded["id"] not in ids
 
 
+def test_list_current_items_filters_before_applying_limit(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    current = store.save_item(title="Current open loop", body="Current open loop", tags=["open_loop"])
+    for index in range(100):
+        item = store.save_item(title=f"Deferred {index}", body=f"Deferred {index}")
+        store.defer_item(item["id"])
+
+    items = store.list_current_items(limit=1)
+
+    assert [item["id"] for item in items] == [current["id"]]
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(
