@@ -103,6 +103,8 @@ def _parse_timestamp(value: Any) -> datetime | None:
 def _receipt_state(receipt: dict[str, Any]) -> str:
     if str(receipt.get("event_type") or "") != "ACTION_COMPLETED":
         return ""
+    if str(receipt.get("activity_origin") or "").strip().lower() == "background_read":
+        return "background_read"
     outcome = str(receipt.get("outcome_state") or "").strip().lower()
     status = str(receipt.get("status") or "").strip().lower()
     if outcome in {"accepted_unverified", "unknown_unverified"}:
@@ -168,6 +170,26 @@ def _weather_payload(session_state: dict[str, Any]) -> tuple[bool, dict[str, Any
     return connected, dict(data) if connected else {}
 
 
+def _calendar_event_is_upcoming(event: dict[str, Any], now: datetime) -> bool:
+    raw_date = str(event.get("date") or "").strip()
+    if not raw_date:
+        return False
+    try:
+        event_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+    except ValueError:
+        return False
+    if event_date != now.date():
+        return event_date > now.date()
+    raw_time = str(event.get("time") or "").strip()
+    if raw_time.lower() == "all day":
+        return True
+    try:
+        event_time = datetime.strptime(raw_time, "%I:%M %p").time()
+    except ValueError:
+        return False
+    return event_time >= now.time().replace(tzinfo=None)
+
+
 def compose_daily_loop_projection(
     *,
     session_state: dict[str, Any] | None = None,
@@ -189,7 +211,7 @@ def compose_daily_loop_projection(
     ]
     schedules = [item for item in list(reminders or []) if isinstance(item, dict)]
     receipt_rows = [item for item in list(receipts or []) if isinstance(item, dict)]
-    local_now = (now or datetime.now().astimezone()).astimezone()
+    local_now = now if now is not None else datetime.now().astimezone()
 
     next_items: list[DailyLoopItem] = []
     changed: list[DailyLoopItem] = []
@@ -202,6 +224,8 @@ def compose_daily_loop_projection(
 
     calendar_connected, events = _calendar_payload(state)
     for event in events:
+        if not isinstance(event, dict) or not _calendar_event_is_upcoming(event, local_now):
+            continue
         time_label = _clean(event.get("time"), limit=30)
         title = _clean(event.get("title") or "Untitled calendar event")
         _append(next_items, f"{time_label} — {title}" if time_label else title, "calendar")
@@ -265,6 +289,8 @@ def compose_daily_loop_projection(
         if receipt_state == "completed":
             _append(completed, detail, "receipts")
             _append(changed, f"Completed: {detail}", "receipts")
+        elif receipt_state == "background_read":
+            _append(changed, f"Background read completed: {detail}", "receipts")
         elif receipt_state == "accepted_unverified":
             _append(unresolved, f"Accepted; outcome unverified: {detail}", "receipts")
             _append(changed, f"Accepted; outcome unverified: {detail}", "receipts")
@@ -285,10 +311,6 @@ def compose_daily_loop_projection(
         )
     )
 
-    working = dict(state.get("working_context") or {})
-    goal = _clean(working.get("task_goal") or state.get("active_topic"))
-    if goal:
-        _append(open_loops, goal, "session_context")
     for loop in list(dict(state.get("conversation_context") or {}).get("open_loops") or []):
         _append(open_loops, loop, "session_context")
     sources.append(DailyLoopSource("session_context", "available", "Current-session state inspected."))

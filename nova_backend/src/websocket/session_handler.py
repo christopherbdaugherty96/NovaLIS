@@ -1810,7 +1810,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 except Exception:
                     memory_available = False
                 try:
-                    daily_loop_reminders = notification_schedules.list_schedules(limit=25)
+                    reminder_read = notification_schedules.read_schedules(limit=25)
+                    daily_loop_reminders = list(reminder_read.schedules)
+                    reminders_available = reminder_read.available
                 except Exception:
                     reminders_available = False
                 try:

@@ -9,7 +9,10 @@ NOW = datetime(2026, 8, 29, 12, 0, tzinfo=timezone.utc)
 
 def test_projection_assembles_existing_state_with_provenance_without_mutation():
     state = {
-        "brief_calendar": {"connected": True, "events": [{"time": "09:00", "title": "Review"}]},
+        "brief_calendar": {
+            "connected": True,
+            "events": [{"date": "2026-08-29", "time": "01:00 PM", "title": "Review"}],
+        },
         "brief_weather": {"connected": True, "summary": "Rain after 3 PM"},
         "news_cache": [{"title": "Relevant local update"}],
         "working_context": {"task_goal": "Finish beta review"},
@@ -38,7 +41,7 @@ def test_projection_assembles_existing_state_with_provenance_without_mutation():
         now=NOW,
     )
 
-    assert projection.next[0].text == "09:00 — Review"
+    assert projection.next[0].text == "01:00 PM — Review"
     assert {item.source for item in projection.next} >= {"calendar", "governed_memory", "local_reminders"}
     assert projection.waiting_on[0].text == "Vendor reply"
     assert projection.completed_today[0].text == "calendar_snapshot"
@@ -116,6 +119,34 @@ def test_completed_actions_correlate_attempt_receipts_and_remain_distinguishable
     }
 
 
+def test_background_reads_are_changes_not_user_completed_work():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-BG",
+                "capability_id": 55,
+                "activity_origin": "background_read",
+                "status": "completed",
+                "success": True,
+            },
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T09:59:00Z",
+                "request_id": "REQ-BG",
+                "capability_id": 55,
+                "capability_name": "weather_snapshot",
+                "activity_origin": "background_read",
+            },
+        ],
+        now=NOW,
+    )
+
+    assert projection.completed_today == ()
+    assert "Background read completed: weather_snapshot" in {item.text for item in projection.changed}
+
+
 def test_projection_excludes_verified_completions_from_other_days():
     projection = compose_daily_loop_projection(
         receipts=[
@@ -131,6 +162,16 @@ def test_projection_excludes_verified_completions_from_other_days():
 
     assert projection.completed_today == ()
     assert projection.changed == ()
+
+
+def test_ambient_working_context_is_not_promoted_to_open_loop_or_recommendation():
+    projection = compose_daily_loop_projection(
+        session_state={"working_context": {"task_goal": "What is the weather today?"}},
+        now=NOW,
+    )
+
+    assert projection.open_loops == ()
+    assert projection.recommended_next is None
 
 
 def test_empty_projection_reports_missing_sources_and_no_fabricated_items():
@@ -206,6 +247,26 @@ def test_calendar_requires_positive_connection_evidence():
     calendar = next(source for source in projection.sources if source.source == "calendar")
     assert calendar.status == "not_loaded"
     assert calendar.detail == "Calendar is not loaded in this session."
+
+
+def test_elapsed_calendar_events_are_not_next_or_recommended():
+    projection = compose_daily_loop_projection(
+        session_state={
+            "brief_calendar": {
+                "connected": True,
+                "status": "ok",
+                "events": [
+                    {"date": "2026-08-29", "time": "7:00 AM", "title": "Past meeting"},
+                    {"date": "2026-08-29", "time": "4:00 PM", "title": "Future meeting"},
+                ],
+            }
+        },
+        now=NOW,
+    )
+
+    assert [item.text for item in projection.next] == ["4:00 PM — Future meeting"]
+    assert projection.recommended_next is not None
+    assert projection.recommended_next.text == "4:00 PM — Future meeting"
 
 
 def test_weather_requires_positive_connection_evidence():
