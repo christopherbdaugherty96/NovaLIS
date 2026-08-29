@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.conversation.personal_operations_intent import PersonalOperationsIntent
+from src.trust.session_activity import correlate_action_receipts
 
 _MAX_ITEMS = 5
 _WAITING_TAGS = {"waiting", "waiting_on", "blocked", "blocker", "dependency"}
@@ -100,40 +101,10 @@ def _parse_timestamp(value: Any) -> datetime | None:
     return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed
 
 
-def _receipt_state(receipt: dict[str, Any]) -> str:
-    if str(receipt.get("event_type") or "") != "ACTION_COMPLETED":
-        return ""
-    outcome = str(receipt.get("outcome_state") or "").strip().lower()
-    status = str(receipt.get("status") or "").strip().lower()
-    if outcome in {"accepted_unverified", "unknown_unverified"}:
-        return outcome
-    if outcome in {"rejected", "failed"} or status in {"rejected", "refused", "failed"}:
-        return outcome or status
-    if receipt.get("success") is False:
-        return "failed"
-    if str(receipt.get("activity_origin") or "").strip().lower() == "background_read":
-        return "background_read"
-    return "completed"
-
-
-def _receipt_detail(
-    receipt: dict[str, Any],
-    attempted_by_request: dict[str, dict[str, Any]],
-) -> str:
-    request_id = str(receipt.get("request_id") or "").strip()
-    attempted = attempted_by_request.get(request_id, {}) if request_id else {}
-    capability_name = _clean(receipt.get("capability_name") or attempted.get("capability_name"))
-    if capability_name:
-        return capability_name
-    capability_id = receipt.get("capability_id") or attempted.get("capability_id")
-    try:
-        normalized_id = int(capability_id or 0)
-    except (TypeError, ValueError):
-        normalized_id = 0
-    if normalized_id:
-        return f"Capability {normalized_id}"
+def _non_action_receipt_detail(receipt: dict[str, Any]) -> str:
     return _clean(
-        receipt.get("outcome_reason")
+        receipt.get("capability_name")
+        or receipt.get("outcome_reason")
         or receipt.get("message")
         or str(receipt.get("event_type") or "").lower().replace("_", " ")
     )
@@ -273,22 +244,18 @@ def compose_daily_loop_projection(
         )
     )
 
-    attempted_by_request = {
-        str(receipt.get("request_id") or "").strip(): receipt
-        for receipt in receipt_rows
-        if str(receipt.get("event_type") or "") == "ACTION_ATTEMPTED"
-        and str(receipt.get("request_id") or "").strip()
-    }
-    for receipt in receipt_rows:
-        event_type = str(receipt.get("event_type") or "").strip()
-        if event_type == "ACTION_ATTEMPTED":
-            continue
-        detail = _receipt_detail(receipt, attempted_by_request)
-        timestamp = _parse_timestamp(receipt.get("timestamp_utc"))
+    action_items = sorted(
+        correlate_action_receipts(receipt_rows),
+        key=lambda item: str(item.get("outcome_timestamp_utc") or ""),
+        reverse=True,
+    )
+    for item in action_items:
+        detail = _clean(item.get("source_label") or item.get("label"))
+        timestamp = _parse_timestamp(item.get("outcome_timestamp_utc"))
         if timestamp is not None and timestamp.astimezone().date() != local_now.date():
             continue
-        receipt_state = _receipt_state(receipt)
-        if receipt_state == "completed":
+        receipt_state = str(item.get("classification") or "")
+        if receipt_state == "effect_verified":
             _append(completed, detail, "receipts")
             _append(changed, f"Completed: {detail}", "receipts")
         elif receipt_state == "background_read":
@@ -299,10 +266,19 @@ def compose_daily_loop_projection(
         elif receipt_state == "unknown_unverified":
             _append(unresolved, f"Outcome unknown; not verified: {detail}", "receipts")
             _append(changed, f"Outcome unknown; not verified: {detail}", "receipts")
-        elif receipt_state in {"failed", "rejected", "refused"}:
-            _append(changed, f"{receipt_state.title()}: {detail}", "receipts")
-        elif event_type:
-            _append(changed, detail, "receipts")
+        elif receipt_state == "failed":
+            _append(changed, f"Failed: {detail}", "receipts")
+        elif receipt_state == "rejected_or_unsupported":
+            _append(changed, f"Rejected: {detail}", "receipts")
+
+    for receipt in receipt_rows:
+        event_type = str(receipt.get("event_type") or "").strip()
+        if event_type in {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}:
+            continue
+        timestamp = _parse_timestamp(receipt.get("timestamp_utc"))
+        if timestamp is not None and timestamp.astimezone().date() != local_now.date():
+            continue
+        _append(changed, _non_action_receipt_detail(receipt), "receipts")
     sources.append(
         DailyLoopSource(
             "receipts",
