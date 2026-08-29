@@ -17,7 +17,6 @@ class PersonalOperationsIntent(str, Enum):
 
 
 _PATTERNS: tuple[tuple[re.Pattern[str], PersonalOperationsIntent], ...] = (
-    (re.compile(r"^what matters today$", re.IGNORECASE), PersonalOperationsIntent.MATTERS_TODAY),
     (re.compile(r"^what do i have next$", re.IGNORECASE), PersonalOperationsIntent.NEXT),
     (re.compile(r"^what changed$", re.IGNORECASE), PersonalOperationsIntent.CHANGED),
     (re.compile(r"^what am i waiting on$", re.IGNORECASE), PersonalOperationsIntent.WAITING_ON),

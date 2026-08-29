@@ -241,6 +241,20 @@ class GovernedMemoryStore:
         safe_limit = max(1, min(int(limit or 25), 100))
         return [dict(item) for item in items[:safe_limit]]
 
+    def list_current_items(self, *, limit: int = 25) -> list[dict[str, Any]]:
+        """Return only current, user-visible memory eligible for operational use."""
+
+        items = self.list_items(limit=100)
+        current = [
+            item
+            for item in items
+            if bool(item.get("user_visible", True))
+            and not _item_is_superseded(item)
+            and str(item.get("tier") or "").strip().lower() in {"active", "locked"}
+        ]
+        safe_limit = max(1, min(int(limit or 25), 100))
+        return [dict(item) for item in current[:safe_limit]]
+
     def summarize_thread_counts(self) -> dict[str, int]:
         with self._lock:
             state = self._read_state()

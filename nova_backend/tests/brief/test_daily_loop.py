@@ -111,6 +111,49 @@ def test_recommendation_is_clearly_distinguished_from_evidence():
     assert "recommendation_from:governed_memory" in answer
 
 
+def test_noncurrent_memory_cannot_enter_projection_or_recommendation():
+    projection = compose_daily_loop_projection(
+        memory_items=[
+            {"content_raw": "Current task", "tags": ["next"], "tier": "active"},
+            {"content_raw": "Deferred task", "tags": ["next"], "tier": "deferred"},
+            {
+                "content_raw": "Superseded task",
+                "tags": ["next"],
+                "tier": "active",
+                "lock": {"superseded_by": "MEM-new"},
+            },
+            {
+                "content_raw": "Private internal task",
+                "tags": ["next"],
+                "tier": "active",
+                "user_visible": False,
+            },
+        ],
+        now=NOW,
+    )
+
+    assert [item.text for item in projection.next] == ["Current task"]
+    assert projection.recommended_next is not None
+    assert projection.recommended_next.text == "Current task"
+
+
+def test_calendar_requires_positive_connection_evidence():
+    projection = compose_daily_loop_projection(
+        session_state={
+            "brief_calendar": {
+                "status": "unavailable",
+                "events": [{"time": "09:00", "title": "Stale event"}],
+            }
+        },
+        now=NOW,
+    )
+
+    assert projection.next == ()
+    calendar = next(source for source in projection.sources if source.source == "calendar")
+    assert calendar.status == "not_loaded"
+    assert calendar.detail == "Calendar is not loaded in this session."
+
+
 def test_waiting_answer_counts_unresolved_outcomes_separately():
     projection = compose_daily_loop_projection(
         memory_items=[{"content_raw": "Approval", "tags": ["waiting"]}],

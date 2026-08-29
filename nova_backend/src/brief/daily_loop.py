@@ -79,6 +79,15 @@ def _memory_labels(item: dict[str, Any]) -> set[str]:
     return labels
 
 
+def _is_current_memory(item: dict[str, Any]) -> bool:
+    lock = dict(item.get("lock") or {})
+    return (
+        bool(item.get("user_visible", True))
+        and not str(lock.get("superseded_by") or "").strip()
+        and str(item.get("tier") or "active").strip().lower() in {"active", "locked"}
+    )
+
+
 def _parse_timestamp(value: Any) -> datetime | None:
     raw = str(value or "").strip()
     if not raw:
@@ -108,7 +117,14 @@ def _calendar_payload(session_state: dict[str, Any]) -> tuple[bool, list[dict[st
     widget = session_state.get("brief_calendar")
     if isinstance(widget, dict):
         data = widget.get("data") if isinstance(widget.get("data"), dict) else widget
-        return bool(data.get("connected", True)), list(data.get("events") or [])
+        status = str(data.get("status") or "").strip().lower()
+        connected = data.get("connected") is True and status not in {
+            "error",
+            "not_connected",
+            "not_configured",
+            "unavailable",
+        }
+        return connected, list(data.get("events") or []) if connected else []
     events = list(session_state.get("last_calendar_events") or [])
     return (bool(events), events)
 
@@ -127,7 +143,11 @@ def compose_daily_loop_projection(
     """Project already-loaded/readable Nova state without fetching or mutating it."""
 
     state = dict(session_state) if isinstance(session_state, dict) else {}
-    memories = [item for item in list(memory_items or []) if isinstance(item, dict)]
+    memories = [
+        item
+        for item in list(memory_items or [])
+        if isinstance(item, dict) and _is_current_memory(item)
+    ]
     schedules = [item for item in list(reminders or []) if isinstance(item, dict)]
     receipt_rows = [item for item in list(receipts or []) if isinstance(item, dict)]
     local_now = (now or datetime.now().astimezone()).astimezone()

@@ -222,6 +222,28 @@ def test_deleting_explicit_correction_does_not_resurface_superseded_memory(tmp_p
     assert store.find_relevant_items("favorite color") == []
 
 
+def test_list_current_items_excludes_hidden_deferred_and_superseded(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    current = store.save_item(title="Current", body="Current", tags=["next"])
+    deferred = store.save_item(title="Deferred", body="Deferred", tags=["next"])
+    store.defer_item(deferred["id"])
+    hidden = store.save_item(title="Hidden", body="Hidden", tags=["next"], user_visible=False)
+    superseded = store.save_item(title="Old", body="Old", tags=["next"])
+    store.supersede_item(
+        superseded["id"],
+        new_title="Replacement",
+        new_body="Replacement",
+        confirmed=True,
+    )
+
+    ids = {item["id"] for item in store.list_current_items(limit=100)}
+
+    assert current["id"] in ids
+    assert deferred["id"] not in ids
+    assert hidden["id"] not in ids
+    assert superseded["id"] not in ids
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(
