@@ -113,6 +113,29 @@ def _receipt_state(receipt: dict[str, Any]) -> str:
     return "completed"
 
 
+def _receipt_detail(
+    receipt: dict[str, Any],
+    attempted_by_request: dict[str, dict[str, Any]],
+) -> str:
+    request_id = str(receipt.get("request_id") or "").strip()
+    attempted = attempted_by_request.get(request_id, {}) if request_id else {}
+    capability_name = _clean(receipt.get("capability_name") or attempted.get("capability_name"))
+    if capability_name:
+        return capability_name
+    capability_id = receipt.get("capability_id") or attempted.get("capability_id")
+    try:
+        normalized_id = int(capability_id or 0)
+    except (TypeError, ValueError):
+        normalized_id = 0
+    if normalized_id:
+        return f"Capability {normalized_id}"
+    return _clean(
+        receipt.get("outcome_reason")
+        or receipt.get("message")
+        or str(receipt.get("event_type") or "").lower().replace("_", " ")
+    )
+
+
 def _calendar_payload(session_state: dict[str, Any]) -> tuple[bool, list[dict[str, Any]]]:
     widget = session_state.get("brief_calendar")
     if isinstance(widget, dict):
@@ -225,14 +248,15 @@ def compose_daily_loop_projection(
         )
     )
 
+    attempted_by_request = {
+        str(receipt.get("request_id") or "").strip(): receipt
+        for receipt in receipt_rows
+        if str(receipt.get("event_type") or "") == "ACTION_ATTEMPTED"
+        and str(receipt.get("request_id") or "").strip()
+    }
     for receipt in receipt_rows:
         event_type = str(receipt.get("event_type") or "").strip()
-        detail = _clean(
-            receipt.get("capability_name")
-            or receipt.get("outcome_reason")
-            or receipt.get("message")
-            or event_type.lower().replace("_", " ")
-        )
+        detail = _receipt_detail(receipt, attempted_by_request)
         timestamp = _parse_timestamp(receipt.get("timestamp_utc"))
         if timestamp is not None and timestamp.astimezone().date() != local_now.date():
             continue

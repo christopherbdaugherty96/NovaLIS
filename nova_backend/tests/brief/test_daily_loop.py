@@ -69,6 +69,53 @@ def test_accepted_unverified_receipt_is_unresolved_never_completed():
     assert "Completed: volume_control" not in {item.text for item in projection.changed}
 
 
+def test_completed_actions_correlate_attempt_receipts_and_remain_distinguishable():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:03:00Z",
+                "request_id": "REQ-2",
+                "capability_id": 22,
+                "status": "completed",
+                "success": True,
+            },
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T10:02:00Z",
+                "request_id": "REQ-2",
+                "capability_id": 22,
+                "capability_name": "open_file_folder",
+            },
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:01:00Z",
+                "request_id": "REQ-1",
+                "capability_id": 19,
+                "status": "completed",
+                "success": True,
+            },
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-1",
+                "capability_id": 19,
+                "capability_name": "volume_control",
+            },
+        ],
+        now=NOW,
+    )
+
+    assert [item.text for item in projection.completed_today] == [
+        "open_file_folder",
+        "volume_control",
+    ]
+    assert {item.text for item in projection.changed} >= {
+        "Completed: open_file_folder",
+        "Completed: volume_control",
+    }
+
+
 def test_projection_excludes_verified_completions_from_other_days():
     projection = compose_daily_loop_projection(
         receipts=[

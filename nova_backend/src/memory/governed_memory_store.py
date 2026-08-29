@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
+from src.utils.persistent_state import (
+    readonly_runtime_path,
+    runtime_path,
+    shared_path_lock,
+    write_json_atomic,
+)
 
 _MEMORY_SEARCH_STOPWORDS = {
     "a",
@@ -115,6 +121,28 @@ def _extract_decision_snippet(value: Any) -> str:
 def _item_is_superseded(item: dict[str, Any]) -> bool:
     lock_meta = dict(item.get("lock") or {})
     return bool(str(lock_meta.get("superseded_by") or "").strip())
+
+
+def _current_items(items: list[dict[str, Any]], *, limit: int) -> list[dict[str, Any]]:
+    current = [
+        dict(item)
+        for item in items
+        if not bool(item.get("deleted"))
+        and bool(item.get("user_visible", True))
+        and not _item_is_superseded(item)
+        and str(item.get("tier") or "").strip().lower() in {"active", "locked"}
+    ]
+    current.sort(key=lambda row: str(row.get("updated_at") or ""), reverse=True)
+    safe_limit = max(1, min(int(limit or 25), 100))
+    return current[:safe_limit]
+
+
+@dataclass(frozen=True)
+class MemoryReadResult:
+    items: tuple[dict[str, Any], ...]
+    available: bool
+    state_exists: bool
+    error: str = ""
 
 
 class GovernedMemoryStore:
@@ -251,16 +279,35 @@ class GovernedMemoryStore:
                 for item in list(state.get("items") or [])
                 if not bool(item.get("deleted"))
             ]
-        current = [
-            item
-            for item in retained
-            if bool(item.get("user_visible", True))
-            and not _item_is_superseded(item)
-            and str(item.get("tier") or "").strip().lower() in {"active", "locked"}
-        ]
-        current.sort(key=lambda row: str(row.get("updated_at") or ""), reverse=True)
-        safe_limit = max(1, min(int(limit or 25), 100))
-        return [dict(item) for item in current[:safe_limit]]
+        return _current_items(retained, limit=limit)
+
+    @classmethod
+    def read_current_items(
+        cls,
+        *,
+        path: str | Path | None = None,
+        limit: int = 25,
+    ) -> MemoryReadResult:
+        """Read current memory without initializing missing persistent state."""
+
+        target = (
+            Path(path)
+            if path is not None
+            else readonly_runtime_path(__file__, "data", "nova_state", "memory", "items.json")
+        )
+        if not target.exists():
+            return MemoryReadResult((), available=True, state_exists=False)
+        try:
+            with shared_path_lock(target):
+                payload = json.loads(target.read_text(encoding="utf-8"))
+            retained = [dict(item) for item in list(payload.get("items") or []) if isinstance(item, dict)]
+            return MemoryReadResult(
+                tuple(_current_items(retained, limit=limit)),
+                available=True,
+                state_exists=True,
+            )
+        except Exception as exc:
+            return MemoryReadResult((), available=False, state_exists=True, error=type(exc).__name__)
 
     def summarize_thread_counts(self) -> dict[str, int]:
         with self._lock:

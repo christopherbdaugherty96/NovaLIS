@@ -256,6 +256,18 @@ def test_list_current_items_filters_before_applying_limit(tmp_path):
     assert [item["id"] for item in items] == [current["id"]]
 
 
+def test_read_current_items_does_not_initialize_missing_state(tmp_path):
+    memory_path = tmp_path / "fresh-profile" / "memory" / "items.json"
+
+    result = GovernedMemoryStore.read_current_items(path=memory_path, limit=100)
+
+    assert result.available is True
+    assert result.state_exists is False
+    assert result.items == ()
+    assert memory_path.exists() is False
+    assert memory_path.parent.exists() is False
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(
