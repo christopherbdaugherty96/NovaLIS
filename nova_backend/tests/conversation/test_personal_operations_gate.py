@@ -7,7 +7,6 @@ from src.conversation.session_router import SessionRouter
 @pytest.mark.parametrize(
     "prompt",
     [
-        "What matters today?",
         "What do I have next?",
         "What changed?",
         "What am I waiting on?",

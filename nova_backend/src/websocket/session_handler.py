@@ -1795,7 +1795,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if decision.personal_operations_intent is not None:
                 from src.brief.daily_loop import compose_daily_loop_projection
                 from src.memory.governed_memory_store import GovernedMemoryStore
-                from src.trust.receipt_store import get_recent_receipts
+                from src.trust.receipt_store import read_recent_receipts
 
                 daily_loop_memory: list[dict[str, Any]] = []
                 daily_loop_reminders: list[dict[str, Any]] = []
@@ -1804,7 +1804,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 reminders_available = True
                 receipts_available = True
                 try:
-                    daily_loop_memory = GovernedMemoryStore().list_items(limit=100)
+                    daily_loop_memory = GovernedMemoryStore().list_current_items(limit=100)
                 except Exception:
                     memory_available = False
                 try:
@@ -1812,7 +1812,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 except Exception:
                     reminders_available = False
                 try:
-                    daily_loop_receipts = get_recent_receipts(limit=50)
+                    receipt_read = read_recent_receipts(limit=50)
+                    daily_loop_receipts = list(receipt_read.receipts)
+                    receipts_available = receipt_read.available
                 except Exception:
                     receipts_available = False
 

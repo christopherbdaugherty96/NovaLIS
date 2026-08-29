@@ -193,7 +193,6 @@ class TestPersonalOperationsRoutingBoundary:
     @pytest.mark.parametrize(
         "raw",
         [
-            "What matters today?",
             "What do I have next?",
             "What changed?",
             "What am I waiting on?",
@@ -217,6 +216,12 @@ class TestPersonalOperationsRoutingBoundary:
     )
     def test_bounded_boundary_does_not_capture_public_or_general_questions(self, raw: str):
         assert _pipeline(raw) != "DAILY_LOOP_READ_MODEL"
+
+    def test_what_matters_today_does_not_shadow_daily_brief(self):
+        from src.conversation.morning_brief_handler import is_daily_brief_request
+
+        assert _pipeline("What matters today?") != "DAILY_LOOP_READ_MODEL"
+        assert is_daily_brief_request("What matters today?") is True
 
 
 class TestPrivateGoogleDriveSourceSelection:

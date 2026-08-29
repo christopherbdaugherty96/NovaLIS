@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +51,23 @@ _TRUSTED_ACTIVITY_ORIGINS: frozenset[str] = frozenset(
 )
 
 
+@dataclass(frozen=True)
+class ReceiptReadResult:
+    receipts: tuple[dict[str, Any], ...]
+    available: bool
+    error: str = ""
+
+
+def read_recent_receipts(limit: int = _DEFAULT_LIMIT) -> ReceiptReadResult:
+    """Read receipts while preserving empty-versus-unavailable truth."""
+
+    try:
+        return ReceiptReadResult(tuple(_collect_receipts(limit)), available=True)
+    except Exception as exc:
+        _log.exception("receipt_store: unexpected error reading ledger")
+        return ReceiptReadResult((), available=False, error=type(exc).__name__)
+
+
 def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
     """
     Return up to `limit` recent action receipts from the ledger, newest first.
@@ -62,21 +80,14 @@ def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
     Returns [] on missing ledger, empty ledger, or any read/parse error so
     callers (API layer, dashboard) stay functional on a fresh install.
     """
-    try:
-        return _collect_receipts(limit)
-    except Exception:
-        _log.exception("receipt_store: unexpected error reading ledger")
-        return []
+    return list(read_recent_receipts(limit).receipts)
 
 
 def _collect_receipts(limit: int) -> list[dict[str, Any]]:
     if not _LEDGER_PATH.exists():
         return []
 
-    try:
-        raw_lines = _read_tail_lines(_LEDGER_PATH, _READ_TAIL)
-    except OSError:
-        return []
+    raw_lines = _read_tail_lines(_LEDGER_PATH, _READ_TAIL)
 
     receipts: list[dict[str, Any]] = []
     for line in reversed(raw_lines):
