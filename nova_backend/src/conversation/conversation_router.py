@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from src.conversation.conversation_decision import ConversationDecision, ConversationMode
+from src.conversation.personal_operations_intent import resolve_personal_operations_intent
 
 
 class ConversationRouter:
@@ -135,6 +136,7 @@ class ConversationRouter:
         text = (user_text or "").strip()
         lowered = text.lower().rstrip(".?!")
         state = session_state or {}
+        personal_operations_intent = resolve_personal_operations_intent(text)
         session_override = cls._coerce_mode(str(state.get("session_mode_override") or "").strip().lower())
 
         # Policy check first so blocked prompts never participate in escalation logic.
@@ -156,8 +158,18 @@ class ConversationRouter:
             override_mode = "default"
             override_confirmation = "Okay. Back to default."
 
-        continuation_detected = cls._is_followup(lowered, state) if not blocked_by_policy else False
-        intent_family = cls._classify_intent_family(text, lowered, continuation_detected) if not blocked_by_policy else "unknown"
+        continuation_detected = (
+            cls._is_followup(lowered, state)
+            if not blocked_by_policy and personal_operations_intent is None
+            else False
+        )
+        intent_family = (
+            "personal_operations"
+            if personal_operations_intent is not None and not blocked_by_policy
+            else cls._classify_intent_family(text, lowered, continuation_detected)
+            if not blocked_by_policy
+            else "unknown"
+        )
         mode = cls._map_intent_to_mode(intent_family, lowered, state) if not blocked_by_policy else ConversationMode.UNKNOWN
         if session_override is not None and not override_applied and not override_cleared and not blocked_by_policy:
             mode = session_override
@@ -250,6 +262,7 @@ class ConversationRouter:
             policy_reason=policy_reason,
             micro_ack=cls.MICRO_ACK.get(mode, "") if should_ack else "",
             resolved_text=resolved_text,
+            personal_operations_intent=personal_operations_intent,
         )
 
     @staticmethod
@@ -315,6 +328,7 @@ class ConversationRouter:
             "followup": ConversationMode.DIRECT,
             "work": ConversationMode.WORK,
             "brainstorm": ConversationMode.BRAINSTORM,
+            "personal_operations": ConversationMode.DIRECT,
             "unknown": ConversationMode.DIRECT,
         }
         return mapping.get(intent_family, ConversationMode.DIRECT)

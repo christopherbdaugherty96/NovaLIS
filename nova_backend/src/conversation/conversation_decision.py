@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from src.conversation.personal_operations_intent import PersonalOperationsIntent
+
 
 class ConversationMode(str, Enum):
     DIRECT = "direct"
@@ -32,3 +34,4 @@ class ConversationDecision:
     policy_reason: str | None
     micro_ack: str = ""
     resolved_text: str = ""
+    personal_operations_intent: PersonalOperationsIntent | None = None
