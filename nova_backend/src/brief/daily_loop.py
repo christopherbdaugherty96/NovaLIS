@@ -103,8 +103,6 @@ def _parse_timestamp(value: Any) -> datetime | None:
 def _receipt_state(receipt: dict[str, Any]) -> str:
     if str(receipt.get("event_type") or "") != "ACTION_COMPLETED":
         return ""
-    if str(receipt.get("activity_origin") or "").strip().lower() == "background_read":
-        return "background_read"
     outcome = str(receipt.get("outcome_state") or "").strip().lower()
     status = str(receipt.get("status") or "").strip().lower()
     if outcome in {"accepted_unverified", "unknown_unverified"}:
@@ -113,6 +111,8 @@ def _receipt_state(receipt: dict[str, Any]) -> str:
         return outcome or status
     if receipt.get("success") is False:
         return "failed"
+    if str(receipt.get("activity_origin") or "").strip().lower() == "background_read":
+        return "background_read"
     return "completed"
 
 
@@ -281,6 +281,8 @@ def compose_daily_loop_projection(
     }
     for receipt in receipt_rows:
         event_type = str(receipt.get("event_type") or "").strip()
+        if event_type == "ACTION_ATTEMPTED":
+            continue
         detail = _receipt_detail(receipt, attempted_by_request)
         timestamp = _parse_timestamp(receipt.get("timestamp_utc"))
         if timestamp is not None and timestamp.astimezone().date() != local_now.date():

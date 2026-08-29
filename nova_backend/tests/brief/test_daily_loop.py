@@ -144,7 +144,65 @@ def test_background_reads_are_changes_not_user_completed_work():
     )
 
     assert projection.completed_today == ()
-    assert "Background read completed: weather_snapshot" in {item.text for item in projection.changed}
+    assert [item.text for item in projection.changed] == [
+        "Background read completed: weather_snapshot"
+    ]
+
+
+def test_failed_background_read_is_never_described_as_completed():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-BG-FAIL",
+                "capability_id": 55,
+                "activity_origin": "background_read",
+                "status": "failed",
+                "success": False,
+            },
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T09:59:00Z",
+                "request_id": "REQ-BG-FAIL",
+                "capability_id": 55,
+                "capability_name": "weather_snapshot",
+                "activity_origin": "background_read",
+            },
+        ],
+        now=NOW,
+    )
+
+    assert projection.completed_today == ()
+    assert [item.text for item in projection.changed] == ["Failed: weather_snapshot"]
+    assert not any("completed" in item.text.lower() for item in projection.changed)
+
+
+def test_correlated_attempt_and_completion_produce_one_change_entry():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-ONE",
+                "capability_id": 19,
+                "activity_origin": "user_action",
+                "status": "completed",
+                "success": True,
+            },
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T09:59:00Z",
+                "request_id": "REQ-ONE",
+                "capability_id": 19,
+                "capability_name": "volume_control",
+                "activity_origin": "user_action",
+            },
+        ],
+        now=NOW,
+    )
+
+    assert [item.text for item in projection.changed] == ["Completed: volume_control"]
 
 
 def test_projection_excludes_verified_completions_from_other_days():
