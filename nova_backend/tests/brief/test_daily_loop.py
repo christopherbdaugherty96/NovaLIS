@@ -175,11 +175,18 @@ def test_noncurrent_memory_cannot_enter_projection_or_recommendation():
                 "tier": "active",
                 "user_visible": False,
             },
+            {
+                "content_raw": "Deleted task",
+                "tags": ["next", "open_loop"],
+                "tier": "active",
+                "deleted": True,
+            },
         ],
         now=NOW,
     )
 
     assert [item.text for item in projection.next] == ["Current task"]
+    assert "Deleted task" not in [item.text for item in projection.open_loops]
     assert projection.recommended_next is not None
     assert projection.recommended_next.text == "Current task"
 
