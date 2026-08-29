@@ -82,7 +82,8 @@ def _memory_labels(item: dict[str, Any]) -> set[str]:
 def _is_current_memory(item: dict[str, Any]) -> bool:
     lock = dict(item.get("lock") or {})
     return (
-        bool(item.get("user_visible", True))
+        not bool(item.get("deleted"))
+        and bool(item.get("user_visible", True))
         and not str(lock.get("superseded_by") or "").strip()
         and str(item.get("tier") or "active").strip().lower() in {"active", "locked"}
     )
