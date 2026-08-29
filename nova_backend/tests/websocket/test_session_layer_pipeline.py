@@ -18,6 +18,7 @@ import re
 
 import pytest
 from src.conversation.response_style_router import InputNormalizer
+from src.conversation.session_router import SessionRouter
 from src.governor.governor_mediator import GovernorMediator, is_private_google_drive_search
 from src.websocket.intent_patterns import (
     AMBIENT_CLARIFICATION_PATTERNS,
@@ -48,6 +49,14 @@ def _pipeline(raw: str) -> str | int | None:
     """
     # Step 1: normalize (InputNormalizer runs in SessionRouter.normalize_and_route)
     normalized = InputNormalizer.normalize(raw)
+
+    # Typed private-state intents are gated immediately after normalization in
+    # session_handler, before deterministic commands or the governor parser.
+    route_context = SessionRouter.normalize_and_route(raw, {})
+    if route_context.decision.personal_operations_intent is not None:
+        gate = SessionRouter.evaluate_gate(route_context.decision, {}, 0)
+        assert gate.handled is True
+        return "PERSONAL_OPERATIONS_UNAVAILABLE"
 
     # Step 2: strip trailing punctuation (session_handler line 971)
     command_text = re.sub(r"[.?!]+$", "", normalized).strip()
@@ -172,6 +181,35 @@ class TestCurrentInformationFreshnessRouting:
         capability_id: str | int,
     ):
         assert _pipeline(raw) == capability_id
+
+
+class TestPersonalOperationsRoutingBoundary:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "What do I have next?",
+            "What changed?",
+            "What am I waiting on?",
+            "What did I need to finish?",
+            "What did I say I needed to finish?",
+            "What should I do next?",
+            "What did I finish today?",
+        ],
+    )
+    def test_private_operational_questions_fail_closed_before_governor(self, raw: str):
+        assert _pipeline(raw) == "PERSONAL_OPERATIONS_UNAVAILABLE"
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "What changed in OpenAI today?",
+            "What should I do next to install Python?",
+            "What did Congress finish today?",
+            "Search what changed in the weather forecast",
+        ],
+    )
+    def test_bounded_boundary_does_not_capture_public_or_general_questions(self, raw: str):
+        assert _pipeline(raw) != "PERSONAL_OPERATIONS_UNAVAILABLE"
 
 
 class TestPrivateGoogleDriveSourceSelection:
