@@ -280,6 +280,17 @@ def test_read_current_items_reports_structurally_invalid_state_as_unavailable(tm
     assert result.error == "ValueError"
 
 
+def test_read_current_items_reports_malformed_tags_as_unavailable(tmp_path):
+    memory_path = tmp_path / "items.json"
+    memory_path.write_text('{"items":[{"tier":"active","tags":42}]}', encoding="utf-8")
+
+    result = GovernedMemoryStore.read_current_items(path=memory_path, limit=100)
+
+    assert result.available is False
+    assert result.items == ()
+    assert result.error == "ValueError"
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(
