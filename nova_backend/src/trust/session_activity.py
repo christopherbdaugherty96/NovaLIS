@@ -195,11 +195,14 @@ def correlate_action_receipts(
             str(item.get("activity_origin") or "").strip().lower()
             for item in correlated
         }
-        capability_id = int(
-            (completed or {}).get("capability_id")
-            or (attempted or {}).get("capability_id")
-            or 0
-        )
+        try:
+            capability_id = int(
+                (completed or {}).get("capability_id")
+                or (attempted or {}).get("capability_id")
+                or 0
+            )
+        except (TypeError, ValueError):
+            capability_id = 0
         capability_name = _clean_label(
             str((attempted or {}).get("capability_name") or ""),
             fallback=f"Capability {capability_id}" if capability_id else "Governed action",

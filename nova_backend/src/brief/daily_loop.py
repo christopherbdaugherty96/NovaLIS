@@ -114,6 +114,35 @@ def _non_action_receipt_detail(receipt: dict[str, Any]) -> str:
     )
 
 
+def _receipt_shape_is_valid(receipt: dict[str, Any]) -> bool:
+    if str(receipt.get("event_type") or "") not in {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}:
+        return True
+    capability_id = receipt.get("capability_id")
+    if capability_id in (None, ""):
+        return True
+    try:
+        int(capability_id)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
+def _explicit_unresolved_session_loops(session_state: dict[str, Any]) -> list[str]:
+    context = session_state.get("conversation_context")
+    if not isinstance(context, dict):
+        return []
+    loops: list[str] = []
+    for item in list(context.get("open_loops") or []):
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("status") or "").strip().lower() != "unresolved":
+            continue
+        text = _clean(item.get("text") or item.get("title") or item.get("body"))
+        if text:
+            loops.append(text)
+    return loops
+
+
 def _calendar_payload(session_state: dict[str, Any]) -> tuple[bool, list[dict[str, Any]]]:
     widget = session_state.get("brief_calendar")
     if isinstance(widget, dict):
@@ -186,7 +215,12 @@ def compose_daily_loop_projection(
     else:
         memories = [item for item in raw_memories if _is_current_memory(item)]
     schedules = [item for item in list(reminders or []) if isinstance(item, dict)]
-    receipt_rows = [item for item in list(receipts or []) if isinstance(item, dict)]
+    raw_receipts = list(receipts or [])
+    if not all(isinstance(item, dict) and _receipt_shape_is_valid(item) for item in raw_receipts):
+        receipts_available = False
+        receipt_rows: list[dict[str, Any]] = []
+    else:
+        receipt_rows = raw_receipts
     local_now = now if now is not None else datetime.now().astimezone()
 
     next_items: list[DailyLoopItem] = []
@@ -319,7 +353,7 @@ def compose_daily_loop_projection(
         )
     )
 
-    for loop in list(dict(state.get("conversation_context") or {}).get("open_loops") or []):
+    for loop in _explicit_unresolved_session_loops(state):
         _append(open_loops, loop, "session_context")
     sources.append(DailyLoopSource("session_context", "available", "Current-session state inspected."))
 
@@ -336,13 +370,23 @@ def compose_daily_loop_projection(
     for article in news_items[:2]:
         title = article.get("title") if isinstance(article, dict) else article
         _append(context, title, "news")
-    sources.append(
-        DailyLoopSource(
-            "news",
-            "available" if news_items else "not_loaded",
-            "Cached news state is available." if news_items else "News is not loaded in this session.",
-        )
+    failed_news_refresh = any(
+        int(item.get("capability_id") or 0) == 56
+        and str(item.get("classification") or "") == "failed"
+        for item in action_items
     )
+    if news_items:
+        sources.append(DailyLoopSource("news", "available", "Cached news state is available."))
+    elif failed_news_refresh:
+        sources.append(
+            DailyLoopSource(
+                "news",
+                "unavailable",
+                "The attempted news refresh failed; current news evidence is unavailable.",
+            )
+        )
+    else:
+        sources.append(DailyLoopSource("news", "not_loaded", "News is not loaded in this session."))
     sources.append(DailyLoopSource("google_tasks", "not_connected", "Google Tasks is not connected."))
 
     recommendation: DailyLoopItem | None = None

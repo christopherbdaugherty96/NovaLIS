@@ -352,6 +352,52 @@ def test_projection_excludes_non_action_change_with_missing_timestamp():
     assert projection.changed == ()
 
 
+def test_malformed_receipt_capability_id_fails_closed_as_unavailable():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-CORRUPT",
+                "capability_id": "abc",
+                "activity_origin": "user_action",
+                "outcome_state": "visible_verified",
+                "visible_effect_verified": True,
+            }
+        ],
+        now=NOW,
+    )
+
+    assert projection.completed_today == ()
+    assert projection.changed == ()
+    receipts = next(source for source in projection.sources if source.source == "receipts")
+    assert receipts.status == "unavailable"
+
+
+def test_failed_news_refresh_preserves_unavailable_source_truth():
+    projection = compose_daily_loop_projection(
+        session_state={"news_cache": []},
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-NEWS-FAIL",
+                "capability_id": 56,
+                "capability_name": "news_snapshot",
+                "activity_origin": "background_read",
+                "status": "failed",
+                "outcome_state": "failed",
+                "success": False,
+            }
+        ],
+        now=NOW,
+    )
+
+    news = next(source for source in projection.sources if source.source == "news")
+    assert news.status == "unavailable"
+    assert "attempted news refresh failed" in news.detail
+
+
 def test_ambient_working_context_is_not_promoted_to_open_loop_or_recommendation():
     projection = compose_daily_loop_projection(
         session_state={"working_context": {"task_goal": "What is the weather today?"}},
@@ -360,6 +406,38 @@ def test_ambient_working_context_is_not_promoted_to_open_loop_or_recommendation(
 
     assert projection.open_loops == ()
     assert projection.recommended_next is None
+
+
+def test_answered_conversation_question_is_not_promoted_to_open_loop():
+    projection = compose_daily_loop_projection(
+        session_state={
+            "conversation_context": {
+                "open_loops": ["Why does local inference matter?"],
+                "open_question": "Why does local inference matter?",
+                "last_answer_kind": "explanation",
+            }
+        },
+        now=NOW,
+    )
+
+    assert projection.open_loops == ()
+    assert projection.recommended_next is None
+
+
+def test_only_explicitly_unresolved_session_evidence_becomes_open_loop():
+    projection = compose_daily_loop_projection(
+        session_state={
+            "conversation_context": {
+                "open_loops": [
+                    {"text": "Confirm deployment window", "status": "unresolved"},
+                    {"text": "Answered question", "status": "resolved"},
+                ]
+            }
+        },
+        now=NOW,
+    )
+
+    assert [item.text for item in projection.open_loops] == ["Confirm deployment window"]
 
 
 def test_empty_projection_reports_missing_sources_and_no_fabricated_items():
