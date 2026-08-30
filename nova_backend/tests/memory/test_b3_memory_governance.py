@@ -268,6 +268,18 @@ def test_read_current_items_does_not_initialize_missing_state(tmp_path):
     assert memory_path.parent.exists() is False
 
 
+def test_read_current_items_reports_structurally_invalid_state_as_unavailable(tmp_path):
+    memory_path = tmp_path / "items.json"
+    memory_path.write_text('{"items":"corrupt"}', encoding="utf-8")
+
+    result = GovernedMemoryStore.read_current_items(path=memory_path, limit=100)
+
+    assert result.available is False
+    assert result.state_exists is True
+    assert result.items == ()
+    assert result.error == "ValueError"
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(
