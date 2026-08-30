@@ -108,7 +108,11 @@ def render_session_activity_recap(
         if receipts is not None
         else get_session_action_receipts(trusted_session_id)
     )
-    items = _receipt_activity_items(trusted_session_id, source_receipts)
+    items = correlate_action_receipts(
+        source_receipts,
+        session_id=trusted_session_id,
+        require_trusted_correlation=True,
+    )
     items.extend(_unsupported_activity_items(trusted_session_id, activity_facts))
     items.sort(key=lambda item: (str(item.get("timestamp_utc") or ""), str(item.get("stable_id") or "")))
 
@@ -128,25 +132,40 @@ def render_session_activity_recap(
     return "\n".join(lines)
 
 
-def _receipt_activity_items(
-    session_id: str,
+def correlate_action_receipts(
     receipts: Iterable[Mapping[str, Any]],
+    *,
+    session_id: str = "",
+    require_trusted_correlation: bool = False,
 ) -> list[dict[str, Any]]:
+    """Return one canonical outcome item per correlated action request.
+
+    Strict session recaps require the server-issued session, request, and origin
+    fields. Other read-only projections may also classify older receipt shapes;
+    those rows remain isolated rather than being correlated by inference.
+    """
+    trusted_session_id = str(session_id or "").strip()
     grouped: dict[str, dict[str, Any]] = {}
-    for raw in reversed(list(receipts)):
+    for index, raw in enumerate(reversed(list(receipts))):
         if not isinstance(raw, Mapping):
             continue
-        if str(raw.get("session_id") or "").strip() != session_id:
+        receipt_session_id = str(raw.get("session_id") or "").strip()
+        if trusted_session_id and receipt_session_id != trusted_session_id:
             continue
         request_id = str(raw.get("request_id") or "").strip()
         origin = str(raw.get("activity_origin") or "").strip().lower()
         event_type = str(raw.get("event_type") or "").strip()
-        if (
-            not request_id
-            or origin not in {item.value for item in ActivityOrigin}
-            or event_type not in {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}
-        ):
+        if event_type not in {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}:
             continue
+        trusted_origin = origin in {item.value for item in ActivityOrigin}
+        if require_trusted_correlation and (not request_id or not trusted_origin):
+            continue
+        if not request_id:
+            request_id = f"uncorrelated-{index}"
+        if not trusted_origin:
+            origin = ActivityOrigin.USER_ACTION.value
+        normalized_receipt = dict(raw)
+        normalized_receipt["activity_origin"] = origin
         group = grouped.setdefault(
             request_id,
             {
@@ -155,7 +174,7 @@ def _receipt_activity_items(
                 "timestamp_utc": str(raw.get("timestamp_utc") or ""),
             },
         )
-        group["receipts"].append(dict(raw))
+        group["receipts"].append(normalized_receipt)
         group["timestamp_utc"] = min(
             str(group.get("timestamp_utc") or str(raw.get("timestamp_utc") or "")),
             str(raw.get("timestamp_utc") or ""),
@@ -176,15 +195,23 @@ def _receipt_activity_items(
             str(item.get("activity_origin") or "").strip().lower()
             for item in correlated
         }
-        capability_id = int(
-            (completed or {}).get("capability_id")
-            or (attempted or {}).get("capability_id")
-            or 0
-        )
+        try:
+            capability_id = int(
+                (completed or {}).get("capability_id")
+                or (attempted or {}).get("capability_id")
+                or 0
+            )
+        except (TypeError, ValueError):
+            capability_id = 0
         capability_name = _clean_label(
             str((attempted or {}).get("capability_name") or ""),
             fallback=f"Capability {capability_id}" if capability_id else "Governed action",
         )
+        source_label = str(
+            (completed or {}).get("capability_name")
+            or (attempted or {}).get("capability_name")
+            or (f"Capability {capability_id}" if capability_id else "Governed action")
+        ).strip()
 
         if len(origins) != 1:
             classification = "unknown_unverified"
@@ -204,10 +231,14 @@ def _receipt_activity_items(
                 "timestamp_utc": str(group.get("timestamp_utc") or ""),
                 "classification": classification,
                 "label": capability_name,
+                "source_label": source_label,
                 "capability_id": capability_id,
                 "activity_origin": origin,
                 "reason": reason,
                 "attempted": attempted is not None,
+                "outcome_timestamp_utc": str(
+                    (completed or attempted or {}).get("timestamp_utc") or ""
+                ),
             }
         )
     return items

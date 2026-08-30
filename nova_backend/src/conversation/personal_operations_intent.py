@@ -7,6 +7,7 @@ from enum import Enum
 class PersonalOperationsIntent(str, Enum):
     """Private-state questions recognized without granting execution authority."""
 
+    MATTERS_TODAY = "matters_today"
     NEXT = "next"
     CHANGED = "changed"
     WAITING_ON = "waiting_on"
@@ -42,6 +43,7 @@ def unavailable_personal_operations_response(intent: PersonalOperationsIntent) -
     """Fail closed while the beta has no assembled personal-operations state."""
 
     subject = {
+        PersonalOperationsIntent.MATTERS_TODAY: "what matters today",
         PersonalOperationsIntent.NEXT: "what you have next",
         PersonalOperationsIntent.CHANGED: "what changed",
         PersonalOperationsIntent.WAITING_ON: "what you're waiting on",

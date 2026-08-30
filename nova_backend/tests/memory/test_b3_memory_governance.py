@@ -222,6 +222,75 @@ def test_deleting_explicit_correction_does_not_resurface_superseded_memory(tmp_p
     assert store.find_relevant_items("favorite color") == []
 
 
+def test_list_current_items_excludes_hidden_deferred_and_superseded(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    current = store.save_item(title="Current", body="Current", tags=["next"])
+    deferred = store.save_item(title="Deferred", body="Deferred", tags=["next"])
+    store.defer_item(deferred["id"])
+    hidden = store.save_item(title="Hidden", body="Hidden", tags=["next"], user_visible=False)
+    superseded = store.save_item(title="Old", body="Old", tags=["next"])
+    store.supersede_item(
+        superseded["id"],
+        new_title="Replacement",
+        new_body="Replacement",
+        confirmed=True,
+    )
+
+    ids = {item["id"] for item in store.list_current_items(limit=100)}
+
+    assert current["id"] in ids
+    assert deferred["id"] not in ids
+    assert hidden["id"] not in ids
+    assert superseded["id"] not in ids
+
+
+def test_list_current_items_filters_before_applying_limit(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    current = store.save_item(title="Current open loop", body="Current open loop", tags=["open_loop"])
+    for index in range(100):
+        item = store.save_item(title=f"Deferred {index}", body=f"Deferred {index}")
+        store.defer_item(item["id"])
+
+    items = store.list_current_items(limit=1)
+
+    assert [item["id"] for item in items] == [current["id"]]
+
+
+def test_read_current_items_does_not_initialize_missing_state(tmp_path):
+    memory_path = tmp_path / "fresh-profile" / "memory" / "items.json"
+
+    result = GovernedMemoryStore.read_current_items(path=memory_path, limit=100)
+
+    assert result.available is True
+    assert result.state_exists is False
+    assert result.items == ()
+    assert memory_path.exists() is False
+    assert memory_path.parent.exists() is False
+
+
+def test_read_current_items_reports_structurally_invalid_state_as_unavailable(tmp_path):
+    memory_path = tmp_path / "items.json"
+    memory_path.write_text('{"items":"corrupt"}', encoding="utf-8")
+
+    result = GovernedMemoryStore.read_current_items(path=memory_path, limit=100)
+
+    assert result.available is False
+    assert result.state_exists is True
+    assert result.items == ()
+    assert result.error == "ValueError"
+
+
+def test_read_current_items_reports_malformed_tags_as_unavailable(tmp_path):
+    memory_path = tmp_path / "items.json"
+    memory_path.write_text('{"items":[{"tier":"active","tags":42}]}', encoding="utf-8")
+
+    result = GovernedMemoryStore.read_current_items(path=memory_path, limit=100)
+
+    assert result.available is False
+    assert result.items == ()
+    assert result.error == "ValueError"
+
+
 def test_missing_provenance_is_candidate_not_authoritative(tmp_path):
     path = tmp_path / "user_memory.json"
     path.write_text(

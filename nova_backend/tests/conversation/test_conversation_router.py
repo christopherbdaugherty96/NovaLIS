@@ -244,3 +244,12 @@ def test_personal_operations_questions_do_not_inherit_prior_followup_context():
     assert out.continuation_detected is False
     assert out.intent_family == "personal_operations"
     assert out.should_escalate is False
+
+
+def test_what_matters_today_remains_authoritative_daily_brief_trigger():
+    from src.conversation.morning_brief_handler import is_daily_brief_request
+
+    out = ConversationRouter.route("What matters today?")
+
+    assert out.personal_operations_intent is None
+    assert is_daily_brief_request("What matters today?") is True

@@ -74,3 +74,24 @@ def runtime_root(anchor: str | Path) -> Path:
 
 def runtime_path(anchor: str | Path, *parts: str) -> Path:
     return runtime_root(anchor).joinpath(*parts)
+
+
+def readonly_runtime_path(anchor: str | Path, *parts: str) -> Path:
+    """Resolve a runtime path without creating its root or parent directories."""
+
+    override = os.getenv("NOVA_RUNTIME_DIR", "").strip()
+    if override:
+        root = Path(override).expanduser()
+    else:
+        current = Path(anchor).resolve().parent
+        while current != current.parent:
+            if current.name == "src" and (current / "brain_server.py").exists():
+                root = current
+                break
+            current = current.parent
+        else:
+            root = Path(anchor).resolve().parents[1]
+        if root.exists() and not os.access(root, os.W_OK):
+            local_appdata = Path(os.getenv("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
+            root = local_appdata / "Nova"
+    return root.joinpath(*parts)

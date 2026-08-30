@@ -1791,7 +1791,53 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 continue
 
-            gate = SessionRouter.evaluate_gate(decision, session_state, session_state["turn_count"])
+            daily_loop_projection = None
+            if decision.personal_operations_intent is not None:
+                from src.brief.daily_loop import compose_daily_loop_projection
+                from src.memory.governed_memory_store import GovernedMemoryStore
+                from src.trust.receipt_store import read_recent_receipts
+
+                daily_loop_memory: list[dict[str, Any]] = []
+                daily_loop_reminders: list[dict[str, Any]] = []
+                daily_loop_receipts: list[dict[str, Any]] = []
+                memory_available = True
+                reminders_available = True
+                receipts_available = True
+                try:
+                    memory_read = GovernedMemoryStore.read_current_items(limit=100)
+                    daily_loop_memory = list(memory_read.items)
+                    memory_available = memory_read.available
+                except Exception:
+                    memory_available = False
+                try:
+                    reminder_read = notification_schedules.read_schedules(limit=25)
+                    daily_loop_reminders = list(reminder_read.schedules)
+                    reminders_available = reminder_read.available
+                except Exception:
+                    reminders_available = False
+                try:
+                    receipt_read = read_recent_receipts(limit=50)
+                    daily_loop_receipts = list(receipt_read.receipts)
+                    receipts_available = receipt_read.available
+                except Exception:
+                    receipts_available = False
+
+                daily_loop_projection = compose_daily_loop_projection(
+                    session_state=session_state,
+                    memory_items=daily_loop_memory,
+                    reminders=daily_loop_reminders,
+                    receipts=daily_loop_receipts,
+                    memory_available=memory_available,
+                    reminders_available=reminders_available,
+                    receipts_available=receipts_available,
+                )
+
+            gate = SessionRouter.evaluate_gate(
+                decision,
+                session_state,
+                session_state["turn_count"],
+                daily_loop_projection=daily_loop_projection,
+            )
             if gate.handled:
                 if gate.apply_override:
                     session_state["session_mode_override"] = gate.apply_override
