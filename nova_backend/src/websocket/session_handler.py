@@ -1946,9 +1946,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             #            left untouched, so receipts and memory keep the real utterance.
             #   medium → ask which brief domain was meant; run nothing.
             #   low    → change nothing; the existing cascade handles it.
+            from src.conversation.morning_brief_handler import is_daily_brief_request
+
+            governed_daily_brief_request = is_daily_brief_request(command_lowered)
             brief_intent = None
             if (
-                command_lowered not in SHOW_SCHEDULES_COMMANDS
+                not governed_daily_brief_request
+                and command_lowered not in SHOW_SCHEDULES_COMMANDS
                 and explicit_cancel_schedule_match is None
             ):
                 brief_intent = resolve_brief_intent(
@@ -4416,9 +4420,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # Daily Brief — single user-facing brief; trigger truth lives in
             # morning_brief_handler.is_daily_brief_request (do not inline sets here)
-            from src.conversation.morning_brief_handler import is_daily_brief_request
-
-            if is_daily_brief_request(lowered):
+            if governed_daily_brief_request:
                 weather_summary = "Weather unavailable."
                 news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."
@@ -4514,11 +4516,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         calendar_line = calendar_result.message
 
                 # Compose governed morning brief via RoutineGraph engine
+                from src.brief.daily_loop import compose_daily_loop_projection
                 from src.conversation.morning_brief_handler import (
                     calendar_result_to_brief_data,
                     compose_governed_morning_brief,
                     weather_result_to_brief_data,
                 )
+                from src.memory.governed_memory_store import GovernedMemoryStore
+                from src.trust.receipt_store import read_recent_receipts
 
                 _weather_brief_data = weather_result_to_brief_data(
                     weather_result, weather_summary,
@@ -4526,18 +4531,48 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 _calendar_brief_data = calendar_result_to_brief_data(session_state)
 
                 _memory_items: list = []
-                if _select_relevant_memory_context is not None:
-                    _memory_items = _select_relevant_memory_context(
-                        "morning brief",
-                        session_state=session_state,
-                        project_threads=project_threads,
-                    )
+                _memory_available = True
+                try:
+                    _memory_read = GovernedMemoryStore.read_current_items(limit=100)
+                    _memory_items = list(_memory_read.items)
+                    _memory_available = _memory_read.available
+                except Exception:
+                    _memory_available = False
+
+                _reminder_items: list = []
+                _reminders_available = True
+                try:
+                    _reminder_read = notification_schedules.read_schedules(limit=25)
+                    _reminder_items = list(_reminder_read.schedules)
+                    _reminders_available = _reminder_read.available
+                except Exception:
+                    _reminders_available = False
+
+                _receipt_items: list = []
+                _receipts_available = True
+                try:
+                    _receipt_read = read_recent_receipts(limit=50)
+                    _receipt_items = list(_receipt_read.receipts)
+                    _receipts_available = _receipt_read.available
+                except Exception:
+                    _receipts_available = False
+
+                _daily_loop_projection = compose_daily_loop_projection(
+                    session_state=session_state,
+                    memory_items=_memory_items,
+                    reminders=_reminder_items,
+                    receipts=_receipt_items,
+                    memory_available=_memory_available,
+                    reminders_available=_reminders_available,
+                    receipts_available=_receipts_available,
+                )
 
                 _brief_result = compose_governed_morning_brief(
                     session_state=session_state,
                     memory_items=_memory_items,
                     weather_data=_weather_brief_data,
                     calendar_data=_calendar_brief_data,
+                    daily_loop_projection=_daily_loop_projection,
                 )
 
                 _log_ledger_event(

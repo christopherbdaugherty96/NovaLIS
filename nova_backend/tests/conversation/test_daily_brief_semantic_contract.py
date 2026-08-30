@@ -101,7 +101,17 @@ class TestPhraseRoutingContract:
 
 class TestSessionHandlerUsesSharedPredicate:
     def test_session_handler_calls_predicate(self):
-        assert "is_daily_brief_request(lowered)" in SESSION_HANDLER_SRC
+        assert "is_daily_brief_request(command_lowered)" in SESSION_HANDLER_SRC
+
+    def test_daily_brief_precedes_domain_brief_resolution(self):
+        predicate_line = SESSION_HANDLER_SRC.index(
+            "governed_daily_brief_request = is_daily_brief_request(command_lowered)"
+        )
+        resolver_line = SESSION_HANDLER_SRC.index("brief_intent = resolve_brief_intent(")
+        assert predicate_line < resolver_line
+        assert "not governed_daily_brief_request" in SESSION_HANDLER_SRC[
+            predicate_line:resolver_line
+        ]
 
     def test_no_inline_brief_trigger_set(self):
         assert '"morning brief", "brief"' not in SESSION_HANDLER_SRC, (
