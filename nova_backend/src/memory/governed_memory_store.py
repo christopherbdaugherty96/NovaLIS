@@ -304,6 +304,12 @@ class GovernedMemoryStore:
                 raise ValueError("Invalid governed-memory state")
             if not all(isinstance(item, dict) for item in payload["items"]):
                 raise ValueError("Invalid governed-memory item")
+            if not all(
+                isinstance(item.get("tags", []), list)
+                and isinstance(item.get("lock", {}), dict)
+                for item in payload["items"]
+            ):
+                raise ValueError("Invalid governed-memory item fields")
             retained = [dict(item) for item in payload["items"]]
             return MemoryReadResult(
                 tuple(_current_items(retained, limit=limit)),

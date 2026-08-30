@@ -387,6 +387,37 @@ def test_recommendation_is_clearly_distinguished_from_evidence():
     assert "recommendation_from:governed_memory" in answer
 
 
+def test_automatic_daily_brief_schedule_is_not_user_work_or_recommendation():
+    projection = compose_daily_loop_projection(
+        reminders=[
+            {
+                "kind": "daily_brief",
+                "active": True,
+                "title": "Daily brief",
+                "body": "Run your scheduled daily brief.",
+                "next_run_at": "2026-08-30T08:00:00Z",
+            }
+        ],
+        now=NOW,
+    )
+
+    assert projection.next == ()
+    assert projection.open_loops == ()
+    assert projection.recommended_next is None
+
+
+def test_malformed_memory_fields_fail_closed_as_unavailable():
+    projection = compose_daily_loop_projection(
+        memory_items=[{"content_raw": "Damaged memory", "tags": 42}],
+        now=NOW,
+    )
+
+    assert projection.next == ()
+    assert projection.open_loops == ()
+    memory = next(source for source in projection.sources if source.source == "governed_memory")
+    assert memory.status == "unavailable"
+
+
 def test_noncurrent_memory_cannot_enter_projection_or_recommendation():
     projection = compose_daily_loop_projection(
         memory_items=[

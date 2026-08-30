@@ -90,6 +90,10 @@ def _is_current_memory(item: dict[str, Any]) -> bool:
     )
 
 
+def _memory_shape_is_valid(item: dict[str, Any]) -> bool:
+    return isinstance(item.get("tags", []), list) and isinstance(item.get("lock", {}), dict)
+
+
 def _parse_timestamp(value: Any) -> datetime | None:
     raw = str(value or "").strip()
     if not raw:
@@ -175,11 +179,12 @@ def compose_daily_loop_projection(
     """Project already-loaded/readable Nova state without fetching or mutating it."""
 
     state = dict(session_state) if isinstance(session_state, dict) else {}
-    memories = [
-        item
-        for item in list(memory_items or [])
-        if isinstance(item, dict) and _is_current_memory(item)
-    ]
+    raw_memories = list(memory_items or [])
+    if not all(isinstance(item, dict) and _memory_shape_is_valid(item) for item in raw_memories):
+        memory_available = False
+        memories: list[dict[str, Any]] = []
+    else:
+        memories = [item for item in raw_memories if _is_current_memory(item)]
     schedules = [item for item in list(reminders or []) if isinstance(item, dict)]
     receipt_rows = [item for item in list(receipts or []) if isinstance(item, dict)]
     local_now = now if now is not None else datetime.now().astimezone()
@@ -230,6 +235,8 @@ def compose_daily_loop_projection(
 
     for reminder in schedules:
         if not bool(reminder.get("active", True)):
+            continue
+        if str(reminder.get("kind") or "reminder").strip().lower() == "daily_brief":
             continue
         body = _clean(reminder.get("body") or reminder.get("title"))
         due = _clean(reminder.get("next_run_at"), limit=40)
