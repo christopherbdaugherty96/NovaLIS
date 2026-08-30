@@ -16,6 +16,7 @@ from src.trust.receipt_store import (
     get_receipt_summary,
     get_recent_receipts,
     get_session_action_receipts,
+    read_recent_receipts,
 )
 
 # ---------------------------------------------------------------------------
@@ -61,6 +62,42 @@ class TestEmptyLedger:
         ledger.write_text("", encoding="utf-8")
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
         assert get_recent_receipts() == []
+
+
+class TestReceiptAvailabilityTruth:
+    def test_missing_ledger_is_available_and_empty(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", tmp_path / "missing.jsonl")
+
+        result = read_recent_receipts()
+
+        assert result.available is True
+        assert result.receipts == ()
+
+    def test_read_failure_is_unavailable_not_empty_success(self, monkeypatch, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        ledger.write_text("{}\n", encoding="utf-8")
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
+
+        def fail_read(*args, **kwargs):
+            raise OSError("synthetic read failure")
+
+        monkeypatch.setattr(store_mod, "_read_tail_lines", fail_read)
+        result = read_recent_receipts()
+
+        assert result.available is False
+        assert result.receipts == ()
+        assert result.error == "OSError"
+
+    def test_nonempty_fully_corrupt_ledger_is_unavailable(self, monkeypatch, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        ledger.write_text("}{bad}{json\n@@@@\n", encoding="utf-8")
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
+
+        result = read_recent_receipts()
+
+        assert result.available is False
+        assert result.receipts == ()
+        assert result.error == "ValueError"
 
 
 class TestNonReceiptWorthy:

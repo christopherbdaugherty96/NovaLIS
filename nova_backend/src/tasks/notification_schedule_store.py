@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,13 @@ def _from_iso(value: Any) -> datetime | None:
     if parsed.tzinfo is None:
         return parsed.replace(tzinfo=timezone.utc)
     return parsed.astimezone(timezone.utc)
+
+
+@dataclass(frozen=True)
+class ScheduleReadResult:
+    schedules: tuple[dict[str, Any], ...]
+    available: bool
+    error: str = ""
 
 
 class NotificationScheduleStore:
@@ -118,6 +126,45 @@ class NotificationScheduleStore:
         )
         safe_limit = max(1, min(int(limit or 25), 100))
         return [dict(item) for item in schedules[:safe_limit]]
+
+    def read_schedules(
+        self,
+        *,
+        include_inactive: bool = False,
+        limit: int = 25,
+    ) -> ScheduleReadResult:
+        """Read schedules while distinguishing empty state from unreadable state."""
+
+        try:
+            with self._lock:
+                payload = json.loads(self._path.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict) or not isinstance(payload.get("schedules"), list):
+                raise ValueError("Invalid notification schedule state")
+            if not all(self._is_structurally_valid_item(item) for item in payload["schedules"]):
+                raise ValueError("Invalid notification schedule entry")
+            schedules = [
+                self._normalize_item(dict(item))
+                for item in payload["schedules"]
+            ]
+            if not include_inactive:
+                schedules = [item for item in schedules if bool(item.get("active"))]
+            schedules.sort(key=lambda row: str(row.get("next_run_at") or ""))
+            safe_limit = max(1, min(int(limit or 25), 100))
+            return ScheduleReadResult(tuple(schedules[:safe_limit]), available=True)
+        except Exception as exc:
+            return ScheduleReadResult((), available=False, error=type(exc).__name__)
+
+    def _is_structurally_valid_item(self, item: Any) -> bool:
+        if not isinstance(item, dict) or not isinstance(item.get("active"), bool):
+            return False
+        required_text = ("id", "kind", "title", "body", "recurrence", "next_run_at")
+        if any(not str(item.get(field) or "").strip() for field in required_text):
+            return False
+        if str(item.get("kind")).strip().lower() not in self.ALLOWED_KINDS:
+            return False
+        if str(item.get("recurrence")).strip().lower() not in self.ALLOWED_RECURRENCES:
+            return False
+        return _from_iso(item.get("next_run_at")) is not None
 
     def get_schedule(self, schedule_id: str) -> dict[str, Any] | None:
         with self._lock:

@@ -17,6 +17,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from src.brief.daily_loop import compose_daily_loop_projection
 from src.conversation.response_style_router import InputNormalizer
 from src.conversation.session_router import SessionRouter
 from src.governor.governor_mediator import GovernorMediator, is_private_google_drive_search
@@ -54,9 +55,14 @@ def _pipeline(raw: str) -> str | int | None:
     # session_handler, before deterministic commands or the governor parser.
     route_context = SessionRouter.normalize_and_route(raw, {})
     if route_context.decision.personal_operations_intent is not None:
-        gate = SessionRouter.evaluate_gate(route_context.decision, {}, 0)
+        gate = SessionRouter.evaluate_gate(
+            route_context.decision,
+            {},
+            0,
+            daily_loop_projection=compose_daily_loop_projection(),
+        )
         assert gate.handled is True
-        return "PERSONAL_OPERATIONS_UNAVAILABLE"
+        return "DAILY_LOOP_READ_MODEL"
 
     # Step 2: strip trailing punctuation (session_handler line 971)
     command_text = re.sub(r"[.?!]+$", "", normalized).strip()
@@ -197,7 +203,7 @@ class TestPersonalOperationsRoutingBoundary:
         ],
     )
     def test_private_operational_questions_fail_closed_before_governor(self, raw: str):
-        assert _pipeline(raw) == "PERSONAL_OPERATIONS_UNAVAILABLE"
+        assert _pipeline(raw) == "DAILY_LOOP_READ_MODEL"
 
     @pytest.mark.parametrize(
         "raw",
@@ -209,7 +215,13 @@ class TestPersonalOperationsRoutingBoundary:
         ],
     )
     def test_bounded_boundary_does_not_capture_public_or_general_questions(self, raw: str):
-        assert _pipeline(raw) != "PERSONAL_OPERATIONS_UNAVAILABLE"
+        assert _pipeline(raw) != "DAILY_LOOP_READ_MODEL"
+
+    def test_what_matters_today_does_not_shadow_daily_brief(self):
+        from src.conversation.morning_brief_handler import is_daily_brief_request
+
+        assert _pipeline("What matters today?") != "DAILY_LOOP_READ_MODEL"
+        assert is_daily_brief_request("What matters today?") is True
 
 
 class TestPrivateGoogleDriveSourceSelection:
