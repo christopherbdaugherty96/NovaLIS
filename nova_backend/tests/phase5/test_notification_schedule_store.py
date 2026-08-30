@@ -16,6 +16,18 @@ def test_read_schedules_reports_corrupt_state_as_unavailable(tmp_path):
     assert result.error == "JSONDecodeError"
 
 
+def test_read_schedules_reports_malformed_entry_as_unavailable(tmp_path):
+    path = tmp_path / "schedules.json"
+    store = NotificationScheduleStore(path)
+    path.write_text('{"schedules":[{"active":true}]}', encoding="utf-8")
+
+    result = store.read_schedules(limit=25)
+
+    assert result.available is False
+    assert result.schedules == ()
+    assert result.error == "ValueError"
+
+
 def test_notification_schedule_store_summarizes_due_and_upcoming_items(tmp_path: Path):
     store = NotificationScheduleStore(tmp_path / "schedules.json")
     now = datetime(2026, 3, 13, 15, 0, tzinfo=timezone.utc)

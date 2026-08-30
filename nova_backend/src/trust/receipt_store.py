@@ -90,20 +90,27 @@ def _collect_receipts(limit: int) -> list[dict[str, Any]]:
     raw_lines = _read_tail_lines(_LEDGER_PATH, _READ_TAIL)
 
     receipts: list[dict[str, Any]] = []
+    nonempty_lines = 0
+    parseable_records = 0
     for line in reversed(raw_lines):
         line = line.strip()
         if not line:
             continue
+        nonempty_lines += 1
         try:
             entry = json.loads(line)
         except json.JSONDecodeError:
             continue
         if not isinstance(entry, dict):
             continue
+        parseable_records += 1
         if entry.get("event_type") in _RECEIPT_WORTHY:
             receipts.append(entry)
         if len(receipts) >= limit:
             break
+
+    if nonempty_lines and not parseable_records:
+        raise ValueError("Receipt ledger contains no parseable records")
 
     return receipts
 

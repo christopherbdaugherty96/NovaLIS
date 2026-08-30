@@ -88,6 +88,17 @@ class TestReceiptAvailabilityTruth:
         assert result.receipts == ()
         assert result.error == "OSError"
 
+    def test_nonempty_fully_corrupt_ledger_is_unavailable(self, monkeypatch, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        ledger.write_text("}{bad}{json\n@@@@\n", encoding="utf-8")
+        monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
+
+        result = read_recent_receipts()
+
+        assert result.available is False
+        assert result.receipts == ()
+        assert result.error == "ValueError"
+
 
 class TestNonReceiptWorthy:
     def test_non_worthy_events_excluded(self, monkeypatch, tmp_path):

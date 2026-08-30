@@ -300,7 +300,11 @@ class GovernedMemoryStore:
         try:
             with shared_path_lock(target):
                 payload = json.loads(target.read_text(encoding="utf-8"))
-            retained = [dict(item) for item in list(payload.get("items") or []) if isinstance(item, dict)]
+            if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
+                raise ValueError("Invalid governed-memory state")
+            if not all(isinstance(item, dict) for item in payload["items"]):
+                raise ValueError("Invalid governed-memory item")
+            retained = [dict(item) for item in payload["items"]]
             return MemoryReadResult(
                 tuple(_current_items(retained, limit=limit)),
                 available=True,

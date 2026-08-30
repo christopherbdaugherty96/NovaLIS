@@ -213,6 +213,40 @@ def test_correlated_attempt_and_completion_produce_one_change_entry():
     assert [item.text for item in projection.changed] == ["Completed: volume_control"]
 
 
+def test_changed_merges_all_receipt_types_by_timestamp_before_limit():
+    receipts = [
+        {
+            "event_type": "ACTION_COMPLETED",
+            "timestamp_utc": f"2026-08-29T{hour:02d}:00:00Z",
+            "request_id": f"REQ-{hour}",
+            "capability_name": f"action_{hour}",
+            "activity_origin": "user_action",
+            "status": "completed",
+            "outcome_state": "visible_verified",
+            "visible_effect_verified": True,
+            "success": True,
+        }
+        for hour in range(13, 19)
+    ]
+    receipts.append(
+        {
+            "event_type": "MEMORY_ITEM_SAVED",
+            "timestamp_utc": "2026-08-29T19:00:00Z",
+            "message": "Newest memory change",
+        }
+    )
+
+    projection = compose_daily_loop_projection(receipts=receipts, now=NOW)
+
+    assert [item.text for item in projection.changed] == [
+        "Newest memory change",
+        "Completed: action_18",
+        "Completed: action_17",
+        "Completed: action_16",
+        "Completed: action_15",
+    ]
+
+
 def test_orphan_attempt_is_preserved_once_as_unknown_unverified():
     projection = compose_daily_loop_projection(
         receipts=[

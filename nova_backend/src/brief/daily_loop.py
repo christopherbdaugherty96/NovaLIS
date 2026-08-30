@@ -190,6 +190,7 @@ def compose_daily_loop_projection(
     open_loops: list[DailyLoopItem] = []
     completed: list[DailyLoopItem] = []
     unresolved: list[DailyLoopItem] = []
+    change_candidates: list[tuple[datetime, str]] = []
     context: list[DailyLoopItem] = []
     sources: list[DailyLoopSource] = []
 
@@ -257,19 +258,34 @@ def compose_daily_loop_projection(
         receipt_state = str(item.get("classification") or "")
         if receipt_state == "effect_verified":
             _append(completed, detail, "receipts")
-            _append(changed, f"Completed: {detail}", "receipts")
+            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Completed: {detail}"))
         elif receipt_state == "background_read":
-            _append(changed, f"Background read completed: {detail}", "receipts")
+            change_candidates.append(
+                (
+                    timestamp or datetime.min.replace(tzinfo=timezone.utc),
+                    f"Background read completed: {detail}",
+                )
+            )
         elif receipt_state == "accepted_unverified":
             _append(unresolved, f"Accepted; outcome unverified: {detail}", "receipts")
-            _append(changed, f"Accepted; outcome unverified: {detail}", "receipts")
+            change_candidates.append(
+                (
+                    timestamp or datetime.min.replace(tzinfo=timezone.utc),
+                    f"Accepted; outcome unverified: {detail}",
+                )
+            )
         elif receipt_state == "unknown_unverified":
             _append(unresolved, f"Outcome unknown; not verified: {detail}", "receipts")
-            _append(changed, f"Outcome unknown; not verified: {detail}", "receipts")
+            change_candidates.append(
+                (
+                    timestamp or datetime.min.replace(tzinfo=timezone.utc),
+                    f"Outcome unknown; not verified: {detail}",
+                )
+            )
         elif receipt_state == "failed":
-            _append(changed, f"Failed: {detail}", "receipts")
+            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Failed: {detail}"))
         elif receipt_state == "rejected_or_unsupported":
-            _append(changed, f"Rejected: {detail}", "receipts")
+            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Rejected: {detail}"))
 
     for receipt in receipt_rows:
         event_type = str(receipt.get("event_type") or "").strip()
@@ -278,7 +294,14 @@ def compose_daily_loop_projection(
         timestamp = _parse_timestamp(receipt.get("timestamp_utc"))
         if timestamp is not None and timestamp.astimezone().date() != local_now.date():
             continue
-        _append(changed, _non_action_receipt_detail(receipt), "receipts")
+        change_candidates.append(
+            (
+                timestamp or datetime.min.replace(tzinfo=timezone.utc),
+                _non_action_receipt_detail(receipt),
+            )
+        )
+    for _, detail in sorted(change_candidates, key=lambda candidate: candidate[0], reverse=True):
+        _append(changed, detail, "receipts")
     sources.append(
         DailyLoopSource(
             "receipts",
