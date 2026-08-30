@@ -316,6 +316,42 @@ def test_projection_excludes_verified_completions_from_other_days():
     assert projection.changed == ()
 
 
+def test_projection_excludes_verified_completion_with_malformed_timestamp():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "bad",
+                "request_id": "REQ-UNDATED",
+                "capability_name": "undated_action",
+                "activity_origin": "user_action",
+                "status": "completed",
+                "outcome_state": "visible_verified",
+                "visible_effect_verified": True,
+                "success": True,
+            }
+        ],
+        now=NOW,
+    )
+
+    assert projection.completed_today == ()
+    assert projection.changed == ()
+
+
+def test_projection_excludes_non_action_change_with_missing_timestamp():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "MEMORY_ITEM_SAVED",
+                "message": "Undated memory change",
+            }
+        ],
+        now=NOW,
+    )
+
+    assert projection.changed == ()
+
+
 def test_ambient_working_context_is_not_promoted_to_open_loop_or_recommendation():
     projection = compose_daily_loop_projection(
         session_state={"working_context": {"task_goal": "What is the weather today?"}},

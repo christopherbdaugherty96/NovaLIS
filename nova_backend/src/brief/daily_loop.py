@@ -253,7 +253,7 @@ def compose_daily_loop_projection(
     for item in action_items:
         detail = _clean(item.get("source_label") or item.get("label"))
         timestamp = _parse_timestamp(item.get("outcome_timestamp_utc"))
-        if timestamp is not None and timestamp.astimezone().date() != local_now.date():
+        if timestamp is None or timestamp.astimezone().date() != local_now.date():
             continue
         receipt_state = str(item.get("classification") or "")
         if receipt_state == "effect_verified":
@@ -292,7 +292,7 @@ def compose_daily_loop_projection(
         if event_type in {"ACTION_ATTEMPTED", "ACTION_COMPLETED"}:
             continue
         timestamp = _parse_timestamp(receipt.get("timestamp_utc"))
-        if timestamp is not None and timestamp.astimezone().date() != local_now.date():
+        if timestamp is None or timestamp.astimezone().date() != local_now.date():
             continue
         change_candidates.append(
             (
