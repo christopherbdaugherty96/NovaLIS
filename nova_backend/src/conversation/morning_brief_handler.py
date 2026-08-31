@@ -170,7 +170,7 @@ def _render_daily_loop_guidance(projection: DailyLoopProjection) -> str:
         (
             item
             for item in projection.changed
-            if not item.text.casefold().startswith("background read completed:")
+            if not item.text.casefold().startswith("background read ")
         ),
         None,
     )
