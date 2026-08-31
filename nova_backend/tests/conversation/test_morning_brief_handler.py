@@ -13,7 +13,11 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
+from src.brief.daily_loop import (
+    DailyLoopItem,
+    DailyLoopProjection,
+    DailyLoopSource,
+)
 from src.conversation.morning_brief_handler import (
     DAILY_BRIEF_TRIGGERS,
     MORNING_BRIEF_TRIGGERS,
@@ -25,7 +29,6 @@ from src.conversation.morning_brief_handler import (
     normalize_brief_text,
     weather_result_to_brief_data,
 )
-
 
 # -------------------------------------------------------------------
 # Trigger detection
@@ -189,6 +192,110 @@ class TestComposeGoverned:
         assert call_kwargs["weather_data"] == {"temp": 72}
         assert call_kwargs["calendar_data"] == {"events": []}
         assert call_kwargs["recent_receipts"] == [{"id": "r1"}]
+
+    @patch("src.conversation.morning_brief_handler.get_recent_receipts")
+    @patch("src.conversation.morning_brief_handler.run_daily_brief_routine")
+    def test_daily_loop_guidance_prioritizes_user_day_over_headlines(
+        self,
+        mock_routine,
+        mock_receipts,
+    ):
+        mock_receipts.return_value = []
+        mock_routine.return_value = _make_mock_run_and_receipt(
+            {
+                "sections": [
+                    {"title": "News", "items": ["Headline 1", "Headline 2", "Headline 3"]}
+                ]
+            }
+        )
+        projection = DailyLoopProjection(
+            next=(DailyLoopItem("Standup at 9 AM", "calendar"),),
+            changed=(DailyLoopItem("Completed: Review draft", "receipts"),),
+            waiting_on=(DailyLoopItem("Vendor reply", "governed_memory"),),
+            open_loops=(),
+            completed_today=(),
+            unresolved_outcomes=(),
+            recommended_next=DailyLoopItem("Standup at 9 AM", "recommendation_from:calendar"),
+            context_today=(
+                DailyLoopItem("Rain after 3 PM", "weather"),
+                DailyLoopItem("Headline 1", "news"),
+            ),
+            sources=(DailyLoopSource("google_tasks", "not_connected", "Google Tasks is not connected."),),
+        )
+
+        result = compose_governed_morning_brief(
+            session_state={},
+            daily_loop_projection=projection,
+        )
+
+        assert result.text.index("Next: Standup at 9 AM") < result.text.index("Waiting on: Vendor reply")
+        assert "Meaningful change: Completed: Review draft" in result.text
+        assert "Recommendation (derived, not an instruction): Standup at 9 AM" in result.text
+        assert "Supporting context: Rain after 3 PM" in result.text
+        assert "Headline 1" not in result.text
+        assert "Google Tasks is not connected" in result.text
+        assert "No action was executed" in result.text
+
+    @patch("src.conversation.morning_brief_handler.get_recent_receipts")
+    @patch("src.conversation.morning_brief_handler.run_daily_brief_routine")
+    def test_daily_loop_guidance_states_when_priorities_are_unknown(
+        self,
+        mock_routine,
+        mock_receipts,
+    ):
+        mock_receipts.return_value = []
+        mock_routine.return_value = _make_mock_run_and_receipt({"sections": []})
+        projection = DailyLoopProjection(
+            next=(),
+            changed=(),
+            waiting_on=(),
+            open_loops=(),
+            completed_today=(),
+            unresolved_outcomes=(),
+            recommended_next=None,
+            context_today=(),
+            sources=(),
+        )
+
+        result = compose_governed_morning_brief(
+            session_state={},
+            daily_loop_projection=projection,
+        )
+
+        assert "No upcoming item is known" in result.text
+        assert "No waiting item is known" in result.text
+        assert "No meaningful user-facing change is known" in result.text
+        assert "No recommendation is supported" in result.text
+
+    @patch("src.conversation.morning_brief_handler.get_recent_receipts")
+    @patch("src.conversation.morning_brief_handler.run_daily_brief_routine")
+    def test_failed_background_support_read_is_not_a_meaningful_change(
+        self,
+        mock_routine,
+        mock_receipts,
+    ):
+        mock_receipts.return_value = []
+        mock_routine.return_value = _make_mock_run_and_receipt({"sections": []})
+        projection = DailyLoopProjection(
+            next=(),
+            changed=(DailyLoopItem("Background read failed: weather_snapshot", "receipts"),),
+            waiting_on=(),
+            open_loops=(),
+            completed_today=(),
+            unresolved_outcomes=(),
+            recommended_next=None,
+            context_today=(),
+            sources=(DailyLoopSource("weather", "not_loaded", "Weather is unavailable."),),
+        )
+
+        result = compose_governed_morning_brief(
+            session_state={},
+            daily_loop_projection=projection,
+        )
+
+        assert "No meaningful user-facing change is known" in result.text
+        assert "Background read failed" not in result.text
+        assert "Weather is unavailable" in result.text
 
 
 # -------------------------------------------------------------------

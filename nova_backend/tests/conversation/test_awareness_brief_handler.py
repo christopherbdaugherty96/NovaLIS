@@ -3,7 +3,6 @@ from __future__ import annotations
 import inspect
 
 import pytest
-
 from src.conversation.awareness_brief_handler import (
     SURFACE_AMBIGUOUS,
     SURFACE_AURALIS_TODAY,
@@ -57,7 +56,7 @@ def test_session_handler_uses_awareness_brief_helper_before_daily_brief():
 
     source = inspect.getsource(session_handler)
     awareness_line = source.index("classify_governed_surface_request(lowered)")
-    daily_line = source.index("is_daily_brief_request(lowered)")
+    daily_line = source.index("if governed_daily_brief_request:")
     assert awareness_line < daily_line
 
 

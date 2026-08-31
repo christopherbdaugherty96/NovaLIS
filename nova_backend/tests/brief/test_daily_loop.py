@@ -155,6 +155,47 @@ def test_background_reads_are_changes_not_user_completed_work():
     ]
 
 
+def test_daily_brief_support_reads_do_not_become_user_work_or_unresolved_outcomes():
+    receipts = []
+    for index, (capability_id, capability_name) in enumerate(
+        (
+            (55, "weather_snapshot"),
+            (56, "news_snapshot"),
+            (32, "os_diagnostics"),
+            (57, "calendar_snapshot"),
+        )
+    ):
+        request_id = f"REQ-BRIEF-{index}"
+        receipts.extend(
+            [
+                {
+                    "event_type": "ACTION_ATTEMPTED",
+                    "timestamp_utc": f"2026-08-29T10:0{index}:00Z",
+                    "request_id": request_id,
+                    "capability_id": capability_id,
+                    "capability_name": capability_name,
+                    "activity_origin": "background_read",
+                },
+                {
+                    "event_type": "ACTION_COMPLETED",
+                    "timestamp_utc": f"2026-08-29T10:0{index}:01Z",
+                    "request_id": request_id,
+                    "capability_id": capability_id,
+                    "activity_origin": "background_read",
+                    "status": "completed",
+                    "success": True,
+                },
+            ]
+        )
+
+    projection = compose_daily_loop_projection(receipts=receipts, now=NOW)
+
+    assert projection.waiting_on == ()
+    assert projection.unresolved_outcomes == ()
+    assert projection.completed_today == ()
+    assert all(item.text.startswith("Background read completed:") for item in projection.changed)
+
+
 def test_failed_background_read_is_never_described_as_completed():
     projection = compose_daily_loop_projection(
         receipts=[
@@ -180,7 +221,11 @@ def test_failed_background_read_is_never_described_as_completed():
     )
 
     assert projection.completed_today == ()
-    assert [item.text for item in projection.changed] == ["Failed: weather_snapshot"]
+    assert projection.waiting_on == ()
+    assert projection.unresolved_outcomes == ()
+    assert [item.text for item in projection.changed] == [
+        "Background read failed: weather_snapshot"
+    ]
     assert not any("completed" in item.text.lower() for item in projection.changed)
 
 
