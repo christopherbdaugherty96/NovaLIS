@@ -84,8 +84,7 @@ class PersonalityInterfaceAgent:
         for pattern in self._SYSTEM_TOKEN_PATTERNS:
             clean = pattern.sub("", clean)
 
-        for pattern, replacement in self._AUTHORITY_REPLACEMENTS:
-            clean = pattern.sub(replacement, clean)
+        clean = self._apply_authority_replacements(clean)
 
         for pattern, replacement in self._EMOTIONAL_REPLACEMENTS:
             clean = pattern.sub(replacement, clean)
@@ -100,6 +99,18 @@ class PersonalityInterfaceAgent:
         clean = NovaStyleContract.normalize(clean)
         clean = self._apply_tone_profile(clean.strip(), domain=domain)
         return clean.strip()
+
+    def _apply_authority_replacements(self, text: str) -> str:
+        """Apply phrasing changes to prose without rewriting structural headings."""
+        rendered_lines: list[str] = []
+        for line in text.split("\n"):
+            if line.strip().endswith(":"):
+                rendered_lines.append(line)
+                continue
+            for pattern, replacement in self._AUTHORITY_REPLACEMENTS:
+                line = pattern.sub(replacement, line)
+            rendered_lines.append(line)
+        return "\n".join(rendered_lines)
 
     def present_agent_result(
         self,
