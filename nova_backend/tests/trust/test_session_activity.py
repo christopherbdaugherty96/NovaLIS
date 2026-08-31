@@ -113,6 +113,25 @@ def test_user_read_success_is_distinct_from_effect_verified_action():
     assert "effect verified" not in recap
 
 
+def test_contradictory_explicit_read_success_receipt_fails_closed_without_throwing():
+    recap = render_session_activity_recap(
+        session_id="session-current",
+        receipts=_pair(
+            "failed-read",
+            capability_id=32,
+            capability_name="system_status",
+            outcome_state="read_succeeded",
+            success=False,
+            status="failed",
+            authority_class="read_only_local",
+            external_effect=False,
+        ),
+    )
+
+    assert "System status (Cap 32): failed" in recap
+    assert "read completed successfully" not in recap
+
+
 def test_empty_and_legacy_receipts_never_create_current_session_history():
     receipts = [
         _receipt("ACTION_COMPLETED", "", success=True, status="completed"),
