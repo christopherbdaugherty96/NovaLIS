@@ -15,6 +15,7 @@ from src.actions.action_result import ActionResult
 from src.build_phase import BUILD_PHASE
 from src.identity.capability_truth import project_capability_truth
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
+from src.semantic.contracts import OutcomeSemantics, OutcomeState
 from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
 
@@ -390,14 +391,17 @@ class OSDiagnosticsExecutor:
         )
         status = str(entry.get("status") or "").strip().lower()
         outcome_state = str(entry.get("outcome_state") or "").strip().lower()
+        outcome_semantics = OutcomeSemantics.from_action_metadata(entry)
         authority_class = str(entry.get("authority_class") or "").strip()
         reversible = entry.get("reversible")
         external_effect = entry.get("external_effect")
 
         if event_type.startswith("ACTION_") and event_type.endswith("_COMPLETED"):
-            kind = "action"
+            kind = "read" if outcome_semantics.state is OutcomeState.READ_SUCCEEDED else "action"
             if outcome == "issue":
                 title = "Action needs attention"
+            elif outcome_semantics.state is OutcomeState.READ_SUCCEEDED:
+                title = "Read completed"
             elif outcome_state == "accepted_unverified":
                 title = "Action accepted; outcome unverified"
             elif outcome_state == "unknown_unverified":

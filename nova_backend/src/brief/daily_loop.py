@@ -301,6 +301,7 @@ def compose_daily_loop_projection(
             background_labels = {
                 "background_read": "completed",
                 "effect_verified": "completed",
+                "read_succeeded": "completed",
                 "accepted_unverified": "outcome unverified",
                 "unknown_unverified": "outcome unknown",
                 "failed": "failed",
@@ -317,6 +318,13 @@ def compose_daily_loop_projection(
         if receipt_state == "effect_verified":
             _append(completed, detail, "receipts")
             change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Completed: {detail}"))
+        elif receipt_state == "read_succeeded":
+            change_candidates.append(
+                (
+                    timestamp or datetime.min.replace(tzinfo=timezone.utc),
+                    f"Read completed: {detail}",
+                )
+            )
         elif receipt_state == "accepted_unverified":
             _append(unresolved, f"Accepted; outcome unverified: {detail}", "receipts")
             change_candidates.append(
