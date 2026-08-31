@@ -318,6 +318,23 @@ class OutcomeSemantics:
             state = OutcomeState.REJECTED
             request_accepted = False
             effect_verified = False
+        elif state is OutcomeState.READ_SUCCEEDED and request_accepted is False:
+            state = OutcomeState.REJECTED
+            request_accepted = False
+            effect_verified = False
+        elif state is OutcomeState.READ_SUCCEEDED and (
+            status == "failed" or success is False
+        ):
+            state = OutcomeState.FAILED
+            effect_verified = False
+        elif state is OutcomeState.READ_SUCCEEDED and (
+            status not in {"completed", "completed_degraded"}
+            or success is not True
+            or external_effect is not False
+            or effect_verification is True
+        ):
+            state = OutcomeState.UNKNOWN_UNVERIFIED
+            effect_verified = False
         elif positive_state and request_accepted is False:
             state = OutcomeState.REJECTED
             request_accepted = False
