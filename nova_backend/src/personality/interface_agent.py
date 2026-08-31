@@ -58,6 +58,18 @@ class PersonalityInterfaceAgent:
         (re.compile(r"\btrust me\b", re.IGNORECASE), "Based on available information"),
     )
 
+    _PERSONAL_OPERATIONS_HEADINGS = frozenset(
+        {
+            "what matters today:",
+            "what you have next:",
+            "what changed:",
+            "what you are waiting on:",
+            "what you needed to finish:",
+            "what you should do next:",
+            "what you finished today:",
+        }
+    )
+
     _EMOTIONAL_REPLACEMENTS = (
         (re.compile(r"\bi[' ]?m here for you\b", re.IGNORECASE), "I can help with the task details"),
         (re.compile(r"\bdon[' ]?t worry\b", re.IGNORECASE), "Let's focus on the next step"),
@@ -84,8 +96,7 @@ class PersonalityInterfaceAgent:
         for pattern in self._SYSTEM_TOKEN_PATTERNS:
             clean = pattern.sub("", clean)
 
-        for pattern, replacement in self._AUTHORITY_REPLACEMENTS:
-            clean = pattern.sub(replacement, clean)
+        clean = self._apply_authority_replacements(clean)
 
         for pattern, replacement in self._EMOTIONAL_REPLACEMENTS:
             clean = pattern.sub(replacement, clean)
@@ -100,6 +111,18 @@ class PersonalityInterfaceAgent:
         clean = NovaStyleContract.normalize(clean)
         clean = self._apply_tone_profile(clean.strip(), domain=domain)
         return clean.strip()
+
+    def _apply_authority_replacements(self, text: str) -> str:
+        """Apply phrasing changes to prose without rewriting structural headings."""
+        rendered_lines: list[str] = []
+        for line in text.split("\n"):
+            if line.strip().casefold() in self._PERSONAL_OPERATIONS_HEADINGS:
+                rendered_lines.append(line)
+                continue
+            for pattern, replacement in self._AUTHORITY_REPLACEMENTS:
+                line = pattern.sub(replacement, line)
+            rendered_lines.append(line)
+        return "\n".join(rendered_lines)
 
     def present_agent_result(
         self,

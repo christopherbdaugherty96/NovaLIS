@@ -20,6 +20,42 @@ def test_existing_authority_replacement_unchanged():
     assert "reasonable option" in lowered
 
 
+def test_authority_replacement_preserves_structural_headings():
+    agent = PersonalityInterfaceAgent()
+    out = agent.present(
+        "What you should do next:\n"
+        "- Recommendation (derived, not an instruction): Review the evidence.\n"
+        "You should verify the result."
+    )
+
+    assert out.startswith("What you should do next:\n")
+    assert "What A useful next step is to do next:" not in out
+    assert "A useful next step is to verify the result." in out
+
+
+def test_personal_operations_structural_headings_remain_unchanged():
+    agent = PersonalityInterfaceAgent()
+    headings = (
+        "What matters today:",
+        "What you have next:",
+        "What changed:",
+        "What you are waiting on:",
+        "What you needed to finish:",
+        "What you should do next:",
+        "What you finished today:",
+    )
+
+    assert agent.present("\n".join(headings)).splitlines() == list(headings)
+
+
+def test_authority_replacement_still_applies_to_colon_ended_body_prose():
+    agent = PersonalityInterfaceAgent()
+
+    out = agent.present("You should review these items:\n- A\n- B")
+
+    assert out.startswith("A useful next step is to review these items:\n")
+
+
 def test_existing_emotional_dampening_unchanged():
     agent = PersonalityInterfaceAgent()
     out = agent.present("Don't worry, I'm here for you!")
