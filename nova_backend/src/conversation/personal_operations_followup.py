@@ -40,7 +40,7 @@ def build_personal_operations_surface(
     selected = {
         PersonalOperationsIntent.NEXT: projection.next,
         PersonalOperationsIntent.CHANGED: projection.changed,
-        PersonalOperationsIntent.WAITING_ON: projection.waiting_on + projection.unresolved_outcomes,
+        PersonalOperationsIntent.WAITING_ON: projection.waiting_on,
         PersonalOperationsIntent.NEED_TO_FINISH: projection.open_loops,
         PersonalOperationsIntent.COMPLETED_TODAY: projection.completed_today,
         PersonalOperationsIntent.MATTERS_TODAY: (
@@ -85,7 +85,7 @@ def answer_personal_operations_followup(text: str, surface: Any) -> str:
             )
         item = items[0]
         prefix = (
-            "I made that recommendation because this was the first supported next item"
+            "I made that recommendation from this supported DailyLoop evidence"
             if surface.get("intent") == PersonalOperationsIntent.RECOMMENDED_NEXT.value
             else "That answer was grounded first in this current item"
         )

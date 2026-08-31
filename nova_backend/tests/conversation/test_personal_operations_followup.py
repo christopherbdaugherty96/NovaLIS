@@ -35,7 +35,7 @@ def test_why_explains_immediately_prior_recommendation_with_provenance():
         "What you should do next",
     )
     answer = answer_personal_operations_followup("Why?", surface)
-    assert "first supported next item" in answer
+    assert "supported DailyLoop evidence" in answer
     assert "Review the launch checklist" in answer
     assert "recommendation_from:governed_memory" in answer
     assert "No action was executed" in answer
@@ -53,6 +53,58 @@ def test_tell_me_more_preserves_items_and_missing_source_truth():
     assert "Google Tasks is not connected" in answer
 
 
+def test_why_uses_truthful_neutral_rationale_for_waiting_fallback():
+    projection = DailyLoopProjection(
+        next=(),
+        changed=(),
+        waiting_on=(DailyLoopItem("Vendor reply", "governed_memory"),),
+        open_loops=(),
+        completed_today=(),
+        unresolved_outcomes=(),
+        recommended_next=DailyLoopItem(
+            "Review waiting item: Vendor reply",
+            "recommendation_from:governed_memory",
+        ),
+        context_today=(),
+        sources=(),
+    )
+    surface = build_personal_operations_surface(
+        PersonalOperationsIntent.RECOMMENDED_NEXT,
+        projection,
+        "What you should do next",
+    )
+    answer = answer_personal_operations_followup("Why?", surface)
+    assert "supported DailyLoop evidence" in answer
+    assert "Review waiting item: Vendor reply" in answer
+    assert "first supported next item" not in answer
+
+
+def test_why_uses_truthful_neutral_rationale_for_open_loop_fallback():
+    projection = DailyLoopProjection(
+        next=(),
+        changed=(),
+        waiting_on=(),
+        open_loops=(DailyLoopItem("Finish the beta notes", "governed_memory"),),
+        completed_today=(),
+        unresolved_outcomes=(),
+        recommended_next=DailyLoopItem(
+            "Continue open loop: Finish the beta notes",
+            "recommendation_from:governed_memory",
+        ),
+        context_today=(),
+        sources=(),
+    )
+    surface = build_personal_operations_surface(
+        PersonalOperationsIntent.RECOMMENDED_NEXT,
+        projection,
+        "What you should do next",
+    )
+    answer = answer_personal_operations_followup("Why?", surface)
+    assert "supported DailyLoop evidence" in answer
+    assert "Continue open loop: Finish the beta notes" in answer
+    assert "first supported next item" not in answer
+
+
 def test_second_one_binds_only_to_second_prior_item():
     surface = build_personal_operations_surface(
         PersonalOperationsIntent.NEXT,
@@ -63,6 +115,28 @@ def test_second_one_binds_only_to_second_prior_item():
     assert "Call Sam at 2 PM" in answer
     assert "source: calendar" in answer
     assert "Review the launch checklist" not in answer
+
+
+def test_waiting_surface_does_not_expose_unrendered_unresolved_outcome_as_second_item():
+    projection = DailyLoopProjection(
+        next=(),
+        changed=(),
+        waiting_on=(DailyLoopItem("Vendor reply", "governed_memory"),),
+        open_loops=(),
+        completed_today=(),
+        unresolved_outcomes=(DailyLoopItem("Outcome unknown: calendar", "receipts"),),
+        recommended_next=None,
+        context_today=(),
+        sources=(),
+    )
+    surface = build_personal_operations_surface(
+        PersonalOperationsIntent.WAITING_ON,
+        projection,
+        "What you're waiting on:\n- Vendor reply\n- Unresolved action outcomes: 1",
+    )
+    answer = answer_personal_operations_followup("the second one", surface)
+    assert answer == "I don't have a reliable second item in the immediately prior answer."
+    assert "calendar" not in answer
 
 
 def test_followup_without_reliable_surface_fails_closed():
