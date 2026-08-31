@@ -267,6 +267,36 @@ class TestComposeGoverned:
         assert "No meaningful user-facing change is known" in result.text
         assert "No recommendation is supported" in result.text
 
+    @patch("src.conversation.morning_brief_handler.get_recent_receipts")
+    @patch("src.conversation.morning_brief_handler.run_daily_brief_routine")
+    def test_failed_background_support_read_is_not_a_meaningful_change(
+        self,
+        mock_routine,
+        mock_receipts,
+    ):
+        mock_receipts.return_value = []
+        mock_routine.return_value = _make_mock_run_and_receipt({"sections": []})
+        projection = DailyLoopProjection(
+            next=(),
+            changed=(DailyLoopItem("Background read failed: weather_snapshot", "receipts"),),
+            waiting_on=(),
+            open_loops=(),
+            completed_today=(),
+            unresolved_outcomes=(),
+            recommended_next=None,
+            context_today=(),
+            sources=(DailyLoopSource("weather", "not_loaded", "Weather is unavailable."),),
+        )
+
+        result = compose_governed_morning_brief(
+            session_state={},
+            daily_loop_projection=projection,
+        )
+
+        assert "No meaningful user-facing change is known" in result.text
+        assert "Background read failed" not in result.text
+        assert "Weather is unavailable" in result.text
+
 
 # -------------------------------------------------------------------
 # Weather converter

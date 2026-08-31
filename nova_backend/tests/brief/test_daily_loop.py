@@ -161,8 +161,8 @@ def test_daily_brief_support_reads_do_not_become_user_work_or_unresolved_outcome
         (
             (55, "weather_snapshot"),
             (56, "news_snapshot"),
-            (1, "system_status"),
-            (49, "calendar_snapshot"),
+            (32, "os_diagnostics"),
+            (57, "calendar_snapshot"),
         )
     ):
         request_id = f"REQ-BRIEF-{index}"
@@ -221,7 +221,11 @@ def test_failed_background_read_is_never_described_as_completed():
     )
 
     assert projection.completed_today == ()
-    assert [item.text for item in projection.changed] == ["Failed: weather_snapshot"]
+    assert projection.waiting_on == ()
+    assert projection.unresolved_outcomes == ()
+    assert [item.text for item in projection.changed] == [
+        "Background read failed: weather_snapshot"
+    ]
     assert not any("completed" in item.text.lower() for item in projection.changed)
 
 
