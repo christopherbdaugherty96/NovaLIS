@@ -1435,6 +1435,30 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if callable(set_current_ws_turn_id):
                 set_current_ws_turn_id(incoming_turn_id)
 
+            from src.conversation.personal_operations_followup import (
+                answer_personal_operations_followup,
+                is_personal_operations_followup,
+                take_personal_operations_surface,
+            )
+
+            prior_personal_operations_surface = take_personal_operations_surface(
+                session_state,
+                silent_widget_refresh=silent_widget_refresh,
+            )
+            if (
+                prior_personal_operations_surface is not None
+                and is_personal_operations_followup(raw_text)
+            ):
+                await _complete_immediate_turn(
+                    answer_personal_operations_followup(
+                        raw_text,
+                        prior_personal_operations_surface,
+                    ),
+                    remember_response=False,
+                    tone_domain="daily",
+                )
+                continue
+
             session_state["last_input_channel"] = channel
             _detected_mode = _detect_session_mode(session_state, raw_text)
             interpreted_confirmation_consumed = False
@@ -1841,6 +1865,21 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 daily_loop_projection=daily_loop_projection,
             )
             if gate.handled:
+                if (
+                    decision.personal_operations_intent is not None
+                    and daily_loop_projection is not None
+                ):
+                    from src.conversation.personal_operations_followup import (
+                        build_personal_operations_surface,
+                    )
+
+                    session_state["active_personal_operations_surface"] = (
+                        build_personal_operations_surface(
+                            decision.personal_operations_intent,
+                            daily_loop_projection,
+                            gate.message,
+                        )
+                    )
                 if gate.apply_override:
                     session_state["session_mode_override"] = gate.apply_override
                 if gate.clear_override:
