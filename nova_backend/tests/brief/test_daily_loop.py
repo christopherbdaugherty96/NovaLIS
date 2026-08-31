@@ -74,6 +74,38 @@ def test_accepted_unverified_receipt_is_unresolved_never_completed():
     assert "Completed: volume_control" not in {item.text for item in projection.changed}
 
 
+def test_successful_user_read_is_changed_but_not_finished_or_unresolved():
+    projection = compose_daily_loop_projection(
+        receipts=[
+            {
+                "event_type": "ACTION_ATTEMPTED",
+                "timestamp_utc": "2026-08-29T10:00:00Z",
+                "request_id": "REQ-READ",
+                "capability_id": 32,
+                "capability_name": "system_status",
+                "activity_origin": "user_action",
+            },
+            {
+                "event_type": "ACTION_COMPLETED",
+                "timestamp_utc": "2026-08-29T10:01:00Z",
+                "request_id": "REQ-READ",
+                "capability_id": 32,
+                "success": True,
+                "status": "completed",
+                "authority_class": "read_only_local",
+                "external_effect": False,
+                "activity_origin": "user_action",
+            },
+        ],
+        now=NOW,
+    )
+
+    assert projection.completed_today == ()
+    assert projection.unresolved_outcomes == ()
+    assert "Read completed: system_status" in {item.text for item in projection.changed}
+    assert not any("effect verified" in item.text.lower() for item in projection.changed)
+
+
 def test_completed_actions_correlate_attempt_receipts_and_remain_distinguishable():
     projection = compose_daily_loop_projection(
         receipts=[

@@ -94,6 +94,25 @@ def test_mixed_recap_uses_correlated_evidence_and_outcome_semantics():
     assert "did not infer actions from the conversation transcript" in recap
 
 
+def test_user_read_success_is_distinct_from_effect_verified_action():
+    recap = render_session_activity_recap(
+        session_id="session-current",
+        receipts=_pair(
+            "system-status",
+            capability_id=32,
+            capability_name="system_status",
+            success=True,
+            status="completed",
+            authority_class="read_only_local",
+            external_effect=False,
+        ),
+    )
+
+    assert "System status (Cap 32): read completed successfully" in recap
+    assert "no external effect is claimed" in recap
+    assert "effect verified" not in recap
+
+
 def test_empty_and_legacy_receipts_never_create_current_session_history():
     receipts = [
         _receipt("ACTION_COMPLETED", "", success=True, status="completed"),

@@ -474,6 +474,50 @@ def test_unrecognized_positive_outcome_remains_conservatively_unknown():
     assert outcome.effect_verified is False
 
 
+@pytest.mark.parametrize("authority_class", ["read_only_local", "read_only_network"])
+def test_successful_completed_read_has_its_own_non_effect_outcome(authority_class):
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": authority_class,
+            "external_effect": False,
+        }
+    )
+
+    assert outcome.state is OutcomeState.READ_SUCCEEDED
+    assert outcome.lifecycle_completed is True
+    assert outcome.request_accepted is True
+    assert outcome.effect_verified is False
+
+
+def test_successful_completed_write_without_effect_proof_remains_unknown():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "persistent_change",
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
+def test_explicit_unknown_read_outcome_is_not_upgraded_to_success():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "outcome_state": "unknown_unverified",
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
 @pytest.mark.parametrize(
     ("raw_state", "expected_state"),
     [
