@@ -385,6 +385,45 @@ def test_changed_prioritizes_older_user_read_over_newer_background_hydration():
     ]
 
 
+def test_background_budget_selects_two_distinct_visible_changes():
+    receipts = []
+    for hour, capability_id, capability_name in (
+        (12, 57, "calendar_snapshot"),
+        (13, 55, "weather_snapshot"),
+        (14, 55, "weather_snapshot"),
+    ):
+        receipts.extend(
+            [
+                {
+                    "event_type": "ACTION_ATTEMPTED",
+                    "timestamp_utc": f"2026-08-29T{hour:02d}:00:00Z",
+                    "request_id": f"REQ-BG-DISTINCT-{hour}",
+                    "capability_id": capability_id,
+                    "capability_name": capability_name,
+                    "activity_origin": "background_read",
+                },
+                {
+                    "event_type": "ACTION_COMPLETED",
+                    "timestamp_utc": f"2026-08-29T{hour:02d}:01:00Z",
+                    "request_id": f"REQ-BG-DISTINCT-{hour}",
+                    "capability_id": capability_id,
+                    "activity_origin": "background_read",
+                    "status": "completed",
+                    "success": True,
+                    "authority_class": "read_only_local",
+                    "external_effect": False,
+                },
+            ]
+        )
+
+    projection = compose_daily_loop_projection(receipts=receipts, now=NOW)
+
+    assert [item.text for item in projection.changed] == [
+        "Background read completed: weather_snapshot",
+        "Background read completed: calendar_snapshot",
+    ]
+
+
 def test_orphan_attempt_is_preserved_once_as_unknown_unverified():
     projection = compose_daily_loop_projection(
         receipts=[

@@ -73,7 +73,17 @@ def _rank_change_candidates(
         key=lambda candidate: candidate[0],
         reverse=True,
     )
-    return [*meaningful, *background[:_MAX_BACKGROUND_CHANGES]]
+    distinct_background: list[tuple[datetime, str, bool]] = []
+    seen_background: set[str] = set()
+    for candidate in background:
+        visible_text = _clean(candidate[1]).casefold()
+        if not visible_text or visible_text in seen_background:
+            continue
+        seen_background.add(visible_text)
+        distinct_background.append(candidate)
+        if len(distinct_background) == _MAX_BACKGROUND_CHANGES:
+            break
+    return [*meaningful, *distinct_background]
 
 
 def _memory_text(item: dict[str, Any]) -> str:
