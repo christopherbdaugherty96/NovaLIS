@@ -296,6 +296,7 @@ class OutcomeSemantics:
             metadata_value("effect_verified", "visible_effect_verified")
         )
         effect_verified = effect_verification is True
+        external_effect = _optional_bool(metadata_value("external_effect"))
         partial_failure = bool(metadata_value("partial_failure")) or (
             state is OutcomeState.PARTIAL_FAILURE
         )
@@ -332,9 +333,10 @@ class OutcomeSemantics:
             and authority_class in {"read_only_local", "read_only_network"}
             and status in {"completed", "completed_degraded"}
             and success is True
+            and external_effect is False
+            and request_accepted is not False
         ):
             state = OutcomeState.READ_SUCCEEDED
-            request_accepted = True
             effect_verified = False
         elif state is OutcomeState.EFFECT_VERIFIED:
             verification_is_contradicted = effect_verification is not True

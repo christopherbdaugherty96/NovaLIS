@@ -487,7 +487,37 @@ def test_successful_completed_read_has_its_own_non_effect_outcome(authority_clas
 
     assert outcome.state is OutcomeState.READ_SUCCEEDED
     assert outcome.lifecycle_completed is True
-    assert outcome.request_accepted is True
+    assert outcome.request_accepted is None
+    assert outcome.effect_verified is False
+
+
+def test_read_only_authority_with_external_effect_is_not_inferred_as_read_success():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_network",
+            "external_effect": True,
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
+def test_explicit_rejected_acceptance_is_not_overwritten_by_read_success_inference():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+            "request_accepted": False,
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.request_accepted is False
     assert outcome.effect_verified is False
 
 
