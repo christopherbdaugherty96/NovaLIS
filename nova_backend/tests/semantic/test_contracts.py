@@ -581,6 +581,19 @@ def test_explicit_read_success_with_rejected_acceptance_downgrades_to_rejected()
             "authority_class": "read_only_local",
             "external_effect": False,
         },
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "authority_class": "persistent_change",
+            "external_effect": False,
+        },
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "external_effect": False,
+        },
     ],
 )
 def test_explicit_read_success_with_other_contradictions_downgrades_to_unknown(metadata):

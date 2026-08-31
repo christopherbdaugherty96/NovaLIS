@@ -330,6 +330,7 @@ class OutcomeSemantics:
         elif state is OutcomeState.READ_SUCCEEDED and (
             status not in {"completed", "completed_degraded"}
             or success is not True
+            or authority_class not in {"read_only_local", "read_only_network"}
             or external_effect is not False
             or effect_verification is True
         ):
