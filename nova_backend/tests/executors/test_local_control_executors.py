@@ -228,6 +228,11 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     monkeypatch.setattr(mod.psutil, "net_if_stats", lambda: {"Ethernet": _Iface()})
     monkeypatch.setattr(
         mod.OSDiagnosticsExecutor,
+        "_model_status_details",
+        staticmethod(lambda: ("available", "Model available.", "", True)),
+    )
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
         "_memory_status_details",
         staticmethod(lambda: ("enabled", 3, "2026-03-13T12:00:00+00:00", "Persistent memory enabled with 3 item(s).")),
     )
@@ -254,6 +259,8 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert result.data.get("disk_percent") == 50.0
     assert result.data.get("network_status") == "available"
     assert result.data.get("health_state") == "healthy"
+    assert result.data.get("resource_health_state") == "healthy"
+    assert result.data.get("canonical_runtime_health", {}).get("state") == "Healthy"
     assert result.data.get("phase_display") == "7 complete / 8 active"
     assert result.data.get("governor_status") == "active"
     assert result.data.get("execution_boundary_status") == "enforced"
@@ -442,12 +449,18 @@ def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     monkeypatch.setattr(mod.psutil, "boot_time", lambda: mod.time.time() - 300.0)
     monkeypatch.setattr(mod.psutil, "pids", lambda: [1, 2])
     monkeypatch.setattr(mod.psutil, "net_if_stats", lambda: (_ for _ in ()).throw(RuntimeError("no stats")))
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
+        "_model_status_details",
+        staticmethod(lambda: ("available", "Model available.", "", True)),
+    )
 
     result = OSDiagnosticsExecutor().execute(ActionRequest(capability_id=32, params={}))
 
     assert result.success is True
     assert result.data.get("network_status") == "unknown"
-    assert result.data.get("health_state") == "critical"
+    assert result.data.get("health_state") == "degraded"
+    assert result.data.get("resource_health_state") == "critical"
 
 
 def test_os_diagnostics_executor_includes_tone_summary(monkeypatch):
@@ -576,3 +589,7 @@ def test_os_diagnostics_executor_reports_blocked_model_as_not_ready(monkeypatch)
     assert result.data.get("model_ready") is False
     assert "confirm model update" in result.data.get("model_remediation", "").lower()
     assert "locked pending explicit confirmation" in result.data.get("model_note", "").lower()
+    assert result.data.get("health_state") == "degraded"
+    assert result.data.get("resource_health_state") == "healthy"
+    assert result.data.get("canonical_runtime_health", {}).get("state") == "Degraded"
+    assert "system checks complete: degraded" in result.message.lower()

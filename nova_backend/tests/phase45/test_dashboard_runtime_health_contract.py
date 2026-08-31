@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 CHAT_NEWS_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard-chat-news.js"
@@ -12,13 +11,15 @@ CONTROL_CENTER_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard-cont
 def test_dashboard_defines_canonical_runtime_health_reducer():
     source = DASHBOARD_PATH.read_text(encoding="utf-8")
 
-    assert 'const RUNTIME_HEALTH_STATES = ["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering"];' in source
+    assert 'const RUNTIME_HEALTH_STATES = ["Healthy", "Connecting", "Degraded", "Unavailable", "Recovering", "Critical"];' in source
     assert "function resolveCanonicalRuntimeHealth(overrides = {})" in source
     assert "HTTP timeout" not in source  # copy belongs in docs, reducer uses concrete signals
     assert "runtimeHealthState.httpTimedOut || overrides.httpTimedOut" in source
     assert 'manualTurnTerminalState === "Timed Out"' in source
     assert 'return { tone: "degraded", label: "Unavailable" };' in source
     assert 'return { tone: "connected", label: "Healthy" };' in source
+    assert 'return { tone: "degraded", label: "Critical" };' in source
+    assert 'candidates.push(["Degraded", "Runtime component health has not refreshed yet."]);' in source
 
 
 def test_dashboard_health_probe_uses_existing_read_only_runtime_settings_endpoint():
@@ -29,6 +30,7 @@ def test_dashboard_health_probe_uses_existing_read_only_runtime_settings_endpoin
     assert "RUNTIME_HEALTH_PROBE_TIMEOUT_MS" in source
     assert "markRuntimeHealthProbeFailure" in source
     assert "markRuntimeHealthProbeSuccess" in source
+    assert "payload?.canonical_runtime_health" in source
 
 
 def test_chat_turn_timeout_is_terminal_and_checks_runtime_health():
@@ -44,8 +46,10 @@ def test_chat_turn_timeout_is_terminal_and_checks_runtime_health():
 
 def test_trust_surfaces_consume_canonical_runtime_health():
     source = CONTROL_CENTER_PATH.read_text(encoding="utf-8")
+    chat_source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
 
     assert "runtimeHealthState.state !== \"Healthy\"" in source
     assert "runtimeHealthState.whatNext" in source
     assert '["Health", runtimeHealthState.state]' in source
     assert '["Next", runtimeHealthState.whatNext]' in source
+    assert 'applyServerRuntimeHealth(msg.data.canonical_runtime_health || null, "trust_status")' in chat_source

@@ -37,6 +37,7 @@ def _runtime_settings_payload(deps, settings_snapshot: dict[str, Any] | None = N
     _sync_usage_budget(snapshot)
     return {
         "settings": snapshot,
+        "canonical_runtime_health": deps.OSDiagnosticsExecutor._runtime_health_projection(),
         "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),
         "connections": deps.OSDiagnosticsExecutor._connection_status_details(),
         "reasoning": deps.OSDiagnosticsExecutor._external_reasoning_status_details(),

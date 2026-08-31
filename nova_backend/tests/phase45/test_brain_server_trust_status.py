@@ -62,6 +62,17 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
         "_get_cached_trust_review_snapshot",
         lambda: dict(snapshot),
     )
+    monkeypatch.setattr(
+        brain_server.OSDiagnosticsExecutor,
+        "_runtime_health_projection",
+        staticmethod(
+            lambda **_kwargs: {
+                "state": "Healthy",
+                "reason": "Nova's local runtime is responding.",
+                "what_next": "Continue with your request.",
+            }
+        ),
+    )
 
     ws = _WebSocket()
     asyncio.run(
