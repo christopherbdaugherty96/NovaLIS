@@ -1224,7 +1224,10 @@ def _build_workspace_home_widget(
             recent_memory_items = []
 
     trust_snapshot = _build_trust_review_snapshot()
-    recent_activity = [dict(item or {}) for item in list(trust_snapshot.get("recent_runtime_activity") or [])[:4]]
+    recent_activity = _project_home_recent_activity(
+        _home_recent_activity_source(trust_snapshot),
+        limit=4,
+    )
 
     analysis_documents = list(session_state.get("analysis_documents") or [])
     analysis_documents = sorted(
@@ -1359,6 +1362,114 @@ def _build_workspace_home_widget(
         "recommended_actions": recommended_actions[:5],
         "blocked_conditions": [dict(item or {}) for item in list(trust_snapshot.get("blocked_conditions") or [])[:3]],
     }
+
+
+_HOME_ACTIVITY_PUBLIC_LABELS = {
+    "os_diagnostics": "System status",
+}
+_HOME_ACTIVITY_SCAN_LINE_LIMIT = 8000
+_HOME_ACTIVITY_CANDIDATE_LIMIT = 1024
+
+
+def _home_recent_activity_source(trust_snapshot: dict[str, object]) -> list[dict[str, object]]:
+    """Give Home enough bounded history to rank persisted user activity after hydration."""
+    fallback = [
+        dict(item)
+        for item in list(trust_snapshot.get("recent_runtime_activity") or [])
+        if isinstance(item, dict)
+    ]
+    try:
+        enabled_entries = OSDiagnosticsExecutor._enabled_capability_entries()
+        activity, _summary = OSDiagnosticsExecutor._recent_runtime_activity(
+            enabled_entries,
+            limit=_HOME_ACTIVITY_CANDIDATE_LIMIT,
+            scan_line_limit=_HOME_ACTIVITY_SCAN_LINE_LIMIT,
+        )
+    except Exception:
+        return fallback
+    return [dict(item) for item in activity if isinstance(item, dict)] or fallback
+
+
+def _project_home_recent_activity(
+    raw_items: object,
+    *,
+    limit: int = 4,
+) -> list[dict[str, object]]:
+    """Rank and label the bounded Home view without rewriting ledger evidence."""
+    if not isinstance(raw_items, list):
+        return []
+
+    meaningful: list[dict[str, object]] = []
+    other_visible: list[dict[str, object]] = []
+    background: list[dict[str, object]] = []
+
+    for raw_item in raw_items:
+        if not isinstance(raw_item, dict):
+            continue
+        item = dict(raw_item)
+        title = str(item.get("title") or "").strip()
+        detail = str(item.get("detail") or "").strip()
+        capability_name = str(item.get("capability_name") or "").strip().lower()
+        normalized_name = capability_name.replace(" ", "_")
+        public_label = _HOME_ACTIVITY_PUBLIC_LABELS.get(normalized_name, "")
+        if public_label:
+            semantic_label = title
+            title = public_label
+            if semantic_label and semantic_label.casefold() != title.casefold():
+                detail = semantic_label
+                if semantic_label.casefold() not in {"read completed", "action completed"}:
+                    title = f"{public_label} — {semantic_label}"
+        elif title and detail.casefold() == title.casefold():
+            detail = ""
+
+        if not title:
+            continue
+        item["title"] = title
+        item["detail"] = detail
+
+        origin = str(item.get("activity_origin") or "").strip().lower()
+        event_type = str(item.get("event_type") or "").strip().upper()
+        kind = str(item.get("kind") or "").strip().lower()
+        if origin == "background_read" or event_type in {
+            "EXTERNAL_NETWORK_CALL",
+            "MODEL_NETWORK_CALL",
+        }:
+            background.append(item)
+        elif origin == "user_action" and kind in {"action", "read"}:
+            meaningful.append(item)
+        else:
+            other_visible.append(item)
+
+    seen_visible: set[tuple[str, str]] = set()
+
+    def _distinct(items: list[dict[str, object]]) -> list[dict[str, object]]:
+        distinct: list[dict[str, object]] = []
+        for item in items:
+            visible_key = (
+                str(item.get("title") or "").casefold(),
+                str(item.get("detail") or "").casefold(),
+            )
+            if visible_key in seen_visible:
+                continue
+            seen_visible.add(visible_key)
+            distinct.append(item)
+        return distinct
+
+    meaningful = _distinct(meaningful)
+    other_visible = _distinct(other_visible)
+    background = _distinct(background)
+
+    bounded_limit = max(1, int(limit))
+    foreground = meaningful + other_visible
+    if not background:
+        return foreground[:bounded_limit]
+    if not foreground:
+        return background[: min(2, bounded_limit)]
+
+    selected = foreground[:bounded_limit]
+    background_limit = min(2, bounded_limit - len(selected))
+    selected.extend(background[:background_limit])
+    return selected
 
 
 def _render_workspace_home_message(widget: dict[str, object]) -> str:
@@ -3273,7 +3384,8 @@ async def send_workspace_home_widget(
     session_state: dict,
     project_threads: ProjectThreadStore,
 ) -> dict[str, object]:
-    payload = _build_workspace_home_widget(
+    payload = await asyncio.to_thread(
+        _build_workspace_home_widget,
         session_state=session_state,
         project_threads=project_threads,
     )
