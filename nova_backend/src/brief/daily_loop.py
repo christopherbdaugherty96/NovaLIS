@@ -297,16 +297,26 @@ def compose_daily_loop_projection(
         if timestamp is None or timestamp.astimezone().date() != local_now.date():
             continue
         receipt_state = str(item.get("classification") or "")
+        if str(item.get("activity_origin") or "").strip().lower() == "background_read":
+            background_labels = {
+                "background_read": "completed",
+                "effect_verified": "completed",
+                "accepted_unverified": "outcome unverified",
+                "unknown_unverified": "outcome unknown",
+                "failed": "failed",
+                "rejected_or_unsupported": "rejected",
+            }
+            background_state = background_labels.get(receipt_state, "status unknown")
+            change_candidates.append(
+                (
+                    timestamp,
+                    f"Background read {background_state}: {detail}",
+                )
+            )
+            continue
         if receipt_state == "effect_verified":
             _append(completed, detail, "receipts")
             change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Completed: {detail}"))
-        elif receipt_state == "background_read":
-            change_candidates.append(
-                (
-                    timestamp or datetime.min.replace(tzinfo=timezone.utc),
-                    f"Background read completed: {detail}",
-                )
-            )
         elif receipt_state == "accepted_unverified":
             _append(unresolved, f"Accepted; outcome unverified: {detail}", "receipts")
             change_candidates.append(
