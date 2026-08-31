@@ -271,6 +271,8 @@ def _classify_correlated_receipts(
     reason = str(semantics.reason or "").strip()
     if semantics.state is OutcomeState.EFFECT_VERIFIED:
         return "effect_verified", reason
+    if semantics.state is OutcomeState.READ_SUCCEEDED:
+        return "read_succeeded", reason
     if semantics.state is OutcomeState.ACCEPTED_UNVERIFIED:
         return "accepted_unverified", reason
     if semantics.state in {OutcomeState.FAILED, OutcomeState.PARTIAL_FAILURE}:
@@ -326,6 +328,7 @@ def _render_item(item: Mapping[str, Any]) -> str:
     messages = {
         "background_read": "background read completed; no external change is claimed",
         "effect_verified": "effect verified by recorded outcome evidence",
+        "read_succeeded": "read completed successfully; no external effect is claimed",
         "accepted_unverified": "request accepted; visible effect was not verified",
         "failed": "failed",
         "unknown_unverified": "outcome unknown or unverified",

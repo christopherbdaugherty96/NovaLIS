@@ -326,6 +326,7 @@ def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_act
             "capability_id": 16,
             "request_id": "req-search-456",
             "success": True,
+            "status": "completed",
             "authority_class": "read_only_network",
             "requires_confirmation": False,
             "external_effect": False,
@@ -336,7 +337,8 @@ def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_act
     )
 
     assert item is not None
-    assert item["title"] == "Action completed"
+    assert item["title"] == "Read completed"
+    assert item["kind"] == "read"
     assert item["detail"] == "governed web search"
     assert item["outcome"] == "success"
     assert item["reason"] == "Allowed as an explicit read-only network action."
