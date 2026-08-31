@@ -324,6 +324,67 @@ def test_changed_merges_all_receipt_types_by_timestamp_before_limit():
     ]
 
 
+def test_changed_prioritizes_older_user_read_over_newer_background_hydration():
+    receipts = [
+        {
+            "event_type": "ACTION_ATTEMPTED",
+            "timestamp_utc": "2026-08-29T09:59:00Z",
+            "request_id": "REQ-USER-STATUS",
+            "capability_id": 32,
+            "capability_name": "os_diagnostics",
+            "activity_origin": "user_action",
+        },
+        {
+            "event_type": "ACTION_COMPLETED",
+            "timestamp_utc": "2026-08-29T10:00:00Z",
+            "request_id": "REQ-USER-STATUS",
+            "capability_id": 32,
+            "activity_origin": "user_action",
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+        },
+    ]
+    for hour, capability_id, capability_name in (
+        (11, 55, "weather_snapshot"),
+        (12, 56, "news_snapshot"),
+        (13, 57, "calendar_snapshot"),
+        (14, 32, "os_diagnostics"),
+    ):
+        receipts.extend(
+            [
+                {
+                    "event_type": "ACTION_ATTEMPTED",
+                    "timestamp_utc": f"2026-08-29T{hour:02d}:00:00Z",
+                    "request_id": f"REQ-BG-{hour}",
+                    "capability_id": capability_id,
+                    "capability_name": capability_name,
+                    "activity_origin": "background_read",
+                },
+                {
+                    "event_type": "ACTION_COMPLETED",
+                    "timestamp_utc": f"2026-08-29T{hour:02d}:01:00Z",
+                    "request_id": f"REQ-BG-{hour}",
+                    "capability_id": capability_id,
+                    "activity_origin": "background_read",
+                    "status": "completed",
+                    "success": True,
+                    "authority_class": "read_only_local",
+                    "external_effect": False,
+                },
+            ]
+        )
+
+    projection = compose_daily_loop_projection(receipts=receipts, now=NOW)
+
+    assert [item.text for item in projection.changed] == [
+        "Read completed: os_diagnostics",
+        "Background read completed: os_diagnostics",
+        "Background read completed: calendar_snapshot",
+    ]
+
+
 def test_orphan_attempt_is_preserved_once_as_unknown_unverified():
     projection = compose_daily_loop_projection(
         receipts=[

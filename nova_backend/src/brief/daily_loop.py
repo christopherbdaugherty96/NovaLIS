@@ -10,6 +10,7 @@ from src.conversation.personal_operations_intent import PersonalOperationsIntent
 from src.trust.session_activity import correlate_action_receipts
 
 _MAX_ITEMS = 5
+_MAX_BACKGROUND_CHANGES = 2
 _WAITING_TAGS = {"waiting", "waiting_on", "blocked", "blocker", "dependency"}
 _OPEN_TAGS = {"open", "open_loop", "pending", "todo", "task", "next", "next_action"}
 
@@ -56,6 +57,23 @@ def _append(items: list[DailyLoopItem], text: Any, source: str) -> None:
         return
     if len(items) < _MAX_ITEMS:
         items.append(DailyLoopItem(clean, source))
+
+
+def _rank_change_candidates(
+    candidates: list[tuple[datetime, str, bool]],
+) -> list[tuple[datetime, str, bool]]:
+    """Rank presentation only; preserve chronology within each activity class."""
+    meaningful = sorted(
+        (candidate for candidate in candidates if not candidate[2]),
+        key=lambda candidate: candidate[0],
+        reverse=True,
+    )
+    background = sorted(
+        (candidate for candidate in candidates if candidate[2]),
+        key=lambda candidate: candidate[0],
+        reverse=True,
+    )
+    return [*meaningful, *background[:_MAX_BACKGROUND_CHANGES]]
 
 
 def _memory_text(item: dict[str, Any]) -> str:
@@ -229,7 +247,7 @@ def compose_daily_loop_projection(
     open_loops: list[DailyLoopItem] = []
     completed: list[DailyLoopItem] = []
     unresolved: list[DailyLoopItem] = []
-    change_candidates: list[tuple[datetime, str]] = []
+    change_candidates: list[tuple[datetime, str, bool]] = []
     context: list[DailyLoopItem] = []
     sources: list[DailyLoopSource] = []
 
@@ -312,17 +330,19 @@ def compose_daily_loop_projection(
                 (
                     timestamp,
                     f"Background read {background_state}: {detail}",
+                    True,
                 )
             )
             continue
         if receipt_state == "effect_verified":
             _append(completed, detail, "receipts")
-            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Completed: {detail}"))
+            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Completed: {detail}", False))
         elif receipt_state == "read_succeeded":
             change_candidates.append(
                 (
                     timestamp or datetime.min.replace(tzinfo=timezone.utc),
                     f"Read completed: {detail}",
+                    False,
                 )
             )
         elif receipt_state == "accepted_unverified":
@@ -331,6 +351,7 @@ def compose_daily_loop_projection(
                 (
                     timestamp or datetime.min.replace(tzinfo=timezone.utc),
                     f"Accepted; outcome unverified: {detail}",
+                    False,
                 )
             )
         elif receipt_state == "unknown_unverified":
@@ -339,12 +360,13 @@ def compose_daily_loop_projection(
                 (
                     timestamp or datetime.min.replace(tzinfo=timezone.utc),
                     f"Outcome unknown; not verified: {detail}",
+                    False,
                 )
             )
         elif receipt_state == "failed":
-            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Failed: {detail}"))
+            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Failed: {detail}", False))
         elif receipt_state == "rejected_or_unsupported":
-            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Rejected: {detail}"))
+            change_candidates.append((timestamp or datetime.min.replace(tzinfo=timezone.utc), f"Rejected: {detail}", False))
 
     for receipt in receipt_rows:
         event_type = str(receipt.get("event_type") or "").strip()
@@ -357,9 +379,10 @@ def compose_daily_loop_projection(
             (
                 timestamp or datetime.min.replace(tzinfo=timezone.utc),
                 _non_action_receipt_detail(receipt),
+                False,
             )
         )
-    for _, detail in sorted(change_candidates, key=lambda candidate: candidate[0], reverse=True):
+    for _, detail, _ in _rank_change_candidates(change_candidates):
         _append(changed, detail, "receipts")
     sources.append(
         DailyLoopSource(
