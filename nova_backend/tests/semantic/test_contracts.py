@@ -474,6 +474,178 @@ def test_unrecognized_positive_outcome_remains_conservatively_unknown():
     assert outcome.effect_verified is False
 
 
+@pytest.mark.parametrize("authority_class", ["read_only_local", "read_only_network"])
+def test_successful_completed_read_has_its_own_non_effect_outcome(authority_class):
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": authority_class,
+            "external_effect": False,
+        }
+    )
+
+    assert outcome.state is OutcomeState.READ_SUCCEEDED
+    assert outcome.lifecycle_completed is True
+    assert outcome.request_accepted is None
+    assert outcome.effect_verified is False
+
+
+def test_read_only_authority_with_external_effect_is_not_inferred_as_read_success():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_network",
+            "external_effect": True,
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
+def test_explicit_rejected_acceptance_is_not_overwritten_by_read_success_inference():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+            "request_accepted": False,
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.request_accepted is False
+    assert outcome.effect_verified is False
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {
+            "outcome_state": "read_succeeded",
+            "status": "failed",
+            "success": False,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+        },
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": False,
+            "authority_class": "read_only_network",
+            "external_effect": False,
+        },
+    ],
+)
+def test_explicit_read_success_with_failed_lifecycle_downgrades_to_failed(metadata):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.FAILED
+    assert outcome.effect_verified is False
+
+
+def test_explicit_read_success_with_rejected_acceptance_downgrades_to_rejected():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+            "request_accepted": False,
+        }
+    )
+
+    assert outcome.state is OutcomeState.REJECTED
+    assert outcome.request_accepted is False
+    assert outcome.effect_verified is False
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_network",
+            "external_effect": True,
+        },
+        {
+            "outcome_state": "read_succeeded",
+            "status": "pending",
+            "success": True,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+        },
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "authority_class": "persistent_change",
+            "external_effect": False,
+        },
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "external_effect": False,
+        },
+    ],
+)
+def test_explicit_read_success_with_other_contradictions_downgrades_to_unknown(metadata):
+    outcome = OutcomeSemantics.from_action_metadata(metadata)
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
+def test_valid_explicit_read_success_remains_read_success():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "outcome_state": "read_succeeded",
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "external_effect": False,
+        }
+    )
+
+    assert outcome.state is OutcomeState.READ_SUCCEEDED
+    assert outcome.lifecycle_completed is True
+    assert outcome.effect_verified is False
+
+
+def test_successful_completed_write_without_effect_proof_remains_unknown():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "persistent_change",
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
+def test_explicit_unknown_read_outcome_is_not_upgraded_to_success():
+    outcome = OutcomeSemantics.from_action_metadata(
+        {
+            "status": "completed",
+            "success": True,
+            "authority_class": "read_only_local",
+            "outcome_state": "unknown_unverified",
+        }
+    )
+
+    assert outcome.state is OutcomeState.UNKNOWN_UNVERIFIED
+    assert outcome.effect_verified is False
+
+
 @pytest.mark.parametrize(
     ("raw_state", "expected_state"),
     [

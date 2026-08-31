@@ -214,6 +214,7 @@ class OutcomeState(str, Enum):
     ACCEPTED_UNVERIFIED = "accepted_unverified"
     EFFECT_VERIFIED = "effect_verified"
     PARTIAL_FAILURE = "partial_failure"
+    READ_SUCCEEDED = "read_succeeded"
 
 
 _OUTCOME_ALIASES = {
@@ -255,6 +256,11 @@ class OutcomeSemantics:
         elif self.state in {OutcomeState.FAILED, OutcomeState.UNKNOWN_UNVERIFIED}:
             if self.effect_verified:
                 raise ValueError(f"{self.state.value} cannot claim a verified effect.")
+        elif self.state is OutcomeState.READ_SUCCEEDED:
+            if self.effect_verified:
+                raise ValueError("read_succeeded cannot claim a verified external effect.")
+            if not self.lifecycle_completed:
+                raise ValueError("read_succeeded requires a completed lifecycle.")
         if self.state is OutcomeState.PARTIAL_FAILURE and not self.partial_failure:
             raise ValueError("partial_failure outcome requires partial_failure=True.")
         object.__setattr__(self, "reason", str(self.reason or "").strip())
@@ -290,10 +296,12 @@ class OutcomeSemantics:
             metadata_value("effect_verified", "visible_effect_verified")
         )
         effect_verified = effect_verification is True
+        external_effect = _optional_bool(metadata_value("external_effect"))
         partial_failure = bool(metadata_value("partial_failure")) or (
             state is OutcomeState.PARTIAL_FAILURE
         )
         status = str(metadata_value("status") or "").strip().lower()
+        authority_class = str(metadata_value("authority_class") or "").strip().lower()
         reason = str(
             metadata_value("outcome_reason", "failure_reason")
             or ""
@@ -310,6 +318,24 @@ class OutcomeSemantics:
             state = OutcomeState.REJECTED
             request_accepted = False
             effect_verified = False
+        elif state is OutcomeState.READ_SUCCEEDED and request_accepted is False:
+            state = OutcomeState.REJECTED
+            request_accepted = False
+            effect_verified = False
+        elif state is OutcomeState.READ_SUCCEEDED and (
+            status == "failed" or success is False
+        ):
+            state = OutcomeState.FAILED
+            effect_verified = False
+        elif state is OutcomeState.READ_SUCCEEDED and (
+            status not in {"completed", "completed_degraded"}
+            or success is not True
+            or authority_class not in {"read_only_local", "read_only_network"}
+            or external_effect is not False
+            or effect_verification is True
+        ):
+            state = OutcomeState.UNKNOWN_UNVERIFIED
+            effect_verified = False
         elif positive_state and request_accepted is False:
             state = OutcomeState.REJECTED
             request_accepted = False
@@ -319,6 +345,16 @@ class OutcomeSemantics:
             effect_verified = False
         elif not state_is_recognized and (status == "failed" or success is False):
             state = OutcomeState.FAILED
+            effect_verified = False
+        elif (
+            not raw_state
+            and authority_class in {"read_only_local", "read_only_network"}
+            and status in {"completed", "completed_degraded"}
+            and success is True
+            and external_effect is False
+            and request_accepted is not False
+        ):
+            state = OutcomeState.READ_SUCCEEDED
             effect_verified = False
         elif state is OutcomeState.EFFECT_VERIFIED:
             verification_is_contradicted = effect_verification is not True
@@ -335,7 +371,11 @@ class OutcomeSemantics:
         elif state is OutcomeState.REJECTED:
             request_accepted = False
             effect_verified = False
-        elif state in {OutcomeState.FAILED, OutcomeState.UNKNOWN_UNVERIFIED}:
+        elif state in {
+            OutcomeState.FAILED,
+            OutcomeState.UNKNOWN_UNVERIFIED,
+            OutcomeState.READ_SUCCEEDED,
+        }:
             effect_verified = False
 
         lifecycle_completed = status in {"completed", "completed_degraded"}
