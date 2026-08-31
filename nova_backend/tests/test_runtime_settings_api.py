@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
-
 from src import brain_server
 from src.executors.external_reasoning_executor import ExternalReasoningExecutor
 from src.settings.runtime_settings_store import RuntimeSettingsStore
@@ -63,6 +62,9 @@ def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     assert payload["settings"]["provider_policy"]["routing_mode"] == "local_first"
     assert payload["settings"]["usage_budget"]["daily_metered_token_budget"] == 4000
     assert payload["settings"]["assistive_policy"]["assistive_notice_mode"] == "suggestive"
+    assert payload["canonical_runtime_health"]["state"] in {"Healthy", "Degraded"}
+    assert payload["canonical_runtime_health"]["process_state"] == "running"
+    assert payload["canonical_runtime_health"]["core_state"] == "available"
 
 
 def test_runtime_settings_api_rejects_non_local_host(monkeypatch, tmp_path):

@@ -15,6 +15,7 @@ from src.actions.action_result import ActionResult
 from src.build_phase import BUILD_PHASE
 from src.identity.capability_truth import project_capability_truth
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
+from src.runtime_health import resolve_runtime_health
 from src.semantic.contracts import OutcomeSemantics, OutcomeState
 from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
@@ -27,6 +28,32 @@ _LEDGER_TAIL_SCAN_LINES = 1000
 
 
 class OSDiagnosticsExecutor:
+    @staticmethod
+    def _runtime_health_projection(
+        *,
+        resource_state: str | None = None,
+        trust_failure_state: str = "Normal",
+    ) -> dict[str, str]:
+        if resource_state is None:
+            try:
+                disk = shutil.disk_usage(OSDiagnosticsExecutor._disk_root())
+                disk_percent = (disk.used / disk.total) * 100.0 if disk.total else 0.0
+                resource_state = OSDiagnosticsExecutor._health_state(
+                    float(psutil.cpu_percent(interval=0.0)),
+                    float(psutil.virtual_memory().percent),
+                    float(disk_percent),
+                )
+            except Exception:
+                resource_state = "unknown"
+        model_state, _, _, _ = OSDiagnosticsExecutor._model_status_details()
+        return resolve_runtime_health(
+            process_state="running",
+            core_state="available",
+            model_inference_state=model_state,
+            resource_state=resource_state,
+            trust_failure_state=trust_failure_state,
+        ).to_dict()
+
     @staticmethod
     def _read_ledger_tail_lines(path: Path, line_limit: int = _LEDGER_TAIL_SCAN_LINES) -> list[str]:
         """Read a bounded ledger tail without loading the full append-only file."""
@@ -1481,7 +1508,7 @@ class OSDiagnosticsExecutor:
         swap_total_gb = round(swap.total / (1024 ** 3), 2)
         swap_used_gb = round(swap.used / (1024 ** 3), 2)
         swap_percent = round(float(swap.percent), 1)
-        health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
+        resource_health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
         capability_truth_entries = self._capability_truth_entries()
         enabled_capability_ids = [
             int(item.get("id"))
@@ -1497,6 +1524,13 @@ class OSDiagnosticsExecutor:
             capability_truth_entries
         )
         model_availability, model_note, model_remediation, model_ready = self._model_status_details()
+        canonical_runtime_health = resolve_runtime_health(
+            process_state="running",
+            core_state="available",
+            model_inference_state=model_availability,
+            resource_state=resource_health_state,
+        ).to_dict()
+        health_state = str(canonical_runtime_health["state"]).lower()
         tone_global_profile, tone_summary, tone_updated_at, tone_override_count = self._tone_status_details()
         memory_status, memory_total_count, memory_last_write, memory_summary = self._memory_status_details()
         (
@@ -1625,6 +1659,8 @@ class OSDiagnosticsExecutor:
             "system_reasons": system_reasons,
             "operator_health_summary": operator_health_summary,
             "health_state": health_state,
+            "resource_health_state": resource_health_state,
+            "canonical_runtime_health": canonical_runtime_health,
         }
         message = (
             f"System checks complete: {health_state}. "
