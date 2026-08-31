@@ -90,7 +90,6 @@ from src.trust.session_activity import (
     normalize_activity_origin,
 )
 from src.trust.trust_contract import normalize_trust_status
-from src.runtime_health import resolve_runtime_health
 from src.patterns.pattern_review_store import PatternReviewStore
 from src.policies.atomic_policy_store import AtomicPolicyStore
 from src.working_context.context_store import WorkingContextStore
@@ -3496,9 +3495,9 @@ async def send_widget_message(
 
 async def send_trust_status(ws: WebSocket, trust_status: dict) -> None:
     payload = normalize_trust_status(trust_status)
-    payload["canonical_runtime_health"] = resolve_runtime_health(
+    payload["canonical_runtime_health"] = OSDiagnosticsExecutor._runtime_health_projection(
         trust_failure_state=str(payload.get("failure_state") or "Normal")
-    ).to_dict()
+    )
     cached_snapshot = _get_cached_trust_review_snapshot()
     if cached_snapshot:
         payload.update(cached_snapshot)

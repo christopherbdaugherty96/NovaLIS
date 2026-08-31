@@ -2913,6 +2913,7 @@ function connectWebSocket() {
           if (Number.isFinite(Number(msg.data.consecutive_failures))) {
             trustState.consecutiveFailures = Math.max(0, Number(msg.data.consecutive_failures));
           }
+          applyServerRuntimeHealth(msg.data.canonical_runtime_health || null, "trust_status");
           renderHomeLaunchWidget();
           renderTrustPanel(msg.data || {});
           renderTrustCenterPage();

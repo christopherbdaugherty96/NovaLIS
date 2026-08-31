@@ -17,6 +17,8 @@ def test_system_status_includes_model_and_capability_fields():
 
     data = result.data
     assert "health_state" in data
+    assert "resource_health_state" in data
+    assert "canonical_runtime_health" in data
     assert "network_status" in data
     assert "cpu_percent" in data
     assert "memory_percent" in data
