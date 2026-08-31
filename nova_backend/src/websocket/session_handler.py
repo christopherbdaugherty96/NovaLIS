@@ -888,10 +888,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         _caller_session_id: str,
         *,
         extra_params: dict[str, Any] | None = None,
+        activity_origin: str | None = None,
     ) -> tuple[Any, Any]:
         """Attach the same trusted origin to mediator-generated actions."""
+        call_activity_origin = activity_origin or current_activity_origin
         trusted_extra_params = dict(extra_params or {})
-        trusted_extra_params[TRUSTED_ACTIVITY_ORIGIN_PARAM] = current_activity_origin
+        trusted_extra_params[TRUSTED_ACTIVITY_ORIGIN_PARAM] = call_activity_origin
         trusted_extra_params[TRUSTED_SESSION_ID_PARAM] = trusted_session_id
         capability_id, result = await _invoke_governed_text_command(
             governor_instance,
@@ -901,7 +903,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         )
         if (
             capability_id is not None
-            and current_activity_origin == ActivityOrigin.USER_ACTION.value
+            and call_activity_origin == ActivityOrigin.USER_ACTION.value
             and result is not None
             and not bool(getattr(result, "success", False))
             and not str(getattr(result, "request_id", "") or "").strip()
@@ -4430,6 +4432,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     governor,
                     "weather",
                     session_id,
+                    activity_origin=ActivityOrigin.BACKGROUND_READ.value,
                 )
                 if weather_result is not None and weather_result.success:
                     weather_summary = weather_result.message
@@ -4448,6 +4451,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     governor,
                     "news",
                     session_id,
+                    activity_origin=ActivityOrigin.BACKGROUND_READ.value,
                 )
                 if news_result is not None and news_result.success and isinstance(news_result.data, dict):
                     news_widget = news_result.data.get("widget")
@@ -4468,6 +4472,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     governor,
                     "system status",
                     session_id,
+                    activity_origin=ActivityOrigin.BACKGROUND_READ.value,
                 )
                 if system_result is not None and system_result.success:
                     system_line = system_result.message
@@ -4496,6 +4501,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     governor,
                     "calendar",
                     session_id,
+                    activity_origin=ActivityOrigin.BACKGROUND_READ.value,
                 )
                 if calendar_result is not None and calendar_result.success and isinstance(calendar_result.data, dict):
                     calendar_widget = calendar_result.data.get("widget")

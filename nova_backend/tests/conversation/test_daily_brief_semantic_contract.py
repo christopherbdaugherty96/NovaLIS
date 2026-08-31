@@ -119,6 +119,13 @@ class TestSessionHandlerUsesSharedPredicate:
             "morning_brief_handler.DAILY_BRIEF_TRIGGERS only"
         )
 
+    def test_daily_brief_support_reads_are_background_evidence(self):
+        branch = SESSION_HANDLER_SRC.split("if governed_daily_brief_request:", 1)[1]
+        branch = branch.split("continue", 1)[0]
+        assert branch.count(
+            "activity_origin=ActivityOrigin.BACKGROUND_READ.value"
+        ) == 4
+
 
 class TestMirrorParity:
     @pytest.mark.parametrize("name", [
