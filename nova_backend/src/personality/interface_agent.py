@@ -58,6 +58,18 @@ class PersonalityInterfaceAgent:
         (re.compile(r"\btrust me\b", re.IGNORECASE), "Based on available information"),
     )
 
+    _PERSONAL_OPERATIONS_HEADINGS = frozenset(
+        {
+            "what matters today:",
+            "what you have next:",
+            "what changed:",
+            "what you are waiting on:",
+            "what you needed to finish:",
+            "what you should do next:",
+            "what you finished today:",
+        }
+    )
+
     _EMOTIONAL_REPLACEMENTS = (
         (re.compile(r"\bi[' ]?m here for you\b", re.IGNORECASE), "I can help with the task details"),
         (re.compile(r"\bdon[' ]?t worry\b", re.IGNORECASE), "Let's focus on the next step"),
@@ -104,7 +116,7 @@ class PersonalityInterfaceAgent:
         """Apply phrasing changes to prose without rewriting structural headings."""
         rendered_lines: list[str] = []
         for line in text.split("\n"):
-            if line.strip().endswith(":"):
+            if line.strip().casefold() in self._PERSONAL_OPERATIONS_HEADINGS:
                 rendered_lines.append(line)
                 continue
             for pattern, replacement in self._AUTHORITY_REPLACEMENTS:

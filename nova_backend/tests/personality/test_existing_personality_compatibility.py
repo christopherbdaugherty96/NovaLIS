@@ -48,6 +48,14 @@ def test_personal_operations_structural_headings_remain_unchanged():
     assert agent.present("\n".join(headings)).splitlines() == list(headings)
 
 
+def test_authority_replacement_still_applies_to_colon_ended_body_prose():
+    agent = PersonalityInterfaceAgent()
+
+    out = agent.present("You should review these items:\n- A\n- B")
+
+    assert out.startswith("A useful next step is to review these items:\n")
+
+
 def test_existing_emotional_dampening_unchanged():
     agent = PersonalityInterfaceAgent()
     out = agent.present("Don't worry, I'm here for you!")
