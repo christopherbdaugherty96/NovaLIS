@@ -82,6 +82,41 @@ def test_recent_runtime_activity_uses_bounded_tail_reader(tmp_path, monkeypatch)
     assert "latest 1" in summary
 
 
+def test_recent_runtime_activity_accepts_a_deeper_bounded_scan_for_home(tmp_path, monkeypatch):
+    from src.ledger import writer as ledger_writer
+
+    ledger_path = tmp_path / "ledger.jsonl"
+    ledger_path.write_text("placeholder\n", encoding="utf-8")
+    monkeypatch.setattr(ledger_writer, "LEDGER_PATH", str(ledger_path))
+    requested_limits: list[int] = []
+
+    def _fake_tail(path, line_limit):
+        assert path == ledger_path
+        requested_limits.append(line_limit)
+        return [
+            (
+                0,
+                '{"timestamp_utc":"2099-01-01T12:01:00+00:00",'
+                '"event_type":"MODEL_NETWORK_CALL"}',
+            )
+        ]
+
+    monkeypatch.setattr(
+        OSDiagnosticsExecutor,
+        "_read_ledger_tail_records",
+        staticmethod(_fake_tail),
+    )
+
+    items, _summary = OSDiagnosticsExecutor._recent_runtime_activity(
+        [],
+        limit=1,
+        scan_line_limit=5000,
+    )
+
+    assert requested_limits == [5000]
+    assert len(items) == 1
+
+
 def test_recent_runtime_activity_preserves_byte_offset_ledger_ref(tmp_path, monkeypatch):
     from src.ledger import writer as ledger_writer
 

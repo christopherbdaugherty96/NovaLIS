@@ -353,6 +353,7 @@ class OSDiagnosticsExecutor:
         enabled_entries: list[dict[str, object]],
         *,
         limit: int = 6,
+        scan_line_limit: int | None = None,
     ) -> tuple[list[dict[str, str]], str]:
         try:
             from src.ledger.writer import LEDGER_PATH
@@ -366,7 +367,11 @@ class OSDiagnosticsExecutor:
                 for item in enabled_entries
                 if item.get("id") is not None
             }
-            raw_records = OSDiagnosticsExecutor._read_ledger_tail_records(path)
+            raw_records = (
+                OSDiagnosticsExecutor._read_ledger_tail_records(path, scan_line_limit)
+                if scan_line_limit is not None
+                else OSDiagnosticsExecutor._read_ledger_tail_records(path)
+            )
             items: list[dict[str, str]] = []
 
             for byte_offset, raw_line in reversed(raw_records):
@@ -420,6 +425,7 @@ class OSDiagnosticsExecutor:
         outcome_state = str(entry.get("outcome_state") or "").strip().lower()
         outcome_semantics = OutcomeSemantics.from_action_metadata(entry)
         authority_class = str(entry.get("authority_class") or "").strip()
+        activity_origin = str(entry.get("activity_origin") or "").strip().lower()
         reversible = entry.get("reversible")
         external_effect = entry.get("external_effect")
 
@@ -510,6 +516,7 @@ class OSDiagnosticsExecutor:
             "capability_id": str(capability_id) if capability_id is not None else "",
             "capability_name": capability_name,
             "authority_class": authority_class,
+            "activity_origin": activity_origin,
             "reversible": "" if not isinstance(reversible, bool) else ("yes" if reversible else "no"),
             "external_effect": "" if not isinstance(external_effect, bool) else ("yes" if external_effect else "no"),
             "reasoning_provider": str(entry.get("reasoning_provider_label") or entry.get("reasoning_provider") or "").strip(),
