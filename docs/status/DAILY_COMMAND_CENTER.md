@@ -1,5 +1,42 @@
 # Daily Command Center
 
+## Current command — post-#405 beta stabilization closeout (2026-09-03)
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+#397 through #405: COMPLETE / MERGED
+
+#397 private-state routing safety          COMPLETE / MERGED
+#398 deterministic DailyLoop               COMPLETE / MERGED
+#399 What matters today UX                  COMPLETE / MERGED
+#400 immediate follow-up grounding          COMPLETE / MERGED
+#401 canonical read-only outcome truth      COMPLETE / MERGED
+#402 user/history ranking                   COMPLETE / MERGED
+#403 recommendation heading presentation   COMPLETE / MERGED
+#404 startup/runtime health truth           COMPLETE / MERGED
+#405 Home activity usefulness               COMPLETE / MERGED / LIVE-ACCEPTED
+
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+The daily-use presentation stabilization lane is closed. PR #405 passed its hosted
+checks, exact-head review signal, protected merge, and merged-main Home replay before
+and after restart. Issue #406 is the immediate bounded correctness lane because
+persisted memory identifiers must remain unambiguous under rapid creation.
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. This
+truth sync grants no new capability or execution authority. The older post-#394
+command below is historical wherever it conflicts with this block.
+
 ## Current command — post-#394 truth sync (2026-08-28)
 
 ```text

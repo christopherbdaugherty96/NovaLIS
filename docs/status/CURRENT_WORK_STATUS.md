@@ -1,6 +1,26 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-08-28.
+Last reviewed: 2026-09-03.
+
+## Current post-#405 beta-readiness status
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+#397 through #405: COMPLETE / MERGED
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. This
+current block supersedes older ordering language below.
 
 ## Current post-#394 status
 
