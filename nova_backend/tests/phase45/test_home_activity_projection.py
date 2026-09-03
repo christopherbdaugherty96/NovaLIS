@@ -86,6 +86,40 @@ def test_home_preserves_newest_first_order_within_meaningful_user_activity():
     ]
 
 
+def test_home_preserves_recency_across_all_non_background_activity():
+    projected = brain_server._project_home_recent_activity(
+        [
+            _activity(
+                "Project thread updated",
+                event_type="PROJECT_THREAD_UPDATED",
+                timestamp="12:05",
+            ),
+            *[
+                _activity(
+                    f"Older user action {index}",
+                    origin="user_action",
+                    kind="action",
+                    timestamp=f"12:0{4 - index}",
+                )
+                for index in range(4)
+            ],
+            _activity(
+                "Hydration",
+                origin="background_read",
+                kind="read",
+                timestamp="12:06",
+            ),
+        ]
+    )
+
+    assert [item["title"] for item in projected] == [
+        "Project thread updated",
+        "Older user action 0",
+        "Older user action 1",
+        "Older user action 2",
+    ]
+
+
 def test_home_collapses_duplicate_visible_read_cards_without_changing_read_semantics():
     read_item = _activity(
         "Read completed",

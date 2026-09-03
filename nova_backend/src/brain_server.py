@@ -1399,8 +1399,7 @@ def _project_home_recent_activity(
     if not isinstance(raw_items, list):
         return []
 
-    meaningful: list[dict[str, object]] = []
-    other_visible: list[dict[str, object]] = []
+    foreground: list[dict[str, object]] = []
     background: list[dict[str, object]] = []
 
     for raw_item in raw_items:
@@ -1429,16 +1428,13 @@ def _project_home_recent_activity(
 
         origin = str(item.get("activity_origin") or "").strip().lower()
         event_type = str(item.get("event_type") or "").strip().upper()
-        kind = str(item.get("kind") or "").strip().lower()
         if origin == "background_read" or event_type in {
             "EXTERNAL_NETWORK_CALL",
             "MODEL_NETWORK_CALL",
         }:
             background.append(item)
-        elif origin == "user_action" and kind in {"action", "read"}:
-            meaningful.append(item)
         else:
-            other_visible.append(item)
+            foreground.append(item)
 
     seen_visible: set[tuple[str, str]] = set()
 
@@ -1455,12 +1451,10 @@ def _project_home_recent_activity(
             distinct.append(item)
         return distinct
 
-    meaningful = _distinct(meaningful)
-    other_visible = _distinct(other_visible)
+    foreground = _distinct(foreground)
     background = _distinct(background)
 
     bounded_limit = max(1, int(limit))
-    foreground = meaningful + other_visible
     if not background:
         return foreground[:bounded_limit]
     if not foreground:
