@@ -346,12 +346,36 @@ def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_act
     assert item is not None
     assert item["title"] == "Read completed"
     assert item["kind"] == "read"
+    assert item["activity_origin"] == ""
     assert item["detail"] == "governed web search"
     assert item["outcome"] == "success"
     assert item["reason"] == "Allowed as an explicit read-only network action."
     assert item["effect"] == "No external effect, Reversible"
     assert item["request_id"] == "req-search-456"
     assert item["ledger_ref"] == "L57"
+
+
+def test_os_diagnostics_recent_activity_preserves_trusted_activity_origin():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 32,
+            "capability_name": "os_diagnostics",
+            "success": True,
+            "status": "completed",
+            "authority_class": "read_only_local",
+            "external_effect": False,
+            "reversible": True,
+            "activity_origin": "user_action",
+            "timestamp_utc": "2026-08-31T16:00:00+00:00",
+        },
+        {32: "os_diagnostics"},
+    )
+
+    assert item is not None
+    assert item["activity_origin"] == "user_action"
+    assert item["title"] == "Read completed"
+    assert item["kind"] == "read"
 
 
 def test_os_diagnostics_recent_activity_does_not_present_accepted_unverified_as_completed():
