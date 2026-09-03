@@ -18,10 +18,11 @@ Checked here:
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
 - the post-#394 completion boundary on active operational surfaces;
+- the post-#405 beta-readiness order through #406 and the durability/install gates;
 - PR #335 remaining explicitly historical and UNMERGED while its implementation
   path is marked SUPERSEDED BY MERGED PR #394;
-- Google identity-only live proof remaining the next proof input, without
-  authorizing Google Tasks READ or later implementation.
+- Google/provider expansion and the other frozen feature categories remaining
+  paused during the #406-first beta-readiness sequence.
 
 The checker supports historical Wave A1-C representations, the active
 post-Wave-C documentation-closeout representation, and the completed
@@ -58,11 +59,14 @@ CHECKED_SURFACES = (
     "docs/CANONICAL/03_GOVERNANCE_TRUTH.md",
     "docs/CANONICAL/07_ROADMAP_TRUTH.md",
 )
+CURRENT_CHECKED_SURFACES = CHECKED_SURFACES + (
+    "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
+)
 
 NON_GOALS = (
     "semantic correctness",
     "generated runtime truth/runtime behavior",
-    "future/archive material",
+    "future/archive material other than the explicitly validated master roadmap",
     "test/capability/authority certification",
 )
 
@@ -70,11 +74,36 @@ POST_WAVE_C_LANE = "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
 POST_WAVE_C_ACTIVE_LANE = f"{POST_WAVE_C_LANE}_ACTIVE"
 POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
+POST_405_LIFECYCLE_MARKER = "BETA_READINESS_SEQUENCE_V1: ACTIVE"
+CURRENT_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
+HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
+POST_405_DIRECTIVE_SEQUENCE = (
+    "NEXT: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS",
+    "THEN: #408 DURABILITY/STATE-OWNERSHIP DECISION",
+    "THEN: EVIDENCE-AUTHORIZED DURABILITY IMPLEMENTATION",
+    "THEN: BOUNDED PRODUCT-TRANSLATION/READINESS PASS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
 
 POST_394_ORDERING_SURFACES = (
     "priority",
     "work_status",
     "command_center",
+    "canonical_index",
+    "roadmap",
+    "master_roadmap",
+)
+
+POST_405_ORDERING_SURFACES = (
+    "readme",
+    "start_here",
+    "agents",
+    "priority",
+    "work_status",
+    "command_center",
+    "active_todo",
     "canonical_index",
     "roadmap",
     "master_roadmap",
@@ -337,6 +366,80 @@ def _preserves_post_394_boundary(text: str) -> bool:
     return completed and tasks_gated and all(marker in upper for marker in required)
 
 
+def _extract_post_405_active_block(text: str) -> str | None:
+    """Extract the one current lifecycle block, excluding later historical sections."""
+
+    upper = text.upper()
+    marker = re.search(
+        rf"(?m)^\s*{re.escape(POST_405_LIFECYCLE_MARKER)}\s*$",
+        upper,
+    )
+    if marker is None:
+        return None
+    preceding_headings = tuple(
+        re.finditer(r"(?m)^#{1,6}\s+\S.*$", upper[: marker.start()])
+    )
+    section_start = preceding_headings[-1].start() if preceding_headings else 0
+    remainder = upper[marker.end() :]
+    boundary = re.search(r"(?m)^(?:#{1,6}\s+\S|-{3,}\s*$)", remainder)
+    if boundary is None:
+        return upper[section_start:]
+    return upper[section_start : marker.end() + boundary.start()]
+
+
+def _preserves_post_405_boundary(text: str) -> bool:
+    """Require the current #406-first beta-readiness order and feature freeze."""
+
+    active = _extract_post_405_active_block(text)
+    if active is None:
+        return False
+    directives = tuple(
+        line.strip()
+        for line in active.splitlines()
+        if re.match(r"^\s*(?:NEXT|THEN):", line)
+    )
+    if directives != POST_405_DIRECTIVE_SEQUENCE:
+        return False
+    normalized = " ".join(active.split())
+    required = (
+        POST_405_LIFECYCLE_MARKER,
+        "#397 THROUGH #405: COMPLETE / MERGED",
+    )
+    if not all(marker in normalized for marker in required):
+        return False
+    if re.search(r"VERIFIED MAIN AT SYNC START:\s+[0-9A-F]{40}\b", normalized) is None:
+        return False
+    frozen_categories = (
+        "GOOGLE/PROVIDER EXPANSION",
+        "OPERATIONAL CONTINUITY IMPLEMENTATION",
+        "NEW CAPABILITIES",
+        "VOICE EXPANSION",
+        "BROADER UI WORK",
+        "OTHER FEATURE EXPANSION",
+    )
+    if not all(
+        re.search(rf"{re.escape(category)}\s+REMAINS? PAUSED", normalized)
+        for category in frozen_categories
+    ):
+        return False
+    contradictory_states = (
+        r"(?:IS\s+)?(?:ACTIVE|AUTHORIZED|ENABLED|RESUMED|UNPAUSED)",
+        r"IS\s+(?:NO\s+LONGER|NOT)\s+PAUSED",
+        r"WILL\s+(?:RESUME|BE\s+RESUMED|BECOME\s+ACTIVE|BE\s+ACTIVATED)",
+        r"IS\s+(?:NOW\s+ACTIVE|AUTHORIZED\s+NOW)",
+    )
+    if any(
+        re.search(
+            rf"{re.escape(category)}\s+{state}",
+            normalized,
+        )
+        for category in frozen_categories
+        for state in contradictory_states
+    ):
+        return False
+    return True
+
+
 def _preserves_current_order(text: str) -> bool:
     prerequisite = _ordering_line_index(
         text, 388, ("COMPLETE", "TRUTH-CHECKER", "PREREQUISITE", "SATISFIED")
@@ -351,7 +454,9 @@ def _preserves_current_order(text: str) -> bool:
     )
 
 
-def check_operational_truth(root: Path = ROOT) -> list[str]:
+def check_operational_truth(
+    root: Path = ROOT, *, lifecycle_generation: str | None = None
+) -> list[str]:
     paths = {
         "readme": root / "README.md",
         "start_here": root / "START_HERE.md",
@@ -372,6 +477,11 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             errors.append(f"{path}: required operational truth surface missing")
             continue
         texts[name] = _read(path)
+
+    master_path = root / "docs" / "future" / "NOVA_MASTER_ROADMAP_2026-07-05.md"
+    if master_path.exists():
+        texts["master_roadmap"] = _read(master_path)
+        paths["master_roadmap"] = master_path
 
     lanes: dict[str, str] = {}
     for name in LANE_PATTERNS:
@@ -397,10 +507,18 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         for name, lane in lanes.items()
         if lane == POST_WAVE_C_COMPLETE_LANE
     }
+    if lifecycle_generation is None:
+        lifecycle_generation = (
+            CURRENT_LIFECYCLE_GENERATION
+            if root.resolve() == ROOT.resolve()
+            else HISTORICAL_LIFECYCLE_GENERATION
+        )
+
     post_394_mode = any(
         "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED" in text.upper()
         for text in texts.values()
     )
+    post_405_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
     for name in sorted(completed_surfaces):
         text = texts[name]
         if not _preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",)):
@@ -426,13 +544,20 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
                 f"{paths[name]}: completed closeout does not bind the separate owner decision to #335 reconstruction"
             )
 
-    if completed_surfaces and post_394_mode:
-        master_path = root / "docs" / "future" / "NOVA_MASTER_ROADMAP_2026-07-05.md"
-        if not master_path.exists():
+    if post_405_mode:
+        if "master_roadmap" not in texts:
+            errors.append(f"{master_path}: required post-#405 ordering surface missing")
+        for name in POST_405_ORDERING_SURFACES:
+            text = texts.get(name)
+            if text is None:
+                continue
+            if not _preserves_post_405_boundary(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
+                )
+    elif completed_surfaces and post_394_mode:
+        if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#394 ordering surface missing")
-        else:
-            texts["master_roadmap"] = _read(master_path)
-            paths["master_roadmap"] = master_path
         for name in POST_394_ORDERING_SURFACES:
             text = texts.get(name)
             if text is None:
@@ -506,7 +631,7 @@ def main() -> int:
 
     print("Operational truth consistency check passed (bounded scope).")
     print("Checked surfaces:")
-    for surface in CHECKED_SURFACES:
+    for surface in CURRENT_CHECKED_SURFACES:
         print(f"- {surface}")
     print("Not proven by this check:")
     for non_goal in NON_GOALS:

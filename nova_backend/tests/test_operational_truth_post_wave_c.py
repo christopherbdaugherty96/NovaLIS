@@ -4,6 +4,8 @@ import importlib.util
 import shutil
 from pathlib import Path
 
+import pytest
+
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 
 
@@ -552,6 +554,19 @@ def test_current_repository_operational_truth_is_consistent():
     assert checker.check_operational_truth(checker.ROOT) == []
 
 
+def test_current_cli_reports_master_roadmap_validation_truthfully(capsys):
+    checker = _load_checker()
+
+    assert checker.main() == 0
+    output = capsys.readouterr().out
+
+    assert "- docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md" in output
+    assert (
+        "future/archive material other than the explicitly validated master roadmap"
+        in output
+    )
+
+
 def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
     checker = _load_checker()
     _post_wave_c_complete_fixture(tmp_path)
@@ -574,29 +589,135 @@ def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
     )
 
 
-def test_current_repository_shape_rejects_corrupted_post_394_order(tmp_path):
+@pytest.mark.parametrize(
+    "target_relative",
+    (
+        ".agent_context/current_priority.md",
+        "README.md",
+        "START_HERE.md",
+        "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
+    ),
+)
+def test_current_repository_shape_rejects_corrupted_post_405_order(
+    tmp_path, target_relative
+):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
-    priority = tmp_path / ".agent_context/current_priority.md"
-    original = priority.read_text(encoding="utf-8")
+    target = tmp_path / target_relative
+    original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "#368: COMPLETE",
-        "#368: BLOCKED",
+        "NEXT: #406 governed-memory ID collision correctness",
+        "NEXT: Google identity-only live proof",
         1,
     )
     assert corrupted != original
-    priority.write_text(corrupted, encoding="utf-8")
+    target.write_text(corrupted, encoding="utf-8")
 
-    errors = checker.check_operational_truth(tmp_path)
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
 
     assert any(
-        "current ordering does not preserve the post-#394 completion and proof-first boundary"
+        str(target) in error
+        and "current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
         in error
         for error in errors
+    )
+
+
+@pytest.mark.parametrize("retain_master_marker", (True, False))
+def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
+    tmp_path, retain_master_marker
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    copied_master.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(master, copied_master)
+
+    for relative in (
+        "README.md",
+        "START_HERE.md",
+        "AGENTS.md",
+        ".agent_context/current_priority.md",
+        "docs/status/CURRENT_WORK_STATUS.md",
+        "docs/status/DAILY_COMMAND_CENTER.md",
+        "docs/todo/ACTIVE_TODO.md",
+        "docs/CANONICAL/00_INDEX.md",
+        "docs/CANONICAL/07_ROADMAP_TRUTH.md",
+        "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
+    ):
+        target = tmp_path / relative
+        original = target.read_text(encoding="utf-8")
+        corrupted = original.replace(
+            "NEXT: #406 governed-memory ID collision correctness",
+            "NEXT: Google identity-only live proof",
+            1,
+        )
+        corrupted = corrupted.replace(
+            "df2df490083511f480b653c0960fbe7a6e6abfe8",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            1,
+        )
+        if (
+            not retain_master_marker
+            or relative != "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+        ):
+            corrupted = corrupted.replace(
+                "BETA_READINESS_SEQUENCE_V1: ACTIVE\n", "", 1
+            )
+        assert corrupted != original
+        target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        "current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
+def test_post_405_mode_survives_normal_sync_start_sha_update(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    copied_master.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(master, copied_master)
+
+    for relative in (
+        "README.md",
+        "START_HERE.md",
+        "AGENTS.md",
+        ".agent_context/current_priority.md",
+        "docs/status/CURRENT_WORK_STATUS.md",
+        "docs/status/DAILY_COMMAND_CENTER.md",
+        "docs/todo/ACTIVE_TODO.md",
+        "docs/CANONICAL/00_INDEX.md",
+        "docs/CANONICAL/07_ROADMAP_TRUTH.md",
+        "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
+    ):
+        target = tmp_path / relative
+        updated = target.read_text(encoding="utf-8").replace(
+            "df2df490083511f480b653c0960fbe7a6e6abfe8",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            1,
+        )
+        target.write_text(updated, encoding="utf-8")
+
+    assert (
+        checker.check_operational_truth(
+            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        )
+        == []
     )
 
 
@@ -628,4 +749,349 @@ def test_post_394_boundary_accepts_new_state_and_rejects_obsolete_directives():
     assert all(
         checker._preserves_post_394_boundary(candidate) is False
         for candidate in obsolete_variants
+    )
+
+
+def test_post_405_boundary_accepts_406_first_order_and_rejects_google_reactivation():
+    checker = _load_checker()
+    current = (
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                "df2df490083511f480b653c0960fbe7a6e6abfe8",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            )
+        )
+        is True
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                "THEN: #408 durability/state-ownership decision\n"
+                "THEN: evidence-authorized durability implementation\n",
+                "THEN: evidence-authorized durability implementation\n",
+            )
+        )
+        is False
+    )
+
+
+def test_post_405_boundary_requires_one_canonical_active_next_directive():
+    checker = _load_checker()
+    current = (
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+    canonical_next = "NEXT: #406 governed-memory ID collision correctness\n"
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                canonical_next,
+                "NEXT: #408 durability/state-ownership decision\n" + canonical_next,
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                canonical_next, "NEXT: Google identity-only live proof\n" + canonical_next
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(canonical_next, canonical_next + canonical_next)
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(current.replace(canonical_next, ""))
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current + "\n## Historical ordering\nNEXT: Google identity-only live proof\n"
+        )
+        is True
+    )
+
+
+@pytest.mark.parametrize(
+    "competing_directive",
+    (
+        "NEXT: Google identity-only live proof",
+        "NEXT: #408 durability/state-ownership decision",
+        "THEN: Google identity-only live proof",
+    ),
+)
+def test_post_405_boundary_rejects_directives_before_lifecycle_marker(
+    competing_directive,
+):
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+    corrupted = current.replace(
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE",
+        f"{competing_directive}\nBETA_READINESS_SEQUENCE_V1: ACTIVE",
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert checker._preserves_post_405_boundary(corrupted) is False
+
+
+def test_post_405_boundary_checks_pre_marker_contradiction_but_excludes_history():
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+    contradiction = current.replace(
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE",
+        "Google/provider expansion will resume.\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE",
+    )
+    historical_before = (
+        "## Historical prior order\n"
+        "NEXT: Google identity-only live proof\n"
+        "Google/provider expansion is active.\n"
+        + current
+    )
+    historical_after = (
+        current
+        + "\n## Historical later order\n"
+        "THEN: Google identity-only live proof\n"
+        "Google/provider expansion is active.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(contradiction) is False
+    assert checker._preserves_post_405_boundary(historical_before) is True
+    assert checker._preserves_post_405_boundary(historical_after) is True
+
+
+def test_post_405_boundary_requires_exact_active_directive_sequence():
+    checker = _load_checker()
+    current = (
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+    durability = "THEN: evidence-authorized durability implementation\n"
+    translation = "THEN: bounded product-translation/readiness pass\n"
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                durability,
+                durability + "THEN: Google identity-only live proof\n",
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(durability, durability + "THEN: #409 repo integrity\n")
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(durability, durability + durability)
+        )
+        is False
+    )
+    assert checker._preserves_post_405_boundary(current.replace(durability, "")) is False
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(durability + translation, translation + durability)
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current + "\n## Historical ordering\nTHEN: Google identity-only live proof\n"
+        )
+        is True
+    )
+
+
+def test_current_lifecycle_rejects_coordinated_legacy_active_lane(tmp_path):
+    checker = _load_checker()
+    _post_wave_c_active_fixture(tmp_path)
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert errors
+    assert any("post-#405 #406-first beta-readiness boundary" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "category",
+    (
+        "Google/provider expansion",
+        "Operational Continuity implementation",
+        "New capabilities",
+        "Voice expansion",
+        "Broader UI work",
+        "Other feature expansion",
+    ),
+)
+def test_post_405_boundary_rejects_each_reactivated_feature_category(category):
+    checker = _load_checker()
+    current = (
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    paused_phrase = (
+        f"{category} remain paused."
+        if category == "New capabilities"
+        else f"{category} remains paused."
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                paused_phrase, f"{category} is active.\n{paused_phrase}"
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                paused_phrase, f"{category} is authorized.\n{paused_phrase}"
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                paused_phrase, f"{paused_phrase}\n{category} is no longer paused."
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                paused_phrase, f"{paused_phrase}\n{category} will resume."
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(current + f"{category} is active.\n")
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current + f"\n## Historical feature state\n{category} is active.\n"
+        )
+        is True
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(paused_phrase, f"{category} is active.")
+        )
+        is False
     )

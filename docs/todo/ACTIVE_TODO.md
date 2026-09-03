@@ -1,10 +1,30 @@
 # Active TODO — Nova
 
-Last reviewed: 2026-08-25.
+Last reviewed: 2026-09-03.
 
 This file is the current actionable task inventory. Historical lane detail belongs in Git history and dated proof/strategy artifacts, not in the active queue.
 
-## Active Now
+## Active Now — post-#405 correctness and beta-readiness
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+#397 through #405: COMPLETE / MERGED
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. Older
+active-order language below is historical wherever it conflicts with this block.
+
+## Historical active queue
 
 ### Post-Wave-C documentation closeout — COMPLETE
 

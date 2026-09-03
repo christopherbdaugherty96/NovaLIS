@@ -1,6 +1,6 @@
 # Nova Canonical Truth — Index
 
-Last reconciled: 2026-08-28.
+Last reconciled: 2026-09-03.
 
 This folder is a thin **navigation and reconciliation layer**. It does not create runtime facts. Each canonical file summarizes one kind of truth and points to the implementation, generated artifact, proof, or maintained status surface that supports it.
 
@@ -19,6 +19,29 @@ Use the source appropriate to the claim:
 Generated documents can become incomplete or misleading when their generators have incomplete coverage. A generated PASS must not be expanded into a claim the generator did not test.
 
 ## Current development interpretation
+
+The current post-#405 beta-readiness boundary supersedes older ordering language
+later in this file:
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+#397 through #405: COMPLETE / MERGED
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. This
+synchronization grants no new capability or authority.
+
+### Historical post-#394 development interpretation
 
 The current post-#394 boundary supersedes older ordering language later in this file:
 
