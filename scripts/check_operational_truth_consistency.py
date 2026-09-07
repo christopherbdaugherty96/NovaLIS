@@ -376,12 +376,17 @@ def _extract_post_405_active_block(text: str) -> str | None:
     )
     if marker is None:
         return None
-    preceding_headings = tuple(
-        re.finditer(r"(?m)^#{1,6}\s+\S.*$", upper[: marker.start()])
-    )
-    section_start = preceding_headings[-1].start() if preceding_headings else 0
+    heading_pattern = re.compile(r"(?m)^(?P<marks>#{1,6})\s+\S.*$")
+    preceding_headings = tuple(heading_pattern.finditer(upper[: marker.start()]))
+    enclosing_heading = preceding_headings[-1] if preceding_headings else None
+    section_start = enclosing_heading.start() if enclosing_heading else 0
+    enclosing_level = len(enclosing_heading.group("marks")) if enclosing_heading else 6
     remainder = upper[marker.end() :]
-    boundary = re.search(r"(?m)^(?:#{1,6}\s+\S|-{3,}\s*$)", remainder)
+    boundary = re.search(
+        rf"(?m)^(?:#{{1,{enclosing_level}}}\s+\S|"
+        rf"#{{1,6}}\s+HISTORICAL\b.*|-{{3,}}\s*$)",
+        remainder,
+    )
     if boundary is None:
         return upper[section_start:]
     return upper[section_start : marker.end() + boundary.start()]
@@ -417,10 +422,18 @@ def _preserves_post_405_boundary(text: str) -> bool:
         return False
     normalized = " ".join(active.split())
     required = (
-        POST_405_LIFECYCLE_MARKER,
         "#397 THROUGH #405: COMPLETE / MERGED",
     )
     if not all(marker in normalized for marker in required):
+        return False
+    lifecycle_states = tuple(
+        match.group("state")
+        for match in re.finditer(
+            r"(?m)^\s*BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
+            active,
+        )
+    )
+    if lifecycle_states != ("ACTIVE",):
         return False
     if len(_post_405_sync_start_shas(text)) != 1:
         return False
