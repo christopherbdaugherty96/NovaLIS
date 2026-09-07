@@ -373,6 +373,7 @@ def _normalize_post_405_structured_line(line: str) -> str:
     while normalized.startswith(">"):
         normalized = normalized[1:].lstrip()
     normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
+    normalized = re.sub(r"^\*\*((?:NEXT|THEN):)\*\*", r"\1", normalized)
     return normalized
 
 

@@ -1480,6 +1480,64 @@ def test_post_405_boundary_rejects_markdown_prefixed_competing_directives(
     )
 
 
+@pytest.mark.parametrize(
+    "directive",
+    (
+        "- **NEXT:** Google identity-only live proof",
+        "> **THEN:** Google identity-only live proof",
+        "> - **NEXT:** Google identity-only live proof",
+    ),
+)
+def test_post_405_boundary_rejects_bold_markdown_competing_directives(directive):
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert checker._preserves_post_405_boundary(current + directive + "\n") is False
+
+
+def test_post_405_boundary_accepts_consistently_bold_markdown_directive_sequence():
+    checker = _load_checker()
+    current = (
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "- **NEXT:** #406 governed-memory ID collision correctness\n"
+        "- **THEN:** #408 durability/state-ownership decision\n"
+        "- **THEN:** evidence-authorized durability implementation\n"
+        "- **THEN:** bounded product-translation/readiness pass\n"
+        "- **THEN:** clean Windows operator proof\n"
+        "- **THEN:** frozen-SHA full beta acceptance\n"
+        "- **THEN:** private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+
+
 @pytest.mark.parametrize("prefix", ("- ", "> ", "> - ", "1. "))
 def test_post_405_boundary_accepts_consistently_markdown_prefixed_sequence(prefix):
     checker = _load_checker()
