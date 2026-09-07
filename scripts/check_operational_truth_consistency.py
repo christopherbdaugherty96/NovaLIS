@@ -436,6 +436,16 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     )
 
 
+def _normalize_post_405_directive_line(line: str) -> str:
+    """Strip bounded Markdown containers before structured directive matching."""
+
+    normalized = line.lstrip()
+    while normalized.startswith(">"):
+        normalized = normalized[1:].lstrip()
+    normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
+    return normalized
+
+
 def _preserves_post_405_boundary(text: str) -> bool:
     """Require the current #406-first beta-readiness order and feature freeze."""
 
@@ -443,9 +453,12 @@ def _preserves_post_405_boundary(text: str) -> bool:
     if active is None:
         return False
     directives = tuple(
-        line.strip()
+        normalized_line
         for line in active.splitlines()
-        if re.match(r"^\s*(?:NEXT|THEN):", line)
+        if re.match(
+            r"^(?:NEXT|THEN):",
+            normalized_line := _normalize_post_405_directive_line(line),
+        )
     )
     if directives != POST_405_DIRECTIVE_SEQUENCE:
         return False

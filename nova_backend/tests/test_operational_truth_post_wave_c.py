@@ -1308,6 +1308,105 @@ def test_post_405_boundary_requires_exact_active_directive_sequence():
     )
 
 
+@pytest.mark.parametrize(
+    "prefix, directive",
+    (
+        ("- ", "NEXT: Google identity-only live proof"),
+        ("* ", "NEXT: Google identity-only live proof"),
+        ("+ ", "THEN: Google identity-only live proof"),
+        ("> ", "NEXT: Google identity-only live proof"),
+        ("> - ", "NEXT: Google identity-only live proof"),
+        ("> * ", "THEN: Google identity-only live proof"),
+        ("1. ", "NEXT: Google identity-only live proof"),
+    ),
+)
+def test_post_405_boundary_rejects_markdown_prefixed_competing_directives(
+    prefix, directive
+):
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert (
+        checker._preserves_post_405_boundary(current + f"{prefix}{directive}\n")
+        is False
+    )
+
+
+@pytest.mark.parametrize("prefix", ("- ", "> ", "> - ", "1. "))
+def test_post_405_boundary_accepts_consistently_markdown_prefixed_sequence(prefix):
+    checker = _load_checker()
+    current = (
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        f"{prefix}NEXT: #406 governed-memory ID collision correctness\n"
+        f"{prefix}THEN: #408 durability/state-ownership decision\n"
+        f"{prefix}THEN: evidence-authorized durability implementation\n"
+        f"{prefix}THEN: bounded product-translation/readiness pass\n"
+        f"{prefix}THEN: clean Windows operator proof\n"
+        f"{prefix}THEN: frozen-SHA full beta acceptance\n"
+        f"{prefix}THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+
+
+def test_post_405_boundary_ignores_historical_markdown_directives_and_harmless_markup():
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "### Current sequence details\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "- Harmless current note.\n"
+        "> Harmless current explanation.\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+        "## Historical ordering\n"
+        "- NEXT: Google identity-only live proof\n"
+        "> THEN: resume provider expansion\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+
+
 def test_current_lifecycle_rejects_coordinated_legacy_active_lane(tmp_path):
     checker = _load_checker()
     _post_wave_c_active_fixture(tmp_path)
