@@ -1074,6 +1074,22 @@ def test_post_405_boundary_rejects_each_reactivated_feature_category(category):
     assert (
         checker._preserves_post_405_boundary(
             current.replace(
+                paused_phrase, f"{paused_phrase}\n{category} does not remain paused."
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                paused_phrase, f"{paused_phrase}\n{category} do not remain paused."
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
                 paused_phrase, f"{paused_phrase}\n{category} will resume."
             )
         )
