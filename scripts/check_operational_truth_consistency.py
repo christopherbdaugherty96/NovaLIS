@@ -366,6 +366,26 @@ def _preserves_post_394_boundary(text: str) -> bool:
     return completed and tasks_gated and all(marker in upper for marker in required)
 
 
+def _normalize_post_405_structured_line(line: str) -> str:
+    """Strip bounded Markdown containers before structured-line parsing."""
+
+    normalized = line.lstrip()
+    while normalized.startswith(">"):
+        normalized = normalized[1:].lstrip()
+    normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
+    return normalized
+
+
+def _post_405_lifecycle_state(line: str) -> str | None:
+    """Return a lifecycle state after bounded Markdown normalization."""
+
+    lifecycle = re.match(
+        r"^BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
+        _normalize_post_405_structured_line(line).rstrip(),
+    )
+    return lifecycle.group("state") if lifecycle else None
+
+
 def _non_historical_post_405_lifecycle_declarations(
     text: str,
 ) -> tuple[tuple[int, str], ...]:
@@ -385,12 +405,10 @@ def _non_historical_post_405_lifecycle_declarations(
             )
             heading_stack.append((level, historical))
 
-        lifecycle = re.match(
-            r"^\s*BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
-            line.rstrip(),
-        )
-        if lifecycle and not any(item[1] for item in heading_stack):
-            declarations.append((offset + lifecycle.start(), lifecycle.group("state")))
+        lifecycle_state = _post_405_lifecycle_state(line)
+        if lifecycle_state is not None and not any(item[1] for item in heading_stack):
+            marker_start = line.find("BETA_READINESS_SEQUENCE_V1:")
+            declarations.append((offset + marker_start, lifecycle_state))
         offset += len(line)
     return tuple(declarations)
 
@@ -436,16 +454,6 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     )
 
 
-def _normalize_post_405_directive_line(line: str) -> str:
-    """Strip bounded Markdown containers before structured directive matching."""
-
-    normalized = line.lstrip()
-    while normalized.startswith(">"):
-        normalized = normalized[1:].lstrip()
-    normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
-    return normalized
-
-
 def _preserves_post_405_boundary(text: str) -> bool:
     """Require the current #406-first beta-readiness order and feature freeze."""
 
@@ -457,7 +465,7 @@ def _preserves_post_405_boundary(text: str) -> bool:
         for line in active.splitlines()
         if re.match(
             r"^(?:NEXT|THEN):",
-            normalized_line := _normalize_post_405_directive_line(line),
+            normalized_line := _normalize_post_405_structured_line(line),
         )
     )
     if directives != POST_405_DIRECTIVE_SEQUENCE:
@@ -469,11 +477,9 @@ def _preserves_post_405_boundary(text: str) -> bool:
     if not all(marker in normalized for marker in required):
         return False
     lifecycle_states = tuple(
-        match.group("state")
-        for match in re.finditer(
-            r"(?m)^\s*BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
-            active,
-        )
+        state
+        for line in active.splitlines()
+        if (state := _post_405_lifecycle_state(line)) is not None
     )
     if lifecycle_states != ("ACTIVE",):
         return False

@@ -1204,6 +1204,135 @@ def test_post_405_boundary_rejects_duplicate_non_historical_lifecycle_blocks():
     )
 
 
+@pytest.mark.parametrize(
+    "prefix, state",
+    (
+        ("- ", "INACTIVE"),
+        ("* ", "INACTIVE"),
+        ("+ ", "INACTIVE"),
+        ("> ", "INACTIVE"),
+        ("> - ", "INACTIVE"),
+        ("> 1. ", "INACTIVE"),
+        ("1. ", "INACTIVE"),
+        ("> * ", "ACTIVE"),
+    ),
+)
+def test_post_405_boundary_rejects_prefixed_conflicting_lifecycle_declarations(
+    prefix, state
+):
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            current + f"{prefix}BETA_READINESS_SEQUENCE_V1: {state}\n"
+        )
+        is False
+    )
+
+
+@pytest.mark.parametrize("prefix", ("- ", "> ", "> - ", "1. ", "> 1. "))
+def test_post_405_boundary_accepts_one_prefixed_active_lifecycle(prefix):
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        f"{prefix}BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "- Harmless current note.\n"
+        "> Harmless current explanation.\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+
+
+def test_post_405_boundary_rejects_only_prefixed_inactive_lifecycle():
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "> - BETA_READINESS_SEQUENCE_V1: INACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is False
+
+
+def test_post_405_boundary_excludes_historical_prefixed_lifecycle_declarations():
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+        "## Historical ordering\n"
+        "- BETA_READINESS_SEQUENCE_V1: INACTIVE\n"
+        "> BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "### Historical nested ordering\n"
+        "> 1. BETA_READINESS_SEQUENCE_V1: RETIRED\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+
+
 def test_post_405_boundary_excludes_explicitly_historical_lifecycle_blocks():
     checker = _load_checker()
     current = (
