@@ -373,6 +373,13 @@ def _normalize_post_405_structured_line(line: str) -> str:
     while normalized.startswith(">"):
         normalized = normalized[1:].lstrip()
     normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
+    stripped = normalized.rstrip()
+    trailing = normalized[len(stripped) :]
+    for delimiter in ("**", "__", "`"):
+        if stripped.startswith(delimiter) and stripped.endswith(delimiter):
+            stripped = stripped[len(delimiter) : -len(delimiter)]
+            normalized = stripped + trailing
+            break
     normalized = re.sub(r"^\*\*((?:NEXT|THEN):)\*\*", r"\1", normalized)
     return normalized
 
@@ -432,7 +439,7 @@ def _extract_post_405_active_block(text: str) -> str | None:
     remainder = upper[marker_end:]
     boundary = re.search(
         rf"(?m)^(?:#{{1,{enclosing_level}}}\s+\S|"
-        rf"#{{1,6}}\s+HISTORICAL\b.*|-{{3,}}\s*$)",
+        rf"#{{1,6}}\s+HISTORICAL\b.*)",
         remainder,
     )
     if boundary is None:
@@ -597,6 +604,12 @@ def check_operational_truth(
         for text in texts.values()
     )
     post_405_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
+    if post_405_mode:
+        required_completed_surfaces = set(LANE_PATTERNS)
+        for name in sorted(required_completed_surfaces - completed_surfaces):
+            errors.append(
+                f"{paths[name]}: current post-#405 lifecycle requires completed PR #366 closeout state"
+            )
     for name in sorted(completed_surfaces):
         text = texts[name]
         if not _preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",)):
