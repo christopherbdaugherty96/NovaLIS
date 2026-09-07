@@ -387,6 +387,21 @@ def _extract_post_405_active_block(text: str) -> str | None:
     return upper[section_start : marker.end() + boundary.start()]
 
 
+def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
+    """Return sync-start SHAs from the current lifecycle section only."""
+
+    active = _extract_post_405_active_block(text)
+    if active is None:
+        return ()
+    return tuple(
+        match.group("sha")
+        for match in re.finditer(
+            r"VERIFIED MAIN AT SYNC START:\s+(?P<sha>[0-9A-F]{40})\b",
+            active,
+        )
+    )
+
+
 def _preserves_post_405_boundary(text: str) -> bool:
     """Require the current #406-first beta-readiness order and feature freeze."""
 
@@ -407,7 +422,7 @@ def _preserves_post_405_boundary(text: str) -> bool:
     )
     if not all(marker in normalized for marker in required):
         return False
-    if re.search(r"VERIFIED MAIN AT SYNC START:\s+[0-9A-F]{40}\b", normalized) is None:
+    if len(_post_405_sync_start_shas(text)) != 1:
         return False
     frozen_categories = (
         "GOOGLE/PROVIDER EXPANSION",
@@ -548,6 +563,7 @@ def check_operational_truth(
     if post_405_mode:
         if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#405 ordering surface missing")
+        sync_start_shas: dict[str, str] = {}
         for name in POST_405_ORDERING_SURFACES:
             text = texts.get(name)
             if text is None:
@@ -556,6 +572,13 @@ def check_operational_truth(
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
                 )
+                continue
+            sync_start_shas[name] = _post_405_sync_start_shas(text)[0]
+        if len(set(sync_start_shas.values())) > 1:
+            rendered = ", ".join(
+                f"{name}={sha}" for name, sha in sorted(sync_start_shas.items())
+            )
+            errors.append(f"post-#405 sync-start SHA mismatch: {rendered}")
     elif completed_surfaces and post_394_mode:
         if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#394 ordering surface missing")
