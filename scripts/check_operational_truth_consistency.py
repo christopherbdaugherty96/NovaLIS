@@ -425,6 +425,7 @@ def _preserves_post_405_boundary(text: str) -> bool:
     contradictory_states = (
         r"(?:IS\s+)?(?:ACTIVE|AUTHORIZED|ENABLED|RESUMED|UNPAUSED)",
         r"IS\s+(?:NO\s+LONGER|NOT)\s+PAUSED",
+        r"(?:DOES|DO)\s+NOT\s+REMAIN\s+PAUSED",
         r"WILL\s+(?:RESUME|BE\s+RESUMED|BECOME\s+ACTIVE|BE\s+ACTIVATED)",
         r"IS\s+(?:NOW\s+ACTIVE|AUTHORIZED\s+NOW)",
     )
