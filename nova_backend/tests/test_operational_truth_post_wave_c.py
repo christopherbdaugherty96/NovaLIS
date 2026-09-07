@@ -1153,6 +1153,101 @@ def test_post_405_boundary_requires_exactly_one_active_lifecycle_declaration():
     )
 
 
+def test_post_405_boundary_rejects_duplicate_non_historical_lifecycle_blocks():
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+    identical = current + "\n" + current
+    conflicting_prefix = (
+        "\n## Current emergency override\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current) is True
+    assert checker._preserves_post_405_boundary(identical) is False
+    assert (
+        checker._preserves_post_405_boundary(
+            current
+            + conflicting_prefix
+            + "Google/provider expansion is active.\n"
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current + conflicting_prefix + "NEXT: Google identity-only live proof\n"
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current + conflicting_prefix + "THEN: Google identity-only live proof\n"
+        )
+        is False
+    )
+
+
+def test_post_405_boundary_excludes_explicitly_historical_lifecycle_blocks():
+    checker = _load_checker()
+    current = (
+        "## Current post-#405 beta-readiness order\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "verified main at sync start: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "#397 through #405: COMPLETE / MERGED\n"
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision\n"
+        "Google/provider expansion remains paused.\n"
+        "Operational Continuity implementation remains paused.\n"
+        "New capabilities remain paused.\n"
+        "Voice expansion remains paused.\n"
+        "Broader UI work remains paused.\n"
+        "Other feature expansion remains paused.\n"
+    )
+    historical = (
+        "\n## Historical ordering\n"
+        "BETA_READINESS_SEQUENCE_V1: INACTIVE\n"
+        "Google/provider expansion is active.\n"
+        "NEXT: Google identity-only live proof\n"
+    )
+    nested_historical = (
+        "\n### Historical emergency override\n"
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        "#### Preserved details\n"
+        "BETA_READINESS_SEQUENCE_V1: INACTIVE\n"
+        "THEN: Google identity-only live proof\n"
+    )
+
+    assert checker._preserves_post_405_boundary(current + historical) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            current + historical + nested_historical
+        )
+        is True
+    )
+
+
 def test_post_405_boundary_requires_exact_active_directive_sequence():
     checker = _load_checker()
     current = (

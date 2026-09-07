@@ -366,22 +366,51 @@ def _preserves_post_394_boundary(text: str) -> bool:
     return completed and tasks_gated and all(marker in upper for marker in required)
 
 
+def _non_historical_post_405_lifecycle_declarations(
+    text: str,
+) -> tuple[tuple[int, str], ...]:
+    """Return lifecycle declarations outside explicitly historical sections."""
+
+    declarations: list[tuple[int, str]] = []
+    heading_stack: list[tuple[int, bool]] = []
+    offset = 0
+    for line in text.upper().splitlines(keepends=True):
+        heading = re.match(r"^(?P<marks>#{1,6})\s+(?P<title>\S.*)$", line.rstrip())
+        if heading:
+            level = len(heading.group("marks"))
+            while heading_stack and heading_stack[-1][0] >= level:
+                heading_stack.pop()
+            historical = any(item[1] for item in heading_stack) or bool(
+                re.match(r"HISTORICAL\b", heading.group("title"))
+            )
+            heading_stack.append((level, historical))
+
+        lifecycle = re.match(
+            r"^\s*BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
+            line.rstrip(),
+        )
+        if lifecycle and not any(item[1] for item in heading_stack):
+            declarations.append((offset + lifecycle.start(), lifecycle.group("state")))
+        offset += len(line)
+    return tuple(declarations)
+
+
 def _extract_post_405_active_block(text: str) -> str | None:
-    """Extract the one current lifecycle block, excluding later historical sections."""
+    """Extract the sole current lifecycle block, excluding historical sections."""
 
     upper = text.upper()
-    marker = re.search(
-        rf"(?m)^\s*{re.escape(POST_405_LIFECYCLE_MARKER)}\s*$",
-        upper,
-    )
-    if marker is None:
+    declarations = _non_historical_post_405_lifecycle_declarations(text)
+    if len(declarations) != 1 or declarations[0][1] != "ACTIVE":
         return None
+    marker_start = declarations[0][0]
+    marker_line_end = upper.find("\n", marker_start)
+    marker_end = len(upper) if marker_line_end == -1 else marker_line_end
     heading_pattern = re.compile(r"(?m)^(?P<marks>#{1,6})\s+\S.*$")
-    preceding_headings = tuple(heading_pattern.finditer(upper[: marker.start()]))
+    preceding_headings = tuple(heading_pattern.finditer(upper[:marker_start]))
     enclosing_heading = preceding_headings[-1] if preceding_headings else None
     section_start = enclosing_heading.start() if enclosing_heading else 0
     enclosing_level = len(enclosing_heading.group("marks")) if enclosing_heading else 6
-    remainder = upper[marker.end() :]
+    remainder = upper[marker_end:]
     boundary = re.search(
         rf"(?m)^(?:#{{1,{enclosing_level}}}\s+\S|"
         rf"#{{1,6}}\s+HISTORICAL\b.*|-{{3,}}\s*$)",
@@ -389,7 +418,7 @@ def _extract_post_405_active_block(text: str) -> str | None:
     )
     if boundary is None:
         return upper[section_start:]
-    return upper[section_start : marker.end() + boundary.start()]
+    return upper[section_start : marker_end + boundary.start()]
 
 
 def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
