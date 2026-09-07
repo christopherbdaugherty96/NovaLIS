@@ -548,6 +548,14 @@ def _copy_current_checked_surfaces(checker, destination: Path) -> None:
         shutil.copy2(source, target)
 
 
+def _copy_post_405_ordering_surfaces(checker, destination: Path) -> None:
+    for relative in checker.CURRENT_CHECKED_SURFACES:
+        source = checker.ROOT / relative
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
 def test_current_repository_operational_truth_is_consistent():
     checker = _load_checker()
 
@@ -721,6 +729,65 @@ def test_post_405_mode_survives_normal_sync_start_sha_update(tmp_path):
     )
 
 
+def test_post_405_mode_rejects_one_current_surface_with_different_sync_sha(tmp_path):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8").replace(
+            "df2df490083511f480b653c0960fbe7a6e6abfe8",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any("post-#405 sync-start SHA mismatch" in error for error in errors)
+
+
+def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    for relative in checker.CURRENT_CHECKED_SURFACES[:5]:
+        target = tmp_path / relative
+        target.write_text(
+            target.read_text(encoding="utf-8").replace(
+                "df2df490083511f480b653c0960fbe7a6e6abfe8",
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any("post-#405 sync-start SHA mismatch" in error for error in errors)
+
+
+def test_post_405_mode_ignores_historical_different_sync_sha(tmp_path):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    with target.open("a", encoding="utf-8") as stream:
+        stream.write(
+            "\n## Historical reconciliation\n"
+            "verified main at sync start: cccccccccccccccccccccccccccccccccccccccc\n"
+        )
+
+    assert (
+        checker.check_operational_truth(
+            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        )
+        == []
+    )
+
+
 def test_post_394_boundary_accepts_new_state_and_rejects_obsolete_directives():
     checker = _load_checker()
     current = (
@@ -782,6 +849,29 @@ def test_post_405_boundary_accepts_406_first_order_and_rejects_google_reactivati
             )
         )
         is True
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                "verified main at sync start: "
+                "df2df490083511f480b653c0960fbe7a6e6abfe8\n",
+                "",
+            )
+        )
+        is False
+    )
+    assert (
+        checker._preserves_post_405_boundary(
+            current.replace(
+                "verified main at sync start: "
+                "df2df490083511f480b653c0960fbe7a6e6abfe8\n",
+                "verified main at sync start: "
+                "df2df490083511f480b653c0960fbe7a6e6abfe8\n"
+                "verified main at sync start: "
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n",
+            )
+        )
+        is False
     )
     assert (
         checker._preserves_post_405_boundary(
