@@ -22,6 +22,28 @@ The consolidated August Product/Platform strategy is merged as strategy-only gui
 
 ## Read Order
 
+Current post-#405 override (2026-09-03):
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+#397 through #405: COMPLETE / MERGED
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. This
+override supersedes older current-order language below; historical evidence remains
+valid for the revisions and scope it actually covered.
+
 Before selecting work, read:
 
 1. `docs/CANONICAL/00_INDEX.md`
