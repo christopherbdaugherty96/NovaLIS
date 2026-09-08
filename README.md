@@ -9,6 +9,26 @@
 Nova separates intelligence from authority so useful reasoning can remain broad while real
 execution stays bounded, inspectable, revocable, and provable.
 
+## Current post-#405 beta-readiness order — 2026-09-03
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+#397 through #405: COMPLETE / MERGED
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. This current order supersedes older ordering language below and
+grants no new capability or authority.
+
 ## Why Nova
 Most assistants wait for a command. Nova is being built to establish what changed, what matters,
 what remains uncertain, and which decision deserves attention before choosing whether a tool is

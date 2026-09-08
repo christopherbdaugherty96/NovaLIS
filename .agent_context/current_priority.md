@@ -1,5 +1,36 @@
 # Current Priority
 
+## Post-#405 beta-readiness truth — 2026-09-03
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
+verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+
+#397 through #405: COMPLETE / MERGED
+daily operating loop: STABLE
+startup health truth: VERIFIED
+Home activity usefulness: LIVE-ACCEPTED BEFORE/AFTER RESTART
+
+NEXT: #406 governed-memory ID collision correctness
+THEN: #408 durability/state-ownership decision
+THEN: evidence-authorized durability implementation
+THEN: bounded product-translation/readiness pass
+THEN: clean Windows operator proof
+THEN: frozen-SHA full beta acceptance
+THEN: private-beta candidacy/distribution decision
+```
+
+Keep #406 bounded to deterministic unique memory identity, collision regression
+coverage, unambiguous ID-addressed mutation, and explicit handling of existing
+duplicate persisted IDs. It does not authorize a memory redesign.
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. Intelligence remains separate from authority. This truth sync
+does not grant new execution authority. Older priority text below is historical
+wherever it conflicts with this block.
+
 ## Post-#394 truth — 2026-08-28
 
 ```text

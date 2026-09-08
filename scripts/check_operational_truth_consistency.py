@@ -18,10 +18,11 @@ Checked here:
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
 - the post-#394 completion boundary on active operational surfaces;
+- the post-#405 beta-readiness order through #406 and the durability/install gates;
 - PR #335 remaining explicitly historical and UNMERGED while its implementation
   path is marked SUPERSEDED BY MERGED PR #394;
-- Google identity-only live proof remaining the next proof input, without
-  authorizing Google Tasks READ or later implementation.
+- Google/provider expansion and the other frozen feature categories remaining
+  paused during the #406-first beta-readiness sequence.
 
 The checker supports historical Wave A1-C representations, the active
 post-Wave-C documentation-closeout representation, and the completed
@@ -58,11 +59,14 @@ CHECKED_SURFACES = (
     "docs/CANONICAL/03_GOVERNANCE_TRUTH.md",
     "docs/CANONICAL/07_ROADMAP_TRUTH.md",
 )
+CURRENT_CHECKED_SURFACES = CHECKED_SURFACES + (
+    "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
+)
 
 NON_GOALS = (
     "semantic correctness",
     "generated runtime truth/runtime behavior",
-    "future/archive material",
+    "future/archive material other than the explicitly validated master roadmap",
     "test/capability/authority certification",
 )
 
@@ -70,11 +74,36 @@ POST_WAVE_C_LANE = "POST_WAVE_C_DOCUMENTATION_CLOSEOUT"
 POST_WAVE_C_ACTIVE_LANE = f"{POST_WAVE_C_LANE}_ACTIVE"
 POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
+POST_405_LIFECYCLE_MARKER = "BETA_READINESS_SEQUENCE_V1: ACTIVE"
+CURRENT_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
+HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
+POST_405_DIRECTIVE_SEQUENCE = (
+    "NEXT: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS",
+    "THEN: #408 DURABILITY/STATE-OWNERSHIP DECISION",
+    "THEN: EVIDENCE-AUTHORIZED DURABILITY IMPLEMENTATION",
+    "THEN: BOUNDED PRODUCT-TRANSLATION/READINESS PASS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
 
 POST_394_ORDERING_SURFACES = (
     "priority",
     "work_status",
     "command_center",
+    "canonical_index",
+    "roadmap",
+    "master_roadmap",
+)
+
+POST_405_ORDERING_SURFACES = (
+    "readme",
+    "start_here",
+    "agents",
+    "priority",
+    "work_status",
+    "command_center",
+    "active_todo",
     "canonical_index",
     "roadmap",
     "master_roadmap",
@@ -337,6 +366,205 @@ def _preserves_post_394_boundary(text: str) -> bool:
     return completed and tasks_gated and all(marker in upper for marker in required)
 
 
+def _unwrap_balanced_markdown(text: str) -> str:
+    """Remove balanced outer emphasis/code wrappers, including nested wrappers."""
+
+    while True:
+        for delimiter in ("**", "__", "`", "*", "_"):
+            if (
+                len(text) > 2 * len(delimiter)
+                and text.startswith(delimiter)
+                and text.endswith(delimiter)
+            ):
+                text = text[len(delimiter) : -len(delimiter)]
+                break
+        else:
+            return text
+
+
+def _normalize_post_405_structured_line(line: str) -> str:
+    """Strip bounded Markdown containers before structured-line parsing."""
+
+    normalized = line.lstrip()
+    while True:
+        container = re.match(r"^(?:>\s*|(?:[-*+]|\d+\.)\s+)", normalized)
+        if container is None:
+            break
+        normalized = normalized[container.end() :].lstrip()
+    stripped = normalized.rstrip()
+    trailing = normalized[len(stripped) :]
+    normalized = _unwrap_balanced_markdown(stripped) + trailing
+    label = re.match(r"^(?P<opening>[*_`]*)(?P<label>NEXT:|THEN:)", normalized)
+    if label:
+        closing = label.group("opening")[::-1]
+        end = label.end() + len(closing)
+        if normalized[label.end() : end] == closing:
+            wrapped_label = normalized[:end]
+            if _unwrap_balanced_markdown(wrapped_label) == label.group("label"):
+                payload = normalized[end:]
+                separator = " " if payload and not payload[0].isspace() else ""
+                normalized = label.group("label") + separator + payload
+    return normalized
+
+
+def _post_405_lifecycle_state(line: str) -> str | None:
+    """Return a lifecycle state after bounded Markdown normalization."""
+
+    lifecycle = re.match(
+        r"^BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
+        _normalize_post_405_structured_line(line).rstrip(),
+    )
+    return lifecycle.group("state") if lifecycle else None
+
+
+def _normalized_heading(line: str) -> tuple[int, str] | None:
+    """Interpret the bounded ATX heading form used by ordering documents."""
+
+    match = re.match(r"^(?P<marks>#{1,6})\s+(?P<title>\S.*)$", line.rstrip())
+    if match is None:
+        return None
+    title = _unwrap_balanced_markdown(match.group("title"))
+    return len(match.group("marks")), title.upper()
+
+
+def _markdown_structure(text: str):
+    """Yield offsets, lines, heading ancestry and historical state consistently."""
+
+    stack: list[tuple[int, str, int]] = []
+    offset = 0
+    for line in text.upper().splitlines(keepends=True):
+        heading = _normalized_heading(line)
+        if heading:
+            level, title = heading
+            while stack and stack[-1][0] >= level:
+                stack.pop()
+            stack.append((level, title, offset))
+        historical = any(re.match(r"HISTORICAL\b", title) for _, title, _ in stack)
+        yield offset, line, heading, tuple(stack), historical
+        offset += len(line)
+
+
+def _non_historical_post_405_lifecycle_declarations(
+    text: str,
+) -> tuple[tuple[int, str], ...]:
+    """Return lifecycle declarations outside explicitly historical sections."""
+
+    declarations: list[tuple[int, str]] = []
+    for offset, line, _, _, historical in _markdown_structure(text):
+        lifecycle_state = _post_405_lifecycle_state(line)
+        if lifecycle_state is not None and not historical:
+            marker_start = line.find("BETA_READINESS_SEQUENCE_V1:")
+            declarations.append((offset + marker_start, lifecycle_state))
+    return tuple(declarations)
+
+
+def _extract_post_405_active_block(text: str) -> str | None:
+    """Validate the governing current section, not just the marker's subsection."""
+
+    declarations = _non_historical_post_405_lifecycle_declarations(text)
+    if len(declarations) != 1 or declarations[0][1] != "ACTIVE":
+        return None
+    marker_start = declarations[0][0]
+    lines = tuple(_markdown_structure(text))
+    section_start, section_level = 0, 6
+    for offset, line, _, ancestors, _ in lines:
+        if offset <= marker_start < offset + len(line):
+            # H1 is the document title; the outermost section beneath it governs
+            # the marker even when a subordinate heading immediately precedes it.
+            sections = [entry for entry in ancestors if entry[0] > 1]
+            governing = sections[0] if sections else (ancestors[0] if ancestors else None)
+            if governing:
+                section_level, _, section_start = governing
+            break
+    active = []
+    for offset, line, heading, _, historical in lines:
+        if offset < section_start:
+            continue
+        if offset > section_start and heading and heading[0] <= section_level:
+            break
+        if not historical:
+            active.append(line)
+    return "".join(active)
+
+
+def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
+    """Return sync-start SHAs from the current lifecycle section only."""
+
+    active = _extract_post_405_active_block(text)
+    if active is None:
+        return ()
+    return tuple(
+        match.group("sha")
+        for match in re.finditer(
+            r"VERIFIED MAIN AT SYNC START:\s+(?P<sha>[0-9A-F]{40})\b",
+            active,
+        )
+    )
+
+
+def _preserves_post_405_boundary(text: str) -> bool:
+    """Require the current #406-first beta-readiness order and feature freeze."""
+
+    active = _extract_post_405_active_block(text)
+    if active is None:
+        return False
+    directives = tuple(
+        normalized_line
+        for line in active.splitlines()
+        if re.match(
+            r"^(?:NEXT|THEN):",
+            normalized_line := _normalize_post_405_structured_line(line),
+        )
+    )
+    if directives != POST_405_DIRECTIVE_SEQUENCE:
+        return False
+    normalized = " ".join(active.split())
+    required = (
+        "#397 THROUGH #405: COMPLETE / MERGED",
+    )
+    if not all(marker in normalized for marker in required):
+        return False
+    lifecycle_states = tuple(
+        state
+        for line in active.splitlines()
+        if (state := _post_405_lifecycle_state(line)) is not None
+    )
+    if lifecycle_states != ("ACTIVE",):
+        return False
+    if len(_post_405_sync_start_shas(text)) != 1:
+        return False
+    frozen_categories = (
+        "GOOGLE/PROVIDER EXPANSION",
+        "OPERATIONAL CONTINUITY IMPLEMENTATION",
+        "NEW CAPABILITIES",
+        "VOICE EXPANSION",
+        "BROADER UI WORK",
+        "OTHER FEATURE EXPANSION",
+    )
+    if not all(
+        re.search(rf"{re.escape(category)}\s+REMAINS? PAUSED", normalized)
+        for category in frozen_categories
+    ):
+        return False
+    contradictory_states = (
+        r"(?:IS\s+)?(?:ACTIVE|AUTHORIZED|ENABLED|RESUMED|UNPAUSED)",
+        r"IS\s+(?:NO\s+LONGER|NOT)\s+PAUSED",
+        r"(?:DOES|DO)\s+NOT\s+REMAIN\s+PAUSED",
+        r"WILL\s+(?:RESUME|BE\s+RESUMED|BECOME\s+ACTIVE|BE\s+ACTIVATED)",
+        r"IS\s+(?:NOW\s+ACTIVE|AUTHORIZED\s+NOW)",
+    )
+    if any(
+        re.search(
+            rf"{re.escape(category)}\s+{state}",
+            normalized,
+        )
+        for category in frozen_categories
+        for state in contradictory_states
+    ):
+        return False
+    return True
+
+
 def _preserves_current_order(text: str) -> bool:
     prerequisite = _ordering_line_index(
         text, 388, ("COMPLETE", "TRUTH-CHECKER", "PREREQUISITE", "SATISFIED")
@@ -351,7 +579,9 @@ def _preserves_current_order(text: str) -> bool:
     )
 
 
-def check_operational_truth(root: Path = ROOT) -> list[str]:
+def check_operational_truth(
+    root: Path = ROOT, *, lifecycle_generation: str | None = None
+) -> list[str]:
     paths = {
         "readme": root / "README.md",
         "start_here": root / "START_HERE.md",
@@ -372,6 +602,11 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
             errors.append(f"{path}: required operational truth surface missing")
             continue
         texts[name] = _read(path)
+
+    master_path = root / "docs" / "future" / "NOVA_MASTER_ROADMAP_2026-07-05.md"
+    if master_path.exists():
+        texts["master_roadmap"] = _read(master_path)
+        paths["master_roadmap"] = master_path
 
     lanes: dict[str, str] = {}
     for name in LANE_PATTERNS:
@@ -397,10 +632,31 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
         for name, lane in lanes.items()
         if lane == POST_WAVE_C_COMPLETE_LANE
     }
+    if lifecycle_generation is None:
+        lifecycle_generation = (
+            CURRENT_LIFECYCLE_GENERATION
+            if root.resolve() == ROOT.resolve()
+            else HISTORICAL_LIFECYCLE_GENERATION
+        )
+
     post_394_mode = any(
         "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED" in text.upper()
         for text in texts.values()
     )
+    post_405_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
+    if post_405_mode:
+        required_completed_surfaces = set(LANE_PATTERNS)
+        current_completed_surfaces = {
+            name
+            for name in required_completed_surfaces
+            if POST_WAVE_C_COMPLETE_MARKER.search(
+                _extract_post_405_active_block(texts.get(name, "")) or ""
+            )
+        }
+        for name in sorted(required_completed_surfaces - current_completed_surfaces):
+            errors.append(
+                f"{paths[name]}: current post-#405 lifecycle requires completed PR #366 closeout state"
+            )
     for name in sorted(completed_surfaces):
         text = texts[name]
         if not _preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",)):
@@ -426,13 +682,28 @@ def check_operational_truth(root: Path = ROOT) -> list[str]:
                 f"{paths[name]}: completed closeout does not bind the separate owner decision to #335 reconstruction"
             )
 
-    if completed_surfaces and post_394_mode:
-        master_path = root / "docs" / "future" / "NOVA_MASTER_ROADMAP_2026-07-05.md"
-        if not master_path.exists():
+    if post_405_mode:
+        if "master_roadmap" not in texts:
+            errors.append(f"{master_path}: required post-#405 ordering surface missing")
+        sync_start_shas: dict[str, str] = {}
+        for name in POST_405_ORDERING_SURFACES:
+            text = texts.get(name)
+            if text is None:
+                continue
+            if not _preserves_post_405_boundary(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
+                )
+                continue
+            sync_start_shas[name] = _post_405_sync_start_shas(text)[0]
+        if len(set(sync_start_shas.values())) > 1:
+            rendered = ", ".join(
+                f"{name}={sha}" for name, sha in sorted(sync_start_shas.items())
+            )
+            errors.append(f"post-#405 sync-start SHA mismatch: {rendered}")
+    elif completed_surfaces and post_394_mode:
+        if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#394 ordering surface missing")
-        else:
-            texts["master_roadmap"] = _read(master_path)
-            paths["master_roadmap"] = master_path
         for name in POST_394_ORDERING_SURFACES:
             text = texts.get(name)
             if text is None:
@@ -506,7 +777,7 @@ def main() -> int:
 
     print("Operational truth consistency check passed (bounded scope).")
     print("Checked surfaces:")
-    for surface in CHECKED_SURFACES:
+    for surface in CURRENT_CHECKED_SURFACES:
         print(f"- {surface}")
     print("Not proven by this check:")
     for non_goal in NON_GOALS:
