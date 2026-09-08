@@ -366,6 +366,22 @@ def _preserves_post_394_boundary(text: str) -> bool:
     return completed and tasks_gated and all(marker in upper for marker in required)
 
 
+def _unwrap_balanced_markdown(text: str) -> str:
+    """Remove balanced outer emphasis/code wrappers, including nested wrappers."""
+
+    while True:
+        for delimiter in ("**", "__", "`", "*", "_"):
+            if (
+                len(text) > 2 * len(delimiter)
+                and text.startswith(delimiter)
+                and text.endswith(delimiter)
+            ):
+                text = text[len(delimiter) : -len(delimiter)]
+                break
+        else:
+            return text
+
+
 def _normalize_post_405_structured_line(line: str) -> str:
     """Strip bounded Markdown containers before structured-line parsing."""
 
@@ -375,19 +391,12 @@ def _normalize_post_405_structured_line(line: str) -> str:
     normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
     stripped = normalized.rstrip()
     trailing = normalized[len(stripped) :]
-    while True:
-        for delimiter in ("**", "__", "`", "*", "_"):
-            if (
-                len(stripped) > 2 * len(delimiter)
-                and stripped.startswith(delimiter)
-                and stripped.endswith(delimiter)
-            ):
-                stripped = stripped[len(delimiter) : -len(delimiter)]
-                break
-        else:
-            break
-    normalized = stripped + trailing
-    normalized = re.sub(r"^\*\*((?:NEXT|THEN):)\*\*", r"\1", normalized)
+    normalized = _unwrap_balanced_markdown(stripped) + trailing
+    label = re.match(r"^[*_`]*(?:NEXT|THEN):[*_`]*(?=\s|$)", normalized)
+    if label:
+        unwrapped = _unwrap_balanced_markdown(label.group())
+        if unwrapped in ("NEXT:", "THEN:"):
+            normalized = unwrapped + normalized[label.end() :]
     return normalized
 
 
