@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -145,4 +146,24 @@ def test_identity_correction_preserves_confirmation_requirements(tmp_path, opera
             store.supersede_item(item["id"], new_title="B", new_body="B body")
         else:
             getattr(store, operation + "_item")(item["id"])
+    assert store.path.read_bytes() == before
+
+
+@pytest.mark.parametrize("command", ("forget memory {id}", "update memory {id}: new body"))
+def test_memory_commands_surface_ambiguity_and_repair_guidance(tmp_path, command):
+    from src.memory.memory_skill import MemorySkill
+
+    store = memory.GovernedMemoryStore(tmp_path / "items.json")
+    item = store.save_item(title="A", body="A body")
+    state = json.loads(store.path.read_text())
+    state["items"].append(dict(item, title="Duplicate", body="Different record"))
+    store.path.write_text(json.dumps(state), encoding="utf-8")
+    before = store.path.read_bytes()
+
+    result = asyncio.run(MemorySkill(store=store).handle(command.format(id=item["id"])))
+
+    assert result is not None
+    assert result.success is False
+    assert "Ambiguous memory ID" in result.message
+    assert "Export memory for inspection before repair" in result.message
     assert store.path.read_bytes() == before

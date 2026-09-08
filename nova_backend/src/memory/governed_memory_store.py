@@ -145,6 +145,10 @@ class MemoryReadResult:
     error: str = ""
 
 
+class AmbiguousMemoryIdError(ValueError):
+    """Raised when a persisted ID identifies more than one memory record."""
+
+
 class GovernedMemoryStore:
     """Persistent, explicit memory filing store for Phase-5 operations."""
 
@@ -762,7 +766,7 @@ class GovernedMemoryStore:
             if str(item.get("id") or "").strip() == normalized
         ]
         if len(matches) > 1:
-            raise ValueError(
+            raise AmbiguousMemoryIdError(
                 f"Ambiguous memory ID: {normalized}. Multiple stored records share this ID; "
                 "no record was selected or changed. Export memory for inspection before repair."
             )
