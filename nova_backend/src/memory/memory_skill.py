@@ -22,7 +22,7 @@ import re
 from typing import Any
 
 from src.base_skill import BaseSkill, SkillResult
-from src.memory.governed_memory_store import GovernedMemoryStore
+from src.memory.governed_memory_store import AmbiguousMemoryIdError, GovernedMemoryStore
 from src.memory.user_memory_store import user_memory_store
 
 # ---------------------------------------------------------------------------
@@ -296,6 +296,8 @@ class MemorySkill(BaseSkill):
                 message=f"Couldn't find memory {item_id}. It may already be gone.",
                 skill=self.name,
             )
+        except AmbiguousMemoryIdError as exc:
+            return SkillResult(success=False, message=str(exc), skill=self.name)
         except Exception:
             return SkillResult(
                 success=False,
@@ -346,6 +348,8 @@ class MemorySkill(BaseSkill):
                 message=f"Couldn't find memory {item_id} to update.",
                 skill=self.name,
             )
+        except AmbiguousMemoryIdError as exc:
+            return SkillResult(success=False, message=str(exc), skill=self.name)
         except Exception:
             return SkillResult(
                 success=False,
