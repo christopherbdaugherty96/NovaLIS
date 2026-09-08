@@ -25,6 +25,7 @@ later in this file:
 
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE
+POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
 #397 through #405: COMPLETE / MERGED
 NEXT: #406 governed-memory ID collision correctness

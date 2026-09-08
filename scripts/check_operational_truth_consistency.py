@@ -375,11 +375,18 @@ def _normalize_post_405_structured_line(line: str) -> str:
     normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
     stripped = normalized.rstrip()
     trailing = normalized[len(stripped) :]
-    for delimiter in ("**", "__", "`"):
-        if stripped.startswith(delimiter) and stripped.endswith(delimiter):
-            stripped = stripped[len(delimiter) : -len(delimiter)]
-            normalized = stripped + trailing
+    while True:
+        for delimiter in ("**", "__", "`", "*", "_"):
+            if (
+                len(stripped) > 2 * len(delimiter)
+                and stripped.startswith(delimiter)
+                and stripped.endswith(delimiter)
+            ):
+                stripped = stripped[len(delimiter) : -len(delimiter)]
+                break
+        else:
             break
+    normalized = stripped + trailing
     normalized = re.sub(r"^\*\*((?:NEXT|THEN):)\*\*", r"\1", normalized)
     return normalized
 
@@ -606,7 +613,14 @@ def check_operational_truth(
     post_405_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
     if post_405_mode:
         required_completed_surfaces = set(LANE_PATTERNS)
-        for name in sorted(required_completed_surfaces - completed_surfaces):
+        current_completed_surfaces = {
+            name
+            for name in required_completed_surfaces
+            if POST_WAVE_C_COMPLETE_MARKER.search(
+                _extract_post_405_active_block(texts.get(name, "")) or ""
+            )
+        }
+        for name in sorted(required_completed_surfaces - current_completed_surfaces):
             errors.append(
                 f"{paths[name]}: current post-#405 lifecycle requires completed PR #366 closeout state"
             )
