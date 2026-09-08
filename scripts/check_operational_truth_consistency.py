@@ -386,17 +386,24 @@ def _normalize_post_405_structured_line(line: str) -> str:
     """Strip bounded Markdown containers before structured-line parsing."""
 
     normalized = line.lstrip()
-    while normalized.startswith(">"):
-        normalized = normalized[1:].lstrip()
-    normalized = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", normalized, count=1)
+    while True:
+        container = re.match(r"^(?:>\s*|(?:[-*+]|\d+\.)\s+)", normalized)
+        if container is None:
+            break
+        normalized = normalized[container.end() :].lstrip()
     stripped = normalized.rstrip()
     trailing = normalized[len(stripped) :]
     normalized = _unwrap_balanced_markdown(stripped) + trailing
-    label = re.match(r"^[*_`]*(?:NEXT|THEN):[*_`]*(?=\s|$)", normalized)
+    label = re.match(r"^(?P<opening>[*_`]*)(?P<label>NEXT:|THEN:)", normalized)
     if label:
-        unwrapped = _unwrap_balanced_markdown(label.group())
-        if unwrapped in ("NEXT:", "THEN:"):
-            normalized = unwrapped + normalized[label.end() :]
+        closing = label.group("opening")[::-1]
+        end = label.end() + len(closing)
+        if normalized[label.end() : end] == closing:
+            wrapped_label = normalized[:end]
+            if _unwrap_balanced_markdown(wrapped_label) == label.group("label"):
+                payload = normalized[end:]
+                separator = " " if payload and not payload[0].isspace() else ""
+                normalized = label.group("label") + separator + payload
     return normalized
 
 
@@ -410,57 +417,74 @@ def _post_405_lifecycle_state(line: str) -> str | None:
     return lifecycle.group("state") if lifecycle else None
 
 
+def _normalized_heading(line: str) -> tuple[int, str] | None:
+    """Interpret the bounded ATX heading form used by ordering documents."""
+
+    match = re.match(r"^(?P<marks>#{1,6})\s+(?P<title>\S.*)$", line.rstrip())
+    if match is None:
+        return None
+    title = _unwrap_balanced_markdown(match.group("title"))
+    return len(match.group("marks")), title.upper()
+
+
+def _markdown_structure(text: str):
+    """Yield offsets, lines, heading ancestry and historical state consistently."""
+
+    stack: list[tuple[int, str, int]] = []
+    offset = 0
+    for line in text.upper().splitlines(keepends=True):
+        heading = _normalized_heading(line)
+        if heading:
+            level, title = heading
+            while stack and stack[-1][0] >= level:
+                stack.pop()
+            stack.append((level, title, offset))
+        historical = any(re.match(r"HISTORICAL\b", title) for _, title, _ in stack)
+        yield offset, line, heading, tuple(stack), historical
+        offset += len(line)
+
+
 def _non_historical_post_405_lifecycle_declarations(
     text: str,
 ) -> tuple[tuple[int, str], ...]:
     """Return lifecycle declarations outside explicitly historical sections."""
 
     declarations: list[tuple[int, str]] = []
-    heading_stack: list[tuple[int, bool]] = []
-    offset = 0
-    for line in text.upper().splitlines(keepends=True):
-        heading = re.match(r"^(?P<marks>#{1,6})\s+(?P<title>\S.*)$", line.rstrip())
-        if heading:
-            level = len(heading.group("marks"))
-            while heading_stack and heading_stack[-1][0] >= level:
-                heading_stack.pop()
-            historical = any(item[1] for item in heading_stack) or bool(
-                re.match(r"HISTORICAL\b", heading.group("title"))
-            )
-            heading_stack.append((level, historical))
-
+    for offset, line, _, _, historical in _markdown_structure(text):
         lifecycle_state = _post_405_lifecycle_state(line)
-        if lifecycle_state is not None and not any(item[1] for item in heading_stack):
+        if lifecycle_state is not None and not historical:
             marker_start = line.find("BETA_READINESS_SEQUENCE_V1:")
             declarations.append((offset + marker_start, lifecycle_state))
-        offset += len(line)
     return tuple(declarations)
 
 
 def _extract_post_405_active_block(text: str) -> str | None:
-    """Extract the sole current lifecycle block, excluding historical sections."""
+    """Validate the governing current section, not just the marker's subsection."""
 
-    upper = text.upper()
     declarations = _non_historical_post_405_lifecycle_declarations(text)
     if len(declarations) != 1 or declarations[0][1] != "ACTIVE":
         return None
     marker_start = declarations[0][0]
-    marker_line_end = upper.find("\n", marker_start)
-    marker_end = len(upper) if marker_line_end == -1 else marker_line_end
-    heading_pattern = re.compile(r"(?m)^(?P<marks>#{1,6})\s+\S.*$")
-    preceding_headings = tuple(heading_pattern.finditer(upper[:marker_start]))
-    enclosing_heading = preceding_headings[-1] if preceding_headings else None
-    section_start = enclosing_heading.start() if enclosing_heading else 0
-    enclosing_level = len(enclosing_heading.group("marks")) if enclosing_heading else 6
-    remainder = upper[marker_end:]
-    boundary = re.search(
-        rf"(?m)^(?:#{{1,{enclosing_level}}}\s+\S|"
-        rf"#{{1,6}}\s+HISTORICAL\b.*)",
-        remainder,
-    )
-    if boundary is None:
-        return upper[section_start:]
-    return upper[section_start : marker_end + boundary.start()]
+    lines = tuple(_markdown_structure(text))
+    section_start, section_level = 0, 6
+    for offset, line, _, ancestors, _ in lines:
+        if offset <= marker_start < offset + len(line):
+            # H1 is the document title; the outermost section beneath it governs
+            # the marker even when a subordinate heading immediately precedes it.
+            sections = [entry for entry in ancestors if entry[0] > 1]
+            governing = sections[0] if sections else (ancestors[0] if ancestors else None)
+            if governing:
+                section_level, _, section_start = governing
+            break
+    active = []
+    for offset, line, heading, _, historical in lines:
+        if offset < section_start:
+            continue
+        if offset > section_start and heading and heading[0] <= section_level:
+            break
+        if not historical:
+            active.append(line)
+    return "".join(active)
 
 
 def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:

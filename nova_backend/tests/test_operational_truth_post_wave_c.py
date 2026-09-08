@@ -2000,3 +2000,52 @@ def test_full_checker_validates_nested_directive_labels(tmp_path, opening, closi
         assert any("README.md: current ordering does not preserve" in error for error in errors)
     else:
         assert errors == []
+
+
+@pytest.mark.parametrize("case", ("containers", "historical_heading", "adjacent", "parent_section"))
+@pytest.mark.parametrize("conflict", (True, False))
+def test_full_checker_structure_corrections(tmp_path, case, conflict):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "AGENTS.md"
+    text = target.read_text(encoding="utf-8")
+    marker = "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+    bad = "NEXT: Google identity-only live proof\n"
+    if case == "containers":
+        if conflict:
+            text = text.replace(marker, marker + "- > ***NEXT:*** Google identity-only live proof\n", 1)
+        else:
+            for label in ("NEXT:", "THEN:"):
+                text = text.replace(label, f"- > 1. > ***{label}***")
+    elif case == "adjacent":
+        if conflict:
+            text = text.replace(marker, marker + "**NEXT:**Google identity-only live proof\n", 1)
+        else:
+            for label in ("NEXT:", "THEN:"):
+                text = text.replace(label + " ", f"**{label}**")
+    elif case == "parent_section":
+        prefix = bad if conflict else "Harmless parent guidance.\n"
+        text = text.replace(marker, prefix + "### Current sequence details\n" + marker, 1)
+    else:
+        if conflict:
+            text = text.replace("POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE", "POST-WAVE-C DOCUMENTATION CLOSEOUT: ACTIVE", 1)
+        end = text.index("## Post-Wave-C Current Development State")
+        text = text[:end] + (
+            "### **Historical closeout evidence**\n"
+            "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
+            + ("" if conflict else "BETA_READINESS_SEQUENCE_V1: INACTIVE\n") + bad
+        ) + text[end:]
+    target.write_text(text, encoding="utf-8")
+    errors = checker.check_operational_truth(tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION)
+    if conflict:
+        expected = "requires completed PR #366 closeout state" if case == "historical_heading" else "current ordering does not preserve"
+        assert any(expected in error for error in errors)
+    else:
+        assert errors == []
+
+
+@pytest.mark.parametrize("prefix", ("> - ", "- > ", "> 1. > - "))
+def test_nested_containers_preserve_plain_payload_markdown(prefix):
+    checker = _load_checker()
+    assert checker._normalize_post_405_structured_line(prefix + "NEXT:**payload**") == "NEXT: **payload**"
+    assert checker._normalize_post_405_structured_line(prefix + "**NEXT:* payload") == "**NEXT:* payload"
