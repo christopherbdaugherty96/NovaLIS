@@ -1973,3 +1973,30 @@ def test_current_closeout_cannot_be_satisfied_by_historical_markers(tmp_path, po
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )
     assert sum("requires completed PR #366 closeout state" in error for error in errors) == 7
+
+
+@pytest.mark.parametrize("opening, closing", (("***", "***"), ("**_", "_**"), ("___", "___"), ("`**", "**`")))
+@pytest.mark.parametrize("competing", (False, True))
+def test_full_checker_validates_nested_directive_labels(tmp_path, opening, closing, competing):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    text = target.read_text(encoding="utf-8")
+    if competing:
+        text = text.replace(
+            "BETA_READINESS_SEQUENCE_V1: ACTIVE\n",
+            "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+            + f"> - {opening}NEXT:{closing} Google identity-only live proof\n",
+            1,
+        )
+    else:
+        for label in ("NEXT:", "THEN:"):
+            text = text.replace(label, f"{opening}{label}{closing}")
+    target.write_text(text, encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    if competing:
+        assert any("README.md: current ordering does not preserve" in error for error in errors)
+    else:
+        assert errors == []
