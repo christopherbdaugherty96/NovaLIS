@@ -1642,6 +1642,8 @@ def test_post_405_boundary_rejects_bold_markdown_competing_directives(directive)
 @pytest.mark.parametrize(
     "directive",
     (
+        "***NEXT: Google identity-only live proof***",
+        "> - **_NEXT: Google identity-only live proof_**",
         "**NEXT: Google identity-only live proof**",
         "__THEN: Google identity-only live proof__",
         "`NEXT: Google identity-only live proof`",
@@ -1676,7 +1678,7 @@ def test_post_405_boundary_rejects_whole_line_formatted_competing_directives(
     assert checker._preserves_post_405_boundary(current + directive + "\n") is False
 
 
-@pytest.mark.parametrize("delimiter", ("**", "__", "`"))
+@pytest.mark.parametrize("delimiter", ("**", "__", "`", "***", "___"))
 def test_post_405_boundary_accepts_consistently_formatted_directive_sequence(delimiter):
     checker = _load_checker()
 
@@ -1946,3 +1948,28 @@ def test_post_405_boundary_rejects_each_reactivated_feature_category(category):
         )
         is False
     )
+
+
+@pytest.mark.parametrize("position", ("before", "after", "nested"))
+def test_current_closeout_cannot_be_satisfied_by_historical_markers(tmp_path, position):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    _replace_completed_closeout_with_active(checker, tmp_path, checker.LANE_PATTERNS)
+    for relative in checker.CHECKED_SURFACES:
+        target = tmp_path / relative
+        text = target.read_text(encoding="utf-8")
+        historical = (
+            "\n## Historical closeout evidence\n"
+            "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
+        )
+        if position == "before":
+            text = historical + "\n## Current guidance\n" + text
+        elif position == "nested":
+            text += "\n## Historical evidence\n### Closeout\n" + historical.split("\n", 2)[2]
+        else:
+            text += historical
+        target.write_text(text, encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert sum("requires completed PR #366 closeout state" in error for error in errors) == 7
