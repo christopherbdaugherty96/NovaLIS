@@ -444,7 +444,7 @@ _REMEMBER_STRIP_RE = re.compile(
     re.IGNORECASE,
 )
 
-_ITEM_ID_RE = re.compile(r"\b(MEM-\d{8}-\d{6}-[0-9A-Fa-f]{4}|UM-[0-9a-fA-F]{8})\b")
+_ITEM_ID_RE = re.compile(r"\b(MEM-\d{8}-\d{6}-(?:[0-9A-Fa-f]{32}|[0-9A-Fa-f]{4})|UM-[0-9a-fA-F]{8})\b")
 
 _UPDATE_COLON_RE = re.compile(
     r"^(?:update|change|edit|correct|fix)\s+(?:my\s+)?(?:memory|note|that)(?:\s+\S+)?\s*:\s*",

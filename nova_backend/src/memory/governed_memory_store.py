@@ -200,7 +200,6 @@ class GovernedMemoryStore:
             links["project_thread_key"] = normalized_thread_key
 
         item = {
-            "id": self._new_id(),
             "title": title_value,
             "tier": "active",
             "status": "active",
@@ -228,6 +227,7 @@ class GovernedMemoryStore:
         with self._lock:
             state = self._read_state()
             items = list(state.get("items") or [])
+            item["id"] = self._new_id(state)
             items.append(item)
             state["items"] = items
             self._write_state(state)
@@ -612,7 +612,7 @@ class GovernedMemoryStore:
 
             now = _utc_now()
             replacement = {
-                "id": self._new_id(),
+                "id": self._new_id(state),
                 "title": replacement_title,
                 "tier": "locked",
                 "status": "locked",
@@ -741,17 +741,32 @@ class GovernedMemoryStore:
             self._write_state(state)
             return dict(item)
 
-    def _new_id(self) -> str:
+    def _new_id(self, state: dict[str, Any]) -> str:
+        """Allocate against retained identities while the caller holds the path lock."""
+
         now = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-        suffix = uuid4().hex[:4].upper()
-        return f"MEM-{now}-{suffix}"
+        suffix = uuid4().int
+        reserved = {str(item.get("id") or "").strip() for item in state.get("items", [])}
+        # At most len(reserved) candidates can be occupied. This terminates even
+        # when time and randomness repeat, and reserves deleted/superseded IDs.
+        for offset in range(len(reserved) + 1):
+            candidate = f"MEM-{now}-{(suffix + offset) % (1 << 128):032X}"
+            if candidate not in reserved:
+                return candidate
+        raise ValueError("Unable to allocate a unique memory ID.")
 
     def _find_item(self, state: dict[str, Any], item_id: str) -> dict[str, Any] | None:
         normalized = str(item_id or "").strip()
-        for item in list(state.get("items") or []):
-            if str(item.get("id") or "").strip() == normalized:
-                return item
-        return None
+        matches = [
+            item for item in state.get("items", [])
+            if str(item.get("id") or "").strip() == normalized
+        ]
+        if len(matches) > 1:
+            raise ValueError(
+                f"Ambiguous memory ID: {normalized}. Multiple stored records share this ID; "
+                "no record was selected or changed. Export memory for inspection before repair."
+            )
+        return matches[0] if matches else None
 
     def _read_state(self) -> dict[str, Any]:
         try:
