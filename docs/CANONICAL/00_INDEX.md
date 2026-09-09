@@ -31,9 +31,12 @@ verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
 COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
 COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
-AUTHORIZED: durability implementation lane 2 only
-NEXT: corruption-safe reader inventory + fail-closed implementation
-THEN: separate exact-head review and merge decision
+COMPLETE: durability implementation lane 2 - corruption-safe readers (PR #416; main `80e1c86f`)
+NEXT: separate owner authorization decision for maintenance locking + mutation quiescence
+THEN: separately authorized snapshot/manifest + safe migration
+THEN: separately authorized encrypted backup/restore/rollback
+THEN: durability torture proof
+THEN: #409 release hygiene
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
