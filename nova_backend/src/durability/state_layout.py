@@ -85,7 +85,11 @@ def logical_store_registry() -> tuple[LogicalStore, ...]:
         _runtime("governed_memory", "data/nova_state/memory/items.json", "portable_user"),
         _runtime("user_memory", "data/nova_state/memory/user_memory.json", "portable_user"),
         _runtime("nova_self_memory", "data/nova_state/memory/nova_self_memory.json", "portable_user"),
-        _runtime("quick_corrections", "data/nova_state/memory/quick_corrections.jsonl", "portable_user"),
+        _runtime(
+            "quick_corrections",
+            "data/nova_state/memory/quick_corrections.jsonl",
+            ("portable_user", "audit_operational"),
+        ),
         _runtime("user_profile", "data/nova_state/profiles/user_profile.json", "portable_user"),
         _runtime("tone_profile", "data/nova_state/personality/tone_profile.json", "portable_user"),
         _runtime(

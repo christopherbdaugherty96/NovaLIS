@@ -90,6 +90,10 @@ def test_secret_and_derived_backup_boundaries_are_explicit():
         "portable_user",
         "audit_operational",
     }
+    assert by_id["quick_corrections"].state_classes == {
+        "portable_user",
+        "audit_operational",
+    }
     assert by_id["openclaw_envelopes"].restore_group == "openclaw_lifecycle"
     assert by_id["openclaw_agent_runtime"].restore_group == "openclaw_lifecycle"
     assert by_id["openclaw_execution_memory"].restore_group is None
