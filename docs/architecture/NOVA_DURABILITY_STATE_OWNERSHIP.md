@@ -19,11 +19,12 @@ The supported Windows installation contract is:
 %LOCALAPPDATA%\Nova\
   control\              stable maintenance control plane
     maintenance.lock
-    active-generation.json
+    activation-a.json
+    activation-b.json
     recovery-journal.json
     staging\
   generations\
-    <generation-id>\    atomically activated durable generation
+    <generation-id>\    validated durable generation selected by activation slot
       data\             durable non-secret operating state
       secrets\          machine-bound protected credentials
       models\           model trust/version state and local model metadata
@@ -35,7 +36,7 @@ user-selected location\
   backups\               encrypted recovery or portable backup artifacts
 ```
 
-`%LOCALAPPDATA%\Nova` is a stable container and is never swapped as a unit. The exact activation unit is one complete `generations\<generation-id>` directory. Restore or migration prepares a new immutable generation under `control\staging`, moves it into `generations`, and atomically and durably replaces only `control\active-generation.json` to select it. The maintenance lock and recovery journal remain open and addressable throughout activation because they sit outside every replaceable generation. Cache, logs, and captures are also outside activation because they are excluded or independently retained by policy.
+`%LOCALAPPDATA%\Nova` is a stable container and is never swapped as a unit. The exact activation unit is one complete `generations\<generation-id>` directory. Restore or migration prepares and validates a generation under `control\staging`; it remains immutable from final validation through activation. The maintenance lock, two activation slots, and recovery journal remain open and addressable throughout activation because they sit outside every generation. Cache, logs, and captures are also outside activation because they are excluded or independently retained by policy. After a successful process restart binds every store to the selected generation, that generation becomes the sole writable live generation.
 
 Application code and static configuration remain in the install directory and are replaceable. A writable source checkout may use an explicit development override, but writable source code must not implicitly become the production data contract. `NOVA_RUNTIME_DIR` remains a supported explicit override and must resolve to the same stable-container layout. Backup artifacts must not be written inside the live user-data root.
 
@@ -110,26 +111,29 @@ Secret configuration includes API keys, bridge tokens, provider tokens, and OAut
 8. A failed migration or restore leaves the previous active root untouched and usable.
 9. `openclaw_envelopes.json` and `openclaw/agent_runtime.json` form one restore group because runtime records reference envelope lifecycle by `envelope_id`. They are validated and activated together.
 10. Quick-correction consumption state is authoritative: restore must not turn a consumed correction into an unconsumed correction or replay it.
+11. No process or store object may survive a generation activation with a cached path. Every writer stops before activation and all stores resolve paths again after restart.
 
 No current user mutation requires an atomic transaction across separate authoritative stores. Where one action updates operational state and appends a ledger receipt, the implementation must use stable operation IDs and reconciliation so an interrupted second write is visible. It must not claim that two independent file writes are one transaction.
 
 ## Storage and snapshot decision
 
-File-backed storage remains the beta architecture. Each mutable JSON or rewritten JSONL store must use atomic replace, schema validation, and explicit corruption failure. A write may be acknowledged only after the complete temporary file has been flushed to the operating system, its file handle has received a durable flush (`fsync` or the Windows `FlushFileBuffers` equivalent), and the same-volume replacement plus directory/metadata update has completed durably. On Windows, the implementation must use replacement semantics with write-through durability, such as `ReplaceFileW` or `MoveFileExW` with `MOVEFILE_WRITE_THROUGH`, and report failure if the durability barrier cannot complete. Append-only JSONL writes must flush and durably sync before acknowledgement. Atomic visibility without these durability steps is insufficient. Silent `except Exception -> empty/default state` behavior is prohibited for authoritative and portable state because it converts corruption into apparent data loss.
+File-backed storage remains the beta architecture. Each mutable JSON or rewritten JSONL store must use schema validation, integrity metadata, and explicit corruption failure. A write may be acknowledged only after the complete candidate bytes have been written through a write-through handle, the handle has received a durable flush (`fsync` or Windows `FlushFileBuffers`), and a crash-recoverable commit record has also been durably flushed. The implementation must use a tested per-store two-slot or write-ahead/journal protocol on Windows so startup can distinguish the last complete commit from a torn candidate. A rename or replace operation alone is not accepted as proof of metadata durability. Append-only JSONL writes must flush and durably sync before acknowledgement, and rewritten JSONL files follow the same recoverable commit protocol as JSON. Silent `except Exception -> empty/default state` behavior is prohibited for authoritative and portable state because it converts corruption into apparent data loss.
 
 Backup, restore, migration, and repair use a Nova-owned maintenance coordinator:
 
 1. Acquire the OS-visible interprocess lock at `control\maintenance.lock`, outside all replaceable generations.
 2. Put Nova into maintenance mode and stop new mutations and scheduled work.
-3. Flush/close active writers and record the current state generation.
+3. Flush and close active writers, stop the runtime process, and record the current state generation. No writer or cached store path survives this boundary.
 4. Validate every included store and copy it into `control\staging\<operation-id>`.
 5. Build and hash a versioned manifest.
 6. Encrypt the completed artifact before it leaves staging.
-7. Resume runtime mutation only after snapshot completion or clean abort.
+7. For backup-only work, restart the runtime against the unchanged selected generation after snapshot completion or clean abort. Restore and migration follow the activation protocol below.
 
 External tools must not mutate live Nova state. A second Nova process must refuse mutation while the maintenance lock is held.
 
-For generation activation, the coordinator moves the fully validated staging directory to `generations\<generation-id>`, durably records the move, and then durably replaces `control\active-generation.json`. It never renames or replaces `%LOCALAPPDATA%\Nova`, `control`, or a directory containing the held lock. A crash before pointer replacement leaves the prior generation active; a crash after durable pointer replacement selects the complete new generation and leaves the prior generation available for rollback.
+For generation activation, the coordinator installs the fully validated generation at `generations\<generation-id>` and verifies its manifest in place. Each activation slot contains a monotonically increasing sequence number, generation ID, manifest hash, and integrity check. The coordinator writes the inactive slot completely through a write-through handle and calls `FlushFileBuffers` before closing it; it never depends on directory rename as the activation commit. Startup reads both slots and selects the highest-sequence slot whose record and referenced generation fully validate. If the newest slot is torn, missing, corrupt, or references an invalid generation, startup deterministically falls back to the prior valid slot and records the failed activation for inspection.
+
+The maintenance lock remains held while old writers stop, the new slot is committed, and the runtime restarts. On restart, every store re-resolves the selected generation rather than retaining a concrete path from the prior process. Startup validates the selected generation and its cross-store groups before mutation or scheduled work becomes available. Only then may the coordinator release maintenance mode. If startup validation fails, the coordinator stops the failed process and restarts against the previous valid slot.
 
 ## SQLite decision
 
@@ -149,11 +153,13 @@ Export remains separate. It produces human-readable user information and does no
 
 ## Restore, migration, corruption, and rollback
 
-Restore never writes directly over the active generation. It decrypts into control-plane staging, verifies authentication and every manifest hash, validates all schemas and cross-store invariants, computes a restore plan, and requires explicit user confirmation. It then installs the fully prepared generation under `generations` and activates it only through the durable `active-generation.json` pointer replacement while maintenance mode is active. The previous generation remains as a rollback point until the restored generation passes startup validation.
+Restore never writes directly over the active generation. It decrypts into control-plane staging, verifies authentication and every manifest hash, validates all schemas and cross-store invariants, computes a restore plan, and requires explicit user confirmation. It then installs the fully prepared generation under `generations` and commits the inactive activation slot while maintenance mode is active. The previous valid slot and generation remain available for deterministic fallback and rollback until the selected generation passes startup validation.
 
 Partial restore is allowed only for explicitly independent logical groups. It reports every included, skipped, incompatible, and reconnect-required group. It never reports success for a partially activated group. Audit/operational state cannot be cherry-picked in a way that creates false execution history.
 
 OpenClaw envelope lifecycle and agent runtime are one indivisible partial-restore group. Before activation, every `envelope_id` reference in active, recent, delivery, or other retained agent-runtime records must resolve to a compatible restored envelope. Missing, duplicate, or contradictory lifecycle records reject that group and preserve it in quarantine for inspection; they are never silently dropped or synthesized. OpenClaw execution memory is advisory and may be restored separately only after validating that it cannot grant authority or create executable lifecycle state.
+
+Quick corrections require conservative replay protection. Restored records remain available as evidence, including their original `consumed` values, but restored `consumed: false` records are not automatically injected after rollback or restore. They may become eligible only when a stable identity or canonical record digest can be reconciled against newer surviving consumption evidence. Current pre-ID or ambiguous records are quarantined from injection and reported for inspection; the restore path does not invent IDs or launch a correction-ID migration. A consumed record always remains consumed when either generation records it as consumed.
 
 Existing source-tree and repository-relative state migrates once into the canonical root. Migration inventories both source and target, refuses ambiguous dual ownership, stages and validates the result, records provenance, and leaves the source untouched until activation succeeds. When both locations contain divergent authoritative data, migration stops for explicit resolution.
 
@@ -165,7 +171,7 @@ Backups must resist accidental cloud-sync disclosure, local unauthorized access,
 
 Raw provider secrets, environment dumps, captures, logs, caches, temp files, and support artifacts are excluded by default. Optional sensitive artifacts show category, count, and size before inclusion. Backup creation and restore write redacted audit events without secret values, passphrases, or content hashes that expose personal data.
 
-## Authorized implementation order after decision acceptance
+## Proposed durability implementation dependency order — non-authorizing
 
 1. Canonical root and logical store registry, including migration detection for goals, story state, launcher logs, and existing runtime-root layouts.
 2. Corruption-safe readers for authoritative and portable stores; preserve evidence and fail visibly.
@@ -175,7 +181,7 @@ Raw provider secrets, environment dumps, captures, logs, caches, temp files, and
 6. Staged restore, target-build validation, paused operational activation, and rollback.
 7. Restart, crash, corruption, migration, cross-identity, and no-silent-loss proof.
 
-Each item is a separately reviewable bounded lane. This ordering does not itself authorize implementation.
+Each item would be a separately reviewable bounded lane if separately authorized. This dependency order and #408 acceptance do not authorize any implementation lane.
 
 ## Non-goals
 

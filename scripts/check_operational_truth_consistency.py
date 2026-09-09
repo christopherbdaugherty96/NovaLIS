@@ -511,7 +511,9 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     )
 
 
-def _preserves_post_405_boundary(text: str) -> bool:
+def _preserves_post_405_boundary(
+    text: str, *, allow_pre_406_sequence: bool = True
+) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
     active = _extract_post_405_active_block(text)
@@ -526,7 +528,9 @@ def _preserves_post_405_boundary(text: str) -> bool:
         )
     )
     normalized = " ".join(active.split())
-    preserves_initial_order = directives == POST_405_DIRECTIVE_SEQUENCE
+    preserves_initial_order = (
+        allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
+    )
     preserves_post_406_order = (
         directives == POST_406_DIRECTIVE_SEQUENCE
         and POST_406_COMPLETE_MARKER in normalized
@@ -706,7 +710,9 @@ def check_operational_truth(
             text = texts.get(name)
             if text is None:
                 continue
-            if not _preserves_post_405_boundary(text):
+            if not _preserves_post_405_boundary(
+                text, allow_pre_406_sequence=False
+            ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
                 )
