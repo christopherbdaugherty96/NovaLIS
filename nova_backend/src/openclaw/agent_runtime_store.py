@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from src.durability.corruption import read_json_state, require_state
 from src.openclaw.agent_personality_bridge import (
     DEFAULT_DELIVERY_MODE_BY_TEMPLATE,
     normalize_delivery_mode,
@@ -832,11 +832,10 @@ class OpenClawAgentRuntimeStore:
 
     def _read_state(self) -> dict[str, Any]:
         try:
-            payload = json.loads(self._path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = self._default_state()
-        if not isinstance(payload, dict):
-            payload = self._default_state()
+            payload = read_json_state(self._path, "openclaw_agent_runtime")
+        except FileNotFoundError:
+            return self._default_state()
+        require_state(isinstance(payload, dict), "openclaw_agent_runtime", self._path, "expected object")
         payload.setdefault("schema_version", self.SCHEMA_VERSION)
         payload["templates"] = self._normalized_templates(payload.get("templates"))
         payload["active_run"] = self._normalize_active_run(payload.get("active_run"))
