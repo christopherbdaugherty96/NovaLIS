@@ -16,7 +16,7 @@ def build_memory_router(deps) -> APIRouter:
 
     @router.get("/api/memory/export")
     async def export_memory():
-        payload = GovernedMemoryStore().export_payload()
+        payload = GovernedMemoryStore().export_payload(include_deleted=True)
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "MEMORY_EXPORT_REQUESTED",
