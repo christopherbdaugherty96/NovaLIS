@@ -22,7 +22,7 @@ import re
 from typing import Any
 
 from src.base_skill import BaseSkill, SkillResult
-from src.memory.governed_memory_store import GovernedMemoryStore
+from src.memory.governed_memory_store import AmbiguousMemoryIdError, GovernedMemoryStore
 from src.memory.user_memory_store import user_memory_store
 
 # ---------------------------------------------------------------------------
@@ -296,6 +296,8 @@ class MemorySkill(BaseSkill):
                 message=f"Couldn't find memory {item_id}. It may already be gone.",
                 skill=self.name,
             )
+        except AmbiguousMemoryIdError as exc:
+            return SkillResult(success=False, message=str(exc), skill=self.name)
         except Exception:
             return SkillResult(
                 success=False,
@@ -346,6 +348,8 @@ class MemorySkill(BaseSkill):
                 message=f"Couldn't find memory {item_id} to update.",
                 skill=self.name,
             )
+        except AmbiguousMemoryIdError as exc:
+            return SkillResult(success=False, message=str(exc), skill=self.name)
         except Exception:
             return SkillResult(
                 success=False,
@@ -444,7 +448,7 @@ _REMEMBER_STRIP_RE = re.compile(
     re.IGNORECASE,
 )
 
-_ITEM_ID_RE = re.compile(r"\b(MEM-\d{8}-\d{6}-[0-9A-Fa-f]{4}|UM-[0-9a-fA-F]{8})\b")
+_ITEM_ID_RE = re.compile(r"\b(MEM-\d{8}-\d{6}-(?:[0-9A-Fa-f]{32}|[0-9A-Fa-f]{4})|UM-[0-9a-fA-F]{8})\b")
 
 _UPDATE_COLON_RE = re.compile(
     r"^(?:update|change|edit|correct|fix)\s+(?:my\s+)?(?:memory|note|that)(?:\s+\S+)?\s*:\s*",

@@ -194,7 +194,7 @@ class MemoryGovernanceExecutor:
         )
 
     def _export(self, request, store: GovernedMemoryStore) -> ActionResult:
-        payload = store.export_payload()
+        payload = store.export_payload(include_deleted=True)
         item_count = int(payload.get("item_count") or 0)
         exported_at = str(payload.get("exported_at") or datetime.now(timezone.utc).isoformat())
         self._log(
