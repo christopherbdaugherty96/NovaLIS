@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: separate owner authorization decision for corruption-safe readers",
+        "NEXT: corruption-safe reader inventory + fail-closed implementation",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -664,8 +664,9 @@ def test_current_repository_shape_records_lane_1_complete_and_lane_2_unapproved(
         assert structured_lines.count(checker.POST_408_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.LANE_1_COMPLETE_PROVENANCE) == 1
         assert checker.LANE_1_AUTHORIZATION_MARKER not in normalized
+        assert checker.LANE_2_AUTHORIZATION_MARKER in normalized
         assert (
-            "NEXT: SEPARATE OWNER AUTHORIZATION DECISION FOR CORRUPTION-SAFE READERS"
+            "NEXT: CORRUPTION-SAFE READER INVENTORY + FAIL-CLOSED IMPLEMENTATION"
             in normalized
         )
 
@@ -777,9 +778,9 @@ def test_lane_1_sequence_rejects_competing_durability_authorization(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: separate owner authorization decision for corruption-safe readers",
-        "AUTHORIZED: durability implementation lane 2\n"
-        "NEXT: separate owner authorization decision for corruption-safe readers",
+        "AUTHORIZED: durability implementation lane 2 only",
+        "AUTHORIZED: durability implementation lane 2 only\n"
+        "AUTHORIZED: durability implementation lane 3",
         1,
     )
     assert corrupted != original
@@ -805,8 +806,9 @@ def test_pre_406_sequence_is_historical_only():
         "COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)\n"
         "COMPLETE: durability implementation lane 1 - canonical state registry/migration detection "
         "(PR #413; main `e74fdca0`)\n"
-        "NEXT: separate owner authorization decision for corruption-safe readers\n"
-        "THEN: if authorized, corruption-safe readers",
+        "AUTHORIZED: durability implementation lane 2 only\n"
+        "NEXT: corruption-safe reader inventory + fail-closed implementation\n"
+        "THEN: separate exact-head review and merge decision",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
         "THEN: evidence-authorized durability implementation",

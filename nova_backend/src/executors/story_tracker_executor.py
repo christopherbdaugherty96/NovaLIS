@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from src.actions.action_result import ActionResult
+from src.durability.corruption import read_json_state, require_state
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 STORY_DIR = PROJECT_ROOT / "nova_workspace" / "story_tracker"
@@ -33,9 +34,20 @@ def _story_path(topic: str, story_dir: Path | None = None) -> Path:
 
 def _read_json(path: Path, default: Any) -> Any:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
+        payload = read_json_state(path, "story_tracker")
+    except FileNotFoundError:
         return default
+    require_state(isinstance(payload, type(default)), "story_tracker", path, f"expected {type(default).__name__}")
+    if path.name == "tracked_topics.json":
+        require_state(isinstance(payload.get("topics"), list), "story_tracker", path, "topics must be a list")
+        require_state(all(isinstance(topic, str) for topic in payload["topics"]), "story_tracker", path, "topics must contain strings")
+    elif path.name == "story_graph.json":
+        require_state(isinstance(payload.get("links"), list), "story_tracker", path, "links must be a list")
+        require_state(all(isinstance(link, dict) for link in payload["links"]), "story_tracker", path, "links must contain objects")
+    elif isinstance(payload, dict):
+        require_state(isinstance(payload.get("snapshots"), list), "story_tracker", path, "snapshots must be a list")
+        require_state(all(isinstance(snapshot, dict) for snapshot in payload["snapshots"]), "story_tracker", path, "snapshots must contain objects")
+    return payload
 
 
 def _write_json(path: Path, payload: Any) -> None:

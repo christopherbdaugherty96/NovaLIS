@@ -27,6 +27,8 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
+from src.durability.corruption import read_json_state, require_state
+
 logger = logging.getLogger(__name__)
 
 _GOALS_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "goals.json"
@@ -192,28 +194,17 @@ class GoalStore:
 
     def _load(self) -> None:
         """Load goals from disk, or create empty default."""
-        if not self._path.exists():
+        try:
+            raw = read_json_state(self._path, "goals")
+        except FileNotFoundError:
             logger.info("No goals.json found — starting with empty goals.")
             self._data = _empty_store()
             return
-        try:
-            with open(self._path, "r", encoding="utf-8") as f:
-                raw = json.load(f)
-            if not isinstance(raw, dict) or "goals" not in raw:
-                logger.warning(
-                    "goals.json has unexpected shape — resetting."
-                )
-                self._data = _empty_store()
-                return
-            self._data = raw
-            logger.info(
-                "Loaded %d goals from %s",
-                len(self._data.get("goals", [])),
-                self._path,
-            )
-        except (json.JSONDecodeError, OSError) as exc:
-            logger.warning("Failed to read goals.json: %s", exc)
-            self._data = _empty_store()
+        require_state(isinstance(raw, dict), "goals", self._path, "expected object")
+        require_state(isinstance(raw.get("goals"), list), "goals", self._path, "goals must be a list")
+        require_state(all(isinstance(goal, dict) for goal in raw["goals"]), "goals", self._path, "goal records must be objects")
+        self._data = raw
+        logger.info("Loaded %d goals from %s", len(self._data["goals"]), self._path)
 
     def _save(self) -> None:
         """Write current state to disk. Must be called under lock."""

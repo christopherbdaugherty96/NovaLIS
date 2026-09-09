@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from src.durability.corruption import StateCorruptError
 from src.utils.persistent_state import runtime_path
 
 _log = logging.getLogger(__name__)
@@ -77,10 +78,13 @@ def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
       - event_type (str)
     Plus any additional metadata the governor logged with the event.
 
-    Returns [] on missing ledger, empty ledger, or any read/parse error so
-    callers (API layer, dashboard) stay functional on a fresh install.
+    Missing and empty ledgers return []; corruption raises rather than being
+    flattened to an empty history.
     """
-    return list(read_recent_receipts(limit).receipts)
+    result = read_recent_receipts(limit)
+    if not result.available:
+        raise StateCorruptError("ledger", _LEDGER_PATH, result.error or "receipt history unavailable")
+    return list(result.receipts)
 
 
 def _collect_receipts(limit: int) -> list[dict[str, Any]]:
@@ -99,10 +103,10 @@ def _collect_receipts(limit: int) -> list[dict[str, Any]]:
         nonempty_lines += 1
         try:
             entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+        except json.JSONDecodeError as exc:
+            raise StateCorruptError("ledger", _LEDGER_PATH, exc) from exc
         if not isinstance(entry, dict):
-            continue
+            raise StateCorruptError("ledger", _LEDGER_PATH, "expected object record")
         parseable_records += 1
         if entry.get("event_type") in _RECEIPT_WORTHY:
             receipts.append(entry)
@@ -140,6 +144,8 @@ def get_session_action_receipts(
         return []
     try:
         return _collect_session_action_receipts(trusted_session_id, limit)
+    except StateCorruptError:
+        raise
     except Exception:
         _log.exception("receipt_store: unexpected error reading session receipts")
         return []
@@ -153,8 +159,8 @@ def _collect_session_action_receipts(
         return []
     try:
         raw_lines = _read_tail_lines(_LEDGER_PATH, _SESSION_READ_TAIL)
-    except OSError:
-        return []
+    except OSError as exc:
+        raise StateCorruptError("ledger", _LEDGER_PATH, exc) from exc
 
     receipts: list[dict[str, Any]] = []
     for line in reversed(raw_lines):
@@ -163,8 +169,8 @@ def _collect_session_action_receipts(
             continue
         try:
             entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+        except json.JSONDecodeError as exc:
+            raise StateCorruptError("ledger", _LEDGER_PATH, exc) from exc
         if not isinstance(entry, dict):
             continue
         if entry.get("event_type") not in _SESSION_ACTION_EVENTS:

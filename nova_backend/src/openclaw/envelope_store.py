@@ -14,13 +14,13 @@ This module can be imported freely even when the flag is off.
 """
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 from uuid import UUID
 
+from src.durability.corruption import read_json_state, require_state
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _STORE_FILENAME = "openclaw_envelopes.json"
@@ -279,11 +279,11 @@ class EnvelopeStore:
 
     def _load(self) -> dict[str, Any]:
         try:
-            return dict(json.loads(self._path.read_text(encoding="utf-8")))
+            payload = read_json_state(self._path, "openclaw_envelopes")
         except FileNotFoundError:
             return {}
-        except Exception:
-            return {}
+        require_state(isinstance(payload, dict), "openclaw_envelopes", self._path, "expected object")
+        return dict(payload)
 
     def _save(self, state: dict[str, Any]) -> None:
         # Prune oldest terminal records if we exceed the rolling window cap
