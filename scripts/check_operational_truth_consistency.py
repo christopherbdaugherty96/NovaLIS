@@ -99,10 +99,9 @@ POST_406_COMPLETE_PROVENANCE = (
     "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS "
     "(PR #411; MAIN `CA66A06D`)"
 )
-POST_408_DIRECTIVE_SEQUENCE = (
-    "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION",
-    "THEN: SEPARATE EXACT-HEAD REVIEW AND MERGE DECISION",
-    "THEN: SEPARATELY AUTHORIZED CORRUPTION-SAFE READERS",
+POST_413_DIRECTIVE_SEQUENCE = (
+    "NEXT: SEPARATE OWNER AUTHORIZATION DECISION FOR CORRUPTION-SAFE READERS",
+    "THEN: IF AUTHORIZED, CORRUPTION-SAFE READERS",
     "THEN: BOUNDED PRODUCT-TRANSLATION/READINESS PASS",
     "THEN: CLEAN WINDOWS OPERATOR PROOF",
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
@@ -114,6 +113,14 @@ POST_408_COMPLETE_PROVENANCE = (
     "(PR #412; MAIN `2592AD91`)"
 )
 LANE_1_AUTHORIZATION_MARKER = "AUTHORIZED: DURABILITY IMPLEMENTATION LANE 1 ONLY"
+LANE_1_COMPLETE_MARKER = (
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 1 - "
+    "CANONICAL STATE REGISTRY/MIGRATION DETECTION"
+)
+LANE_1_COMPLETE_PROVENANCE = (
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 1 - "
+    "CANONICAL STATE REGISTRY/MIGRATION DETECTION (PR #413; MAIN `E74FDCA0`)"
+)
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -534,7 +541,7 @@ def _preserves_post_405_boundary(
     text: str,
     *,
     allow_pre_406_sequence: bool = True,
-    require_lane_1_sequence: bool = False,
+    require_lane_1_closeout: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -559,8 +566,12 @@ def _preserves_post_405_boundary(
     completion_408_lines = tuple(
         line for line in structured_lines if line.startswith(POST_408_COMPLETE_MARKER)
     )
+    lane_1_completion_lines = tuple(
+        line for line in structured_lines if line.startswith(LANE_1_COMPLETE_MARKER)
+    )
     has_406_provenance = completion_406_lines == (POST_406_COMPLETE_PROVENANCE,)
     has_408_provenance = completion_408_lines == (POST_408_COMPLETE_PROVENANCE,)
+    has_lane_1_provenance = lane_1_completion_lines == (LANE_1_COMPLETE_PROVENANCE,)
     durability_authorizations = tuple(
         line
         for line in structured_lines
@@ -571,18 +582,19 @@ def _preserves_post_405_boundary(
         allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     )
     preserves_post_406_order = (
-        not require_lane_1_sequence
+        not require_lane_1_closeout
         and directives == POST_406_DIRECTIVE_SEQUENCE
         and has_406_provenance
     )
-    preserves_lane_1_order = (
-        directives == POST_408_DIRECTIVE_SEQUENCE
+    preserves_lane_1_closeout = (
+        directives == POST_413_DIRECTIVE_SEQUENCE
         and has_406_provenance
         and has_408_provenance
-        and durability_authorizations == (LANE_1_AUTHORIZATION_MARKER,)
+        and has_lane_1_provenance
+        and durability_authorizations == ()
     )
     if not (
-        preserves_initial_order or preserves_post_406_order or preserves_lane_1_order
+        preserves_initial_order or preserves_post_406_order or preserves_lane_1_closeout
     ):
         return False
     required = (
@@ -759,7 +771,7 @@ def check_operational_truth(
             if not _preserves_post_405_boundary(
                 text,
                 allow_pre_406_sequence=False,
-                require_lane_1_sequence=True,
+                require_lane_1_closeout=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
