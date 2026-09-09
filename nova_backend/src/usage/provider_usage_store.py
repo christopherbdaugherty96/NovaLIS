@@ -251,6 +251,7 @@ class ProviderUsageStore:
         require_state(isinstance(state, dict), "provider_usage", self._path, "expected object")
         require_state(isinstance(state.get("daily", {}), dict), "provider_usage", self._path, "daily must be an object")
         require_state(isinstance(state.get("recent_events", []), list), "provider_usage", self._path, "recent_events must be a list")
+        require_state(all(isinstance(item, dict) for item in state["recent_events"]), "provider_usage", self._path, "recent event records must be objects")
         state.setdefault("schema_version", self.SCHEMA_VERSION)
         state.setdefault("current_day", _utc_day())
         state.setdefault("daily", {})

@@ -112,6 +112,24 @@ def test_schedule_corruption_blocks_mutation_and_preserves_state(tmp_path):
     assert path.read_text(encoding="utf-8") == original
 
 
+def test_structurally_invalid_schedule_blocks_mutation_and_preserves_state(tmp_path):
+    path = tmp_path / "schedules.json"
+    original = '{"schema_version":"1.1","schedules":[{}],"policy":{}}'
+    path.write_text(original, encoding="utf-8")
+    store = NotificationScheduleStore(path)
+
+    with pytest.raises(StateCorruptError):
+        store.create_schedule(
+            kind="reminder",
+            title="x",
+            body="y",
+            recurrence="once",
+            next_run_at=datetime.now(timezone.utc),
+        )
+
+    assert path.read_text(encoding="utf-8") == original
+
+
 def test_ledger_does_not_drop_truncated_history(tmp_path):
     path = tmp_path / "ledger.jsonl"
     original = '{"event_type":"ACTION_COMPLETED"}\n{"event_type":'

@@ -78,10 +78,13 @@ def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
       - event_type (str)
     Plus any additional metadata the governor logged with the event.
 
-    Missing and empty ledgers return []; corruption is exposed by
-    ``read_recent_receipts`` as unavailable.
+    Missing and empty ledgers return []; corruption raises rather than being
+    flattened to an empty history.
     """
-    return list(read_recent_receipts(limit).receipts)
+    result = read_recent_receipts(limit)
+    if not result.available:
+        raise StateCorruptError("ledger", _LEDGER_PATH, result.error or "receipt history unavailable")
+    return list(result.receipts)
 
 
 def _collect_receipts(limit: int) -> list[dict[str, Any]]:

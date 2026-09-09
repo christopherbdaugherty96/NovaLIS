@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+from types import SimpleNamespace
+
 import pytest
 from src.durability.corruption import StateCorruptError
-from src.executors.story_tracker_executor import _read_json
+from src.executors.story_tracker_executor import StoryTrackerExecutor, _read_json
 from src.memory.user_memory_store import UserMemoryStore
 from src.patterns.pattern_review_store import PatternReviewStore
 from src.settings.runtime_settings_store import RuntimeSettingsStore
@@ -74,3 +77,54 @@ def test_wave2_missing_store_retains_default_semantics(tmp_path, factory):
 
 def test_missing_story_tracker_state_retains_default(tmp_path):
     assert _read_json(tmp_path / "missing.json", []) == []
+
+
+@pytest.mark.parametrize(
+    "factory,payload,mutate",
+    (
+        (
+            PatternReviewStore,
+            {"schema_version": "1.0", "proposals": [1], "decisions": []},
+            lambda store: store.set_opt_in(True),
+        ),
+        (
+            ProviderUsageStore,
+            {"daily": {}, "recent_events": [1]},
+            lambda store: store.record_reasoning_event(
+                provider="local",
+                route="test",
+                analysis_profile="analysis",
+                prompt_text="prompt",
+                response_text="response",
+            ),
+        ),
+    ),
+)
+def test_invalid_nested_records_block_mutation_and_preserve_bytes(
+    tmp_path, factory, payload, mutate
+):
+    path = tmp_path / "state.json"
+    original = json.dumps(payload)
+    path.write_text(original, encoding="utf-8")
+
+    with pytest.raises(StateCorruptError):
+        mutate(factory(path))
+
+    assert path.read_text(encoding="utf-8") == original
+
+
+def test_invalid_tracked_topics_block_mutation_and_preserve_bytes(tmp_path):
+    story_dir = tmp_path / "stories"
+    story_dir.mkdir()
+    path = story_dir / "tracked_topics.json"
+    original = '{"topics":{"lost":"value"}}'
+    path.write_text(original, encoding="utf-8")
+    executor = StoryTrackerExecutor(story_dir)
+    request = SimpleNamespace(
+        params={"action": "stop", "topic": "lost"}, request_id="story-corrupt"
+    )
+
+    with pytest.raises(StateCorruptError):
+        executor.execute_update(request)
+
+    assert path.read_text(encoding="utf-8") == original

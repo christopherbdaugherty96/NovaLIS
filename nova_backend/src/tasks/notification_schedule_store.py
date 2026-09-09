@@ -503,6 +503,13 @@ class NotificationScheduleStore:
             return self._default_state()
         require_state(isinstance(payload, dict), "notification_schedules", self._path, "expected object")
         require_state(isinstance(payload.get("schedules", []), list), "notification_schedules", self._path, "schedules must be a list")
+        require_state(
+            all(self._is_structurally_valid_item(item) for item in payload["schedules"]),
+            "notification_schedules",
+            self._path,
+            "schedule entries must be structurally valid",
+        )
+        require_state(isinstance(payload.get("policy", {}), dict), "notification_schedules", self._path, "policy must be an object")
         if payload.get("schema_version") != self.SCHEMA_VERSION:
             payload = {
                 "schema_version": self.SCHEMA_VERSION,

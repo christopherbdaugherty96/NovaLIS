@@ -389,6 +389,8 @@ class PatternReviewStore:
         require_state(isinstance(payload, dict), "pattern_review", self._path, "expected object")
         require_state(isinstance(payload.get("proposals", []), list), "pattern_review", self._path, "proposals must be a list")
         require_state(isinstance(payload.get("decisions", []), list), "pattern_review", self._path, "decisions must be a list")
+        require_state(all(isinstance(item, dict) for item in payload["proposals"]), "pattern_review", self._path, "proposal records must be objects")
+        require_state(all(isinstance(item, dict) for item in payload["decisions"]), "pattern_review", self._path, "decision records must be objects")
         if payload.get("schema_version") != self.SCHEMA_VERSION:
             payload = {
                 "schema_version": self.SCHEMA_VERSION,
