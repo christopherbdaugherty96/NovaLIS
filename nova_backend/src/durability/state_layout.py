@@ -32,11 +32,13 @@ class LogicalStore:
 
     logical_id: str
     relative_path: Path
-    state_class: StateClass
+    state_classes: frozenset[StateClass]
     path_kind: PathKind = "file"
     location_scope: LocationScope = "generation"
     legacy_runtime_path: Path | None = None
     legacy_repository_path: Path | None = None
+    legacy_runtime_kind: PathKind | None = None
+    legacy_repository_kind: PathKind | None = None
     restore_group: str | None = None
     included_in_recovery: bool = True
     included_in_portable: bool = True
@@ -86,9 +88,17 @@ def logical_store_registry() -> tuple[LogicalStore, ...]:
         _runtime("quick_corrections", "data/nova_state/memory/quick_corrections.jsonl", "portable_user"),
         _runtime("user_profile", "data/nova_state/profiles/user_profile.json", "portable_user"),
         _runtime("tone_profile", "data/nova_state/personality/tone_profile.json", "portable_user"),
-        _runtime("runtime_settings", "data/nova_state/settings/runtime_settings.json", "audit_operational"),
+        _runtime(
+            "runtime_settings",
+            "data/nova_state/settings/runtime_settings.json",
+            ("portable_user", "audit_operational"),
+        ),
         _runtime("atomic_policies", "data/nova_state/policies/atomic_policies.json", "audit_operational"),
-        _runtime("notification_schedules", "data/nova_state/notifications/schedules.json", "audit_operational"),
+        _runtime(
+            "notification_schedules",
+            "data/nova_state/notifications/schedules.json",
+            ("portable_user", "audit_operational"),
+        ),
         _runtime("pattern_review", "data/nova_state/patterns/review_queue.json", "portable_user"),
         _repository(
             "goals",
@@ -162,7 +172,8 @@ def logical_store_registry() -> tuple[LogicalStore, ...]:
             "logs",
             "sensitive_artifact",
             legacy_runtime_path="logs",
-            legacy_repository_path="scripts/pids",
+            legacy_repository_path="scripts/pids/nova.log",
+            legacy_repository_kind="file",
             path_kind="directory",
             included_in_recovery=False,
             included_in_portable=False,
@@ -191,12 +202,14 @@ def detect_migration_state(
 
         if store.legacy_runtime_path is not None:
             path = legacy_runtime_root / store.legacy_runtime_path
-            if path != target and _meaningfully_exists(path, store.path_kind):
+            legacy_kind = store.legacy_runtime_kind or store.path_kind
+            if path != target and _meaningfully_exists(path, legacy_kind):
                 candidates.append(MigrationCandidate(path, "legacy_runtime"))
 
         if store.legacy_repository_path is not None:
             path = repository_root / store.legacy_repository_path
-            if path != target and _meaningfully_exists(path, store.path_kind):
+            legacy_kind = store.legacy_repository_kind or store.path_kind
+            if path != target and _meaningfully_exists(path, legacy_kind):
                 candidates.append(MigrationCandidate(path, "legacy_repository"))
 
         canonical_count = sum(candidate.source == "canonical" for candidate in candidates)
@@ -230,10 +243,12 @@ def _meaningfully_exists(path: Path, path_kind: PathKind) -> bool:
 def _runtime(
     logical_id: str,
     relative_path: str,
-    state_class: StateClass,
+    state_classes: StateClass | tuple[StateClass, ...],
     *,
     legacy_runtime_path: str | None = None,
     legacy_repository_path: str | None = None,
+    legacy_runtime_kind: PathKind | None = None,
+    legacy_repository_kind: PathKind | None = None,
     restore_group: str | None = None,
     path_kind: PathKind = "file",
     location_scope: LocationScope = "generation",
@@ -243,13 +258,15 @@ def _runtime(
     return LogicalStore(
         logical_id=logical_id,
         relative_path=Path(relative_path),
-        state_class=state_class,
+        state_classes=_state_classes(state_classes),
         path_kind=path_kind,
         location_scope=location_scope,
         legacy_runtime_path=Path(legacy_runtime_path or relative_path),
         legacy_repository_path=(
             Path(legacy_repository_path) if legacy_repository_path else None
         ),
+        legacy_runtime_kind=legacy_runtime_kind,
+        legacy_repository_kind=legacy_repository_kind,
         restore_group=restore_group,
         included_in_recovery=included_in_recovery,
         included_in_portable=included_in_portable,
@@ -260,14 +277,20 @@ def _repository(
     logical_id: str,
     relative_path: str,
     legacy_repository_path: str,
-    state_class: StateClass,
+    state_classes: StateClass | tuple[StateClass, ...],
     *,
     path_kind: PathKind = "file",
 ) -> LogicalStore:
     return LogicalStore(
         logical_id=logical_id,
         relative_path=Path(relative_path),
-        state_class=state_class,
+        state_classes=_state_classes(state_classes),
         path_kind=path_kind,
         legacy_repository_path=Path(legacy_repository_path),
     )
+
+
+def _state_classes(
+    values: StateClass | tuple[StateClass, ...],
+) -> frozenset[StateClass]:
+    return frozenset((values,)) if isinstance(values, str) else frozenset(values)
