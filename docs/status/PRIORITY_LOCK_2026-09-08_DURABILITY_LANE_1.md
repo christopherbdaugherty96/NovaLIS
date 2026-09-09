@@ -1,7 +1,7 @@
 # Priority Lock — Durability Implementation Lane 1
 
-Status: ACTIVE / OWNER AUTHORIZED  
-Authorized from: accepted #408 decision on `main@2592ad913b7da4c998425b7b2ee8432a8c032ba8`  
+Status: ACTIVE / OWNER AUTHORIZED
+Authorized from: accepted #408 decision on `main@2592ad913b7da4c998425b7b2ee8432a8c032ba8`
 Branch: `codex/durability-lane1-user-data-root`
 
 ## Objective
