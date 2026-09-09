@@ -97,7 +97,7 @@ class TestReceiptAvailabilityTruth:
 
         assert result.available is False
         assert result.receipts == ()
-        assert result.error == "ValueError"
+        assert result.error == "StateCorruptError"
 
 
 class TestNonReceiptWorthy:
@@ -176,24 +176,26 @@ class TestReceiptWorthy:
 
 
 class TestMalformedLines:
-    def test_invalid_json_line_skipped(self, monkeypatch, tmp_path):
+    def test_invalid_json_line_marks_ledger_unavailable(self, monkeypatch, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
         with open(ledger, "w", encoding="utf-8") as f:
             f.write("not json at all\n")
             f.write(json.dumps(_entry(_RECEIPT_TYPE)) + "\n")
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
-        result = get_recent_receipts()
-        assert len(result) == 1
+        result = read_recent_receipts()
+        assert result.available is False
+        assert result.error == "StateCorruptError"
 
-    def test_non_dict_json_line_skipped(self, monkeypatch, tmp_path):
+    def test_non_dict_json_line_marks_ledger_unavailable(self, monkeypatch, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
         with open(ledger, "w", encoding="utf-8") as f:
             f.write(json.dumps([1, 2, 3]) + "\n")          # list — valid JSON, not dict
             f.write(json.dumps("a string") + "\n")          # string — valid JSON, not dict
             f.write(json.dumps(_entry(_RECEIPT_TYPE)) + "\n")
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
-        result = get_recent_receipts()
-        assert len(result) == 1
+        result = read_recent_receipts()
+        assert result.available is False
+        assert result.error == "StateCorruptError"
 
     def test_blank_lines_skipped(self, monkeypatch, tmp_path):
         ledger = tmp_path / "ledger.jsonl"

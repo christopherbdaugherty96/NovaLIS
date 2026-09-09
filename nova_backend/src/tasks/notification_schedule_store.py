@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from src.durability.corruption import StateCorruptError, read_json_state, require_state
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -137,7 +137,12 @@ class NotificationScheduleStore:
 
         try:
             with self._lock:
-                payload = json.loads(self._path.read_text(encoding="utf-8"))
+                payload = read_json_state(self._path, "notification_schedules")
+        except FileNotFoundError:
+            return ScheduleReadResult((), available=True)
+        except StateCorruptError as exc:
+            return ScheduleReadResult((), available=False, error=type(exc).__name__)
+        try:
             if not isinstance(payload, dict) or not isinstance(payload.get("schedules"), list):
                 raise ValueError("Invalid notification schedule state")
             if not all(self._is_structurally_valid_item(item) for item in payload["schedules"]):
@@ -493,17 +498,17 @@ class NotificationScheduleStore:
 
     def _read_state(self) -> dict[str, Any]:
         try:
-            payload = json.loads(self._path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = self._default_state()
+            payload = read_json_state(self._path, "notification_schedules")
+        except FileNotFoundError:
+            return self._default_state()
+        require_state(isinstance(payload, dict), "notification_schedules", self._path, "expected object")
+        require_state(isinstance(payload.get("schedules", []), list), "notification_schedules", self._path, "schedules must be a list")
         if payload.get("schema_version") != self.SCHEMA_VERSION:
             payload = {
                 "schema_version": self.SCHEMA_VERSION,
                 "schedules": list(payload.get("schedules") or []),
                 "policy": dict(payload.get("policy") or self.DEFAULT_POLICY),
             }
-        if not isinstance(payload.get("schedules"), list):
-            payload["schedules"] = []
         payload["policy"] = self._normalize_policy(payload.get("policy"))
         payload["schedules"] = [self._normalize_item(dict(item or {})) for item in payload["schedules"]]
         return payload
