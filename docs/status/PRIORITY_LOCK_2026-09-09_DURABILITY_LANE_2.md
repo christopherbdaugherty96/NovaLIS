@@ -1,8 +1,8 @@
 # Priority Lock — Durability Implementation Lane 2
 
-Status: ACTIVE / OWNER AUTHORIZED
+Status: COMPLETE / MERGED
 Authorized from: lane 1 closeout on `main@2a3ccbd7cf4e13a1770d68c579ab8fce108059f3`
-Branch: `codex/durability-lane2-corruption-readers`
+Merged: PR #416 at `main@80e1c86f4ff9a735f5b390248f73dd3fafc1008d`
 
 ## Objective
 
