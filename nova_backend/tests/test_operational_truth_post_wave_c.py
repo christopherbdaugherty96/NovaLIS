@@ -657,6 +657,8 @@ def test_current_repository_shape_records_408_complete_and_lane_1_next():
         assert active is not None
         normalized = " ".join(active.upper().split())
         assert checker.POST_406_COMPLETE_MARKER in normalized
+        assert "PR #411" in normalized
+        assert "CA66A06D" in normalized
         assert checker.POST_408_COMPLETE_MARKER in normalized
         assert "PR #412" in normalized
         assert "2592AD91" in normalized
@@ -665,6 +667,36 @@ def test_current_repository_shape_records_408_complete_and_lane_1_next():
             "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION"
             in normalized
         )
+
+
+@pytest.mark.parametrize(
+    ("original_provenance", "corrupted_provenance"),
+    (
+        ("PR #411", "PR #999"),
+        ("ca66a06d", "deadbeef"),
+    ),
+)
+def test_lane_1_sequence_rejects_corrupt_406_provenance(
+    tmp_path, original_provenance, corrupted_provenance
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(original_provenance, corrupted_provenance, 1)
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
 
 
 def test_pre_406_sequence_is_historical_only():
