@@ -12,8 +12,8 @@ daily operating loop: STABLE
 startup health truth: VERIFIED
 Home activity usefulness: LIVE-ACCEPTED BEFORE/AFTER RESTART
 
-NEXT: #406 governed-memory ID collision correctness
-THEN: #408 durability/state-ownership decision
+COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
+NEXT: #408 durability/state-ownership decision
 THEN: evidence-authorized durability implementation
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof
