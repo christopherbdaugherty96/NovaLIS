@@ -826,6 +826,70 @@ def test_lane_2_closeout_rejects_new_durability_authorization(tmp_path):
     )
 
 
+def test_lane_2_closeout_rejects_explicit_locking_authorization(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    next_line = (
+        "NEXT: separate owner authorization decision for maintenance locking + "
+        "mutation quiescence"
+    )
+    corrupted = original.replace(
+        next_line,
+        "AUTHORIZED: maintenance locking + mutation quiescence\n" + next_line,
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
+def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    current_block = (
+        "COMPLETE: durability implementation lane 2 - corruption-safe readers "
+        "(PR #416; main `80e1c86f`)\n"
+        + "\n".join(checker.POST_416_DIRECTIVE_SEQUENCE).lower()
+    )
+    lane_1_block = (
+        "AUTHORIZED: durability implementation lane 2 only\n"
+        "next: corruption-safe reader inventory + fail-closed implementation\n"
+        "then: separate exact-head review and merge decision\n"
+        "then: bounded product-translation/readiness pass\n"
+        "then: clean windows operator proof\n"
+        "then: frozen-sha full beta acceptance\n"
+        "then: private-beta candidacy/distribution decision"
+    )
+    corrupted = original.lower().replace(current_block.lower(), lane_1_block, 1)
+    assert corrupted != original.lower()
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
 def test_pre_406_sequence_is_historical_only():
     checker = _load_checker()
     current = (checker.ROOT / "README.md").read_text(encoding="utf-8")
