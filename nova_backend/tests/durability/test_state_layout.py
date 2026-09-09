@@ -59,7 +59,7 @@ def test_registry_has_unique_safe_logical_paths_and_contract_classes():
     assert {store.logical_id for store in registry} == expected_ids
     assert len({store.logical_id for store in registry}) == len(registry)
     assert len({store.relative_path.as_posix() for store in registry}) == len(registry)
-    assert {store.state_class for store in registry} == {
+    assert set().union(*(store.state_classes for store in registry)) == {
         "portable_user",
         "machine_secret",
         "audit_operational",
@@ -82,6 +82,14 @@ def test_secret_and_derived_backup_boundaries_are_explicit():
     assert by_id["news_synthesis_cache"].included_in_recovery is False
     assert by_id["screen_captures"].included_in_recovery is False
     assert by_id["runtime_logs"].included_in_recovery is False
+    assert by_id["runtime_settings"].state_classes == {
+        "portable_user",
+        "audit_operational",
+    }
+    assert by_id["notification_schedules"].state_classes == {
+        "portable_user",
+        "audit_operational",
+    }
     assert by_id["openclaw_envelopes"].restore_group == "openclaw_lifecycle"
     assert by_id["openclaw_agent_runtime"].restore_group == "openclaw_lifecycle"
     assert by_id["openclaw_execution_memory"].restore_group is None
@@ -141,7 +149,7 @@ def test_detection_refuses_dual_ownership(tmp_path: Path):
     store = LogicalStore(
         logical_id="sample",
         relative_path=Path("data/sample.json"),
-        state_class="portable_user",
+        state_classes=frozenset({"portable_user"}),
         legacy_runtime_path=Path("data/sample.json"),
         legacy_repository_path=Path("legacy/sample.json"),
     )
@@ -172,7 +180,7 @@ def test_empty_legacy_directories_are_not_migration_sources(tmp_path: Path):
     store = LogicalStore(
         logical_id="directory",
         relative_path=Path("data/directory"),
-        state_class="portable_user",
+        state_classes=frozenset({"portable_user"}),
         path_kind="directory",
         legacy_runtime_path=Path("old/directory"),
     )
@@ -187,3 +195,37 @@ def test_empty_legacy_directories_are_not_migration_sources(tmp_path: Path):
     )[0]
 
     assert finding.status == "absent"
+
+
+def test_launcher_pid_without_log_is_not_a_runtime_log_candidate(tmp_path: Path):
+    container = tmp_path / "container"
+    runtime = tmp_path / "runtime"
+    repo = tmp_path / "repo"
+    pid_dir = repo / "scripts/pids"
+    pid_dir.mkdir(parents=True)
+    (pid_dir / "nova_backend.pid").write_text("1234", encoding="utf-8")
+    runtime_logs = next(
+        store for store in logical_store_registry() if store.logical_id == "runtime_logs"
+    )
+
+    finding = detect_migration_state(
+        container=container,
+        legacy_runtime_root=runtime,
+        repository_root=repo,
+        target_generation_id="gen-1",
+        registry=(runtime_logs,),
+    )[0]
+
+    assert finding.status == "absent"
+    assert finding.candidates == ()
+
+    (pid_dir / "nova.log").write_text("started", encoding="utf-8")
+    finding = detect_migration_state(
+        container=container,
+        legacy_runtime_root=runtime,
+        repository_root=repo,
+        target_generation_id="gen-1",
+        registry=(runtime_logs,),
+    )[0]
+    assert finding.status == "migration_required"
+    assert finding.candidates[0].path == pid_dir / "nova.log"
