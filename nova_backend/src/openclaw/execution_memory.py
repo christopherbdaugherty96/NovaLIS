@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.durability.corruption import read_json_state, require_state
 from src.utils.persistent_state import runtime_path
 
 logger = logging.getLogger(__name__)
@@ -143,9 +144,11 @@ class ExecutionMemory:
     def _load(self) -> None:
         if not self._path.exists():
             return
-        try:
-            raw = json.loads(self._path.read_text(encoding="utf-8"))
-            for item in raw:
+        raw = read_json_state(self._path, "openclaw_execution_memory")
+        require_state(isinstance(raw, list), "openclaw_execution_memory", self._path, "expected list")
+        for item in raw:
+            require_state(isinstance(item, dict), "openclaw_execution_memory", self._path, "expected object record")
+            try:
                 self._history.append(ExecutionRecord(
                     tool_name=item["tool_name"],
                     task_type=item["task_type"],
@@ -154,6 +157,7 @@ class ExecutionMemory:
                     error=item.get("error"),
                     timestamp=item.get("timestamp", ""),
                 ))
-            logger.info("Loaded %d execution records", len(self._history))
-        except Exception as exc:
-            logger.error("Failed to load execution memory: %s", exc)
+            except (KeyError, TypeError, ValueError) as exc:
+                from src.durability.corruption import StateCorruptError
+                raise StateCorruptError("openclaw_execution_memory", self._path, exc) from exc
+        logger.info("Loaded %d execution records", len(self._history))

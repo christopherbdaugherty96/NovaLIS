@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.durability.corruption import read_json_state, require_state
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -247,12 +247,11 @@ class ProviderUsageStore:
     def _read_state(self) -> dict[str, Any]:
         if not self._path.exists():
             return self._default_state()
-        try:
-            state = json.loads(self._path.read_text(encoding="utf-8"))
-        except Exception:
-            state = self._default_state()
-        if not isinstance(state, dict):
-            state = self._default_state()
+        state = read_json_state(self._path, "provider_usage")
+        require_state(isinstance(state, dict), "provider_usage", self._path, "expected object")
+        require_state(isinstance(state.get("daily", {}), dict), "provider_usage", self._path, "daily must be an object")
+        require_state(isinstance(state.get("recent_events", []), list), "provider_usage", self._path, "recent_events must be a list")
+        require_state(all(isinstance(item, dict) for item in state["recent_events"]), "provider_usage", self._path, "recent event records must be objects")
         state.setdefault("schema_version", self.SCHEMA_VERSION)
         state.setdefault("current_day", _utc_day())
         state.setdefault("daily", {})

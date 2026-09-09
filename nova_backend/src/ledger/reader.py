@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Dict, List
+
+from src.durability.corruption import read_jsonl_state, require_state
 
 
 class LedgerAnalyzer:
@@ -12,16 +13,9 @@ class LedgerAnalyzer:
     def _read_entries(self) -> List[Dict]:
         if not self.path.exists():
             return []
-        entries: List[Dict] = []
-        with self.path.open("r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    entries.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
+        entries = read_jsonl_state(self.path, "ledger")
+        for entry in entries:
+            require_state(isinstance(entry, dict), "ledger", self.path, "expected object record")
         return entries
 
     def last_n(self, n: int) -> List[Dict]:

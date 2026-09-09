@@ -15,8 +15,9 @@ Home activity usefulness: LIVE-ACCEPTED BEFORE/AFTER RESTART
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
 COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
 COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
-NEXT: separate owner authorization decision for corruption-safe readers
-THEN: if authorized, corruption-safe readers
+AUTHORIZED: durability implementation lane 2 only
+NEXT: corruption-safe reader inventory + fail-closed implementation
+THEN: separate exact-head review and merge decision
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance

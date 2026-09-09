@@ -2,12 +2,10 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from src.memory.quick_corrections import (
     load_unconsumed,
     mark_all_consumed,
@@ -38,7 +36,7 @@ class TestRecordCorrection:
         with patch("src.memory.quick_corrections._CORRECTIONS_PATH", p):
             record_correction("Correction one")
             record_correction("Correction two")
-        lines = [l for l in p.read_text().splitlines() if l.strip()]
+        lines = [line for line in p.read_text().splitlines() if line.strip()]
         assert len(lines) == 2
 
     def test_strips_whitespace(self, tmp_path):
@@ -92,16 +90,18 @@ class TestLoadUnconsumed:
             result = load_unconsumed(limit=3)
         assert len(result) == 3
 
-    def test_skips_malformed_lines(self, tmp_path):
+    def test_rejects_malformed_lines(self, tmp_path):
         p = _patched_path(tmp_path)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(
             "not valid json\n" +
             json.dumps({"content": "valid entry", "consumed": False}) + "\n"
         )
+        from src.durability.corruption import StateCorruptError
+
         with patch("src.memory.quick_corrections._CORRECTIONS_PATH", p):
-            result = load_unconsumed()
-        assert result == ["valid entry"]
+            with pytest.raises(StateCorruptError):
+                load_unconsumed()
 
 
 # ---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ class TestMarkAllConsumed:
         )
         with patch("src.memory.quick_corrections._CORRECTIONS_PATH", p):
             mark_all_consumed()
-        lines = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+        lines = [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
         assert all(entry["consumed"] is True for entry in lines)
 
     def test_does_not_change_already_consumed(self, tmp_path):
@@ -133,11 +133,10 @@ class TestMarkAllConsumed:
         p.write_text(
             json.dumps({"content": "already done", "consumed": True}) + "\n"
         )
-        original = p.stat().st_mtime
         with patch("src.memory.quick_corrections._CORRECTIONS_PATH", p):
             mark_all_consumed()
         # File should not be rewritten since nothing changed
-        lines = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+        lines = [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
         assert lines[0]["consumed"] is True
 
     def test_round_trip_record_load_mark(self, tmp_path):

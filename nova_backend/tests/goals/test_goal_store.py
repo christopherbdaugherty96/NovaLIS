@@ -9,9 +9,9 @@ These tests prove:
   4. Thread safety basics
 """
 import json
-import pytest
-from pathlib import Path
 
+import pytest
+from src.durability.corruption import StateCorruptError
 from src.goals.goal_store import GoalStore
 
 
@@ -233,11 +233,15 @@ class TestGoalPersistence:
         assert data["version"] == 1
         assert len(data["goals"]) == 1
 
-    def test_corrupt_file_resets_gracefully(self, tmp_path):
+    def test_corrupt_file_fails_closed_and_preserves_evidence(self, tmp_path):
         path = tmp_path / "goals.json"
-        path.write_text("NOT VALID JSON", encoding="utf-8")
-        store = GoalStore(path=path)
-        assert store.list_goals() == []
+        original = b"NOT VALID JSON"
+        path.write_bytes(original)
+
+        with pytest.raises(StateCorruptError):
+            GoalStore(path=path)
+
+        assert path.read_bytes() == original
 
     def test_missing_file_starts_empty(self, tmp_path):
         path = tmp_path / "nonexistent" / "goals.json"
