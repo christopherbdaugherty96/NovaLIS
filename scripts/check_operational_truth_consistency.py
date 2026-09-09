@@ -95,6 +95,10 @@ POST_406_DIRECTIVE_SEQUENCE = (
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
 POST_406_COMPLETE_MARKER = "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS"
+POST_406_COMPLETE_PROVENANCE = (
+    "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS "
+    "(PR #411; MAIN `CA66A06D`)"
+)
 POST_408_DIRECTIVE_SEQUENCE = (
     "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION",
     "THEN: SEPARATE EXACT-HEAD REVIEW AND MERGE DECISION",
@@ -541,6 +545,16 @@ def _preserves_post_405_boundary(
             normalized_line := _normalize_post_405_structured_line(line),
         )
     )
+    structured_lines = tuple(
+        _normalize_post_405_structured_line(line).rstrip()
+        for line in active.splitlines()
+    )
+    has_406_provenance = structured_lines.count(POST_406_COMPLETE_PROVENANCE) == 1
+    durability_authorizations = tuple(
+        line
+        for line in structured_lines
+        if re.match(r"^AUTHORIZED:\s+DURABILITY IMPLEMENTATION LANE\b", line)
+    )
     normalized = " ".join(active.split())
     preserves_initial_order = (
         allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
@@ -548,19 +562,15 @@ def _preserves_post_405_boundary(
     preserves_post_406_order = (
         not require_lane_1_sequence
         and directives == POST_406_DIRECTIVE_SEQUENCE
-        and POST_406_COMPLETE_MARKER in normalized
-        and "PR #411" in normalized
-        and "CA66A06D" in normalized
+        and has_406_provenance
     )
     preserves_lane_1_order = (
         directives == POST_408_DIRECTIVE_SEQUENCE
-        and POST_406_COMPLETE_MARKER in normalized
-        and "PR #411" in normalized
-        and "CA66A06D" in normalized
+        and has_406_provenance
         and POST_408_COMPLETE_MARKER in normalized
         and "PR #412" in normalized
         and "2592AD91" in normalized
-        and LANE_1_AUTHORIZATION_MARKER in normalized
+        and durability_authorizations == (LANE_1_AUTHORIZATION_MARKER,)
     )
     if not (
         preserves_initial_order or preserves_post_406_order or preserves_lane_1_order

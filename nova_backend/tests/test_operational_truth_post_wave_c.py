@@ -655,10 +655,12 @@ def test_current_repository_shape_records_408_complete_and_lane_1_next():
         text = (checker.ROOT / relative).read_text(encoding="utf-8")
         active = checker._extract_post_405_active_block(text)
         assert active is not None
+        structured_lines = tuple(
+            checker._normalize_post_405_structured_line(line).rstrip()
+            for line in active.splitlines()
+        )
         normalized = " ".join(active.upper().split())
-        assert checker.POST_406_COMPLETE_MARKER in normalized
-        assert "PR #411" in normalized
-        assert "CA66A06D" in normalized
+        assert structured_lines.count(checker.POST_406_COMPLETE_PROVENANCE) == 1
         assert checker.POST_408_COMPLETE_MARKER in normalized
         assert "PR #412" in normalized
         assert "2592AD91" in normalized
@@ -684,6 +686,38 @@ def test_lane_1_sequence_rejects_corrupt_406_provenance(
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(original_provenance, corrupted_provenance, 1)
+    assert corrupted != original
+    corrupted = corrupted.replace(
+        "AUTHORIZED: durability implementation lane 1 only",
+        "NOTE: prior merge provenance PR #411 at ca66a06d\n"
+        "AUTHORIZED: durability implementation lane 1 only",
+        1,
+    )
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
+def test_lane_1_sequence_rejects_competing_durability_authorization(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "AUTHORIZED: durability implementation lane 1 only",
+        "AUTHORIZED: durability implementation lane 1 only\n"
+        "AUTHORIZED: durability implementation lane 2",
+        1,
+    )
     assert corrupted != original
     target.write_text(corrupted, encoding="utf-8")
 
