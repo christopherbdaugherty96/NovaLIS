@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from src.durability.corruption import read_json_state, require_state
 from src.policies.policy_validator import PolicyValidationResult
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
@@ -195,17 +195,17 @@ class AtomicPolicyStore:
 
     def _read_state(self) -> dict[str, Any]:
         try:
-            payload = json.loads(self._path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = self._default_state()
+            payload = read_json_state(self._path, "atomic_policies")
+        except FileNotFoundError:
+            return self._default_state()
+        require_state(isinstance(payload, dict), "atomic_policies", self._path, "expected object")
+        require_state(isinstance(payload.get("policies", []), list), "atomic_policies", self._path, "policies must be a list")
 
         if payload.get("schema_version") != self.SCHEMA_VERSION:
             payload = {
                 "schema_version": self.SCHEMA_VERSION,
                 "policies": list(payload.get("policies") or []),
             }
-        if not isinstance(payload.get("policies"), list):
-            payload["policies"] = []
         return payload
 
     def _write_state(self, state: dict[str, Any]) -> None:
