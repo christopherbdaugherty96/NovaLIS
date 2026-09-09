@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.durability.corruption import read_json_state, require_state
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -590,12 +590,9 @@ class RuntimeSettingsStore:
     def _read_state(self) -> dict[str, Any]:
         if not self._path.exists():
             return self._default_state()
-        try:
-            state = json.loads(self._path.read_text(encoding="utf-8"))
-        except Exception:
-            state = self._default_state()
-        if not isinstance(state, dict):
-            state = self._default_state()
+        state = read_json_state(self._path, "runtime_settings")
+        require_state(isinstance(state, dict), "runtime_settings", self._path, "expected object")
+        require_state(isinstance(state.get("history", []), list), "runtime_settings", self._path, "history must be a list")
         state["setup_mode"] = self._normalize_setup_mode(str(state.get("setup_mode") or self.DEFAULT_SETUP_MODE))
         state["provider_routing_mode"] = self._normalize_provider_routing_mode(
             str(state.get("provider_routing_mode") or self.DEFAULT_PROVIDER_ROUTING_MODE)
