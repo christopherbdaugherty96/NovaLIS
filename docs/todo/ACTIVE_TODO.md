@@ -11,8 +11,8 @@ BETA_READINESS_SEQUENCE_V1: ACTIVE
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
 #397 through #405: COMPLETE / MERGED
-NEXT: #406 governed-memory ID collision correctness
-THEN: #408 durability/state-ownership decision
+COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
+NEXT: #408 durability/state-ownership decision
 THEN: evidence-authorized durability implementation
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof

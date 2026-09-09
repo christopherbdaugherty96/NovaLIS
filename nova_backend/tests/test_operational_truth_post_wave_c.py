@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #406 governed-memory ID collision correctness",
+        "NEXT: #408 durability/state-ownership decision",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -631,9 +631,55 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
+        and "current ordering does not preserve the active beta-readiness boundary"
         in error
         for error in errors
+    )
+
+
+def test_current_repository_shape_records_406_complete_and_408_next():
+    checker = _load_checker()
+
+    for relative in (
+        "README.md",
+        "START_HERE.md",
+        "AGENTS.md",
+        ".agent_context/current_priority.md",
+        "docs/status/CURRENT_WORK_STATUS.md",
+        "docs/status/DAILY_COMMAND_CENTER.md",
+        "docs/todo/ACTIVE_TODO.md",
+        "docs/CANONICAL/00_INDEX.md",
+        "docs/CANONICAL/07_ROADMAP_TRUTH.md",
+        "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
+    ):
+        text = (checker.ROOT / relative).read_text(encoding="utf-8")
+        active = checker._extract_post_405_active_block(text)
+        assert active is not None
+        normalized = " ".join(active.upper().split())
+        assert checker.POST_406_COMPLETE_MARKER in normalized
+        assert "PR #411" in normalized
+        assert "CA66A06D" in normalized
+        assert "NEXT: #408 DURABILITY/STATE-OWNERSHIP DECISION" in normalized
+
+
+def test_pre_406_sequence_is_historical_only():
+    checker = _load_checker()
+    current = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    pre_406 = current.replace(
+        "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)\n"
+        "NEXT: #408 durability/state-ownership decision",
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision",
+        1,
+    )
+
+    assert pre_406 != current
+    assert checker._preserves_post_405_boundary(pre_406) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            pre_406, allow_pre_406_sequence=False
+        )
+        is False
     )
 
 
@@ -663,7 +709,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target = tmp_path / relative
         original = target.read_text(encoding="utf-8")
         corrupted = original.replace(
-            "NEXT: #406 governed-memory ID collision correctness",
+            "NEXT: #408 durability/state-ownership decision",
             "NEXT: Google identity-only live proof",
             1,
         )
@@ -687,7 +733,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
     )
 
     assert any(
-        "current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
+        "current ordering does not preserve the active beta-readiness boundary"
         in error
         for error in errors
     )
@@ -1843,7 +1889,7 @@ def test_current_lifecycle_rejects_coordinated_legacy_active_lane(tmp_path):
     )
 
     assert errors
-    assert any("post-#405 #406-first beta-readiness boundary" in error for error in errors)
+    assert any("active beta-readiness boundary" in error for error in errors)
 
 
 @pytest.mark.parametrize(
