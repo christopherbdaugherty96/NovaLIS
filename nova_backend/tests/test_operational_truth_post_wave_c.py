@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: canonical user-data root + logical store registry/migration detection",
+        "NEXT: separate owner authorization decision for corruption-safe readers",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -637,7 +637,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     )
 
 
-def test_current_repository_shape_records_408_complete_and_lane_1_next():
+def test_current_repository_shape_records_lane_1_complete_and_lane_2_unapproved():
     checker = _load_checker()
 
     for relative in (
@@ -662,9 +662,10 @@ def test_current_repository_shape_records_408_complete_and_lane_1_next():
         normalized = " ".join(active.upper().split())
         assert structured_lines.count(checker.POST_406_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.POST_408_COMPLETE_PROVENANCE) == 1
-        assert checker.LANE_1_AUTHORIZATION_MARKER in normalized
+        assert structured_lines.count(checker.LANE_1_COMPLETE_PROVENANCE) == 1
+        assert checker.LANE_1_AUTHORIZATION_MARKER not in normalized
         assert (
-            "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION"
+            "NEXT: SEPARATE OWNER AUTHORIZATION DECISION FOR CORRUPTION-SAFE READERS"
             in normalized
         )
 
@@ -686,9 +687,9 @@ def test_lane_1_sequence_rejects_corrupt_406_provenance(
     corrupted = original.replace(original_provenance, corrupted_provenance, 1)
     assert corrupted != original
     corrupted = corrupted.replace(
-        "AUTHORIZED: durability implementation lane 1 only",
+        "COMPLETE: durability implementation lane 1 -",
         "NOTE: prior merge provenance PR #411 at ca66a06d\n"
-        "AUTHORIZED: durability implementation lane 1 only",
+        "COMPLETE: durability implementation lane 1 -",
         1,
     )
     target.write_text(corrupted, encoding="utf-8")
@@ -751,9 +752,9 @@ def test_lane_1_sequence_rejects_borrowed_408_provenance(
     corrupted = original.replace(original_provenance, corrupted_provenance, 1)
     assert corrupted != original
     corrupted = corrupted.replace(
-        "AUTHORIZED: durability implementation lane 1 only",
+        "COMPLETE: durability implementation lane 1 -",
         "NOTE: prior merge provenance PR #412 at 2592ad91\n"
-        "AUTHORIZED: durability implementation lane 1 only",
+        "COMPLETE: durability implementation lane 1 -",
         1,
     )
     target.write_text(corrupted, encoding="utf-8")
@@ -776,9 +777,9 @@ def test_lane_1_sequence_rejects_competing_durability_authorization(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "AUTHORIZED: durability implementation lane 1 only",
-        "AUTHORIZED: durability implementation lane 1 only\n"
-        "AUTHORIZED: durability implementation lane 2",
+        "NEXT: separate owner authorization decision for corruption-safe readers",
+        "AUTHORIZED: durability implementation lane 2\n"
+        "NEXT: separate owner authorization decision for corruption-safe readers",
         1,
     )
     assert corrupted != original
@@ -802,10 +803,10 @@ def test_pre_406_sequence_is_historical_only():
     pre_406 = current.replace(
         "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)\n"
         "COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)\n"
-        "AUTHORIZED: durability implementation lane 1 only\n"
-        "NEXT: canonical user-data root + logical store registry/migration detection\n"
-        "THEN: separate exact-head review and merge decision\n"
-        "THEN: separately authorized corruption-safe readers",
+        "COMPLETE: durability implementation lane 1 - canonical state registry/migration detection "
+        "(PR #413; main `e74fdca0`)\n"
+        "NEXT: separate owner authorization decision for corruption-safe readers\n"
+        "THEN: if authorized, corruption-safe readers",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
         "THEN: evidence-authorized durability implementation",
@@ -818,7 +819,7 @@ def test_pre_406_sequence_is_historical_only():
         checker._preserves_post_405_boundary(
             pre_406,
             allow_pre_406_sequence=False,
-            require_lane_1_sequence=True,
+            require_lane_1_closeout=True,
         )
         is False
     )
