@@ -662,6 +662,27 @@ def test_current_repository_shape_records_406_complete_and_408_next():
         assert "NEXT: #408 DURABILITY/STATE-OWNERSHIP DECISION" in normalized
 
 
+def test_pre_406_sequence_is_historical_only():
+    checker = _load_checker()
+    current = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    pre_406 = current.replace(
+        "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)\n"
+        "NEXT: #408 durability/state-ownership decision",
+        "NEXT: #406 governed-memory ID collision correctness\n"
+        "THEN: #408 durability/state-ownership decision",
+        1,
+    )
+
+    assert pre_406 != current
+    assert checker._preserves_post_405_boundary(pre_406) is True
+    assert (
+        checker._preserves_post_405_boundary(
+            pre_406, allow_pre_406_sequence=False
+        )
+        is False
+    )
+
+
 @pytest.mark.parametrize("retain_master_marker", (True, False))
 def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
     tmp_path, retain_master_marker
