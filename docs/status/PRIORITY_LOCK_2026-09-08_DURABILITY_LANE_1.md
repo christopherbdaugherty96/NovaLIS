@@ -1,8 +1,9 @@
 # Priority Lock — Durability Implementation Lane 1
 
-Status: ACTIVE / OWNER AUTHORIZED
+Status: COMPLETE / MERGED AS PR #413
 Authorized from: accepted #408 decision on `main@2592ad913b7da4c998425b7b2ee8432a8c032ba8`
-Branch: `codex/durability-lane1-user-data-root`
+Merged head: `6078e03cb3c945247aee1bbcf8c830ff5521aeb2`
+Main merge: `e74fdca094295f587a50b4a3d82df45958937f3d`
 
 ## Objective
 
