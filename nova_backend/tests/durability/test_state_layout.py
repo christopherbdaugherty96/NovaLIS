@@ -79,6 +79,8 @@ def test_secret_and_derived_backup_boundaries_are_explicit():
 
     assert by_id["provider_keys"].included_in_portable is False
     assert by_id["google_credentials"].included_in_portable is False
+    assert by_id["provider_keys"].included_in_recovery is False
+    assert by_id["google_credentials"].included_in_recovery is False
     assert by_id["news_synthesis_cache"].included_in_recovery is False
     assert by_id["screen_captures"].included_in_recovery is False
     assert by_id["runtime_logs"].included_in_recovery is False
@@ -93,6 +95,10 @@ def test_secret_and_derived_backup_boundaries_are_explicit():
     assert by_id["quick_corrections"].state_classes == {
         "portable_user",
         "audit_operational",
+    }
+    assert by_id["story_tracker"].state_classes == {
+        "portable_user",
+        "derived",
     }
     assert by_id["openclaw_envelopes"].restore_group == "openclaw_lifecycle"
     assert by_id["openclaw_agent_runtime"].restore_group == "openclaw_lifecycle"
