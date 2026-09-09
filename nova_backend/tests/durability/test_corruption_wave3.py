@@ -22,3 +22,22 @@ def test_low_risk_portable_corruption_is_explicit_and_preserved(tmp_path, factor
 def test_low_risk_portable_missing_state_keeps_defaults(tmp_path, factory):
     store = factory(tmp_path / "missing.json")
     assert isinstance(store._read_state(), dict)
+
+
+@pytest.mark.parametrize(
+    "factory,mutate",
+    (
+        (UserProfileStore, lambda store: store.set_identity(name="Nova user")),
+        (ToneProfileStore, lambda store: store.set_global_profile("balanced")),
+        (NovaSelfMemoryStore, lambda store: store.record_insight("prefers concise answers")),
+    ),
+)
+def test_low_risk_corruption_blocks_dependent_mutation(tmp_path, factory, mutate):
+    path = tmp_path / "state.json"
+    original = b'{"truncated":'
+    path.write_bytes(original)
+
+    with pytest.raises(StateCorruptError):
+        mutate(factory(path))
+
+    assert path.read_bytes() == original
