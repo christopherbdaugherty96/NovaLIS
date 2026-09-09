@@ -109,6 +109,10 @@ POST_408_DIRECTIVE_SEQUENCE = (
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
 POST_408_COMPLETE_MARKER = "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION"
+POST_408_COMPLETE_PROVENANCE = (
+    "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION "
+    "(PR #412; MAIN `2592AD91`)"
+)
 LANE_1_AUTHORIZATION_MARKER = "AUTHORIZED: DURABILITY IMPLEMENTATION LANE 1 ONLY"
 
 POST_394_ORDERING_SURFACES = (
@@ -549,7 +553,14 @@ def _preserves_post_405_boundary(
         _normalize_post_405_structured_line(line).rstrip()
         for line in active.splitlines()
     )
-    has_406_provenance = structured_lines.count(POST_406_COMPLETE_PROVENANCE) == 1
+    completion_406_lines = tuple(
+        line for line in structured_lines if line.startswith(POST_406_COMPLETE_MARKER)
+    )
+    completion_408_lines = tuple(
+        line for line in structured_lines if line.startswith(POST_408_COMPLETE_MARKER)
+    )
+    has_406_provenance = completion_406_lines == (POST_406_COMPLETE_PROVENANCE,)
+    has_408_provenance = completion_408_lines == (POST_408_COMPLETE_PROVENANCE,)
     durability_authorizations = tuple(
         line
         for line in structured_lines
@@ -567,9 +578,7 @@ def _preserves_post_405_boundary(
     preserves_lane_1_order = (
         directives == POST_408_DIRECTIVE_SEQUENCE
         and has_406_provenance
-        and POST_408_COMPLETE_MARKER in normalized
-        and "PR #412" in normalized
-        and "2592AD91" in normalized
+        and has_408_provenance
         and durability_authorizations == (LANE_1_AUTHORIZATION_MARKER,)
     )
     if not (
