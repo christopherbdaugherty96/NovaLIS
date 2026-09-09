@@ -86,6 +86,15 @@ POST_405_DIRECTIVE_SEQUENCE = (
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
+POST_406_DIRECTIVE_SEQUENCE = (
+    "NEXT: #408 DURABILITY/STATE-OWNERSHIP DECISION",
+    "THEN: EVIDENCE-AUTHORIZED DURABILITY IMPLEMENTATION",
+    "THEN: BOUNDED PRODUCT-TRANSLATION/READINESS PASS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
+POST_406_COMPLETE_MARKER = "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS"
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -502,8 +511,10 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     )
 
 
-def _preserves_post_405_boundary(text: str) -> bool:
-    """Require the current #406-first beta-readiness order and feature freeze."""
+def _preserves_post_405_boundary(
+    text: str, *, allow_pre_406_sequence: bool = True
+) -> bool:
+    """Require the current beta-readiness order and feature freeze."""
 
     active = _extract_post_405_active_block(text)
     if active is None:
@@ -516,9 +527,18 @@ def _preserves_post_405_boundary(text: str) -> bool:
             normalized_line := _normalize_post_405_structured_line(line),
         )
     )
-    if directives != POST_405_DIRECTIVE_SEQUENCE:
-        return False
     normalized = " ".join(active.split())
+    preserves_initial_order = (
+        allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
+    )
+    preserves_post_406_order = (
+        directives == POST_406_DIRECTIVE_SEQUENCE
+        and POST_406_COMPLETE_MARKER in normalized
+        and "PR #411" in normalized
+        and "CA66A06D" in normalized
+    )
+    if not (preserves_initial_order or preserves_post_406_order):
+        return False
     required = (
         "#397 THROUGH #405: COMPLETE / MERGED",
     )
@@ -690,9 +710,11 @@ def check_operational_truth(
             text = texts.get(name)
             if text is None:
                 continue
-            if not _preserves_post_405_boundary(text):
+            if not _preserves_post_405_boundary(
+                text, allow_pre_406_sequence=False
+            ):
                 errors.append(
-                    f"{paths[name]}: current ordering does not preserve the post-#405 #406-first beta-readiness boundary"
+                    f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
                 )
                 continue
             sync_start_shas[name] = _post_405_sync_start_shas(text)[0]

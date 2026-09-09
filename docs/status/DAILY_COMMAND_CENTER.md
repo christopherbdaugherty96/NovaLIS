@@ -18,8 +18,8 @@ verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
 #404 startup/runtime health truth           COMPLETE / MERGED
 #405 Home activity usefulness               COMPLETE / MERGED / LIVE-ACCEPTED
 
-NEXT: #406 governed-memory ID collision correctness
-THEN: #408 durability/state-ownership decision
+COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
+NEXT: #408 durability/state-ownership decision
 THEN: evidence-authorized durability implementation
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof
