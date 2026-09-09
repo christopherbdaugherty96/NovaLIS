@@ -1,6 +1,11 @@
 """Durability layout contracts and read-only migration discovery."""
 
-from src.durability.corruption import StateCorruptError, read_json_state, require_state
+from src.durability.corruption import (
+    StateCorruptError,
+    read_json_state,
+    read_jsonl_state,
+    require_state,
+)
 from src.durability.state_layout import (
     LogicalStore,
     MigrationCandidate,
@@ -19,5 +24,6 @@ __all__ = [
     "logical_store_registry",
     "StateCorruptError",
     "read_json_state",
+    "read_jsonl_state",
     "require_state",
 ]

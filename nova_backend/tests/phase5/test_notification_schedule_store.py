@@ -13,7 +13,7 @@ def test_read_schedules_reports_corrupt_state_as_unavailable(tmp_path):
 
     assert result.available is False
     assert result.schedules == ()
-    assert result.error == "JSONDecodeError"
+    assert result.error == "StateCorruptError"
 
 
 def test_read_schedules_reports_malformed_entry_as_unavailable(tmp_path):

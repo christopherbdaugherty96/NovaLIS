@@ -27,6 +27,26 @@ def read_json_state(path: Path, store_id: str) -> Any:
         raise StateCorruptError(store_id, path, exc) from exc
 
 
+def read_jsonl_state(path: Path, store_id: str) -> list[Any]:
+    """Read an existing JSONL file without dropping malformed records."""
+
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        raise
+    except (OSError, UnicodeError) as exc:
+        raise StateCorruptError(store_id, path, exc) from exc
+    records: list[Any] = []
+    for number, line in enumerate(lines, start=1):
+        if not line.strip():
+            continue
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError as exc:
+            raise StateCorruptError(store_id, path, f"invalid JSON on line {number}: {exc}") from exc
+    return records
+
+
 def require_state(condition: bool, store_id: str, path: Path, detail: str) -> None:
     if not condition:
         raise StateCorruptError(store_id, path, detail)

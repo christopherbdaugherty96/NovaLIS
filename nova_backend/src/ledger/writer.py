@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
+from src.durability.corruption import read_jsonl_state, require_state
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.event_types import EVENT_TYPES
 from src.utils.persistent_state import runtime_path
@@ -31,6 +32,10 @@ class LedgerWriter:
             **metadata
         }
         try:
+            if self.path.exists():
+                existing = read_jsonl_state(self.path, "ledger")
+                for record in existing:
+                    require_state(isinstance(record, dict), "ledger", self.path, "expected object record")
             with open(self.path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(entry) + "\n")
                 f.flush()

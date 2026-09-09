@@ -836,6 +836,10 @@ class OpenClawAgentRuntimeStore:
         except FileNotFoundError:
             return self._default_state()
         require_state(isinstance(payload, dict), "openclaw_agent_runtime", self._path, "expected object")
+        require_state(isinstance(payload.get("templates", []), list), "openclaw_agent_runtime", self._path, "templates must be a list")
+        require_state(payload.get("active_run") is None or isinstance(payload.get("active_run"), dict), "openclaw_agent_runtime", self._path, "active_run must be an object or null")
+        require_state(isinstance(payload.get("recent_runs", []), list) and all(isinstance(item, dict) for item in payload.get("recent_runs", [])), "openclaw_agent_runtime", self._path, "recent_runs must contain objects")
+        require_state(isinstance(payload.get("delivery_inbox", []), list) and all(isinstance(item, dict) for item in payload.get("delivery_inbox", [])), "openclaw_agent_runtime", self._path, "delivery_inbox must contain objects")
         payload.setdefault("schema_version", self.SCHEMA_VERSION)
         payload["templates"] = self._normalized_templates(payload.get("templates"))
         payload["active_run"] = self._normalize_active_run(payload.get("active_run"))
