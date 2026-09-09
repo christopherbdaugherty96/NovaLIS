@@ -555,6 +555,8 @@ def _preserves_post_405_boundary(
     preserves_lane_1_order = (
         directives == POST_408_DIRECTIVE_SEQUENCE
         and POST_406_COMPLETE_MARKER in normalized
+        and "PR #411" in normalized
+        and "CA66A06D" in normalized
         and POST_408_COMPLETE_MARKER in normalized
         and "PR #412" in normalized
         and "2592AD91" in normalized
