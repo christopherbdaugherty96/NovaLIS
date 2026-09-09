@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #408 durability/state-ownership decision",
+        "NEXT: canonical user-data root + logical store registry/migration detection",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -637,7 +637,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     )
 
 
-def test_current_repository_shape_records_406_complete_and_408_next():
+def test_current_repository_shape_records_408_complete_and_lane_1_next():
     checker = _load_checker()
 
     for relative in (
@@ -655,11 +655,145 @@ def test_current_repository_shape_records_406_complete_and_408_next():
         text = (checker.ROOT / relative).read_text(encoding="utf-8")
         active = checker._extract_post_405_active_block(text)
         assert active is not None
+        structured_lines = tuple(
+            checker._normalize_post_405_structured_line(line).rstrip()
+            for line in active.splitlines()
+        )
         normalized = " ".join(active.upper().split())
-        assert checker.POST_406_COMPLETE_MARKER in normalized
-        assert "PR #411" in normalized
-        assert "CA66A06D" in normalized
-        assert "NEXT: #408 DURABILITY/STATE-OWNERSHIP DECISION" in normalized
+        assert structured_lines.count(checker.POST_406_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.POST_408_COMPLETE_PROVENANCE) == 1
+        assert checker.LANE_1_AUTHORIZATION_MARKER in normalized
+        assert (
+            "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION"
+            in normalized
+        )
+
+
+@pytest.mark.parametrize(
+    ("original_provenance", "corrupted_provenance"),
+    (
+        ("PR #411", "PR #999"),
+        ("ca66a06d", "deadbeef"),
+    ),
+)
+def test_lane_1_sequence_rejects_corrupt_406_provenance(
+    tmp_path, original_provenance, corrupted_provenance
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(original_provenance, corrupted_provenance, 1)
+    assert corrupted != original
+    corrupted = corrupted.replace(
+        "AUTHORIZED: durability implementation lane 1 only",
+        "NOTE: prior merge provenance PR #411 at ca66a06d\n"
+        "AUTHORIZED: durability implementation lane 1 only",
+        1,
+    )
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
+def test_lane_1_sequence_rejects_conflicting_duplicate_406_completion(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "COMPLETE: #406 governed-memory ID collision correctness "
+        "(PR #411; main `ca66a06d`)",
+        "COMPLETE: #406 governed-memory ID collision correctness "
+        "(PR #411; main `ca66a06d`)\n"
+        "COMPLETE: #406 governed-memory ID collision correctness "
+        "(PR #999; main `deadbeef`)",
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
+@pytest.mark.parametrize(
+    ("original_provenance", "corrupted_provenance"),
+    (
+        ("PR #412", "PR #999"),
+        ("2592ad91", "deadbeef"),
+    ),
+)
+def test_lane_1_sequence_rejects_borrowed_408_provenance(
+    tmp_path, original_provenance, corrupted_provenance
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(original_provenance, corrupted_provenance, 1)
+    assert corrupted != original
+    corrupted = corrupted.replace(
+        "AUTHORIZED: durability implementation lane 1 only",
+        "NOTE: prior merge provenance PR #412 at 2592ad91\n"
+        "AUTHORIZED: durability implementation lane 1 only",
+        1,
+    )
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
+def test_lane_1_sequence_rejects_competing_durability_authorization(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "AUTHORIZED: durability implementation lane 1 only",
+        "AUTHORIZED: durability implementation lane 1 only\n"
+        "AUTHORIZED: durability implementation lane 2",
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
 
 
 def test_pre_406_sequence_is_historical_only():
@@ -667,9 +801,14 @@ def test_pre_406_sequence_is_historical_only():
     current = (checker.ROOT / "README.md").read_text(encoding="utf-8")
     pre_406 = current.replace(
         "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)\n"
-        "NEXT: #408 durability/state-ownership decision",
+        "COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)\n"
+        "AUTHORIZED: durability implementation lane 1 only\n"
+        "NEXT: canonical user-data root + logical store registry/migration detection\n"
+        "THEN: separate exact-head review and merge decision\n"
+        "THEN: separately authorized corruption-safe readers",
         "NEXT: #406 governed-memory ID collision correctness\n"
-        "THEN: #408 durability/state-ownership decision",
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation",
         1,
     )
 
@@ -677,7 +816,9 @@ def test_pre_406_sequence_is_historical_only():
     assert checker._preserves_post_405_boundary(pre_406) is True
     assert (
         checker._preserves_post_405_boundary(
-            pre_406, allow_pre_406_sequence=False
+            pre_406,
+            allow_pre_406_sequence=False,
+            require_lane_1_sequence=True,
         )
         is False
     )
