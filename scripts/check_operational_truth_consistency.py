@@ -561,6 +561,7 @@ def _preserves_post_405_boundary(
     *,
     allow_pre_406_sequence: bool = True,
     require_lane_1_closeout: bool = False,
+    require_lane_2_closeout: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -600,6 +601,15 @@ def _preserves_post_405_boundary(
         for line in structured_lines
         if re.match(r"^AUTHORIZED:\s+DURABILITY IMPLEMENTATION LANE\b", line)
     )
+    pending_locking_authorizations = tuple(
+        line
+        for line in structured_lines
+        if re.match(r"^(?:AUTHORIZED|APPROVED|ACTIVE):", line)
+        and (
+            "MAINTENANCE LOCK" in line
+            or "MUTATION QUIESCENCE" in line
+        )
+    )
     normalized = " ".join(active.split())
     preserves_initial_order = (
         allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
@@ -623,13 +633,17 @@ def _preserves_post_405_boundary(
         and has_lane_1_provenance
         and has_lane_2_provenance
         and not durability_authorizations
+        and not pending_locking_authorizations
     )
-    if not (
+    preserves_allowed_state = (
         preserves_initial_order
         or preserves_post_406_order
         or preserves_lane_1_closeout
         or preserves_lane_2_closeout
-    ):
+    )
+    if require_lane_2_closeout:
+        preserves_allowed_state = preserves_lane_2_closeout
+    if not preserves_allowed_state:
         return False
     required = (
         "#397 THROUGH #405: COMPLETE / MERGED",
@@ -806,6 +820,7 @@ def check_operational_truth(
                 text,
                 allow_pre_406_sequence=False,
                 require_lane_1_closeout=True,
+                require_lane_2_closeout=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
