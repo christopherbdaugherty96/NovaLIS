@@ -114,7 +114,7 @@ def logical_store_registry() -> tuple[LogicalStore, ...]:
             "story_tracker",
             "data/nova_state/story_tracker",
             "nova_workspace/story_tracker",
-            "portable_user",
+            ("portable_user", "derived"),
             path_kind="directory",
         ),
         _runtime(
@@ -137,6 +137,7 @@ def logical_store_registry() -> tuple[LogicalStore, ...]:
             "secrets/provider_keys.json",
             "machine_secret",
             legacy_runtime_path="data/nova_state/connections/provider_keys.json",
+            included_in_recovery=False,
             included_in_portable=False,
         ),
         _runtime(
@@ -144,6 +145,7 @@ def logical_store_registry() -> tuple[LogicalStore, ...]:
             "secrets/google_workspace_credentials.json",
             "machine_secret",
             legacy_runtime_path="data/nova_state/connections/google_workspace_credentials.json",
+            included_in_recovery=False,
             included_in_portable=False,
         ),
         _runtime(
