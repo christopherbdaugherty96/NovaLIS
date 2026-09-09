@@ -13,8 +13,11 @@ startup health truth: VERIFIED
 Home activity usefulness: LIVE-ACCEPTED BEFORE/AFTER RESTART
 
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
-NEXT: #408 durability/state-ownership decision
-THEN: evidence-authorized durability implementation
+COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
+AUTHORIZED: durability implementation lane 1 only
+NEXT: canonical user-data root + logical store registry/migration detection
+THEN: separate exact-head review and merge decision
+THEN: separately authorized corruption-safe readers
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance

@@ -10,8 +10,11 @@ POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
 #397 through #405: COMPLETE / MERGED
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
-NEXT: #408 durability/state-ownership decision
-THEN: evidence-authorized durability implementation
+COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
+AUTHORIZED: durability implementation lane 1 only
+NEXT: canonical user-data root + logical store registry/migration detection
+THEN: separate exact-head review and merge decision
+THEN: separately authorized corruption-safe readers
 THEN: bounded product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
