@@ -25,6 +25,35 @@ def test_wave2_store_distinguishes_corrupt_from_absent_and_preserves_bytes(
     assert path.read_text(encoding="utf-8") == contents
 
 
+@pytest.mark.parametrize(
+    "factory,mutate",
+    (
+        (UserMemoryStore, lambda store: store.save("preferences", "theme", "dark")),
+        (RuntimeSettingsStore, lambda store: store.set_setup_mode("guided")),
+        (
+            ProviderUsageStore,
+            lambda store: store.record_reasoning_event(
+                provider="local",
+                route="test",
+                analysis_profile="analysis",
+                prompt_text="prompt",
+                response_text="response",
+            ),
+        ),
+        (PatternReviewStore, lambda store: store.set_opt_in(True)),
+    ),
+)
+def test_wave2_corruption_blocks_dependent_mutation(tmp_path, factory, mutate):
+    path = tmp_path / "state.json"
+    original = b'{"truncated":'
+    path.write_bytes(original)
+
+    with pytest.raises(StateCorruptError):
+        mutate(factory(path))
+
+    assert path.read_bytes() == original
+
+
 def test_story_tracker_corruption_is_not_a_default_and_is_preserved(tmp_path):
     path = tmp_path / "tracked_topics.json"
     original = '{"truncated":'
