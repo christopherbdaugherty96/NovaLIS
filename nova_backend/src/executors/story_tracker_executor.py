@@ -38,6 +38,15 @@ def _read_json(path: Path, default: Any) -> Any:
     except FileNotFoundError:
         return default
     require_state(isinstance(payload, type(default)), "story_tracker", path, f"expected {type(default).__name__}")
+    if path.name == "tracked_topics.json":
+        require_state(isinstance(payload.get("topics"), list), "story_tracker", path, "topics must be a list")
+        require_state(all(isinstance(topic, str) for topic in payload["topics"]), "story_tracker", path, "topics must contain strings")
+    elif path.name == "story_graph.json":
+        require_state(isinstance(payload.get("links"), list), "story_tracker", path, "links must be a list")
+        require_state(all(isinstance(link, dict) for link in payload["links"]), "story_tracker", path, "links must contain objects")
+    elif isinstance(payload, dict):
+        require_state(isinstance(payload.get("snapshots"), list), "story_tracker", path, "snapshots must be a list")
+        require_state(all(isinstance(snapshot, dict) for snapshot in payload["snapshots"]), "story_tracker", path, "snapshots must contain objects")
     return payload
 
 

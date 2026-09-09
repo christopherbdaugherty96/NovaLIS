@@ -10,7 +10,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 import src.trust.receipt_store as store_mod
+from src.durability.corruption import StateCorruptError
 from src.trust.receipt_store import (
     _RECEIPT_WORTHY,
     get_receipt_summary,
@@ -207,15 +209,16 @@ class TestMalformedLines:
         result = get_recent_receipts()
         assert len(result) == 1
 
-    def test_fully_corrupt_ledger_returns_empty(self, monkeypatch, tmp_path):
+    def test_fully_corrupt_ledger_raises_from_legacy_wrapper(self, monkeypatch, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
         ledger.write_text("}{bad}{json\n@@@@\n", encoding="utf-8")
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
-        assert get_recent_receipts() == []
+        with pytest.raises(StateCorruptError):
+            get_recent_receipts()
 
 
 class TestReadError:
-    def test_os_error_returns_empty(self, monkeypatch, tmp_path):
+    def test_os_error_raises_from_legacy_wrapper(self, monkeypatch, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
         ledger.write_text(json.dumps(_entry(_RECEIPT_TYPE)) + "\n", encoding="utf-8")
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
@@ -224,9 +227,10 @@ class TestReadError:
             raise OSError("simulated read failure")
 
         monkeypatch.setattr(store_mod, "_read_tail_lines", _bad_read)
-        assert get_recent_receipts() == []
+        with pytest.raises(StateCorruptError):
+            get_recent_receipts()
 
-    def test_unexpected_exception_returns_empty(self, monkeypatch, tmp_path):
+    def test_unexpected_exception_raises_from_legacy_wrapper(self, monkeypatch, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
         ledger.write_text(json.dumps(_entry(_RECEIPT_TYPE)) + "\n", encoding="utf-8")
         monkeypatch.setattr(store_mod, "_LEDGER_PATH", ledger)
@@ -235,7 +239,8 @@ class TestReadError:
             raise RuntimeError("unexpected internal error")
 
         monkeypatch.setattr(store_mod, "_read_tail_lines", _explode)
-        assert get_recent_receipts() == []
+        with pytest.raises(StateCorruptError):
+            get_recent_receipts()
 
 
 class TestSummary:
