@@ -95,6 +95,17 @@ POST_406_DIRECTIVE_SEQUENCE = (
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
 POST_406_COMPLETE_MARKER = "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS"
+POST_408_DIRECTIVE_SEQUENCE = (
+    "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION",
+    "THEN: SEPARATE EXACT-HEAD REVIEW AND MERGE DECISION",
+    "THEN: SEPARATELY AUTHORIZED CORRUPTION-SAFE READERS",
+    "THEN: BOUNDED PRODUCT-TRANSLATION/READINESS PASS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
+POST_408_COMPLETE_MARKER = "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION"
+LANE_1_AUTHORIZATION_MARKER = "AUTHORIZED: DURABILITY IMPLEMENTATION LANE 1 ONLY"
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -512,7 +523,10 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
 
 
 def _preserves_post_405_boundary(
-    text: str, *, allow_pre_406_sequence: bool = True
+    text: str,
+    *,
+    allow_pre_406_sequence: bool = True,
+    require_lane_1_sequence: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -532,12 +546,23 @@ def _preserves_post_405_boundary(
         allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     )
     preserves_post_406_order = (
-        directives == POST_406_DIRECTIVE_SEQUENCE
+        not require_lane_1_sequence
+        and directives == POST_406_DIRECTIVE_SEQUENCE
         and POST_406_COMPLETE_MARKER in normalized
         and "PR #411" in normalized
         and "CA66A06D" in normalized
     )
-    if not (preserves_initial_order or preserves_post_406_order):
+    preserves_lane_1_order = (
+        directives == POST_408_DIRECTIVE_SEQUENCE
+        and POST_406_COMPLETE_MARKER in normalized
+        and POST_408_COMPLETE_MARKER in normalized
+        and "PR #412" in normalized
+        and "2592AD91" in normalized
+        and LANE_1_AUTHORIZATION_MARKER in normalized
+    )
+    if not (
+        preserves_initial_order or preserves_post_406_order or preserves_lane_1_order
+    ):
         return False
     required = (
         "#397 THROUGH #405: COMPLETE / MERGED",
@@ -711,7 +736,9 @@ def check_operational_truth(
             if text is None:
                 continue
             if not _preserves_post_405_boundary(
-                text, allow_pre_406_sequence=False
+                text,
+                allow_pre_406_sequence=False,
+                require_lane_1_sequence=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"

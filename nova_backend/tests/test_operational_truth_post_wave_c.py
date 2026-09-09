@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #408 durability/state-ownership decision",
+        "NEXT: canonical user-data root + logical store registry/migration detection",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -637,7 +637,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     )
 
 
-def test_current_repository_shape_records_406_complete_and_408_next():
+def test_current_repository_shape_records_408_complete_and_lane_1_next():
     checker = _load_checker()
 
     for relative in (
@@ -657,9 +657,14 @@ def test_current_repository_shape_records_406_complete_and_408_next():
         assert active is not None
         normalized = " ".join(active.upper().split())
         assert checker.POST_406_COMPLETE_MARKER in normalized
-        assert "PR #411" in normalized
-        assert "CA66A06D" in normalized
-        assert "NEXT: #408 DURABILITY/STATE-OWNERSHIP DECISION" in normalized
+        assert checker.POST_408_COMPLETE_MARKER in normalized
+        assert "PR #412" in normalized
+        assert "2592AD91" in normalized
+        assert checker.LANE_1_AUTHORIZATION_MARKER in normalized
+        assert (
+            "NEXT: CANONICAL USER-DATA ROOT + LOGICAL STORE REGISTRY/MIGRATION DETECTION"
+            in normalized
+        )
 
 
 def test_pre_406_sequence_is_historical_only():
@@ -667,9 +672,14 @@ def test_pre_406_sequence_is_historical_only():
     current = (checker.ROOT / "README.md").read_text(encoding="utf-8")
     pre_406 = current.replace(
         "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)\n"
-        "NEXT: #408 durability/state-ownership decision",
+        "COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)\n"
+        "AUTHORIZED: durability implementation lane 1 only\n"
+        "NEXT: canonical user-data root + logical store registry/migration detection\n"
+        "THEN: separate exact-head review and merge decision\n"
+        "THEN: separately authorized corruption-safe readers",
         "NEXT: #406 governed-memory ID collision correctness\n"
-        "THEN: #408 durability/state-ownership decision",
+        "THEN: #408 durability/state-ownership decision\n"
+        "THEN: evidence-authorized durability implementation",
         1,
     )
 
@@ -677,7 +687,9 @@ def test_pre_406_sequence_is_historical_only():
     assert checker._preserves_post_405_boundary(pre_406) is True
     assert (
         checker._preserves_post_405_boundary(
-            pre_406, allow_pre_406_sequence=False
+            pre_406,
+            allow_pre_406_sequence=False,
+            require_lane_1_sequence=True,
         )
         is False
     )

@@ -1,6 +1,6 @@
 # Nova Durability and State-Ownership Decision
 
-Status: PROPOSED FOR #408 EXACT-HEAD REVIEW  
+Status: ACCEPTED / MERGED AS PR #412
 Evidence baseline: `main@ca66a06daa2ca41e6b2a20b8942bc7eee8c96b96`  
 Decision date: 2026-09-08  
 Scope: architecture and implementation ordering only; this document authorizes no storage implementation.
@@ -194,4 +194,4 @@ Each item would be a separately reviewable bounded lane if separately authorized
 
 ## Acceptance consequence
 
-After exact-head review, owner acceptance, and merge, #408 can close as a decision gate. No implementation lane opens automatically. A separate owner-reviewed priority lock or implementation warrant must explicitly authorize the first bounded durability lane and name its scope. Any implementation that changes this contract requires a new reviewed decision rather than an incidental code choice.
+#408 closed as a decision gate when PR #412 merged at `main@2592ad91`. That merge opened no implementation automatically. The owner separately authorized only durability implementation lane 1 in `docs/status/PRIORITY_LOCK_2026-09-08_DURABILITY_LANE_1.md`. Every later durability lane still requires its own owner-reviewed priority lock or implementation warrant. Any implementation that changes this contract requires a new reviewed decision rather than an incidental code choice.
