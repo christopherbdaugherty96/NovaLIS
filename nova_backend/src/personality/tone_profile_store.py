@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.durability.corruption import read_json_state, require_state
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -281,9 +281,12 @@ class ToneProfileStore:
 
     def _read_state(self) -> dict[str, Any]:
         try:
-            payload = json.loads(self._path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = self._default_state()
+            payload = read_json_state(self._path, "tone_profile")
+        except FileNotFoundError:
+            return self._default_state()
+        require_state(isinstance(payload, dict), "tone_profile", self._path, "expected object")
+        require_state(isinstance(payload.get("domain_overrides", {}), dict), "tone_profile", self._path, "domain_overrides must be an object")
+        require_state(isinstance(payload.get("history", []), list), "tone_profile", self._path, "history must be a list")
         if payload.get("schema_version") != self.SCHEMA_VERSION:
             payload = {
                 **self._default_state(),
@@ -292,10 +295,6 @@ class ToneProfileStore:
                 "history": list(payload.get("history") or []),
                 "updated_at": str(payload.get("updated_at") or _utc_now()),
             }
-        if not isinstance(payload.get("domain_overrides"), dict):
-            payload["domain_overrides"] = {}
-        if not isinstance(payload.get("history"), list):
-            payload["history"] = []
         payload["global_profile"] = self._normalize_profile(payload.get("global_profile"))
         payload["updated_at"] = str(payload.get("updated_at") or _utc_now())
         return payload
