@@ -125,12 +125,12 @@ def test_memory_unlock_and_delete_require_confirmation(tmp_path: Path):
     assert all(entry.get("id") != item_id for entry in listed)
 
 
-def test_memory_export_returns_non_deleted_items(tmp_path: Path):
+def test_memory_export_preserves_deleted_duplicate_repair_evidence(tmp_path: Path):
     ledger = _FakeLedger()
     store = GovernedMemoryStore(tmp_path / "memory_items.json")
     executor = MemoryGovernanceExecutor(ledger=ledger, store=store)
 
-    executor.execute(
+    first = executor.execute(
         ActionRequest(
             capability_id=61,
             params={"action": "save", "title": "Keep", "body": "Retain this governed note."},
@@ -150,17 +150,31 @@ def test_memory_export_returns_non_deleted_items(tmp_path: Path):
             approval_id="test-approval",
         )
     )
+    first_id = str((first.data or {}).get("memory_item", {}).get("id") or "")
+    state = store._read_state()  # noqa: SLF001 - persisted duplicate regression fixture
+    state["items"][1]["id"] = first_id
+    store._write_state(state)  # noqa: SLF001 - persisted duplicate regression fixture
+    before = store.path.read_bytes()
+
+    refused = executor.execute(
+        ActionRequest(capability_id=61, params={"action": "defer", "item_id": first_id})
+    )
+    assert refused.success is False
+    assert "Ambiguous memory ID" in refused.message
+    assert store.path.read_bytes() == before
 
     export_result = executor.execute(ActionRequest(capability_id=61, params={"action": "export"}))
 
     assert export_result.success is True
     payload = dict(export_result.data or {}).get("memory_export") or {}
     assert payload.get("export_version") == 1
-    assert payload.get("item_count") == 1
+    assert payload.get("item_count") == 2
+    assert payload.get("includes_deleted") is True
     exported_items = list(payload.get("items") or [])
-    assert len(exported_items) == 1
-    assert exported_items[0]["title"] == "Keep"
-    assert all(not bool(item.get("deleted")) for item in exported_items)
+    assert len(exported_items) == 2
+    assert {item["id"] for item in exported_items} == {first_id}
+    assert {bool(item.get("deleted")) for item in exported_items} == {False, True}
+    assert store.path.read_bytes() == before
     assert "MEMORY_EXPORT_REQUESTED" in [name for name, _ in ledger.events]
 
 
