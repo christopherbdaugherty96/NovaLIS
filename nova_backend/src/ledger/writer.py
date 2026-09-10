@@ -9,7 +9,7 @@ from typing import Any, Dict
 from src.durability.corruption import read_jsonl_state, require_state
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.event_types import EVENT_TYPES
-from src.utils.persistent_state import runtime_path
+from src.utils.persistent_state import runtime_path, shared_path_lock
 
 LEDGER_PATH = runtime_path(__file__, "data", "ledger.jsonl")
 
@@ -19,6 +19,7 @@ class LedgerWriter:
 
     def __init__(self, path: Path = LEDGER_PATH):
         self.path = path
+        self._lock = shared_path_lock(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def log_event(self, event_type: str, metadata: Dict[str, Any]) -> None:
@@ -32,13 +33,16 @@ class LedgerWriter:
             **metadata
         }
         try:
-            if self.path.exists():
-                existing = read_jsonl_state(self.path, "ledger")
-                for record in existing:
-                    require_state(isinstance(record, dict), "ledger", self.path, "expected object record")
-            with open(self.path, "a", encoding="utf-8") as f:
-                f.write(json.dumps(entry) + "\n")
-                f.flush()
-                os.fsync(f.fileno())
+            # Serialize separate writer instances in this process. Windows append
+            # handles can otherwise overlap, corrupting acknowledged history.
+            with self._lock:
+                if self.path.exists():
+                    existing = read_jsonl_state(self.path, "ledger")
+                    for record in existing:
+                        require_state(isinstance(record, dict), "ledger", self.path, "expected object record")
+                with open(self.path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(entry) + "\n")
+                    f.flush()
+                    os.fsync(f.fileno())
         except Exception as e:
             raise LedgerWriteFailed(f"Ledger write failed: {e}") from e
