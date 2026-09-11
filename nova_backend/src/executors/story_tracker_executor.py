@@ -9,6 +9,7 @@ from typing import Any
 
 from src.actions.action_result import ActionResult
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 STORY_DIR = PROJECT_ROOT / "nova_workspace" / "story_tracker"
@@ -240,6 +241,7 @@ class StoryTrackerExecutor:
         lines.append(f"- stop tracking story {topic}")
         return "\n".join(lines)
 
+    @authoritative_mutation
     def execute_update(self, request) -> ActionResult:
         params = request.params or {}
         action = (params.get("action") or "update").strip().lower()

@@ -28,6 +28,7 @@ from threading import Lock
 from typing import Any
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +95,7 @@ class GoalStore:
 
     # ── write ───────────────────────────────────────────
 
+    @authoritative_mutation
     def create_goal(self, goal: dict[str, Any]) -> dict[str, Any]:
         """
         Create a new goal record.
@@ -146,6 +148,7 @@ class GoalStore:
             self._save()
         return deepcopy(goal)
 
+    @authoritative_mutation
     def update_goal(
         self, goal_id: str, updates: dict[str, Any]
     ) -> dict[str, Any] | None:

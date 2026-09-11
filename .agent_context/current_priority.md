@@ -16,7 +16,8 @@ COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d
 COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
 COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
 COMPLETE: durability implementation lane 2 - corruption-safe readers (PR #416; main `80e1c86f`)
-NEXT: separate owner authorization decision for maintenance locking + mutation quiescence
+AUTHORIZED / ACTIVE: durability implementation lane 3 - maintenance locking + mutation quiescence (owner authorization; base main `1be759a5`)
+NEXT: implement and review only the authorized Lane 3 contract
 THEN: separately authorized snapshot/manifest + safe migration
 THEN: separately authorized encrypted backup/restore/rollback
 THEN: durability torture proof

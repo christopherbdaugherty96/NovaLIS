@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _ALLOWED_STYLES = {"concise", "balanced", "detailed"}
@@ -32,10 +33,11 @@ class UserProfileStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._write_state(self._default_state())
 
     # ------------------------------------------------------------------
     # Public read
@@ -50,6 +52,7 @@ class UserProfileStore:
     # Public writes
     # ------------------------------------------------------------------
 
+    @authoritative_mutation
     def set_identity(
         self,
         *,
@@ -70,6 +73,7 @@ class UserProfileStore:
             self._write_state(state)
         return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_preferences(
         self,
         *,
@@ -100,6 +104,7 @@ class UserProfileStore:
             self._write_state(state)
         return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_rules(self, rules: str, source: str = "user") -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
