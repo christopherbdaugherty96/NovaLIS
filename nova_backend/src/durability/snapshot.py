@@ -115,7 +115,10 @@ def create_snapshot(
     if timestamp.tzinfo is None:
         raise ValueError("created_at must be timezone-aware")
 
-    snapshot_path = container / "control" / "staging" / operation_id
+    staging_root = container / "control" / "staging"
+    if _path_has_link_or_reparse(staging_root, container):
+        raise SnapshotValidationError(f"linked snapshot staging refused: {staging_root}")
+    snapshot_path = staging_root / operation_id
     if snapshot_path.exists():
         raise SnapshotError(f"snapshot staging path already exists: {snapshot_path}")
 
@@ -126,7 +129,6 @@ def create_snapshot(
         repository=repository,
         source_generation_id=source_generation_id,
     )
-    staging_root = snapshot_path.parent
     _validate_candidate_containment(staging_root, candidates)
     sources = _resolve_capture_sources(
         stores,
@@ -313,7 +315,7 @@ def _resolve_source(
         if key in seen:
             continue
         seen.add(key)
-        if _meaningfully_exists(candidate.path, store.path_kind):
+        if _meaningfully_exists(candidate.path, store.path_kind, store.logical_id):
             existing.append(candidate)
     if len(existing) > 1:
         kinds = ", ".join(item.kind for item in existing)
@@ -360,16 +362,12 @@ def _capture_source_candidates(
     source_generation_id: str | None,
 ) -> dict[str, tuple[_Source, ...]]:
     return {
-        store.logical_id: (
-            _source_candidates(
-                store,
-                container=container,
-                runtime=runtime,
-                repository=repository,
-                source_generation_id=source_generation_id,
-            )
-            if store.included_in_recovery
-            else ()
+        store.logical_id: _source_candidates(
+            store,
+            container=container,
+            runtime=runtime,
+            repository=repository,
+            source_generation_id=source_generation_id,
         )
         for store in stores
     }
@@ -783,6 +781,12 @@ def _validate_json_shape(
     if logical_id in list_roots:
         if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
             raise SnapshotValidationError(f"{logical_id} must contain object records: {path}")
+        if logical_id == "openclaw_execution_memory" and not all(
+            _is_valid_execution_memory_record(item) for item in payload
+        ):
+            raise SnapshotValidationError(
+                f"openclaw_execution_memory execution record is invalid: {path}"
+            )
         return
     if logical_id == "story_tracker":
         _validate_story_tracker_shape(payload, path, store_relative_path)
@@ -908,6 +912,19 @@ def _is_valid_notification_schedule(item: Any) -> bool:
     return True
 
 
+def _is_valid_execution_memory_record(item: dict[str, Any]) -> bool:
+    duration = item.get("duration_seconds")
+    return (
+        isinstance(item.get("tool_name"), str)
+        and isinstance(item.get("task_type"), str)
+        and isinstance(item.get("success"), bool)
+        and isinstance(duration, (int, float))
+        and not isinstance(duration, bool)
+        and (item.get("error") is None or isinstance(item.get("error"), str))
+        and isinstance(item.get("timestamp", ""), str)
+    )
+
+
 def _write_durable_json(path: Path, payload: dict[str, Any]) -> None:
     encoded = (json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n").encode(
         "utf-8"
@@ -951,11 +968,19 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _meaningfully_exists(path: Path, path_kind: str) -> bool:
-    if path_kind == "file":
-        return path.is_file()
-    if not path.is_dir():
+def _meaningfully_exists(path: Path, path_kind: str, logical_id: str) -> bool:
+    if not path.exists():
         return False
+    if path_kind == "file":
+        if not path.is_file():
+            raise SnapshotValidationError(
+                f"wrong filesystem type for {logical_id}; expected file: {path}"
+            )
+        return True
+    if not path.is_dir():
+        raise SnapshotValidationError(
+            f"wrong filesystem type for {logical_id}; expected directory: {path}"
+        )
     try:
         next(path.iterdir())
     except StopIteration:
