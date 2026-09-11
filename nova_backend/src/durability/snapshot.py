@@ -100,13 +100,13 @@ def create_snapshot(
     if source_generation_id is not None:
         _require_safe_id(source_generation_id, "source_generation_id")
         generation_root = container / "generations" / source_generation_id
-        if not generation_root.is_dir() or generation_root.is_symlink():
-            raise SnapshotValidationError(
-                f"explicit source generation does not exist: {source_generation_id}"
-            )
         if _path_has_link_or_reparse(generation_root, container):
             raise SnapshotValidationError(
                 f"linked explicit source generation refused: {source_generation_id}"
+            )
+        if not generation_root.is_dir():
+            raise SnapshotValidationError(
+                f"explicit source generation does not exist: {source_generation_id}"
             )
     normalized_build = str(build_id or "").strip()
     if not normalized_build:
@@ -119,7 +119,7 @@ def create_snapshot(
     if snapshot_path.exists():
         raise SnapshotError(f"snapshot staging path already exists: {snapshot_path}")
 
-    sources = _resolve_capture_sources(
+    candidates = _capture_source_candidates(
         stores,
         container=container,
         runtime=runtime,
@@ -127,11 +127,29 @@ def create_snapshot(
         source_generation_id=source_generation_id,
     )
     staging_root = snapshot_path.parent
+    _validate_candidate_containment(staging_root, candidates)
+    sources = _resolve_capture_sources(
+        stores,
+        container=container,
+        runtime=runtime,
+        repository=repository,
+        source_generation_id=source_generation_id,
+    )
     _validate_source_containment(staging_root, sources)
 
     with maintenance_scope(container_root=container, timeout=timeout):
         if snapshot_path.exists():
             raise SnapshotError(f"snapshot staging path already exists: {snapshot_path}")
+        locked_candidates = _capture_source_candidates(
+            stores,
+            container=container,
+            runtime=runtime,
+            repository=repository,
+            source_generation_id=source_generation_id,
+        )
+        if locked_candidates != candidates:
+            raise SnapshotValidationError("snapshot source configuration changed before capture")
+        _validate_candidate_containment(staging_root, locked_candidates)
         locked_sources = _resolve_capture_sources(
             stores,
             container=container,
@@ -271,27 +289,22 @@ def _resolve_source(
     repository: Path,
     source_generation_id: str | None,
 ) -> _Source | None:
-    if store.location_scope == "container":
-        candidates = (_Source(container / store.relative_path, "container"),)
-    elif source_generation_id is not None:
-        candidates = (
-            _Source(
-                store.canonical_path(container, source_generation_id),
-                "canonical_generation",
-            ),
-        )
-    else:
-        candidates_list: list[_Source] = []
-        if store.legacy_runtime_path is not None:
-            candidates_list.append(_Source(runtime / store.legacy_runtime_path, "legacy_runtime"))
-        if store.legacy_repository_path is not None:
-            candidates_list.append(
-                _Source(
-                    repository / store.legacy_repository_path,
-                    "legacy_repository",
+    candidates = _source_candidates(
+        store,
+        container=container,
+        runtime=runtime,
+        repository=repository,
+        source_generation_id=source_generation_id,
+    )
+    if source_generation_id is not None:
+        generation_root = container / "generations" / source_generation_id
+        for candidate in candidates:
+            if candidate.kind == "canonical_generation" and _path_has_link_or_reparse(
+                candidate.path, generation_root
+            ):
+                raise SnapshotValidationError(
+                    f"linked explicit source generation refused for {store.logical_id}"
                 )
-            )
-        candidates = tuple(candidates_list)
 
     existing: list[_Source] = []
     seen: set[str] = set()
@@ -306,6 +319,60 @@ def _resolve_source(
         kinds = ", ".join(item.kind for item in existing)
         raise SnapshotSourceConflictError(f"multiple owners for {store.logical_id}: {kinds}")
     return existing[0] if existing else None
+
+
+def _source_candidates(
+    store: LogicalStore,
+    *,
+    container: Path,
+    runtime: Path,
+    repository: Path,
+    source_generation_id: str | None,
+) -> tuple[_Source, ...]:
+    if store.location_scope == "container":
+        return (_Source(container / store.relative_path, "container"),)
+    elif source_generation_id is not None:
+        return (
+            _Source(
+                store.canonical_path(container, source_generation_id),
+                "canonical_generation",
+            ),
+        )
+    candidates: list[_Source] = []
+    if store.legacy_runtime_path is not None:
+        candidates.append(_Source(runtime / store.legacy_runtime_path, "legacy_runtime"))
+    if store.legacy_repository_path is not None:
+        candidates.append(
+            _Source(
+                repository / store.legacy_repository_path,
+                "legacy_repository",
+            )
+        )
+    return tuple(candidates)
+
+
+def _capture_source_candidates(
+    stores: tuple[LogicalStore, ...],
+    *,
+    container: Path,
+    runtime: Path,
+    repository: Path,
+    source_generation_id: str | None,
+) -> dict[str, tuple[_Source, ...]]:
+    return {
+        store.logical_id: (
+            _source_candidates(
+                store,
+                container=container,
+                runtime=runtime,
+                repository=repository,
+                source_generation_id=source_generation_id,
+            )
+            if store.included_in_recovery
+            else ()
+        )
+        for store in stores
+    }
 
 
 def _resolve_capture_sources(
@@ -361,6 +428,21 @@ def _validate_source_containment(
             raise SnapshotValidationError(
                 f"snapshot staging overlaps live source for {logical_id}: {source.path}"
             )
+
+
+def _validate_candidate_containment(
+    staging_root: Path, candidates: dict[str, tuple[_Source, ...]]
+) -> None:
+    resolved_staging = staging_root.resolve()
+    for logical_id, configured_sources in candidates.items():
+        for source in configured_sources:
+            resolved_source = source.path.resolve()
+            if _is_relative_to(resolved_source, resolved_staging) or _is_relative_to(
+                resolved_staging, resolved_source
+            ):
+                raise SnapshotValidationError(
+                    f"snapshot staging overlaps configured source for {logical_id}: {source.path}"
+                )
 
 
 def _copy_store(
