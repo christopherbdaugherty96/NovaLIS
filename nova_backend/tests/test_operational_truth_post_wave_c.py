@@ -802,7 +802,10 @@ def test_lane_1_sequence_rejects_borrowed_408_provenance(
     )
 
 
-def test_lane_3_closeout_rejects_competing_durability_authorization(tmp_path):
+@pytest.mark.parametrize("authority_prefix", ("AUTHORIZED", "APPROVED", "ACTIVE"))
+def test_lane_3_closeout_rejects_competing_durability_authorization(
+    tmp_path, authority_prefix
+):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
@@ -810,7 +813,7 @@ def test_lane_3_closeout_rejects_competing_durability_authorization(tmp_path):
     corrupted = original.replace(
         "COMPLETE: durability implementation lane 3 - maintenance locking + "
         "mutation quiescence (PR #419; main `2bfe202e`)",
-        "AUTHORIZED: durability implementation lane 4 only\n"
+        f"{authority_prefix}: durability implementation lane 4 only\n"
         "COMPLETE: durability implementation lane 3 - maintenance locking + "
         "mutation quiescence (PR #419; main `2bfe202e`)",
         1,
@@ -860,7 +863,19 @@ def test_lane_3_closeout_rejects_corrupt_merge_provenance(
     )
 
 
-def test_lane_3_closeout_rejects_snapshot_authorization(tmp_path):
+@pytest.mark.parametrize(
+    ("authority_prefix", "later_work"),
+    (
+        ("AUTHORIZED", "versioned snapshot + manifest implementation"),
+        ("APPROVED", "safe migration + generation activation"),
+        ("ACTIVE", "encrypted backup + recovery"),
+        ("APPROVED", "staged restore + rollback"),
+        ("ACTIVE", "durability torture proof"),
+    ),
+)
+def test_lane_3_closeout_rejects_later_durability_authorization(
+    tmp_path, authority_prefix, later_work
+):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
@@ -868,7 +883,7 @@ def test_lane_3_closeout_rejects_snapshot_authorization(tmp_path):
     next_line = "NEXT: separate owner authorization decision for versioned snapshot + manifest"
     corrupted = original.replace(
         next_line,
-        "AUTHORIZED: versioned snapshot + manifest implementation\n" + next_line,
+        f"{authority_prefix}: {later_work}\n" + next_line,
         1,
     )
     assert corrupted != original
