@@ -114,9 +114,29 @@ def create_snapshot(
     if snapshot_path.exists():
         raise SnapshotError(f"snapshot staging path already exists: {snapshot_path}")
 
+    sources = _resolve_capture_sources(
+        stores,
+        container=container,
+        runtime=runtime,
+        repository=repository,
+        source_generation_id=source_generation_id,
+    )
+    staging_root = snapshot_path.parent
+    _validate_source_containment(staging_root, sources)
+
     with maintenance_scope(container_root=container, timeout=timeout):
         if snapshot_path.exists():
             raise SnapshotError(f"snapshot staging path already exists: {snapshot_path}")
+        locked_sources = _resolve_capture_sources(
+            stores,
+            container=container,
+            runtime=runtime,
+            repository=repository,
+            source_generation_id=source_generation_id,
+        )
+        if locked_sources != sources:
+            raise SnapshotValidationError("snapshot source ownership changed before capture")
+        _validate_source_containment(staging_root, locked_sources)
         snapshot_path.mkdir(parents=True)
         entries: list[dict[str, Any]] = []
         for store in stores:
@@ -124,10 +144,7 @@ def create_snapshot(
                 _capture_store(
                     store,
                     snapshot_path=snapshot_path,
-                    container=container,
-                    runtime=runtime,
-                    repository=repository,
-                    source_generation_id=source_generation_id,
+                    source=locked_sources[store.logical_id],
                 )
             )
         _validate_restore_groups(entries, stores)
@@ -181,10 +198,7 @@ def _capture_store(
     store: LogicalStore,
     *,
     snapshot_path: Path,
-    container: Path,
-    runtime: Path,
-    repository: Path,
-    source_generation_id: str | None,
+    source: _Source | None,
 ) -> dict[str, Any]:
     base = {
         "logical_id": store.logical_id,
@@ -209,13 +223,6 @@ def _capture_store(
             "schema_versions": [],
         }
 
-    source = _resolve_source(
-        store,
-        container=container,
-        runtime=runtime,
-        repository=repository,
-        source_generation_id=source_generation_id,
-    )
     if source is None:
         return {
             **base,
@@ -228,9 +235,6 @@ def _capture_store(
             "aggregate_sha256": None,
             "schema_versions": [],
         }
-    if _is_relative_to(source.path.resolve(), snapshot_path.resolve()):
-        raise SnapshotValidationError(f"snapshot source is inside staging for {store.logical_id}")
-
     relative_target = Path("state") / store.relative_path
     target = snapshot_path / relative_target
     copied = _copy_store(
@@ -297,6 +301,46 @@ def _resolve_source(
         kinds = ", ".join(item.kind for item in existing)
         raise SnapshotSourceConflictError(f"multiple owners for {store.logical_id}: {kinds}")
     return existing[0] if existing else None
+
+
+def _resolve_capture_sources(
+    stores: tuple[LogicalStore, ...],
+    *,
+    container: Path,
+    runtime: Path,
+    repository: Path,
+    source_generation_id: str | None,
+) -> dict[str, _Source | None]:
+    return {
+        store.logical_id: (
+            _resolve_source(
+                store,
+                container=container,
+                runtime=runtime,
+                repository=repository,
+                source_generation_id=source_generation_id,
+            )
+            if store.included_in_recovery
+            else None
+        )
+        for store in stores
+    }
+
+
+def _validate_source_containment(
+    staging_root: Path, sources: dict[str, _Source | None]
+) -> None:
+    resolved_staging = staging_root.resolve()
+    for logical_id, source in sources.items():
+        if source is None:
+            continue
+        resolved_source = source.path.resolve()
+        if _is_relative_to(resolved_source, resolved_staging) or _is_relative_to(
+            resolved_staging, resolved_source
+        ):
+            raise SnapshotValidationError(
+                f"snapshot staging overlaps live source for {logical_id}: {source.path}"
+            )
 
 
 def _copy_store(
@@ -371,7 +415,7 @@ def _copy_file(
     target_hash = _sha256_file(target)
     if source_hash != target_hash:
         raise SnapshotValidationError(f"source changed during capture for {logical_id}: {source}")
-    schema_versions = _validate_state_file(target, logical_id)
+    schema_versions = _validate_state_file(target, logical_id, store_relative_path)
     return {
         "path": snapshot_relative_path,
         "store_relative_path": store_relative_path,
@@ -463,7 +507,9 @@ def _validate_snapshot_contents(
                 raise SnapshotValidationError(f"snapshot file hash mismatch: {relative}")
             if path.stat().st_size != file_record.get("size_bytes"):
                 raise SnapshotValidationError(f"snapshot file size mismatch: {relative}")
-            schema_versions = _validate_state_file(path, store.logical_id)
+            schema_versions = _validate_state_file(
+                path, store.logical_id, file_record["store_relative_path"]
+            )
             if schema_versions != file_record.get("schema_versions"):
                 raise SnapshotValidationError(f"snapshot schema metadata mismatch: {relative}")
             calculated.append(file_record)
@@ -508,6 +554,21 @@ def _validate_snapshot_contents(
         extra = sorted(actual_files - expected_files)
         raise SnapshotValidationError(
             f"snapshot inventory mismatch; missing={missing}, extra={extra}"
+        )
+    expected_directories = {
+        parent.as_posix()
+        for relative in expected_files
+        for parent in Path(relative).parents
+        if parent != Path(".")
+    }
+    actual_directories = {
+        path.relative_to(snapshot_path).as_posix() for path in all_paths if path.is_dir()
+    }
+    if actual_directories != expected_directories:
+        missing = sorted(expected_directories - actual_directories)
+        extra = sorted(actual_directories - expected_directories)
+        raise SnapshotValidationError(
+            f"snapshot directory inventory mismatch; missing={missing}, extra={extra}"
         )
     return manifest
 
@@ -581,13 +642,15 @@ def _validate_entry_contract(entry: dict[str, Any], store: LogicalStore) -> None
         )
 
 
-def _validate_state_file(path: Path, logical_id: str) -> list[str]:
+def _validate_state_file(
+    path: Path, logical_id: str, store_relative_path: str
+) -> list[str]:
     suffix = path.suffix.lower()
     versions: set[str] = set()
     try:
         if suffix == ".json":
             payload = json.loads(path.read_text(encoding="utf-8"))
-            _validate_json_shape(logical_id, payload, path)
+            _validate_json_shape(logical_id, payload, path, store_relative_path)
             if isinstance(payload, dict) and "schema_version" in payload:
                 versions.add(str(payload["schema_version"]))
         elif suffix == ".jsonl":
@@ -612,15 +675,16 @@ def _validate_state_file(path: Path, logical_id: str) -> list[str]:
     return sorted(versions)
 
 
-def _validate_json_shape(logical_id: str, payload: Any, path: Path) -> None:
+def _validate_json_shape(
+    logical_id: str, payload: Any, path: Path, store_relative_path: str
+) -> None:
     list_roots = {"openclaw_execution_memory"}
     if logical_id in list_roots:
         if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
             raise SnapshotValidationError(f"{logical_id} must contain object records: {path}")
         return
-    if logical_id in {"story_tracker"}:
-        if not isinstance(payload, (dict, list)):
-            raise SnapshotValidationError(f"{logical_id} must be an object or list: {path}")
+    if logical_id == "story_tracker":
+        _validate_story_tracker_shape(payload, path, store_relative_path)
         return
     if not isinstance(payload, dict):
         raise SnapshotValidationError(f"{logical_id} must be an object: {path}")
@@ -638,6 +702,10 @@ def _validate_json_shape(logical_id: str, payload: Any, path: Path) -> None:
     }
     for key in required_lists.get(logical_id, ()):
         if key in payload and not isinstance(payload[key], list):
+            raise SnapshotValidationError(f"{logical_id}.{key} must be a list: {path}")
+    mandatory_lists = {"goals": ("goals",)}
+    for key in mandatory_lists.get(logical_id, ()):
+        if not isinstance(payload.get(key), list):
             raise SnapshotValidationError(f"{logical_id}.{key} must be a list: {path}")
     object_record_lists = {
         "governed_memory": ("items",),
@@ -673,6 +741,41 @@ def _validate_json_shape(logical_id: str, payload: Any, path: Path) -> None:
         and not isinstance(payload.get("active_run"), dict)
     ):
         raise SnapshotValidationError(f"openclaw_agent_runtime.active_run is invalid: {path}")
+
+
+def _validate_story_tracker_shape(
+    payload: Any, path: Path, store_relative_path: str
+) -> None:
+    relative = Path(store_relative_path)
+    if len(relative.parts) != 1:
+        raise SnapshotValidationError(
+            f"story_tracker has unsupported persisted path: {store_relative_path}"
+        )
+    if not isinstance(payload, dict):
+        raise SnapshotValidationError(f"story_tracker must be an object: {path}")
+    filename = relative.name
+    if filename == "tracked_topics.json":
+        key = "topics"
+        item_type = str
+        item_name = "strings"
+    elif filename == "story_graph.json":
+        key = "links"
+        item_type = dict
+        item_name = "objects"
+    elif filename.startswith("story_") and filename.endswith(".json"):
+        key = "snapshots"
+        item_type = dict
+        item_name = "objects"
+    else:
+        raise SnapshotValidationError(
+            f"story_tracker has unsupported persisted file: {store_relative_path}"
+        )
+    if not isinstance(payload.get(key), list):
+        raise SnapshotValidationError(f"story_tracker {key} must be a list: {path}")
+    if not all(isinstance(item, item_type) for item in payload[key]):
+        raise SnapshotValidationError(
+            f"story_tracker {key} must contain {item_name}: {path}"
+        )
 
 
 def _write_durable_json(path: Path, payload: dict[str, Any]) -> None:

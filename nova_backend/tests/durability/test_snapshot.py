@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
@@ -126,13 +128,18 @@ def test_snapshot_captures_every_present_recovery_store_from_registry(tmp_path: 
             assert store.legacy_runtime_path is not None
             path = runtime / store.legacy_runtime_path
         if store.path_kind == "directory":
-            path = path / "state.json"
+            path = path / (
+                "story_test.json" if store.logical_id == "story_tracker" else "state.json"
+            )
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.suffix == ".jsonl":
             record = {"consumed": True} if store.logical_id == "quick_corrections" else {"ok": True}
             path.write_text(json.dumps(record) + "\n", encoding="utf-8")
         elif path.suffix == ".json":
-            path.write_text(json.dumps(payloads.get(store.logical_id, {})), encoding="utf-8")
+            payload = payloads.get(store.logical_id, {})
+            if store.logical_id == "story_tracker":
+                payload = {"snapshots": []}
+            path.write_text(json.dumps(payload), encoding="utf-8")
         else:
             path.write_text("model-hash", encoding="utf-8")
 
@@ -195,6 +202,17 @@ def test_validation_rejects_missing_extra_and_tampered_files(tmp_path: Path, dam
         validate_snapshot(result.snapshot_path, registry=(_store(),))
 
 
+def test_validation_rejects_unexpected_empty_directory(tmp_path: Path):
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+    result = _capture(tmp_path)
+    (result.snapshot_path / "unexpected-empty").mkdir()
+
+    with pytest.raises(SnapshotValidationError, match="directory inventory mismatch"):
+        validate_snapshot(result.snapshot_path, registry=(_store(),))
+
+
 def test_validation_rejects_incomplete_staging(tmp_path: Path):
     source = tmp_path / "runtime/data/sample.json"
     source.parent.mkdir(parents=True)
@@ -244,6 +262,43 @@ def test_corrupt_source_fails_closed_and_preserves_live_bytes(tmp_path: Path, co
     staging = tmp_path / "container/control/staging/snapshot-test"
     assert staging.exists()
     assert not (staging / "snapshot.complete.json").exists()
+
+
+def test_goals_missing_mandatory_goals_list_fails_closed(tmp_path: Path):
+    store = _store("goals", "data/goals.json")
+    source = tmp_path / "runtime/data/goals.json"
+    source.parent.mkdir(parents=True)
+    source.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="goals.goals must be a list"):
+        _capture(tmp_path, registry=(store,))
+
+    assert source.read_text(encoding="utf-8") == "{}"
+    assert not (
+        tmp_path / "container/control/staging/snapshot-test/snapshot.complete.json"
+    ).exists()
+
+
+@pytest.mark.parametrize(
+    ("filename", "payload", "message"),
+    (
+        ("tracked_topics.json", {}, "topics must be a list"),
+        ("story_graph.json", {}, "links must be a list"),
+        ("story_topic.json", {"snapshots": "invalid"}, "snapshots must be a list"),
+    ),
+)
+def test_story_tracker_uses_filename_specific_reader_contract(
+    tmp_path: Path, filename: str, payload: object, message: str
+):
+    store = _store("story_tracker", "data/story_tracker", path_kind="directory")
+    source = tmp_path / "runtime/data/story_tracker" / filename
+    source.parent.mkdir(parents=True)
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match=message):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
 
 
 def test_jsonl_truncation_fails_closed(tmp_path: Path):
@@ -307,6 +362,88 @@ def test_snapshot_rejects_conflicting_legacy_owners(tmp_path: Path):
 
     with pytest.raises(SnapshotSourceConflictError, match="multiple owners"):
         _capture(tmp_path, registry=(store,))
+
+
+def test_snapshot_rejects_live_source_inside_staging_before_snapshot_creation(tmp_path: Path):
+    container = tmp_path / "container"
+    runtime = container / "control/staging/live-runtime"
+    source = runtime / "data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="overlaps live source"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=runtime,
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-overlap",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert not (container / "control/staging/snapshot-overlap").exists()
+
+
+def test_snapshot_rejects_staging_inside_live_directory_source_before_creation(tmp_path: Path):
+    runtime = tmp_path / "runtime"
+    store = _store("directory", "live", path_kind="directory")
+    source = runtime / "live"
+    source.mkdir(parents=True)
+    (source / "state.json").write_text('{"ok": true}', encoding="utf-8")
+    container = source / "nested-container"
+
+    with pytest.raises(SnapshotValidationError, match="overlaps live source"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=runtime,
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-overlap",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert not container.exists()
+
+
+def test_snapshot_rejects_linked_staging_ancestor_into_live_source(tmp_path: Path):
+    runtime = tmp_path / "runtime"
+    store = _store("directory", "live", path_kind="directory")
+    source = runtime / "live"
+    source.mkdir(parents=True)
+    (source / "state.json").write_text('{"ok": true}', encoding="utf-8")
+    container = tmp_path / "container"
+    control = container / "control"
+    control.mkdir(parents=True)
+    staging = control / "staging"
+    if os.name == "nt":
+        result = subprocess.run(
+            ["cmd.exe", "/d", "/c", "mklink", "/J", str(staging), str(source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode:
+            pytest.skip(f"directory junctions unavailable: {result.stderr or result.stdout}")
+    else:
+        try:
+            os.symlink(source, staging, target_is_directory=True)
+        except OSError as exc:
+            pytest.skip(f"directory links unavailable: {exc}")
+
+    with pytest.raises(SnapshotValidationError, match="overlaps live source"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=runtime,
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-overlap",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert not (staging / "snapshot-overlap").exists()
 
 
 def test_snapshot_rejects_partial_restore_group(tmp_path: Path):
@@ -390,9 +527,9 @@ def test_explicit_generation_must_exist_before_staging(tmp_path: Path):
 
 def test_validation_binds_directory_store_relative_path_to_staged_file(tmp_path: Path):
     store = _store("story_tracker", "data/story_tracker", path_kind="directory")
-    source = tmp_path / "runtime/data/story_tracker/nested/state.json"
+    source = tmp_path / "runtime/data/story_tracker/story_topic.json"
     source.parent.mkdir(parents=True)
-    source.write_text('{"ok": true}', encoding="utf-8")
+    source.write_text('{"snapshots": []}', encoding="utf-8")
     result = _capture(tmp_path, registry=(store,))
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     manifest["entries"][0]["files"][0]["store_relative_path"] = "other.json"
