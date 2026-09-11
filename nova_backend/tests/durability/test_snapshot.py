@@ -1069,7 +1069,31 @@ def test_openclaw_envelopes_match_reader_mapping_normalization(
     }
     source.write_text(json.dumps(payload), encoding="utf-8")
 
-    with pytest.raises(SnapshotValidationError, match="reader normalization"):
+    with pytest.raises(SnapshotValidationError, match="must be an object"):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+    assert not (
+        tmp_path / "container/control/staging/snapshot-test/snapshot.complete.json"
+    ).exists()
+
+
+@pytest.mark.parametrize("falsey_scalar", (False, 0, "", None))
+def test_openclaw_envelopes_reject_falsey_scalar_mappings(
+    tmp_path: Path, falsey_scalar: object
+):
+    store = _store("openclaw_envelopes", "data/envelopes.json")
+    source = tmp_path / "runtime/data/envelopes.json"
+    source.parent.mkdir(parents=True)
+    payload = {
+        "ENV-1": {
+            "envelope_id": "ENV-1",
+            "feature_flags_snapshot": falsey_scalar,
+        }
+    }
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="must be an object"):
         _capture(tmp_path, registry=(store,))
 
     assert json.loads(source.read_text(encoding="utf-8")) == payload
