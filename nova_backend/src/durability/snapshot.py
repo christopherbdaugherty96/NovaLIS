@@ -5,6 +5,7 @@ import json
 import os
 import re
 import shutil
+import stat
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -102,6 +103,10 @@ def create_snapshot(
         if not generation_root.is_dir() or generation_root.is_symlink():
             raise SnapshotValidationError(
                 f"explicit source generation does not exist: {source_generation_id}"
+            )
+        if _path_has_link_or_reparse(generation_root, container):
+            raise SnapshotValidationError(
+                f"linked explicit source generation refused: {source_generation_id}"
             )
     normalized_build = str(build_id or "").strip()
     if not normalized_build:
@@ -311,8 +316,14 @@ def _resolve_capture_sources(
     repository: Path,
     source_generation_id: str | None,
 ) -> dict[str, _Source | None]:
-    return {
-        store.logical_id: (
+    sources: dict[str, _Source | None] = {}
+    generation_root = (
+        container / "generations" / source_generation_id
+        if source_generation_id is not None
+        else None
+    )
+    for store in stores:
+        source = (
             _resolve_source(
                 store,
                 container=container,
@@ -323,8 +334,17 @@ def _resolve_capture_sources(
             if store.included_in_recovery
             else None
         )
-        for store in stores
-    }
+        if (
+            source is not None
+            and source.kind == "canonical_generation"
+            and generation_root is not None
+            and _path_has_link_or_reparse(source.path, generation_root)
+        ):
+            raise SnapshotValidationError(
+                f"linked explicit source generation refused for {store.logical_id}"
+            )
+        sources[store.logical_id] = source
+    return sources
 
 
 def _validate_source_containment(
@@ -350,9 +370,9 @@ def _copy_store(
     *,
     snapshot_path: Path,
 ) -> list[dict[str, Any]]:
-    if source.is_symlink():
+    if _is_link_or_reparse(source):
         raise SnapshotValidationError(
-            f"symbolic-link source refused for {store.logical_id}: {source}"
+            f"linked source refused for {store.logical_id}: {source}"
         )
     if store.path_kind == "file":
         return [
@@ -365,13 +385,9 @@ def _copy_store(
             )
         ]
 
-    target.mkdir(parents=True)
     copied: list[dict[str, Any]] = []
-    source_paths = tuple(source.rglob("*"))
-    if any(path.is_symlink() for path in source_paths):
-        raise SnapshotValidationError(
-            f"symbolic-link source refused for {store.logical_id}: {source}"
-        )
+    source_paths = _safe_tree_paths(source, f"source for {store.logical_id}")
+    target.mkdir(parents=True)
     source_files = sorted(path for path in source_paths if path.is_file())
     for source_file in source_files:
         relative = source_file.relative_to(source)
@@ -385,10 +401,10 @@ def _copy_store(
                 target_file.relative_to(snapshot_path).as_posix(),
             )
         )
-    final_paths = tuple(source.rglob("*"))
-    if any(path.is_symlink() for path in final_paths) or sorted(
-        _path_key(path) for path in final_paths
-    ) != sorted(_path_key(path) for path in source_paths):
+    final_paths = _safe_tree_paths(source, f"source for {store.logical_id}")
+    if sorted(_path_key(path) for path in final_paths) != sorted(
+        _path_key(path) for path in source_paths
+    ):
         raise SnapshotValidationError(
             f"source directory changed during capture for {store.logical_id}: {source}"
         )
@@ -431,6 +447,7 @@ def _validate_snapshot_contents(
     stores: tuple[LogicalStore, ...],
     require_complete: bool,
 ) -> dict[str, Any]:
+    initial_paths = _safe_tree_paths(snapshot_path, "snapshot")
     try:
         manifest_bytes = (snapshot_path / "manifest.json").read_bytes()
         manifest = json.loads(manifest_bytes.decode("utf-8"))
@@ -543,9 +560,11 @@ def _validate_snapshot_contents(
         if completion.get("manifest_sha256") != hashlib.sha256(manifest_bytes).hexdigest():
             raise SnapshotValidationError("snapshot manifest hash mismatch")
 
-    all_paths = tuple(snapshot_path.rglob("*"))
-    if any(path.is_symlink() for path in all_paths):
-        raise SnapshotValidationError("snapshot contains a symbolic link")
+    all_paths = _safe_tree_paths(snapshot_path, "snapshot")
+    if sorted(_path_key(path) for path in all_paths) != sorted(
+        _path_key(path) for path in initial_paths
+    ):
+        raise SnapshotValidationError("snapshot contents changed during validation")
     actual_files = {
         path.relative_to(snapshot_path).as_posix() for path in all_paths if path.is_file()
     }
@@ -693,6 +712,7 @@ def _validate_json_shape(
         "user_memory": ("entries",),
         "nova_self_memory": ("relationship_notes", "session_summaries"),
         "runtime_settings": ("history",),
+        "tone_profile": ("history",),
         "atomic_policies": ("policies",),
         "notification_schedules": ("schedules",),
         "pattern_review": ("proposals", "decisions"),
@@ -703,7 +723,12 @@ def _validate_json_shape(
     for key in required_lists.get(logical_id, ()):
         if key in payload and not isinstance(payload[key], list):
             raise SnapshotValidationError(f"{logical_id}.{key} must be a list: {path}")
-    mandatory_lists = {"goals": ("goals",)}
+    mandatory_lists = {
+        "goals": ("goals",),
+        "pattern_review": ("proposals", "decisions"),
+        "notification_schedules": ("schedules",),
+        "provider_usage": ("recent_events",),
+    }
     for key in mandatory_lists.get(logical_id, ()):
         if not isinstance(payload.get(key), list):
             raise SnapshotValidationError(f"{logical_id}.{key} must be a list: {path}")
@@ -720,6 +745,12 @@ def _validate_json_shape(
     for key in object_record_lists.get(logical_id, ()):
         if key in payload and not all(isinstance(item, dict) for item in payload[key]):
             raise SnapshotValidationError(f"{logical_id}.{key} must contain objects: {path}")
+    if logical_id == "notification_schedules" and not all(
+        _is_valid_notification_schedule(item) for item in payload["schedules"]
+    ):
+        raise SnapshotValidationError(
+            f"notification_schedules entries must be structurally valid: {path}"
+        )
     required_objects = {
         "nova_self_memory": ("conversation_patterns",),
         "runtime_settings": (),
@@ -776,6 +807,23 @@ def _validate_story_tracker_shape(
         raise SnapshotValidationError(
             f"story_tracker {key} must contain {item_name}: {path}"
         )
+
+
+def _is_valid_notification_schedule(item: Any) -> bool:
+    if not isinstance(item, dict) or not isinstance(item.get("active"), bool):
+        return False
+    required_text = ("id", "kind", "title", "body", "recurrence", "next_run_at")
+    if any(not str(item.get(field) or "").strip() for field in required_text):
+        return False
+    if str(item.get("kind")).strip().lower() not in {"reminder", "daily_brief"}:
+        return False
+    if str(item.get("recurrence")).strip().lower() not in {"once", "daily"}:
+        return False
+    try:
+        datetime.fromisoformat(str(item.get("next_run_at") or "").strip())
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 def _write_durable_json(path: Path, payload: dict[str, Any]) -> None:
@@ -836,6 +884,54 @@ def _meaningfully_exists(path: Path, path_kind: str) -> bool:
 def _path_key(path: Path) -> str:
     key = str(path.resolve())
     return key.lower() if os.name == "nt" else key
+
+
+def _is_link_or_reparse(path: Path) -> bool:
+    if path.is_symlink():
+        return True
+    try:
+        attributes = getattr(path.stat(follow_symlinks=False), "st_file_attributes", 0)
+    except OSError:
+        return False
+    return bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+
+
+def _path_has_link_or_reparse(path: Path, root: Path) -> bool:
+    current = path
+    while True:
+        if _is_link_or_reparse(current):
+            return True
+        if current == root:
+            return False
+        parent = current.parent
+        if parent == current:
+            return True
+        current = parent
+
+
+def _safe_tree_paths(root: Path, label: str) -> tuple[Path, ...]:
+    if not root.is_dir() or _is_link_or_reparse(root):
+        raise SnapshotValidationError(f"{label} root is unavailable or a link or reparse point")
+    paths: list[Path] = []
+
+    def raise_walk_error(error: OSError) -> None:
+        raise error
+
+    try:
+        for directory, directory_names, file_names in os.walk(
+            root, topdown=True, onerror=raise_walk_error, followlinks=False
+        ):
+            current = Path(directory)
+            for name in sorted((*directory_names, *file_names)):
+                path = current / name
+                if _is_link_or_reparse(path):
+                    raise SnapshotValidationError(
+                        f"{label} contains a link or reparse point: {path}"
+                    )
+                paths.append(path)
+    except OSError as exc:
+        raise SnapshotValidationError(f"{label} inventory failed: {exc}") from exc
+    return tuple(paths)
 
 
 def _require_safe_id(value: str, name: str) -> None:

@@ -61,6 +61,23 @@ def _capture(
     )
 
 
+def _make_directory_link(link: Path, target: Path) -> None:
+    if os.name == "nt":
+        result = subprocess.run(
+            ["cmd.exe", "/d", "/c", "mklink", "/J", str(link), str(target)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode:
+            pytest.skip(f"directory junctions unavailable: {result.stderr or result.stdout}")
+        return
+    try:
+        os.symlink(target, link, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory links unavailable: {exc}")
+
+
 def test_snapshot_manifest_covers_complete_registry_and_records_exclusions(tmp_path: Path):
     runtime = tmp_path / "runtime"
     source = runtime / "data/nova_state/memory/items.json"
@@ -280,6 +297,125 @@ def test_goals_missing_mandatory_goals_list_fails_closed(tmp_path: Path):
 
 
 @pytest.mark.parametrize(
+    ("logical_id", "relative_path", "required_field"),
+    (
+        ("pattern_review", "data/pattern_review.json", "proposals"),
+        ("pattern_review", "data/pattern_review.json", "decisions"),
+        ("notification_schedules", "data/schedules.json", "schedules"),
+        ("provider_usage", "data/provider_usage.json", "recent_events"),
+    ),
+)
+def test_reader_indexed_lists_are_mandatory(
+    tmp_path: Path, logical_id: str, relative_path: str, required_field: str
+):
+    store = _store(logical_id, relative_path)
+    source = tmp_path / "runtime" / relative_path
+    source.parent.mkdir(parents=True)
+    payload = {"proposals": []} if required_field == "decisions" else {}
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(
+        SnapshotValidationError, match=rf"{logical_id}\.{required_field} must be a list"
+    ):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+
+
+@pytest.mark.parametrize(
+    "invalid_item",
+    (
+        {},
+        {
+            "id": "SCH-1",
+            "kind": "reminder",
+            "title": "Title",
+            "body": "Body",
+            "recurrence": "once",
+            "next_run_at": "2026-09-12T12:00:00+00:00",
+            "active": "yes",
+        },
+        {
+            "id": "SCH-1",
+            "kind": "unknown",
+            "title": "Title",
+            "body": "Body",
+            "recurrence": "once",
+            "next_run_at": "2026-09-12T12:00:00+00:00",
+            "active": True,
+        },
+        {
+            "id": "SCH-1",
+            "kind": "reminder",
+            "title": "Title",
+            "body": "Body",
+            "recurrence": "weekly",
+            "next_run_at": "2026-09-12T12:00:00+00:00",
+            "active": True,
+        },
+        {
+            "id": "SCH-1",
+            "kind": "reminder",
+            "title": "Title",
+            "body": "Body",
+            "recurrence": "once",
+            "next_run_at": "not-a-time",
+            "active": True,
+        },
+    ),
+)
+def test_notification_schedule_records_match_runtime_reader_contract(
+    tmp_path: Path, invalid_item: dict[str, object]
+):
+    store = _store("notification_schedules", "data/schedules.json")
+    source = tmp_path / "runtime/data/schedules.json"
+    source.parent.mkdir(parents=True)
+    payload = {"schedules": [invalid_item]}
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="structurally valid"):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+
+
+def test_valid_notification_schedule_record_is_captured(tmp_path: Path):
+    store = _store("notification_schedules", "data/schedules.json")
+    source = tmp_path / "runtime/data/schedules.json"
+    source.parent.mkdir(parents=True)
+    payload = {
+        "schedules": [
+            {
+                "id": "SCH-1",
+                "kind": "reminder",
+                "title": "Title",
+                "body": "Body",
+                "recurrence": "once",
+                "next_run_at": "2026-09-12T12:00:00+00:00",
+                "active": True,
+            }
+        ]
+    }
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = _capture(tmp_path, registry=(store,))
+
+    assert json.loads((result.snapshot_path / "state/data/schedules.json").read_text()) == payload
+
+
+def test_tone_profile_history_must_be_a_list_when_present(tmp_path: Path):
+    store = _store("tone_profile", "data/tone_profile.json")
+    source = tmp_path / "runtime/data/tone_profile.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"history": "invalid"}', encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="tone_profile.history must be a list"):
+        _capture(tmp_path, registry=(store,))
+
+    assert source.read_text(encoding="utf-8") == '{"history": "invalid"}'
+
+
+@pytest.mark.parametrize(
     ("filename", "payload", "message"),
     (
         ("tracked_topics.json", {}, "topics must be a list"),
@@ -417,20 +553,7 @@ def test_snapshot_rejects_linked_staging_ancestor_into_live_source(tmp_path: Pat
     control = container / "control"
     control.mkdir(parents=True)
     staging = control / "staging"
-    if os.name == "nt":
-        result = subprocess.run(
-            ["cmd.exe", "/d", "/c", "mklink", "/J", str(staging), str(source)],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode:
-            pytest.skip(f"directory junctions unavailable: {result.stderr or result.stdout}")
-    else:
-        try:
-            os.symlink(source, staging, target_is_directory=True)
-        except OSError as exc:
-            pytest.skip(f"directory links unavailable: {exc}")
+    _make_directory_link(staging, source)
 
     with pytest.raises(SnapshotValidationError, match="overlaps live source"):
         create_snapshot(
@@ -444,6 +567,46 @@ def test_snapshot_rejects_linked_staging_ancestor_into_live_source(tmp_path: Pat
         )
 
     assert not (staging / "snapshot-overlap").exists()
+
+
+def test_explicit_generation_rejects_junction_backed_root_before_staging(tmp_path: Path):
+    container = tmp_path / "container"
+    target = tmp_path / "external-generation"
+    source = target / "data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"owner": "external"}', encoding="utf-8")
+    generations = container / "generations"
+    generations.mkdir(parents=True)
+    generation_root = generations / "gen-linked"
+    _make_directory_link(generation_root, target)
+
+    with pytest.raises(SnapshotValidationError, match="linked explicit source generation"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=tmp_path / "runtime",
+            repository_root=tmp_path / "repository",
+            source_generation_id="gen-linked",
+            snapshot_id="snapshot-linked-generation",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert not (container / "control/staging/snapshot-linked-generation").exists()
+
+
+def test_validation_rejects_junction_directory_inside_snapshot(tmp_path: Path):
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+    result = _capture(tmp_path)
+    external = tmp_path / "external"
+    external.mkdir()
+    linked = result.snapshot_path / "linked-directory"
+    _make_directory_link(linked, external)
+
+    with pytest.raises(SnapshotValidationError, match="link or reparse point"):
+        validate_snapshot(result.snapshot_path, registry=(_store(),))
 
 
 def test_snapshot_rejects_partial_restore_group(tmp_path: Path):
