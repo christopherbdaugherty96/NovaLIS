@@ -230,6 +230,18 @@ def test_validation_rejects_unexpected_empty_directory(tmp_path: Path):
         validate_snapshot(result.snapshot_path, registry=(_store(),))
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX special filesystem node")
+def test_validation_rejects_unmanifested_special_filesystem_node(tmp_path: Path):
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+    result = _capture(tmp_path)
+    os.mkfifo(result.snapshot_path / "unexpected.fifo")
+
+    with pytest.raises(SnapshotValidationError, match="unsupported filesystem type"):
+        validate_snapshot(result.snapshot_path, registry=(_store(),))
+
+
 def test_validation_rejects_incomplete_staging(tmp_path: Path):
     source = tmp_path / "runtime/data/sample.json"
     source.parent.mkdir(parents=True)
@@ -793,6 +805,40 @@ def test_snapshot_rejects_linked_container_root_before_normalization(tmp_path: P
     assert tuple(external.iterdir()) == ()
 
 
+@pytest.mark.parametrize("root_kind", ("runtime", "repository"))
+def test_snapshot_rejects_linked_configured_legacy_roots(
+    tmp_path: Path, root_kind: str
+):
+    external = tmp_path / f"external-{root_kind}"
+    external.mkdir()
+    linked_root = tmp_path / f"linked-{root_kind}"
+    _make_directory_link(linked_root, external)
+    source = external / "data/sample.json"
+    source.parent.mkdir()
+    source.write_text('{"owner": "external"}', encoding="utf-8")
+    store = _store(
+        repository_path=("data/sample.json" if root_kind == "repository" else None)
+    )
+    if root_kind == "repository":
+        store = LogicalStore(**{**store.__dict__, "legacy_runtime_path": None})
+
+    with pytest.raises(SnapshotValidationError, match=f"linked {root_kind} root"):
+        create_snapshot(
+            container_root=tmp_path / "container",
+            runtime_root=(linked_root if root_kind == "runtime" else tmp_path / "runtime"),
+            repository_root=(
+                linked_root if root_kind == "repository" else tmp_path / "repository"
+            ),
+            snapshot_id=f"snapshot-linked-{root_kind}-root",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert source.read_text(encoding="utf-8") == '{"owner": "external"}'
+    assert not (tmp_path / "container").exists()
+
+
 def test_snapshot_checks_dot_segments_before_container_normalization(tmp_path: Path):
     external_parent = tmp_path / "external"
     external_child = external_parent / "child"
@@ -969,6 +1015,40 @@ def test_snapshot_rejects_invalid_nested_authoritative_records(tmp_path: Path):
 
     with pytest.raises(SnapshotValidationError, match="templates must contain objects"):
         _capture(tmp_path, registry=(store,))
+
+
+@pytest.mark.parametrize(
+    "invalid_state",
+    (
+        {"templates": [{"id": "morning_brief", "max_network_calls": "bad"}]},
+        {"recent_runs": [{"estimated_input_tokens": "bad"}]},
+        {"recent_runs": [{"budget_usage": "bad"}]},
+        {"active_run": {"envelope_id": "ENV-1", "budget_usage": "bad"}},
+        {"delivery_inbox": [{"usage_meta": "bad"}]},
+    ),
+)
+def test_openclaw_agent_runtime_matches_reader_normalization(
+    tmp_path: Path, invalid_state: dict[str, object]
+):
+    store = _store("openclaw_agent_runtime", "data/runtime.json")
+    source = tmp_path / "runtime/data/runtime.json"
+    source.parent.mkdir(parents=True)
+    payload = {
+        "templates": [],
+        "active_run": None,
+        "recent_runs": [],
+        "delivery_inbox": [],
+        **invalid_state,
+    }
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="reader normalization"):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+    assert not (
+        tmp_path / "container/control/staging/snapshot-test/snapshot.complete.json"
+    ).exists()
 
 
 def test_explicit_generation_captures_only_canonical_generation(tmp_path: Path):
