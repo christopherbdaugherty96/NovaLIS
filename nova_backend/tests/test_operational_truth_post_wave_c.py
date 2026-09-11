@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: implement and review only the authorized Lane 3 contract",
+        "NEXT: separate owner authorization decision for versioned snapshot + manifest",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -637,7 +637,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     )
 
 
-def test_current_repository_shape_records_lane_3_owner_authorization():
+def test_current_repository_shape_records_lane_3_complete_and_snapshot_unapproved():
     checker = _load_checker()
 
     for relative in (
@@ -666,8 +666,12 @@ def test_current_repository_shape_records_lane_3_owner_authorization():
         assert structured_lines.count(checker.LANE_2_COMPLETE_PROVENANCE) == 1
         assert checker.LANE_1_AUTHORIZATION_MARKER not in normalized
         assert checker.LANE_2_AUTHORIZATION_MARKER not in normalized
-        assert structured_lines.count(checker.LANE_3_AUTHORIZATION_MARKER) == 1
-        assert "NEXT: IMPLEMENT AND REVIEW ONLY THE AUTHORIZED LANE 3 CONTRACT" in normalized
+        assert checker.LANE_3_AUTHORIZATION_MARKER not in normalized
+        assert structured_lines.count(checker.LANE_3_COMPLETE_PROVENANCE) == 1
+        assert (
+            "NEXT: SEPARATE OWNER AUTHORIZATION DECISION FOR VERSIONED SNAPSHOT + MANIFEST"
+            in normalized
+        )
 
 
 @pytest.mark.parametrize(
@@ -798,17 +802,17 @@ def test_lane_1_sequence_rejects_borrowed_408_provenance(
     )
 
 
-def test_lane_3_active_rejects_competing_durability_authorization(tmp_path):
+def test_lane_3_closeout_rejects_competing_durability_authorization(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "AUTHORIZED / ACTIVE: durability implementation lane 3 - maintenance locking + "
-        "mutation quiescence (owner authorization; base main `1be759a5`)",
+        "COMPLETE: durability implementation lane 3 - maintenance locking + "
+        "mutation quiescence (PR #419; main `2bfe202e`)",
         "AUTHORIZED: durability implementation lane 4 only\n"
-        "AUTHORIZED / ACTIVE: durability implementation lane 3 - maintenance locking + "
-        "mutation quiescence (owner authorization; base main `1be759a5`)",
+        "COMPLETE: durability implementation lane 3 - maintenance locking + "
+        "mutation quiescence (PR #419; main `2bfe202e`)",
         1,
     )
     assert corrupted != original
@@ -829,11 +833,11 @@ def test_lane_3_active_rejects_competing_durability_authorization(tmp_path):
 @pytest.mark.parametrize(
     ("provenance", "replacement"),
     (
-        ("1be759a5", "deadbeef"),
-        ("owner authorization", "unreviewed authorization"),
+        ("PR #419", "PR #999"),
+        ("2bfe202e", "deadbeef"),
     ),
 )
-def test_lane_3_active_rejects_corrupt_authorization_provenance(
+def test_lane_3_closeout_rejects_corrupt_merge_provenance(
     tmp_path, provenance, replacement
 ):
     checker = _load_checker()
@@ -856,15 +860,41 @@ def test_lane_3_active_rejects_corrupt_authorization_provenance(
     )
 
 
+def test_lane_3_closeout_rejects_snapshot_authorization(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    next_line = "NEXT: separate owner authorization decision for versioned snapshot + manifest"
+    corrupted = original.replace(
+        next_line,
+        "AUTHORIZED: versioned snapshot + manifest implementation\n" + next_line,
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
+
+
 def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     current_block = (
-        "AUTHORIZED / ACTIVE: durability implementation lane 3 - maintenance locking + "
-        "mutation quiescence (owner authorization; base main `1be759a5`)\n"
-        + "\n".join(checker.LANE_3_ACTIVE_DIRECTIVE_SEQUENCE).lower()
+        "COMPLETE: durability implementation lane 3 - maintenance locking + "
+        "mutation quiescence (PR #419; main `2bfe202e`)\n"
+        + "\n".join(checker.POST_419_DIRECTIVE_SEQUENCE).lower()
     )
     lane_1_block = (
         "AUTHORIZED: durability implementation lane 2 only\n"
@@ -901,10 +931,10 @@ def test_pre_406_sequence_is_historical_only():
         "(PR #413; main `e74fdca0`)\n"
         "COMPLETE: durability implementation lane 2 - corruption-safe readers "
         "(PR #416; main `80e1c86f`)\n"
-        "AUTHORIZED / ACTIVE: durability implementation lane 3 - maintenance locking + "
-        "mutation quiescence (owner authorization; base main `1be759a5`)\n"
-        "NEXT: implement and review only the authorized Lane 3 contract\n"
-        "THEN: separately authorized snapshot/manifest + safe migration\n"
+        "COMPLETE: durability implementation lane 3 - maintenance locking + "
+        "mutation quiescence (PR #419; main `2bfe202e`)\n"
+        "NEXT: separate owner authorization decision for versioned snapshot + manifest\n"
+        "THEN: separately authorized safe migration + generation activation\n"
         "THEN: separately authorized encrypted backup/restore/rollback\n"
         "THEN: durability torture proof\n"
         "THEN: #409 release hygiene",
