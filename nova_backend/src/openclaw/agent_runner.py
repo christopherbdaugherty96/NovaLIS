@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.durability.maintenance import authoritative_mutation
 from src.governor.network_mediator import NetworkMediator
 from src.llm import llm_gateway
 from src.openclaw.agent_personality_bridge import (
@@ -234,6 +235,7 @@ class OpenClawAgentRunner:
     def _reset_per_tool_budget(self) -> None:
         self._per_tool_budget = PerToolBudgetTracker()
 
+    @authoritative_mutation
     async def run_template(self, template_id: str, *, triggered_by: str = "dashboard") -> dict[str, Any]:
         self._reset_per_tool_budget()
         template = self._store.get_template(template_id)
@@ -1177,6 +1179,7 @@ class OpenClawAgentRunner:
     # Goal-based execution (ThinkingLoop path)
     # ------------------------------------------------------------------
 
+    @authoritative_mutation
     async def run_goal(self, goal: str, *, triggered_by: str = "user") -> dict[str, Any]:
         """Run a freeform goal through the LLM-guided thinking loop.
 

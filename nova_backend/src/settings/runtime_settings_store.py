@@ -129,10 +129,10 @@ class RuntimeSettingsStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        self._path.parent.mkdir(parents=True, exist_ok=True)
         if not self._path.exists():
             with mutation_scope(), self._lock:
                 if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
                     self._write_state(self._default_state())
 
     @property

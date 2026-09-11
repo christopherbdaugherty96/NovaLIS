@@ -28,14 +28,16 @@ justify deleting or overriding a live lock.
 | Class | Authoritative entry points | Narrow admission boundary |
 |---|---|---|
 | Foreground / Governor | Governed capability invocation and its receipt/ledger effects | `Governor.handle_governed_invocation` |
-| Direct stores | Governed/user/self memory, quick corrections, policies, schedules, settings, usage, profiles, goals, connections/credentials, story tracking, model lock | Public read-modify-write methods; common JSON writer remains defense in depth |
+| Direct stores | Governed/user/self memory, quick corrections, policies, schedules, settings, usage, profiles, goals, connections/credentials, story tracking, model lock | Public read-modify-write methods and admitted first-use initialization |
 | Scheduler / background | Notification delivery and scheduled OpenClaw claims/runs | Schedule-store mutation methods and `OpenClawAgentScheduler.tick` |
 | OpenClaw / runtime | Envelope lifecycle, active/recent run state, delivery state, execution memory | Public lifecycle/runtime mutation methods |
 | Audit / receipts | Append-only ledger events consumed by receipt views | `LedgerWriter.log_event`, preserving its same-path `RLock` |
 
-Derived caches may be refused by the common writer during maintenance, but they
-do not expand the authoritative inventory. Reads remain available except where a
-governed invocation necessarily creates audit/receipt state.
+The common JSON writer is not a maintenance boundary because some callers already
+hold per-path locks when they reach it. Logical authoritative mutation boundaries
+must acquire admission first. Derived caches do not expand the authoritative
+inventory. Reads remain available except where a governed invocation necessarily
+creates audit/receipt state or a read must persist rollover/expiry state.
 
 ## Explicit exclusions
 

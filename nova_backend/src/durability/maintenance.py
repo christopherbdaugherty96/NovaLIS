@@ -101,7 +101,12 @@ class _OSFileLease:
     """One shared or exclusive byte-range lease in the maintenance lock file."""
 
     def __init__(self, path: Path, *, offset: int) -> None:
-        self.path = Path(path)
+        requested_path = Path(path)
+        self.path = (
+            requested_path.with_name(f"{requested_path.name}.activity")
+            if os.name != "nt" and offset == _ACTIVITY_LOCK_OFFSET
+            else requested_path
+        )
         self.offset = offset
         self._handle = None
         self._overlapped = None
@@ -140,9 +145,7 @@ class _OSFileLease:
 
         mode = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
         try:
-            fcntl.lockf(
-                self._handle.fileno(), mode | fcntl.LOCK_NB, 1, self.offset
-            )
+            fcntl.flock(self._handle.fileno(), mode | fcntl.LOCK_NB)
         except BlockingIOError:
             return False
         return True
@@ -167,9 +170,7 @@ class _OSFileLease:
                 else:
                     import fcntl
 
-                    fcntl.lockf(
-                        self._handle.fileno(), fcntl.LOCK_UN, 1, self.offset
-                    )
+                    fcntl.flock(self._handle.fileno(), fcntl.LOCK_UN)
         finally:
             self._locked = False
             self._handle.close()
@@ -286,17 +287,17 @@ class MaintenanceCoordinator:
                 time.sleep(min(0.01, max(0.0, deadline - time.monotonic())))
 
             active_metadata = self._owner_metadata("active")
-            activity_lease.write_metadata(active_metadata)
+            admission_lease.write_metadata(active_metadata)
             try:
                 yield MaintenanceStatus(self.lock_path, True, active_metadata)
             except BaseException:
                 try:
-                    activity_lease.write_metadata(self._owner_metadata("failed"))
+                    admission_lease.write_metadata(self._owner_metadata("failed"))
                 except OSError:
                     pass
                 raise
             else:
-                activity_lease.write_metadata(self._owner_metadata("released"))
+                admission_lease.write_metadata(self._owner_metadata("released"))
         finally:
             try:
                 activity_lease.release()

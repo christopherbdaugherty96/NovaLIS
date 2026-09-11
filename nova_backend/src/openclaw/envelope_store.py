@@ -21,7 +21,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from src.durability.corruption import read_json_state, require_state
-from src.durability.maintenance import authoritative_mutation
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _STORE_FILENAME = "openclaw_envelopes.json"
@@ -241,7 +241,6 @@ class EnvelopeStore:
     # Read operations
     # ------------------------------------------------------------------
 
-    @authoritative_mutation
     def get(self, envelope_id: str) -> Optional[EnvelopeRecord]:
         """
         Return the record for an envelope, or None if not found.
@@ -257,27 +256,32 @@ class EnvelopeStore:
             if raw is None:
                 return None
             record = self._hydrate(raw)
-            if record.is_expired():
-                self._expire_in_place(state, eid, record)
-                self._save(state)
+            if not record.is_expired():
+                return record
+        with mutation_scope(), self._lock:
+            state = self._load()
+            raw = state.get(eid)
+            if raw is None:
                 return None
-            return record
+            record = self._hydrate(raw)
+            if not record.is_expired():
+                return record
+            self._expire_in_place(state, eid, record)
+            self._save(state)
+            return None
 
-    @authoritative_mutation
     def list_active(self) -> list[EnvelopeRecord]:
         """Return all non-terminal, non-expired envelope records."""
         with self._lock:
             state = self._load()
-            results: list[EnvelopeRecord] = []
-            for eid, raw in list(state.items()):
-                record = self._hydrate(raw)
-                if EnvelopeStatus.is_terminal(record.status):
-                    continue
-                if record.is_expired():
-                    self._expire_in_place(state, eid, record)
-                    continue
-                results.append(record)
-            self._save(state)
+            results, has_expired = self._active_records(state)
+            if not has_expired:
+                return results
+        with mutation_scope(), self._lock:
+            state = self._load()
+            results, has_expired = self._active_records(state, expire=True)
+            if has_expired:
+                self._save(state)
             return results
 
     # ------------------------------------------------------------------
@@ -328,6 +332,23 @@ class EnvelopeStore:
         state[eid] = raw
         # _save is not called here — caller holds the lock and will call _save itself
         return self._hydrate(raw)
+
+    def _active_records(
+        self, state: dict[str, Any], *, expire: bool = False
+    ) -> tuple[list[EnvelopeRecord], bool]:
+        results: list[EnvelopeRecord] = []
+        has_expired = False
+        for eid, raw in list(state.items()):
+            record = self._hydrate(raw)
+            if EnvelopeStatus.is_terminal(record.status):
+                continue
+            if record.is_expired():
+                has_expired = True
+                if expire:
+                    self._expire_in_place(state, eid, record)
+                continue
+            results.append(record)
+        return results, has_expired
 
     @staticmethod
     def _hydrate(raw: dict[str, Any]) -> EnvelopeRecord:

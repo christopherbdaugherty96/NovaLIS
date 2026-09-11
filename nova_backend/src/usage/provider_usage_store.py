@@ -43,20 +43,22 @@ class ProviderUsageStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        self._path.parent.mkdir(parents=True, exist_ok=True)
         self._daily_budget = int(daily_token_budget or self.DEFAULT_DAILY_TOKEN_BUDGET)
         self._warning_ratio = float(warning_ratio or self.DEFAULT_WARNING_RATIO)
         if not self._path.exists():
             with mutation_scope(), self._lock:
                 if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
                     self._write_state(self._default_state())
 
-    @authoritative_mutation
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
-            rolled = self._roll_day_if_needed(state)
-            if rolled:
+            if str(state.get("current_day") or "") == _utc_day():
+                return self._build_snapshot(state)
+        with mutation_scope(), self._lock:
+            state = self._read_state()
+            if self._roll_day_if_needed(state):
                 self._write_state(state)
             return self._build_snapshot(state)
 
