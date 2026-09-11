@@ -919,10 +919,12 @@ def _validate_json_shape(
         _validate_runtime_settings_numeric_fields(payload, path)
     if logical_id == "openclaw_agent_runtime":
         _validate_openclaw_agent_runtime_normalization(payload, path)
-    if logical_id == "openclaw_envelopes" and not all(
-        isinstance(item, dict) for item in payload.values()
-    ):
-        raise SnapshotValidationError(f"openclaw_envelopes must contain object records: {path}")
+    if logical_id == "openclaw_envelopes":
+        if not all(isinstance(item, dict) for item in payload.values()):
+            raise SnapshotValidationError(
+                f"openclaw_envelopes must contain object records: {path}"
+            )
+        _validate_openclaw_envelope_normalization(payload, path)
     if (
         logical_id == "openclaw_agent_runtime"
         and payload.get("active_run") is not None
@@ -988,6 +990,20 @@ def _validate_openclaw_agent_runtime_normalization(
     except (TypeError, ValueError, OverflowError) as exc:
         raise SnapshotValidationError(
             f"openclaw_agent_runtime failed reader normalization: {path}"
+        ) from exc
+
+
+def _validate_openclaw_envelope_normalization(
+    payload: dict[str, Any], path: Path
+) -> None:
+    mapping_fields = ("feature_flags_snapshot", "envelope_data", "run_metadata")
+    try:
+        for record in payload.values():
+            for key in mapping_fields:
+                dict(record.get(key) or {})
+    except (TypeError, ValueError) as exc:
+        raise SnapshotValidationError(
+            f"openclaw_envelopes failed reader normalization: {path}"
         ) from exc
 
 
