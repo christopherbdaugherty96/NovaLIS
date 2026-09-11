@@ -450,6 +450,89 @@ def test_jsonl_truncation_fails_closed(tmp_path: Path):
     assert source.read_bytes() == corrupt
 
 
+@pytest.mark.parametrize(
+    ("invalid_field", "invalid_value"),
+    (
+        (None, None),
+        ("tool_name", 1),
+        ("task_type", 1),
+        ("success", "true"),
+        ("duration_seconds", "1.0"),
+        ("error", 1),
+        ("timestamp", 1),
+    ),
+)
+def test_openclaw_execution_memory_requires_reader_compatible_records(
+    tmp_path: Path, invalid_field: str | None, invalid_value: object
+):
+    store = _store("openclaw_execution_memory", "data/execution_memory.json")
+    source = tmp_path / "runtime/data/execution_memory.json"
+    source.parent.mkdir(parents=True)
+    record: dict[str, object] = {
+        "tool_name": "weather",
+        "task_type": "brief",
+        "success": True,
+        "duration_seconds": 1.5,
+        "error": None,
+        "timestamp": "2026-09-12T12:00:00+00:00",
+    }
+    if invalid_field is None:
+        record = {}
+    else:
+        record[invalid_field] = invalid_value
+    payload = [record]
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="execution record is invalid"):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+
+
+def test_openclaw_execution_memory_accepts_reader_compatible_record(tmp_path: Path):
+    store = _store("openclaw_execution_memory", "data/execution_memory.json")
+    source = tmp_path / "runtime/data/execution_memory.json"
+    source.parent.mkdir(parents=True)
+    payload = [
+        {
+            "tool_name": "weather",
+            "task_type": "brief",
+            "success": True,
+            "duration_seconds": 1.5,
+            "error": None,
+            "timestamp": "2026-09-12T12:00:00+00:00",
+        }
+    ]
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = _capture(tmp_path, registry=(store,))
+
+    staged = result.snapshot_path / "state/data/execution_memory.json"
+    assert json.loads(staged.read_text(encoding="utf-8")) == payload
+
+
+@pytest.mark.parametrize(
+    ("path_kind", "create_wrong_kind"),
+    (
+        ("file", "directory"),
+        ("directory", "file"),
+    ),
+)
+def test_snapshot_rejects_existing_source_with_wrong_filesystem_kind(
+    tmp_path: Path, path_kind: str, create_wrong_kind: str
+):
+    store = _store("wrong_kind", "data/state", path_kind=path_kind)
+    source = tmp_path / "runtime/data/state"
+    source.parent.mkdir(parents=True)
+    if create_wrong_kind == "directory":
+        source.mkdir()
+    else:
+        source.write_text("state", encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="wrong filesystem type"):
+        _capture(tmp_path, registry=(store,))
+
+
 def test_snapshot_holds_maintenance_and_refuses_mutation_during_capture(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ):
@@ -577,7 +660,9 @@ def test_snapshot_rejects_linked_staging_ancestor_into_live_source(tmp_path: Pat
     staging = control / "staging"
     _make_directory_link(staging, source)
 
-    with pytest.raises(SnapshotValidationError, match="overlaps .*source"):
+    with pytest.raises(
+        SnapshotValidationError, match="linked snapshot staging|overlaps .*source"
+    ):
         create_snapshot(
             container_root=container,
             runtime_root=runtime,
@@ -589,6 +674,53 @@ def test_snapshot_rejects_linked_staging_ancestor_into_live_source(tmp_path: Pat
         )
 
     assert not (staging / "snapshot-overlap").exists()
+
+
+def test_snapshot_rejects_linked_staging_ancestor_outside_container(tmp_path: Path):
+    container = tmp_path / "container"
+    control = container / "control"
+    control.mkdir(parents=True)
+    external = tmp_path / "external-staging"
+    external.mkdir()
+    staging = control / "staging"
+    _make_directory_link(staging, external)
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="linked snapshot staging"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=tmp_path / "runtime",
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-external-staging",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert tuple(external.iterdir()) == ()
+
+
+def test_excluded_empty_directory_still_participates_in_containment(tmp_path: Path):
+    runtime = tmp_path / "runtime"
+    store = _store("excluded", "excluded-live", included=False, path_kind="directory")
+    source = runtime / "excluded-live"
+    source.mkdir(parents=True)
+    container = source / "nested-container"
+
+    with pytest.raises(SnapshotValidationError, match="overlaps configured source"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=runtime,
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-excluded-overlap",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert tuple(source.iterdir()) == ()
 
 
 def test_explicit_generation_rejects_junction_backed_root_before_staging(tmp_path: Path):
