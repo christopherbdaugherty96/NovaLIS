@@ -372,6 +372,36 @@ def test_explicit_generation_captures_only_canonical_generation(tmp_path: Path):
     }
 
 
+def test_explicit_generation_must_exist_before_staging(tmp_path: Path):
+    with pytest.raises(SnapshotValidationError, match="explicit source generation does not exist"):
+        create_snapshot(
+            container_root=tmp_path / "container",
+            runtime_root=tmp_path / "runtime",
+            repository_root=tmp_path / "repository",
+            source_generation_id="missing-generation",
+            snapshot_id="snapshot-missing-generation",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert not (tmp_path / "container/control/staging/snapshot-missing-generation").exists()
+
+
+def test_validation_binds_directory_store_relative_path_to_staged_file(tmp_path: Path):
+    store = _store("story_tracker", "data/story_tracker", path_kind="directory")
+    source = tmp_path / "runtime/data/story_tracker/nested/state.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+    result = _capture(tmp_path, registry=(store,))
+    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    manifest["entries"][0]["files"][0]["store_relative_path"] = "other.json"
+    result.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="store-relative path mismatch"):
+        validate_snapshot(result.snapshot_path, registry=(store,))
+
+
 def test_validation_uses_snapshot_not_changed_live_filesystem(tmp_path: Path):
     source = tmp_path / "runtime/data/sample.json"
     source.parent.mkdir(parents=True)
