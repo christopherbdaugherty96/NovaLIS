@@ -637,28 +637,41 @@ def _preserves_post_405_boundary(
     has_lane_1_provenance = lane_1_completion_lines == (LANE_1_COMPLETE_PROVENANCE,)
     has_lane_2_provenance = lane_2_completion_lines == (LANE_2_COMPLETE_PROVENANCE,)
     has_lane_3_provenance = lane_3_completion_lines == (LANE_3_COMPLETE_PROVENANCE,)
+    authority_prefix_pattern = (
+        r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
+    )
     durability_authorizations = tuple(
         line
         for line in structured_lines
         if re.match(
-            r"^AUTHORIZED(?:\s*/\s*ACTIVE)?:\s+DURABILITY IMPLEMENTATION LANE\b",
+            authority_prefix_pattern + r"\s+DURABILITY IMPLEMENTATION LANE\b",
             line,
         )
     )
     pending_locking_authorizations = tuple(
         line
         for line in structured_lines
-        if re.match(r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):", line)
+        if re.match(authority_prefix_pattern, line)
         and (
             "MAINTENANCE LOCK" in line
             or "MUTATION QUIESCENCE" in line
         )
     )
-    pending_snapshot_authorizations = tuple(
+    premature_later_durability_authorizations = tuple(
         line
         for line in structured_lines
-        if re.match(r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):", line)
-        and ("SNAPSHOT" in line or "MANIFEST" in line or "MIGRATION" in line)
+        if re.match(authority_prefix_pattern, line)
+        and (
+            "DURABILITY" in line
+            or "SNAPSHOT" in line
+            or "MANIFEST" in line
+            or "MIGRATION" in line
+            or "GENERATION ACTIVATION" in line
+            or "BACKUP" in line
+            or "RECOVERY" in line
+            or "RESTORE" in line
+            or "ROLLBACK" in line
+        )
     )
     normalized = " ".join(active.split())
     preserves_initial_order = (
@@ -703,7 +716,7 @@ def _preserves_post_405_boundary(
         and has_lane_3_provenance
         and not durability_authorizations
         and not pending_locking_authorizations
-        and not pending_snapshot_authorizations
+        and not premature_later_durability_authorizations
     )
     preserves_allowed_state = (
         preserves_initial_order
