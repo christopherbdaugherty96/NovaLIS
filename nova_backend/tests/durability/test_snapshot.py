@@ -702,6 +702,29 @@ def test_snapshot_rejects_linked_staging_ancestor_outside_container(tmp_path: Pa
     assert tuple(external.iterdir()) == ()
 
 
+def test_snapshot_rejects_linked_container_root_before_normalization(tmp_path: Path):
+    external = tmp_path / "external-container"
+    external.mkdir()
+    linked_container = tmp_path / "linked-container"
+    _make_directory_link(linked_container, external)
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="linked container root"):
+        create_snapshot(
+            container_root=linked_container,
+            runtime_root=tmp_path / "runtime",
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-linked-container",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert tuple(external.iterdir()) == ()
+
+
 def test_excluded_empty_directory_still_participates_in_containment(tmp_path: Path):
     runtime = tmp_path / "runtime"
     store = _store("excluded", "excluded-live", included=False, path_kind="directory")
@@ -715,6 +738,36 @@ def test_excluded_empty_directory_still_participates_in_containment(tmp_path: Pa
             runtime_root=runtime,
             repository_root=tmp_path / "repository",
             snapshot_id="snapshot-excluded-overlap",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert tuple(source.iterdir()) == ()
+
+
+def test_container_scoped_exclusion_checks_legacy_runtime_containment(tmp_path: Path):
+    runtime = tmp_path / "runtime"
+    source = runtime / "data/captures"
+    source.mkdir(parents=True)
+    container = source / "nested-container"
+    store = LogicalStore(
+        logical_id="screen_captures",
+        relative_path=Path("captures"),
+        state_classes=frozenset({"sensitive_artifact"}),
+        path_kind="directory",
+        location_scope="container",
+        legacy_runtime_path=Path("data/captures"),
+        included_in_recovery=False,
+        included_in_portable=False,
+    )
+
+    with pytest.raises(SnapshotValidationError, match="overlaps configured source"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=runtime,
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-screen-capture-overlap",
             build_id="build",
             created_at=FIXED_TIME,
             registry=(store,),

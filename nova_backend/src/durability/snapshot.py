@@ -15,7 +15,6 @@ from uuid import uuid4
 from src.durability.maintenance import maintenance_scope
 from src.durability.state_layout import (
     LogicalStore,
-    canonical_user_data_root,
     logical_store_registry,
 )
 from src.utils.persistent_state import readonly_runtime_path
@@ -78,11 +77,13 @@ def create_snapshot(
     migrate, encrypt, export, restore, or mutate live state.
     """
 
-    container = (
-        canonical_user_data_root()
-        if container_root is None
-        else Path(container_root).expanduser().resolve()
-    )
+    configured_container = _configured_container_root(container_root)
+    container_anchor = Path(configured_container.anchor)
+    if _path_has_link_or_reparse(configured_container, container_anchor):
+        raise SnapshotValidationError(
+            f"linked container root refused: {configured_container}"
+        )
+    container = configured_container.resolve()
     runtime = (
         readonly_runtime_path(__file__).resolve()
         if runtime_root is None
@@ -362,7 +363,7 @@ def _capture_source_candidates(
     source_generation_id: str | None,
 ) -> dict[str, tuple[_Source, ...]]:
     return {
-        store.logical_id: _source_candidates(
+        store.logical_id: _containment_source_candidates(
             store,
             container=container,
             runtime=runtime,
@@ -371,6 +372,38 @@ def _capture_source_candidates(
         )
         for store in stores
     }
+
+
+def _containment_source_candidates(
+    store: LogicalStore,
+    *,
+    container: Path,
+    runtime: Path,
+    repository: Path,
+    source_generation_id: str | None,
+) -> tuple[_Source, ...]:
+    candidates = list(
+        _source_candidates(
+            store,
+            container=container,
+            runtime=runtime,
+            repository=repository,
+            source_generation_id=source_generation_id,
+        )
+    )
+    if store.location_scope == "container":
+        if store.legacy_runtime_path is not None:
+            candidates.append(
+                _Source(runtime / store.legacy_runtime_path, "legacy_runtime")
+            )
+        if store.legacy_repository_path is not None:
+            candidates.append(
+                _Source(
+                    repository / store.legacy_repository_path,
+                    "legacy_repository",
+                )
+            )
+    return tuple(candidates)
 
 
 def _resolve_capture_sources(
@@ -991,6 +1024,24 @@ def _meaningfully_exists(path: Path, path_kind: str, logical_id: str) -> bool:
 def _path_key(path: Path) -> str:
     key = str(path.resolve())
     return key.lower() if os.name == "nt" else key
+
+
+def _configured_container_root(container_root: Path | None) -> Path:
+    if container_root is not None:
+        configured = Path(container_root).expanduser()
+    else:
+        override = str(os.environ.get("NOVA_RUNTIME_DIR") or "").strip()
+        if override:
+            configured = Path(override).expanduser()
+        else:
+            local_appdata = str(os.environ.get("LOCALAPPDATA") or "").strip()
+            base = (
+                Path(local_appdata).expanduser()
+                if local_appdata
+                else Path.home() / "AppData" / "Local"
+            )
+            configured = base / "Nova"
+    return Path(os.path.abspath(configured))
 
 
 def _is_link_or_reparse(path: Path) -> bool:
