@@ -129,6 +129,17 @@ LANE_3_ACTIVE_DIRECTIVE_SEQUENCE = (
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
+POST_419_DIRECTIVE_SEQUENCE = (
+    "NEXT: SEPARATE OWNER AUTHORIZATION DECISION FOR VERSIONED SNAPSHOT + MANIFEST",
+    "THEN: SEPARATELY AUTHORIZED SAFE MIGRATION + GENERATION ACTIVATION",
+    "THEN: SEPARATELY AUTHORIZED ENCRYPTED BACKUP/RESTORE/ROLLBACK",
+    "THEN: DURABILITY TORTURE PROOF",
+    "THEN: #409 RELEASE HYGIENE",
+    "THEN: BOUNDED PRODUCT-TRANSLATION/READINESS PASS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
 POST_408_COMPLETE_MARKER = "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION"
 POST_408_COMPLETE_PROVENANCE = (
     "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION "
@@ -155,6 +166,14 @@ LANE_2_COMPLETE_MARKER = (
 LANE_2_COMPLETE_PROVENANCE = (
     "COMPLETE: DURABILITY IMPLEMENTATION LANE 2 - CORRUPTION-SAFE READERS "
     "(PR #416; MAIN `80E1C86F`)"
+)
+LANE_3_COMPLETE_MARKER = (
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 3 - "
+    "MAINTENANCE LOCKING + MUTATION QUIESCENCE"
+)
+LANE_3_COMPLETE_PROVENANCE = (
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 3 - "
+    "MAINTENANCE LOCKING + MUTATION QUIESCENCE (PR #419; MAIN `2BFE202E`)"
 )
 
 POST_394_ORDERING_SURFACES = (
@@ -579,6 +598,7 @@ def _preserves_post_405_boundary(
     require_lane_1_closeout: bool = False,
     require_lane_2_closeout: bool = False,
     require_lane_3_active: bool = False,
+    require_lane_3_closeout: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -609,25 +629,48 @@ def _preserves_post_405_boundary(
     lane_2_completion_lines = tuple(
         line for line in structured_lines if line.startswith(LANE_2_COMPLETE_MARKER)
     )
+    lane_3_completion_lines = tuple(
+        line for line in structured_lines if line.startswith(LANE_3_COMPLETE_MARKER)
+    )
     has_406_provenance = completion_406_lines == (POST_406_COMPLETE_PROVENANCE,)
     has_408_provenance = completion_408_lines == (POST_408_COMPLETE_PROVENANCE,)
     has_lane_1_provenance = lane_1_completion_lines == (LANE_1_COMPLETE_PROVENANCE,)
     has_lane_2_provenance = lane_2_completion_lines == (LANE_2_COMPLETE_PROVENANCE,)
+    has_lane_3_provenance = lane_3_completion_lines == (LANE_3_COMPLETE_PROVENANCE,)
+    authority_prefix_pattern = (
+        r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
+    )
     durability_authorizations = tuple(
         line
         for line in structured_lines
         if re.match(
-            r"^AUTHORIZED(?:\s*/\s*ACTIVE)?:\s+DURABILITY IMPLEMENTATION LANE\b",
+            authority_prefix_pattern + r"\s+DURABILITY IMPLEMENTATION LANE\b",
             line,
         )
     )
     pending_locking_authorizations = tuple(
         line
         for line in structured_lines
-        if re.match(r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):", line)
+        if re.match(authority_prefix_pattern, line)
         and (
             "MAINTENANCE LOCK" in line
             or "MUTATION QUIESCENCE" in line
+        )
+    )
+    premature_later_durability_authorizations = tuple(
+        line
+        for line in structured_lines
+        if re.match(authority_prefix_pattern, line)
+        and (
+            "DURABILITY" in line
+            or "SNAPSHOT" in line
+            or "MANIFEST" in line
+            or "MIGRATION" in line
+            or "GENERATION ACTIVATION" in line
+            or "BACKUP" in line
+            or "RECOVERY" in line
+            or "RESTORE" in line
+            or "ROLLBACK" in line
         )
     )
     normalized = " ".join(active.split())
@@ -664,17 +707,35 @@ def _preserves_post_405_boundary(
         and durability_authorizations == (LANE_3_AUTHORIZATION_MARKER,)
         and pending_locking_authorizations == (LANE_3_AUTHORIZATION_MARKER,)
     )
+    preserves_lane_3_closeout = (
+        directives == POST_419_DIRECTIVE_SEQUENCE
+        and has_406_provenance
+        and has_408_provenance
+        and has_lane_1_provenance
+        and has_lane_2_provenance
+        and has_lane_3_provenance
+        and not durability_authorizations
+        and not pending_locking_authorizations
+        and not premature_later_durability_authorizations
+    )
     preserves_allowed_state = (
         preserves_initial_order
         or preserves_post_406_order
         or preserves_lane_1_closeout
         or preserves_lane_2_closeout
         or preserves_lane_3_active
+        or preserves_lane_3_closeout
     )
     if require_lane_2_closeout:
-        preserves_allowed_state = preserves_lane_2_closeout or preserves_lane_3_active
+        preserves_allowed_state = (
+            preserves_lane_2_closeout
+            or preserves_lane_3_active
+            or preserves_lane_3_closeout
+        )
     if require_lane_3_active:
         preserves_allowed_state = preserves_lane_3_active
+    if require_lane_3_closeout:
+        preserves_allowed_state = preserves_lane_3_closeout
     if not preserves_allowed_state:
         return False
     required = (
@@ -853,7 +914,7 @@ def check_operational_truth(
                 allow_pre_406_sequence=False,
                 require_lane_1_closeout=True,
                 require_lane_2_closeout=True,
-                require_lane_3_active=True,
+                require_lane_3_closeout=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
