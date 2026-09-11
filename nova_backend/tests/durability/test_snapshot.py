@@ -281,6 +281,31 @@ def test_corrupt_source_fails_closed_and_preserves_live_bytes(tmp_path: Path, co
     assert not (staging / "snapshot.complete.json").exists()
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("daily_metered_token_budget", "bad"),
+        ("warning_ratio", "bad"),
+    ),
+)
+def test_runtime_settings_numeric_fields_match_runtime_reader_contract(
+    tmp_path: Path, field: str, value: object
+):
+    store = _store("runtime_settings", "data/runtime_settings.json")
+    source = tmp_path / "runtime/data/runtime_settings.json"
+    source.parent.mkdir(parents=True)
+    payload = {"history": [], field: value}
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match=rf"runtime_settings\.{field}"):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+    assert not (
+        tmp_path / "container/control/staging/snapshot-test/snapshot.complete.json"
+    ).exists()
+
+
 def test_goals_missing_mandatory_goals_list_fails_closed(tmp_path: Path):
     store = _store("goals", "data/goals.json")
     source = tmp_path / "runtime/data/goals.json"
@@ -583,6 +608,49 @@ def test_snapshot_rejects_conflicting_legacy_owners(tmp_path: Path):
         _capture(tmp_path, registry=(store,))
 
 
+@pytest.mark.parametrize("source_kind", ("runtime", "repository"))
+def test_snapshot_rejects_links_in_legacy_source_ancestry(
+    tmp_path: Path, source_kind: str
+):
+    runtime = tmp_path / "runtime"
+    repository = tmp_path / "repository"
+    source_root = runtime if source_kind == "runtime" else repository
+    external = tmp_path / f"external-{source_kind}"
+    external.mkdir()
+    source_root.mkdir()
+    _make_directory_link(source_root / "linked", external)
+    source = external / "sample.json"
+    source.write_text('{"owner": "external"}', encoding="utf-8")
+    store = _store(
+        relative_path="linked/sample.json",
+        repository_path=("linked/sample.json" if source_kind == "repository" else None),
+    )
+    if source_kind == "repository":
+        store = LogicalStore(
+            **{
+                **store.__dict__,
+                "legacy_runtime_path": None,
+            }
+        )
+
+    with pytest.raises(SnapshotValidationError, match="linked legacy source"):
+        create_snapshot(
+            container_root=tmp_path / "container",
+            runtime_root=runtime,
+            repository_root=repository,
+            snapshot_id=f"snapshot-linked-{source_kind}",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert source.read_text(encoding="utf-8") == '{"owner": "external"}'
+    assert not (
+        tmp_path
+        / f"container/control/staging/snapshot-linked-{source_kind}/snapshot.complete.json"
+    ).exists()
+
+
 def test_snapshot_rejects_live_source_inside_staging_before_snapshot_creation(tmp_path: Path):
     container = tmp_path / "container"
     runtime = container / "control/staging/live-runtime"
@@ -723,6 +791,32 @@ def test_snapshot_rejects_linked_container_root_before_normalization(tmp_path: P
         )
 
     assert tuple(external.iterdir()) == ()
+
+
+def test_snapshot_checks_dot_segments_before_container_normalization(tmp_path: Path):
+    external_parent = tmp_path / "external"
+    external_child = external_parent / "child"
+    external_child.mkdir(parents=True)
+    linked = tmp_path / "linked"
+    _make_directory_link(linked, external_child)
+    configured_container = linked / ".." / "Nova"
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"ok": true}', encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="linked container root"):
+        create_snapshot(
+            container_root=configured_container,
+            runtime_root=tmp_path / "runtime",
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-dot-segments",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert not (tmp_path / "Nova").exists()
+    assert not (external_parent / "Nova").exists()
 
 
 def test_excluded_empty_directory_still_participates_in_containment(tmp_path: Path):

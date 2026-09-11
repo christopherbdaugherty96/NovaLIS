@@ -343,12 +343,21 @@ def _source_candidates(
         )
     candidates: list[_Source] = []
     if store.legacy_runtime_path is not None:
-        candidates.append(_Source(runtime / store.legacy_runtime_path, "legacy_runtime"))
+        candidates.append(
+            _legacy_source(
+                runtime,
+                store.legacy_runtime_path,
+                "legacy_runtime",
+                store.logical_id,
+            )
+        )
     if store.legacy_repository_path is not None:
         candidates.append(
-            _Source(
-                repository / store.legacy_repository_path,
+            _legacy_source(
+                repository,
+                store.legacy_repository_path,
                 "legacy_repository",
+                store.logical_id,
             )
         )
     return tuple(candidates)
@@ -394,16 +403,37 @@ def _containment_source_candidates(
     if store.location_scope == "container":
         if store.legacy_runtime_path is not None:
             candidates.append(
-                _Source(runtime / store.legacy_runtime_path, "legacy_runtime")
+                _legacy_source(
+                    runtime,
+                    store.legacy_runtime_path,
+                    "legacy_runtime",
+                    store.logical_id,
+                )
             )
         if store.legacy_repository_path is not None:
             candidates.append(
-                _Source(
-                    repository / store.legacy_repository_path,
+                _legacy_source(
+                    repository,
+                    store.legacy_repository_path,
                     "legacy_repository",
+                    store.logical_id,
                 )
             )
     return tuple(candidates)
+
+
+def _legacy_source(
+    root: Path,
+    relative_path: Path,
+    kind: str,
+    logical_id: str,
+) -> _Source:
+    source = _Source(root / relative_path, kind)
+    if _path_has_link_or_reparse(source.path, root):
+        raise SnapshotValidationError(
+            f"linked legacy source refused for {logical_id}: {source.path}"
+        )
+    return source
 
 
 def _resolve_capture_sources(
@@ -881,6 +911,8 @@ def _validate_json_shape(
     for key in required_objects.get(logical_id, ()):
         if key in payload and not isinstance(payload[key], dict):
             raise SnapshotValidationError(f"{logical_id}.{key} must be an object: {path}")
+    if logical_id == "runtime_settings":
+        _validate_runtime_settings_numeric_fields(payload, path)
     if logical_id == "openclaw_envelopes" and not all(
         isinstance(item, dict) for item in payload.values()
     ):
@@ -891,6 +923,22 @@ def _validate_json_shape(
         and not isinstance(payload.get("active_run"), dict)
     ):
         raise SnapshotValidationError(f"openclaw_agent_runtime.active_run is invalid: {path}")
+
+
+def _validate_runtime_settings_numeric_fields(payload: dict[str, Any], path: Path) -> None:
+    conversions = {
+        "daily_metered_token_budget": lambda value: int(value or 1),
+        "warning_ratio": lambda value: float(value if value is not None else 0.0),
+    }
+    for key, convert in conversions.items():
+        if key not in payload:
+            continue
+        try:
+            convert(payload[key])
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise SnapshotValidationError(
+                f"runtime_settings.{key} must be reader-compatible numeric state: {path}"
+            ) from exc
 
 
 def _validate_story_tracker_shape(
@@ -1041,7 +1089,7 @@ def _configured_container_root(container_root: Path | None) -> Path:
                 else Path.home() / "AppData" / "Local"
             )
             configured = base / "Nova"
-    return Path(os.path.abspath(configured))
+    return configured if configured.is_absolute() else Path.cwd() / configured
 
 
 def _is_link_or_reparse(path: Path) -> bool:
