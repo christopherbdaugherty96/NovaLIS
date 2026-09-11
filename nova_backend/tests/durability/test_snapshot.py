@@ -507,7 +507,7 @@ def test_snapshot_rejects_live_source_inside_staging_before_snapshot_creation(tm
     source.parent.mkdir(parents=True)
     source.write_text('{"ok": true}', encoding="utf-8")
 
-    with pytest.raises(SnapshotValidationError, match="overlaps live source"):
+    with pytest.raises(SnapshotValidationError, match="overlaps .*source"):
         create_snapshot(
             container_root=container,
             runtime_root=runtime,
@@ -529,7 +529,7 @@ def test_snapshot_rejects_staging_inside_live_directory_source_before_creation(t
     (source / "state.json").write_text('{"ok": true}', encoding="utf-8")
     container = source / "nested-container"
 
-    with pytest.raises(SnapshotValidationError, match="overlaps live source"):
+    with pytest.raises(SnapshotValidationError, match="overlaps .*source"):
         create_snapshot(
             container_root=container,
             runtime_root=runtime,
@@ -540,6 +540,28 @@ def test_snapshot_rejects_staging_inside_live_directory_source_before_creation(t
             registry=(store,),
         )
 
+    assert not container.exists()
+
+
+def test_empty_directory_source_containment_fails_without_live_state_mutation(tmp_path: Path):
+    runtime = tmp_path / "runtime"
+    store = _store("directory", "live", path_kind="directory")
+    source = runtime / "live"
+    source.mkdir(parents=True)
+    container = source / "nested-container"
+
+    with pytest.raises(SnapshotValidationError, match="overlaps configured source"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=runtime,
+            repository_root=tmp_path / "repository",
+            snapshot_id="snapshot-empty-overlap",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(store,),
+        )
+
+    assert tuple(source.iterdir()) == ()
     assert not container.exists()
 
 
@@ -555,7 +577,7 @@ def test_snapshot_rejects_linked_staging_ancestor_into_live_source(tmp_path: Pat
     staging = control / "staging"
     _make_directory_link(staging, source)
 
-    with pytest.raises(SnapshotValidationError, match="overlaps live source"):
+    with pytest.raises(SnapshotValidationError, match="overlaps .*source"):
         create_snapshot(
             container_root=container,
             runtime_root=runtime,
@@ -593,6 +615,31 @@ def test_explicit_generation_rejects_junction_backed_root_before_staging(tmp_pat
         )
 
     assert not (container / "control/staging/snapshot-linked-generation").exists()
+
+
+def test_explicit_generation_rejects_linked_ancestor_when_store_leaf_is_absent(
+    tmp_path: Path,
+):
+    container = tmp_path / "container"
+    generation_root = container / "generations/gen-linked-ancestor"
+    generation_root.mkdir(parents=True)
+    external = tmp_path / "external-data"
+    external.mkdir()
+    _make_directory_link(generation_root / "data", external)
+
+    with pytest.raises(SnapshotValidationError, match="linked explicit source generation"):
+        create_snapshot(
+            container_root=container,
+            runtime_root=tmp_path / "runtime",
+            repository_root=tmp_path / "repository",
+            source_generation_id="gen-linked-ancestor",
+            snapshot_id="snapshot-absent-leaf",
+            build_id="build",
+            created_at=FIXED_TIME,
+            registry=(_store(),),
+        )
+
+    assert not (container / "control/staging/snapshot-absent-leaf").exists()
 
 
 def test_validation_rejects_junction_directory_inside_snapshot(tmp_path: Path):
