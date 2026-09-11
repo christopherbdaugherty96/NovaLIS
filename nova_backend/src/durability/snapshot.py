@@ -98,6 +98,11 @@ def create_snapshot(
     _require_safe_id(operation_id, "snapshot_id")
     if source_generation_id is not None:
         _require_safe_id(source_generation_id, "source_generation_id")
+        generation_root = container / "generations" / source_generation_id
+        if not generation_root.is_dir() or generation_root.is_symlink():
+            raise SnapshotValidationError(
+                f"explicit source generation does not exist: {source_generation_id}"
+            )
     normalized_build = str(build_id or "").strip()
     if not normalized_build:
         raise ValueError("build_id must be non-empty")
@@ -537,12 +542,23 @@ def _validate_entry_contract(entry: dict[str, Any], store: LogicalStore) -> None
             raise SnapshotValidationError(f"snapshot path mismatch for {store.logical_id}")
         for file_record in files:
             file_relative = _safe_relative_path(file_record.get("path"))
-            if store.path_kind == "file" and file_relative != expected_relative:
-                raise SnapshotValidationError(f"snapshot file path mismatch for {store.logical_id}")
-            if store.path_kind == "directory" and not _is_relative_to(
-                file_relative, expected_relative
-            ):
-                raise SnapshotValidationError(f"snapshot directory file escaped {store.logical_id}")
+            store_relative = _safe_relative_path(file_record.get("store_relative_path"))
+            if store.path_kind == "file":
+                if file_relative != expected_relative:
+                    raise SnapshotValidationError(
+                        f"snapshot file path mismatch for {store.logical_id}"
+                    )
+                expected_store_relative = Path(store.relative_path.name)
+            else:
+                if not _is_relative_to(file_relative, expected_relative):
+                    raise SnapshotValidationError(
+                        f"snapshot directory file escaped {store.logical_id}"
+                    )
+                expected_store_relative = file_relative.relative_to(expected_relative)
+            if store_relative != expected_store_relative:
+                raise SnapshotValidationError(
+                    f"store-relative path mismatch for {store.logical_id}"
+                )
         if entry.get("source_kind") not in {
             "legacy_runtime",
             "legacy_repository",
