@@ -84,16 +84,20 @@ def create_snapshot(
             f"linked container root refused: {configured_container}"
         )
     container = configured_container.resolve()
-    runtime = (
-        readonly_runtime_path(__file__).resolve()
+    configured_runtime = _absolute_unresolved(
+        readonly_runtime_path(__file__)
         if runtime_root is None
-        else Path(runtime_root).expanduser().resolve()
+        else Path(runtime_root).expanduser()
     )
-    repository = (
+    _validate_configured_root(configured_runtime, "runtime")
+    runtime = configured_runtime.resolve()
+    configured_repository = _absolute_unresolved(
         Path(__file__).resolve().parents[3]
         if repository_root is None
-        else Path(repository_root).expanduser().resolve()
+        else Path(repository_root).expanduser()
     )
+    _validate_configured_root(configured_repository, "repository")
+    repository = configured_repository.resolve()
     stores = logical_store_registry() if registry is None else registry
     _validate_registry(stores)
     operation_id = snapshot_id or f"snapshot-{uuid4().hex}"
@@ -913,6 +917,8 @@ def _validate_json_shape(
             raise SnapshotValidationError(f"{logical_id}.{key} must be an object: {path}")
     if logical_id == "runtime_settings":
         _validate_runtime_settings_numeric_fields(payload, path)
+    if logical_id == "openclaw_agent_runtime":
+        _validate_openclaw_agent_runtime_normalization(payload, path)
     if logical_id == "openclaw_envelopes" and not all(
         isinstance(item, dict) for item in payload.values()
     ):
@@ -939,6 +945,50 @@ def _validate_runtime_settings_numeric_fields(payload: dict[str, Any], path: Pat
             raise SnapshotValidationError(
                 f"runtime_settings.{key} must be reader-compatible numeric state: {path}"
             ) from exc
+
+
+def _validate_openclaw_agent_runtime_normalization(
+    payload: dict[str, Any], path: Path
+) -> None:
+    template_numeric_fields = (
+        "max_steps",
+        "max_duration_s",
+        "max_network_calls",
+        "max_files_touched",
+        "max_bytes_read",
+        "max_bytes_written",
+    )
+    run_numeric_fields = (
+        "estimated_input_tokens",
+        "estimated_output_tokens",
+        "estimated_total_tokens",
+    )
+    run_mapping_fields = (
+        "budget_usage",
+        "source_notes",
+        "strict_preflight",
+        "usage_meta",
+    )
+    try:
+        for template in payload.get("templates", []):
+            list(template.get("tools_allowed") or [])
+            list(template.get("allowed_hostnames") or [])
+            for key in template_numeric_fields:
+                int(template.get(key) or 0)
+        for run in payload.get("recent_runs", []):
+            for key in run_numeric_fields:
+                int(run.get(key) or 0)
+            for key in run_mapping_fields:
+                dict(run.get(key) or {})
+        active_run = payload.get("active_run")
+        if active_run:
+            dict(active_run.get("budget_usage") or {})
+        for delivery in payload.get("delivery_inbox", []):
+            dict(delivery.get("usage_meta") or {})
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise SnapshotValidationError(
+            f"openclaw_agent_runtime failed reader normalization: {path}"
+        ) from exc
 
 
 def _validate_story_tracker_shape(
@@ -1089,7 +1139,16 @@ def _configured_container_root(container_root: Path | None) -> Path:
                 else Path.home() / "AppData" / "Local"
             )
             configured = base / "Nova"
-    return configured if configured.is_absolute() else Path.cwd() / configured
+    return _absolute_unresolved(configured)
+
+
+def _absolute_unresolved(path: Path) -> Path:
+    return path if path.is_absolute() else Path.cwd() / path
+
+
+def _validate_configured_root(path: Path, label: str) -> None:
+    if _path_has_link_or_reparse(path, Path(path.anchor)):
+        raise SnapshotValidationError(f"linked {label} root refused: {path}")
 
 
 def _is_link_or_reparse(path: Path) -> bool:
@@ -1133,6 +1192,16 @@ def _safe_tree_paths(root: Path, label: str) -> tuple[Path, ...]:
                 if _is_link_or_reparse(path):
                     raise SnapshotValidationError(
                         f"{label} contains a link or reparse point: {path}"
+                    )
+                try:
+                    mode = path.stat(follow_symlinks=False).st_mode
+                except OSError as exc:
+                    raise SnapshotValidationError(
+                        f"{label} path is unavailable: {path}: {exc}"
+                    ) from exc
+                if not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
+                    raise SnapshotValidationError(
+                        f"{label} contains an unsupported filesystem type: {path}"
                     )
                 paths.append(path)
     except OSError as exc:
