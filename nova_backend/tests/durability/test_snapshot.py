@@ -1051,6 +1051,33 @@ def test_openclaw_agent_runtime_matches_reader_normalization(
     ).exists()
 
 
+@pytest.mark.parametrize(
+    "mapping_field",
+    ("feature_flags_snapshot", "envelope_data", "run_metadata"),
+)
+def test_openclaw_envelopes_match_reader_mapping_normalization(
+    tmp_path: Path, mapping_field: str
+):
+    store = _store("openclaw_envelopes", "data/envelopes.json")
+    source = tmp_path / "runtime/data/envelopes.json"
+    source.parent.mkdir(parents=True)
+    payload = {
+        "ENV-1": {
+            "envelope_id": "ENV-1",
+            mapping_field: "bad",
+        }
+    }
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(SnapshotValidationError, match="reader normalization"):
+        _capture(tmp_path, registry=(store,))
+
+    assert json.loads(source.read_text(encoding="utf-8")) == payload
+    assert not (
+        tmp_path / "container/control/staging/snapshot-test/snapshot.complete.json"
+    ).exists()
+
+
 def test_explicit_generation_captures_only_canonical_generation(tmp_path: Path):
     store = _store()
     legacy = tmp_path / "runtime/data/sample.json"
