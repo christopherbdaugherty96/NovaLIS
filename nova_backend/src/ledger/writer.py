@@ -21,7 +21,6 @@ class LedgerWriter:
     def __init__(self, path: Path = LEDGER_PATH):
         self.path = path
         self._lock = shared_path_lock(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
 
     @authoritative_mutation
     def log_event(self, event_type: str, metadata: Dict[str, Any]) -> None:
@@ -35,6 +34,7 @@ class LedgerWriter:
             **metadata
         }
         try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
             # Serialize separate writer instances in this process. Windows append
             # handles can otherwise overlap, corrupting acknowledged history.
             with self._lock:

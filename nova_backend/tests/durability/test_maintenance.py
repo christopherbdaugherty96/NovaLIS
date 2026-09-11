@@ -7,7 +7,9 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from src.durability.maintenance import (
@@ -213,7 +215,7 @@ async def test_inherited_child_context_acquires_own_lease_after_parent_exits(
     assert coordinator._active_writers == 0
 
 
-def test_cross_process_writer_lease_drains_before_exclusive_maintenance(
+def test_cross_process_writer_lease_survives_admission_descriptor_close(
     tmp_path: Path,
 ) -> None:
     process = _start_writer_process(tmp_path, hold_seconds=0.5)
@@ -344,13 +346,85 @@ def test_first_use_store_initialization_requires_admission_but_existing_read_doe
     existing_path = tmp_path / "existing-memory.json"
     existing_store = GovernedMemoryStore(existing_path)
 
+    missing_path = tmp_path / "new-state-root" / "memory" / "missing-memory.json"
     with MaintenanceCoordinator(tmp_path).maintenance(timeout=2):
         with pytest.raises(MaintenanceActiveError):
-            GovernedMemoryStore(tmp_path / "missing-memory.json")
-        assert not (tmp_path / "missing-memory.json").exists()
+            GovernedMemoryStore(missing_path)
+        assert not missing_path.parent.exists()
         assert GovernedMemoryStore(existing_path).list_items() == (
             existing_store.list_items()
         )
+
+
+def test_provider_usage_current_day_snapshot_remains_readable_during_maintenance(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from src.usage.provider_usage_store import ProviderUsageStore
+
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+    store = ProviderUsageStore(tmp_path / "usage.json")
+    before = store._path.read_bytes()
+
+    with MaintenanceCoordinator(tmp_path).maintenance(timeout=2):
+        snapshot = store.snapshot()
+
+    assert snapshot["current_day"] == datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    assert store._path.read_bytes() == before
+
+
+def test_provider_usage_rollover_refuses_during_maintenance_without_mutation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from src.usage.provider_usage_store import ProviderUsageStore
+
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+    store = ProviderUsageStore(tmp_path / "usage.json")
+    payload = json.loads(store._path.read_text(encoding="utf-8"))
+    payload["current_day"] = "2000-01-01"
+    store._path.write_text(json.dumps(payload), encoding="utf-8")
+    before = store._path.read_bytes()
+
+    with MaintenanceCoordinator(tmp_path).maintenance(timeout=2):
+        with pytest.raises(MaintenanceActiveError):
+            store.snapshot()
+
+    assert store._path.read_bytes() == before
+
+
+def test_envelope_reads_remain_available_but_expiry_refuses_during_maintenance(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from src.openclaw.envelope_store import EnvelopeStore
+
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+    store = EnvelopeStore(tmp_path / "envelopes.json")
+    now = datetime.now(timezone.utc)
+    active_id = uuid4()
+    common = {
+        "envelope_data": {},
+        "issuing_channel": "test",
+        "settings_hash": "hash",
+        "feature_flags_snapshot": {},
+        "issued_at": now,
+    }
+    store.register(envelope_id=active_id, expires_at=now + timedelta(hours=1), **common)
+    before = store._path.read_bytes()
+
+    with MaintenanceCoordinator(tmp_path).maintenance(timeout=2):
+        assert store.get(str(active_id)) is not None
+        assert [record.envelope_id for record in store.list_active()] == [str(active_id)]
+
+    assert store._path.read_bytes() == before
+    expired_id = uuid4()
+    store.register(envelope_id=expired_id, expires_at=now - timedelta(hours=1), **common)
+    before = store._path.read_bytes()
+    with MaintenanceCoordinator(tmp_path).maintenance(timeout=2):
+        with pytest.raises(MaintenanceActiveError):
+            store.get(str(expired_id))
+        with pytest.raises(MaintenanceActiveError):
+            store.list_active()
+
+    assert store._path.read_bytes() == before
 
 
 def test_governor_refuses_foreground_invocation_during_maintenance(
@@ -390,6 +464,7 @@ def test_authoritative_mutation_inventory_keeps_admission_at_logical_boundaries(
     from src.memory import quick_corrections
     from src.memory.nova_self_memory_store import NovaSelfMemoryStore
     from src.memory.user_memory_store import UserMemoryStore
+    from src.openclaw.agent_runner import OpenClawAgentRunner
     from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
     from src.openclaw.envelope_store import EnvelopeStore
     from src.openclaw.execution_memory import ExecutionMemory
@@ -454,8 +529,6 @@ def test_authoritative_mutation_inventory_keeps_admission_at_logical_boundaries(
             "transition",
             "mark_used",
             "update_run_metadata",
-            "get",
-            "list_active",
         ),
         ExecutionMemory: ("record",),
         PatternReviewStore: (
@@ -472,7 +545,8 @@ def test_authoritative_mutation_inventory_keeps_admission_at_logical_boundaries(
             "set_assistive_notice_mode",
             "reset_recommended_defaults",
         ),
-        ProviderUsageStore: ("snapshot", "configure_budget", "record_reasoning_event"),
+        ProviderUsageStore: ("configure_budget", "record_reasoning_event"),
+        OpenClawAgentRunner: ("run_template", "run_goal"),
         UserProfileStore: ("set_identity", "set_preferences", "set_rules"),
         ToneProfileStore: (
             "set_global_profile",
