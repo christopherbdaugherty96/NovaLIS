@@ -1000,6 +1000,10 @@ def _validate_openclaw_envelope_normalization(
     try:
         for record in payload.values():
             for key in mapping_fields:
+                if key in record and not isinstance(record[key], dict):
+                    raise SnapshotValidationError(
+                        f"openclaw_envelopes.{key} must be an object: {path}"
+                    )
                 dict(record.get(key) or {})
     except (TypeError, ValueError) as exc:
         raise SnapshotValidationError(
