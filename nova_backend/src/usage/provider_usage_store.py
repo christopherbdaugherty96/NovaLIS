@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -45,10 +46,12 @@ class ProviderUsageStore:
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._daily_budget = int(daily_token_budget or self.DEFAULT_DAILY_TOKEN_BUDGET)
         self._warning_ratio = float(warning_ratio or self.DEFAULT_WARNING_RATIO)
-        with self._lock:
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._write_state(self._default_state())
 
+    @authoritative_mutation
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
@@ -57,6 +60,7 @@ class ProviderUsageStore:
                 self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def configure_budget(
         self,
         *,
@@ -74,6 +78,7 @@ class ProviderUsageStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def record_reasoning_event(
         self,
         *,

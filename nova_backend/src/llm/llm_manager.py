@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Optional
 
+from src.durability.maintenance import authoritative_mutation
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.writer import LedgerWriter
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
@@ -252,6 +253,7 @@ class LLMManager:
             self._block_inference()
             self._log_model_updated(None, computed, user_confirmed=False)
 
+    @authoritative_mutation
     def confirm_model_update(self):
         """
         Called after user explicitly confirms a model update.

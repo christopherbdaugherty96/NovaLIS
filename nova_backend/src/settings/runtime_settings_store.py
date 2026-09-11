@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -128,10 +129,11 @@ class RuntimeSettingsStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -154,6 +156,7 @@ class RuntimeSettingsStore:
             permissions = self._normalized_permissions(state.get("permissions"))
         return bool(permissions.get(normalized, self._permission_default(normalized)))
 
+    @authoritative_mutation
     def set_setup_mode(self, mode: str, *, source: str = "user") -> dict[str, Any]:
         normalized = self._normalize_setup_mode(mode)
         with self._lock:
@@ -172,6 +175,7 @@ class RuntimeSettingsStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_permission(self, permission_name: str, enabled: bool, *, source: str = "user") -> dict[str, Any]:
         normalized = self._normalize_permission_name(permission_name)
         with self._lock:
@@ -192,6 +196,7 @@ class RuntimeSettingsStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_provider_policy(
         self,
         *,
@@ -232,6 +237,7 @@ class RuntimeSettingsStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_usage_budget(
         self,
         *,
@@ -278,6 +284,7 @@ class RuntimeSettingsStore:
             str(state.get("assistive_notice_mode") or self.DEFAULT_ASSISTIVE_NOTICE_MODE)
         )
 
+    @authoritative_mutation
     def set_assistive_notice_mode(self, mode: str, *, source: str = "user") -> dict[str, Any]:
         normalized = self._require_assistive_notice_mode(mode)
         with self._lock:
@@ -298,6 +305,7 @@ class RuntimeSettingsStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def reset_recommended_defaults(self, *, source: str = "user") -> dict[str, Any]:
         with self._lock:
             state = self._read_state()

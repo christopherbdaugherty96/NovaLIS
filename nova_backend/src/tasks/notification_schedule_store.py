@@ -7,6 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import StateCorruptError, read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -59,15 +60,17 @@ class NotificationScheduleStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
         return self._path
 
+    @authoritative_mutation
     def create_schedule(
         self,
         *,
@@ -179,6 +182,7 @@ class NotificationScheduleStore:
                 return None
             return dict(item)
 
+    @authoritative_mutation
     def update_policy(
         self,
         *,
@@ -253,6 +257,7 @@ class NotificationScheduleStore:
             "policy": dict(policy),
         }
 
+    @authoritative_mutation
     def cancel_schedule(self, schedule_id: str) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
@@ -264,6 +269,7 @@ class NotificationScheduleStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
     def dismiss_schedule(self, schedule_id: str, *, now: datetime | None = None) -> dict[str, Any]:
         current = (now or _utc_now()).astimezone(timezone.utc)
         with self._lock:
@@ -286,6 +292,7 @@ class NotificationScheduleStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
     def reschedule_schedule(
         self,
         schedule_id: str,
@@ -304,6 +311,7 @@ class NotificationScheduleStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
     def mark_due_surface(self, schedule_id: str, *, now: datetime | None = None) -> dict[str, Any]:
         current = (now or _utc_now()).astimezone(timezone.utc)
         with self._lock:
@@ -316,6 +324,7 @@ class NotificationScheduleStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
     def record_delivery_attempt(self, schedule_id: str, *, now: datetime | None = None) -> dict[str, Any]:
         current = (now or _utc_now()).astimezone(timezone.utc)
         with self._lock:
@@ -328,6 +337,7 @@ class NotificationScheduleStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
     def record_delivery_outcome(
         self,
         schedule_id: str,
