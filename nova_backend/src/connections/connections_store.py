@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 # ---------------------------------------------------------------------------
@@ -104,12 +105,14 @@ class ConnectionsStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
-            else:
-                # On startup: re-inject all stored keys into os.environ
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._write_state(self._default_state())
+        else:
+            # On startup: re-inject all stored keys into os.environ
+            with self._lock:
                 self._sync_env_from_store()
 
     # ------------------------------------------------------------------
@@ -154,6 +157,7 @@ class ConnectionsStore:
     # Public writes
     # ------------------------------------------------------------------
 
+    @authoritative_mutation
     def save_key(self, provider_id: str, key: str) -> dict[str, Any]:
         """Persist key, update os.environ. Does NOT run health check."""
         meta = PROVIDER_REGISTRY.get(provider_id)
@@ -182,6 +186,7 @@ class ConnectionsStore:
 
         return self._provider_snapshot(provider_id, state)
 
+    @authoritative_mutation
     def record_health(
         self,
         provider_id: str,
@@ -201,6 +206,7 @@ class ConnectionsStore:
             self._write_state(state)
         return self._provider_snapshot(provider_id, state)
 
+    @authoritative_mutation
     def clear_key(self, provider_id: str) -> dict[str, Any]:
         """Remove stored key and clear env var."""
         meta = PROVIDER_REGISTRY.get(provider_id)
@@ -223,6 +229,7 @@ class ConnectionsStore:
         os.environ.pop(meta["env_var"], None)
         return self._provider_snapshot(provider_id, state)
 
+    @authoritative_mutation
     def clear_all(self) -> list[dict[str, Any]]:
         """Remove all stored keys and clear all env vars."""
         with self._lock:

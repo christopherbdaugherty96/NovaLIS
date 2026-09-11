@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from typing import Dict, List
 
 from src.durability.corruption import read_jsonl_state, require_state
+from src.durability.maintenance import authoritative_mutation
 from src.utils.persistent_state import runtime_path
 
 # Absolute path anchored to this file — consistent regardless of CWD.
@@ -26,6 +27,7 @@ from src.utils.persistent_state import runtime_path
 _CORRECTIONS_PATH = runtime_path(__file__, "data", "nova_state", "memory", "quick_corrections.jsonl")
 
 
+@authoritative_mutation
 def record_correction(content: str) -> Dict[str, str]:
     """
     Record a user-issued correction verbatim.
@@ -75,6 +77,7 @@ def load_unconsumed(limit: int = 10) -> List[str]:
     return results
 
 
+@authoritative_mutation
 def mark_all_consumed() -> None:
     """
     Rewrite the corrections log marking every entry as consumed.

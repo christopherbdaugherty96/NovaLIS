@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Protocol
 
 from src.connectors.google_workspace.models import GoogleStoredCredential
+from src.durability.maintenance import authoritative_mutation
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -146,6 +147,7 @@ class EncryptedGoogleCredentialVault:
                     "Google credential vault could not be read safely."
                 ) from error
 
+    @authoritative_mutation
     def save(self, credential: GoogleStoredCredential) -> None:
         plaintext = json.dumps(
             credential.to_secret_payload(),
@@ -162,6 +164,7 @@ class EncryptedGoogleCredentialVault:
         with self._lock:
             write_json_atomic(self._path, wrapper)
 
+    @authoritative_mutation
     def delete(self) -> None:
         with self._lock:
             if self._path.exists():

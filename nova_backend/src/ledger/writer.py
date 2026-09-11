@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from src.durability.corruption import read_jsonl_state, require_state
+from src.durability.maintenance import authoritative_mutation
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.event_types import EVENT_TYPES
 from src.utils.persistent_state import runtime_path, shared_path_lock
@@ -22,6 +23,7 @@ class LedgerWriter:
         self._lock = shared_path_lock(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
+    @authoritative_mutation
     def log_event(self, event_type: str, metadata: Dict[str, Any]) -> None:
         """Append a single event. Raises LedgerWriteFailed if write fails."""
         if event_type not in EVENT_TYPES:

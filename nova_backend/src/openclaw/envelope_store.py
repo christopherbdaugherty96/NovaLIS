@@ -21,6 +21,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _STORE_FILENAME = "openclaw_envelopes.json"
@@ -145,6 +146,7 @@ class EnvelopeStore:
     # Write operations
     # ------------------------------------------------------------------
 
+    @authoritative_mutation
     def register(
         self,
         *,
@@ -175,6 +177,7 @@ class EnvelopeStore:
             self._save(state)
         return record
 
+    @authoritative_mutation
     def transition(self, envelope_id: str, to_status: str) -> EnvelopeRecord:
         """Atomically move an envelope to a new status."""
         eid = str(envelope_id or "").strip()
@@ -200,6 +203,7 @@ class EnvelopeStore:
             self._save(state)
             return self._hydrate(raw)
 
+    @authoritative_mutation
     def mark_used(self, envelope_id: str) -> None:
         """Record that the envelope has been consumed. Prevents double-run."""
         eid = str(envelope_id or "").strip()
@@ -217,6 +221,7 @@ class EnvelopeStore:
             state[eid] = raw
             self._save(state)
 
+    @authoritative_mutation
     def update_run_metadata(self, envelope_id: str, metadata: dict[str, Any]) -> None:
         """Merge run-time metadata (e.g. suspended state) into the record."""
         eid = str(envelope_id or "").strip()
@@ -236,6 +241,7 @@ class EnvelopeStore:
     # Read operations
     # ------------------------------------------------------------------
 
+    @authoritative_mutation
     def get(self, envelope_id: str) -> Optional[EnvelopeRecord]:
         """
         Return the record for an envelope, or None if not found.
@@ -257,6 +263,7 @@ class EnvelopeStore:
                 return None
             return record
 
+    @authoritative_mutation
     def list_active(self) -> list[EnvelopeRecord]:
         """Return all non-terminal, non-expired envelope records."""
         with self._lock:

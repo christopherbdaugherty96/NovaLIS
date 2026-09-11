@@ -8,6 +8,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import (
     readonly_runtime_path,
     runtime_path,
@@ -161,15 +162,17 @@ class GovernedMemoryStore:
         default_path = runtime_path(__file__, "data", "nova_state", "memory", "items.json")
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state({"schema_version": self.SCHEMA_VERSION, "items": []})
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._write_state({"schema_version": self.SCHEMA_VERSION, "items": []})
 
     @property
     def path(self) -> Path:
         return self._path
 
+    @authoritative_mutation
     def save_item(
         self,
         *,
@@ -559,17 +562,21 @@ class GovernedMemoryStore:
         safe_limit = max(1, min(int(limit or 10), 20))
         return filtered[:safe_limit]
 
+    @authoritative_mutation
     def lock_item(self, item_id: str) -> dict[str, Any]:
         return self._mutate_tier(item_id=item_id, tier="locked", lock_state=True)
 
+    @authoritative_mutation
     def defer_item(self, item_id: str) -> dict[str, Any]:
         return self._mutate_tier(item_id=item_id, tier="deferred", lock_state=False)
 
+    @authoritative_mutation
     def unlock_item(self, item_id: str, *, confirmed: bool = False) -> dict[str, Any]:
         if not confirmed:
             raise PermissionError("Unlock requires explicit confirmation.")
         return self._mutate_tier(item_id=item_id, tier="active", lock_state=False)
 
+    @authoritative_mutation
     def delete_item(self, item_id: str, *, confirmed: bool = False) -> dict[str, Any]:
         if not confirmed:
             raise PermissionError("Delete requires explicit confirmation.")
@@ -585,6 +592,7 @@ class GovernedMemoryStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
     def supersede_item(
         self,
         item_id: str,

@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from typing import Any, Callable
 
+from src.durability.maintenance import authoritative_mutation
 from src.openclaw.agent_runner import OpenClawAgentRunner, openclaw_agent_runner
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore, openclaw_agent_runtime_store
 from src.openclaw.envelope_factory import _FEATURE_FLAG_ENV, EnvelopeFactory, EnvelopeFactoryError
@@ -69,6 +70,7 @@ class OpenClawAgentScheduler:
         except asyncio.CancelledError:
             return
 
+    @authoritative_mutation
     async def tick(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
         if not self._settings.is_permission_enabled("home_agent_enabled"):
             return []

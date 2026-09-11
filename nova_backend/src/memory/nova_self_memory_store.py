@@ -12,6 +12,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _MAX_RELATIONSHIP_NOTES = 20
@@ -39,13 +40,15 @@ class NovaSelfMemoryStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._write_state(self._default_state())
 
     # ── Relationship Notes ──────────────────────────────────────────
 
+    @authoritative_mutation
     def record_insight(self, insight: str, source: str = "observed") -> dict[str, Any]:
         """Record a relationship insight. Deduplicates by substring match."""
         text = _clean(insight, 200)
@@ -103,6 +106,7 @@ class NovaSelfMemoryStore:
 
     # ── Session Summaries ───────────────────────────────────────────
 
+    @authoritative_mutation
     def record_session_summary(
         self,
         summary: str,
@@ -134,6 +138,7 @@ class NovaSelfMemoryStore:
 
     # ── Conversation Patterns ───────────────────────────────────────
 
+    @authoritative_mutation
     def record_topic(self, topic: str) -> None:
         key = _clean(topic, 60).lower()
         if not key:
