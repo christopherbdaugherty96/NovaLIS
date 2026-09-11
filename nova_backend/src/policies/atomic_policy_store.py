@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.policies.policy_validator import PolicyValidationResult
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
@@ -25,15 +26,17 @@ class AtomicPolicyStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
         return self._path
 
+    @authoritative_mutation
     def create_draft(
         self,
         *,
@@ -99,6 +102,7 @@ class AtomicPolicyStore:
                     return dict(item)
         return None
 
+    @authoritative_mutation
     def delete_policy(self, policy_id: str) -> dict[str, Any]:
         target = str(policy_id or "").strip().upper()
         with self._lock:
@@ -113,6 +117,7 @@ class AtomicPolicyStore:
                 return dict(item)
         raise KeyError(target)
 
+    @authoritative_mutation
     def record_simulation(self, policy_id: str, decision: dict[str, Any]) -> dict[str, Any]:
         target = str(policy_id or "").strip().upper()
         with self._lock:
@@ -129,6 +134,7 @@ class AtomicPolicyStore:
                 return dict(item)
         raise KeyError(target)
 
+    @authoritative_mutation
     def record_manual_run(
         self,
         policy_id: str,

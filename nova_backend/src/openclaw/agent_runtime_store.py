@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.openclaw.agent_personality_bridge import (
     DEFAULT_DELIVERY_MODE_BY_TEMPLATE,
     normalize_delivery_mode,
@@ -290,10 +291,11 @@ class OpenClawAgentRuntimeStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -365,6 +367,7 @@ class OpenClawAgentRuntimeStore:
                 return dict(item)
         return None
 
+    @authoritative_mutation
     def set_template_delivery_mode(self, template_id: str, delivery_mode: str) -> dict[str, Any]:
         target = str(template_id or "").strip()
         if not target:
@@ -386,6 +389,7 @@ class OpenClawAgentRuntimeStore:
             self._write_state(state)
             return self.snapshot()
 
+    @authoritative_mutation
     def set_template_schedule_enabled(self, template_id: str, enabled: bool) -> dict[str, Any]:
         target = str(template_id or "").strip()
         if not target:
@@ -410,6 +414,7 @@ class OpenClawAgentRuntimeStore:
             self._write_state(state)
             return self.snapshot()
 
+    @authoritative_mutation
     def record_run(self, payload: dict[str, Any]) -> dict[str, Any]:
         entry = self._normalize_run(dict(payload or {}))
         terminal_status = normalize_run_status(entry.get("status"))
@@ -442,6 +447,7 @@ class OpenClawAgentRuntimeStore:
         )
         return dict(entry)
 
+    @authoritative_mutation
     def set_active_run(self, payload: dict[str, Any]) -> dict[str, Any]:
         entry = self._normalize_active_run(payload)
         _active, event = run_state_machine.transition(None, entry, next_status=entry.get("status") if entry else RUN_RUNNING)
@@ -454,6 +460,7 @@ class OpenClawAgentRuntimeStore:
         self._emit_run_event(event)
         return dict(entry)
 
+    @authoritative_mutation
     def update_active_run(self, envelope_id: str, payload: dict[str, Any]) -> dict[str, Any] | None:
         target = str(envelope_id or "").strip()
         if not target:
@@ -475,6 +482,7 @@ class OpenClawAgentRuntimeStore:
         self._emit_run_event(event)
         return updated
 
+    @authoritative_mutation
     def request_cancel_active_run(self, envelope_id: str | None = None) -> bool:
         """Mark the active run as cancel-requested. Returns True if the flag was set."""
         target = str(envelope_id or "").strip()
@@ -513,6 +521,7 @@ class OpenClawAgentRuntimeStore:
             return False
         return bool(active_run.get("cancel_requested"))
 
+    @authoritative_mutation
     def clear_active_run(self, envelope_id: str | None = None) -> None:
         target = str(envelope_id or "").strip()
         with self._lock:
@@ -535,6 +544,7 @@ class OpenClawAgentRuntimeStore:
             }
         )
 
+    @authoritative_mutation
     def finish_active_run(
         self,
         envelope_id: str,
@@ -575,6 +585,7 @@ class OpenClawAgentRuntimeStore:
             state = self._read_state()
         return run_state_machine.running_now(state)
 
+    @authoritative_mutation
     def recover_interrupted_runs(self) -> None:
         """Mark any active run left over from a previous session as interrupted."""
         with self._lock:
@@ -601,6 +612,7 @@ class OpenClawAgentRuntimeStore:
             )
         )
 
+    @authoritative_mutation
     def dismiss_delivery(self, delivery_id: str) -> dict[str, Any]:
         target = str(delivery_id or "").strip()
         if not target:
@@ -653,6 +665,7 @@ class OpenClawAgentRuntimeStore:
                 )
         return due
 
+    @authoritative_mutation
     def claim_due_scheduled_templates(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
         claims: list[dict[str, Any]] = []
         for item in self.due_scheduled_templates(now=now):
@@ -664,6 +677,7 @@ class OpenClawAgentRuntimeStore:
                 claims.append({"template_id": template_id, "slot_key": slot_key})
         return claims
 
+    @authoritative_mutation
     def claim_scheduled_template(self, template_id: str, slot_key: str) -> bool:
         target = str(template_id or "").strip()
         safe_slot_key = str(slot_key or "").strip()
@@ -697,6 +711,7 @@ class OpenClawAgentRuntimeStore:
                 self._write_state(state)
             return claimed
 
+    @authoritative_mutation
     def record_schedule_suppression(
         self,
         template_id: str,
@@ -784,6 +799,7 @@ class OpenClawAgentRuntimeStore:
                 count += 1
         return count
 
+    @authoritative_mutation
     def record_scheduled_run_outcome(
         self,
         template_id: str,

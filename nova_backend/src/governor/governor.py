@@ -15,6 +15,7 @@ from typing import Any, Dict
 import src.ledger.writer as ledger_mod
 from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
+from src.durability.maintenance import authoritative_mutation
 from src.governor.approval_grants import (
     DEFAULT_APPROVAL_TTL_SECONDS,
     ApprovalAuthorityMetadataError,
@@ -295,6 +296,7 @@ class Governor:
             capability_id=capability_id,
         )
 
+    @authoritative_mutation
     def handle_governed_invocation(
         self,
         capability_id: int,

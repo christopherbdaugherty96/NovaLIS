@@ -12,6 +12,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _MAX_ENTRIES = 200
@@ -100,13 +101,15 @@ class UserMemoryStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._write_state(self._default_state())
 
     # ── Public API ──────────────────────────────────────────────────
 
+    @authoritative_mutation
     def save(
         self,
         category: str,
@@ -285,6 +288,7 @@ class UserMemoryStore:
         scored.sort(key=lambda pair: pair[0], reverse=True)
         return [item for _, item in scored[:limit]]
 
+    @authoritative_mutation
     def remove(self, entry_id: str) -> bool:
         target = str(entry_id or "").strip()
         if not target:

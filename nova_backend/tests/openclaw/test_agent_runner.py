@@ -1,4 +1,8 @@
+import asyncio
+import threading
+
 import pytest
+from src.durability.maintenance import MaintenanceCoordinator
 from src.openclaw.agent_runner import OpenClawAgentRunner, RunCancelledError
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 
@@ -82,6 +86,44 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
     assert store.snapshot()["recent_runs"][0]["budget_summary"].startswith("Can take up to 6 steps")
     assert store.snapshot()["recent_runs"][0]["budget_usage"]["network_calls_used"] == 5
+    assert store.snapshot()["active_run"] is None
+
+
+@pytest.mark.asyncio
+async def test_manual_run_holds_mutation_lease_through_failure_cleanup(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+    collection_started = asyncio.Event()
+    release_collection = asyncio.Event()
+    maintenance_entered = threading.Event()
+
+    async def _blocked_collect(_template_id):
+        collection_started.set()
+        await release_collection.wait()
+        raise RuntimeError("bounded collection failure")
+
+    def _maintain():
+        with MaintenanceCoordinator(tmp_path).maintenance(timeout=5):
+            maintenance_entered.set()
+
+    monkeypatch.setattr(runner, "_collect_payload", _blocked_collect)
+    run_task = asyncio.create_task(
+        runner.run_template("morning_brief", triggered_by="test")
+    )
+    await asyncio.wait_for(collection_started.wait(), timeout=2)
+    maintenance_task = asyncio.create_task(asyncio.to_thread(_maintain))
+    await asyncio.sleep(0.1)
+    assert not maintenance_entered.is_set()
+
+    release_collection.set()
+    with pytest.raises(RuntimeError, match="bounded collection failure"):
+        await run_task
+    await asyncio.wait_for(maintenance_task, timeout=5)
+
+    assert maintenance_entered.is_set()
     assert store.snapshot()["active_run"] is None
 
 

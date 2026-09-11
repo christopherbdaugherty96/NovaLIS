@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -49,10 +50,11 @@ class ToneProfileStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -74,6 +76,7 @@ class ToneProfileStore:
             or self.DEFAULT_GLOBAL_PROFILE
         )
 
+    @authoritative_mutation
     def set_global_profile(self, profile: str, *, source: str = "user") -> dict[str, Any]:
         normalized_profile = self._normalize_profile(profile)
         with self._lock:
@@ -92,6 +95,7 @@ class ToneProfileStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_domain_profile(self, domain: str, profile: str, *, source: str = "user") -> dict[str, Any]:
         normalized_domain = self._normalize_domain(domain)
         normalized_profile = self._normalize_profile(profile)
@@ -117,6 +121,7 @@ class ToneProfileStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def reset_domain(self, domain: str, *, source: str = "user") -> dict[str, Any]:
         normalized_domain = self._normalize_domain(domain)
         with self._lock:
@@ -136,6 +141,7 @@ class ToneProfileStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def reset_all(self, *, source: str = "user") -> dict[str, Any]:
         with self._lock:
             state = self._read_state()

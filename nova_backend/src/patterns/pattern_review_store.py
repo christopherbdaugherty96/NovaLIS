@@ -7,6 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation, mutation_scope
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -69,10 +70,11 @@ class PatternReviewStore:
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
-        with self._lock:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            if not self._path.exists():
-                self._write_state(self._default_state())
+        if not self._path.exists():
+            with mutation_scope(), self._lock:
+                if not self._path.exists():
+                    self._path.parent.mkdir(parents=True, exist_ok=True)
+                    self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -83,6 +85,7 @@ class PatternReviewStore:
             state = self._read_state()
         return self._build_snapshot(state)
 
+    @authoritative_mutation
     def set_opt_in(self, enabled: bool, *, source: str = "user") -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
@@ -105,6 +108,7 @@ class PatternReviewStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def generate_review(
         self,
         *,
@@ -128,9 +132,11 @@ class PatternReviewStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    @authoritative_mutation
     def dismiss_proposal(self, proposal_id: str, *, source: str = "user") -> tuple[dict[str, Any], dict[str, Any]]:
         return self._resolve_proposal(proposal_id, action="dismiss", source=source)
 
+    @authoritative_mutation
     def accept_proposal(self, proposal_id: str, *, source: str = "user") -> tuple[dict[str, Any], dict[str, Any]]:
         return self._resolve_proposal(proposal_id, action="accept", source=source)
 

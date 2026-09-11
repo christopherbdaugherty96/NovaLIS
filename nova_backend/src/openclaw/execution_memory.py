@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.corruption import read_json_state, require_state
+from src.durability.maintenance import authoritative_mutation
 from src.utils.persistent_state import runtime_path
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ class ExecutionMemory:
     # Record
     # ------------------------------------------------------------------
 
+    @authoritative_mutation
     def record(
         self,
         tool_name: str,
