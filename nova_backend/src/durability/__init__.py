@@ -1,10 +1,18 @@
-"""Durability layout contracts and read-only migration discovery."""
+"""Durability layout, corruption, maintenance, and snapshot contracts."""
 
 from src.durability.corruption import (
     StateCorruptError,
     read_json_state,
     read_jsonl_state,
     require_state,
+)
+from src.durability.snapshot import (
+    SnapshotError,
+    SnapshotResult,
+    SnapshotSourceConflictError,
+    SnapshotValidationError,
+    create_snapshot,
+    validate_snapshot,
 )
 from src.durability.state_layout import (
     LogicalStore,
@@ -26,4 +34,10 @@ __all__ = [
     "read_json_state",
     "read_jsonl_state",
     "require_state",
+    "SnapshotError",
+    "SnapshotResult",
+    "SnapshotSourceConflictError",
+    "SnapshotValidationError",
+    "create_snapshot",
+    "validate_snapshot",
 ]
