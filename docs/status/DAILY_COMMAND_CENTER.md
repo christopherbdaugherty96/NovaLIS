@@ -23,7 +23,8 @@ COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
 COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
 COMPLETE: durability implementation lane 2 - corruption-safe readers (PR #416; main `80e1c86f`)
 COMPLETE: durability implementation lane 3 - maintenance locking + mutation quiescence (PR #419; main `2bfe202e`)
-NEXT: separate owner authorization decision for versioned snapshot + manifest
+AUTHORIZED / ACTIVE: durability implementation lane 4 - versioned snapshot + manifest (owner authorization; base main `38dd95fd`)
+NEXT: implement and review only the authorized Lane 4 contract
 THEN: separately authorized safe migration + generation activation
 THEN: separately authorized encrypted backup/restore/rollback
 THEN: durability torture proof

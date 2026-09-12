@@ -618,7 +618,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: separate owner authorization decision for versioned snapshot + manifest",
+        "NEXT: implement and review only the authorized Lane 4 contract",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -637,7 +637,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     )
 
 
-def test_current_repository_shape_records_lane_3_complete_and_snapshot_unapproved():
+def test_current_repository_shape_records_lane_3_complete_and_lane_4_active():
     checker = _load_checker()
 
     for relative in (
@@ -668,10 +668,38 @@ def test_current_repository_shape_records_lane_3_complete_and_snapshot_unapprove
         assert checker.LANE_2_AUTHORIZATION_MARKER not in normalized
         assert checker.LANE_3_AUTHORIZATION_MARKER not in normalized
         assert structured_lines.count(checker.LANE_3_COMPLETE_PROVENANCE) == 1
-        assert (
-            "NEXT: SEPARATE OWNER AUTHORIZATION DECISION FOR VERSIONED SNAPSHOT + MANIFEST"
-            in normalized
-        )
+        assert structured_lines.count(checker.LANE_4_AUTHORIZATION_MARKER) == 1
+        assert "NEXT: IMPLEMENT AND REVIEW ONLY THE AUTHORIZED LANE 4 CONTRACT" in normalized
+
+
+@pytest.mark.parametrize(
+    ("provenance", "replacement"),
+    (
+        ("38dd95fd", "deadbeef"),
+        ("versioned snapshot + manifest", "snapshot + migration"),
+    ),
+)
+def test_lane_4_active_rejects_corrupt_authorization_provenance(
+    tmp_path, provenance, replacement
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(provenance, replacement, 1)
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary"
+        in error
+        for error in errors
+    )
 
 
 @pytest.mark.parametrize(
@@ -880,7 +908,7 @@ def test_lane_3_closeout_rejects_later_durability_authorization(
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    next_line = "NEXT: separate owner authorization decision for versioned snapshot + manifest"
+    next_line = "NEXT: implement and review only the authorized Lane 4 contract"
     corrupted = original.replace(
         next_line,
         f"{authority_prefix}: {later_work}\n" + next_line,
@@ -909,7 +937,9 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
     current_block = (
         "COMPLETE: durability implementation lane 3 - maintenance locking + "
         "mutation quiescence (PR #419; main `2bfe202e`)\n"
-        + "\n".join(checker.POST_419_DIRECTIVE_SEQUENCE).lower()
+        "AUTHORIZED / ACTIVE: durability implementation lane 4 - versioned "
+        "snapshot + manifest (owner authorization; base main `38dd95fd`)\n"
+        + "\n".join(checker.LANE_4_ACTIVE_DIRECTIVE_SEQUENCE).lower()
     )
     lane_1_block = (
         "AUTHORIZED: durability implementation lane 2 only\n"
@@ -948,7 +978,9 @@ def test_pre_406_sequence_is_historical_only():
         "(PR #416; main `80e1c86f`)\n"
         "COMPLETE: durability implementation lane 3 - maintenance locking + "
         "mutation quiescence (PR #419; main `2bfe202e`)\n"
-        "NEXT: separate owner authorization decision for versioned snapshot + manifest\n"
+        "AUTHORIZED / ACTIVE: durability implementation lane 4 - versioned snapshot + "
+        "manifest (owner authorization; base main `38dd95fd`)\n"
+        "NEXT: implement and review only the authorized Lane 4 contract\n"
         "THEN: separately authorized safe migration + generation activation\n"
         "THEN: separately authorized encrypted backup/restore/rollback\n"
         "THEN: durability torture proof\n"
