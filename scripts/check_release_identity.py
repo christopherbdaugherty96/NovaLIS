@@ -26,6 +26,8 @@ UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS = (
     r"\[\s*Download\s+`?NovaSetup-[^`\]\s]+\.exe`?\s*\]\s*\(",
     r"\[[^\]]*NovaSetup-[^`\]\s]+\.exe[^\]]*\]\s*\([^)]*\)",
     r"\[[^\]]*\]\s*\([^)]*NovaSetup-[^`)\s]+\.exe[^)]*\)",
+    r"^\s*\[[^\]]+\]:\s*<?[^>\s]*NovaSetup-[^>\s]+\.exe[^>\s]*>?\s*$",
+    r"<a\b[^>]*\bhref\s*=\s*[\"'][^\"']*NovaSetup-[^\"']+\.exe[^\"']*[\"'][^>]*>",
 )
 
 
@@ -103,11 +105,14 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             r"^\*\*(?P<label>Version\s+[^\r\n]+)\*\*$",
             label="README release banner",
         )
-        readme_versions = _all_matches(
-            readme,
-            r"\bVersion\s+(?P<version>\d+(?:\.\d+)+)\b",
-            label="README release version",
+        readme_versions = tuple(
+            re.finditer(
+                r"\bVersion\s+(?P<version>\d+(?:\.\d+)+)(?:\s+(?P<label>[A-Za-z]+))?",
+                readme,
+            )
         )
+        if not readme_versions:
+            raise ValueError("README release version must appear at least once")
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
@@ -118,12 +123,16 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             errors.append(
                 f"README.md release banner {release_banner!r} must match {expected_banner!r}"
             )
-        for actual in readme_versions:
+        for declaration in readme_versions:
+            actual = declaration.group("version")
             if actual not in accepted_readme_versions:
                 errors.append(
                     f"README.md release version {actual!r} must match pyproject.toml "
                     f"display version {major_minor!r} or canonical version {version!r}"
                 )
+            label = declaration.group("label")
+            if label != "Alpha":
+                errors.append(f"README.md release label {label or '<missing>'!r} must be 'Alpha'")
 
     try:
         installer_readme = (root / INSTALLER_README).read_text(encoding="utf-8")
@@ -147,7 +156,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                 f"installer/README.md must state {notice!r} until a candidate is published"
             )
         if any(
-            re.search(pattern, installer_readme, re.IGNORECASE)
+            re.search(pattern, installer_readme, re.IGNORECASE | re.MULTILINE)
             for pattern in UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS
         ):
             errors.append(

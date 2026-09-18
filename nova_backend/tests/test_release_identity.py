@@ -103,6 +103,22 @@ def test_release_identity_rejects_unrecognized_active_readme_label(tmp_path):
     )
 
 
+def test_release_identity_rejects_non_banner_readme_release_label_drift(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            "Version 0.5 Alpha is", "Version 0.5 Beta is", 1
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("README.md release label 'Beta' must be 'Alpha'" in error for error in errors)
+
+
 def test_release_identity_rejects_full_semver_readme_version_drift(tmp_path):
     checker = _load_checker()
     _copy_release_surfaces(checker, tmp_path)
@@ -172,6 +188,36 @@ def test_release_identity_rejects_descriptive_markdown_installer_link(tmp_path):
     installer_readme.write_text(
         installer_readme.read_text(encoding="utf-8")
         + "\n[Get Nova for Windows](https://example.invalid/NovaSetup-0.5.0.exe)\n",
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("must not advertise an unpublished installer download" in error for error in errors)
+
+
+def test_release_identity_rejects_reference_style_installer_link(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    installer_readme = tmp_path / "installer/README.md"
+    installer_readme.write_text(
+        installer_readme.read_text(encoding="utf-8")
+        + "\n[Get Nova for Windows][installer]\n\n[installer]: https://example.invalid/NovaSetup-0.5.0.exe\n",
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("must not advertise an unpublished installer download" in error for error in errors)
+
+
+def test_release_identity_rejects_html_installer_link(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    installer_readme = tmp_path / "installer/README.md"
+    installer_readme.write_text(
+        installer_readme.read_text(encoding="utf-8")
+        + '\n<a class="download" href="https://example.invalid/NovaSetup-0.5.0.exe">Get Nova</a>\n',
         encoding="utf-8",
     )
 
