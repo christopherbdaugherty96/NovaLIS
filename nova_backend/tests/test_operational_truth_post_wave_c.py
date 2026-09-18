@@ -598,7 +598,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, tar
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #409 release integrity / repository control (separately scoped)",
+        "NEXT: recovery candidate validation",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -650,7 +650,12 @@ def test_current_repository_shape_records_lane_3_and_lane_4_complete():
         assert checker.LANE_4_AUTHORIZATION_MARKER not in normalized
         assert structured_lines.count(checker.LANE_4_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.LANE_4_FRESH_MAIN_CLOSEOUT) == 1
-        assert "NEXT: #409 RELEASE INTEGRITY / REPOSITORY CONTROL" in normalized
+        assert structured_lines.count(checker.POST_423_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.POST_410_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.LANE_5A_MIGRATION_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.LANE_5A_MIGRATION_PROOF) == 1
+        assert checker.LANE_5A_AUTHORIZATION_MARKER in normalized
+        assert "NEXT: RECOVERY CANDIDATE VALIDATION" in normalized
 
 
 @pytest.mark.parametrize(
@@ -876,7 +881,7 @@ def test_lane_4_complete_rejects_later_durability_authorization(
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    next_line = "NEXT: #409 release integrity / repository control (separately scoped)"
+    next_line = "NEXT: recovery candidate validation"
     corrupted = original.replace(
         next_line,
         f"{authority_prefix}: {later_work}\n" + next_line,
@@ -901,14 +906,18 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    current_block = (
-        "COMPLETE: durability implementation lane 3 - maintenance locking + "
-        "mutation quiescence (PR #419; main `2bfe202e`)\n"
-        "COMPLETE: durability implementation lane 4 - versioned snapshot + "
-        "manifest (PR #421; main `4e32b501`)\n"
-        "FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests "
-        "passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
-        + "\n".join(checker.LANE_4_COMPLETE_DIRECTIVE_SEQUENCE).lower()
+    current_block = "\n".join(
+        (
+            checker.LANE_3_COMPLETE_PROVENANCE,
+            checker.LANE_4_COMPLETE_PROVENANCE,
+            checker.LANE_4_FRESH_MAIN_CLOSEOUT,
+            checker.POST_423_COMPLETE_PROVENANCE,
+            checker.POST_410_COMPLETE_PROVENANCE,
+            checker.LANE_5A_AUTHORIZATION_MARKER,
+            checker.LANE_5A_MIGRATION_COMPLETE_PROVENANCE,
+            checker.LANE_5A_MIGRATION_PROOF,
+            *checker.LANE_5A_MIGRATION_DIRECTIVE_SEQUENCE,
+        )
     )
     lane_1_block = (
         "AUTHORIZED: durability implementation lane 2 only\n"
@@ -919,8 +928,8 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
         "then: frozen-sha full beta acceptance\n"
         "then: private-beta candidacy/distribution decision"
     )
-    corrupted = original.lower().replace(current_block.lower(), lane_1_block, 1)
-    assert corrupted != original.lower()
+    corrupted = original.upper().replace(current_block, lane_1_block.upper(), 1)
+    assert corrupted != original.upper()
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
@@ -950,11 +959,15 @@ def test_pre_406_sequence_is_historical_only():
         "(PR #421; main `4e32b501`)\n"
         "FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests "
         "passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
-        "NEXT: #409 release integrity / repository control (separately scoped)\n"
-        "THEN: rebase and exact-head review #410 private-beta freeze criteria\n"
-        "THEN: separate owner authorization decision for recovery construction (Lane 5A)\n"
-        "THEN: separately authorized recovery proof: inactive candidate migration -> "
-        "candidate validation -> activation -> rollback/restore semantics\n"
+        "COMPLETE: #409 release integrity / repository control (PR #423; main `aa39515f`)\n"
+        "COMPLETE: #410 private-beta freeze criteria (PR #410; main `3ad3f544`)\n"
+        "AUTHORIZED / ACTIVE: Lane 5A recovery construction (owner authorization; base main `3ad3f544`)\n"
+        "COMPLETE: Lane 5A step 1 - inactive recovery candidate migration (PR #424; main `298b7731`)\n"
+        "MIGRATION PROOF: PASS (173 durability tests passed; 1 expected Windows POSIX-FIFO skip)\n"
+        "NEXT: recovery candidate validation\n"
+        "THEN: candidate activation only after validation\n"
+        "THEN: rollback/restore proof\n"
+        "THEN: bounded beta product-translation/readiness pass\n"
         "THEN: clean Windows operator proof\n"
         "THEN: frozen-SHA full beta acceptance\n"
         "THEN: private-beta candidacy/distribution decision",
@@ -1006,12 +1019,12 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target = tmp_path / relative
         original = target.read_text(encoding="utf-8")
         corrupted = original.replace(
-            "NEXT: #409 release integrity / repository control (separately scoped)",
+            "NEXT: recovery candidate validation",
             "NEXT: Google identity-only live proof",
             1,
         )
         corrupted = corrupted.replace(
-            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
+            "298b77314d764e89b5c8ddee259c0931dfceb18a",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         )
@@ -1052,7 +1065,7 @@ def test_post_405_mode_survives_normal_sync_start_sha_update(tmp_path):
     ):
         target = tmp_path / relative
         updated = target.read_text(encoding="utf-8").replace(
-            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
+            "298b77314d764e89b5c8ddee259c0931dfceb18a",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         )
@@ -1072,7 +1085,7 @@ def test_post_405_mode_rejects_one_current_surface_with_different_sync_sha(tmp_p
     target = tmp_path / "README.md"
     target.write_text(
         target.read_text(encoding="utf-8").replace(
-            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
+            "298b77314d764e89b5c8ddee259c0931dfceb18a",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         ),
@@ -1093,7 +1106,7 @@ def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
         target = tmp_path / relative
         target.write_text(
             target.read_text(encoding="utf-8").replace(
-                "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
+                "298b77314d764e89b5c8ddee259c0931dfceb18a",
                 "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                 1,
             ),
