@@ -20,6 +20,7 @@ RUNTIME_VERSION_SURFACES = (
 INSTALLER = Path("installer/windows/nova_setup.iss")
 README = Path("README.md")
 INSTALLER_README = Path("installer/README.md")
+UNPUBLISHED_INSTALLER_NOTICE = "No `{version}` installer artifact is currently published."
 
 
 def canonical_version(root: Path = ROOT) -> str:
@@ -38,6 +39,13 @@ def _single_match(source: str, pattern: str, *, label: str) -> str:
     if len(matches) != 1:
         raise ValueError(f"{label} must appear exactly once")
     return matches[0]
+
+
+def _all_matches(source: str, pattern: str, *, label: str) -> tuple[str, ...]:
+    matches = tuple(re.findall(pattern, source, re.MULTILINE))
+    if not matches:
+        raise ValueError(f"{label} must appear at least once")
+    return matches
 
 
 def check_release_identity(root: Path = ROOT) -> list[str]:
@@ -82,19 +90,52 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             if actual != version:
                 errors.append(f"{label} {actual!r} must match pyproject.toml {version!r}")
 
-    major_minor = ".".join(version.split(".")[:2])
-    readme_version = f"Version {major_minor} Alpha"
-    for path, required in (
-        (README, readme_version),
-        (INSTALLER_README, f"NovaSetup-{version}.exe"),
-    ):
-        try:
-            source = (root / path).read_text(encoding="utf-8")
-        except OSError as exc:
-            errors.append(str(exc))
-            continue
-        if required not in source:
-            errors.append(f"{path.as_posix()} must declare {required!r} from pyproject.toml")
+    try:
+        readme_versions = _all_matches(
+            (root / README).read_text(encoding="utf-8"),
+            r"\bVersion\s+(?P<version>\d+\.\d+)\s+Alpha\b",
+            label="README active release version",
+        )
+    except (OSError, ValueError) as exc:
+        errors.append(str(exc))
+    else:
+        major_minor = ".".join(version.split(".")[:2])
+        for actual in readme_versions:
+            if actual != major_minor:
+                errors.append(
+                    f"README.md active release version {actual!r} must match "
+                    f"pyproject.toml major/minor {major_minor!r}"
+                )
+
+    try:
+        installer_readme = (root / INSTALLER_README).read_text(encoding="utf-8")
+        installer_readme_versions = _all_matches(
+            installer_readme,
+            r"\bNovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe\b",
+            label="installer README artifact version",
+        )
+    except (OSError, ValueError) as exc:
+        errors.append(str(exc))
+    else:
+        for actual in installer_readme_versions:
+            if actual != version:
+                errors.append(
+                    f"installer README artifact version {actual!r} must match "
+                    f"pyproject.toml {version!r}"
+                )
+        notice = UNPUBLISHED_INSTALLER_NOTICE.format(version=version)
+        if notice not in installer_readme:
+            errors.append(
+                f"installer/README.md must state {notice!r} until a candidate is published"
+            )
+        if re.search(
+            r"^\d+\.\s+Download\s+`NovaSetup-[^`]+\.exe`\s+from\b",
+            installer_readme,
+            re.MULTILINE,
+        ):
+            errors.append(
+                "installer/README.md must not advertise an unpublished installer download"
+            )
 
     return errors
 
@@ -109,7 +150,9 @@ def main() -> int:
 
     print("Release identity check passed.")
     print(f"Canonical source: {PYPROJECT} [project].version = {canonical_version()}")
-    print("Validated projections: runtime metadata, Windows installer, README, installer README")
+    print(
+        "Validated projections: runtime metadata, Windows installer, active README versions, installer README"
+    )
     return 0
 
 

@@ -6,14 +6,19 @@ Windows x64 is Nova's primary beta-support target. The installer path is real, b
 clean-machine certification remains a later acceptance gate. Do not treat an existing
 installer artifact as certified until that proof is complete.
 
-### Option A: Run the .exe installer (Windows beta path; not yet certified)
+### Published installer status
 
-1. Download `NovaSetup-0.5.0.exe` from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
-2. Double-click to run. Follow the wizard.
-3. The installer handles Python, Ollama, model download, and shortcuts.
-4. If setup fails, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
-5. If Nova starts but then immediately closes, inspect `C:\Program Files\Nova\scripts\pids\nova.log` for the server startup error.
-6. On a successful first launch, wait up to 90 seconds for local services to start, then try `daily brief`, `news`, or `system status`.
+No `0.5.0` installer artifact is currently published. Do not treat the existing
+historical test build as a beta candidate. A Windows installer becomes a
+candidate only after the later frozen-SHA and clean-Windows acceptance gates.
+
+### Installer behavior when a candidate is published
+
+The Windows installer handles Python, Ollama, model download, and shortcuts.
+If setup fails, inspect `C:\Program Files\Nova\bootstrap.log`. If Nova starts
+but immediately closes, inspect `C:\Program Files\Nova\scripts\pids\nova.log`.
+On a successful first launch, wait up to 90 seconds for local services to
+start, then try `daily brief`, `news`, or `system status`.
 
 ### Option B: Run the bootstrap script directly (for developers)
 
