@@ -106,11 +106,8 @@ def test_release_identity_rejects_unpublished_installer_advertising(tmp_path):
     _copy_release_surfaces(checker, tmp_path)
     installer_readme = tmp_path / "installer/README.md"
     installer_readme.write_text(
-        installer_readme.read_text(encoding="utf-8").replace(
-            checker.UNPUBLISHED_INSTALLER_NOTICE.format(version="0.5.0"),
-            "1. Download `NovaSetup-0.5.0.exe` from GitHub Releases.",
-            1,
-        ),
+        installer_readme.read_text(encoding="utf-8")
+        + "\nDownload `NovaSetup-0.5.0.exe` from GitHub Releases.\n",
         encoding="utf-8",
     )
 

@@ -129,9 +129,9 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                 f"installer/README.md must state {notice!r} until a candidate is published"
             )
         if re.search(
-            r"^\d+\.\s+Download\s+`NovaSetup-[^`]+\.exe`\s+from\b",
+            r"\bDownload\s+(?:the\s+)?`?NovaSetup-[^`\s]+\.exe`?\s+(?:from|via)\b",
             installer_readme,
-            re.MULTILINE,
+            re.IGNORECASE,
         ):
             errors.append(
                 "installer/README.md must not advertise an unpublished installer download"
