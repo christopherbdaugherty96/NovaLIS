@@ -82,7 +82,9 @@ def test_release_identity_rejects_conflicting_active_readme_version(tmp_path):
 
     errors = checker.check_release_identity(tmp_path)
 
-    assert any("README.md release version '9.9'" in error for error in errors)
+    assert any(
+        "README.md release banner 'Version 9.9 Alpha — Current State'" in error for error in errors
+    )
 
 
 def test_release_identity_rejects_unrecognized_active_readme_label(tmp_path):
@@ -116,7 +118,10 @@ def test_release_identity_rejects_non_banner_readme_release_label_drift(tmp_path
 
     errors = checker.check_release_identity(tmp_path)
 
-    assert any("README.md release label 'Beta' must be 'Alpha'" in error for error in errors)
+    assert any(
+        "README.md current status release declaration 'Version 0.5 Beta'" in error
+        for error in errors
+    )
 
 
 def test_release_identity_rejects_readme_release_label_suffixes(tmp_path):
@@ -135,7 +140,7 @@ def test_release_identity_rejects_readme_release_label_suffixes(tmp_path):
         errors = checker.check_release_identity(root)
 
         assert any(
-            f"README.md release label {malformed_label!r} must be 'Alpha'" in error
+            f"README.md current status release declaration 'Version 0.5 {malformed_label}'" in error
             for error in errors
         )
 
@@ -153,7 +158,10 @@ def test_release_identity_rejects_full_semver_readme_version_drift(tmp_path):
 
     errors = checker.check_release_identity(tmp_path)
 
-    assert any("README.md release version '9.9.9'" in error for error in errors)
+    assert any(
+        "README.md current status release declaration 'Version 9.9.9 Alpha'" in error
+        for error in errors
+    )
 
 
 def test_release_identity_rejects_conflicting_installer_readme_artifact(tmp_path):

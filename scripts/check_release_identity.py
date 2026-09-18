@@ -21,14 +21,9 @@ INSTALLER = Path("installer/windows/nova_setup.iss")
 README = Path("README.md")
 INSTALLER_README = Path("installer/README.md")
 UNPUBLISHED_INSTALLER_NOTICE = "No `{version}` installer artifact is currently published."
-UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS = (
-    r"\bDownload\s+(?:the\s+)?`?NovaSetup-[^`\s]+\.exe`?\s+(?:from|via)\b",
-    r"\[\s*Download\s+`?NovaSetup-[^`\]\s]+\.exe`?\s*\]\s*\(",
-    r"\[[^\]]*NovaSetup-[^`\]\s]+\.exe[^\]]*\]\s*\([^)]*\)",
-    r"\[[^\]]*\]\s*\([^)]*NovaSetup-[^`)\s]+\.exe[^)]*\)",
-    r"^\s*\[[^\]]+\]:\s*<?[^>\s]*NovaSetup-[^>\s]+\.exe[^>\s]*>?\s*$",
-    r"<a\b[^>]*\bhref\s*=\s*[\"'][^\"']*NovaSetup-[^\"']+\.exe[^\"']*[\"'][^>]*>",
-    r"https?://[^\s<>()]*NovaSetup-[^\s<>()]+\.exe(?:[?#][^\s<>()]*)?",
+INSTALLER_ARTIFACT_PATTERN = re.compile(r"\bNovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe\b")
+ALLOWED_LOCAL_INSTALLER_PATTERN = re.compile(
+    r"`dist[\\/]NovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe`"
 )
 
 
@@ -106,62 +101,55 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             r"^\*\*(?P<label>Version\s+[^\r\n]+)\*\*$",
             label="README release banner",
         )
-        readme_versions = tuple(
-            re.finditer(
-                r"\bVersion\s+(?P<version>\d+(?:\.\d+)+)(?:\s+(?P<label>[A-Za-z][A-Za-z0-9/]*))?",
-                readme,
-            )
+        status_declaration = _single_match(
+            readme,
+            r"^(?P<declaration>Version\s+\d+(?:\.\d+)+\s+[A-Za-z][A-Za-z0-9/+.-]*)\s+is\b",
+            label="README current status release declaration",
         )
-        if not readme_versions:
-            raise ValueError("README release version must appear at least once")
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
         major_minor = ".".join(version.split(".")[:2])
         expected_banner = f"Version {major_minor} Alpha — Current State"
-        accepted_readme_versions = {major_minor, version}
+        expected_status = f"Version {major_minor} Alpha"
         if release_banner != expected_banner:
             errors.append(
                 f"README.md release banner {release_banner!r} must match {expected_banner!r}"
             )
-        for declaration in readme_versions:
-            actual = declaration.group("version")
-            if actual not in accepted_readme_versions:
-                errors.append(
-                    f"README.md release version {actual!r} must match pyproject.toml "
-                    f"display version {major_minor!r} or canonical version {version!r}"
-                )
-            label = declaration.group("label")
-            if label != "Alpha":
-                errors.append(f"README.md release label {label or '<missing>'!r} must be 'Alpha'")
+        if status_declaration != expected_status:
+            errors.append(
+                f"README.md current status release declaration {status_declaration!r} "
+                f"must match {expected_status!r}"
+            )
 
     try:
         installer_readme = (root / INSTALLER_README).read_text(encoding="utf-8")
-        installer_readme_versions = _all_matches(
-            installer_readme,
-            r"\bNovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe\b",
-            label="installer README artifact version",
-        )
+        installer_artifacts = tuple(INSTALLER_ARTIFACT_PATTERN.finditer(installer_readme))
+        if not installer_artifacts:
+            raise ValueError("installer README artifact version must appear at least once")
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
-        for actual in installer_readme_versions:
+        allowed_local_installers = tuple(ALLOWED_LOCAL_INSTALLER_PATTERN.finditer(installer_readme))
+        for artifact in installer_artifacts:
+            actual = artifact.group("version")
             if actual != version:
                 errors.append(
                     f"installer README artifact version {actual!r} must match "
                     f"pyproject.toml {version!r}"
                 )
+            if not any(
+                allowed.start() <= artifact.start() and artifact.end() <= allowed.end()
+                for allowed in allowed_local_installers
+            ):
+                errors.append(
+                    "installer/README.md must not advertise an unpublished installer "
+                    "download; artifacts must be explicit local dist build-output references"
+                )
         notice = UNPUBLISHED_INSTALLER_NOTICE.format(version=version)
         if notice not in installer_readme:
             errors.append(
                 f"installer/README.md must state {notice!r} until a candidate is published"
-            )
-        if any(
-            re.search(pattern, installer_readme, re.IGNORECASE | re.MULTILINE)
-            for pattern in UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS
-        ):
-            errors.append(
-                "installer/README.md must not advertise an unpublished installer download"
             )
 
     return errors
