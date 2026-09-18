@@ -2,9 +2,13 @@
 
 ## Windows
 
-### Option A: Run the .exe installer (recommended for end users)
+Windows x64 is Nova's primary beta-support target. The installer path is real, but
+clean-machine certification remains a later acceptance gate. Do not treat an existing
+installer artifact as certified until that proof is complete.
 
-1. Download `NovaSetup-0.1.0.exe` from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
+### Option A: Run the .exe installer (Windows beta path; not yet certified)
+
+1. Download `NovaSetup-0.5.0.exe` from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
 2. Double-click to run. Follow the wizard.
 3. The installer handles Python, Ollama, model download, and shortcuts.
 4. If setup fails, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
@@ -55,17 +59,18 @@ After installing or rebuilding the Windows package:
 
 1. Install [Inno Setup 6+](https://jrsoftware.org/isinfo.php).
 2. Open `installer/windows/nova_setup.iss` in the Inno Setup Compiler.
-3. Press Ctrl+F9. The output lands in `dist/NovaSetup-0.1.0.exe`.
+3. Press Ctrl+F9. The output lands in `dist/NovaSetup-0.5.0.exe`.
 
-Important: the existing `dist\NovaSetup-0.1.0.exe` may predate source changes.
+Important: the existing `dist\NovaSetup-0.5.0.exe` may predate source changes.
 After runtime-state or startup changes, rebuild the installer before treating
 the packaged app as fixed.
 
-## macOS
+## Other platforms
 
-Not yet available. See the [roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) — macOS `.app` bundle is planned after Windows installer is validated.
+macOS and Linux do not have supported beta installer paths. They may be used for
+source-based development only and are not covered by the Windows beta-support claim.
 
-## Manual install (any platform)
+## Manual source install (developer use)
 
 ```bash
 pip install -e .

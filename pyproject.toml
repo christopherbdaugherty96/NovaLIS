@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "novalis"
-# Keep in sync with the "Version 0.5 Alpha" identity in README.md.
+# Canonical Nova release identity. Dependent runtime, installer, and user-facing
+# surfaces are verified by `python scripts/check_release_identity.py`.
 version = "0.5.0"
 description = "Nova — governed local assistant with memory and transparent execution."
 readme = "README.md"
@@ -17,7 +18,7 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "License :: Other/Proprietary License",
-    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

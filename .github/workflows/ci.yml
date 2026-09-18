@@ -43,6 +43,10 @@ jobs:
         run: |
           python scripts/check_dependency_consistency.py
 
+      - name: Verify release identity consistency
+        run: |
+          python scripts/check_release_identity.py
+
       - name: Ruff lint
         run: |
           ruff check nova_backend/src
@@ -94,6 +98,10 @@ jobs:
       - name: Verify dependency source consistency
         run: |
           python scripts/check_dependency_consistency.py
+
+      - name: Verify release identity consistency
+        run: |
+          python scripts/check_release_identity.py
 
       - name: Pytest — adversarial suite (Windows)
         env:

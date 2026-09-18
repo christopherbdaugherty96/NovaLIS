@@ -69,6 +69,12 @@ python scripts/check_dependency_consistency.py
 if ($LASTEXITCODE -ne 0) { Write-Fail "dependency consistency check failed" }
 Write-Pass "dependency sources agree"
 
+# --- Release identity consistency ---
+Write-Step "Verify release identity consistency"
+python scripts/check_release_identity.py
+if ($LASTEXITCODE -ne 0) { Write-Fail "release identity consistency check failed" }
+Write-Pass "release identity surfaces agree"
+
 # --- Ruff lint ---
 Write-Step "Ruff lint"
 python -m ruff check $NOVA_BACKEND\src
