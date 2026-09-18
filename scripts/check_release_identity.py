@@ -68,7 +68,7 @@ def _normalized_whitespace(value: str) -> str:
 
 def _active_markdown(value: str) -> str:
     """Remove HTML comments so hidden text cannot satisfy release-boundary checks."""
-    return re.sub(r"<!--[\s\S]*?-->", "", value)
+    return re.sub(r"<!--[\s\S]*?(?:-->|$)", "", value)
 
 
 def check_release_identity(root: Path = ROOT) -> list[str]:
