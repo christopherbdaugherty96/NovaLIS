@@ -71,8 +71,10 @@ def test_migration_materializes_inactive_candidate_without_writing_live_state(
     assert candidate.candidate_path == (
         tmp_path / "container/control/recovery_candidates/candidate-1"
     )
-    assert (candidate.candidate_path / "generation/data/state.json").read_bytes() == source_bytes
-    assert (candidate.candidate_path / "container/cache/container.json").read_text(
+    assert (
+        candidate.candidate_path / "payload/generation/data/state.json"
+    ).read_bytes() == source_bytes
+    assert (candidate.candidate_path / "payload/container/cache/container.json").read_text(
         encoding="utf-8"
     ) == '{"value": "container source"}'
     assert not (tmp_path / "container/generations").exists()
@@ -99,7 +101,7 @@ def test_migration_preserves_directory_store_layout_for_later_validation(tmp_pat
         registry=(store,),
     )
 
-    target = candidate.candidate_path / "generation/data/story_tracker/story_topic.json"
+    target = candidate.candidate_path / "payload/generation/data/story_tracker/story_topic.json"
     assert target.read_text(encoding="utf-8") == '{"snapshots": []}'
     entry = candidate.metadata["entries"][0]
     assert entry["files"] == [
@@ -145,3 +147,66 @@ def test_migration_refuses_to_replace_an_existing_candidate(tmp_path: Path):
         )
 
     assert (candidate_path / "keep.txt").read_text(encoding="utf-8") == "do not replace"
+
+
+def test_migration_refuses_candidate_path_reserved_concurrently(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store = _store("sample", "data/sample.json")
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"value": true}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (store,))
+    candidate_path = tmp_path / "container/control/recovery_candidates/candidate-race"
+    original_mkdir = Path.mkdir
+    reserved = False
+
+    def race_mkdir(path: Path, *args, **kwargs):
+        nonlocal reserved
+        if path == candidate_path and not reserved:
+            reserved = True
+            original_mkdir(path, *args, **kwargs)
+            (path / "other-owner.txt").write_text("other process", encoding="utf-8")
+        return original_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", race_mkdir)
+
+    with pytest.raises(RecoveryCandidateError, match="already exists"):
+        create_recovery_candidate(
+            snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            candidate_id="candidate-race",
+            registry=(store,),
+        )
+
+    assert (candidate_path / "other-owner.txt").read_text(encoding="utf-8") == "other process"
+
+
+def test_migration_refuses_candidate_container_inside_source_snapshot(tmp_path: Path):
+    store = _store("sample", "data/sample.json")
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"value": true}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (store,))
+    source_inventory = sorted(
+        path.relative_to(snapshot.snapshot_path).as_posix()
+        for path in snapshot.snapshot_path.rglob("*")
+    )
+    nested_container = snapshot.snapshot_path / "nested-container"
+
+    with pytest.raises(RecoveryCandidateError, match="overlaps the source snapshot"):
+        create_recovery_candidate(
+            snapshot_path=snapshot.snapshot_path,
+            container_root=nested_container,
+            candidate_id="candidate-overlap",
+            registry=(store,),
+        )
+
+    assert not nested_container.exists()
+    assert (
+        sorted(
+            path.relative_to(snapshot.snapshot_path).as_posix()
+            for path in snapshot.snapshot_path.rglob("*")
+        )
+        == source_inventory
+    )

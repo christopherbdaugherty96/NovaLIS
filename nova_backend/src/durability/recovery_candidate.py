@@ -65,7 +65,7 @@ def create_recovery_candidate(
     """
 
     stores = logical_store_registry() if registry is None else registry
-    source_root = Path(snapshot_path).expanduser()
+    source_root = Path(snapshot_path).expanduser().resolve()
     manifest = validate_snapshot(source_root, registry=stores)
     manifest_path = source_root / "manifest.json"
     manifest_bytes = manifest_path.read_bytes()
@@ -81,14 +81,23 @@ def create_recovery_candidate(
     if _path_has_link_or_reparse(candidates_root, container):
         raise RecoveryCandidateError(f"linked recovery candidate root refused: {candidates_root}")
     candidate_path = candidates_root / operation_id
-    if candidate_path.exists() or candidate_path.is_symlink():
-        raise RecoveryCandidateError(f"recovery candidate already exists: {candidate_path}")
+    if _paths_overlap(source_root, candidate_path):
+        raise RecoveryCandidateError(
+            "recovery candidate path overlaps the source snapshot: "
+            f"snapshot={source_root}, candidate={candidate_path}"
+        )
 
-    staging_root = candidates_root / ".staging"
-    if _path_has_link_or_reparse(staging_root, container):
-        raise RecoveryCandidateError(f"linked recovery candidate staging refused: {staging_root}")
-    staging_path = staging_root / f"{operation_id}-{uuid4().hex}"
-    staging_path.mkdir(parents=True)
+    candidates_root.mkdir(parents=True, exist_ok=True)
+    try:
+        candidate_path.mkdir()
+    except FileExistsError as exc:
+        raise RecoveryCandidateError(
+            f"recovery candidate already exists: {candidate_path}"
+        ) from exc
+
+    staging_path = candidate_path / f".staging-{uuid4().hex}"
+    payload_path = candidate_path / "payload"
+    staging_path.mkdir()
 
     try:
         entries = _materialize_entries(
@@ -104,12 +113,13 @@ def create_recovery_candidate(
             "source_snapshot_id": manifest["snapshot_id"],
             "source_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
             "registry_store_count": len(stores),
+            "payload_root": "payload",
             "entries": entries,
         }
-        _write_durable_json(staging_path / "recovery_candidate.json", metadata)
-        os.replace(staging_path, candidate_path)
+        os.replace(staging_path, payload_path)
+        _write_durable_json(candidate_path / "recovery_candidate.json", metadata)
     except BaseException:
-        # A failed migration never creates an activation-eligible candidate.
+        # A failed migration never creates an activation-eligible candidate marker.
         if staging_path.exists() and not staging_path.is_symlink():
             shutil.rmtree(staging_path)
         raise
@@ -247,6 +257,22 @@ def _path_has_link_or_reparse(path: Path, root: Path) -> bool:
         if parent == current:
             return True
         current = parent
+
+
+def _paths_overlap(first: Path, second: Path) -> bool:
+    first_resolved = first.resolve()
+    second_resolved = second.resolve()
+    return _is_relative_to(first_resolved, second_resolved) or _is_relative_to(
+        second_resolved, first_resolved
+    )
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+    except ValueError:
+        return False
+    return True
 
 
 def _is_link_or_reparse(path: Path) -> bool:
