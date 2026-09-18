@@ -381,6 +381,65 @@ def test_release_identity_ignores_hidden_support_boundary_text(tmp_path):
     assert any("README Windows beta-support boundary" in error for error in errors)
 
 
+def test_release_identity_strips_comments_before_readme_section_selection(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    source = readme.read_text(encoding="utf-8")
+    start = source.index("## Current Status")
+    end = source.index("## Future Directions", start)
+    hidden_section = source[start:end]
+    visible_section = hidden_section.replace("Version 0.5 Alpha is", "Version 9.9 Beta is", 1)
+    readme.write_text(
+        source[:start] + "<!--\n" + hidden_section + "-->\n" + visible_section + source[end:],
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any(
+        "README.md current status release declaration 'Version 9.9 Beta'" in error
+        for error in errors
+    )
+
+
+def test_release_identity_ignores_hidden_release_banner(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    approved_banner = "**Version 0.5 Alpha — Current State**"
+    visible_false_banner = "**Version 9.9 Beta — Current State**"
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            approved_banner, f"<!-- {approved_banner} -->\n{visible_false_banner}", 1
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any(
+        "README.md release banner 'Version 9.9 Beta — Current State'" in error for error in errors
+    )
+
+
+def test_release_identity_ignores_hidden_unpublished_installer_notice(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    installer_readme = tmp_path / "installer/README.md"
+    notice = checker.UNPUBLISHED_INSTALLER_NOTICE.format(version="0.5.0")
+    installer_readme.write_text(
+        installer_readme.read_text(encoding="utf-8").replace(
+            notice, f"<!-- {notice} -->\nA Nova 0.5.0 installer is published.", 1
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("installer/README.md must state" in error for error in errors)
+
+
 def test_release_identity_rejects_installer_artifact_outside_build_lines(tmp_path):
     checker = _load_checker()
     _copy_release_surfaces(checker, tmp_path)

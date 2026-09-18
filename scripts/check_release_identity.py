@@ -114,7 +114,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                 errors.append(f"{label} {actual!r} must match pyproject.toml {version!r}")
 
     try:
-        readme = (root / README).read_text(encoding="utf-8")
+        readme = _active_markdown((root / README).read_text(encoding="utf-8"))
         header_section = _single_section_match(readme, "# NovaLIS", label="README top-level header")
         release_banner = _single_match(
             header_section.group(1),
@@ -130,7 +130,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             label="README current status release declaration",
         )
         readme_support_boundary = _single_match(
-            _active_markdown(current_status_section.group(1)),
+            current_status_section.group(1),
             r"^(?P<statement>Windows is Nova's primary beta-support target\.\s+"
             r"The Windows installer path exists, but\s+clean-machine certification is still "
             r"a later acceptance gate\. macOS and Linux may be\s+used for source-based "
@@ -164,7 +164,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             )
 
     try:
-        installer_readme = (root / INSTALLER_README).read_text(encoding="utf-8")
+        installer_readme = _active_markdown((root / INSTALLER_README).read_text(encoding="utf-8"))
         build_section = _single_section_match(
             installer_readme,
             "### Building the .exe from source",
@@ -174,7 +174,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             installer_readme, "## Windows", label="installer README Windows section"
         )
         installer_windows_support_boundary = _single_match(
-            _active_markdown(installer_windows_section.group(1)),
+            installer_windows_section.group(1),
             r"^(?P<statement>Windows x64 is Nova's primary beta-support target\. The installer "
             r"path is real, but\s+clean-machine certification remains a later acceptance gate\. "
             r"Do not treat an existing\s+installer artifact as certified until that proof is complete\.)$",
@@ -184,7 +184,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             installer_readme, "## Other platforms", label="installer README Other platforms section"
         )
         installer_other_platforms_boundary = _single_match(
-            _active_markdown(installer_other_platforms_section.group(1)),
+            installer_other_platforms_section.group(1),
             r"^(?P<statement>macOS and Linux do not have supported beta installer paths\. They may be used for\s+"
             r"source-based development only and are not covered by the Windows beta-support claim\.)$",
             label="installer README other-platforms beta-support boundary",
