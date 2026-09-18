@@ -127,8 +127,7 @@ def _post_wave_c_complete_fixture(root: Path) -> None:
         "docs/CANONICAL/00_INDEX.md",
         "**Implementation:** code\n"
         "**Automated/recorded evidence:** tests\n"
-        "current HEAD != immutable validated baseline\n"
-        + _completed_state_text(),
+        "current HEAD != immutable validated baseline\n" + _completed_state_text(),
     )
     _governance_fixture(root)
     _write(
@@ -143,9 +142,7 @@ def test_checker_accepts_active_merge_safe_documentation_closeout_gate(tmp_path)
     _post_wave_c_active_fixture(tmp_path)
 
     assert checker.check_operational_truth(tmp_path) == []
-    assert checker.POST_WAVE_C_ACTIVE_LANE == (
-        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_ACTIVE"
-    )
+    assert checker.POST_WAVE_C_ACTIVE_LANE == ("POST_WAVE_C_DOCUMENTATION_CLOSEOUT_ACTIVE")
 
 
 def test_checker_accepts_completed_documentation_closeout(tmp_path):
@@ -153,9 +150,7 @@ def test_checker_accepts_completed_documentation_closeout(tmp_path):
     _post_wave_c_complete_fixture(tmp_path)
 
     assert checker.check_operational_truth(tmp_path) == []
-    assert checker.POST_WAVE_C_COMPLETE_LANE == (
-        "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE"
-    )
+    assert checker.POST_WAVE_C_COMPLETE_LANE == ("POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE")
     assert checker.VALIDATED_BASELINE_SHA == VALIDATED_BASELINE_SHA
 
 
@@ -205,9 +200,7 @@ def test_completed_state_ignores_nearby_365_provenance_collision():
     )
 
     assert checker._preserves_merged_pr_role(text, 366, ("TRUTH-HYGIENE",))
-    assert checker._preserves_merged_pr_role(
-        text, 378, ("NARRATION", "FRONT-DOOR")
-    )
+    assert checker._preserves_merged_pr_role(text, 378, ("NARRATION", "FRONT-DOOR"))
     assert checker._extract_lane("active_todo", text) == (
         "POST_WAVE_C_DOCUMENTATION_CLOSEOUT_COMPLETE"
     )
@@ -218,8 +211,7 @@ def test_canonical_index_accepts_completion_without_current_gate_wording():
     text = (
         "**Implementation:** code\n"
         "**Automated/recorded evidence:** tests\n"
-        "current HEAD != immutable validated baseline\n"
-        + _completed_state_text()
+        "current HEAD != immutable validated baseline\n" + _completed_state_text()
     )
 
     assert "Current gate:" not in text
@@ -279,9 +271,7 @@ def test_checker_detects_post_wave_c_to_legacy_lane_drift(tmp_path):
 def test_checker_preserves_legacy_b1_lane_parsing():
     checker = _load_checker()
 
-    assert checker._extract_lane(
-        "priority", "## Wave B1 — Runtime Truth Instrumentation\n"
-    ) == "B1"
+    assert checker._extract_lane("priority", "## Wave B1 — Runtime Truth Instrumentation\n") == "B1"
 
 
 def test_checker_detects_completed_truth_hygiene_pr_identity_drift(tmp_path):
@@ -305,10 +295,7 @@ def test_checker_detects_completed_truth_hygiene_pr_identity_drift(tmp_path):
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any(
-        "PR #366 as MERGED truth-hygiene provenance" in error
-        for error in errors
-    )
+    assert any("PR #366 as MERGED truth-hygiene provenance" in error for error in errors)
 
 
 def test_checker_detects_missing_merged_378_provenance(tmp_path):
@@ -317,9 +304,7 @@ def test_checker_detects_missing_merged_378_provenance(tmp_path):
     _write(
         tmp_path,
         "docs/status/CURRENT_WORK_STATUS.md",
-        _completed_state_text().replace(
-            "narration/front-door package: PR #378 MERGED\n", ""
-        ),
+        _completed_state_text().replace("narration/front-door package: PR #378 MERGED\n", ""),
     )
 
     errors = checker.check_operational_truth(tmp_path)
@@ -403,20 +388,15 @@ def test_checker_does_not_borrow_unmerged_for_335_from_other_line(tmp_path):
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("current priority does not preserve PR #335 as explicitly UNMERGED" in error for error in errors)
+    assert any(
+        "current priority does not preserve PR #335 as explicitly UNMERGED" in error
+        for error in errors
+    )
 
 
 def test_checker_accepts_structured_multiline_335_unmerged_status():
     checker = _load_checker()
-    positive = (
-        "PR #335 remains:\n\n"
-        "```text\n"
-        "OPEN\n"
-        "DRAFT\n"
-        "UNMERGED\n"
-        "head: befb69ef\n"
-        "```\n"
-    )
+    positive = "PR #335 remains:\n\n```text\nOPEN\nDRAFT\nUNMERGED\nhead: befb69ef\n```\n"
     negative = (
         "PR #335 remains:\n\n"
         "```text\n"
@@ -441,9 +421,12 @@ def test_checker_does_not_borrow_pending_not_authorized_for_335_from_other_line(
     )
 
     assert checker._preserves_pr_335_pending_not_authorized(text) is False
-    assert checker._preserves_pr_335_pending_not_authorized(
-        "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
-    ) is True
+    assert (
+        checker._preserves_pr_335_pending_not_authorized(
+            "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n"
+        )
+        is True
+    )
 
     _post_wave_c_complete_fixture(tmp_path)
     _write(
@@ -486,7 +469,10 @@ def test_checker_detects_missing_335_unmerged_in_priority(tmp_path):
 
     errors = checker.check_operational_truth(tmp_path)
 
-    assert any("current priority does not preserve PR #335 as explicitly UNMERGED" in error for error in errors)
+    assert any(
+        "current priority does not preserve PR #335 as explicitly UNMERGED" in error
+        for error in errors
+    )
 
 
 def test_checker_detects_missing_335_pending_not_authorized(tmp_path):
@@ -514,8 +500,7 @@ def test_checker_detects_unrelated_separate_owner_decision(tmp_path):
         "docs/todo/ACTIVE_TODO.md",
         _completed_state_text().replace(
             "PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED\n",
-            "PR #335 reconstruction: PENDING / NOT AUTHORIZED\n"
-            "#368: SEPARATE OWNER DECISION\n",
+            "PR #335 reconstruction: PENDING / NOT AUTHORIZED\n#368: SEPARATE OWNER DECISION\n",
         ),
     )
 
@@ -569,10 +554,7 @@ def test_current_cli_reports_master_roadmap_validation_truthfully(capsys):
     output = capsys.readouterr().out
 
     assert "- docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md" in output
-    assert (
-        "future/archive material other than the explicitly validated master roadmap"
-        in output
-    )
+    assert "future/archive material other than the explicitly validated master roadmap" in output
 
 
 def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
@@ -606,9 +588,7 @@ def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
         "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
     ),
 )
-def test_current_repository_shape_rejects_corrupted_post_405_order(
-    tmp_path, target_relative
-):
+def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, target_relative):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
@@ -618,7 +598,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: implement and review only the authorized Lane 4 contract",
+        "NEXT: #409 release integrity / repository control (separately scoped)",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -631,13 +611,12 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
 
-def test_current_repository_shape_records_lane_3_complete_and_lane_4_active():
+def test_current_repository_shape_records_lane_3_and_lane_4_complete():
     checker = _load_checker()
 
     for relative in (
@@ -668,20 +647,21 @@ def test_current_repository_shape_records_lane_3_complete_and_lane_4_active():
         assert checker.LANE_2_AUTHORIZATION_MARKER not in normalized
         assert checker.LANE_3_AUTHORIZATION_MARKER not in normalized
         assert structured_lines.count(checker.LANE_3_COMPLETE_PROVENANCE) == 1
-        assert structured_lines.count(checker.LANE_4_AUTHORIZATION_MARKER) == 1
-        assert "NEXT: IMPLEMENT AND REVIEW ONLY THE AUTHORIZED LANE 4 CONTRACT" in normalized
+        assert checker.LANE_4_AUTHORIZATION_MARKER not in normalized
+        assert structured_lines.count(checker.LANE_4_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.LANE_4_FRESH_MAIN_CLOSEOUT) == 1
+        assert "NEXT: #409 RELEASE INTEGRITY / REPOSITORY CONTROL" in normalized
 
 
 @pytest.mark.parametrize(
     ("provenance", "replacement"),
     (
-        ("38dd95fd", "deadbeef"),
+        ("PR #421", "PR #999"),
+        ("main `4e32b501`", "main `deadbeef`"),
         ("versioned snapshot + manifest", "snapshot + migration"),
     ),
 )
-def test_lane_4_active_rejects_corrupt_authorization_provenance(
-    tmp_path, provenance, replacement
-):
+def test_lane_4_complete_rejects_corrupt_merge_provenance(tmp_path, provenance, replacement):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
@@ -696,8 +676,7 @@ def test_lane_4_active_rejects_corrupt_authorization_provenance(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -723,8 +702,7 @@ def test_lane_2_closeout_rejects_corrupt_merge_provenance(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -759,8 +737,7 @@ def test_lane_1_sequence_rejects_corrupt_406_provenance(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -771,8 +748,7 @@ def test_lane_1_sequence_rejects_conflicting_duplicate_406_completion(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "COMPLETE: #406 governed-memory ID collision correctness "
-        "(PR #411; main `ca66a06d`)",
+        "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)",
         "COMPLETE: #406 governed-memory ID collision correctness "
         "(PR #411; main `ca66a06d`)\n"
         "COMPLETE: #406 governed-memory ID collision correctness "
@@ -788,8 +764,7 @@ def test_lane_1_sequence_rejects_conflicting_duplicate_406_completion(tmp_path):
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -824,16 +799,13 @@ def test_lane_1_sequence_rejects_borrowed_408_provenance(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
 
 @pytest.mark.parametrize("authority_prefix", ("AUTHORIZED", "APPROVED", "ACTIVE"))
-def test_lane_3_closeout_rejects_competing_durability_authorization(
-    tmp_path, authority_prefix
-):
+def test_lane_3_closeout_rejects_competing_durability_authorization(tmp_path, authority_prefix):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
@@ -855,8 +827,7 @@ def test_lane_3_closeout_rejects_competing_durability_authorization(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -868,9 +839,7 @@ def test_lane_3_closeout_rejects_competing_durability_authorization(
         ("2bfe202e", "deadbeef"),
     ),
 )
-def test_lane_3_closeout_rejects_corrupt_merge_provenance(
-    tmp_path, provenance, replacement
-):
+def test_lane_3_closeout_rejects_corrupt_merge_provenance(tmp_path, provenance, replacement):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
@@ -885,8 +854,7 @@ def test_lane_3_closeout_rejects_corrupt_merge_provenance(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -901,14 +869,14 @@ def test_lane_3_closeout_rejects_corrupt_merge_provenance(
         ("ACTIVE", "durability torture proof"),
     ),
 )
-def test_lane_3_closeout_rejects_later_durability_authorization(
+def test_lane_4_complete_rejects_later_durability_authorization(
     tmp_path, authority_prefix, later_work
 ):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    next_line = "NEXT: implement and review only the authorized Lane 4 contract"
+    next_line = "NEXT: #409 release integrity / repository control (separately scoped)"
     corrupted = original.replace(
         next_line,
         f"{authority_prefix}: {later_work}\n" + next_line,
@@ -923,8 +891,7 @@ def test_lane_3_closeout_rejects_later_durability_authorization(
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -937,9 +904,11 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
     current_block = (
         "COMPLETE: durability implementation lane 3 - maintenance locking + "
         "mutation quiescence (PR #419; main `2bfe202e`)\n"
-        "AUTHORIZED / ACTIVE: durability implementation lane 4 - versioned "
-        "snapshot + manifest (owner authorization; base main `38dd95fd`)\n"
-        + "\n".join(checker.LANE_4_ACTIVE_DIRECTIVE_SEQUENCE).lower()
+        "COMPLETE: durability implementation lane 4 - versioned snapshot + "
+        "manifest (PR #421; main `4e32b501`)\n"
+        "FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests "
+        "passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
+        + "\n".join(checker.LANE_4_COMPLETE_DIRECTIVE_SEQUENCE).lower()
     )
     lane_1_block = (
         "AUTHORIZED: durability implementation lane 2 only\n"
@@ -960,8 +929,7 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
 
     assert any(
         str(target) in error
-        and "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -978,16 +946,25 @@ def test_pre_406_sequence_is_historical_only():
         "(PR #416; main `80e1c86f`)\n"
         "COMPLETE: durability implementation lane 3 - maintenance locking + "
         "mutation quiescence (PR #419; main `2bfe202e`)\n"
-        "AUTHORIZED / ACTIVE: durability implementation lane 4 - versioned snapshot + "
-        "manifest (owner authorization; base main `38dd95fd`)\n"
-        "NEXT: implement and review only the authorized Lane 4 contract\n"
-        "THEN: separately authorized safe migration + generation activation\n"
-        "THEN: separately authorized encrypted backup/restore/rollback\n"
-        "THEN: durability torture proof\n"
-        "THEN: #409 release hygiene",
+        "COMPLETE: durability implementation lane 4 - versioned snapshot + manifest "
+        "(PR #421; main `4e32b501`)\n"
+        "FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests "
+        "passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
+        "NEXT: #409 release integrity / repository control (separately scoped)\n"
+        "THEN: rebase and exact-head review #410 private-beta freeze criteria\n"
+        "THEN: separate owner authorization decision for recovery construction (Lane 5A)\n"
+        "THEN: separately authorized recovery proof: inactive candidate migration -> "
+        "candidate validation -> activation -> rollback/restore semantics\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
-        "THEN: evidence-authorized durability implementation",
+        "THEN: evidence-authorized durability implementation\n"
+        "THEN: bounded product-translation/readiness pass\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: frozen-SHA full beta acceptance\n"
+        "THEN: private-beta candidacy/distribution decision",
         1,
     )
 
@@ -1029,22 +1006,17 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target = tmp_path / relative
         original = target.read_text(encoding="utf-8")
         corrupted = original.replace(
-            "NEXT: #408 durability/state-ownership decision",
+            "NEXT: #409 release integrity / repository control (separately scoped)",
             "NEXT: Google identity-only live proof",
             1,
         )
         corrupted = corrupted.replace(
-            "df2df490083511f480b653c0960fbe7a6e6abfe8",
+            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         )
-        if (
-            not retain_master_marker
-            or relative != "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
-        ):
-            corrupted = corrupted.replace(
-                "BETA_READINESS_SEQUENCE_V1: ACTIVE\n", "", 1
-            )
+        if not retain_master_marker or relative != "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md":
+            corrupted = corrupted.replace("BETA_READINESS_SEQUENCE_V1: ACTIVE\n", "", 1)
         assert corrupted != original
         target.write_text(corrupted, encoding="utf-8")
 
@@ -1053,8 +1025,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
     )
 
     assert any(
-        "current ordering does not preserve the active beta-readiness boundary"
-        in error
+        "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
 
@@ -1081,7 +1052,7 @@ def test_post_405_mode_survives_normal_sync_start_sha_update(tmp_path):
     ):
         target = tmp_path / relative
         updated = target.read_text(encoding="utf-8").replace(
-            "df2df490083511f480b653c0960fbe7a6e6abfe8",
+            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         )
@@ -1101,7 +1072,7 @@ def test_post_405_mode_rejects_one_current_surface_with_different_sync_sha(tmp_p
     target = tmp_path / "README.md"
     target.write_text(
         target.read_text(encoding="utf-8").replace(
-            "df2df490083511f480b653c0960fbe7a6e6abfe8",
+            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         ),
@@ -1122,7 +1093,7 @@ def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
         target = tmp_path / relative
         target.write_text(
             target.read_text(encoding="utf-8").replace(
-                "df2df490083511f480b653c0960fbe7a6e6abfe8",
+                "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
                 "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                 1,
             ),
@@ -1156,30 +1127,20 @@ def test_post_405_mode_ignores_historical_different_sync_sha(tmp_path):
 
 _ACTIVE_CLOSEOUT_SNIPPETS = {
     "agents": (
-        "Post-Wave-C documentation closeout gate: truth-hygiene contract package "
-        "PR #366.\n"
+        "Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366.\n"
     ),
-    "priority": (
-        "## Post-Wave-C Documentation Closeout — PR #366 Truth-Hygiene Contract\n"
-    ),
-    "work_status": (
-        "POST-WAVE-C DOCUMENTATION CLOSEOUT\n"
-        "TRUTH-HYGIENE CONTRACT: PR #366\n"
-    ),
-    "command_center": (
-        "Post-Wave-C documentation closeout — truth-hygiene contract PR #366.\n"
-    ),
+    "priority": ("## Post-Wave-C Documentation Closeout — PR #366 Truth-Hygiene Contract\n"),
+    "work_status": ("POST-WAVE-C DOCUMENTATION CLOSEOUT\nTRUTH-HYGIENE CONTRACT: PR #366\n"),
+    "command_center": ("Post-Wave-C documentation closeout — truth-hygiene contract PR #366.\n"),
     "active_todo": (
-        "### Post-Wave-C documentation closeout\n"
-        "truth-hygiene contract package: PR #366\n"
+        "### Post-Wave-C documentation closeout\ntruth-hygiene contract package: PR #366\n"
     ),
     "canonical_index": (
         "Current gate: post-Wave-C documentation closeout — truth-hygiene contract "
         "package PR #366.\n"
     ),
     "roadmap": (
-        "Post-Wave-C documentation closeout gate: truth-hygiene contract package "
-        "PR #366.\n"
+        "Post-Wave-C documentation closeout gate: truth-hygiene contract package PR #366.\n"
     ),
 }
 
@@ -1196,9 +1157,7 @@ def _replace_completed_closeout_with_active(checker, root, names):
     }
     for name in names:
         target = root / relative_by_name[name]
-        text = checker.POST_WAVE_C_COMPLETE_MARKER.sub(
-            "", target.read_text(encoding="utf-8")
-        )
+        text = checker.POST_WAVE_C_COMPLETE_MARKER.sub("", target.read_text(encoding="utf-8"))
         target.write_text(_ACTIVE_CLOSEOUT_SNIPPETS[name] + text, encoding="utf-8")
 
 
@@ -1238,24 +1197,20 @@ def test_post_405_mode_rejects_one_active_or_missing_completed_surface(tmp_path)
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )
     assert any(
-        "AGENTS.md: current post-#405 lifecycle requires completed PR #366 closeout state"
-        in error
+        "AGENTS.md: current post-#405 lifecycle requires completed PR #366 closeout state" in error
         for error in errors
     )
 
     agents = tmp_path / "AGENTS.md"
     agents.write_text(
-        agents.read_text(encoding="utf-8").replace(
-            _ACTIVE_CLOSEOUT_SNIPPETS["agents"], "", 1
-        ),
+        agents.read_text(encoding="utf-8").replace(_ACTIVE_CLOSEOUT_SNIPPETS["agents"], "", 1),
         encoding="utf-8",
     )
     errors = checker.check_operational_truth(
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )
     assert any(
-        "AGENTS.md: current post-#405 lifecycle requires completed PR #366 closeout state"
-        in error
+        "AGENTS.md: current post-#405 lifecycle requires completed PR #366 closeout state" in error
         for error in errors
     )
 
@@ -1305,8 +1260,7 @@ def test_post_394_boundary_accepts_new_state_and_rejects_obsolete_directives():
         ),
     )
     assert all(
-        checker._preserves_post_394_boundary(candidate) is False
-        for candidate in obsolete_variants
+        checker._preserves_post_394_boundary(candidate) is False for candidate in obsolete_variants
     )
 
 
@@ -1344,8 +1298,7 @@ def test_post_405_boundary_accepts_406_first_order_and_rejects_google_reactivati
     assert (
         checker._preserves_post_405_boundary(
             current.replace(
-                "verified main at sync start: "
-                "df2df490083511f480b653c0960fbe7a6e6abfe8\n",
+                "verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8\n",
                 "",
             )
         )
@@ -1354,8 +1307,7 @@ def test_post_405_boundary_accepts_406_first_order_and_rejects_google_reactivati
     assert (
         checker._preserves_post_405_boundary(
             current.replace(
-                "verified main at sync start: "
-                "df2df490083511f480b653c0960fbe7a6e6abfe8\n",
+                "verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8\n",
                 "verified main at sync start: "
                 "df2df490083511f480b653c0960fbe7a6e6abfe8\n"
                 "verified main at sync start: "
@@ -1422,10 +1374,7 @@ def test_post_405_boundary_requires_one_canonical_active_next_directive():
         )
         is False
     )
-    assert (
-        checker._preserves_post_405_boundary(current.replace(canonical_next, ""))
-        is False
-    )
+    assert checker._preserves_post_405_boundary(current.replace(canonical_next, "")) is False
     assert (
         checker._preserves_post_405_boundary(
             current + "\n## Historical ordering\nNEXT: Google identity-only live proof\n"
@@ -1497,18 +1446,15 @@ def test_post_405_boundary_checks_pre_marker_contradiction_but_excludes_history(
     )
     contradiction = current.replace(
         "BETA_READINESS_SEQUENCE_V1: ACTIVE",
-        "Google/provider expansion will resume.\n"
-        "BETA_READINESS_SEQUENCE_V1: ACTIVE",
+        "Google/provider expansion will resume.\nBETA_READINESS_SEQUENCE_V1: ACTIVE",
     )
     historical_before = (
         "## Historical prior order\n"
         "NEXT: Google identity-only live proof\n"
-        "Google/provider expansion is active.\n"
-        + current
+        "Google/provider expansion is active.\n" + current
     )
     historical_after = (
-        current
-        + "\n## Historical later order\n"
+        current + "\n## Historical later order\n"
         "THEN: Google identity-only live proof\n"
         "Google/provider expansion is active.\n"
     )
@@ -1549,32 +1495,25 @@ def test_post_405_boundary_includes_subordinate_headings():
     )
     assert (
         checker._preserves_post_405_boundary(
-            current
-            + "\n### Current implementation update\n"
-            "Google/provider expansion is active.\n"
+            current + "\n### Current implementation update\nGoogle/provider expansion is active.\n"
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current
-            + "\n### Current implementation update\n"
-            "NEXT: Google identity-only live proof\n"
+            current + "\n### Current implementation update\nNEXT: Google identity-only live proof\n"
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current
-            + "\n### Current implementation update\n"
-            "THEN: Google identity-only live proof\n"
+            current + "\n### Current implementation update\nTHEN: Google identity-only live proof\n"
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current
-            + "\n## Historical ordering\n"
+            current + "\n## Historical ordering\n"
             "Google/provider expansion is active.\n"
             "NEXT: Google identity-only live proof\n"
         )
@@ -1609,8 +1548,7 @@ def test_post_405_boundary_requires_exactly_one_active_lifecycle_declaration():
         checker._preserves_post_405_boundary(
             current.replace(
                 "BETA_READINESS_SEQUENCE_V1: ACTIVE\n",
-                "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
-                "BETA_READINESS_SEQUENCE_V1: INACTIVE\n",
+                "BETA_READINESS_SEQUENCE_V1: ACTIVE\nBETA_READINESS_SEQUENCE_V1: INACTIVE\n",
             )
         )
         is False
@@ -1619,8 +1557,7 @@ def test_post_405_boundary_requires_exactly_one_active_lifecycle_declaration():
         checker._preserves_post_405_boundary(
             current.replace(
                 "BETA_READINESS_SEQUENCE_V1: ACTIVE\n",
-                "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
-                "BETA_READINESS_SEQUENCE_V1: ACTIVE\n",
+                "BETA_READINESS_SEQUENCE_V1: ACTIVE\nBETA_READINESS_SEQUENCE_V1: ACTIVE\n",
             )
         )
         is False
@@ -1636,9 +1573,7 @@ def test_post_405_boundary_requires_exactly_one_active_lifecycle_declaration():
     )
     assert (
         checker._preserves_post_405_boundary(
-            current
-            + "\n## Historical ordering\n"
-            "BETA_READINESS_SEQUENCE_V1: INACTIVE\n"
+            current + "\n## Historical ordering\nBETA_READINESS_SEQUENCE_V1: INACTIVE\n"
         )
         is True
     )
@@ -1666,18 +1601,13 @@ def test_post_405_boundary_rejects_duplicate_non_historical_lifecycle_blocks():
         "Other feature expansion remains paused.\n"
     )
     identical = current + "\n" + current
-    conflicting_prefix = (
-        "\n## Current emergency override\n"
-        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
-    )
+    conflicting_prefix = "\n## Current emergency override\nBETA_READINESS_SEQUENCE_V1: ACTIVE\n"
 
     assert checker._preserves_post_405_boundary(current) is True
     assert checker._preserves_post_405_boundary(identical) is False
     assert (
         checker._preserves_post_405_boundary(
-            current
-            + conflicting_prefix
-            + "Google/provider expansion is active.\n"
+            current + conflicting_prefix + "Google/provider expansion is active.\n"
         )
         is False
     )
@@ -1708,9 +1638,7 @@ def test_post_405_boundary_rejects_duplicate_non_historical_lifecycle_blocks():
         ("> * ", "ACTIVE"),
     ),
 )
-def test_post_405_boundary_rejects_prefixed_conflicting_lifecycle_declarations(
-    prefix, state
-):
+def test_post_405_boundary_rejects_prefixed_conflicting_lifecycle_declarations(prefix, state):
     checker = _load_checker()
     current = (
         "## Current post-#405 beta-readiness order\n"
@@ -1860,12 +1788,7 @@ def test_post_405_boundary_excludes_explicitly_historical_lifecycle_blocks():
     )
 
     assert checker._preserves_post_405_boundary(current + historical) is True
-    assert (
-        checker._preserves_post_405_boundary(
-            current + historical + nested_historical
-        )
-        is True
-    )
+    assert checker._preserves_post_405_boundary(current + historical + nested_historical) is True
 
 
 def test_post_405_boundary_requires_exact_active_directive_sequence():
@@ -1908,9 +1831,7 @@ def test_post_405_boundary_requires_exact_active_directive_sequence():
         is False
     )
     assert (
-        checker._preserves_post_405_boundary(
-            current.replace(durability, durability + durability)
-        )
+        checker._preserves_post_405_boundary(current.replace(durability, durability + durability))
         is False
     )
     assert checker._preserves_post_405_boundary(current.replace(durability, "")) is False
@@ -1940,9 +1861,7 @@ def test_post_405_boundary_requires_exact_active_directive_sequence():
         ("1. ", "NEXT: Google identity-only live proof"),
     ),
 )
-def test_post_405_boundary_rejects_markdown_prefixed_competing_directives(
-    prefix, directive
-):
+def test_post_405_boundary_rejects_markdown_prefixed_competing_directives(prefix, directive):
     checker = _load_checker()
     current = (
         "## Current post-#405 beta-readiness order\n"
@@ -1965,10 +1884,7 @@ def test_post_405_boundary_rejects_markdown_prefixed_competing_directives(
     )
 
     assert checker._preserves_post_405_boundary(current) is True
-    assert (
-        checker._preserves_post_405_boundary(current + f"{prefix}{directive}\n")
-        is False
-    )
+    assert checker._preserves_post_405_boundary(current + f"{prefix}{directive}\n") is False
 
 
 @pytest.mark.parametrize(
@@ -2252,56 +2168,41 @@ def test_post_405_boundary_rejects_each_reactivated_feature_category(category):
     )
     assert (
         checker._preserves_post_405_boundary(
-            current.replace(
-                paused_phrase, f"{category} is active.\n{paused_phrase}"
-            )
+            current.replace(paused_phrase, f"{category} is active.\n{paused_phrase}")
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current.replace(
-                paused_phrase, f"{category} is authorized.\n{paused_phrase}"
-            )
+            current.replace(paused_phrase, f"{category} is authorized.\n{paused_phrase}")
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current.replace(
-                paused_phrase, f"{paused_phrase}\n{category} is no longer paused."
-            )
+            current.replace(paused_phrase, f"{paused_phrase}\n{category} is no longer paused.")
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current.replace(
-                paused_phrase, f"{paused_phrase}\n{category} does not remain paused."
-            )
+            current.replace(paused_phrase, f"{paused_phrase}\n{category} does not remain paused.")
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current.replace(
-                paused_phrase, f"{paused_phrase}\n{category} do not remain paused."
-            )
+            current.replace(paused_phrase, f"{paused_phrase}\n{category} do not remain paused.")
         )
         is False
     )
     assert (
         checker._preserves_post_405_boundary(
-            current.replace(
-                paused_phrase, f"{paused_phrase}\n{category} will resume."
-            )
+            current.replace(paused_phrase, f"{paused_phrase}\n{category} will resume.")
         )
         is False
     )
-    assert (
-        checker._preserves_post_405_boundary(current + f"{category} is active.\n")
-        is False
-    )
+    assert checker._preserves_post_405_boundary(current + f"{category} is active.\n") is False
     assert (
         checker._preserves_post_405_boundary(
             current + f"\n## Historical feature state\n{category} is active.\n"
@@ -2325,8 +2226,7 @@ def test_current_closeout_cannot_be_satisfied_by_historical_markers(tmp_path, po
         target = tmp_path / relative
         text = target.read_text(encoding="utf-8")
         historical = (
-            "\n## Historical closeout evidence\n"
-            "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
+            "\n## Historical closeout evidence\nPOST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
         )
         if position == "before":
             text = historical + "\n## Current guidance\n" + text
@@ -2341,7 +2241,9 @@ def test_current_closeout_cannot_be_satisfied_by_historical_markers(tmp_path, po
     assert sum("requires completed PR #366 closeout state" in error for error in errors) == 7
 
 
-@pytest.mark.parametrize("opening, closing", (("***", "***"), ("**_", "_**"), ("___", "___"), ("`**", "**`")))
+@pytest.mark.parametrize(
+    "opening, closing", (("***", "***"), ("**_", "_**"), ("___", "___"), ("`**", "**`"))
+)
 @pytest.mark.parametrize("competing", (False, True))
 def test_full_checker_validates_nested_directive_labels(tmp_path, opening, closing, competing):
     checker = _load_checker()
@@ -2379,7 +2281,9 @@ def test_full_checker_structure_corrections(tmp_path, case, conflict):
     bad = "NEXT: Google identity-only live proof\n"
     if case == "containers":
         if conflict:
-            text = text.replace(marker, marker + "- > ***NEXT:*** Google identity-only live proof\n", 1)
+            text = text.replace(
+                marker, marker + "- > ***NEXT:*** Google identity-only live proof\n", 1
+            )
         else:
             for label in ("NEXT:", "THEN:"):
                 text = text.replace(label, f"- > 1. > ***{label}***")
@@ -2394,17 +2298,32 @@ def test_full_checker_structure_corrections(tmp_path, case, conflict):
         text = text.replace(marker, prefix + "### Current sequence details\n" + marker, 1)
     else:
         if conflict:
-            text = text.replace("POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE", "POST-WAVE-C DOCUMENTATION CLOSEOUT: ACTIVE", 1)
+            text = text.replace(
+                "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE",
+                "POST-WAVE-C DOCUMENTATION CLOSEOUT: ACTIVE",
+                1,
+            )
         end = text.index("## Post-Wave-C Current Development State")
-        text = text[:end] + (
-            "### **Historical closeout evidence**\n"
-            "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
-            + ("" if conflict else "BETA_READINESS_SEQUENCE_V1: INACTIVE\n") + bad
-        ) + text[end:]
+        text = (
+            text[:end]
+            + (
+                "### **Historical closeout evidence**\n"
+                "POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE\n"
+                + ("" if conflict else "BETA_READINESS_SEQUENCE_V1: INACTIVE\n")
+                + bad
+            )
+            + text[end:]
+        )
     target.write_text(text, encoding="utf-8")
-    errors = checker.check_operational_truth(tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION)
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
     if conflict:
-        expected = "requires completed PR #366 closeout state" if case == "historical_heading" else "current ordering does not preserve"
+        expected = (
+            "requires completed PR #366 closeout state"
+            if case == "historical_heading"
+            else "current ordering does not preserve"
+        )
         assert any(expected in error for error in errors)
     else:
         assert errors == []
@@ -2413,5 +2332,11 @@ def test_full_checker_structure_corrections(tmp_path, case, conflict):
 @pytest.mark.parametrize("prefix", ("> - ", "- > ", "> 1. > - "))
 def test_nested_containers_preserve_plain_payload_markdown(prefix):
     checker = _load_checker()
-    assert checker._normalize_post_405_structured_line(prefix + "NEXT:**payload**") == "NEXT: **payload**"
-    assert checker._normalize_post_405_structured_line(prefix + "**NEXT:* payload") == "**NEXT:* payload"
+    assert (
+        checker._normalize_post_405_structured_line(prefix + "NEXT:**payload**")
+        == "NEXT: **payload**"
+    )
+    assert (
+        checker._normalize_post_405_structured_line(prefix + "**NEXT:* payload")
+        == "**NEXT:* payload"
+    )
