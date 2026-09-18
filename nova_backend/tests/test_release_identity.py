@@ -354,6 +354,33 @@ def test_release_identity_rejects_unsupported_beta_boundary_claims(tmp_path):
         assert any(error_fragment in error for error in errors)
 
 
+def test_release_identity_ignores_hidden_support_boundary_text(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    approved = (
+        "Windows is Nova's primary beta-support target. The Windows installer path exists, but\n"
+        "clean-machine certification is still a later acceptance gate. macOS and Linux may be\n"
+        "used for source-based development only; they are not certified or supported beta\n"
+        "platforms."
+    )
+    visible_false = (
+        "Windows is Nova's primary beta-support target. The Windows installer path exists, but\n"
+        "clean-machine certification is complete. macOS and Linux are supported beta\n"
+        "platforms."
+    )
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            approved, f"<!--\n{approved}\n-->\n{visible_false}", 1
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("README Windows beta-support boundary" in error for error in errors)
+
+
 def test_release_identity_rejects_installer_artifact_outside_build_lines(tmp_path):
     checker = _load_checker()
     _copy_release_surfaces(checker, tmp_path)
