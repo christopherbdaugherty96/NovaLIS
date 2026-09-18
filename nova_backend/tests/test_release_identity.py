@@ -199,7 +199,7 @@ def test_release_identity_rejects_conflicting_installer_readme_artifact(tmp_path
 
     errors = checker.check_release_identity(tmp_path)
 
-    assert any("installer README artifact version '9.9.9'" in error for error in errors)
+    assert any("installer README artifact name '9.9.9'" in error for error in errors)
 
 
 def test_release_identity_rejects_unpublished_installer_advertising(tmp_path):
@@ -296,6 +296,62 @@ def test_release_identity_rejects_bare_and_autolink_installer_urls(tmp_path):
         assert any(
             "must not advertise an unpublished installer download" in error for error in errors
         )
+
+
+def test_release_identity_rejects_nonsemver_installer_artifact_names(tmp_path):
+    checker = _load_checker()
+    for artifact_name in ("0.5.0-beta", "latest"):
+        root = tmp_path / artifact_name
+        _copy_release_surfaces(checker, root)
+        installer_readme = root / "installer/README.md"
+        installer_readme.write_text(
+            installer_readme.read_text(encoding="utf-8")
+            + f"\nDownload `NovaSetup-{artifact_name}.exe` from GitHub Releases.\n",
+            encoding="utf-8",
+        )
+
+        errors = checker.check_release_identity(root)
+
+        assert any(f"installer README artifact name {artifact_name!r}" in error for error in errors)
+        assert any(
+            "must not advertise an unpublished installer download" in error for error in errors
+        )
+
+
+def test_release_identity_rejects_unsupported_beta_boundary_claims(tmp_path):
+    checker = _load_checker()
+    support_claim_mutations = (
+        (
+            "README.md",
+            "they are not certified or supported beta",
+            "they are certified and supported beta",
+            "README Windows beta-support boundary",
+        ),
+        (
+            "installer/README.md",
+            "clean-machine certification remains a later acceptance gate.",
+            "clean-machine certification is complete.",
+            "installer README Windows beta-support boundary",
+        ),
+        (
+            "installer/README.md",
+            "macOS and Linux do not have supported beta installer paths.",
+            "macOS and Linux have supported beta installer paths.",
+            "installer README other-platforms beta-support boundary",
+        ),
+    )
+    for relative, expected, replacement, error_fragment in support_claim_mutations:
+        root = tmp_path / error_fragment.replace(" ", "_")
+        _copy_release_surfaces(checker, root)
+        surface = root / relative
+        surface.write_text(
+            surface.read_text(encoding="utf-8").replace(expected, replacement, 1),
+            encoding="utf-8",
+        )
+
+        errors = checker.check_release_identity(root)
+
+        assert any(error_fragment in error for error in errors)
 
 
 def test_release_identity_rejects_installer_artifact_outside_build_lines(tmp_path):

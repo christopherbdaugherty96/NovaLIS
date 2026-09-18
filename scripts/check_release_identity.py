@@ -21,7 +21,7 @@ INSTALLER = Path("installer/windows/nova_setup.iss")
 README = Path("README.md")
 INSTALLER_README = Path("installer/README.md")
 UNPUBLISHED_INSTALLER_NOTICE = "No `{version}` installer artifact is currently published."
-INSTALLER_ARTIFACT_PATTERN = re.compile(r"\bNovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe\b")
+INSTALLER_ARTIFACT_PATTERN = re.compile(r"\bNovaSetup-(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)\.exe\b")
 ALLOWED_LOCAL_INSTALLER_LINE_PATTERN = re.compile(
     r"^(?:3\. Press Ctrl\+F9\. The output lands in `dist[\\/]NovaSetup-\d+\.\d+\.\d+\.exe`\.|"
     r"Important: the existing `dist\\NovaSetup-\d+\.\d+\.\d+\.exe` may predate source changes\.)\r?$",
@@ -60,6 +60,10 @@ def _single_section_match(source: str, heading: str, *, label: str) -> re.Match[
     if len(matches) != 1:
         raise ValueError(f"{label} must appear exactly once")
     return matches[0]
+
+
+def _normalized_whitespace(value: str) -> str:
+    return " ".join(value.split())
 
 
 def check_release_identity(root: Path = ROOT) -> list[str]:
@@ -120,12 +124,26 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             r"^(?P<declaration>Version\s+\d+(?:\.\d+)+\s+[A-Za-z][A-Za-z0-9/+.-]*)\s+is\b",
             label="README current status release declaration",
         )
+        readme_support_boundary = _single_match(
+            current_status_section.group(1),
+            r"^(?P<statement>Windows is Nova's primary beta-support target\.\s+"
+            r"The Windows installer path exists, but\s+clean-machine certification is still "
+            r"a later acceptance gate\. macOS and Linux may be\s+used for source-based "
+            r"development only; they are not certified or supported beta\s+platforms\.)$",
+            label="README Windows beta-support boundary",
+        )
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
         major_minor = ".".join(version.split(".")[:2])
         expected_banner = f"Version {major_minor} Alpha — Current State"
         expected_status = f"Version {major_minor} Alpha"
+        expected_readme_support_boundary = (
+            "Windows is Nova's primary beta-support target. The Windows installer path exists, "
+            "but clean-machine certification is still a later acceptance gate. macOS and Linux "
+            "may be used for source-based development only; they are not certified or supported "
+            "beta platforms."
+        )
         if release_banner != expected_banner:
             errors.append(
                 f"README.md release banner {release_banner!r} must match {expected_banner!r}"
@@ -135,6 +153,10 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                 f"README.md current status release declaration {status_declaration!r} "
                 f"must match {expected_status!r}"
             )
+        if _normalized_whitespace(readme_support_boundary) != expected_readme_support_boundary:
+            errors.append(
+                "README.md Windows beta-support boundary must match the approved statement"
+            )
 
     try:
         installer_readme = (root / INSTALLER_README).read_text(encoding="utf-8")
@@ -143,12 +165,54 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             "### Building the .exe from source",
             label="installer README build section",
         )
+        installer_windows_section = _single_section_match(
+            installer_readme, "## Windows", label="installer README Windows section"
+        )
+        installer_windows_support_boundary = _single_match(
+            installer_windows_section.group(1),
+            r"^(?P<statement>Windows x64 is Nova's primary beta-support target\. The installer "
+            r"path is real, but\s+clean-machine certification remains a later acceptance gate\. "
+            r"Do not treat an existing\s+installer artifact as certified until that proof is complete\.)$",
+            label="installer README Windows beta-support boundary",
+        )
+        installer_other_platforms_section = _single_section_match(
+            installer_readme, "## Other platforms", label="installer README Other platforms section"
+        )
+        installer_other_platforms_boundary = _single_match(
+            installer_other_platforms_section.group(1),
+            r"^(?P<statement>macOS and Linux do not have supported beta installer paths\. They may be used for\s+"
+            r"source-based development only and are not covered by the Windows beta-support claim\.)$",
+            label="installer README other-platforms beta-support boundary",
+        )
         installer_artifacts = tuple(INSTALLER_ARTIFACT_PATTERN.finditer(installer_readme))
         if not installer_artifacts:
             raise ValueError("installer README artifact version must appear at least once")
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
+        expected_installer_windows_support_boundary = (
+            "Windows x64 is Nova's primary beta-support target. The installer path is real, but "
+            "clean-machine certification remains a later acceptance gate. Do not treat an existing "
+            "installer artifact as certified until that proof is complete."
+        )
+        expected_installer_other_platforms_boundary = (
+            "macOS and Linux do not have supported beta installer paths. They may be used for "
+            "source-based development only and are not covered by the Windows beta-support claim."
+        )
+        if (
+            _normalized_whitespace(installer_windows_support_boundary)
+            != expected_installer_windows_support_boundary
+        ):
+            errors.append(
+                "installer/README.md Windows beta-support boundary must match the approved statement"
+            )
+        if (
+            _normalized_whitespace(installer_other_platforms_boundary)
+            != expected_installer_other_platforms_boundary
+        ):
+            errors.append(
+                "installer/README.md other-platforms beta-support boundary must match the approved statement"
+            )
         section_offset = build_section.start(1)
         allowed_local_installers = []
         for line in ALLOWED_LOCAL_INSTALLER_LINE_PATTERN.finditer(build_section.group(1)):
@@ -160,10 +224,10 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                     )
                 )
         for artifact in installer_artifacts:
-            actual = artifact.group("version")
+            actual = artifact.group("name")
             if actual != version:
                 errors.append(
-                    f"installer README artifact version {actual!r} must match "
+                    f"installer README artifact name {actual!r} must match "
                     f"pyproject.toml {version!r}"
                 )
             if not any(
