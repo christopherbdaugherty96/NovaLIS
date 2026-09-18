@@ -34,7 +34,7 @@ from src.utils.persistent_state import runtime_root
 
 # ==================== VERSION ====================
 
-__version__ = "1.0.0"
+__version__ = "0.5.0"
 __system_name__ = "NovaLIS"
 __description__ = "Local Intelligence System"
 

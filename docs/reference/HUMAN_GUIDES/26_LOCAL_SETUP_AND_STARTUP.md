@@ -10,6 +10,10 @@ It is written for actual use, not for architectural review.
 For Windows end users, Nova now has a real installer path under `installer/`.
 That installer path is not fully signed off yet because clean-VM validation is still open.
 
+Windows is the primary beta-support target. macOS and Linux source setup remains
+developer-only and unverified for beta support; this is not a cross-platform end-user
+support claim.
+
 For source-based local setup, Nova has:
 - canonical packaging and runtime dependency metadata in `pyproject.toml`
 - a mechanically checked compatibility requirements file

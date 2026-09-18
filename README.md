@@ -150,6 +150,13 @@ Nova is not yet a finished consumer product.
 ## Current Status
 Version 0.5 Alpha is a technical-user / early-adopter state, not a finished mainstream release.
 
+### Beta support boundary
+
+Windows is Nova's primary beta-support target. The Windows installer path exists, but
+clean-machine certification is still a later acceptance gate. macOS and Linux may be
+used for source-based development only; they are not certified or supported beta
+platforms.
+
 Current grounded status:
 
 ```text
