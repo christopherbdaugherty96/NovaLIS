@@ -82,7 +82,7 @@ def test_release_identity_rejects_conflicting_active_readme_version(tmp_path):
 
     errors = checker.check_release_identity(tmp_path)
 
-    assert any("README.md active release version '9.9'" in error for error in errors)
+    assert any("README.md release version '9.9'" in error for error in errors)
 
 
 def test_release_identity_rejects_unrecognized_active_readme_label(tmp_path):
@@ -101,6 +101,22 @@ def test_release_identity_rejects_unrecognized_active_readme_label(tmp_path):
     assert any(
         "README.md release banner 'Version 9.9 Beta — Current State'" in error for error in errors
     )
+
+
+def test_release_identity_rejects_full_semver_readme_version_drift(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            "Version 0.5 Alpha is", "Version 9.9.9 Alpha is", 1
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("README.md release version '9.9.9'" in error for error in errors)
 
 
 def test_release_identity_rejects_conflicting_installer_readme_artifact(tmp_path):
@@ -141,6 +157,21 @@ def test_release_identity_rejects_unpublished_markdown_installer_download(tmp_pa
     installer_readme.write_text(
         installer_readme.read_text(encoding="utf-8")
         + "\n[Download `NovaSetup-0.5.0.exe`](https://example.invalid/releases)\n",
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("must not advertise an unpublished installer download" in error for error in errors)
+
+
+def test_release_identity_rejects_descriptive_markdown_installer_link(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    installer_readme = tmp_path / "installer/README.md"
+    installer_readme.write_text(
+        installer_readme.read_text(encoding="utf-8")
+        + "\n[Get Nova for Windows](https://example.invalid/NovaSetup-0.5.0.exe)\n",
         encoding="utf-8",
     )
 

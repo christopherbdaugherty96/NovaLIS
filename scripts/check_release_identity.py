@@ -24,6 +24,8 @@ UNPUBLISHED_INSTALLER_NOTICE = "No `{version}` installer artifact is currently p
 UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS = (
     r"\bDownload\s+(?:the\s+)?`?NovaSetup-[^`\s]+\.exe`?\s+(?:from|via)\b",
     r"\[\s*Download\s+`?NovaSetup-[^`\]\s]+\.exe`?\s*\]\s*\(",
+    r"\[[^\]]*NovaSetup-[^`\]\s]+\.exe[^\]]*\]\s*\([^)]*\)",
+    r"\[[^\]]*\]\s*\([^)]*NovaSetup-[^`)\s]+\.exe[^)]*\)",
 )
 
 
@@ -103,23 +105,24 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
         )
         readme_versions = _all_matches(
             readme,
-            r"\bVersion\s+(?P<version>\d+\.\d+)\s+Alpha\b",
-            label="README active release version",
+            r"\bVersion\s+(?P<version>\d+(?:\.\d+)+)\b",
+            label="README release version",
         )
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
         major_minor = ".".join(version.split(".")[:2])
         expected_banner = f"Version {major_minor} Alpha — Current State"
+        accepted_readme_versions = {major_minor, version}
         if release_banner != expected_banner:
             errors.append(
                 f"README.md release banner {release_banner!r} must match {expected_banner!r}"
             )
         for actual in readme_versions:
-            if actual != major_minor:
+            if actual not in accepted_readme_versions:
                 errors.append(
-                    f"README.md active release version {actual!r} must match "
-                    f"pyproject.toml major/minor {major_minor!r}"
+                    f"README.md release version {actual!r} must match pyproject.toml "
+                    f"display version {major_minor!r} or canonical version {version!r}"
                 )
 
     try:
