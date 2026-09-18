@@ -28,6 +28,7 @@ UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS = (
     r"\[[^\]]*\]\s*\([^)]*NovaSetup-[^`)\s]+\.exe[^)]*\)",
     r"^\s*\[[^\]]+\]:\s*<?[^>\s]*NovaSetup-[^>\s]+\.exe[^>\s]*>?\s*$",
     r"<a\b[^>]*\bhref\s*=\s*[\"'][^\"']*NovaSetup-[^\"']+\.exe[^\"']*[\"'][^>]*>",
+    r"https?://[^\s<>()]*NovaSetup-[^\s<>()]+\.exe(?:[?#][^\s<>()]*)?",
 )
 
 
@@ -107,7 +108,7 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
         )
         readme_versions = tuple(
             re.finditer(
-                r"\bVersion\s+(?P<version>\d+(?:\.\d+)+)(?:\s+(?P<label>[A-Za-z]+))?",
+                r"\bVersion\s+(?P<version>\d+(?:\.\d+)+)(?:\s+(?P<label>[A-Za-z][A-Za-z0-9/]*))?",
                 readme,
             )
         )

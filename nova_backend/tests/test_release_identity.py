@@ -119,6 +119,27 @@ def test_release_identity_rejects_non_banner_readme_release_label_drift(tmp_path
     assert any("README.md release label 'Beta' must be 'Alpha'" in error for error in errors)
 
 
+def test_release_identity_rejects_readme_release_label_suffixes(tmp_path):
+    checker = _load_checker()
+    for malformed_label in ("Alpha/Beta", "Alpha2"):
+        root = tmp_path / malformed_label.replace("/", "_")
+        _copy_release_surfaces(checker, root)
+        readme = root / "README.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8").replace(
+                "Version 0.5 Alpha is", f"Version 0.5 {malformed_label} is", 1
+            ),
+            encoding="utf-8",
+        )
+
+        errors = checker.check_release_identity(root)
+
+        assert any(
+            f"README.md release label {malformed_label!r} must be 'Alpha'" in error
+            for error in errors
+        )
+
+
 def test_release_identity_rejects_full_semver_readme_version_drift(tmp_path):
     checker = _load_checker()
     _copy_release_surfaces(checker, tmp_path)
@@ -224,3 +245,24 @@ def test_release_identity_rejects_html_installer_link(tmp_path):
     errors = checker.check_release_identity(tmp_path)
 
     assert any("must not advertise an unpublished installer download" in error for error in errors)
+
+
+def test_release_identity_rejects_bare_and_autolink_installer_urls(tmp_path):
+    checker = _load_checker()
+    for installer_url in (
+        "https://example.invalid/NovaSetup-0.5.0.exe",
+        "<https://example.invalid/NovaSetup-0.5.0.exe>",
+    ):
+        root = tmp_path / ("autolink" if installer_url.startswith("<") else "bare")
+        _copy_release_surfaces(checker, root)
+        installer_readme = root / "installer/README.md"
+        installer_readme.write_text(
+            installer_readme.read_text(encoding="utf-8") + f"\n{installer_url}\n",
+            encoding="utf-8",
+        )
+
+        errors = checker.check_release_identity(root)
+
+        assert any(
+            "must not advertise an unpublished installer download" in error for error in errors
+        )
