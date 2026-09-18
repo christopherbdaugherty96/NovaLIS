@@ -21,13 +21,13 @@
 
 [Setup]
 AppName=Nova
-AppVersion=0.1.0
+AppVersion=0.5.0
 AppPublisher=Christopher Daugherty
 AppPublisherURL=https://github.com/christopherbdaugherty96/NovaLIS
 DefaultDirName={commonpf64}\Nova
 DefaultGroupName=Nova
 OutputDir=..\..\dist
-OutputBaseFilename=NovaSetup-0.1.0
+OutputBaseFilename=NovaSetup-0.5.0
 Compression=lzma2
 SolidCompression=yes
 ; Require 64-bit Windows

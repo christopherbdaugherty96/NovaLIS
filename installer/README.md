@@ -2,14 +2,23 @@
 
 ## Windows
 
-### Option A: Run the .exe installer (recommended for end users)
+Windows x64 is Nova's primary beta-support target. The installer path is real, but
+clean-machine certification remains a later acceptance gate. Do not treat an existing
+installer artifact as certified until that proof is complete.
 
-1. Download `NovaSetup-0.1.0.exe` from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
-2. Double-click to run. Follow the wizard.
-3. The installer handles Python, Ollama, model download, and shortcuts.
-4. If setup fails, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
-5. If Nova starts but then immediately closes, inspect `C:\Program Files\Nova\scripts\pids\nova.log` for the server startup error.
-6. On a successful first launch, wait up to 90 seconds for local services to start, then try `daily brief`, `news`, or `system status`.
+### Published installer status
+
+No `0.5.0` installer artifact is currently published. Do not treat the existing
+historical test build as a beta candidate. A Windows installer becomes a
+candidate only after the later frozen-SHA and clean-Windows acceptance gates.
+
+### Installer behavior when a candidate is published
+
+The Windows installer handles Python, Ollama, model download, and shortcuts.
+If setup fails, inspect `C:\Program Files\Nova\bootstrap.log`. If Nova starts
+but immediately closes, inspect `C:\Program Files\Nova\scripts\pids\nova.log`.
+On a successful first launch, wait up to 90 seconds for local services to
+start, then try `daily brief`, `news`, or `system status`.
 
 ### Option B: Run the bootstrap script directly (for developers)
 
@@ -55,17 +64,18 @@ After installing or rebuilding the Windows package:
 
 1. Install [Inno Setup 6+](https://jrsoftware.org/isinfo.php).
 2. Open `installer/windows/nova_setup.iss` in the Inno Setup Compiler.
-3. Press Ctrl+F9. The output lands in `dist/NovaSetup-0.1.0.exe`.
+3. Press Ctrl+F9. The output lands in `dist/NovaSetup-0.5.0.exe`.
 
-Important: the existing `dist\NovaSetup-0.1.0.exe` may predate source changes.
+Important: the existing `dist\NovaSetup-0.5.0.exe` may predate source changes.
 After runtime-state or startup changes, rebuild the installer before treating
 the packaged app as fixed.
 
-## macOS
+## Other platforms
 
-Not yet available. See the [roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) — macOS `.app` bundle is planned after Windows installer is validated.
+macOS and Linux do not have supported beta installer paths. They may be used for
+source-based development only and are not covered by the Windows beta-support claim.
 
-## Manual install (any platform)
+## Manual source install (developer use)
 
 ```bash
 pip install -e .
