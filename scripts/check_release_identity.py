@@ -22,8 +22,10 @@ README = Path("README.md")
 INSTALLER_README = Path("installer/README.md")
 UNPUBLISHED_INSTALLER_NOTICE = "No `{version}` installer artifact is currently published."
 INSTALLER_ARTIFACT_PATTERN = re.compile(r"\bNovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe\b")
-ALLOWED_LOCAL_INSTALLER_PATTERN = re.compile(
-    r"`dist[\\/]NovaSetup-(?P<version>\d+\.\d+\.\d+)\.exe`"
+ALLOWED_LOCAL_INSTALLER_LINE_PATTERN = re.compile(
+    r"^(?:3\. Press Ctrl\+F9\. The output lands in `dist[\\/]NovaSetup-\d+\.\d+\.\d+\.exe`\.|"
+    r"Important: the existing `dist\\NovaSetup-\d+\.\d+\.\d+\.exe` may predate source changes\.)\r?$",
+    re.MULTILINE,
 )
 
 
@@ -50,6 +52,14 @@ def _all_matches(source: str, pattern: str, *, label: str) -> tuple[str, ...]:
     if not matches:
         raise ValueError(f"{label} must appear at least once")
     return matches
+
+
+def _single_section_match(source: str, heading: str, *, label: str) -> re.Match[str]:
+    pattern = rf"^{re.escape(heading)}\s*$([\s\S]*?)(?=^## |\Z)"
+    matches = tuple(re.finditer(pattern, source, re.MULTILINE))
+    if len(matches) != 1:
+        raise ValueError(f"{label} must appear exactly once")
+    return matches[0]
 
 
 def check_release_identity(root: Path = ROOT) -> list[str]:
@@ -96,13 +106,17 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
 
     try:
         readme = (root / README).read_text(encoding="utf-8")
+        header_section = _single_section_match(readme, "# NovaLIS", label="README top-level header")
         release_banner = _single_match(
-            readme,
+            header_section.group(1),
             r"^\*\*(?P<label>Version\s+[^\r\n]+)\*\*$",
             label="README release banner",
         )
+        current_status_section = _single_section_match(
+            readme, "## Current Status", label="README Current Status section"
+        )
         status_declaration = _single_match(
-            readme,
+            current_status_section.group(1),
             r"^(?P<declaration>Version\s+\d+(?:\.\d+)+\s+[A-Za-z][A-Za-z0-9/+.-]*)\s+is\b",
             label="README current status release declaration",
         )
@@ -124,13 +138,27 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
 
     try:
         installer_readme = (root / INSTALLER_README).read_text(encoding="utf-8")
+        build_section = _single_section_match(
+            installer_readme,
+            "### Building the .exe from source",
+            label="installer README build section",
+        )
         installer_artifacts = tuple(INSTALLER_ARTIFACT_PATTERN.finditer(installer_readme))
         if not installer_artifacts:
             raise ValueError("installer README artifact version must appear at least once")
     except (OSError, ValueError) as exc:
         errors.append(str(exc))
     else:
-        allowed_local_installers = tuple(ALLOWED_LOCAL_INSTALLER_PATTERN.finditer(installer_readme))
+        section_offset = build_section.start(1)
+        allowed_local_installers = []
+        for line in ALLOWED_LOCAL_INSTALLER_LINE_PATTERN.finditer(build_section.group(1)):
+            for artifact in INSTALLER_ARTIFACT_PATTERN.finditer(line.group(0)):
+                allowed_local_installers.append(
+                    (
+                        section_offset + line.start() + artifact.start(),
+                        section_offset + line.start() + artifact.end(),
+                    )
+                )
         for artifact in installer_artifacts:
             actual = artifact.group("version")
             if actual != version:
@@ -139,8 +167,8 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                     f"pyproject.toml {version!r}"
                 )
             if not any(
-                allowed.start() <= artifact.start() and artifact.end() <= allowed.end()
-                for allowed in allowed_local_installers
+                allowed_start <= artifact.start() and artifact.end() <= allowed_end
+                for allowed_start, allowed_end in allowed_local_installers
             ):
                 errors.append(
                     "installer/README.md must not advertise an unpublished installer "

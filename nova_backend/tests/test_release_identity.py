@@ -164,6 +164,28 @@ def test_release_identity_rejects_full_semver_readme_version_drift(tmp_path):
     )
 
 
+def test_release_identity_scopes_readme_status_to_current_status_section(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            "Version 0.5 Alpha is a technical-user / early-adopter state, not a finished mainstream release.",
+            "The current status declaration is intentionally absent.",
+            1,
+        )
+        + "\nVersion 0.5 Alpha is a decoy outside Current Status.\n",
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any(
+        "README current status release declaration must appear exactly once" in error
+        for error in errors
+    )
+
+
 def test_release_identity_rejects_conflicting_installer_readme_artifact(tmp_path):
     checker = _load_checker()
     _copy_release_surfaces(checker, tmp_path)
@@ -274,3 +296,18 @@ def test_release_identity_rejects_bare_and_autolink_installer_urls(tmp_path):
         assert any(
             "must not advertise an unpublished installer download" in error for error in errors
         )
+
+
+def test_release_identity_rejects_installer_artifact_outside_build_lines(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    installer_readme = tmp_path / "installer/README.md"
+    installer_readme.write_text(
+        installer_readme.read_text(encoding="utf-8")
+        + "\nDownload `dist/NovaSetup-0.5.0.exe` from the source checkout.\n",
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("must not advertise an unpublished installer download" in error for error in errors)
