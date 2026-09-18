@@ -227,6 +227,7 @@ LANE_5A_MIGRATION_COMPLETE_PROVENANCE = (
 LANE_5A_MIGRATION_PROOF = (
     "MIGRATION PROOF: PASS (173 DURABILITY TESTS PASSED; 1 EXPECTED WINDOWS POSIX-FIFO SKIP)"
 )
+LANE_5A_MIGRATION_MAIN_SHA = "298B77314D764E89B5C8DDEE259C0931DFCEB18A"
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -633,6 +634,23 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     )
 
 
+def _preserves_lane_5a_milestone_order(structured_lines: tuple[str, ...]) -> bool:
+    milestones = (
+        LANE_4_COMPLETE_PROVENANCE,
+        POST_423_COMPLETE_PROVENANCE,
+        POST_410_COMPLETE_PROVENANCE,
+        LANE_5A_AUTHORIZATION_MARKER,
+        LANE_5A_MIGRATION_COMPLETE_PROVENANCE,
+        LANE_5A_MIGRATION_PROOF,
+        *LANE_5A_MIGRATION_DIRECTIVE_SEQUENCE,
+    )
+    try:
+        positions = tuple(structured_lines.index(marker) for marker in milestones)
+    except ValueError:
+        return False
+    return positions == tuple(sorted(positions)) and len(set(positions)) == len(positions)
+
+
 def _preserves_post_405_boundary(
     text: str,
     *,
@@ -826,6 +844,8 @@ def _preserves_post_405_boundary(
         and has_post_410_provenance
         and has_lane_5a_migration_provenance
         and has_lane_5a_migration_proof
+        and _preserves_lane_5a_milestone_order(structured_lines)
+        and _post_405_sync_start_shas(text) == (LANE_5A_MIGRATION_MAIN_SHA,)
         and not durability_authorizations
         and not pending_locking_authorizations
         and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)

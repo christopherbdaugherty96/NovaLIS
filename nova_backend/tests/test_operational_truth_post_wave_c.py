@@ -616,7 +616,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, tar
     )
 
 
-def test_current_repository_shape_records_lane_3_and_lane_4_complete():
+def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
     checker = _load_checker()
 
     for relative in (
@@ -656,6 +656,37 @@ def test_current_repository_shape_records_lane_3_and_lane_4_complete():
         assert structured_lines.count(checker.LANE_5A_MIGRATION_PROOF) == 1
         assert checker.LANE_5A_AUTHORIZATION_MARKER in normalized
         assert "NEXT: RECOVERY CANDIDATE VALIDATION" in normalized
+
+
+def test_lane_5a_migration_requires_ordered_milestones(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    lines = original.splitlines()
+    migration_index = next(
+        index
+        for index, line in enumerate(lines)
+        if line.startswith("COMPLETE: Lane 5A step 1 - inactive recovery candidate migration")
+    )
+    release_index = next(
+        index
+        for index, line in enumerate(lines)
+        if line.startswith("COMPLETE: #409 release integrity / repository control")
+    )
+    migration_line = lines.pop(migration_index)
+    lines.insert(release_index, migration_line)
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
 
 
 @pytest.mark.parametrize(
@@ -1045,7 +1076,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
     )
 
 
-def test_post_405_mode_survives_normal_sync_start_sha_update(tmp_path):
+def test_post_405_mode_rejects_noncanonical_migration_checkpoint_sha(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
@@ -1068,16 +1099,17 @@ def test_post_405_mode_survives_normal_sync_start_sha_update(tmp_path):
         target = tmp_path / relative
         updated = target.read_text(encoding="utf-8").replace(
             "298b77314d764e89b5c8ddee259c0931dfceb18a",
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
             1,
         )
         target.write_text(updated, encoding="utf-8")
 
-    assert (
-        checker.check_operational_truth(
-            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
-        )
-        == []
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert any(
+        "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
     )
 
 
@@ -1098,7 +1130,10 @@ def test_post_405_mode_rejects_one_current_surface_with_different_sync_sha(tmp_p
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )
 
-    assert any("post-#405 sync-start SHA mismatch" in error for error in errors)
+    assert any(
+        "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
 
 
 def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
@@ -1119,7 +1154,10 @@ def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )
 
-    assert any("post-#405 sync-start SHA mismatch" in error for error in errors)
+    assert any(
+        "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
 
 
 def test_post_405_mode_ignores_historical_different_sync_sha(tmp_path):
