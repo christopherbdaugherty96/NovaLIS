@@ -85,6 +85,24 @@ def test_release_identity_rejects_conflicting_active_readme_version(tmp_path):
     assert any("README.md active release version '9.9'" in error for error in errors)
 
 
+def test_release_identity_rejects_unrecognized_active_readme_label(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            "Version 0.5 Alpha — Current State", "Version 9.9 Beta — Current State", 1
+        ),
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any(
+        "README.md release banner 'Version 9.9 Beta — Current State'" in error for error in errors
+    )
+
+
 def test_release_identity_rejects_conflicting_installer_readme_artifact(tmp_path):
     checker = _load_checker()
     _copy_release_surfaces(checker, tmp_path)
@@ -108,6 +126,21 @@ def test_release_identity_rejects_unpublished_installer_advertising(tmp_path):
     installer_readme.write_text(
         installer_readme.read_text(encoding="utf-8")
         + "\nDownload `NovaSetup-0.5.0.exe` from GitHub Releases.\n",
+        encoding="utf-8",
+    )
+
+    errors = checker.check_release_identity(tmp_path)
+
+    assert any("must not advertise an unpublished installer download" in error for error in errors)
+
+
+def test_release_identity_rejects_unpublished_markdown_installer_download(tmp_path):
+    checker = _load_checker()
+    _copy_release_surfaces(checker, tmp_path)
+    installer_readme = tmp_path / "installer/README.md"
+    installer_readme.write_text(
+        installer_readme.read_text(encoding="utf-8")
+        + "\n[Download `NovaSetup-0.5.0.exe`](https://example.invalid/releases)\n",
         encoding="utf-8",
     )
 

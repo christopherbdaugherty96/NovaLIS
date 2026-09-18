@@ -21,6 +21,10 @@ INSTALLER = Path("installer/windows/nova_setup.iss")
 README = Path("README.md")
 INSTALLER_README = Path("installer/README.md")
 UNPUBLISHED_INSTALLER_NOTICE = "No `{version}` installer artifact is currently published."
+UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS = (
+    r"\bDownload\s+(?:the\s+)?`?NovaSetup-[^`\s]+\.exe`?\s+(?:from|via)\b",
+    r"\[\s*Download\s+`?NovaSetup-[^`\]\s]+\.exe`?\s*\]\s*\(",
+)
 
 
 def canonical_version(root: Path = ROOT) -> str:
@@ -91,8 +95,14 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
                 errors.append(f"{label} {actual!r} must match pyproject.toml {version!r}")
 
     try:
+        readme = (root / README).read_text(encoding="utf-8")
+        release_banner = _single_match(
+            readme,
+            r"^\*\*(?P<label>Version\s+[^\r\n]+)\*\*$",
+            label="README release banner",
+        )
         readme_versions = _all_matches(
-            (root / README).read_text(encoding="utf-8"),
+            readme,
             r"\bVersion\s+(?P<version>\d+\.\d+)\s+Alpha\b",
             label="README active release version",
         )
@@ -100,6 +110,11 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
         errors.append(str(exc))
     else:
         major_minor = ".".join(version.split(".")[:2])
+        expected_banner = f"Version {major_minor} Alpha — Current State"
+        if release_banner != expected_banner:
+            errors.append(
+                f"README.md release banner {release_banner!r} must match {expected_banner!r}"
+            )
         for actual in readme_versions:
             if actual != major_minor:
                 errors.append(
@@ -128,10 +143,9 @@ def check_release_identity(root: Path = ROOT) -> list[str]:
             errors.append(
                 f"installer/README.md must state {notice!r} until a candidate is published"
             )
-        if re.search(
-            r"\bDownload\s+(?:the\s+)?`?NovaSetup-[^`\s]+\.exe`?\s+(?:from|via)\b",
-            installer_readme,
-            re.IGNORECASE,
+        if any(
+            re.search(pattern, installer_readme, re.IGNORECASE)
+            for pattern in UNPUBLISHED_INSTALLER_DOWNLOAD_PATTERNS
         ):
             errors.append(
                 "installer/README.md must not advertise an unpublished installer download"
