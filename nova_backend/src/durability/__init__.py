@@ -6,6 +6,11 @@ from src.durability.corruption import (
     read_jsonl_state,
     require_state,
 )
+from src.durability.recovery_candidate import (
+    RecoveryCandidateError,
+    RecoveryCandidateResult,
+    create_recovery_candidate,
+)
 from src.durability.snapshot import (
     SnapshotError,
     SnapshotResult,
@@ -40,4 +45,7 @@ __all__ = [
     "SnapshotValidationError",
     "create_snapshot",
     "validate_snapshot",
+    "RecoveryCandidateError",
+    "RecoveryCandidateResult",
+    "create_recovery_candidate",
 ]
