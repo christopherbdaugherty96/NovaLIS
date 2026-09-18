@@ -738,6 +738,8 @@ def _preserves_post_405_boundary(
             or "SNAPSHOT" in line
             or "MANIFEST" in line
             or "MIGRATION" in line
+            or "CANDIDATE VALIDATION" in line
+            or "CANDIDATE ACTIVATION" in line
             or "GENERATION ACTIVATION" in line
             or "BACKUP" in line
             or "RECOVERY" in line

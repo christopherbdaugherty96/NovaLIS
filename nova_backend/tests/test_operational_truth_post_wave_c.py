@@ -872,6 +872,8 @@ def test_lane_3_closeout_rejects_corrupt_merge_provenance(tmp_path, provenance, 
         ("ACTIVE", "encrypted backup + recovery"),
         ("APPROVED", "staged restore + rollback"),
         ("ACTIVE", "durability torture proof"),
+        ("ACTIVE", "candidate validation"),
+        ("ACTIVE", "candidate activation"),
     ),
 )
 def test_lane_4_complete_rejects_later_durability_authorization(
