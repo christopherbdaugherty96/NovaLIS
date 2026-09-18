@@ -59,9 +59,7 @@ CHECKED_SURFACES = (
     "docs/CANONICAL/03_GOVERNANCE_TRUTH.md",
     "docs/CANONICAL/07_ROADMAP_TRUTH.md",
 )
-CURRENT_CHECKED_SURFACES = CHECKED_SURFACES + (
-    "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
-)
+CURRENT_CHECKED_SURFACES = CHECKED_SURFACES + ("docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",)
 
 NON_GOALS = (
     "semantic correctness",
@@ -96,8 +94,7 @@ POST_406_DIRECTIVE_SEQUENCE = (
 )
 POST_406_COMPLETE_MARKER = "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS"
 POST_406_COMPLETE_PROVENANCE = (
-    "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS "
-    "(PR #411; MAIN `CA66A06D`)"
+    "COMPLETE: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS (PR #411; MAIN `CA66A06D`)"
 )
 POST_413_DIRECTIVE_SEQUENCE = (
     "NEXT: CORRUPTION-SAFE READER INVENTORY + FAIL-CLOSED IMPLEMENTATION",
@@ -151,10 +148,18 @@ LANE_4_ACTIVE_DIRECTIVE_SEQUENCE = (
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
+LANE_4_COMPLETE_DIRECTIVE_SEQUENCE = (
+    "NEXT: #409 RELEASE INTEGRITY / REPOSITORY CONTROL (SEPARATELY SCOPED)",
+    "THEN: REBASE AND EXACT-HEAD REVIEW #410 PRIVATE-BETA FREEZE CRITERIA",
+    "THEN: SEPARATE OWNER AUTHORIZATION DECISION FOR RECOVERY CONSTRUCTION (LANE 5A)",
+    "THEN: SEPARATELY AUTHORIZED RECOVERY PROOF: INACTIVE CANDIDATE MIGRATION -> CANDIDATE VALIDATION -> ACTIVATION -> ROLLBACK/RESTORE SEMANTICS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
 POST_408_COMPLETE_MARKER = "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION"
 POST_408_COMPLETE_PROVENANCE = (
-    "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION "
-    "(PR #412; MAIN `2592AD91`)"
+    "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION (PR #412; MAIN `2592AD91`)"
 )
 LANE_1_AUTHORIZATION_MARKER = "AUTHORIZED: DURABILITY IMPLEMENTATION LANE 1 ONLY"
 LANE_2_AUTHORIZATION_MARKER = "AUTHORIZED: DURABILITY IMPLEMENTATION LANE 2 ONLY"
@@ -169,27 +174,34 @@ LANE_4_AUTHORIZATION_MARKER = (
     "(OWNER AUTHORIZATION; BASE MAIN `38DD95FD`)"
 )
 LANE_1_COMPLETE_MARKER = (
-    "COMPLETE: DURABILITY IMPLEMENTATION LANE 1 - "
-    "CANONICAL STATE REGISTRY/MIGRATION DETECTION"
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 1 - CANONICAL STATE REGISTRY/MIGRATION DETECTION"
 )
 LANE_1_COMPLETE_PROVENANCE = (
     "COMPLETE: DURABILITY IMPLEMENTATION LANE 1 - "
     "CANONICAL STATE REGISTRY/MIGRATION DETECTION (PR #413; MAIN `E74FDCA0`)"
 )
-LANE_2_COMPLETE_MARKER = (
-    "COMPLETE: DURABILITY IMPLEMENTATION LANE 2 - CORRUPTION-SAFE READERS"
-)
+LANE_2_COMPLETE_MARKER = "COMPLETE: DURABILITY IMPLEMENTATION LANE 2 - CORRUPTION-SAFE READERS"
 LANE_2_COMPLETE_PROVENANCE = (
     "COMPLETE: DURABILITY IMPLEMENTATION LANE 2 - CORRUPTION-SAFE READERS "
     "(PR #416; MAIN `80E1C86F`)"
 )
 LANE_3_COMPLETE_MARKER = (
-    "COMPLETE: DURABILITY IMPLEMENTATION LANE 3 - "
-    "MAINTENANCE LOCKING + MUTATION QUIESCENCE"
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 3 - MAINTENANCE LOCKING + MUTATION QUIESCENCE"
 )
 LANE_3_COMPLETE_PROVENANCE = (
     "COMPLETE: DURABILITY IMPLEMENTATION LANE 3 - "
     "MAINTENANCE LOCKING + MUTATION QUIESCENCE (PR #419; MAIN `2BFE202E`)"
+)
+LANE_4_COMPLETE_MARKER = (
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 4 - VERSIONED SNAPSHOT + MANIFEST"
+)
+LANE_4_COMPLETE_PROVENANCE = (
+    "COMPLETE: DURABILITY IMPLEMENTATION LANE 4 - VERSIONED SNAPSHOT + MANIFEST "
+    "(PR #421; MAIN `4E32B501`)"
+)
+LANE_4_FRESH_MAIN_CLOSEOUT = (
+    "FRESH-MAIN CLOSEOUT: PASS (314 FOCUSED DURABILITY/OPERATIONAL-TRUTH TESTS "
+    "PASSED; 1 EXPECTED WINDOWS POSIX-FIFO SKIP; RUNTIME STRUCTURAL SMOKE PASS)"
 )
 
 POST_394_ORDERING_SURFACES = (
@@ -233,18 +245,10 @@ LANE_PATTERNS = {
         r"^## Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b.*Current Development State",
         re.MULTILINE,
     ),
-    "priority": re.compile(
-        r"^## Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b", re.MULTILINE
-    ),
-    "work_status": re.compile(
-        r"^WAVE (?P<lane>A1|A2|B1|B2|B3|B4|C)\s+[—-]", re.MULTILINE
-    ),
-    "command_center": re.compile(
-        r"^\s*Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\s+[—-]", re.MULTILINE
-    ),
-    "active_todo": re.compile(
-        r"^### Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b", re.MULTILINE
-    ),
+    "priority": re.compile(r"^## Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b", re.MULTILINE),
+    "work_status": re.compile(r"^WAVE (?P<lane>A1|A2|B1|B2|B3|B4|C)\s+[—-]", re.MULTILINE),
+    "command_center": re.compile(r"^\s*Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\s+[—-]", re.MULTILINE),
+    "active_todo": re.compile(r"^### Wave (?P<lane>A1|A2|B1|B2|B3|B4|C)\b", re.MULTILINE),
     "canonical_index": re.compile(
         r"^Current active stabilization lane:\s*(?P<lane>A1|A2|B1|B2|B3|B4|C)\b",
         re.MULTILINE,
@@ -293,6 +297,7 @@ POST_WAVE_C_COMPLETE_MARKER = re.compile(
     r"POST-WAVE-C DOCUMENTATION CLOSEOUT(?:\s*:\s*|\s+[—-]\s*)COMPLETE\b",
     re.IGNORECASE,
 )
+
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -351,9 +356,7 @@ def _preserves_pr_335_unmerged(text: str) -> bool:
                     continue
 
                 status_upper = stripped.upper()
-                if "UNMERGED" in status_upper and not re.search(
-                    r"\bMERGED\b", status_upper
-                ):
+                if "UNMERGED" in status_upper and not re.search(r"\bMERGED\b", status_upper):
                     return True
                 if re.search(r"\bMERGED\b", status_upper):
                     return False
@@ -379,9 +382,7 @@ def _preserves_merged_pr(text: str, pr_number: int) -> bool:
     return False
 
 
-def _preserves_merged_pr_role(
-    text: str, pr_number: int, required_terms: tuple[str, ...]
-) -> bool:
+def _preserves_merged_pr_role(text: str, pr_number: int, required_terms: tuple[str, ...]) -> bool:
     """Require MERGED and the expected provenance role on the target PR line."""
 
     for line in _lines_for_pr(text, pr_number):
@@ -616,6 +617,7 @@ def _preserves_post_405_boundary(
     require_lane_3_active: bool = False,
     require_lane_3_closeout: bool = False,
     require_lane_4_active: bool = False,
+    require_lane_4_complete: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -631,8 +633,7 @@ def _preserves_post_405_boundary(
         )
     )
     structured_lines = tuple(
-        _normalize_post_405_structured_line(line).rstrip()
-        for line in active.splitlines()
+        _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
     )
     completion_406_lines = tuple(
         line for line in structured_lines if line.startswith(POST_406_COMPLETE_MARKER)
@@ -649,14 +650,20 @@ def _preserves_post_405_boundary(
     lane_3_completion_lines = tuple(
         line for line in structured_lines if line.startswith(LANE_3_COMPLETE_MARKER)
     )
+    lane_4_completion_lines = tuple(
+        line for line in structured_lines if line.startswith(LANE_4_COMPLETE_MARKER)
+    )
     has_406_provenance = completion_406_lines == (POST_406_COMPLETE_PROVENANCE,)
     has_408_provenance = completion_408_lines == (POST_408_COMPLETE_PROVENANCE,)
     has_lane_1_provenance = lane_1_completion_lines == (LANE_1_COMPLETE_PROVENANCE,)
     has_lane_2_provenance = lane_2_completion_lines == (LANE_2_COMPLETE_PROVENANCE,)
     has_lane_3_provenance = lane_3_completion_lines == (LANE_3_COMPLETE_PROVENANCE,)
-    authority_prefix_pattern = (
-        r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
+    has_lane_4_provenance = lane_4_completion_lines == (LANE_4_COMPLETE_PROVENANCE,)
+    fresh_main_closeout_lines = tuple(
+        line for line in structured_lines if line.startswith("FRESH-MAIN CLOSEOUT:")
     )
+    has_lane_4_fresh_main_closeout = fresh_main_closeout_lines == (LANE_4_FRESH_MAIN_CLOSEOUT,)
+    authority_prefix_pattern = r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
     durability_authorizations = tuple(
         line
         for line in structured_lines
@@ -669,10 +676,7 @@ def _preserves_post_405_boundary(
         line
         for line in structured_lines
         if re.match(authority_prefix_pattern, line)
-        and (
-            "MAINTENANCE LOCK" in line
-            or "MUTATION QUIESCENCE" in line
-        )
+        and ("MAINTENANCE LOCK" in line or "MUTATION QUIESCENCE" in line)
     )
     premature_later_durability_authorizations = tuple(
         line
@@ -691,9 +695,7 @@ def _preserves_post_405_boundary(
         )
     )
     normalized = " ".join(active.split())
-    preserves_initial_order = (
-        allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
-    )
+    preserves_initial_order = allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     preserves_post_406_order = (
         not require_lane_1_closeout
         and directives == POST_406_DIRECTIVE_SEQUENCE
@@ -743,8 +745,20 @@ def _preserves_post_405_boundary(
         and has_lane_2_provenance
         and has_lane_3_provenance
         and durability_authorizations == (LANE_4_AUTHORIZATION_MARKER,)
-        and premature_later_durability_authorizations
-        == (LANE_4_AUTHORIZATION_MARKER,)
+        and premature_later_durability_authorizations == (LANE_4_AUTHORIZATION_MARKER,)
+    )
+    preserves_lane_4_complete = (
+        directives == LANE_4_COMPLETE_DIRECTIVE_SEQUENCE
+        and has_406_provenance
+        and has_408_provenance
+        and has_lane_1_provenance
+        and has_lane_2_provenance
+        and has_lane_3_provenance
+        and has_lane_4_provenance
+        and has_lane_4_fresh_main_closeout
+        and not durability_authorizations
+        and not pending_locking_authorizations
+        and not premature_later_durability_authorizations
     )
     preserves_allowed_state = (
         preserves_initial_order
@@ -754,6 +768,7 @@ def _preserves_post_405_boundary(
         or preserves_lane_3_active
         or preserves_lane_3_closeout
         or preserves_lane_4_active
+        or preserves_lane_4_complete
     )
     if require_lane_2_closeout:
         preserves_allowed_state = (
@@ -761,18 +776,21 @@ def _preserves_post_405_boundary(
             or preserves_lane_3_active
             or preserves_lane_3_closeout
             or preserves_lane_4_active
+            or preserves_lane_4_complete
         )
     if require_lane_3_active:
         preserves_allowed_state = preserves_lane_3_active
     if require_lane_3_closeout:
-        preserves_allowed_state = preserves_lane_3_closeout or preserves_lane_4_active
+        preserves_allowed_state = (
+            preserves_lane_3_closeout or preserves_lane_4_active or preserves_lane_4_complete
+        )
     if require_lane_4_active:
         preserves_allowed_state = preserves_lane_4_active
+    if require_lane_4_complete:
+        preserves_allowed_state = preserves_lane_4_complete
     if not preserves_allowed_state:
         return False
-    required = (
-        "#397 THROUGH #405: COMPLETE / MERGED",
-    )
+    required = ("#397 THROUGH #405: COMPLETE / MERGED",)
     if not all(marker in normalized for marker in required):
         return False
     lifecycle_states = tuple(
@@ -871,18 +889,12 @@ def check_operational_truth(
             lanes[name] = lane
 
     if lanes and len(set(lanes.values())) != 1:
-        rendered = ", ".join(
-            f"{name}={lane}" for name, lane in sorted(lanes.items())
-        )
+        rendered = ", ".join(f"{name}={lane}" for name, lane in sorted(lanes.items()))
         errors.append(
             f"active stabilization lane mismatch / stabilization/current-truth gate mismatch: {rendered}"
         )
 
-    completed_surfaces = {
-        name
-        for name, lane in lanes.items()
-        if lane == POST_WAVE_C_COMPLETE_LANE
-    }
+    completed_surfaces = {name for name, lane in lanes.items() if lane == POST_WAVE_C_COMPLETE_LANE}
     if lifecycle_generation is None:
         lifecycle_generation = (
             CURRENT_LIFECYCLE_GENERATION
@@ -891,8 +903,7 @@ def check_operational_truth(
         )
 
     post_394_mode = any(
-        "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED" in text.upper()
-        for text in texts.values()
+        "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED" in text.upper() for text in texts.values()
     )
     post_405_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
     if post_405_mode:
@@ -947,7 +958,7 @@ def check_operational_truth(
                 require_lane_1_closeout=True,
                 require_lane_2_closeout=True,
                 require_lane_3_closeout=True,
-                require_lane_4_active=True,
+                require_lane_4_complete=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
@@ -955,9 +966,7 @@ def check_operational_truth(
                 continue
             sync_start_shas[name] = _post_405_sync_start_shas(text)[0]
         if len(set(sync_start_shas.values())) > 1:
-            rendered = ", ".join(
-                f"{name}={sha}" for name, sha in sorted(sync_start_shas.items())
-            )
+            rendered = ", ".join(f"{name}={sha}" for name, sha in sorted(sync_start_shas.items()))
             errors.append(f"post-#405 sync-start SHA mismatch: {rendered}")
     elif completed_surfaces and post_394_mode:
         if "master_roadmap" not in texts:
@@ -1010,9 +1019,7 @@ def check_operational_truth(
         "**Implementation:**" not in canonical_index
         or "**Automated/recorded evidence:**" not in canonical_index
     ):
-        errors.append(
-            "canonical index no longer separates implementation from evidence"
-        )
+        errors.append("canonical index no longer separates implementation from evidence")
 
     priority = texts.get("priority", "")
     roadmap = texts.get("roadmap", "")

@@ -22,25 +22,24 @@ The consolidated August Product/Platform strategy is merged as strategy-only gui
 
 ## Read Order
 
-Current post-#405 override (2026-09-03):
+Current post-#405 override (2026-09-17):
 
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
-verified main at sync start: df2df490083511f480b653c0960fbe7a6e6abfe8
+verified main at sync start: 4e32b501934e176e89e049fef5597ccdaaa4e6c8
 #397 through #405: COMPLETE / MERGED
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
 COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
 COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
 COMPLETE: durability implementation lane 2 - corruption-safe readers (PR #416; main `80e1c86f`)
 COMPLETE: durability implementation lane 3 - maintenance locking + mutation quiescence (PR #419; main `2bfe202e`)
-AUTHORIZED / ACTIVE: durability implementation lane 4 - versioned snapshot + manifest (owner authorization; base main `38dd95fd`)
-NEXT: implement and review only the authorized Lane 4 contract
-THEN: separately authorized safe migration + generation activation
-THEN: separately authorized encrypted backup/restore/rollback
-THEN: durability torture proof
-THEN: #409 release hygiene
-THEN: bounded product-translation/readiness pass
+COMPLETE: durability implementation lane 4 - versioned snapshot + manifest (PR #421; main `4e32b501`)
+FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
+NEXT: #409 release integrity / repository control (separately scoped)
+THEN: rebase and exact-head review #410 private-beta freeze criteria
+THEN: separate owner authorization decision for recovery construction (Lane 5A)
+THEN: separately authorized recovery proof: inactive candidate migration -> candidate validation -> activation -> rollback/restore semantics
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
 THEN: private-beta candidacy/distribution decision
