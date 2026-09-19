@@ -66,6 +66,10 @@ class MaintenanceTimeoutError(TimeoutError):
     """Raised when maintenance cannot obtain a fully quiesced boundary in time."""
 
 
+class ControlLockActiveError(RuntimeError):
+    """Raised when a control-plane resource is already exclusively leased."""
+
+
 @dataclass(frozen=True)
 class MaintenanceStatus:
     lock_path: Path
@@ -182,6 +186,24 @@ class _OSFileLease:
         if not _UNLOCK_FILE_EX(os_handle, 0, 1, 0, ctypes.byref(self._overlapped)):
             error = ctypes.get_last_error()
             raise OSError(error, os.strerror(error), str(self.path))
+
+
+@contextmanager
+def exclusive_control_lock(lock_path: Path) -> Iterator[None]:
+    """Hold a fail-closed cross-process lock for one control-plane resource.
+
+    The lease writes no metadata. Callers that mutate the same control-plane
+    resource must use this scope, so an in-progress validation sees one stable
+    Nova-controlled version or fails instead of validating a moving target.
+    """
+
+    lease = _OSFileLease(Path(lock_path), offset=0)
+    if not lease.acquire(exclusive=True):
+        raise ControlLockActiveError(f"control-plane resource is busy: {lease.path}")
+    try:
+        yield
+    finally:
+        lease.release()
 
 
 class MaintenanceCoordinator:

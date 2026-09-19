@@ -224,6 +224,21 @@ def validate_snapshot(
     return _validate_snapshot_contents(Path(snapshot_path), stores=stores, require_complete=True)
 
 
+def validate_state_file(
+    path: Path,
+    logical_id: str,
+    store_relative_path: str,
+) -> list[str]:
+    """Read and validate one persisted state file without modifying it.
+
+    Recovery-candidate validation reuses the same per-store semantic checks as
+    completed snapshots.  This public wrapper deliberately exposes no capture,
+    migration, activation, or write behavior.
+    """
+
+    return _validate_state_file(Path(path), logical_id, store_relative_path)
+
+
 def _capture_store(
     store: LogicalStore,
     *,
