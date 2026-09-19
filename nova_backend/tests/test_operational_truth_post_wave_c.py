@@ -658,24 +658,30 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         assert "NEXT: RECOVERY CANDIDATE VALIDATION" in normalized
 
 
-def test_lane_5a_migration_requires_ordered_milestones(tmp_path):
+@pytest.mark.parametrize(
+    "milestone_prefix",
+    (
+        "COMPLETE: #406 governed-memory ID collision correctness",
+        "FRESH-MAIN CLOSEOUT:",
+        "COMPLETE: #409 release integrity / repository control",
+    ),
+)
+def test_lane_5a_migration_requires_full_ordered_milestone_chain(tmp_path, milestone_prefix):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     lines = original.splitlines()
-    migration_index = next(
+    milestone_index = next(
+        index for index, line in enumerate(lines) if line.startswith(milestone_prefix)
+    )
+    milestone_line = lines.pop(milestone_index)
+    insertion_index = next(
         index
         for index, line in enumerate(lines)
         if line.startswith("COMPLETE: Lane 5A step 1 - inactive recovery candidate migration")
     )
-    release_index = next(
-        index
-        for index, line in enumerate(lines)
-        if line.startswith("COMPLETE: #409 release integrity / repository control")
-    )
-    migration_line = lines.pop(migration_index)
-    lines.insert(release_index, migration_line)
+    lines.insert(insertion_index + 1, milestone_line)
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     errors = checker.check_operational_truth(

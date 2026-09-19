@@ -636,7 +636,13 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
 
 def _preserves_lane_5a_milestone_order(structured_lines: tuple[str, ...]) -> bool:
     milestones = (
+        POST_406_COMPLETE_PROVENANCE,
+        POST_408_COMPLETE_PROVENANCE,
+        LANE_1_COMPLETE_PROVENANCE,
+        LANE_2_COMPLETE_PROVENANCE,
+        LANE_3_COMPLETE_PROVENANCE,
         LANE_4_COMPLETE_PROVENANCE,
+        LANE_4_FRESH_MAIN_CLOSEOUT,
         POST_423_COMPLETE_PROVENANCE,
         POST_410_COMPLETE_PROVENANCE,
         LANE_5A_AUTHORIZATION_MARKER,
