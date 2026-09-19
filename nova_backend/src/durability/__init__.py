@@ -9,7 +9,10 @@ from src.durability.corruption import (
 from src.durability.recovery_candidate import (
     RecoveryCandidateError,
     RecoveryCandidateResult,
+    RecoveryCandidateValidationError,
+    RecoveryCandidateValidationResult,
     create_recovery_candidate,
+    validate_recovery_candidate,
 )
 from src.durability.snapshot import (
     SnapshotError,
@@ -18,6 +21,7 @@ from src.durability.snapshot import (
     SnapshotValidationError,
     create_snapshot,
     validate_snapshot,
+    validate_state_file,
 )
 from src.durability.state_layout import (
     LogicalStore,
@@ -44,8 +48,12 @@ __all__ = [
     "SnapshotSourceConflictError",
     "SnapshotValidationError",
     "create_snapshot",
+    "validate_state_file",
     "validate_snapshot",
     "RecoveryCandidateError",
     "RecoveryCandidateResult",
+    "RecoveryCandidateValidationError",
+    "RecoveryCandidateValidationResult",
     "create_recovery_candidate",
+    "validate_recovery_candidate",
 ]
