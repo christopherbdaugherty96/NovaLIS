@@ -1,8 +1,9 @@
-"""Inactive recovery-candidate materialization and validation for Lane 5A.
+"""Recovery-candidate materialization, validation, and controlled activation.
 
-Both operations are confined to a completed source snapshot and an inactive
-control-plane candidate.  They never activate, replace, delete, or otherwise
-write authoritative state.
+Migration and validation operate only on an inactive control-plane candidate.
+Activation is a separate, fail-closed transition: it stages one complete
+generation while mutation admission is closed, then publishes one durable
+active-generation record.  It does not implement rollback or restore.
 """
 
 from __future__ import annotations
@@ -19,7 +20,11 @@ from pathlib import Path
 from typing import Any, Iterator
 from uuid import uuid4
 
-from src.durability.maintenance import ControlLockActiveError, exclusive_control_lock
+from src.durability.maintenance import (
+    ControlLockActiveError,
+    exclusive_control_lock,
+    maintenance_scope,
+)
 from src.durability.snapshot import validate_snapshot, validate_state_file
 from src.durability.state_layout import (
     LogicalStore,
@@ -27,6 +32,7 @@ from src.durability.state_layout import (
 )
 
 RECOVERY_CANDIDATE_FORMAT_VERSION = 1
+RECOVERY_ACTIVATION_FORMAT_VERSION = 1
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$")
 _WINDOWS_RESERVED_NAMES = {
     "CON",
@@ -44,6 +50,10 @@ class RecoveryCandidateError(RuntimeError):
 
 class RecoveryCandidateValidationError(RecoveryCandidateError):
     """An inactive recovery candidate is incomplete, unsafe, or inconsistent."""
+
+
+class RecoveryCandidateActivationError(RecoveryCandidateError):
+    """A validated candidate could not be activated without ambiguity."""
 
 
 @dataclass(frozen=True)
@@ -65,6 +75,17 @@ class RecoveryCandidateValidationResult:
     source_snapshot_id: str
     source_manifest_sha256: str
     metadata: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RecoveryCandidateActivationResult:
+    """Evidence of one completed, non-reversible activation transition."""
+
+    candidate_id: str
+    generation_id: str
+    generation_path: Path
+    activation_path: Path
+    activation: dict[str, Any]
 
 
 def create_recovery_candidate(
@@ -202,42 +223,218 @@ def validate_recovery_candidate(
     candidate_id = candidate_root.name
     _require_safe_id(candidate_id, "candidate directory name")
     with _candidate_operation_lock(candidates_root, candidate_id, RecoveryCandidateValidationError):
-        candidate_paths, initial_inventory = _candidate_tree_fingerprint(candidate_root)
-        metadata = _read_candidate_metadata(candidate_root / "recovery_candidate.json")
-        if metadata.get("candidate_id") != candidate_id:
-            raise RecoveryCandidateValidationError(
-                "candidate metadata ID does not match its container"
-            )
-        if metadata.get("recovery_candidate_format_version") != RECOVERY_CANDIDATE_FORMAT_VERSION:
-            raise RecoveryCandidateValidationError("unsupported recovery candidate format version")
-        if metadata.get("state") != "migrated_unvalidated":
-            raise RecoveryCandidateValidationError(
-                "candidate is not an inactive unvalidated migration"
-            )
-        if metadata.get("source_snapshot_id") != manifest.get("snapshot_id"):
-            raise RecoveryCandidateValidationError("candidate source snapshot ID mismatch")
-        source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
-        if metadata.get("source_manifest_sha256") != source_manifest_sha256:
-            raise RecoveryCandidateValidationError("candidate source manifest hash mismatch")
-        if metadata.get("registry_store_count") != len(stores):
-            raise RecoveryCandidateValidationError("candidate registry store count mismatch")
-        if metadata.get("payload_root") != "payload":
-            raise RecoveryCandidateValidationError("candidate payload root is invalid")
-
-        expected_entries = _expected_candidate_entries(manifest, stores)
-        if metadata.get("entries") != expected_entries:
-            raise RecoveryCandidateValidationError("candidate metadata inventory mismatch")
-        _validate_candidate_payload(
+        return _validate_locked_candidate(
             candidate_root=candidate_root,
-            expected_entries=expected_entries,
+            candidate_id=candidate_id,
             manifest=manifest,
+            manifest_bytes=manifest_bytes,
             stores=stores,
-            candidate_paths=candidate_paths,
         )
-        _, final_inventory = _candidate_tree_fingerprint(candidate_root)
-        if final_inventory != initial_inventory:
-            raise RecoveryCandidateValidationError("candidate contents changed during validation")
 
+
+def activate_recovery_candidate(
+    *,
+    candidate_path: Path,
+    snapshot_path: Path,
+    generation_id: str,
+    container_root: Path | None = None,
+    registry: tuple[LogicalStore, ...] | None = None,
+    maintenance_timeout: float = 30.0,
+) -> RecoveryCandidateActivationResult:
+    """Make one validated generation candidate authoritative exactly once.
+
+    This transition refuses mixed container-scoped recovery stores because they
+    cannot share one atomic generation pointer.  The generation is completely
+    materialized before the active record is published; until that final record
+    exists, no staged path is authoritative.  Existing active records are never
+    replaced here: rollback and later replacement are separate work.
+    """
+
+    stores = logical_store_registry() if registry is None else registry
+    _require_safe_id(generation_id, "generation_id")
+    if any(store.included_in_recovery and store.location_scope != "generation" for store in stores):
+        raise RecoveryCandidateActivationError(
+            "activation refuses recovery-included container-scoped stores"
+        )
+
+    source_root = Path(snapshot_path).expanduser().resolve()
+    manifest = validate_snapshot(source_root, registry=stores)
+    manifest_bytes = (source_root / "manifest.json").read_bytes()
+    configured_container = _configured_container_root(container_root)
+    if _path_has_link_or_reparse(configured_container, Path(configured_container.anchor)):
+        raise RecoveryCandidateActivationError(
+            f"linked recovery container refused: {configured_container}"
+        )
+    container = configured_container.resolve()
+    candidates_root = container / "control" / "recovery_candidates"
+    if _path_has_link_or_reparse(candidates_root, container):
+        raise RecoveryCandidateActivationError(
+            f"linked recovery candidate root refused: {candidates_root}"
+        )
+    candidate_root = _configured_candidate_root(
+        candidate_path=candidate_path,
+        candidates_root=candidates_root,
+        error_type=RecoveryCandidateActivationError,
+    )
+    if _paths_overlap(source_root, candidate_root):
+        raise RecoveryCandidateActivationError(
+            "recovery candidate overlaps the source snapshot: "
+            f"snapshot={source_root}, candidate={candidate_root}"
+        )
+    candidate_id = candidate_root.name
+    _require_safe_id(candidate_id, "candidate directory name")
+
+    with _activation_operation_lock(container, RecoveryCandidateActivationError):
+        with maintenance_scope(container_root=container, timeout=maintenance_timeout):
+            with _candidate_operation_lock(
+                candidates_root, candidate_id, RecoveryCandidateActivationError
+            ):
+                validation = _validate_locked_candidate(
+                    candidate_root=candidate_root,
+                    candidate_id=candidate_id,
+                    manifest=manifest,
+                    manifest_bytes=manifest_bytes,
+                    stores=stores,
+                )
+                activation_path = _activation_record_path(container)
+                if _path_has_link_or_reparse(activation_path, container):
+                    raise RecoveryCandidateActivationError(
+                        f"linked recovery activation record refused: {activation_path}"
+                    )
+                if activation_path.exists():
+                    raise RecoveryCandidateActivationError(
+                        "an active recovery generation already exists"
+                    )
+
+                generations_root = container / "generations"
+                if _path_has_link_or_reparse(generations_root, container):
+                    raise RecoveryCandidateActivationError(
+                        f"linked generations root refused: {generations_root}"
+                    )
+                generations_root.mkdir(parents=True, exist_ok=True)
+                generation_path = generations_root / generation_id
+                try:
+                    generation_path.mkdir()
+                except FileExistsError as exc:
+                    raise RecoveryCandidateActivationError(
+                        f"recovery generation already exists: {generation_path}"
+                    ) from exc
+
+                try:
+                    _materialize_validated_generation(
+                        candidate_root=candidate_root,
+                        metadata=validation.metadata,
+                        generation_path=generation_path,
+                    )
+                    _sync_staged_generation(
+                        generation_path=generation_path,
+                        generations_root=generations_root,
+                        container=container,
+                    )
+                    activation = {
+                        "recovery_activation_format_version": RECOVERY_ACTIVATION_FORMAT_VERSION,
+                        "candidate_id": candidate_id,
+                        "generation_id": generation_id,
+                        "source_snapshot_id": validation.source_snapshot_id,
+                        "source_manifest_sha256": validation.source_manifest_sha256,
+                    }
+                    _publish_new_durable_json(activation_path, activation)
+                except BaseException:
+                    # Creation of this record is the commit point.  A failure after
+                    # it exists is ambiguous to the caller, but must never remove
+                    # the generation it may already make authoritative.
+                    if (
+                        not activation_path.exists()
+                        and generation_path.is_dir()
+                        and not generation_path.is_symlink()
+                    ):
+                        shutil.rmtree(generation_path)
+                    raise
+
+    return RecoveryCandidateActivationResult(
+        candidate_id=candidate_id,
+        generation_id=generation_id,
+        generation_path=generation_path,
+        activation_path=activation_path,
+        activation=activation,
+    )
+
+
+def active_recovery_generation(
+    *, container_root: Path | None = None
+) -> RecoveryCandidateActivationResult | None:
+    """Read the sole authoritative recovery generation without changing it."""
+
+    configured_container = _configured_container_root(container_root)
+    if _path_has_link_or_reparse(configured_container, Path(configured_container.anchor)):
+        raise RecoveryCandidateActivationError(
+            f"linked recovery container refused: {configured_container}"
+        )
+    container = configured_container.resolve()
+    activation_path = _activation_record_path(container)
+    if not activation_path.exists():
+        return None
+    if _path_has_link_or_reparse(activation_path, container):
+        raise RecoveryCandidateActivationError(
+            f"linked recovery activation record refused: {activation_path}"
+        )
+    activation = _read_activation_record(activation_path)
+    generation_id = str(activation["generation_id"])
+    generation_path = container / "generations" / generation_id
+    if not generation_path.is_dir() or _path_has_link_or_reparse(generation_path, container):
+        raise RecoveryCandidateActivationError(
+            "active recovery generation is unavailable or linked"
+        )
+    return RecoveryCandidateActivationResult(
+        candidate_id=str(activation["candidate_id"]),
+        generation_id=generation_id,
+        generation_path=generation_path,
+        activation_path=activation_path,
+        activation=activation,
+    )
+
+
+def _validate_locked_candidate(
+    *,
+    candidate_root: Path,
+    candidate_id: str,
+    manifest: dict[str, Any],
+    manifest_bytes: bytes,
+    stores: tuple[LogicalStore, ...],
+) -> RecoveryCandidateValidationResult:
+    """Validate while the caller holds the candidate-specific exclusive lease."""
+
+    candidate_paths, initial_inventory = _candidate_tree_fingerprint(candidate_root)
+    metadata = _read_candidate_metadata(candidate_root / "recovery_candidate.json")
+    if metadata.get("candidate_id") != candidate_id:
+        raise RecoveryCandidateValidationError("candidate metadata ID does not match its container")
+    if metadata.get("recovery_candidate_format_version") != RECOVERY_CANDIDATE_FORMAT_VERSION:
+        raise RecoveryCandidateValidationError("unsupported recovery candidate format version")
+    if metadata.get("state") != "migrated_unvalidated":
+        raise RecoveryCandidateValidationError("candidate is not an inactive unvalidated migration")
+    if metadata.get("source_snapshot_id") != manifest.get("snapshot_id"):
+        raise RecoveryCandidateValidationError("candidate source snapshot ID mismatch")
+    source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+    if metadata.get("source_manifest_sha256") != source_manifest_sha256:
+        raise RecoveryCandidateValidationError("candidate source manifest hash mismatch")
+    if metadata.get("registry_store_count") != len(stores):
+        raise RecoveryCandidateValidationError("candidate registry store count mismatch")
+    if metadata.get("payload_root") != "payload":
+        raise RecoveryCandidateValidationError("candidate payload root is invalid")
+
+    expected_entries = _expected_candidate_entries(manifest, stores)
+    if metadata.get("entries") != expected_entries:
+        raise RecoveryCandidateValidationError("candidate metadata inventory mismatch")
+    _validate_candidate_payload(
+        candidate_root=candidate_root,
+        expected_entries=expected_entries,
+        manifest=manifest,
+        stores=stores,
+        candidate_paths=candidate_paths,
+    )
+    _, final_inventory = _candidate_tree_fingerprint(candidate_root)
+    if final_inventory != initial_inventory:
+        raise RecoveryCandidateValidationError("candidate contents changed during validation")
     return RecoveryCandidateValidationResult(
         candidate_id=candidate_id,
         candidate_path=candidate_root,
@@ -245,6 +442,132 @@ def validate_recovery_candidate(
         source_manifest_sha256=source_manifest_sha256,
         metadata=metadata,
     )
+
+
+def _materialize_validated_generation(
+    *, candidate_root: Path, metadata: dict[str, Any], generation_path: Path
+) -> None:
+    """Copy only the validated generation payload into an inactive target."""
+
+    for entry in metadata["entries"]:
+        if entry["location_scope"] != "generation":
+            continue
+        for file_record in entry["files"]:
+            candidate_relative = _safe_relative_path(file_record["candidate_path"])
+            if candidate_relative.parts[0] != "generation":
+                raise RecoveryCandidateActivationError(
+                    f"invalid generation candidate path: {candidate_relative}"
+                )
+            target_relative = Path(*candidate_relative.parts[1:])
+            if not target_relative.parts:
+                raise RecoveryCandidateActivationError("invalid empty generation candidate path")
+            source = candidate_root / "payload" / candidate_relative
+            target = generation_path / target_relative
+            _copy_candidate_file(source, target, expected_sha256=str(file_record["sha256"]))
+
+
+def _copy_candidate_file(source: Path, target: Path, *, expected_sha256: str) -> None:
+    if not source.is_file() or source.is_symlink():
+        raise RecoveryCandidateActivationError(
+            f"validated candidate payload is unavailable or linked: {source}"
+        )
+    if _sha256_file(source) != expected_sha256:
+        raise RecoveryCandidateActivationError(
+            f"validated candidate payload changed before activation: {source}"
+        )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with source.open("rb") as source_handle, target.open("xb") as target_handle:
+        shutil.copyfileobj(source_handle, target_handle, length=1024 * 1024)
+        target_handle.flush()
+        os.fsync(target_handle.fileno())
+    if _sha256_file(source) != expected_sha256:
+        raise RecoveryCandidateActivationError(
+            f"validated candidate payload changed during activation: {source}"
+        )
+
+
+def _sync_staged_generation(
+    *, generation_path: Path, generations_root: Path, container: Path
+) -> None:
+    """Durably commit staged bytes and directory entries before authority moves."""
+
+    paths = _safe_tree_paths(generation_path, "staged recovery generation")
+    for path in paths:
+        if path.is_file():
+            _fsync_existing_file(path)
+    directories = sorted(
+        (path for path in paths if path.is_dir()), key=lambda path: len(path.parts), reverse=True
+    )
+    for directory in (*directories, generation_path, generations_root, container):
+        _fsync_directory(directory)
+
+
+def _fsync_existing_file(path: Path) -> None:
+    try:
+        # Windows rejects FlushFileBuffers through Python's read-only file
+        # descriptor, even though the bytes were already written and synced.
+        with path.open("r+b") as handle:
+            os.fsync(handle.fileno())
+    except OSError as exc:
+        raise RecoveryCandidateActivationError(
+            f"staged recovery file could not be durably synced: {path}: {exc}"
+        ) from exc
+
+
+def _fsync_directory(path: Path) -> None:
+    """Flush a directory on each supported platform without treating it as a file."""
+
+    try:
+        if os.name == "nt":
+            _flush_windows_directory(path)
+            return
+        descriptor = os.open(path, os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    except OSError as exc:
+        raise RecoveryCandidateActivationError(
+            f"recovery directory could not be durably synced: {path}: {exc}"
+        ) from exc
+
+
+def _flush_windows_directory(path: Path) -> None:
+    """Use FILE_FLAG_BACKUP_SEMANTICS so Windows can flush a directory handle."""
+
+    import ctypes
+    from ctypes import wintypes
+
+    create_file = ctypes.windll.kernel32.CreateFileW
+    create_file.argtypes = (
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    )
+    create_file.restype = wintypes.HANDLE
+    handle = create_file(
+        str(path),
+        0x80000000 | 0x40000000,  # GENERIC_READ | GENERIC_WRITE
+        0x00000001 | 0x00000002 | 0x00000004,  # all share modes
+        None,
+        3,  # OPEN_EXISTING
+        0x02000000,  # FILE_FLAG_BACKUP_SEMANTICS
+        None,
+    )
+    invalid_handle = wintypes.HANDLE(-1).value
+    if handle == invalid_handle:
+        error = ctypes.get_last_error()
+        raise OSError(error, os.strerror(error), str(path))
+    try:
+        if not ctypes.windll.kernel32.FlushFileBuffers(handle):
+            error = ctypes.get_last_error()
+            raise OSError(error, os.strerror(error), str(path))
+    finally:
+        ctypes.windll.kernel32.CloseHandle(handle)
 
 
 def _materialize_entries(
@@ -462,6 +785,10 @@ def _candidate_lock_path(candidates_root: Path, candidate_id: str) -> Path:
     return candidates_root / ".locks" / f"{candidate_id}.lock"
 
 
+def _activation_lock_path(container: Path) -> Path:
+    return container / "control" / "recovery_activation.lock"
+
+
 @contextmanager
 def _candidate_operation_lock(
     candidates_root: Path,
@@ -476,6 +803,20 @@ def _candidate_operation_lock(
             yield
     except ControlLockActiveError as exc:
         raise error_type(f"recovery candidate is busy: {candidate_id}") from exc
+
+
+@contextmanager
+def _activation_operation_lock(
+    container: Path, error_type: type[RecoveryCandidateError]
+) -> Iterator[None]:
+    lock_path = _activation_lock_path(container)
+    if _path_has_link_or_reparse(lock_path, container):
+        raise error_type(f"linked recovery activation lock refused: {lock_path}")
+    try:
+        with exclusive_control_lock(lock_path):
+            yield
+    except ControlLockActiveError as exc:
+        raise error_type("recovery activation is busy") from exc
 
 
 def _candidate_target_relative(store: LogicalStore, file_record: dict[str, Any]) -> Path:
@@ -511,6 +852,87 @@ def _write_durable_json(path: Path, payload: dict[str, Any]) -> None:
     finally:
         if temporary.exists():
             temporary.unlink()
+
+
+def _publish_new_durable_json(path: Path, payload: dict[str, Any]) -> None:
+    """Atomically publish a new control record without replacing an existing one."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+    encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    try:
+        with temporary.open("xb") as handle:
+            handle.write(encoded)
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError as exc:
+            raise RecoveryCandidateActivationError(
+                "an active recovery generation already exists"
+            ) from exc
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    # Linking the complete, fsynced record is the activation commit.  Flush both
+    # directory entries after the temporary name is removed before reporting it.
+    _fsync_directory(path.parent)
+    _fsync_directory(path.parent.parent)
+
+
+def _activation_record_path(container: Path) -> Path:
+    return container / "control" / "recovery_activation.json"
+
+
+def _read_activation_record(path: Path) -> dict[str, Any]:
+    if not path.is_file() or path.is_symlink():
+        raise RecoveryCandidateActivationError(
+            f"recovery activation record is unavailable or linked: {path}"
+        )
+    try:
+        activation = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RecoveryCandidateActivationError(
+            f"recovery activation record is malformed: {exc}"
+        ) from exc
+    expected_keys = {
+        "recovery_activation_format_version",
+        "candidate_id",
+        "generation_id",
+        "source_snapshot_id",
+        "source_manifest_sha256",
+    }
+    if not isinstance(activation, dict) or set(activation) != expected_keys:
+        raise RecoveryCandidateActivationError("recovery activation record has an unsupported shape")
+    if activation.get("recovery_activation_format_version") != RECOVERY_ACTIVATION_FORMAT_VERSION:
+        raise RecoveryCandidateActivationError("unsupported recovery activation format version")
+    for field in ("candidate_id", "generation_id", "source_snapshot_id"):
+        try:
+            _require_safe_id(str(activation.get(field)), field)
+        except ValueError as exc:
+            raise RecoveryCandidateActivationError(
+                f"recovery activation record has unsafe {field}"
+            ) from exc
+    digest = activation.get("source_manifest_sha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise RecoveryCandidateActivationError(
+            "recovery activation record has invalid source manifest hash"
+        )
+    return activation
+
+
+def _configured_candidate_root(
+    *, candidate_path: Path, candidates_root: Path, error_type: type[RecoveryCandidateError]
+) -> Path:
+    configured_candidate = Path(candidate_path).expanduser()
+    if _path_has_link_or_reparse(configured_candidate, Path(configured_candidate.anchor)):
+        raise error_type(f"linked recovery candidate refused: {configured_candidate}")
+    candidate_root = configured_candidate.resolve()
+    if candidate_root.parent != candidates_root.resolve() or not candidate_root.is_dir():
+        raise error_type(
+            f"recovery candidate is outside the configured candidate root: {candidate_root}"
+        )
+    return candidate_root
 
 
 def _safe_relative_path(value: Any) -> Path:
