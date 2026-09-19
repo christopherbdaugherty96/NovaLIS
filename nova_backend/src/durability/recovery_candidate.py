@@ -1,8 +1,8 @@
-"""Inactive recovery-candidate materialization for the Lane 5A contract.
+"""Inactive recovery-candidate materialization and validation for Lane 5A.
 
-This module deliberately does not validate, activate, replace, or delete live
-state.  It copies one completed snapshot into an isolated control-plane
-candidate so validation can happen before any future activation decision.
+Both operations are confined to a completed source snapshot and an inactive
+control-plane candidate.  They never activate, replace, delete, or otherwise
+write authoritative state.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from src.durability.snapshot import validate_snapshot
+from src.durability.snapshot import validate_snapshot, validate_state_file
 from src.durability.state_layout import (
     LogicalStore,
     logical_store_registry,
@@ -40,6 +40,10 @@ class RecoveryCandidateError(RuntimeError):
     """An inactive recovery candidate could not be materialized safely."""
 
 
+class RecoveryCandidateValidationError(RecoveryCandidateError):
+    """An inactive recovery candidate is incomplete, unsafe, or inconsistent."""
+
+
 @dataclass(frozen=True)
 class RecoveryCandidateResult:
     """The isolated output of snapshot-to-candidate migration."""
@@ -47,6 +51,17 @@ class RecoveryCandidateResult:
     candidate_id: str
     candidate_path: Path
     metadata_path: Path
+    metadata: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class RecoveryCandidateValidationResult:
+    """Read-only evidence that a candidate matches its completed snapshot."""
+
+    candidate_id: str
+    candidate_path: Path
+    source_snapshot_id: str
+    source_manifest_sha256: str
     metadata: dict[str, Any]
 
 
@@ -132,6 +147,97 @@ def create_recovery_candidate(
     )
 
 
+def validate_recovery_candidate(
+    *,
+    candidate_path: Path,
+    snapshot_path: Path,
+    container_root: Path | None = None,
+    registry: tuple[LogicalStore, ...] | None = None,
+) -> RecoveryCandidateValidationResult:
+    """Validate an inactive candidate without changing it or authoritative state.
+
+    Validation binds the candidate to a still-complete source snapshot, its
+    manifest hash, the complete registry, exact candidate inventory, and the
+    same persisted-state semantic checks used for snapshots.  A candidate is
+    accepted only while its metadata state remains ``migrated_unvalidated``;
+    this function deliberately does not mark it validated or activation-ready.
+    """
+
+    stores = logical_store_registry() if registry is None else registry
+    source_root = Path(snapshot_path).expanduser().resolve()
+    manifest = validate_snapshot(source_root, registry=stores)
+    manifest_bytes = (source_root / "manifest.json").read_bytes()
+
+    configured_container = _configured_container_root(container_root)
+    if _path_has_link_or_reparse(configured_container, Path(configured_container.anchor)):
+        raise RecoveryCandidateValidationError(
+            f"linked recovery container refused: {configured_container}"
+        )
+    container = configured_container.resolve()
+    candidates_root = container / "control" / "recovery_candidates"
+    if _path_has_link_or_reparse(candidates_root, container):
+        raise RecoveryCandidateValidationError(
+            f"linked recovery candidate root refused: {candidates_root}"
+        )
+
+    configured_candidate = Path(candidate_path).expanduser()
+    if _path_has_link_or_reparse(configured_candidate, Path(configured_candidate.anchor)):
+        raise RecoveryCandidateValidationError(
+            f"linked recovery candidate refused: {configured_candidate}"
+        )
+    candidate_root = configured_candidate.resolve()
+    if candidate_root.parent != candidates_root.resolve() or not candidate_root.is_dir():
+        raise RecoveryCandidateValidationError(
+            f"recovery candidate is outside the configured candidate root: {candidate_root}"
+        )
+    if _paths_overlap(source_root, candidate_root):
+        raise RecoveryCandidateValidationError(
+            "recovery candidate overlaps the source snapshot: "
+            f"snapshot={source_root}, candidate={candidate_root}"
+        )
+
+    candidate_paths = _safe_tree_paths(candidate_root, "recovery candidate")
+    metadata = _read_candidate_metadata(candidate_root / "recovery_candidate.json")
+    candidate_id = metadata.get("candidate_id")
+    if not isinstance(candidate_id, str):
+        raise RecoveryCandidateValidationError("candidate metadata candidate_id is invalid")
+    _require_safe_id(candidate_id, "candidate metadata candidate_id")
+    if candidate_root.name != candidate_id:
+        raise RecoveryCandidateValidationError("candidate metadata ID does not match its container")
+    if metadata.get("recovery_candidate_format_version") != RECOVERY_CANDIDATE_FORMAT_VERSION:
+        raise RecoveryCandidateValidationError("unsupported recovery candidate format version")
+    if metadata.get("state") != "migrated_unvalidated":
+        raise RecoveryCandidateValidationError("candidate is not an inactive unvalidated migration")
+    if metadata.get("source_snapshot_id") != manifest.get("snapshot_id"):
+        raise RecoveryCandidateValidationError("candidate source snapshot ID mismatch")
+    source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+    if metadata.get("source_manifest_sha256") != source_manifest_sha256:
+        raise RecoveryCandidateValidationError("candidate source manifest hash mismatch")
+    if metadata.get("registry_store_count") != len(stores):
+        raise RecoveryCandidateValidationError("candidate registry store count mismatch")
+    if metadata.get("payload_root") != "payload":
+        raise RecoveryCandidateValidationError("candidate payload root is invalid")
+
+    expected_entries = _expected_candidate_entries(manifest, stores)
+    if metadata.get("entries") != expected_entries:
+        raise RecoveryCandidateValidationError("candidate metadata inventory mismatch")
+    _validate_candidate_payload(
+        candidate_root=candidate_root,
+        expected_entries=expected_entries,
+        manifest=manifest,
+        stores=stores,
+        candidate_paths=candidate_paths,
+    )
+
+    return RecoveryCandidateValidationResult(
+        candidate_id=candidate_id,
+        candidate_path=candidate_root,
+        source_snapshot_id=str(manifest["snapshot_id"]),
+        source_manifest_sha256=source_manifest_sha256,
+        metadata=metadata,
+    )
+
+
 def _materialize_entries(
     *,
     source_root: Path,
@@ -172,6 +278,151 @@ def _materialize_entries(
             }
         )
     return materialized
+
+
+def _read_candidate_metadata(path: Path) -> dict[str, Any]:
+    if not path.is_file() or path.is_symlink():
+        raise RecoveryCandidateValidationError(
+            f"candidate metadata is unavailable or linked: {path}"
+        )
+    try:
+        metadata = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RecoveryCandidateValidationError(f"candidate metadata is malformed: {exc}") from exc
+    if not isinstance(metadata, dict):
+        raise RecoveryCandidateValidationError("candidate metadata must be an object")
+    expected_keys = {
+        "recovery_candidate_format_version",
+        "candidate_id",
+        "state",
+        "source_snapshot_id",
+        "source_manifest_sha256",
+        "registry_store_count",
+        "payload_root",
+        "entries",
+    }
+    if set(metadata) != expected_keys:
+        raise RecoveryCandidateValidationError("candidate metadata has an unsupported shape")
+    return metadata
+
+
+def _expected_candidate_entries(
+    manifest: dict[str, Any], stores: tuple[LogicalStore, ...]
+) -> list[dict[str, Any]]:
+    entries_by_id = {entry["logical_id"]: entry for entry in manifest["entries"]}
+    expected: list[dict[str, Any]] = []
+    for store in stores:
+        snapshot_entry = entries_by_id[store.logical_id]
+        files = [
+            {
+                "source_path": _safe_relative_path(file_record["path"]).as_posix(),
+                "candidate_path": _candidate_target_relative(store, file_record).as_posix(),
+                "sha256": file_record["sha256"],
+            }
+            for file_record in snapshot_entry["files"]
+        ]
+        expected.append(
+            {
+                "logical_id": store.logical_id,
+                "status": snapshot_entry["status"],
+                "location_scope": store.location_scope,
+                "files": files,
+            }
+        )
+    return expected
+
+
+def _validate_candidate_payload(
+    *,
+    candidate_root: Path,
+    expected_entries: list[dict[str, Any]],
+    manifest: dict[str, Any],
+    stores: tuple[LogicalStore, ...],
+    candidate_paths: tuple[Path, ...],
+) -> None:
+    expected_files = {Path("recovery_candidate.json")}
+    manifest_entries = {entry["logical_id"]: entry for entry in manifest["entries"]}
+    for candidate_entry in expected_entries:
+        logical_id = candidate_entry["logical_id"]
+        manifest_files = manifest_entries[logical_id]["files"]
+        for candidate_file, manifest_file in zip(
+            candidate_entry["files"], manifest_files, strict=True
+        ):
+            relative = Path("payload") / _safe_relative_path(candidate_file["candidate_path"])
+            expected_files.add(relative)
+            path = candidate_root / relative
+            if not path.is_file() or path.is_symlink():
+                raise RecoveryCandidateValidationError(
+                    f"candidate file missing or linked: {relative}"
+                )
+            if _sha256_file(path) != candidate_file["sha256"]:
+                raise RecoveryCandidateValidationError(f"candidate file hash mismatch: {relative}")
+            schema_versions = validate_state_file(
+                path,
+                logical_id,
+                str(manifest_file["store_relative_path"]),
+            )
+            if schema_versions != manifest_file["schema_versions"]:
+                raise RecoveryCandidateValidationError(
+                    f"candidate schema metadata mismatch: {relative}"
+                )
+
+    actual_files = {path.relative_to(candidate_root) for path in candidate_paths if path.is_file()}
+    if actual_files != expected_files:
+        missing = sorted(path.as_posix() for path in expected_files - actual_files)
+        extra = sorted(path.as_posix() for path in actual_files - expected_files)
+        raise RecoveryCandidateValidationError(
+            f"candidate inventory mismatch; missing={missing}, extra={extra}"
+        )
+    expected_directories = {
+        parent for relative in expected_files for parent in relative.parents if parent != Path(".")
+    }
+    actual_directories = {
+        path.relative_to(candidate_root) for path in candidate_paths if path.is_dir()
+    }
+    if actual_directories != expected_directories:
+        missing = sorted(path.as_posix() for path in expected_directories - actual_directories)
+        extra = sorted(path.as_posix() for path in actual_directories - expected_directories)
+        raise RecoveryCandidateValidationError(
+            f"candidate directory layout mismatch; missing={missing}, extra={extra}"
+        )
+
+
+def _safe_tree_paths(root: Path, label: str) -> tuple[Path, ...]:
+    if not root.is_dir() or _is_link_or_reparse(root):
+        raise RecoveryCandidateValidationError(
+            f"{label} root is unavailable or a link or reparse point"
+        )
+    paths: list[Path] = []
+
+    def raise_walk_error(error: OSError) -> None:
+        raise error
+
+    try:
+        for directory, directory_names, file_names in os.walk(
+            root, topdown=True, onerror=raise_walk_error, followlinks=False
+        ):
+            current = Path(directory)
+            for name in sorted((*directory_names, *file_names)):
+                path = current / name
+                if _is_link_or_reparse(path):
+                    raise RecoveryCandidateValidationError(
+                        f"{label} contains a link or reparse point: {path}"
+                    )
+                try:
+                    mode = path.stat(follow_symlinks=False).st_mode
+                except OSError as exc:
+                    raise RecoveryCandidateValidationError(
+                        f"{label} path is unavailable: {path}: {exc}"
+                    ) from exc
+                if not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
+                    raise RecoveryCandidateValidationError(
+                        f"{label} contains an unsupported filesystem type: {path}"
+                    )
+                paths.append(path)
+    except OSError as exc:
+        raise RecoveryCandidateValidationError(f"{label} inventory failed: {exc}") from exc
+    return tuple(paths)
 
 
 def _candidate_target_relative(store: LogicalStore, file_record: dict[str, Any]) -> Path:

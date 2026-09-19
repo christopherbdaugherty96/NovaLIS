@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -7,7 +8,9 @@ from pathlib import Path
 import pytest
 from src.durability.recovery_candidate import (
     RecoveryCandidateError,
+    RecoveryCandidateValidationError,
     create_recovery_candidate,
+    validate_recovery_candidate,
 )
 from src.durability.snapshot import SnapshotValidationError, create_snapshot
 from src.durability.state_layout import LogicalStore
@@ -45,6 +48,21 @@ def _snapshot(tmp_path: Path, registry: tuple[LogicalStore, ...]):
         created_at=FIXED_TIME,
         registry=registry,
     )
+
+
+def _inactive_candidate(tmp_path: Path):
+    store = _store("sample", "data/sample.json")
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"value": true}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (store,))
+    candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-validation",
+        registry=(store,),
+    )
+    return store, snapshot, candidate
 
 
 def test_migration_materializes_inactive_candidate_without_writing_live_state(
@@ -210,3 +228,123 @@ def test_migration_refuses_candidate_container_inside_source_snapshot(tmp_path: 
         )
         == source_inventory
     )
+
+
+def test_validation_accepts_inactive_candidate_without_writing_it_or_live_state(tmp_path: Path):
+    generation_store = _store("generation_state", "data/state.json")
+    container_store = _store("container_state", "cache/container.json", location_scope="container")
+    runtime_state = tmp_path / "runtime/data/state.json"
+    runtime_state.parent.mkdir(parents=True)
+    runtime_state.write_text('{"value": "snapshot"}', encoding="utf-8")
+    live_container_state = tmp_path / "container/cache/container.json"
+    live_container_state.parent.mkdir(parents=True)
+    live_container_state.write_text('{"value": "live"}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (generation_store, container_store))
+    candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-valid",
+        registry=(generation_store, container_store),
+    )
+    candidate_before = {
+        path.relative_to(candidate.candidate_path).as_posix(): path.read_bytes()
+        for path in candidate.candidate_path.rglob("*")
+        if path.is_file()
+    }
+    source_before = (snapshot.snapshot_path / "manifest.json").read_bytes()
+    live_before = live_container_state.read_bytes()
+
+    result = validate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        registry=(generation_store, container_store),
+    )
+
+    assert result.candidate_id == "candidate-valid"
+    assert result.source_snapshot_id == "source-snapshot"
+    assert result.source_manifest_sha256 == hashlib.sha256(source_before).hexdigest()
+    assert result.metadata["state"] == "migrated_unvalidated"
+    assert not (tmp_path / "container/generations").exists()
+    assert live_container_state.read_bytes() == live_before
+    assert (snapshot.snapshot_path / "manifest.json").read_bytes() == source_before
+    assert {
+        path.relative_to(candidate.candidate_path).as_posix(): path.read_bytes()
+        for path in candidate.candidate_path.rglob("*")
+        if path.is_file()
+    } == candidate_before
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("corrupt", "candidate file hash mismatch"),
+        ("remove", "candidate file missing or linked"),
+        ("extra", "candidate inventory mismatch"),
+    ),
+)
+def test_validation_rejects_corrupted_incomplete_or_wrong_layout_candidates(
+    tmp_path: Path, mutation: str, message: str
+):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    payload_file = candidate.candidate_path / "payload/generation/data/sample.json"
+    if mutation == "corrupt":
+        payload_file.write_text('{"value": false}', encoding="utf-8")
+    elif mutation == "remove":
+        payload_file.unlink()
+    else:
+        extra = candidate.candidate_path / "payload/generation/data/unexpected.json"
+        extra.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(RecoveryCandidateValidationError, match=message):
+        validate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+
+def test_validation_rejects_malformed_metadata(tmp_path: Path):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    candidate.metadata_path.write_text("{", encoding="utf-8")
+
+    with pytest.raises(RecoveryCandidateValidationError, match="metadata is malformed"):
+        validate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+
+def test_validation_rejects_candidate_marked_as_activation_ready(tmp_path: Path):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    metadata = json.loads(candidate.metadata_path.read_text(encoding="utf-8"))
+    metadata["state"] = "validated"
+    candidate.metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+    with pytest.raises(RecoveryCandidateValidationError, match="inactive unvalidated migration"):
+        validate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+
+def test_validation_rejects_candidate_outside_its_control_plane_root(tmp_path: Path):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    misplaced = tmp_path / "elsewhere" / candidate.candidate_id
+    misplaced.parent.mkdir(parents=True)
+    candidate.candidate_path.rename(misplaced)
+
+    with pytest.raises(
+        RecoveryCandidateValidationError, match="outside the configured candidate root"
+    ):
+        validate_recovery_candidate(
+            candidate_path=misplaced,
+            snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
