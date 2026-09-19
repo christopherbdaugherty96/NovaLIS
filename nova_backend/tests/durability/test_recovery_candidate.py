@@ -476,6 +476,56 @@ def test_activation_copy_failure_leaves_no_authoritative_or_staged_generation(
     assert not (tmp_path / "container/generations/recovered-failure").exists()
 
 
+def test_activation_sync_failure_prevents_authority_publication(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+
+    def fail_sync(*args, **kwargs):
+        raise RecoveryCandidateActivationError("injected staged sync failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_sync_staged_generation", fail_sync)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected staged sync failure"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-unsynced",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert not (tmp_path / "container/generations/recovered-unsynced").exists()
+
+
+def test_post_commit_failure_never_removes_the_authoritative_generation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    original_publish = recovery_candidate_module._publish_new_durable_json
+
+    def publish_then_fail(*args, **kwargs):
+        original_publish(*args, **kwargs)
+        raise RecoveryCandidateActivationError("injected post-commit failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_publish_new_durable_json", publish_then_fail)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected post-commit failure"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-committed",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    active = active_recovery_generation(container_root=tmp_path / "container")
+    assert active is not None
+    assert active.generation_id == "recovered-committed"
+    assert (active.generation_path / "data/sample.json").is_file()
+
+
 def test_activation_refuses_to_run_while_authoritative_mutation_is_admitted(tmp_path: Path):
     store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
 

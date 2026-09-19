@@ -326,6 +326,11 @@ def activate_recovery_candidate(
                         metadata=validation.metadata,
                         generation_path=generation_path,
                     )
+                    _sync_staged_generation(
+                        generation_path=generation_path,
+                        generations_root=generations_root,
+                        container=container,
+                    )
                     activation = {
                         "recovery_activation_format_version": RECOVERY_ACTIVATION_FORMAT_VERSION,
                         "candidate_id": candidate_id,
@@ -335,8 +340,14 @@ def activate_recovery_candidate(
                     }
                     _publish_new_durable_json(activation_path, activation)
                 except BaseException:
-                    # The generation has no authority until the activation record exists.
-                    if generation_path.is_dir() and not generation_path.is_symlink():
+                    # Creation of this record is the commit point.  A failure after
+                    # it exists is ambiguous to the caller, but must never remove
+                    # the generation it may already make authoritative.
+                    if (
+                        not activation_path.exists()
+                        and generation_path.is_dir()
+                        and not generation_path.is_symlink()
+                    ):
                         shutil.rmtree(generation_path)
                     raise
 
@@ -473,6 +484,90 @@ def _copy_candidate_file(source: Path, target: Path, *, expected_sha256: str) ->
         raise RecoveryCandidateActivationError(
             f"validated candidate payload changed during activation: {source}"
         )
+
+
+def _sync_staged_generation(
+    *, generation_path: Path, generations_root: Path, container: Path
+) -> None:
+    """Durably commit staged bytes and directory entries before authority moves."""
+
+    paths = _safe_tree_paths(generation_path, "staged recovery generation")
+    for path in paths:
+        if path.is_file():
+            _fsync_existing_file(path)
+    directories = sorted(
+        (path for path in paths if path.is_dir()), key=lambda path: len(path.parts), reverse=True
+    )
+    for directory in (*directories, generation_path, generations_root, container):
+        _fsync_directory(directory)
+
+
+def _fsync_existing_file(path: Path) -> None:
+    try:
+        # Windows rejects FlushFileBuffers through Python's read-only file
+        # descriptor, even though the bytes were already written and synced.
+        with path.open("r+b") as handle:
+            os.fsync(handle.fileno())
+    except OSError as exc:
+        raise RecoveryCandidateActivationError(
+            f"staged recovery file could not be durably synced: {path}: {exc}"
+        ) from exc
+
+
+def _fsync_directory(path: Path) -> None:
+    """Flush a directory on each supported platform without treating it as a file."""
+
+    try:
+        if os.name == "nt":
+            _flush_windows_directory(path)
+            return
+        descriptor = os.open(path, os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    except OSError as exc:
+        raise RecoveryCandidateActivationError(
+            f"recovery directory could not be durably synced: {path}: {exc}"
+        ) from exc
+
+
+def _flush_windows_directory(path: Path) -> None:
+    """Use FILE_FLAG_BACKUP_SEMANTICS so Windows can flush a directory handle."""
+
+    import ctypes
+    from ctypes import wintypes
+
+    create_file = ctypes.windll.kernel32.CreateFileW
+    create_file.argtypes = (
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    )
+    create_file.restype = wintypes.HANDLE
+    handle = create_file(
+        str(path),
+        0x80000000 | 0x40000000,  # GENERIC_READ | GENERIC_WRITE
+        0x00000001 | 0x00000002 | 0x00000004,  # all share modes
+        None,
+        3,  # OPEN_EXISTING
+        0x02000000,  # FILE_FLAG_BACKUP_SEMANTICS
+        None,
+    )
+    invalid_handle = wintypes.HANDLE(-1).value
+    if handle == invalid_handle:
+        error = ctypes.get_last_error()
+        raise OSError(error, os.strerror(error), str(path))
+    try:
+        if not ctypes.windll.kernel32.FlushFileBuffers(handle):
+            error = ctypes.get_last_error()
+            raise OSError(error, os.strerror(error), str(path))
+    finally:
+        ctypes.windll.kernel32.CloseHandle(handle)
 
 
 def _materialize_entries(
@@ -779,6 +874,10 @@ def _publish_new_durable_json(path: Path, payload: dict[str, Any]) -> None:
     finally:
         if temporary.exists():
             temporary.unlink()
+    # Linking the complete, fsynced record is the activation commit.  Flush both
+    # directory entries after the temporary name is removed before reporting it.
+    _fsync_directory(path.parent)
+    _fsync_directory(path.parent.parent)
 
 
 def _activation_record_path(container: Path) -> Path:
