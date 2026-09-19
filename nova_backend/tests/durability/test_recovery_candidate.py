@@ -7,10 +7,18 @@ from pathlib import Path
 
 import pytest
 import src.durability.recovery_candidate as recovery_candidate_module
-from src.durability.maintenance import ControlLockActiveError, exclusive_control_lock
+from src.durability.maintenance import (
+    ControlLockActiveError,
+    MaintenanceTimeoutError,
+    exclusive_control_lock,
+    mutation_scope,
+)
 from src.durability.recovery_candidate import (
+    RecoveryCandidateActivationError,
     RecoveryCandidateError,
     RecoveryCandidateValidationError,
+    activate_recovery_candidate,
+    active_recovery_generation,
     create_recovery_candidate,
     validate_recovery_candidate,
 )
@@ -65,6 +73,17 @@ def _inactive_candidate(tmp_path: Path):
         registry=(store,),
     )
     return store, snapshot, candidate
+
+
+def _validated_activation_input(tmp_path: Path):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    validation = validate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    return store, snapshot, candidate, validation
 
 
 def test_migration_materializes_inactive_candidate_without_writing_live_state(
@@ -318,6 +337,211 @@ def test_validation_accepts_a_valid_empty_payload_candidate(tmp_path: Path):
 
     assert result.candidate_id == "candidate-empty"
     assert (candidate.candidate_path / "payload").is_dir()
+
+
+def test_activation_revalidates_then_switches_one_complete_generation(tmp_path: Path):
+    store, snapshot, candidate, validation = _validated_activation_input(tmp_path)
+    candidate_before = {
+        path.relative_to(candidate.candidate_path).as_posix(): path.read_bytes()
+        for path in candidate.candidate_path.rglob("*")
+        if path.is_file()
+    }
+
+    result = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-gen-1",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+
+    expected = candidate.candidate_path / "payload/generation/data/sample.json"
+    assert result.candidate_id == validation.candidate_id
+    assert result.generation_path == tmp_path / "container/generations/recovered-gen-1"
+    assert (result.generation_path / "data/sample.json").read_bytes() == expected.read_bytes()
+    assert result.activation == {
+        "recovery_activation_format_version": 1,
+        "candidate_id": "candidate-validation",
+        "generation_id": "recovered-gen-1",
+        "source_snapshot_id": "source-snapshot",
+        "source_manifest_sha256": validation.source_manifest_sha256,
+    }
+    assert json.loads(result.activation_path.read_text(encoding="utf-8")) == result.activation
+    assert active_recovery_generation(container_root=tmp_path / "container") == result
+    assert {
+        path.relative_to(candidate.candidate_path).as_posix(): path.read_bytes()
+        for path in candidate.candidate_path.rglob("*")
+        if path.is_file()
+    } == candidate_before
+
+
+def test_activation_rejects_invalid_candidate_without_creating_authority(tmp_path: Path):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    (candidate.candidate_path / "payload/generation/data/sample.json").write_text(
+        '{"value": false}', encoding="utf-8"
+    )
+
+    with pytest.raises(RecoveryCandidateValidationError, match="candidate file hash mismatch"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-invalid",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert not (tmp_path / "container/generations/recovered-invalid").exists()
+
+
+def test_activation_refuses_mixed_scope_recovery_registry(tmp_path: Path):
+    generation_store = _store("generation_state", "data/state.json")
+    container_store = _store("container_state", "cache/container.json", location_scope="container")
+    runtime_state = tmp_path / "runtime/data/state.json"
+    runtime_state.parent.mkdir(parents=True)
+    runtime_state.write_text('{"value": "snapshot"}', encoding="utf-8")
+    live_state = tmp_path / "container/cache/container.json"
+    live_state.parent.mkdir(parents=True)
+    live_state.write_text('{"value": "live"}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (generation_store, container_store))
+    candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-mixed",
+        registry=(generation_store, container_store),
+    )
+
+    with pytest.raises(RecoveryCandidateActivationError, match="container-scoped"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-mixed",
+            container_root=tmp_path / "container",
+            registry=(generation_store, container_store),
+        )
+
+    assert live_state.read_text(encoding="utf-8") == '{"value": "live"}'
+    assert active_recovery_generation(container_root=tmp_path / "container") is None
+
+
+def test_activation_never_replaces_existing_authority(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-second",
+        registry=(store,),
+    )
+
+    with pytest.raises(RecoveryCandidateActivationError, match="already exists"):
+        activate_recovery_candidate(
+            candidate_path=second_candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-second",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    assert active_recovery_generation(container_root=tmp_path / "container") == first
+    assert not (tmp_path / "container/generations/recovered-second").exists()
+
+
+def test_activation_copy_failure_leaves_no_authoritative_or_staged_generation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+
+    def fail_copy(*args, **kwargs):
+        raise RecoveryCandidateActivationError("injected copy failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_copy_candidate_file", fail_copy)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected copy failure"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-failure",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert not (tmp_path / "container/generations/recovered-failure").exists()
+
+
+def test_activation_sync_failure_prevents_authority_publication(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+
+    def fail_sync(*args, **kwargs):
+        raise RecoveryCandidateActivationError("injected staged sync failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_sync_staged_generation", fail_sync)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected staged sync failure"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-unsynced",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert not (tmp_path / "container/generations/recovered-unsynced").exists()
+
+
+def test_post_commit_failure_never_removes_the_authoritative_generation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    original_publish = recovery_candidate_module._publish_new_durable_json
+
+    def publish_then_fail(*args, **kwargs):
+        original_publish(*args, **kwargs)
+        raise RecoveryCandidateActivationError("injected post-commit failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_publish_new_durable_json", publish_then_fail)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected post-commit failure"):
+        activate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-committed",
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+    active = active_recovery_generation(container_root=tmp_path / "container")
+    assert active is not None
+    assert active.generation_id == "recovered-committed"
+    assert (active.generation_path / "data/sample.json").is_file()
+
+
+def test_activation_refuses_to_run_while_authoritative_mutation_is_admitted(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+
+    with mutation_scope(container_root=tmp_path / "container"):
+        with pytest.raises(MaintenanceTimeoutError):
+            activate_recovery_candidate(
+                candidate_path=candidate.candidate_path,
+                snapshot_path=snapshot.snapshot_path,
+                generation_id="recovered-busy",
+                container_root=tmp_path / "container",
+                registry=(store,),
+                maintenance_timeout=0,
+            )
+
+    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert not (tmp_path / "container/generations/recovered-busy").exists()
 
 
 @pytest.mark.parametrize(
