@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 import src.durability.recovery_candidate as recovery_candidate_module
+from src.durability.maintenance import ControlLockActiveError, exclusive_control_lock
 from src.durability.recovery_candidate import (
     RecoveryCandidateError,
     RecoveryCandidateValidationError,
@@ -393,3 +394,33 @@ def test_validation_rejects_candidate_changed_during_validation(
             container_root=tmp_path / "container",
             registry=(store,),
         )
+
+
+def test_validation_holds_candidate_lease_against_a_concurrent_control_plane_writer(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    original_validate = recovery_candidate_module.validate_state_file
+    lock_path = (
+        tmp_path / "container/control/recovery_candidates/.locks" / f"{candidate.candidate_id}.lock"
+    )
+
+    def attempt_mutation(*args, **kwargs):
+        with pytest.raises(ControlLockActiveError):
+            with exclusive_control_lock(lock_path):
+                (candidate.candidate_path / "payload/generation/data/late-change.json").write_text(
+                    "{}", encoding="utf-8"
+                )
+        return original_validate(*args, **kwargs)
+
+    monkeypatch.setattr(recovery_candidate_module, "validate_state_file", attempt_mutation)
+
+    result = validate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+
+    assert result.candidate_id == candidate.candidate_id
+    assert not (candidate.candidate_path / "payload/generation/data/late-change.json").exists()

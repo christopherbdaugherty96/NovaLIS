@@ -13,11 +13,13 @@ import os
 import re
 import shutil
 import stat
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 from uuid import uuid4
 
+from src.durability.maintenance import ControlLockActiveError, exclusive_control_lock
 from src.durability.snapshot import validate_snapshot, validate_state_file
 from src.durability.state_layout import (
     LogicalStore,
@@ -110,34 +112,35 @@ def create_recovery_candidate(
             f"recovery candidate already exists: {candidate_path}"
         ) from exc
 
-    staging_path = candidate_path / f".staging-{uuid4().hex}"
-    payload_path = candidate_path / "payload"
-    staging_path.mkdir()
+    with _candidate_operation_lock(candidates_root, operation_id, RecoveryCandidateError):
+        staging_path = candidate_path / f".staging-{uuid4().hex}"
+        payload_path = candidate_path / "payload"
+        staging_path.mkdir()
 
-    try:
-        entries = _materialize_entries(
-            source_root=source_root,
-            manifest=manifest,
-            stores=stores,
-            candidate_root=staging_path,
-        )
-        metadata: dict[str, Any] = {
-            "recovery_candidate_format_version": RECOVERY_CANDIDATE_FORMAT_VERSION,
-            "candidate_id": operation_id,
-            "state": "migrated_unvalidated",
-            "source_snapshot_id": manifest["snapshot_id"],
-            "source_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
-            "registry_store_count": len(stores),
-            "payload_root": "payload",
-            "entries": entries,
-        }
-        os.replace(staging_path, payload_path)
-        _write_durable_json(candidate_path / "recovery_candidate.json", metadata)
-    except BaseException:
-        # A failed migration never creates an activation-eligible candidate marker.
-        if staging_path.exists() and not staging_path.is_symlink():
-            shutil.rmtree(staging_path)
-        raise
+        try:
+            entries = _materialize_entries(
+                source_root=source_root,
+                manifest=manifest,
+                stores=stores,
+                candidate_root=staging_path,
+            )
+            metadata: dict[str, Any] = {
+                "recovery_candidate_format_version": RECOVERY_CANDIDATE_FORMAT_VERSION,
+                "candidate_id": operation_id,
+                "state": "migrated_unvalidated",
+                "source_snapshot_id": manifest["snapshot_id"],
+                "source_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+                "registry_store_count": len(stores),
+                "payload_root": "payload",
+                "entries": entries,
+            }
+            os.replace(staging_path, payload_path)
+            _write_durable_json(candidate_path / "recovery_candidate.json", metadata)
+        except BaseException:
+            # A failed migration never creates an activation-eligible candidate marker.
+            if staging_path.exists() and not staging_path.is_symlink():
+                shutil.rmtree(staging_path)
+            raise
 
     return RecoveryCandidateResult(
         candidate_id=operation_id,
@@ -196,41 +199,44 @@ def validate_recovery_candidate(
             f"snapshot={source_root}, candidate={candidate_root}"
         )
 
-    candidate_paths, initial_inventory = _candidate_tree_fingerprint(candidate_root)
-    metadata = _read_candidate_metadata(candidate_root / "recovery_candidate.json")
-    candidate_id = metadata.get("candidate_id")
-    if not isinstance(candidate_id, str):
-        raise RecoveryCandidateValidationError("candidate metadata candidate_id is invalid")
-    _require_safe_id(candidate_id, "candidate metadata candidate_id")
-    if candidate_root.name != candidate_id:
-        raise RecoveryCandidateValidationError("candidate metadata ID does not match its container")
-    if metadata.get("recovery_candidate_format_version") != RECOVERY_CANDIDATE_FORMAT_VERSION:
-        raise RecoveryCandidateValidationError("unsupported recovery candidate format version")
-    if metadata.get("state") != "migrated_unvalidated":
-        raise RecoveryCandidateValidationError("candidate is not an inactive unvalidated migration")
-    if metadata.get("source_snapshot_id") != manifest.get("snapshot_id"):
-        raise RecoveryCandidateValidationError("candidate source snapshot ID mismatch")
-    source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
-    if metadata.get("source_manifest_sha256") != source_manifest_sha256:
-        raise RecoveryCandidateValidationError("candidate source manifest hash mismatch")
-    if metadata.get("registry_store_count") != len(stores):
-        raise RecoveryCandidateValidationError("candidate registry store count mismatch")
-    if metadata.get("payload_root") != "payload":
-        raise RecoveryCandidateValidationError("candidate payload root is invalid")
+    candidate_id = candidate_root.name
+    _require_safe_id(candidate_id, "candidate directory name")
+    with _candidate_operation_lock(candidates_root, candidate_id, RecoveryCandidateValidationError):
+        candidate_paths, initial_inventory = _candidate_tree_fingerprint(candidate_root)
+        metadata = _read_candidate_metadata(candidate_root / "recovery_candidate.json")
+        if metadata.get("candidate_id") != candidate_id:
+            raise RecoveryCandidateValidationError(
+                "candidate metadata ID does not match its container"
+            )
+        if metadata.get("recovery_candidate_format_version") != RECOVERY_CANDIDATE_FORMAT_VERSION:
+            raise RecoveryCandidateValidationError("unsupported recovery candidate format version")
+        if metadata.get("state") != "migrated_unvalidated":
+            raise RecoveryCandidateValidationError(
+                "candidate is not an inactive unvalidated migration"
+            )
+        if metadata.get("source_snapshot_id") != manifest.get("snapshot_id"):
+            raise RecoveryCandidateValidationError("candidate source snapshot ID mismatch")
+        source_manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+        if metadata.get("source_manifest_sha256") != source_manifest_sha256:
+            raise RecoveryCandidateValidationError("candidate source manifest hash mismatch")
+        if metadata.get("registry_store_count") != len(stores):
+            raise RecoveryCandidateValidationError("candidate registry store count mismatch")
+        if metadata.get("payload_root") != "payload":
+            raise RecoveryCandidateValidationError("candidate payload root is invalid")
 
-    expected_entries = _expected_candidate_entries(manifest, stores)
-    if metadata.get("entries") != expected_entries:
-        raise RecoveryCandidateValidationError("candidate metadata inventory mismatch")
-    _validate_candidate_payload(
-        candidate_root=candidate_root,
-        expected_entries=expected_entries,
-        manifest=manifest,
-        stores=stores,
-        candidate_paths=candidate_paths,
-    )
-    _, final_inventory = _candidate_tree_fingerprint(candidate_root)
-    if final_inventory != initial_inventory:
-        raise RecoveryCandidateValidationError("candidate contents changed during validation")
+        expected_entries = _expected_candidate_entries(manifest, stores)
+        if metadata.get("entries") != expected_entries:
+            raise RecoveryCandidateValidationError("candidate metadata inventory mismatch")
+        _validate_candidate_payload(
+            candidate_root=candidate_root,
+            expected_entries=expected_entries,
+            manifest=manifest,
+            stores=stores,
+            candidate_paths=candidate_paths,
+        )
+        _, final_inventory = _candidate_tree_fingerprint(candidate_root)
+        if final_inventory != initial_inventory:
+            raise RecoveryCandidateValidationError("candidate contents changed during validation")
 
     return RecoveryCandidateValidationResult(
         candidate_id=candidate_id,
@@ -450,6 +456,26 @@ def _candidate_tree_fingerprint(root: Path) -> tuple[tuple[Path, ...], tuple[tup
             )
         )
     return paths, tuple(inventory)
+
+
+def _candidate_lock_path(candidates_root: Path, candidate_id: str) -> Path:
+    return candidates_root / ".locks" / f"{candidate_id}.lock"
+
+
+@contextmanager
+def _candidate_operation_lock(
+    candidates_root: Path,
+    candidate_id: str,
+    error_type: type[RecoveryCandidateError],
+) -> Iterator[None]:
+    lock_path = _candidate_lock_path(candidates_root, candidate_id)
+    if _path_has_link_or_reparse(lock_path, candidates_root):
+        raise error_type(f"linked recovery candidate lock refused: {lock_path}")
+    try:
+        with exclusive_control_lock(lock_path):
+            yield
+    except ControlLockActiveError as exc:
+        raise error_type(f"recovery candidate is busy: {candidate_id}") from exc
 
 
 def _candidate_target_relative(store: LogicalStore, file_record: dict[str, Any]) -> Path:
