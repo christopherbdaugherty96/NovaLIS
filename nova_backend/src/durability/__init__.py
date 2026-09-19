@@ -7,10 +7,14 @@ from src.durability.corruption import (
     require_state,
 )
 from src.durability.recovery_candidate import (
+    RecoveryCandidateActivationError,
+    RecoveryCandidateActivationResult,
     RecoveryCandidateError,
     RecoveryCandidateResult,
     RecoveryCandidateValidationError,
     RecoveryCandidateValidationResult,
+    activate_recovery_candidate,
+    active_recovery_generation,
     create_recovery_candidate,
     validate_recovery_candidate,
 )
@@ -51,9 +55,13 @@ __all__ = [
     "validate_state_file",
     "validate_snapshot",
     "RecoveryCandidateError",
+    "RecoveryCandidateActivationError",
+    "RecoveryCandidateActivationResult",
     "RecoveryCandidateResult",
     "RecoveryCandidateValidationError",
     "RecoveryCandidateValidationResult",
     "create_recovery_candidate",
     "validate_recovery_candidate",
+    "activate_recovery_candidate",
+    "active_recovery_generation",
 ]
