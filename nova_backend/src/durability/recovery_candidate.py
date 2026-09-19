@@ -196,7 +196,7 @@ def validate_recovery_candidate(
             f"snapshot={source_root}, candidate={candidate_root}"
         )
 
-    candidate_paths = _safe_tree_paths(candidate_root, "recovery candidate")
+    candidate_paths, initial_inventory = _candidate_tree_fingerprint(candidate_root)
     metadata = _read_candidate_metadata(candidate_root / "recovery_candidate.json")
     candidate_id = metadata.get("candidate_id")
     if not isinstance(candidate_id, str):
@@ -228,6 +228,9 @@ def validate_recovery_candidate(
         stores=stores,
         candidate_paths=candidate_paths,
     )
+    _, final_inventory = _candidate_tree_fingerprint(candidate_root)
+    if final_inventory != initial_inventory:
+        raise RecoveryCandidateValidationError("candidate contents changed during validation")
 
     return RecoveryCandidateValidationResult(
         candidate_id=candidate_id,
@@ -374,9 +377,10 @@ def _validate_candidate_payload(
         raise RecoveryCandidateValidationError(
             f"candidate inventory mismatch; missing={missing}, extra={extra}"
         )
-    expected_directories = {
+    expected_directories = {Path("payload")}
+    expected_directories.update(
         parent for relative in expected_files for parent in relative.parents if parent != Path(".")
-    }
+    )
     actual_directories = {
         path.relative_to(candidate_root) for path in candidate_paths if path.is_dir()
     }
@@ -423,6 +427,29 @@ def _safe_tree_paths(root: Path, label: str) -> tuple[Path, ...]:
     except OSError as exc:
         raise RecoveryCandidateValidationError(f"{label} inventory failed: {exc}") from exc
     return tuple(paths)
+
+
+def _candidate_tree_fingerprint(root: Path) -> tuple[tuple[Path, ...], tuple[tuple[Any, ...], ...]]:
+    """Return a read-only inventory that detects concurrent candidate changes."""
+
+    paths = _safe_tree_paths(root, "recovery candidate")
+    inventory: list[tuple[Any, ...]] = []
+    for path in paths:
+        relative = path.relative_to(root).as_posix()
+        if path.is_dir():
+            inventory.append((relative, "directory"))
+            continue
+        stat_result = path.stat(follow_symlinks=False)
+        inventory.append(
+            (
+                relative,
+                "file",
+                stat_result.st_size,
+                stat_result.st_mtime_ns,
+                _sha256_file(path),
+            )
+        )
+    return paths, tuple(inventory)
 
 
 def _candidate_target_relative(store: LogicalStore, file_record: dict[str, Any]) -> Path:

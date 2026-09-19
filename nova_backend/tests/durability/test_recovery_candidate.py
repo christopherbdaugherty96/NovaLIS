@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+import src.durability.recovery_candidate as recovery_candidate_module
 from src.durability.recovery_candidate import (
     RecoveryCandidateError,
     RecoveryCandidateValidationError,
@@ -275,6 +276,27 @@ def test_validation_accepts_inactive_candidate_without_writing_it_or_live_state(
     } == candidate_before
 
 
+def test_validation_accepts_a_valid_empty_payload_candidate(tmp_path: Path):
+    excluded_store = _store("machine_secret", "secrets/provider_keys.json", included=False)
+    snapshot = _snapshot(tmp_path, (excluded_store,))
+    candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-empty",
+        registry=(excluded_store,),
+    )
+
+    result = validate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        registry=(excluded_store,),
+    )
+
+    assert result.candidate_id == "candidate-empty"
+    assert (candidate.candidate_path / "payload").is_dir()
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     (
@@ -344,6 +366,29 @@ def test_validation_rejects_candidate_outside_its_control_plane_root(tmp_path: P
     ):
         validate_recovery_candidate(
             candidate_path=misplaced,
+            snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+
+def test_validation_rejects_candidate_changed_during_validation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    original_validate = recovery_candidate_module.validate_state_file
+
+    def mutate_after_validation(*args, **kwargs):
+        result = original_validate(*args, **kwargs)
+        late_file = candidate.candidate_path / "payload/generation/data/late-change.json"
+        late_file.write_text("{}", encoding="utf-8")
+        return result
+
+    monkeypatch.setattr(recovery_candidate_module, "validate_state_file", mutate_after_validation)
+
+    with pytest.raises(RecoveryCandidateValidationError, match="changed during validation"):
+        validate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
             snapshot_path=snapshot.snapshot_path,
             container_root=tmp_path / "container",
             registry=(store,),
