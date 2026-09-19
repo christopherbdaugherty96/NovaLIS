@@ -105,14 +105,14 @@ def create_recovery_candidate(
         )
 
     candidates_root.mkdir(parents=True, exist_ok=True)
-    try:
-        candidate_path.mkdir()
-    except FileExistsError as exc:
-        raise RecoveryCandidateError(
-            f"recovery candidate already exists: {candidate_path}"
-        ) from exc
-
     with _candidate_operation_lock(candidates_root, operation_id, RecoveryCandidateError):
+        try:
+            candidate_path.mkdir()
+        except FileExistsError as exc:
+            raise RecoveryCandidateError(
+                f"recovery candidate already exists: {candidate_path}"
+            ) from exc
+
         staging_path = candidate_path / f".staging-{uuid4().hex}"
         payload_path = candidate_path / "payload"
         staging_path.mkdir()

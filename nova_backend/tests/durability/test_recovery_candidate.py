@@ -202,6 +202,28 @@ def test_migration_refuses_candidate_path_reserved_concurrently(
     assert (candidate_path / "other-owner.txt").read_text(encoding="utf-8") == "other process"
 
 
+def test_migration_lease_contention_leaves_no_orphaned_candidate_directory(tmp_path: Path):
+    store = _store("sample", "data/sample.json")
+    source = tmp_path / "runtime/data/sample.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"value": true}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (store,))
+    candidate_id = "candidate-locked"
+    candidates_root = tmp_path / "container/control/recovery_candidates"
+    lock_path = candidates_root / ".locks" / f"{candidate_id}.lock"
+
+    with exclusive_control_lock(lock_path):
+        with pytest.raises(RecoveryCandidateError, match="recovery candidate is busy"):
+            create_recovery_candidate(
+                snapshot_path=snapshot.snapshot_path,
+                container_root=tmp_path / "container",
+                candidate_id=candidate_id,
+                registry=(store,),
+            )
+
+    assert not (candidates_root / candidate_id).exists()
+
+
 def test_migration_refuses_candidate_container_inside_source_snapshot(tmp_path: Path):
     store = _store("sample", "data/sample.json")
     source = tmp_path / "runtime/data/sample.json"
