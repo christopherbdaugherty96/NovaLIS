@@ -850,7 +850,7 @@ def _preserves_post_405_boundary(
     semantic_active = re.sub(r"[^A-Z0-9]+", " ", active.upper())
     obsolete_current_lane_claim = bool(
         re.search(
-            r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:CURRENTLY )?(?:IS )?"
+            r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:CURRENTLY )?(?:IS )?(?:CURRENTLY )?"
             r"RECOVERY CANDIDATE VALIDATION\b"
             r"|\bRECOVERY CANDIDATE VALIDATION (?:IS )?"
             r"(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE\b",
