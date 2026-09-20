@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,7 +24,7 @@ from src.durability.recovery_candidate import (
     validate_recovery_candidate,
 )
 from src.durability.snapshot import SnapshotValidationError, create_snapshot
-from src.durability.state_layout import LogicalStore
+from src.durability.state_layout import LogicalStore, logical_store_registry
 
 FIXED_TIME = datetime(2026, 9, 18, 12, 0, tzinfo=timezone.utc)
 
@@ -359,15 +360,22 @@ def test_activation_revalidates_then_switches_one_complete_generation(tmp_path: 
     assert result.candidate_id == validation.candidate_id
     assert result.generation_path == tmp_path / "container/generations/recovered-gen-1"
     assert (result.generation_path / "data/sample.json").read_bytes() == expected.read_bytes()
-    assert result.activation == {
-        "recovery_activation_format_version": 1,
-        "candidate_id": "candidate-validation",
-        "generation_id": "recovered-gen-1",
-        "source_snapshot_id": "source-snapshot",
-        "source_manifest_sha256": validation.source_manifest_sha256,
-    }
+    assert result.activation["recovery_activation_slot_format_version"] == 1
+    assert result.activation["slot"] == "slot-a"
+    assert result.activation["sequence"] == 1
+    assert result.activation["generation_id"] == "recovered-gen-1"
+    assert len(result.activation["generation_manifest_sha256"]) == 64
+    generation_manifest = json.loads(
+        (result.generation_path / "recovery_generation_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert generation_manifest["candidate_id"] == validation.candidate_id
+    assert generation_manifest["source_manifest_sha256"] == validation.source_manifest_sha256
     assert json.loads(result.activation_path.read_text(encoding="utf-8")) == result.activation
-    assert active_recovery_generation(container_root=tmp_path / "container") == result
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == result
     assert {
         path.relative_to(candidate.candidate_path).as_posix(): path.read_bytes()
         for path in candidate.candidate_path.rglob("*")
@@ -390,7 +398,9 @@ def test_activation_rejects_invalid_candidate_without_creating_authority(tmp_pat
             registry=(store,),
         )
 
-    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) is None
     assert not (tmp_path / "container/generations/recovered-invalid").exists()
 
 
@@ -424,7 +434,7 @@ def test_activation_refuses_mixed_scope_recovery_registry(tmp_path: Path):
     assert active_recovery_generation(container_root=tmp_path / "container") is None
 
 
-def test_activation_never_replaces_existing_authority(tmp_path: Path):
+def test_activation_preserves_previous_slot_and_selects_newest_valid_generation(tmp_path: Path):
     store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
     first = activate_recovery_candidate(
         candidate_path=candidate.candidate_path,
@@ -440,17 +450,176 @@ def test_activation_never_replaces_existing_authority(tmp_path: Path):
         registry=(store,),
     )
 
-    with pytest.raises(RecoveryCandidateActivationError, match="already exists"):
-        activate_recovery_candidate(
-            candidate_path=second_candidate.candidate_path,
+    second = activate_recovery_candidate(
+        candidate_path=second_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-second",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+
+    assert first.activation["slot"] == "slot-a"
+    assert second.activation["slot"] == "slot-b"
+    assert second.activation["sequence"] == 2
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == second
+    assert first.generation_path.is_dir()
+
+
+def test_selection_falls_back_when_newest_generation_is_corrupted(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-second",
+        registry=(store,),
+    )
+    second = activate_recovery_candidate(
+        candidate_path=second_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-second",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    (second.generation_path / "data/sample.json").write_text(
+        '{"value": false}', encoding="utf-8"
+    )
+
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == first
+
+
+def test_selection_fails_closed_when_every_slot_is_invalid(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    activated = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-only",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    (activated.generation_path / "data/sample.json").unlink()
+
+    with pytest.raises(RecoveryCandidateActivationError, match="no fully valid"):
+        active_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+
+def test_selection_rejects_torn_generation_and_uses_previous_valid_slot(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-second",
+        registry=(store,),
+    )
+    second = activate_recovery_candidate(
+        candidate_path=second_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-second",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    (second.generation_path / "recovery_generation_manifest.json").unlink()
+
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == first
+
+
+def test_selection_ignores_malformed_newest_slot_and_uses_previous_valid_slot(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-second",
+        registry=(store,),
+    )
+    second = activate_recovery_candidate(
+        candidate_path=second_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-second",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second.activation_path.write_text("{", encoding="utf-8")
+
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == first
+
+
+def test_validation_rejects_hard_linked_candidate_payload(tmp_path: Path):
+    store, snapshot, candidate = _inactive_candidate(tmp_path)
+    payload = candidate.candidate_path / "payload/generation/data/sample.json"
+    os.link(payload, payload.with_name("sample-alias.json"))
+
+    with pytest.raises(RecoveryCandidateValidationError, match="hard-linked"):
+        validate_recovery_candidate(
+            candidate_path=candidate.candidate_path,
             snapshot_path=snapshot.snapshot_path,
-            generation_id="recovered-second",
             container_root=tmp_path / "container",
             registry=(store,),
         )
 
-    assert active_recovery_generation(container_root=tmp_path / "container") == first
-    assert not (tmp_path / "container/generations/recovered-second").exists()
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows directory durability probe")
+def test_windows_directory_flush_supports_activation_control_directories(tmp_path: Path):
+    directory = tmp_path / "control" / "recovery_activation_slots"
+    directory.mkdir(parents=True)
+
+    recovery_candidate_module._fsync_directory(directory)
+
+
+def test_activation_selects_an_empty_generation_with_the_production_registry(tmp_path: Path):
+    registry = logical_store_registry()
+    snapshot = create_snapshot(
+        container_root=tmp_path / "container",
+        runtime_root=tmp_path / "runtime",
+        repository_root=tmp_path / "repository",
+        snapshot_id="production-empty-source",
+        build_id="build",
+        created_at=FIXED_TIME,
+        registry=registry,
+    )
+    candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="production-empty-candidate",
+        registry=registry,
+    )
+
+    result = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="production-empty-generation",
+        container_root=tmp_path / "container",
+        registry=registry,
+    )
+
+    assert active_recovery_generation(container_root=tmp_path / "container", registry=registry) == result
 
 
 def test_activation_copy_failure_leaves_no_authoritative_or_staged_generation(
@@ -472,7 +641,9 @@ def test_activation_copy_failure_leaves_no_authoritative_or_staged_generation(
             registry=(store,),
         )
 
-    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) is None
     assert not (tmp_path / "container/generations/recovered-failure").exists()
 
 
@@ -495,7 +666,9 @@ def test_activation_sync_failure_prevents_authority_publication(
             registry=(store,),
         )
 
-    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) is None
     assert not (tmp_path / "container/generations/recovered-unsynced").exists()
 
 
@@ -503,13 +676,13 @@ def test_post_commit_failure_never_removes_the_authoritative_generation(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ):
     store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
-    original_publish = recovery_candidate_module._publish_new_durable_json
+    original_publish = recovery_candidate_module._replace_durable_json
 
     def publish_then_fail(*args, **kwargs):
         original_publish(*args, **kwargs)
         raise RecoveryCandidateActivationError("injected post-commit failure")
 
-    monkeypatch.setattr(recovery_candidate_module, "_publish_new_durable_json", publish_then_fail)
+    monkeypatch.setattr(recovery_candidate_module, "_replace_durable_json", publish_then_fail)
 
     with pytest.raises(RecoveryCandidateActivationError, match="injected post-commit failure"):
         activate_recovery_candidate(
@@ -520,7 +693,9 @@ def test_post_commit_failure_never_removes_the_authoritative_generation(
             registry=(store,),
         )
 
-    active = active_recovery_generation(container_root=tmp_path / "container")
+    active = active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    )
     assert active is not None
     assert active.generation_id == "recovered-committed"
     assert (active.generation_path / "data/sample.json").is_file()
@@ -540,7 +715,9 @@ def test_activation_refuses_to_run_while_authoritative_mutation_is_admitted(tmp_
                 maintenance_timeout=0,
             )
 
-    assert active_recovery_generation(container_root=tmp_path / "container") is None
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) is None
     assert not (tmp_path / "container/generations/recovered-busy").exists()
 
 

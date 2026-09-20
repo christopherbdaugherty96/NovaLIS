@@ -2,8 +2,8 @@
 
 Migration and validation operate only on an inactive control-plane candidate.
 Activation is a separate, fail-closed transition: it stages one complete
-generation while mutation admission is closed, then publishes one durable
-active-generation record.  It does not implement rollback or restore.
+generation while mutation admission is closed, then publishes one of two
+integrity-bound activation slots.  It does not implement rollback or restore.
 """
 
 from __future__ import annotations
@@ -32,7 +32,9 @@ from src.durability.state_layout import (
 )
 
 RECOVERY_CANDIDATE_FORMAT_VERSION = 1
-RECOVERY_ACTIVATION_FORMAT_VERSION = 1
+RECOVERY_GENERATION_FORMAT_VERSION = 1
+RECOVERY_ACTIVATION_SLOT_FORMAT_VERSION = 1
+_ACTIVATION_SLOT_NAMES = ("slot-a", "slot-b")
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$")
 _WINDOWS_RESERVED_NAMES = {
     "CON",
@@ -79,7 +81,7 @@ class RecoveryCandidateValidationResult:
 
 @dataclass(frozen=True)
 class RecoveryCandidateActivationResult:
-    """Evidence of one completed, non-reversible activation transition."""
+    """Evidence of one completed selection of a validated generation."""
 
     candidate_id: str
     generation_id: str
@@ -241,13 +243,13 @@ def activate_recovery_candidate(
     registry: tuple[LogicalStore, ...] | None = None,
     maintenance_timeout: float = 30.0,
 ) -> RecoveryCandidateActivationResult:
-    """Make one validated generation candidate authoritative exactly once.
+    """Stage and select one validated generation through the inactive slot.
 
-    This transition refuses mixed container-scoped recovery stores because they
-    cannot share one atomic generation pointer.  The generation is completely
-    materialized before the active record is published; until that final record
-    exists, no staged path is authoritative.  Existing active records are never
-    replaced here: rollback and later replacement are separate work.
+    The new generation and its manifest are complete before its slot is
+    replaced.  The previously selected valid slot is never overwritten, so
+    selection can deterministically retain it if the new slot is torn, corrupt,
+    or references an invalid generation after interruption.  This is an
+    authority primitive only; no user-invoked rollback or restore is provided.
     """
 
     stores = logical_store_registry() if registry is None else registry
@@ -296,15 +298,24 @@ def activate_recovery_candidate(
                     manifest_bytes=manifest_bytes,
                     stores=stores,
                 )
-                activation_path = _activation_record_path(container)
-                if _path_has_link_or_reparse(activation_path, container):
+                legacy_path = _legacy_activation_record_path(container)
+                if legacy_path.exists():
                     raise RecoveryCandidateActivationError(
-                        f"linked recovery activation record refused: {activation_path}"
+                        "legacy single-slot recovery activation record requires explicit migration"
                     )
-                if activation_path.exists():
+                slots_root = _activation_slots_root(container)
+                if _path_has_link_or_reparse(slots_root, container):
                     raise RecoveryCandidateActivationError(
-                        "an active recovery generation already exists"
+                        f"linked recovery activation slots refused: {slots_root}"
                     )
+                slots_root.mkdir(parents=True, exist_ok=True)
+                slot_records = _read_activation_slots(
+                    container=container, stores=stores, require_valid_generations=True
+                )
+                active_slot = _select_highest_valid_slot(slot_records)
+                target_slot = _inactive_slot_name(active_slot, slot_records)
+                next_sequence = max((record["sequence"] for record in slot_records.values()), default=0) + 1
+                activation_path = _activation_slot_path(container, target_slot)
 
                 generations_root = container / "generations"
                 if _path_has_link_or_reparse(generations_root, container):
@@ -326,25 +337,33 @@ def activate_recovery_candidate(
                         metadata=validation.metadata,
                         generation_path=generation_path,
                     )
+                    generation_manifest = _build_generation_manifest(
+                        generation_id=generation_id,
+                        validation=validation,
+                        manifest=manifest,
+                        stores=stores,
+                    )
+                    generation_manifest_path = _generation_manifest_path(generation_path)
+                    _write_durable_json(generation_manifest_path, generation_manifest)
                     _sync_staged_generation(
                         generation_path=generation_path,
                         generations_root=generations_root,
                         container=container,
                     )
                     activation = {
-                        "recovery_activation_format_version": RECOVERY_ACTIVATION_FORMAT_VERSION,
-                        "candidate_id": candidate_id,
+                        "recovery_activation_slot_format_version": RECOVERY_ACTIVATION_SLOT_FORMAT_VERSION,
+                        "slot": target_slot,
+                        "sequence": next_sequence,
                         "generation_id": generation_id,
-                        "source_snapshot_id": validation.source_snapshot_id,
-                        "source_manifest_sha256": validation.source_manifest_sha256,
+                        "generation_manifest_sha256": _sha256_file(generation_manifest_path),
                     }
-                    _publish_new_durable_json(activation_path, activation)
+                    _replace_durable_json(activation_path, activation)
                 except BaseException:
-                    # Creation of this record is the commit point.  A failure after
-                    # it exists is ambiguous to the caller, but must never remove
-                    # the generation it may already make authoritative.
+                    # A slot record naming this generation is the commit point.
+                    # Once it exists, cleanup cannot remove the generation even if
+                    # the caller sees a later durability/reporting failure.
                     if (
-                        not activation_path.exists()
+                        not _slot_references_generation(activation_path, generation_id)
                         and generation_path.is_dir()
                         and not generation_path.is_symlink()
                     ):
@@ -361,32 +380,66 @@ def activate_recovery_candidate(
 
 
 def active_recovery_generation(
-    *, container_root: Path | None = None
+    *,
+    container_root: Path | None = None,
+    registry: tuple[LogicalStore, ...] | None = None,
 ) -> RecoveryCandidateActivationResult | None:
-    """Read the sole authoritative recovery generation without changing it."""
+    """Select the highest-sequence fully valid recovery generation.
 
+    Slot records never win on shape alone: the installed generation manifest,
+    inventory, hashes, and state schemas must validate at read time.  A broken
+    newest slot therefore falls back to the older valid slot; no valid slot is a
+    visible safe failure rather than an implied empty state.
+    """
+
+    stores = logical_store_registry() if registry is None else registry
     configured_container = _configured_container_root(container_root)
     if _path_has_link_or_reparse(configured_container, Path(configured_container.anchor)):
         raise RecoveryCandidateActivationError(
             f"linked recovery container refused: {configured_container}"
-        )
+    )
     container = configured_container.resolve()
-    activation_path = _activation_record_path(container)
-    if not activation_path.exists():
-        return None
-    if _path_has_link_or_reparse(activation_path, container):
+    legacy_path = _legacy_activation_record_path(container)
+    if legacy_path.exists():
         raise RecoveryCandidateActivationError(
-            f"linked recovery activation record refused: {activation_path}"
+            "legacy single-slot recovery activation record requires explicit migration"
         )
-    activation = _read_activation_record(activation_path)
+    slots_root = _activation_slots_root(container)
+    if not slots_root.exists():
+        return None
+    if _path_has_link_or_reparse(slots_root, container):
+        raise RecoveryCandidateActivationError(
+            f"linked recovery activation slots refused: {slots_root}"
+        )
+    slot_records = _read_activation_slots(
+        container=container, stores=stores, require_valid_generations=False
+    )
+    if not slot_records and not any(
+        _activation_slot_path(container, slot).exists() for slot in _ACTIVATION_SLOT_NAMES
+    ):
+        return None
+    valid_slots: list[tuple[Path, dict[str, Any], dict[str, Any]]] = []
+    for slot, record in slot_records.items():
+        try:
+            generation_manifest = _validate_installed_generation(
+                container=container, record=record, stores=stores
+            )
+        except RecoveryCandidateActivationError:
+            continue
+        valid_slots.append((_activation_slot_path(container, slot), record, generation_manifest))
+    if not valid_slots:
+        raise RecoveryCandidateActivationError(
+            "no fully valid recovery activation slot is available"
+        )
+    highest_sequence = max(record["sequence"] for _, record, _ in valid_slots)
+    winners = [item for item in valid_slots if item[1]["sequence"] == highest_sequence]
+    if len(winners) != 1:
+        raise RecoveryCandidateActivationError("recovery activation slot sequence is ambiguous")
+    activation_path, activation, generation_manifest = winners[0]
     generation_id = str(activation["generation_id"])
     generation_path = container / "generations" / generation_id
-    if not generation_path.is_dir() or _path_has_link_or_reparse(generation_path, container):
-        raise RecoveryCandidateActivationError(
-            "active recovery generation is unavailable or linked"
-        )
     return RecoveryCandidateActivationResult(
-        candidate_id=str(activation["candidate_id"]),
+        candidate_id=str(generation_manifest["candidate_id"]),
         generation_id=generation_id,
         generation_path=generation_path,
         activation_path=activation_path,
@@ -752,6 +805,10 @@ def _safe_tree_paths(root: Path, label: str) -> tuple[Path, ...]:
                     raise RecoveryCandidateValidationError(
                         f"{label} contains an unsupported filesystem type: {path}"
                     )
+                if stat.S_ISREG(mode) and path.stat(follow_symlinks=False).st_nlink != 1:
+                    raise RecoveryCandidateValidationError(
+                        f"{label} contains a hard-linked file: {path}"
+                    )
                 paths.append(path)
     except OSError as exc:
         raise RecoveryCandidateValidationError(f"{label} inventory failed: {exc}") from exc
@@ -854,8 +911,8 @@ def _write_durable_json(path: Path, payload: dict[str, Any]) -> None:
             temporary.unlink()
 
 
-def _publish_new_durable_json(path: Path, payload: dict[str, Any]) -> None:
-    """Atomically publish a new control record without replacing an existing one."""
+def _replace_durable_json(path: Path, payload: dict[str, Any]) -> None:
+    """Replace the inactive slot only after its complete bytes are durable."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
@@ -865,60 +922,313 @@ def _publish_new_durable_json(path: Path, payload: dict[str, Any]) -> None:
             handle.write(encoded)
             handle.flush()
             os.fsync(handle.fileno())
-        try:
-            os.link(temporary, path)
-        except FileExistsError as exc:
-            raise RecoveryCandidateActivationError(
-                "an active recovery generation already exists"
-            ) from exc
+        os.replace(temporary, path)
+        _fsync_directory(path.parent)
+        _fsync_directory(path.parent.parent)
     finally:
         if temporary.exists():
             temporary.unlink()
-    # Linking the complete, fsynced record is the activation commit.  Flush both
-    # directory entries after the temporary name is removed before reporting it.
-    _fsync_directory(path.parent)
-    _fsync_directory(path.parent.parent)
 
 
-def _activation_record_path(container: Path) -> Path:
+def _activation_slots_root(container: Path) -> Path:
+    return container / "control" / "recovery_activation_slots"
+
+
+def _activation_slot_path(container: Path, slot: str) -> Path:
+    if slot not in _ACTIVATION_SLOT_NAMES:
+        raise RecoveryCandidateActivationError(f"unsupported recovery activation slot: {slot}")
+    return _activation_slots_root(container) / f"{slot}.json"
+
+
+def _legacy_activation_record_path(container: Path) -> Path:
     return container / "control" / "recovery_activation.json"
 
 
-def _read_activation_record(path: Path) -> dict[str, Any]:
+def _generation_manifest_path(generation_path: Path) -> Path:
+    return generation_path / "recovery_generation_manifest.json"
+
+
+def _read_activation_slots(
+    *,
+    container: Path,
+    stores: tuple[LogicalStore, ...],
+    require_valid_generations: bool,
+) -> dict[str, dict[str, Any]]:
+    records: dict[str, dict[str, Any]] = {}
+    for slot in _ACTIVATION_SLOT_NAMES:
+        path = _activation_slot_path(container, slot)
+        if not path.exists():
+            continue
+        try:
+            record = _read_activation_slot(path, slot)
+            if require_valid_generations:
+                _validate_installed_generation(container=container, record=record, stores=stores)
+        except RecoveryCandidateActivationError:
+            if require_valid_generations:
+                raise
+            continue
+        records[slot] = record
+    return records
+
+
+def _read_activation_slot(path: Path, expected_slot: str) -> dict[str, Any]:
     if not path.is_file() or path.is_symlink():
         raise RecoveryCandidateActivationError(
-            f"recovery activation record is unavailable or linked: {path}"
+            f"recovery activation slot is unavailable or linked: {path}"
         )
     try:
-        activation = json.loads(path.read_text(encoding="utf-8"))
+        record = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise RecoveryCandidateActivationError(
-            f"recovery activation record is malformed: {exc}"
+            f"recovery activation slot is malformed: {exc}"
         ) from exc
     expected_keys = {
-        "recovery_activation_format_version",
+        "recovery_activation_slot_format_version",
+        "slot",
+        "sequence",
+        "generation_id",
+        "generation_manifest_sha256",
+    }
+    if not isinstance(record, dict) or set(record) != expected_keys:
+        raise RecoveryCandidateActivationError("recovery activation slot has an unsupported shape")
+    if record.get("recovery_activation_slot_format_version") != RECOVERY_ACTIVATION_SLOT_FORMAT_VERSION:
+        raise RecoveryCandidateActivationError("unsupported recovery activation slot format version")
+    if record.get("slot") != expected_slot:
+        raise RecoveryCandidateActivationError("recovery activation slot name mismatch")
+    if not isinstance(record.get("sequence"), int) or record["sequence"] < 1:
+        raise RecoveryCandidateActivationError("recovery activation slot sequence is invalid")
+    try:
+        _require_safe_id(str(record.get("generation_id")), "generation_id")
+    except ValueError as exc:
+        raise RecoveryCandidateActivationError("recovery activation slot has unsafe generation ID") from exc
+    digest = record.get("generation_manifest_sha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise RecoveryCandidateActivationError(
+            "recovery activation slot has invalid generation manifest hash"
+        )
+    return record
+
+
+def _select_highest_valid_slot(records: dict[str, dict[str, Any]]) -> str | None:
+    if not records:
+        return None
+    highest = max(record["sequence"] for record in records.values())
+    winners = [slot for slot, record in records.items() if record["sequence"] == highest]
+    if len(winners) != 1:
+        raise RecoveryCandidateActivationError("recovery activation slot sequence is ambiguous")
+    return winners[0]
+
+
+def _inactive_slot_name(
+    active_slot: str | None, records: dict[str, dict[str, Any]]
+) -> str:
+    if active_slot is not None:
+        return next(slot for slot in _ACTIVATION_SLOT_NAMES if slot != active_slot)
+    if not records:
+        return _ACTIVATION_SLOT_NAMES[0]
+    return next(slot for slot in _ACTIVATION_SLOT_NAMES if slot not in records)
+
+
+def _slot_references_generation(path: Path, generation_id: str) -> bool:
+    try:
+        record = _read_activation_slot(path, path.stem)
+    except RecoveryCandidateActivationError:
+        return False
+    return record.get("generation_id") == generation_id
+
+
+def _build_generation_manifest(
+    *,
+    generation_id: str,
+    validation: RecoveryCandidateValidationResult,
+    manifest: dict[str, Any],
+    stores: tuple[LogicalStore, ...],
+) -> dict[str, Any]:
+    """Build the installed-generation inventory from the validated snapshot."""
+
+    source_entries = {entry["logical_id"]: entry for entry in manifest["entries"]}
+    entries: list[dict[str, Any]] = []
+    for store in stores:
+        source_entry = source_entries[store.logical_id]
+        files: list[dict[str, Any]] = []
+        if source_entry["status"] == "included":
+            for source_file in source_entry["files"]:
+                relative = _installed_relative_path(store, source_file["store_relative_path"])
+                files.append(
+                    {
+                        "path": relative.as_posix(),
+                        "store_relative_path": source_file["store_relative_path"],
+                        "size_bytes": source_file["size_bytes"],
+                        "sha256": source_file["sha256"],
+                        "schema_versions": source_file["schema_versions"],
+                    }
+                )
+        entries.append(
+            {
+                "logical_id": store.logical_id,
+                "status": source_entry["status"],
+                "files": files,
+            }
+        )
+    return {
+        "recovery_generation_format_version": RECOVERY_GENERATION_FORMAT_VERSION,
+        "candidate_id": validation.candidate_id,
+        "generation_id": generation_id,
+        "source_snapshot_id": validation.source_snapshot_id,
+        "source_manifest_sha256": validation.source_manifest_sha256,
+        "registry_store_count": len(stores),
+        "entries": entries,
+    }
+
+
+def _validate_installed_generation(
+    *, container: Path, record: dict[str, Any], stores: tuple[LogicalStore, ...]
+) -> dict[str, Any]:
+    generation_id = str(record["generation_id"])
+    generation_path = container / "generations" / generation_id
+    if not generation_path.is_dir() or _path_has_link_or_reparse(generation_path, container):
+        raise RecoveryCandidateActivationError("selected recovery generation is unavailable or linked")
+    manifest_path = _generation_manifest_path(generation_path)
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        raise RecoveryCandidateActivationError("selected recovery generation manifest is unavailable")
+    if _sha256_file(manifest_path) != record["generation_manifest_sha256"]:
+        raise RecoveryCandidateActivationError("selected recovery generation manifest hash mismatch")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RecoveryCandidateActivationError(
+            f"selected recovery generation manifest is malformed: {exc}"
+        ) from exc
+    _validate_generation_manifest_shape(manifest, generation_id, stores)
+
+    try:
+        paths = _safe_tree_paths(generation_path, "selected recovery generation")
+    except RecoveryCandidateValidationError as exc:
+        raise RecoveryCandidateActivationError(str(exc)) from exc
+    expected_files = {Path("recovery_generation_manifest.json")}
+    expected_directories: set[Path] = set()
+    entries_by_id = {entry["logical_id"]: entry for entry in manifest["entries"]}
+    for store in stores:
+        entry = entries_by_id[store.logical_id]
+        for file_record in entry["files"]:
+            relative = _safe_relative_path(file_record["path"])
+            expected_files.add(relative)
+            target = generation_path / relative
+            if not target.is_file() or target.is_symlink():
+                raise RecoveryCandidateActivationError(
+                    f"selected recovery generation file is missing or linked: {relative}"
+                )
+            if target.stat().st_size != file_record["size_bytes"]:
+                raise RecoveryCandidateActivationError(
+                    f"selected recovery generation file size mismatch: {relative}"
+                )
+            if _sha256_file(target) != file_record["sha256"]:
+                raise RecoveryCandidateActivationError(
+                    f"selected recovery generation file hash mismatch: {relative}"
+                )
+            try:
+                schema_versions = validate_state_file(
+                    target, store.logical_id, file_record["store_relative_path"]
+                )
+            except Exception as exc:
+                raise RecoveryCandidateActivationError(
+                    f"selected recovery generation state validation failed: {relative}: {exc}"
+                ) from exc
+            if schema_versions != file_record["schema_versions"]:
+                raise RecoveryCandidateActivationError(
+                    f"selected recovery generation schema metadata mismatch: {relative}"
+                )
+            expected_directories.update(
+                parent for parent in relative.parents if parent != Path(".")
+            )
+    actual_files = {path.relative_to(generation_path) for path in paths if path.is_file()}
+    actual_directories = {path.relative_to(generation_path) for path in paths if path.is_dir()}
+    if actual_files != expected_files or actual_directories != expected_directories:
+        raise RecoveryCandidateActivationError("selected recovery generation inventory mismatch")
+    return manifest
+
+
+def _validate_generation_manifest_shape(
+    manifest: Any, generation_id: str, stores: tuple[LogicalStore, ...]
+) -> None:
+    expected_keys = {
+        "recovery_generation_format_version",
         "candidate_id",
         "generation_id",
         "source_snapshot_id",
         "source_manifest_sha256",
+        "registry_store_count",
+        "entries",
     }
-    if not isinstance(activation, dict) or set(activation) != expected_keys:
-        raise RecoveryCandidateActivationError("recovery activation record has an unsupported shape")
-    if activation.get("recovery_activation_format_version") != RECOVERY_ACTIVATION_FORMAT_VERSION:
-        raise RecoveryCandidateActivationError("unsupported recovery activation format version")
+    if not isinstance(manifest, dict) or set(manifest) != expected_keys:
+        raise RecoveryCandidateActivationError(
+            "selected recovery generation manifest has an unsupported shape"
+        )
+    if manifest.get("recovery_generation_format_version") != RECOVERY_GENERATION_FORMAT_VERSION:
+        raise RecoveryCandidateActivationError("unsupported recovery generation format version")
+    if manifest.get("generation_id") != generation_id:
+        raise RecoveryCandidateActivationError("selected recovery generation ID mismatch")
     for field in ("candidate_id", "generation_id", "source_snapshot_id"):
         try:
-            _require_safe_id(str(activation.get(field)), field)
+            _require_safe_id(str(manifest.get(field)), field)
         except ValueError as exc:
             raise RecoveryCandidateActivationError(
-                f"recovery activation record has unsafe {field}"
+                f"selected recovery generation manifest has unsafe {field}"
             ) from exc
-    digest = activation.get("source_manifest_sha256")
+    digest = manifest.get("source_manifest_sha256")
     if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
         raise RecoveryCandidateActivationError(
-            "recovery activation record has invalid source manifest hash"
+            "selected recovery generation manifest has invalid source manifest hash"
         )
-    return activation
+    if manifest.get("registry_store_count") != len(stores):
+        raise RecoveryCandidateActivationError("selected recovery generation registry count mismatch")
+    entries = manifest.get("entries")
+    if not isinstance(entries, list) or [entry.get("logical_id") for entry in entries if isinstance(entry, dict)] != [store.logical_id for store in stores]:
+        raise RecoveryCandidateActivationError("selected recovery generation registry inventory mismatch")
+    for store, entry in zip(stores, entries, strict=True):
+        if not isinstance(entry, dict) or set(entry) != {"logical_id", "status", "files"}:
+            raise RecoveryCandidateActivationError("selected recovery generation entry is malformed")
+        if entry["status"] not in {"included", "absent", "excluded"} or not isinstance(entry["files"], list):
+            raise RecoveryCandidateActivationError("selected recovery generation entry has invalid status")
+        if entry["status"] != "included" and entry["files"]:
+            raise RecoveryCandidateActivationError("selected recovery generation has files for an inactive store")
+        if not store.included_in_recovery and entry["status"] != "excluded":
+            raise RecoveryCandidateActivationError("selected recovery generation includes an excluded store")
+        for file_record in entry["files"]:
+            _validate_generation_file_record(store, file_record)
+
+
+def _validate_generation_file_record(store: LogicalStore, file_record: Any) -> None:
+    expected_keys = {"path", "store_relative_path", "size_bytes", "sha256", "schema_versions"}
+    if not isinstance(file_record, dict) or set(file_record) != expected_keys:
+        raise RecoveryCandidateActivationError("selected recovery generation file record is malformed")
+    relative = _safe_relative_path(file_record["path"])
+    store_relative = _safe_relative_path(file_record["store_relative_path"])
+    if relative != _installed_relative_path(store, store_relative.as_posix()):
+        raise RecoveryCandidateActivationError("selected recovery generation file path mismatch")
+    if not isinstance(file_record["size_bytes"], int) or file_record["size_bytes"] < 0:
+        raise RecoveryCandidateActivationError("selected recovery generation file size is invalid")
+    if not isinstance(file_record["sha256"], str) or not re.fullmatch(
+        r"[0-9a-f]{64}", file_record["sha256"]
+    ):
+        raise RecoveryCandidateActivationError("selected recovery generation file hash is invalid")
+    if not isinstance(file_record["schema_versions"], list) or not all(
+        isinstance(value, str) for value in file_record["schema_versions"]
+    ):
+        raise RecoveryCandidateActivationError(
+            "selected recovery generation schema metadata is invalid"
+        )
+
+
+def _installed_relative_path(store: LogicalStore, store_relative_path: str) -> Path:
+    store_relative = _safe_relative_path(store_relative_path)
+    if store.path_kind == "file":
+        if store_relative != Path(store.relative_path.name):
+            raise RecoveryCandidateActivationError(
+                f"invalid file-store relative path for {store.logical_id}"
+            )
+        return store.relative_path
+    return store.relative_path / store_relative
 
 
 def _configured_candidate_root(
