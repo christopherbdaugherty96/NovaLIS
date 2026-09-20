@@ -1,6 +1,6 @@
 # Start Here
 
-Last reviewed: 2026-08-25
+Last reviewed: 2026-09-20
 
 This is the shortest human path through NovaLIS.
 

@@ -845,6 +845,9 @@ def _preserves_post_405_boundary(
         and re.search(r"\b(?:STARTED|COMPLETE)\b", line)
     )
     normalized = " ".join(active.split())
+    obsolete_current_lane_claim = (
+        "CURRENT IMMEDIATE LANE IS RECOVERY CANDIDATE VALIDATION" in normalized
+    )
     preserves_initial_order = allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     preserves_post_406_order = (
         not require_lane_1_closeout
@@ -937,6 +940,7 @@ def _preserves_post_405_boundary(
         and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and premature_later_durability_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and not rollback_progress_claims
+        and not obsolete_current_lane_claim
     )
     preserves_allowed_state = (
         preserves_initial_order

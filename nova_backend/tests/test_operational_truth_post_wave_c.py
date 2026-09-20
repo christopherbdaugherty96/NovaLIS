@@ -812,6 +812,30 @@ def test_recovery_foundation_rejects_rollback_progress_before_authorization(tmp_
     )
 
 
+def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "docs/status/DAILY_COMMAND_CENTER.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "The current immediate lane is rollback/restore proof.",
+        "The current immediate lane is recovery candidate validation.",
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
 @pytest.mark.parametrize(
     ("provenance", "replacement"),
     (

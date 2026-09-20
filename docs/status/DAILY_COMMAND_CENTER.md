@@ -47,7 +47,7 @@ THEN: private-beta candidacy/distribution decision
 The daily-use presentation stabilization lane is closed. PR #405 passed its hosted
 checks, exact-head review signal, protected merge, and merged-main Home replay before
 and after restart. Issue #406 is complete; its former immediate-lane framing is
-historical. The current immediate lane is recovery candidate validation.
+historical. The current immediate lane is rollback/restore proof.
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
