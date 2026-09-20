@@ -498,6 +498,54 @@ def test_selection_falls_back_when_newest_generation_is_corrupted(tmp_path: Path
     ) == first
 
 
+def test_activation_reuses_invalid_nonselected_slot_after_fallback(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-second",
+        registry=(store,),
+    )
+    second = activate_recovery_candidate(
+        candidate_path=second_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-second",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    (second.generation_path / "data/sample.json").write_text(
+        '{"value": false}', encoding="utf-8"
+    )
+    third_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-third",
+        registry=(store,),
+    )
+
+    third = activate_recovery_candidate(
+        candidate_path=third_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-third",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+
+    assert first.generation_path.is_dir()
+    assert third.activation["slot"] == "slot-b"
+    assert third.activation["sequence"] == 3
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == third
+
+
 def test_selection_fails_closed_when_every_slot_is_invalid(tmp_path: Path):
     store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
     activated = activate_recovery_candidate(
@@ -580,6 +628,36 @@ def test_validation_rejects_hard_linked_candidate_payload(tmp_path: Path):
         validate_recovery_candidate(
             candidate_path=candidate.candidate_path,
             snapshot_path=snapshot.snapshot_path,
+            container_root=tmp_path / "container",
+            registry=(store,),
+        )
+
+
+def test_selection_rejects_hard_linked_activation_slot(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    activated = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-hard-link-slot",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    os.link(activated.activation_path, activated.activation_path.with_name("slot-alias.json"))
+
+    with pytest.raises(RecoveryCandidateActivationError, match="no fully valid"):
+        active_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+    replacement_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-hard-link-slot",
+        registry=(store,),
+    )
+    with pytest.raises(RecoveryCandidateActivationError, match="hard-linked"):
+        activate_recovery_candidate(
+            candidate_path=replacement_candidate.candidate_path,
+            snapshot_path=snapshot.snapshot_path,
+            generation_id="recovered-replacement",
             container_root=tmp_path / "container",
             registry=(store,),
         )

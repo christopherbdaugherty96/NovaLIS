@@ -307,14 +307,28 @@ def activate_recovery_candidate(
                 if _path_has_link_or_reparse(slots_root, container):
                     raise RecoveryCandidateActivationError(
                         f"linked recovery activation slots refused: {slots_root}"
-                    )
-                slots_root.mkdir(parents=True, exist_ok=True)
-                slot_records = _read_activation_slots(
-                    container=container, stores=stores, require_valid_generations=True
                 )
-                active_slot = _select_highest_valid_slot(slot_records)
-                target_slot = _inactive_slot_name(active_slot, slot_records)
-                next_sequence = max((record["sequence"] for record in slot_records.values()), default=0) + 1
+                slots_root.mkdir(parents=True, exist_ok=True)
+                _require_unlinked_activation_slots(container)
+                slot_records = _read_activation_slots(
+                    container=container, stores=stores, require_valid_generations=False
+                )
+                valid_slot_records = _valid_activation_slots(
+                    container=container, stores=stores, records=slot_records
+                )
+                active_slot = _select_highest_valid_slot(valid_slot_records)
+                if not active_slot and any(
+                    _activation_slot_path(container, slot).exists()
+                    for slot in _ACTIVATION_SLOT_NAMES
+                ):
+                    raise RecoveryCandidateActivationError(
+                        "no fully valid recovery activation slot is available"
+                    )
+                target_slot = _inactive_slot_name(active_slot, valid_slot_records)
+                next_sequence = (
+                    max((record["sequence"] for record in slot_records.values()), default=0)
+                    + 1
+                )
                 activation_path = _activation_slot_path(container, target_slot)
 
                 generations_root = container / "generations"
@@ -418,24 +432,20 @@ def active_recovery_generation(
         _activation_slot_path(container, slot).exists() for slot in _ACTIVATION_SLOT_NAMES
     ):
         return None
-    valid_slots: list[tuple[Path, dict[str, Any], dict[str, Any]]] = []
-    for slot, record in slot_records.items():
-        try:
-            generation_manifest = _validate_installed_generation(
-                container=container, record=record, stores=stores
-            )
-        except RecoveryCandidateActivationError:
-            continue
-        valid_slots.append((_activation_slot_path(container, slot), record, generation_manifest))
-    if not valid_slots:
+    valid_slot_records = _valid_activation_slots(
+        container=container, stores=stores, records=slot_records
+    )
+    if not valid_slot_records:
         raise RecoveryCandidateActivationError(
             "no fully valid recovery activation slot is available"
         )
-    highest_sequence = max(record["sequence"] for _, record, _ in valid_slots)
-    winners = [item for item in valid_slots if item[1]["sequence"] == highest_sequence]
-    if len(winners) != 1:
-        raise RecoveryCandidateActivationError("recovery activation slot sequence is ambiguous")
-    activation_path, activation, generation_manifest = winners[0]
+    active_slot = _select_highest_valid_slot(valid_slot_records)
+    assert active_slot is not None
+    activation_path = _activation_slot_path(container, active_slot)
+    activation = valid_slot_records[active_slot]
+    generation_manifest = _validate_installed_generation(
+        container=container, record=activation, stores=stores
+    )
     generation_id = str(activation["generation_id"])
     generation_path = container / "generations" / generation_id
     return RecoveryCandidateActivationResult(
@@ -977,6 +987,15 @@ def _read_activation_slot(path: Path, expected_slot: str) -> dict[str, Any]:
             f"recovery activation slot is unavailable or linked: {path}"
         )
     try:
+        if path.stat(follow_symlinks=False).st_nlink != 1:
+            raise RecoveryCandidateActivationError(
+                f"recovery activation slot is hard-linked: {path}"
+            )
+    except OSError as exc:
+        raise RecoveryCandidateActivationError(
+            f"recovery activation slot is unavailable: {path}: {exc}"
+        ) from exc
+    try:
         record = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise RecoveryCandidateActivationError(
@@ -1007,6 +1026,46 @@ def _read_activation_slot(path: Path, expected_slot: str) -> dict[str, Any]:
             "recovery activation slot has invalid generation manifest hash"
         )
     return record
+
+
+def _valid_activation_slots(
+    *,
+    container: Path,
+    stores: tuple[LogicalStore, ...],
+    records: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Return only slots whose referenced installed generation still validates."""
+
+    valid: dict[str, dict[str, Any]] = {}
+    for slot, record in records.items():
+        try:
+            _validate_installed_generation(container=container, record=record, stores=stores)
+        except RecoveryCandidateActivationError:
+            continue
+        valid[slot] = record
+    return valid
+
+
+def _require_unlinked_activation_slots(container: Path) -> None:
+    """Never replace a slot that may have a non-Nova hard-link alias."""
+
+    for slot in _ACTIVATION_SLOT_NAMES:
+        path = _activation_slot_path(container, slot)
+        if not path.exists():
+            continue
+        if not path.is_file() or path.is_symlink():
+            raise RecoveryCandidateActivationError(
+                f"recovery activation slot is unavailable or linked: {path}"
+            )
+        try:
+            if path.stat(follow_symlinks=False).st_nlink != 1:
+                raise RecoveryCandidateActivationError(
+                    f"recovery activation slot is hard-linked: {path}"
+                )
+        except OSError as exc:
+            raise RecoveryCandidateActivationError(
+                f"recovery activation slot is unavailable: {path}: {exc}"
+            ) from exc
 
 
 def _select_highest_valid_slot(records: dict[str, dict[str, Any]]) -> str | None:
