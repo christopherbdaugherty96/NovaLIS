@@ -157,9 +157,15 @@ LANE_4_COMPLETE_DIRECTIVE_SEQUENCE = (
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
-LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE = (
+LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE = (
     "NEXT: ROLLBACK/RESTORE PROOF",
     "THEN: BOUNDED BETA PRODUCT-TRANSLATION/READINESS PASS",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF",
+    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
+    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+)
+LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE = (
+    "NEXT: BOUNDED BETA PRODUCT-TRANSLATION/READINESS PASS",
     "THEN: CLEAN WINDOWS OPERATOR PROOF",
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
@@ -245,6 +251,14 @@ LANE_5A_AUTHORITY_FOUNDATION_PROOF = (
 )
 LANE_5A_AUTHORITY_MODEL = "RECOVERY AUTHORITY MODEL: DUAL-SLOT HIGHEST-VALID-GENERATION SELECTION"
 LANE_5A_AUTHORITY_FOUNDATION_MAIN_SHA = "3A3E9D332C6B744DCEA0FEF9D3532E5FCDE60E51"
+LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE = (
+    "COMPLETE: LANE 5A STEP 4 - ROLLBACK/RESTORE PROOF (PR #430; MAIN `868DE9D9`)"
+)
+LANE_5A_ROLLBACK_RESTORE_PROOF = (
+    "ROLLBACK/RESTORE PROOF: PASS (208 DURABILITY TESTS PASSED; "
+    "1 EXPECTED WINDOWS POSIX-FIFO SKIP; RUNTIME STRUCTURAL SMOKE PASS)"
+)
+LANE_5A_ROLLBACK_RESTORE_MAIN_SHA = "868DE9D92C701834F1C4FBA422AB9C47A01EA33F"
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -644,14 +658,19 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     return tuple(
         match.group("sha")
         for match in re.finditer(
-            r"VERIFIED MAIN (?:AT SYNC START|AFTER LANE 5A MIGRATION|AFTER LANE 5A AUTHORITY FOUNDATION):\s+"
+            r"VERIFIED MAIN (?:AT SYNC START|AFTER LANE 5A MIGRATION|AFTER LANE 5A AUTHORITY FOUNDATION|"
+            r"AFTER LANE 5A ROLLBACK/RESTORE PROOF):\s+"
             r"(?P<sha>[0-9A-F]{40})\b",
             active,
         )
     )
 
 
-def _preserves_lane_5a_milestone_order(structured_lines: tuple[str, ...]) -> bool:
+def _preserves_lane_5a_milestone_order(
+    structured_lines: tuple[str, ...],
+    directive_sequence: tuple[str, ...],
+    completion_markers: tuple[str, ...] = (),
+) -> bool:
     milestones = (
         POST_406_COMPLETE_PROVENANCE,
         POST_408_COMPLETE_PROVENANCE,
@@ -672,7 +691,8 @@ def _preserves_lane_5a_milestone_order(structured_lines: tuple[str, ...]) -> boo
         LANE_5A_AUTHORITY_FOUNDATION_COMPLETE_PROVENANCE,
         LANE_5A_AUTHORITY_FOUNDATION_PROOF,
         LANE_5A_AUTHORITY_MODEL,
-        *LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE,
+        *completion_markers,
+        *directive_sequence,
     )
     try:
         positions = tuple(structured_lines.index(marker) for marker in milestones)
@@ -692,6 +712,7 @@ def _preserves_post_405_boundary(
     require_lane_4_active: bool = False,
     require_lane_4_complete: bool = False,
     require_lane_5a_recovery_foundation: bool = False,
+    require_lane_5a_rollback_restore_closeout: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -764,6 +785,11 @@ def _preserves_post_405_boundary(
         for line in structured_lines
         if line.startswith("COMPLETE: LANE 5A AUTHORITY-FOUNDATION CORRECTION")
     )
+    lane_5a_rollback_restore_lines = tuple(
+        line
+        for line in structured_lines
+        if line.startswith("COMPLETE: LANE 5A STEP 4 - ROLLBACK/RESTORE PROOF")
+    )
     fresh_main_closeout_lines = tuple(
         line for line in structured_lines if line.startswith("FRESH-MAIN CLOSEOUT:")
     )
@@ -780,6 +806,9 @@ def _preserves_post_405_boundary(
     )
     authority_foundation_proof_lines = tuple(
         line for line in structured_lines if line.startswith("AUTHORITY FOUNDATION PROOF:")
+    )
+    rollback_restore_proof_lines = tuple(
+        line for line in structured_lines if line.startswith("ROLLBACK/RESTORE PROOF:")
     )
     authority_model_lines = tuple(
         line for line in structured_lines if line.startswith("RECOVERY AUTHORITY MODEL:")
@@ -799,6 +828,12 @@ def _preserves_post_405_boundary(
         LANE_5A_AUTHORITY_FOUNDATION_PROOF,
     )
     has_lane_5a_authority_model = authority_model_lines == (LANE_5A_AUTHORITY_MODEL,)
+    has_lane_5a_rollback_restore_provenance = (
+        lane_5a_rollback_restore_lines == (LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,)
+    )
+    has_lane_5a_rollback_restore_proof = (
+        rollback_restore_proof_lines == (LANE_5A_ROLLBACK_RESTORE_PROOF,)
+    )
     authority_prefix_pattern = r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
     durability_authorizations = tuple(
         line
@@ -837,17 +872,43 @@ def _preserves_post_405_boundary(
             or "ROLLBACK" in line
         )
     )
-    rollback_progress_claims = tuple(
-        line
-        for line in structured_lines
-        if ("ROLLBACK" in line or "RESTORE" in line)
-        and re.search(
-            r"\b(?:STARTED|COMPLETE|IN\s+PROGRESS)\b",
-            re.sub(r"[^A-Z0-9]+", " ", line),
-        )
-    )
     normalized = " ".join(active.split())
     semantic_active = re.sub(r"[^A-Z0-9]+", " ", active.upper())
+    canonical_rollback_lines = {
+        LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,
+        LANE_5A_ROLLBACK_RESTORE_PROOF,
+        *LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE,
+        *LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
+    }
+    semantic_active_prose = " ".join(
+        line for line in structured_lines if line not in canonical_rollback_lines
+    )
+    semantic_active_prose = re.sub(r"\bISN['’]T\b", "IS NOT", semantic_active_prose)
+    semantic_active_prose = re.sub(r"\bHASN['’]T\b", "HAS NOT", semantic_active_prose)
+    semantic_active_prose = re.sub(
+        r"[.!?;](?=\s|$)", " __SENTENCE_BOUNDARY__ ", semantic_active_prose
+    )
+    semantic_active_prose = re.sub(r"[^A-Z0-9_]+", " ", semantic_active_prose)
+    unfinished_state = (
+        r"(?:STARTED|IN\s+PROGRESS|NOT\s+STARTED|NOT\s+BEGUN|UNSTARTED|PENDING|"
+        r"INCOMPLETE|UNFINISHED|OUTSTANDING|IS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETE|"
+        r"HAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED)"
+    )
+    rollback_unfinished_claim = bool(
+        re.search(
+            rf"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){{0,8}}\s+{unfinished_state}\b"
+            rf"|\b{unfinished_state}(?:\s+[A-Z0-9]+){{0,8}}\s+(?:ROLLBACK|RESTORE)\b",
+            semantic_active_prose,
+        )
+    )
+    rollback_next_or_current_claim = bool(
+        re.search(
+            r"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){0,6}\s+"
+            r"(?:NEXT|CURRENT|IMMEDIATE)\b|\b(?:NEXT|CURRENT|IMMEDIATE)"
+            r"(?:\s+[A-Z0-9]+){0,6}\s+(?:ROLLBACK|RESTORE)\b",
+            semantic_active_prose,
+        )
+    )
     obsolete_current_lane_claim = bool(
         re.search(
             r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:CURRENTLY )?(?:IS )?(?:CURRENTLY )?"
@@ -923,7 +984,7 @@ def _preserves_post_405_boundary(
         and not premature_later_durability_authorizations
     )
     preserves_lane_5a_recovery_foundation = (
-        directives == LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE
+        directives == LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE
         and has_406_provenance
         and has_408_provenance
         and has_lane_1_provenance
@@ -942,13 +1003,55 @@ def _preserves_post_405_boundary(
         and has_lane_5a_authority_foundation_provenance
         and has_lane_5a_authority_foundation_proof
         and has_lane_5a_authority_model
-        and _preserves_lane_5a_milestone_order(structured_lines)
+        and _preserves_lane_5a_milestone_order(
+            structured_lines, LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE
+        )
         and _post_405_sync_start_shas(text) == (LANE_5A_AUTHORITY_FOUNDATION_MAIN_SHA,)
         and not durability_authorizations
         and not pending_locking_authorizations
         and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and premature_later_durability_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
-        and not rollback_progress_claims
+        and not rollback_unfinished_claim
+        and not rollback_next_or_current_claim
+        and not obsolete_current_lane_claim
+    )
+    preserves_lane_5a_rollback_restore_closeout = (
+        directives == LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE
+        and has_406_provenance
+        and has_408_provenance
+        and has_lane_1_provenance
+        and has_lane_2_provenance
+        and has_lane_3_provenance
+        and has_lane_4_provenance
+        and has_lane_4_fresh_main_closeout
+        and has_post_423_provenance
+        and has_post_410_provenance
+        and has_lane_5a_migration_provenance
+        and has_lane_5a_migration_proof
+        and has_lane_5a_validation_provenance
+        and has_lane_5a_validation_proof
+        and has_lane_5a_activation_provenance
+        and has_lane_5a_activation_proof
+        and has_lane_5a_authority_foundation_provenance
+        and has_lane_5a_authority_foundation_proof
+        and has_lane_5a_authority_model
+        and has_lane_5a_rollback_restore_provenance
+        and has_lane_5a_rollback_restore_proof
+        and _preserves_lane_5a_milestone_order(
+            structured_lines,
+            LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
+            (
+                LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,
+                LANE_5A_ROLLBACK_RESTORE_PROOF,
+            ),
+        )
+        and _post_405_sync_start_shas(text) == (LANE_5A_ROLLBACK_RESTORE_MAIN_SHA,)
+        and not durability_authorizations
+        and not pending_locking_authorizations
+        and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
+        and premature_later_durability_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
+        and not rollback_unfinished_claim
+        and not rollback_next_or_current_claim
         and not obsolete_current_lane_claim
     )
     preserves_allowed_state = (
@@ -961,6 +1064,7 @@ def _preserves_post_405_boundary(
         or preserves_lane_4_active
         or preserves_lane_4_complete
         or preserves_lane_5a_recovery_foundation
+        or preserves_lane_5a_rollback_restore_closeout
     )
     if require_lane_2_closeout:
         preserves_allowed_state = (
@@ -970,6 +1074,7 @@ def _preserves_post_405_boundary(
             or preserves_lane_4_active
             or preserves_lane_4_complete
             or preserves_lane_5a_recovery_foundation
+            or preserves_lane_5a_rollback_restore_closeout
         )
     if require_lane_3_active:
         preserves_allowed_state = preserves_lane_3_active
@@ -979,13 +1084,22 @@ def _preserves_post_405_boundary(
             or preserves_lane_4_active
             or preserves_lane_4_complete
             or preserves_lane_5a_recovery_foundation
+            or preserves_lane_5a_rollback_restore_closeout
         )
     if require_lane_4_active:
         preserves_allowed_state = preserves_lane_4_active
     if require_lane_4_complete:
-        preserves_allowed_state = preserves_lane_4_complete or preserves_lane_5a_recovery_foundation
+        preserves_allowed_state = (
+            preserves_lane_4_complete
+            or preserves_lane_5a_recovery_foundation
+            or preserves_lane_5a_rollback_restore_closeout
+        )
     if require_lane_5a_recovery_foundation:
-        preserves_allowed_state = preserves_lane_5a_recovery_foundation
+        preserves_allowed_state = (
+            preserves_lane_5a_recovery_foundation or preserves_lane_5a_rollback_restore_closeout
+        )
+    if require_lane_5a_rollback_restore_closeout:
+        preserves_allowed_state = preserves_lane_5a_rollback_restore_closeout
     if not preserves_allowed_state:
         return False
     required = ("#397 THROUGH #405: COMPLETE / MERGED",)
@@ -1157,7 +1271,7 @@ def check_operational_truth(
                 require_lane_2_closeout=True,
                 require_lane_3_closeout=True,
                 require_lane_4_complete=True,
-                require_lane_5a_recovery_foundation=True,
+                require_lane_5a_rollback_restore_closeout=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"

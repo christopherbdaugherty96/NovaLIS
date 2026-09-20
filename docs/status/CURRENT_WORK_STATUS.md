@@ -7,7 +7,7 @@ Last reviewed: 2026-09-20.
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
-verified main after Lane 5A authority foundation: 3a3e9d332c6b744dcea0fef9d3532e5fcde60e51
+verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
 #397 through #405: COMPLETE / MERGED
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
 COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
@@ -28,8 +28,9 @@ ACTIVATION PROOF: PASS (192 durability tests passed; 1 expected Windows POSIX-FI
 COMPLETE: Lane 5A authority-foundation correction (PR #428; main `3a3e9d33`)
 AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Windows POSIX-FIFO skip)
 RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
-NEXT: rollback/restore proof
-THEN: bounded beta product-translation/readiness pass
+COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)
+ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
+NEXT: bounded beta product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
 THEN: private-beta candidacy/distribution decision
