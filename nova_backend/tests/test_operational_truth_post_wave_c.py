@@ -782,6 +782,37 @@ def test_recovery_foundation_rejects_activation_reopened_before_rollback(tmp_pat
 
 
 @pytest.mark.parametrize(
+    "claim",
+    (
+        "STARTED: rollback/restore proof",
+        "COMPLETE: rollback/restore proof",
+    ),
+)
+def test_recovery_foundation_rejects_rollback_progress_before_authorization(tmp_path, claim):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "NEXT: rollback/restore proof",
+        claim + "\nNEXT: rollback/restore proof",
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
+@pytest.mark.parametrize(
     ("provenance", "replacement"),
     (
         ("PR #421", "PR #999"),

@@ -1,6 +1,6 @@
 # Current Priority
 
-## Post-#405 beta-readiness truth — 2026-09-18
+## Post-#405 beta-readiness truth — 2026-09-20
 
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE

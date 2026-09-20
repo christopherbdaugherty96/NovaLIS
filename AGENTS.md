@@ -22,7 +22,7 @@ The consolidated August Product/Platform strategy is merged as strategy-only gui
 
 ## Read Order
 
-Current post-#405 override (2026-09-18):
+Current post-#405 override (2026-09-20):
 
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE

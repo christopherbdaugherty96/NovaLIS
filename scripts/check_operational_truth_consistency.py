@@ -837,6 +837,13 @@ def _preserves_post_405_boundary(
             or "ROLLBACK" in line
         )
     )
+    rollback_progress_claims = tuple(
+        line
+        for line in structured_lines
+        if "ROLLBACK" in line
+        and "RESTORE" in line
+        and re.search(r"\b(?:STARTED|COMPLETE)\b", line)
+    )
     normalized = " ".join(active.split())
     preserves_initial_order = allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     preserves_post_406_order = (
@@ -929,6 +936,7 @@ def _preserves_post_405_boundary(
         and not pending_locking_authorizations
         and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and premature_later_durability_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
+        and not rollback_progress_claims
     )
     preserves_allowed_state = (
         preserves_initial_order
