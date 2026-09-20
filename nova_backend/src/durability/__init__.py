@@ -16,6 +16,7 @@ from src.durability.recovery_candidate import (
     activate_recovery_candidate,
     active_recovery_generation,
     create_recovery_candidate,
+    rollback_recovery_generation,
     validate_recovery_candidate,
 )
 from src.durability.snapshot import (
@@ -64,4 +65,5 @@ __all__ = [
     "validate_recovery_candidate",
     "activate_recovery_candidate",
     "active_recovery_generation",
+    "rollback_recovery_generation",
 ]
