@@ -157,10 +157,8 @@ LANE_4_COMPLETE_DIRECTIVE_SEQUENCE = (
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
-LANE_5A_MIGRATION_DIRECTIVE_SEQUENCE = (
-    "NEXT: RECOVERY CANDIDATE VALIDATION",
-    "THEN: CANDIDATE ACTIVATION ONLY AFTER VALIDATION",
-    "THEN: ROLLBACK/RESTORE PROOF",
+LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE = (
+    "NEXT: ROLLBACK/RESTORE PROOF",
     "THEN: BOUNDED BETA PRODUCT-TRANSLATION/READINESS PASS",
     "THEN: CLEAN WINDOWS OPERATOR PROOF",
     "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
@@ -227,7 +225,26 @@ LANE_5A_MIGRATION_COMPLETE_PROVENANCE = (
 LANE_5A_MIGRATION_PROOF = (
     "MIGRATION PROOF: PASS (173 DURABILITY TESTS PASSED; 1 EXPECTED WINDOWS POSIX-FIFO SKIP)"
 )
-LANE_5A_MIGRATION_MAIN_SHA = "298B77314D764E89B5C8DDEE259C0931DFCEB18A"
+LANE_5A_VALIDATION_COMPLETE_PROVENANCE = (
+    "COMPLETE: LANE 5A STEP 2 - RECOVERY CANDIDATE VALIDATION (PR #426; MAIN `9DE640CD`)"
+)
+LANE_5A_VALIDATION_PROOF = (
+    "VALIDATION PROOF: PASS (184 DURABILITY TESTS PASSED; 1 EXPECTED WINDOWS POSIX-FIFO SKIP)"
+)
+LANE_5A_ACTIVATION_COMPLETE_PROVENANCE = (
+    "COMPLETE: LANE 5A STEP 3 - CONTROLLED RECOVERY ACTIVATION (PR #427; MAIN `678DDA6C`)"
+)
+LANE_5A_ACTIVATION_PROOF = (
+    "ACTIVATION PROOF: PASS (192 DURABILITY TESTS PASSED; 1 EXPECTED WINDOWS POSIX-FIFO SKIP)"
+)
+LANE_5A_AUTHORITY_FOUNDATION_COMPLETE_PROVENANCE = (
+    "COMPLETE: LANE 5A AUTHORITY-FOUNDATION CORRECTION (PR #428; MAIN `3A3E9D33`)"
+)
+LANE_5A_AUTHORITY_FOUNDATION_PROOF = (
+    "AUTHORITY FOUNDATION PROOF: PASS (201 DURABILITY TESTS PASSED; 1 EXPECTED WINDOWS POSIX-FIFO SKIP)"
+)
+LANE_5A_AUTHORITY_MODEL = "RECOVERY AUTHORITY MODEL: DUAL-SLOT HIGHEST-VALID-GENERATION SELECTION"
+LANE_5A_AUTHORITY_FOUNDATION_MAIN_SHA = "3A3E9D332C6B744DCEA0FEF9D3532E5FCDE60E51"
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -627,7 +644,7 @@ def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     return tuple(
         match.group("sha")
         for match in re.finditer(
-            r"VERIFIED MAIN (?:AT SYNC START|AFTER LANE 5A MIGRATION):\s+"
+            r"VERIFIED MAIN (?:AT SYNC START|AFTER LANE 5A MIGRATION|AFTER LANE 5A AUTHORITY FOUNDATION):\s+"
             r"(?P<sha>[0-9A-F]{40})\b",
             active,
         )
@@ -648,7 +665,14 @@ def _preserves_lane_5a_milestone_order(structured_lines: tuple[str, ...]) -> boo
         LANE_5A_AUTHORIZATION_MARKER,
         LANE_5A_MIGRATION_COMPLETE_PROVENANCE,
         LANE_5A_MIGRATION_PROOF,
-        *LANE_5A_MIGRATION_DIRECTIVE_SEQUENCE,
+        LANE_5A_VALIDATION_COMPLETE_PROVENANCE,
+        LANE_5A_VALIDATION_PROOF,
+        LANE_5A_ACTIVATION_COMPLETE_PROVENANCE,
+        LANE_5A_ACTIVATION_PROOF,
+        LANE_5A_AUTHORITY_FOUNDATION_COMPLETE_PROVENANCE,
+        LANE_5A_AUTHORITY_FOUNDATION_PROOF,
+        LANE_5A_AUTHORITY_MODEL,
+        *LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE,
     )
     try:
         positions = tuple(structured_lines.index(marker) for marker in milestones)
@@ -667,7 +691,7 @@ def _preserves_post_405_boundary(
     require_lane_3_closeout: bool = False,
     require_lane_4_active: bool = False,
     require_lane_4_complete: bool = False,
-    require_lane_5a_migration: bool = False,
+    require_lane_5a_recovery_foundation: bool = False,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -725,6 +749,21 @@ def _preserves_post_405_boundary(
     has_lane_5a_migration_provenance = lane_5a_migration_lines == (
         LANE_5A_MIGRATION_COMPLETE_PROVENANCE,
     )
+    lane_5a_validation_lines = tuple(
+        line
+        for line in structured_lines
+        if line.startswith("COMPLETE: LANE 5A STEP 2 - RECOVERY CANDIDATE VALIDATION")
+    )
+    lane_5a_activation_lines = tuple(
+        line
+        for line in structured_lines
+        if line.startswith("COMPLETE: LANE 5A STEP 3 - CONTROLLED RECOVERY ACTIVATION")
+    )
+    lane_5a_authority_foundation_lines = tuple(
+        line
+        for line in structured_lines
+        if line.startswith("COMPLETE: LANE 5A AUTHORITY-FOUNDATION CORRECTION")
+    )
     fresh_main_closeout_lines = tuple(
         line for line in structured_lines if line.startswith("FRESH-MAIN CLOSEOUT:")
     )
@@ -733,6 +772,33 @@ def _preserves_post_405_boundary(
         line for line in structured_lines if line.startswith("MIGRATION PROOF:")
     )
     has_lane_5a_migration_proof = migration_proof_lines == (LANE_5A_MIGRATION_PROOF,)
+    validation_proof_lines = tuple(
+        line for line in structured_lines if line.startswith("VALIDATION PROOF:")
+    )
+    activation_proof_lines = tuple(
+        line for line in structured_lines if line.startswith("ACTIVATION PROOF:")
+    )
+    authority_foundation_proof_lines = tuple(
+        line for line in structured_lines if line.startswith("AUTHORITY FOUNDATION PROOF:")
+    )
+    authority_model_lines = tuple(
+        line for line in structured_lines if line.startswith("RECOVERY AUTHORITY MODEL:")
+    )
+    has_lane_5a_validation_provenance = lane_5a_validation_lines == (
+        LANE_5A_VALIDATION_COMPLETE_PROVENANCE,
+    )
+    has_lane_5a_validation_proof = validation_proof_lines == (LANE_5A_VALIDATION_PROOF,)
+    has_lane_5a_activation_provenance = lane_5a_activation_lines == (
+        LANE_5A_ACTIVATION_COMPLETE_PROVENANCE,
+    )
+    has_lane_5a_activation_proof = activation_proof_lines == (LANE_5A_ACTIVATION_PROOF,)
+    has_lane_5a_authority_foundation_provenance = lane_5a_authority_foundation_lines == (
+        LANE_5A_AUTHORITY_FOUNDATION_COMPLETE_PROVENANCE,
+    )
+    has_lane_5a_authority_foundation_proof = authority_foundation_proof_lines == (
+        LANE_5A_AUTHORITY_FOUNDATION_PROOF,
+    )
+    has_lane_5a_authority_model = authority_model_lines == (LANE_5A_AUTHORITY_MODEL,)
     authority_prefix_pattern = r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
     durability_authorizations = tuple(
         line
@@ -771,7 +837,26 @@ def _preserves_post_405_boundary(
             or "ROLLBACK" in line
         )
     )
+    rollback_progress_claims = tuple(
+        line
+        for line in structured_lines
+        if ("ROLLBACK" in line or "RESTORE" in line)
+        and re.search(
+            r"\b(?:STARTED|COMPLETE|IN\s+PROGRESS)\b",
+            re.sub(r"[^A-Z0-9]+", " ", line),
+        )
+    )
     normalized = " ".join(active.split())
+    semantic_active = re.sub(r"[^A-Z0-9]+", " ", active.upper())
+    obsolete_current_lane_claim = bool(
+        re.search(
+            r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:CURRENTLY )?(?:IS )?(?:CURRENTLY )?"
+            r"RECOVERY CANDIDATE VALIDATION\b"
+            r"|\bRECOVERY CANDIDATE VALIDATION (?:IS )?"
+            r"(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE\b",
+            semantic_active,
+        )
+    )
     preserves_initial_order = allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     preserves_post_406_order = (
         not require_lane_1_closeout
@@ -837,8 +922,8 @@ def _preserves_post_405_boundary(
         and not pending_locking_authorizations
         and not premature_later_durability_authorizations
     )
-    preserves_lane_5a_migration = (
-        directives == LANE_5A_MIGRATION_DIRECTIVE_SEQUENCE
+    preserves_lane_5a_recovery_foundation = (
+        directives == LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE
         and has_406_provenance
         and has_408_provenance
         and has_lane_1_provenance
@@ -850,12 +935,21 @@ def _preserves_post_405_boundary(
         and has_post_410_provenance
         and has_lane_5a_migration_provenance
         and has_lane_5a_migration_proof
+        and has_lane_5a_validation_provenance
+        and has_lane_5a_validation_proof
+        and has_lane_5a_activation_provenance
+        and has_lane_5a_activation_proof
+        and has_lane_5a_authority_foundation_provenance
+        and has_lane_5a_authority_foundation_proof
+        and has_lane_5a_authority_model
         and _preserves_lane_5a_milestone_order(structured_lines)
-        and _post_405_sync_start_shas(text) == (LANE_5A_MIGRATION_MAIN_SHA,)
+        and _post_405_sync_start_shas(text) == (LANE_5A_AUTHORITY_FOUNDATION_MAIN_SHA,)
         and not durability_authorizations
         and not pending_locking_authorizations
         and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and premature_later_durability_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
+        and not rollback_progress_claims
+        and not obsolete_current_lane_claim
     )
     preserves_allowed_state = (
         preserves_initial_order
@@ -866,7 +960,7 @@ def _preserves_post_405_boundary(
         or preserves_lane_3_closeout
         or preserves_lane_4_active
         or preserves_lane_4_complete
-        or preserves_lane_5a_migration
+        or preserves_lane_5a_recovery_foundation
     )
     if require_lane_2_closeout:
         preserves_allowed_state = (
@@ -875,7 +969,7 @@ def _preserves_post_405_boundary(
             or preserves_lane_3_closeout
             or preserves_lane_4_active
             or preserves_lane_4_complete
-            or preserves_lane_5a_migration
+            or preserves_lane_5a_recovery_foundation
         )
     if require_lane_3_active:
         preserves_allowed_state = preserves_lane_3_active
@@ -884,14 +978,14 @@ def _preserves_post_405_boundary(
             preserves_lane_3_closeout
             or preserves_lane_4_active
             or preserves_lane_4_complete
-            or preserves_lane_5a_migration
+            or preserves_lane_5a_recovery_foundation
         )
     if require_lane_4_active:
         preserves_allowed_state = preserves_lane_4_active
     if require_lane_4_complete:
-        preserves_allowed_state = preserves_lane_4_complete or preserves_lane_5a_migration
-    if require_lane_5a_migration:
-        preserves_allowed_state = preserves_lane_5a_migration
+        preserves_allowed_state = preserves_lane_4_complete or preserves_lane_5a_recovery_foundation
+    if require_lane_5a_recovery_foundation:
+        preserves_allowed_state = preserves_lane_5a_recovery_foundation
     if not preserves_allowed_state:
         return False
     required = ("#397 THROUGH #405: COMPLETE / MERGED",)
@@ -1063,7 +1157,7 @@ def check_operational_truth(
                 require_lane_2_closeout=True,
                 require_lane_3_closeout=True,
                 require_lane_4_complete=True,
-                require_lane_5a_migration=True,
+                require_lane_5a_recovery_foundation=True,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"
