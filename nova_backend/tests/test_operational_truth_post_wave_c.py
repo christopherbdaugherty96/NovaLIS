@@ -789,6 +789,7 @@ def test_recovery_foundation_rejects_activation_reopened_before_rollback(tmp_pat
         "STARTED: rollback proof",
         "COMPLETE: restore proof",
         "ROLLBACK/RESTORE PROOF: IN PROGRESS",
+        "IN-PROGRESS: rollback proof",
     ),
 )
 def test_recovery_foundation_rejects_rollback_progress_before_authorization(tmp_path, claim):
@@ -820,6 +821,7 @@ def test_recovery_foundation_rejects_rollback_progress_before_authorization(tmp_
     (
         "The current immediate lane is recovery candidate validation.",
         "The current lane is recovery-candidate validation.",
+        "The lane currently is recovery-candidate validation.",
         "Recovery candidate validation is the current lane.",
     ),
 )

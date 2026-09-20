@@ -841,13 +841,16 @@ def _preserves_post_405_boundary(
         line
         for line in structured_lines
         if ("ROLLBACK" in line or "RESTORE" in line)
-        and re.search(r"\b(?:STARTED|COMPLETE|IN\s+PROGRESS)\b", line)
+        and re.search(
+            r"\b(?:STARTED|COMPLETE|IN\s+PROGRESS)\b",
+            re.sub(r"[^A-Z0-9]+", " ", line),
+        )
     )
     normalized = " ".join(active.split())
     semantic_active = re.sub(r"[^A-Z0-9]+", " ", active.upper())
     obsolete_current_lane_claim = bool(
         re.search(
-            r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:IS )?"
+            r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:CURRENTLY )?(?:IS )?"
             r"RECOVERY CANDIDATE VALIDATION\b"
             r"|\bRECOVERY CANDIDATE VALIDATION (?:IS )?"
             r"(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE\b",
