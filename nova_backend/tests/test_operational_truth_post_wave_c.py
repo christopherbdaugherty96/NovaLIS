@@ -598,7 +598,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, tar
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: recovery candidate validation",
+        "NEXT: rollback/restore proof",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -654,8 +654,15 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         assert structured_lines.count(checker.POST_410_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.LANE_5A_MIGRATION_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.LANE_5A_MIGRATION_PROOF) == 1
+        assert structured_lines.count(checker.LANE_5A_VALIDATION_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.LANE_5A_VALIDATION_PROOF) == 1
+        assert structured_lines.count(checker.LANE_5A_ACTIVATION_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.LANE_5A_ACTIVATION_PROOF) == 1
+        assert structured_lines.count(checker.LANE_5A_AUTHORITY_FOUNDATION_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.LANE_5A_AUTHORITY_FOUNDATION_PROOF) == 1
+        assert structured_lines.count(checker.LANE_5A_AUTHORITY_MODEL) == 1
         assert checker.LANE_5A_AUTHORIZATION_MARKER in normalized
-        assert "NEXT: RECOVERY CANDIDATE VALIDATION" in normalized
+        assert "NEXT: ROLLBACK/RESTORE PROOF" in normalized
 
 
 @pytest.mark.parametrize(
@@ -664,6 +671,7 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         "COMPLETE: #406 governed-memory ID collision correctness",
         "FRESH-MAIN CLOSEOUT:",
         "COMPLETE: #409 release integrity / repository control",
+        "COMPLETE: Lane 5A authority-foundation correction",
     ),
 )
 def test_lane_5a_migration_requires_full_ordered_milestone_chain(tmp_path, milestone_prefix):
@@ -683,6 +691,84 @@ def test_lane_5a_migration_requires_full_ordered_milestone_chain(tmp_path, miles
     )
     lines.insert(insertion_index + 1, milestone_line)
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
+@pytest.mark.parametrize(
+    ("provenance", "replacement"),
+    (
+        ("PR #426", "PR #999"),
+        ("PR #427", "PR #999"),
+        ("PR #428", "PR #999"),
+    ),
+)
+def test_recovery_foundation_rejects_corrupt_completion_provenance(
+    tmp_path, provenance, replacement
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(provenance, replacement, 1)
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
+def test_recovery_foundation_rejects_noncanonical_authority_model(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection",
+        "RECOVERY AUTHORITY MODEL: single-pointer generation selection",
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
+def test_recovery_foundation_rejects_activation_reopened_before_rollback(tmp_path):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(
+        "NEXT: rollback/restore proof",
+        "NEXT: candidate activation",
+        1,
+    )
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
@@ -920,7 +1006,7 @@ def test_lane_4_complete_rejects_later_durability_authorization(
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    next_line = "NEXT: recovery candidate validation"
+    next_line = "NEXT: rollback/restore proof"
     corrupted = original.replace(
         next_line,
         f"{authority_prefix}: {later_work}\n" + next_line,
@@ -955,7 +1041,14 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
             checker.LANE_5A_AUTHORIZATION_MARKER,
             checker.LANE_5A_MIGRATION_COMPLETE_PROVENANCE,
             checker.LANE_5A_MIGRATION_PROOF,
-            *checker.LANE_5A_MIGRATION_DIRECTIVE_SEQUENCE,
+            checker.LANE_5A_VALIDATION_COMPLETE_PROVENANCE,
+            checker.LANE_5A_VALIDATION_PROOF,
+            checker.LANE_5A_ACTIVATION_COMPLETE_PROVENANCE,
+            checker.LANE_5A_ACTIVATION_PROOF,
+            checker.LANE_5A_AUTHORITY_FOUNDATION_COMPLETE_PROVENANCE,
+            checker.LANE_5A_AUTHORITY_FOUNDATION_PROOF,
+            checker.LANE_5A_AUTHORITY_MODEL,
+            *checker.LANE_5A_RECOVERY_DIRECTIVE_SEQUENCE,
         )
     )
     lane_1_block = (
@@ -1003,9 +1096,14 @@ def test_pre_406_sequence_is_historical_only():
         "AUTHORIZED / ACTIVE: Lane 5A recovery construction (owner authorization; base main `3ad3f544`)\n"
         "COMPLETE: Lane 5A step 1 - inactive recovery candidate migration (PR #424; main `298b7731`)\n"
         "MIGRATION PROOF: PASS (173 durability tests passed; 1 expected Windows POSIX-FIFO skip)\n"
-        "NEXT: recovery candidate validation\n"
-        "THEN: candidate activation only after validation\n"
-        "THEN: rollback/restore proof\n"
+        "COMPLETE: Lane 5A step 2 - recovery candidate validation (PR #426; main `9de640cd`)\n"
+        "VALIDATION PROOF: PASS (184 durability tests passed; 1 expected Windows POSIX-FIFO skip)\n"
+        "COMPLETE: Lane 5A step 3 - controlled recovery activation (PR #427; main `678dda6c`)\n"
+        "ACTIVATION PROOF: PASS (192 durability tests passed; 1 expected Windows POSIX-FIFO skip)\n"
+        "COMPLETE: Lane 5A authority-foundation correction (PR #428; main `3a3e9d33`)\n"
+        "AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Windows POSIX-FIFO skip)\n"
+        "RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection\n"
+        "NEXT: rollback/restore proof\n"
         "THEN: bounded beta product-translation/readiness pass\n"
         "THEN: clean Windows operator proof\n"
         "THEN: frozen-SHA full beta acceptance\n"
@@ -1058,12 +1156,12 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target = tmp_path / relative
         original = target.read_text(encoding="utf-8")
         corrupted = original.replace(
-            "NEXT: recovery candidate validation",
+            "NEXT: rollback/restore proof",
             "NEXT: Google identity-only live proof",
             1,
         )
         corrupted = corrupted.replace(
-            "298b77314d764e89b5c8ddee259c0931dfceb18a",
+            "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         )
@@ -1104,7 +1202,7 @@ def test_post_405_mode_rejects_noncanonical_migration_checkpoint_sha(tmp_path):
     ):
         target = tmp_path / relative
         updated = target.read_text(encoding="utf-8").replace(
-            "298b77314d764e89b5c8ddee259c0931dfceb18a",
+            "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
             "4e32b501934e176e89e049fef5597ccdaaa4e6c8",
             1,
         )
@@ -1125,7 +1223,7 @@ def test_post_405_mode_rejects_one_current_surface_with_different_sync_sha(tmp_p
     target = tmp_path / "README.md"
     target.write_text(
         target.read_text(encoding="utf-8").replace(
-            "298b77314d764e89b5c8ddee259c0931dfceb18a",
+            "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             1,
         ),
@@ -1149,7 +1247,7 @@ def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
         target = tmp_path / relative
         target.write_text(
             target.read_text(encoding="utf-8").replace(
-                "298b77314d764e89b5c8ddee259c0931dfceb18a",
+                "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
                 "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                 1,
             ),
