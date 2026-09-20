@@ -21,6 +21,7 @@ from src.durability.recovery_candidate import (
     activate_recovery_candidate,
     active_recovery_generation,
     create_recovery_candidate,
+    rollback_recovery_generation,
     validate_recovery_candidate,
 )
 from src.durability.snapshot import SnapshotValidationError, create_snapshot
@@ -85,6 +86,31 @@ def _validated_activation_input(tmp_path: Path):
         registry=(store,),
     )
     return store, snapshot, candidate, validation
+
+
+def _two_activated_generations(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    second_candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-second",
+        registry=(store,),
+    )
+    second = activate_recovery_candidate(
+        candidate_path=second_candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-second",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    return store, first, second
 
 
 def test_migration_materializes_inactive_candidate_without_writing_live_state(
@@ -496,6 +522,140 @@ def test_selection_falls_back_when_newest_generation_is_corrupted(tmp_path: Path
     assert active_recovery_generation(
         container_root=tmp_path / "container", registry=(store,)
     ) == first
+
+
+def test_rollback_selects_prior_valid_generation_and_survives_restart(tmp_path: Path):
+    store, first, second = _two_activated_generations(tmp_path)
+
+    rolled_back = rollback_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    )
+
+    assert rolled_back.generation_id == first.generation_id
+    assert rolled_back.activation_path == first.activation_path
+    assert rolled_back.activation["sequence"] == 3
+    assert first.generation_path.is_dir()
+    assert second.generation_path.is_dir()
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == rolled_back
+    assert json.loads(second.activation_path.read_text(encoding="utf-8"))["generation_id"] == (
+        second.generation_id
+    )
+
+
+def test_rollback_fails_closed_without_a_prior_valid_generation(tmp_path: Path):
+    store, snapshot, candidate, _ = _validated_activation_input(tmp_path)
+    first = activate_recovery_candidate(
+        candidate_path=candidate.candidate_path,
+        snapshot_path=snapshot.snapshot_path,
+        generation_id="recovered-first",
+        container_root=tmp_path / "container",
+        registry=(store,),
+    )
+    activation_before = first.activation_path.read_bytes()
+
+    with pytest.raises(RecoveryCandidateActivationError, match="no prior fully valid"):
+        rollback_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+    assert first.activation_path.read_bytes() == activation_before
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == first
+
+
+def test_rollback_fails_closed_when_newest_authority_is_invalid(tmp_path: Path):
+    store, first, second = _two_activated_generations(tmp_path)
+    (second.generation_path / "data/sample.json").write_text(
+        '{"value": false}', encoding="utf-8"
+    )
+    activation_before = first.activation_path.read_bytes()
+
+    with pytest.raises(RecoveryCandidateActivationError, match="no prior fully valid"):
+        rollback_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+    assert first.activation_path.read_bytes() == activation_before
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == first
+
+
+def test_rollback_fails_closed_when_no_valid_authority_exists(tmp_path: Path):
+    store, first, second = _two_activated_generations(tmp_path)
+    (first.generation_path / "data/sample.json").unlink()
+    (second.generation_path / "data/sample.json").unlink()
+
+    with pytest.raises(RecoveryCandidateActivationError, match="no fully valid"):
+        rollback_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+    with pytest.raises(RecoveryCandidateActivationError, match="no fully valid"):
+        active_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+
+def test_rollback_refuses_mixed_scope_recovery_registry(tmp_path: Path):
+    generation_store = _store("generation_state", "data/state.json")
+    container_store = _store("container_state", "cache/container.json", location_scope="container")
+    source = tmp_path / "runtime/data/state.json"
+    source.parent.mkdir(parents=True)
+    source.write_text('{"value": true}', encoding="utf-8")
+    snapshot = _snapshot(tmp_path, (generation_store, container_store))
+    candidate = create_recovery_candidate(
+        snapshot_path=snapshot.snapshot_path,
+        container_root=tmp_path / "container",
+        candidate_id="candidate-mixed-rollback",
+        registry=(generation_store, container_store),
+    )
+
+    with pytest.raises(RecoveryCandidateActivationError, match="container-scoped"):
+        rollback_recovery_generation(
+            container_root=tmp_path / "container",
+            registry=(generation_store, container_store),
+        )
+
+    assert not (tmp_path / "container/generations").exists()
+    assert candidate.candidate_path.is_dir()
+
+
+def test_rollback_interruption_before_commit_preserves_current_authority(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, first, second = _two_activated_generations(tmp_path)
+
+    def fail_publish(*args, **kwargs):
+        raise RecoveryCandidateActivationError("injected rollback publish failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_replace_durable_json", fail_publish)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected rollback publish failure"):
+        rollback_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+    assert first.generation_path.is_dir()
+    assert second.generation_path.is_dir()
+    assert active_recovery_generation(
+        container_root=tmp_path / "container", registry=(store,)
+    ) == second
+
+
+def test_rollback_post_commit_failure_has_deterministic_new_authority(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    store, first, second = _two_activated_generations(tmp_path)
+    original_publish = recovery_candidate_module._replace_durable_json
+
+    def publish_then_fail(*args, **kwargs):
+        original_publish(*args, **kwargs)
+        raise RecoveryCandidateActivationError("injected rollback post-commit failure")
+
+    monkeypatch.setattr(recovery_candidate_module, "_replace_durable_json", publish_then_fail)
+
+    with pytest.raises(RecoveryCandidateActivationError, match="injected rollback post-commit failure"):
+        rollback_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+
+    active = active_recovery_generation(container_root=tmp_path / "container", registry=(store,))
+    assert active is not None
+    assert active.generation_id == first.generation_id
+    assert first.generation_path.is_dir()
+    assert second.generation_path.is_dir()
 
 
 def test_activation_reuses_invalid_nonselected_slot_after_fallback(tmp_path: Path):

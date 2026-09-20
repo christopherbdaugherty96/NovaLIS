@@ -1,9 +1,10 @@
-"""Recovery-candidate materialization, validation, and controlled activation.
+"""Recovery-candidate materialization, validation, activation, and rollback.
 
 Migration and validation operate only on an inactive control-plane candidate.
 Activation is a separate, fail-closed transition: it stages one complete
 generation while mutation admission is closed, then publishes one of two
-integrity-bound activation slots.  It does not implement rollback or restore.
+integrity-bound activation slots. Rollback is a separate, fail-closed authority
+transition to the previous fully valid installed generation.
 """
 
 from __future__ import annotations
@@ -249,7 +250,7 @@ def activate_recovery_candidate(
     replaced.  The previously selected valid slot is never overwritten, so
     selection can deterministically retain it if the new slot is torn, corrupt,
     or references an invalid generation after interruption.  This is an
-    authority primitive only; no user-invoked rollback or restore is provided.
+    authority primitive only; rollback is a separate transition.
     """
 
     stores = logical_store_registry() if registry is None else registry
@@ -390,6 +391,90 @@ def activate_recovery_candidate(
         generation_path=generation_path,
         activation_path=activation_path,
         activation=activation,
+    )
+
+
+def rollback_recovery_generation(
+    *,
+    container_root: Path | None = None,
+    registry: tuple[LogicalStore, ...] | None = None,
+    maintenance_timeout: float = 30.0,
+) -> RecoveryCandidateActivationResult:
+    """Select the prior fully valid installed generation through the inactive slot.
+
+    Rollback never copies, removes, or mutates a generation. It advances the
+    non-selected slot that already names the immediately prior fully valid
+    generation. The selected slot remains untouched until the replacement slot
+    is durably published, so interruption before publication preserves the
+    current authority and interruption after publication has one deterministic
+    highest-sequence authority record.
+    """
+
+    stores = logical_store_registry() if registry is None else registry
+    if any(store.included_in_recovery and store.location_scope != "generation" for store in stores):
+        raise RecoveryCandidateActivationError(
+            "rollback refuses recovery-included container-scoped stores"
+        )
+    configured_container = _configured_container_root(container_root)
+    if _path_has_link_or_reparse(configured_container, Path(configured_container.anchor)):
+        raise RecoveryCandidateActivationError(
+            f"linked recovery container refused: {configured_container}"
+        )
+    container = configured_container.resolve()
+
+    with _activation_operation_lock(container, RecoveryCandidateActivationError):
+        with maintenance_scope(container_root=container, timeout=maintenance_timeout):
+            legacy_path = _legacy_activation_record_path(container)
+            if legacy_path.exists():
+                raise RecoveryCandidateActivationError(
+                    "legacy single-slot recovery activation record requires explicit migration"
+                )
+            slots_root = _activation_slots_root(container)
+            if not slots_root.exists() or _path_has_link_or_reparse(slots_root, container):
+                raise RecoveryCandidateActivationError(
+                    "recovery activation slots are unavailable or linked"
+                )
+            _require_unlinked_activation_slots(container)
+            slot_records = _read_activation_slots(
+                container=container, stores=stores, require_valid_generations=False
+            )
+            valid_slot_records = _valid_activation_slots(
+                container=container, stores=stores, records=slot_records
+            )
+            active_slot = _select_highest_valid_slot(valid_slot_records)
+            if active_slot is None:
+                raise RecoveryCandidateActivationError(
+                    "no fully valid recovery activation slot is available"
+                )
+            rollback_slot = _previous_valid_slot(active_slot, valid_slot_records)
+            if rollback_slot is None:
+                raise RecoveryCandidateActivationError(
+                    "no prior fully valid recovery generation is available for rollback"
+                )
+
+            active_record = valid_slot_records[active_slot]
+            rollback_record = valid_slot_records[rollback_slot]
+            if rollback_record["generation_id"] == active_record["generation_id"]:
+                raise RecoveryCandidateActivationError(
+                    "no distinct prior fully valid recovery generation is available for rollback"
+                )
+            rollback_manifest = _validate_installed_generation(
+                container=container, record=rollback_record, stores=stores
+            )
+            rollback_activation = dict(rollback_record)
+            rollback_activation["sequence"] = (
+                max((record["sequence"] for record in slot_records.values()), default=0) + 1
+            )
+            rollback_path = _activation_slot_path(container, rollback_slot)
+            _replace_durable_json(rollback_path, rollback_activation)
+
+    generation_id = str(rollback_activation["generation_id"])
+    return RecoveryCandidateActivationResult(
+        candidate_id=str(rollback_manifest["candidate_id"]),
+        generation_id=generation_id,
+        generation_path=container / "generations" / generation_id,
+        activation_path=rollback_path,
+        activation=rollback_activation,
     )
 
 
@@ -1076,6 +1161,22 @@ def _select_highest_valid_slot(records: dict[str, dict[str, Any]]) -> str | None
     if len(winners) != 1:
         raise RecoveryCandidateActivationError("recovery activation slot sequence is ambiguous")
     return winners[0]
+
+
+def _previous_valid_slot(
+    active_slot: str, records: dict[str, dict[str, Any]]
+) -> str | None:
+    """Return the highest-sequence valid slot below the selected authority."""
+
+    active_record = records[active_slot]
+    candidates = (
+        slot
+        for slot, record in records.items()
+        if slot != active_slot
+        and record["sequence"] < active_record["sequence"]
+        and record["generation_id"] != active_record["generation_id"]
+    )
+    return max(candidates, key=lambda slot: records[slot]["sequence"], default=None)
 
 
 def _inactive_slot_name(
