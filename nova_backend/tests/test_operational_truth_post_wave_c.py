@@ -786,6 +786,9 @@ def test_recovery_foundation_rejects_activation_reopened_before_rollback(tmp_pat
     (
         "STARTED: rollback/restore proof",
         "COMPLETE: rollback/restore proof",
+        "STARTED: rollback proof",
+        "COMPLETE: restore proof",
+        "ROLLBACK/RESTORE PROOF: IN PROGRESS",
     ),
 )
 def test_recovery_foundation_rejects_rollback_progress_before_authorization(tmp_path, claim):
@@ -812,14 +815,22 @@ def test_recovery_foundation_rejects_rollback_progress_before_authorization(tmp_
     )
 
 
-def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_path):
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "The current immediate lane is recovery candidate validation.",
+        "The current lane is recovery-candidate validation.",
+        "Recovery candidate validation is the current lane.",
+    ),
+)
+def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_path, claim):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "docs/status/DAILY_COMMAND_CENTER.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
         "The current immediate lane is rollback/restore proof.",
-        "The current immediate lane is recovery candidate validation.",
+        claim,
         1,
     )
     assert corrupted != original

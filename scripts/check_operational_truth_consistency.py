@@ -840,13 +840,19 @@ def _preserves_post_405_boundary(
     rollback_progress_claims = tuple(
         line
         for line in structured_lines
-        if "ROLLBACK" in line
-        and "RESTORE" in line
-        and re.search(r"\b(?:STARTED|COMPLETE)\b", line)
+        if ("ROLLBACK" in line or "RESTORE" in line)
+        and re.search(r"\b(?:STARTED|COMPLETE|IN\s+PROGRESS)\b", line)
     )
     normalized = " ".join(active.split())
-    obsolete_current_lane_claim = (
-        "CURRENT IMMEDIATE LANE IS RECOVERY CANDIDATE VALIDATION" in normalized
+    semantic_active = re.sub(r"[^A-Z0-9]+", " ", active.upper())
+    obsolete_current_lane_claim = bool(
+        re.search(
+            r"\b(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE (?:IS )?"
+            r"RECOVERY CANDIDATE VALIDATION\b"
+            r"|\bRECOVERY CANDIDATE VALIDATION (?:IS )?"
+            r"(?:THE )?(?:CURRENT )?(?:IMMEDIATE )?LANE\b",
+            semantic_active,
+        )
     )
     preserves_initial_order = allow_pre_406_sequence and directives == POST_405_DIRECTIVE_SEQUENCE
     preserves_post_406_order = (
