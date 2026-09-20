@@ -1,11 +1,11 @@
 # Daily Command Center
 
-## Current command — post-#405 release-control transition (2026-09-18)
+## Current command — post-#405 release-control transition (2026-09-20)
 
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
-verified main after Lane 5A migration: 298b77314d764e89b5c8ddee259c0931dfceb18a
+verified main after Lane 5A authority foundation: 3a3e9d332c6b744dcea0fef9d3532e5fcde60e51
 #397 through #405: COMPLETE / MERGED
 
 #397 private-state routing safety          COMPLETE / MERGED
@@ -30,9 +30,14 @@ COMPLETE: #410 private-beta freeze criteria (PR #410; main `3ad3f544`)
 AUTHORIZED / ACTIVE: Lane 5A recovery construction (owner authorization; base main `3ad3f544`)
 COMPLETE: Lane 5A step 1 - inactive recovery candidate migration (PR #424; main `298b7731`)
 MIGRATION PROOF: PASS (173 durability tests passed; 1 expected Windows POSIX-FIFO skip)
-NEXT: recovery candidate validation
-THEN: candidate activation only after validation
-THEN: rollback/restore proof
+COMPLETE: Lane 5A step 2 - recovery candidate validation (PR #426; main `9de640cd`)
+VALIDATION PROOF: PASS (184 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+COMPLETE: Lane 5A step 3 - controlled recovery activation (PR #427; main `678dda6c`)
+ACTIVATION PROOF: PASS (192 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+COMPLETE: Lane 5A authority-foundation correction (PR #428; main `3a3e9d33`)
+AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
+NEXT: rollback/restore proof
 THEN: bounded beta product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
@@ -42,7 +47,7 @@ THEN: private-beta candidacy/distribution decision
 The daily-use presentation stabilization lane is closed. PR #405 passed its hosted
 checks, exact-head review signal, protected merge, and merged-main Home replay before
 and after restart. Issue #406 is complete; its former immediate-lane framing is
-historical. The current immediate lane is recovery candidate validation.
+historical. The current immediate lane is rollback/restore proof.
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
