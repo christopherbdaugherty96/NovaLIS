@@ -69,6 +69,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     ],
     home: [
       { id: "home_brief", label: "Daily brief", command: "daily brief", switchToPage: "chat" },
+      { id: "home_calendar", label: "Today's schedule", command: "calendar", switchToPage: "chat" },
       { id: "home_weather", label: "Weather", command: "weather", switchToPage: "chat" },
       { id: "home_explain", label: "Explain this", command: "explain this", switchToPage: "chat" },
       { id: "home_threads", label: "Continue a project", command: "show threads", switchToPage: "chat" },
