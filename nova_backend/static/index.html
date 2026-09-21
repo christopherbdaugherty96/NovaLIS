@@ -72,20 +72,20 @@
             <span id="workflow-focus-status-badge" class="confidence-badge">Ready</span>
           </div>
           <p id="workflow-focus-copy" class="workflow-focus-copy">
-            Tell Nova the outcome you want, and it will turn that into the next steps.
+            Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.
           </p>
           <div class="workflow-focus-grid">
             <div class="workflow-focus-card">
               <div class="workflow-focus-label">Goal</div>
-              <div id="workflow-focus-goal" class="workflow-focus-value">Start with something simple like "Build me a landing page for my business."</div>
+              <div id="workflow-focus-goal" class="workflow-focus-value">Start with something simple like "Help me plan my day."</div>
             </div>
             <div class="workflow-focus-card">
               <div class="workflow-focus-label">Now</div>
-              <div id="workflow-focus-now" class="workflow-focus-value">Nova is ready to turn your idea into a workflow.</div>
+              <div id="workflow-focus-now" class="workflow-focus-value">Nova is ready to help plan, research, explain, or review supported work.</div>
             </div>
             <div class="workflow-focus-card">
               <div class="workflow-focus-label">Next</div>
-              <div id="workflow-focus-next" class="workflow-focus-value">You can start broad. Nova will draft, explain, and pause when a choice matters.</div>
+              <div id="workflow-focus-next" class="workflow-focus-value">Start with a request. Nova will return a result or ask for the context it needs.</div>
             </div>
           </div>
           <div class="workflow-focus-actions">
@@ -118,55 +118,10 @@
           <div id="quick-actions" class="quick-actions" aria-label="Quick actions" hidden></div>
         </section>
 
-        <section id="live-help-widget" class="widget page-card live-help-widget" aria-live="polite">
-          <div class="live-help-header">
-            <div>
-              <div class="home-launch-kicker">Live Screen Help</div>
-              <h3>Screen help (experimental)</h3>
-            </div>
-            <span id="live-help-status-badge" class="confidence-badge">Off</span>
-          </div>
-          <p id="live-help-copy" class="workflow-focus-copy">
-            Share a screen and Nova will try to explain what it sees. Requires browser screen-share and microphone permissions. Works best on simple pages.
-          </p>
-          <p id="live-help-trust-note" class="live-help-trust-note">
-            Nova only follows the screen you choose to share, only during this session, and stops as soon as you stop it or end screen sharing.
-          </p>
-          <div class="live-help-steps" aria-label="How live help works">
-            <div class="live-help-step">1. Share one screen or tab</div>
-            <div class="live-help-step">2. Say "Hey Nova" followed by a question</div>
-            <div class="live-help-step">3. Stop any time</div>
-          </div>
-          <div class="workflow-focus-grid">
-            <div class="workflow-focus-card">
-              <div class="workflow-focus-label">Shared Screen</div>
-              <div id="live-help-screen-value" class="workflow-focus-value">No screen shared yet.</div>
-            </div>
-            <div class="workflow-focus-card">
-              <div class="workflow-focus-label">Voice</div>
-              <div id="live-help-voice-value" class="workflow-focus-value">Not started. Requires microphone permission.</div>
-            </div>
-            <div class="workflow-focus-card">
-              <div class="workflow-focus-label">Last Heard</div>
-              <div id="live-help-last-heard-value" class="workflow-focus-value">Nothing heard yet.</div>
-            </div>
-            <div class="workflow-focus-card">
-              <div class="workflow-focus-label">Last Help</div>
-              <div id="live-help-last-result-value" class="workflow-focus-value">No live explanation yet.</div>
-            </div>
-          </div>
-          <div id="live-help-prompt-actions" class="live-help-prompt-actions" aria-label="Live help examples"></div>
-          <div class="workflow-focus-actions">
-            <button id="btn-live-help-start" type="button" class="assistant-action-btn">Start live help</button>
-            <button id="btn-live-help-explain" type="button" class="assistant-action-btn">Explain current view</button>
-            <button id="btn-live-help-stop" type="button" class="assistant-action-btn">Stop live help</button>
-          </div>
-        </section>
-
         <div class="chat-input">
           <div id="thinking-bar" class="thinking-bar" style="display:none" role="status" aria-live="polite"></div>
           <div id="token-budget-bar" class="token-budget-bar" style="display:none" role="status" aria-live="polite"></div>
-          <input id="chat-input" type="text" placeholder="What are you trying to get done? Example: build me a landing page for my business." title="Type a goal or message and press Enter to send." autocomplete="off" spellcheck="false" />
+          <input id="chat-input" type="text" placeholder="What are you trying to get done? Example: summarize today's headlines." title="Type a goal or message and press Enter to send." autocomplete="off" spellcheck="false" />
           <button id="deepseek-btn" type="button" aria-label="Ask for a second opinion" title="Ask for a second opinion on the latest message" style="display:none">Second opinion</button>
           <button id="send-btn" type="button" title="Send message (Enter)">Send</button>
           <button id="stop-btn" type="button" aria-label="Stop the current request" title="Stop waiting for the current request" style="display:none">Stop</button>
