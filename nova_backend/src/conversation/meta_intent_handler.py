@@ -686,7 +686,7 @@ def _build_local_status() -> str:
         "- Dashboard navigation: use Intro, Home, Chat, Trust, Memory, Settings, News, Workspace, Agent, and Rules.\n"
         "- Memory visibility: durable memory is explicit, inspectable, and revocable.\n"
         "- Receipts: the Trust API shows recent governed-action receipts, and the Trust page is the visual review surface.\n"
-        "- Safe local actions: system status, response verification, explain-anything, screen help, and some reversible device controls are governed local capabilities.\n"
+        "- Safe local actions: system status, response verification, explain-anything, request-time screen capture and analysis, and some reversible device controls are governed local capabilities.\n"
         "- Email draft boundary: Nova can prepare a local mail-client draft after confirmation, but it does not send email.\n\n"
         "What to try first\n"
         "1. Ask: what does memory do?\n"

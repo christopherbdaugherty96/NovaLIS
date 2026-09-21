@@ -16,7 +16,6 @@ function isUserFacingSuggestionAvailable(command) {
   if (
     q.startsWith("research ")
     || q === "research a topic"
-    || q.startsWith("create analysis report")
     || q.startsWith("search for ")
     || q.startsWith("search latest ")
   ) {
@@ -2521,15 +2520,6 @@ function requestDeepSeekSecondOpinion() {
 }
 
 async function startSTT() {
-  if (liveHelpState.active || liveHelpState.starting) {
-    appendChatMessage(
-      "assistant",
-      "Live screen help is already listening for \"Hey Nova.\" Stop live help first if you want to use the regular Talk button instead.",
-      null,
-      "Voice input",
-    );
-    return;
-  }
   if (mediaRecorder) return;
   if (!navigator.mediaDevices || !window.MediaRecorder) {
     flashPTTError();
@@ -3762,7 +3752,7 @@ function setChatComposerBusy(isBusy) {
     input.setAttribute("aria-busy", busy ? "true" : "false");
     input.placeholder = busy
       ? "Nova is working. Wait for the current response before sending another message."
-      : "What are you trying to get done? Example: build me a landing page for my business.";
+      : "What are you trying to get done? Example: help me plan my day.";
   }
   if (sendBtn) {
     sendBtn.disabled = busy;
@@ -4271,7 +4261,7 @@ function showQuickCustomizeModal() {
   if (overlay) overlay.remove();
 
   const page = getActivePage();
-  const actions = getQuickActionsForPage(page);
+  const actions = getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command));
 
   const shell = createModalShell("quick-customize-modal", "Customize quick actions");
   overlay = shell.overlay;
@@ -4990,19 +4980,4 @@ window.addEventListener("DOMContentLoaded", () => {
     setActivePage("settings");
   });
 
-  const liveHelpStartBtn = $("btn-live-help-start");
-  if (liveHelpStartBtn) liveHelpStartBtn.addEventListener("click", () => {
-    startLiveHelpSession();
-  });
-
-  const liveHelpExplainBtn = $("btn-live-help-explain");
-  if (liveHelpExplainBtn) liveHelpExplainBtn.addEventListener("click", () => {
-    if (!liveHelpState.active) return;
-    requestLiveHelpAnalysis("explain this page", { echoUserMessage: false, updateFocus: true });
-  });
-
-  const liveHelpStopBtn = $("btn-live-help-stop");
-  if (liveHelpStopBtn) liveHelpStopBtn.addEventListener("click", () => {
-    stopLiveHelpSession();
-  });
 });

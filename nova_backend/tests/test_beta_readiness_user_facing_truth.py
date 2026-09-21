@@ -2,7 +2,6 @@ from pathlib import Path
 
 from src.conversation.meta_intent_handler import MetaIntentHandler
 
-
 ROOT = Path(__file__).resolve().parents[2]
 STATIC = ROOT / "nova_backend" / "static"
 MIRROR = ROOT / "Nova-Frontend-Dashboard"
@@ -16,7 +15,8 @@ def test_beta_ui_does_not_advertise_unproven_live_or_builder_claims():
     index = _read(STATIC / "index.html")
     config = _read(STATIC / "dashboard-config.js")
     control = _read(STATIC / "dashboard-control-center.js")
-    visible_truth = "\n".join((index, config, control))
+    chat = _read(STATIC / "dashboard-chat-news.js")
+    visible_truth = "\n".join((index, config, control, chat))
 
     for banned in (
         "build me a landing page for my business",
@@ -24,15 +24,18 @@ def test_beta_ui_does_not_advertise_unproven_live_or_builder_claims():
         "Live Screen Help",
         "Start live help",
         'Say "Hey Nova"',
+        "Live screen help is already listening",
     ):
         assert banned not in visible_truth
 
     assert 'id="live-help-widget"' not in index
     assert 'id="btn-live-help-start"' not in index
+    assert "startLiveHelpSession(" not in chat
 
 
 def test_generic_suggestions_exclude_context_and_configuration_only_actions():
     config = _read(STATIC / "dashboard-config.js")
+    chat = _read(STATIC / "dashboard-chat-news.js")
 
     for context_only in (
         "which one should I download",
@@ -58,16 +61,44 @@ def test_generic_suggestions_exclude_context_and_configuration_only_actions():
     assert 'label: "Draft weather rule"' in config
     assert 'label: "Create calendar rule"' not in config
     assert 'label: "Create weather rule"' not in config
+    assert 'q === "calendar"' in chat
+    assert 'return isConnectedSuggestionProvider("brave")' in chat
+    assert "hasProjectSuggestionContext()" in chat
+    assert 'const actions = getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command));' in chat
+    assert 'q.startsWith("create analysis report")' not in chat
 
 
 def test_workflow_narration_stays_response_scoped_not_outcome_scoped():
     control = _read(STATIC / "dashboard-control-center.js")
+    chat = _read(STATIC / "dashboard-chat-news.js")
 
     assert "Nova returned a response for the current request." in control
     assert "Response received." in control
     assert "Nova finished the current step" not in control
     assert "Turning your idea into a build plan" not in control
     assert "Planning what would be needed" in control
+    assert "build me a landing page for my business" not in chat
+    assert 'goal: "Start with something simple like \\"Help me plan my day.\\""' in control
+
+
+def test_home_filters_stale_internal_and_projectless_state_from_normal_output():
+    workspace = _read(STATIC / "dashboard-workspace.js")
+
+    assert "function isStaleDatedWatch" in workspace
+    assert ".filter(isUserFacingWorkspaceHomeItem)" in workspace
+    assert "function userFacingWorkspaceValue" in workspace
+    assert "local_project_structure_map" in workspace
+    assert "No project thread is active right now." in workspace
+    assert "const homeRows = hasProjectContext" in workspace
+
+
+def test_remote_bridge_settings_distinguish_permission_from_availability():
+    control = _read(STATIC / "dashboard-control-center.js")
+
+    assert "Permission and runtime availability are shown separately." in control
+    assert 'Permission: ${item.enabled ? "Enabled" : "Paused"} · Availability: ${availability}' in control
+    assert "Unavailable — token not configured" in control
+    assert "Permission does not make the bridge available without its token." in control
 
 
 def test_capability_help_describes_local_first_and_bounded_controls():
@@ -127,18 +158,19 @@ def test_remote_bridge_separates_permission_from_runtime_availability():
     assert '"Unavailable — token not configured"' in control
     assert '["Remote permission", setup.remote_bridge_enabled ? "Enabled" : "Paused"]' in control
     assert '["Remote availability", setup.remote_bridge_enabled && setup.remote_bridge_token_configured' in control
+    assert 'Permission: ${item.enabled ? "Enabled" : "Paused"} · Availability: ${availability}' in control
+    assert "Permission does not make the bridge available without its token." in control
 
 
 def test_home_filters_internal_paths_and_stale_dated_watch_copy():
     workspace = _read(STATIC / "dashboard-workspace.js")
 
     assert 'text.includes("local_project_structure_map")' in workspace
-    assert 'text.includes("c:\\\\nova-project")' in workspace
+    assert "userFacingWorkspaceValue" in workspace
     assert "isStaleDatedWatch" in workspace
     assert "No current assistive notices." in workspace
-    assert "userFacingSelectedFile" in workspace
-    assert "hasProjectThreadContext ? String(snapshot.task_goal" in workspace
-    assert "hasProjectThreadContext ? String(snapshot.current_step" in workspace
+    assert "No project thread is active right now." in workspace
+    assert "const homeRows = hasProjectContext" in workspace
 
 
 def test_settings_html_does_not_present_wake_word_as_live():
@@ -148,3 +180,10 @@ def test_settings_html_does_not_present_wake_word_as_live():
     assert "wake phrase" not in index.lower()
     assert "live screen help" not in index.lower()
 
+def test_existing_goals_and_disconnected_service_truth_remain_visible():
+    index = _read(STATIC / "index.html")
+    awareness_brief = _read(ROOT / "nova_backend" / "src" / "brief" / "awareness_brief.py")
+
+    assert "Goals track visible work. They do not run tasks." in index
+    assert "Shopify not connected. Add your store in Settings." in awareness_brief
+    assert "Printify integration is not built yet." in awareness_brief

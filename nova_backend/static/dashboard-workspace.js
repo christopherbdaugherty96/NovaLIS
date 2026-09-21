@@ -123,8 +123,8 @@ function workspaceItemSearchText(item) {
 function isInternalWorkspaceHomeItem(item) {
   const text = workspaceItemSearchText(item).toLowerCase();
   return text.includes("local_project_structure_map")
-    || text.includes("c:\\nova-project")
-    || text.includes("c:/nova-project");
+    || /(?:^|[\s'"`])[a-z]:[\\/]/i.test(text)
+    || /\/(?:users|home|tmp|var)\//i.test(text);
 }
 
 function isStaleDatedWatch(item, now = new Date()) {
@@ -142,6 +142,11 @@ function isStaleDatedWatch(item, now = new Date()) {
 
 function isUserFacingWorkspaceHomeItem(item) {
   return !isInternalWorkspaceHomeItem(item) && !isStaleDatedWatch(item);
+}
+
+function userFacingWorkspaceValue(value, fallback = "None") {
+  const clean = String(value || "").trim();
+  return clean && isUserFacingWorkspaceHomeItem(clean) ? clean : fallback;
 }
 
 function workspaceActionRequiresProjectContext(item) {
@@ -1017,27 +1022,24 @@ function renderOperationalContextWidget(data = {}) {
   }
 
   const snapshot = operationalContextState.snapshot || {};
-  const recentTurns = Array.isArray(snapshot.recent_relevant_turns) ? snapshot.recent_relevant_turns : [];
+  const recentTurns = (Array.isArray(snapshot.recent_relevant_turns) ? snapshot.recent_relevant_turns : [])
+    .filter(isUserFacingWorkspaceHomeItem);
   const recentActivity = Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : [];
   const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
-  const userFacingRecentTurns = recentTurns.filter(isUserFacingWorkspaceHomeItem);
-  const activeThread = String(snapshot.active_thread || "").trim();
-  const threadCount = Number(snapshot.thread_count || 0);
-  const hasProjectThreadContext = !!activeThread || threadCount > 0;
-  const userFacingSummary = isUserFacingWorkspaceHomeItem(operationalContextState.summary)
-    ? operationalContextState.summary
-    : "";
-  const userFacingSelectedFile = isUserFacingWorkspaceHomeItem(snapshot.selected_file)
-    ? String(snapshot.selected_file || "None").trim() || "None"
-    : "None";
 
   const homeHost = $("workspace-home-operational");
   if (homeHost) {
     clear(homeHost);
 
+    const activeThread = userFacingWorkspaceValue(snapshot.active_thread, "");
+    const hasProjectContext = Boolean(activeThread);
+    const summaryCopy = hasProjectContext && isUserFacingWorkspaceHomeItem(operationalContextState.summary)
+      ? operationalContextState.summary
+      : "No project thread is active right now.";
+
     const summary = document.createElement("div");
     summary.className = "workspace-home-doc-copy";
-    summary.textContent = userFacingSummary || (hasProjectThreadContext ? "Project context is available." : "No project thread is active.");
+    summary.textContent = summaryCopy;
     homeHost.appendChild(summary);
 
     const note = document.createElement("div");
@@ -1048,14 +1050,19 @@ function renderOperationalContextWidget(data = {}) {
 
     const grid = document.createElement("div");
     grid.className = "operator-health-grid";
-    [
-      ["Focus thread", String(snapshot.active_thread || "None").trim() || "None"],
-      ["Goal", hasProjectThreadContext ? String(snapshot.task_goal || "None").trim() || "None" : "None"],
-      ["Current step", hasProjectThreadContext ? String(snapshot.current_step || "None").trim() || "None" : "None"],
-      ["Active topic", String(snapshot.active_topic || "None").trim() || "None"],
-      ["Selected file", userFacingSelectedFile],
-      ["Turns", `${Number(snapshot.turn_count || 0)}`],
-    ].forEach(([labelText, valueText]) => {
+    const homeRows = hasProjectContext
+      ? [
+          ["Focus thread", activeThread],
+          ["Goal", userFacingWorkspaceValue(snapshot.task_goal)],
+          ["Current step", userFacingWorkspaceValue(snapshot.current_step)],
+          ["Active topic", userFacingWorkspaceValue(snapshot.active_topic)],
+          ["Turns", `${Number(snapshot.turn_count || 0)}`],
+        ]
+      : [
+          ["Focus thread", "None"],
+          ["Project state", "No active project thread"],
+        ];
+    homeRows.forEach(([labelText, valueText]) => {
       const row = document.createElement("div");
       row.className = "operator-health-row";
       const label = document.createElement("div");
@@ -1070,10 +1077,10 @@ function renderOperationalContextWidget(data = {}) {
     });
     homeHost.appendChild(grid);
 
-    if (userFacingRecentTurns.length) {
+    if (hasProjectContext && recentTurns.length) {
       const turns = document.createElement("div");
       turns.className = "workspace-home-blocked";
-      turns.textContent = `Recent turns: ${userFacingRecentTurns.slice(0, 3).map((item) => String(item || "").trim()).filter(Boolean).join(" | ")}`;
+      turns.textContent = `Recent turns: ${recentTurns.slice(0, 3).map((item) => String(item || "").trim()).filter(Boolean).join(" | ")}`;
       homeHost.appendChild(turns);
     }
   }

@@ -748,11 +748,11 @@ function renderWorkflowFocusWidget() {
 
 function resetWorkflowFocusState() {
   workflowFocusState = {
-    goal: "Start with something simple like \"Build me a landing page for my business.\"",
+    goal: "Start with something simple like \"Help me plan my day.\"",
     status: "Ready",
-    copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
-    now: "Nova is ready to turn your idea into a workflow.",
-    next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+    copy: "Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.",
+    now: "Nova is ready to help plan, research, explain, or review supported work.",
+    next: "Start with a request. Nova will return a result or ask for the context it needs.",
     lastUserInput: "",
     awaitingResponse: false,
   };
@@ -4071,12 +4071,25 @@ function renderSettingsPage() {
 
         const status = document.createElement("div");
         status.className = "workspace-home-focus-meta";
-        status.textContent = String(item.status_label || (item.enabled ? "Enabled" : "Paused")).trim();
+        const isRemoteBridge = item.id === "remote_bridge_enabled";
+        const bridge = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
+          ? trustReviewState.bridgeRuntime
+          : {};
+        const availability = bridge.enabled === true
+          ? "Available"
+          : bridge.token_configured === true
+            ? "Unavailable — permission paused"
+            : "Unavailable — token not configured";
+        status.textContent = isRemoteBridge
+          ? `Permission: ${item.enabled ? "Enabled" : "Paused"} · Availability: ${availability}`
+          : String(item.status_label || (item.enabled ? "Enabled" : "Paused")).trim();
         card.appendChild(status);
 
         const copy = document.createElement("div");
         copy.className = "workspace-home-focus-copy";
-        copy.textContent = String(item.description || item.summary || "").trim() || "Governed runtime permission.";
+        copy.textContent = isRemoteBridge
+          ? `${String(item.description || item.summary || "").trim() || "Governed runtime permission."} Permission does not make the bridge available without its token.`
+          : String(item.description || item.summary || "").trim() || "Governed runtime permission.";
         card.appendChild(copy);
 
         const actionRow = document.createElement("div");
