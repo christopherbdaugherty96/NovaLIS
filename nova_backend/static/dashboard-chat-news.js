@@ -2466,7 +2466,7 @@ async function startSTT() {
   if (liveHelpState.active || liveHelpState.starting) {
     appendChatMessage(
       "assistant",
-      "Live screen help is already listening for \"Hey Nova.\" Stop live help first if you want to use the regular Talk button instead.",
+      "A screen-help session is already using the microphone. Stop that session before using the regular Talk button.",
       null,
       "Voice input",
     );
@@ -2542,7 +2542,7 @@ async function startSTT() {
         if (wakeWordState.matched && !wakeWordState.command) {
           appendChatMessage(
             "assistant",
-            `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want, or just press Talk again and say the request directly.`,
+            "I heard the wake phrase, but there was no request after it. Press Talk again and say the request directly.",
             null,
             "Voice input",
           );
@@ -3721,7 +3721,7 @@ function setChatComposerBusy(isBusy) {
     input.setAttribute("aria-busy", busy ? "true" : "false");
     input.placeholder = busy
       ? "Nova is working. Wait for the current response before sending another message."
-      : "What are you trying to get done? Example: build me a landing page for my business.";
+      : "What are you trying to get done? Example: summarize today's headlines.";
   }
   if (sendBtn) {
     sendBtn.disabled = busy;
@@ -4132,9 +4132,7 @@ function showHelpModal() {
 
 async function refreshPrivacyPanel() {
   const items = {
-    listening: isHeyNovaWakeWordEnabled()
-      ? `Off in the background (only when you press mic, then say "${HEY_NOVA_WAKE_WORD}")`
-      : "Off in the background (only when you press mic)",
+    listening: "Off in the background (only when you press mic)",
     background: "Off",
     network: "Only when asked",
     execution: "Governed",
