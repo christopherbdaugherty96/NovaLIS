@@ -926,6 +926,8 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_sentences(
         "Rollback/restore proof isn't complete.",
         "Rollback/restore proof has not been completed.",
         "Rollback/restore proof hasn't been completed.",
+        "Rollback/restore proof is not finished.",
+        "Rollback/restore proof still needs completion.",
         "Rollback/restore proof remains outstanding.",
     ),
 )
