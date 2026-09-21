@@ -227,11 +227,11 @@ let settingsRuntimeState = {
   lastHydratedAt: 0,
 };
 let workflowFocusState = {
-  goal: "Start with something simple like \"Build me a landing page for my business.\"",
+  goal: "Start with something simple like \"Help me plan my day.\"",
   status: "Ready",
-  copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
-  now: "Nova is ready to turn your idea into a workflow.",
-  next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+  copy: "Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.",
+  now: "Nova is ready to help plan, research, explain, or review supported work.",
+  next: "Start with a request. Nova will return a result or ask for the context it needs.",
   lastUserInput: "",
   awaitingResponse: false,
 };
@@ -628,13 +628,9 @@ function setPTTButtonState(state = "idle") {
   btn.classList.remove("mic-idle", "mic-recording", "mic-sending", "mic-error");
   btn.classList.add(`mic-${safeState}`);
 
-  const wakeWordHint = isHeyNovaWakeWordEnabled()
-    ? `Press to record and speak normally. Saying "${HEY_NOVA_WAKE_WORD}" is optional here, but still used during live help.`
-    : "Press to record a short voice question.";
-
   const labels = {
-    idle: { text: "Talk", title: wakeWordHint },
-    recording: { text: "Listening", title: `Nova is listening. Start with "${HEY_NOVA_WAKE_WORD}" and press again to stop.` },
+    idle: { text: "Talk", title: "Press to record a short voice question." },
+    recording: { text: "Listening", title: "Nova is listening. Press again to stop." },
     sending: { text: "Sending", title: "Sending your voice request to Nova" },
     error: { text: "Mic issue", title: "Voice input is unavailable right now" },
   };
@@ -698,7 +694,7 @@ function getLiveHelpPromptSuggestions() {
     return [
       { label: "Explain this page", command: "explain this page" },
       { label: "What matters here?", command: "what matters most here" },
-      { label: "What should I click?", command: "what should i click next" },
+      { label: "Read the important part", command: "read the important part" },
     ];
   }
   const analysis = (liveHelpState.lastAnalysis && typeof liveHelpState.lastAnalysis === "object")
@@ -708,7 +704,6 @@ function getLiveHelpPromptSuggestions() {
   const fallback = [
     "explain this page",
     "what matters most here",
-    "what should i click next",
     "read the important part",
   ];
   const merged = [...prompts, ...fallback];
@@ -1406,6 +1401,9 @@ function getSetupReadinessItems() {
   const bridgeRuntime = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
     ? trustReviewState.bridgeRuntime
     : {};
+  const bridgePermissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.remote_bridge_enabled);
+  const bridgeTokenConfigured = bridgeRuntime.token_configured === true;
+  const bridgeAvailable = bridgeRuntime.enabled === true;
   const agentRuntime = (legacyConnections.agent_runtime && typeof legacyConnections.agent_runtime === "object")
     ? legacyConnections.agent_runtime
     : ((openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object") ? openClawAgentState.snapshot : {});
@@ -1489,11 +1487,14 @@ function getSetupReadinessItems() {
       key: "remote_bridge",
       group: "Optional later",
       title: "Remote bridge",
-      status: String(bridgeRuntime.status_label || "Optional").trim() || "Optional",
-      tone: bridgeRuntime.enabled ? "optional-ready" : "optional",
+      status: bridgeAvailable ? "Available" : bridgeTokenConfigured ? "Permission paused" : "Token not configured",
+      tone: bridgeAvailable ? "optional-ready" : "optional",
       ready: true,
-      copy: String(bridgeRuntime.summary || "").trim()
-        || "Remote access is optional and stays gated even when you turn it on.",
+      copy: [
+        String(bridgeRuntime.summary || "").trim(),
+        `Permission: ${bridgePermissionEnabled ? "Enabled" : "Paused"}.`,
+        `Availability: ${bridgeAvailable ? "Available" : bridgeTokenConfigured ? "Unavailable while permission is paused" : "Unavailable until a bridge token is configured"}.`,
+      ].filter(Boolean).join(" "),
     },
     {
       key: "home_agent",
@@ -1767,8 +1768,10 @@ function getIntroFirstSuccessItems(items = []) {
 
   const weatherLive = byProvider.weather && byProvider.weather.connected;
   const calendarLive = byProvider.calendar && byProvider.calendar.connected;
-  const newsLive = (byProvider.news && byProvider.news.connected) || (byProvider.brave && byProvider.brave.connected);
+  const newsLive = byProvider.news && byProvider.news.connected;
+  const researchLive = byProvider.brave && byProvider.brave.connected;
   const openaiLive = byProvider.openai && byProvider.openai.connected;
+  const hasProjectThreads = Array.isArray(threadMapState.threads) && threadMapState.threads.length > 0;
 
   if (weatherLive && calendarLive) {
     liveItems.push({
@@ -1831,7 +1834,7 @@ function getIntroFirstSuccessItems(items = []) {
     });
   }
 
-  // Core items always available as fallbacks
+  // Core items remain truth-scoped to what is actually available on this instance.
   const coreItems = [
     {
       title: "Explain anything",
@@ -1843,27 +1846,31 @@ function getIntroFirstSuccessItems(items = []) {
         injectUserText("explain this", "text");
       },
     },
-    {
+  ];
+  if (hasProjectThreads) {
+    coreItems.push({
       title: "Continue a project",
       badge: "Continuity",
-      copy: "If you already have work in motion, Nova can help you pick it back up instead of starting from scratch.",
+      copy: "Resume a saved project thread instead of starting from scratch.",
       actionLabel: "Show threads",
       action: () => {
         setActivePage("chat");
         injectUserText("show threads", "text");
       },
-    },
-    {
+    });
+  }
+  if (researchLive) {
+    coreItems.push({
       title: "Research a topic",
-      badge: "Local reasoning",
-      copy: "Ask Nova to research something and return a grounded answer with sources and follow-up ideas.",
+      badge: "Search connected",
+      copy: "Research with the connected web-search source and return grounded results with sources.",
       actionLabel: "Research",
       action: () => {
         setActivePage("chat");
         injectUserText("research latest technology news", "text");
       },
-    },
-  ];
+    });
+  }
 
   // Connection-aware items first, then core to fill up to 4 slots
   const allItems = [...liveItems, ...coreItems].slice(0, 3);
