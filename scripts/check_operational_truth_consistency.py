@@ -903,6 +903,14 @@ def _preserves_post_405_boundary(
             semantic_active_prose,
         )
     )
+    rollback_completion_claim = bool(
+        re.search(
+            r"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){0,8}\s+(?:IS\s+)?"
+            r"(?:COMPLETE|COMPLETED)\b|\b(?:COMPLETE|COMPLETED)"
+            r"(?:\s+[A-Z0-9]+){0,8}\s+(?:ROLLBACK|RESTORE)\b",
+            semantic_active_prose,
+        )
+    )
     rollback_next_or_current_claim = bool(
         re.search(
             r"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){0,6}\s+"
@@ -1014,6 +1022,7 @@ def _preserves_post_405_boundary(
         and lane_5a_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and premature_later_durability_authorizations == (LANE_5A_AUTHORIZATION_MARKER,)
         and not rollback_unfinished_claim
+        and not rollback_completion_claim
         and not rollback_next_or_current_claim
         and not obsolete_current_lane_claim
     )
