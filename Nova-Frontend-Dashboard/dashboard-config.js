@@ -52,7 +52,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "chat_research", label: "Research a topic", command: "research latest technology news" },
       { id: "chat_explain", label: "Explain what I'm seeing", command: "explain this" },
       { id: "chat_threads", label: "Continue a project", command: "show threads" },
-      { id: "chat_plan_goal", label: "Help me do this", command: "help me do this" },
+      { id: "chat_plan_goal", label: "Help me plan", command: "help me make a plan for this" },
     ],
     news: [
       { id: "news_get", label: "Get headlines", command: "news", stayOnPage: true },
@@ -69,7 +69,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     ],
     home: [
       { id: "home_brief", label: "Daily brief", command: "daily brief", switchToPage: "chat" },
-      { id: "home_calendar", label: "Today's schedule", command: "calendar", switchToPage: "chat" },
+      { id: "home_calendar", label: "Today's schedule", command: "calendar", switchToPage: "chat", requires: "calendar_connected" },
       { id: "home_weather", label: "Weather", command: "weather", switchToPage: "chat" },
       { id: "home_explain", label: "Explain this", command: "explain this", switchToPage: "chat" },
       { id: "home_threads", label: "Continue a project", command: "show threads", switchToPage: "chat" },
@@ -96,8 +96,8 @@ window.NOVA_DASHBOARD_CONFIG = {
     ],
     policy: [
       { id: "policy_page_overview", label: "Refresh rules", command: "policy overview", stayOnPage: true },
-      { id: "policy_page_calendar", label: "Create calendar rule", command: "policy create weekday calendar snapshot at 8:00 am", stayOnPage: true },
-      { id: "policy_page_weather", label: "Create weather rule", command: "policy create daily weather snapshot at 7:30 am", stayOnPage: true },
+      { id: "policy_page_calendar", label: "Draft calendar rule", command: "policy create weekday calendar snapshot at 8:00 am", stayOnPage: true },
+      { id: "policy_page_weather", label: "Draft weather rule", command: "policy create daily weather snapshot at 7:30 am", stayOnPage: true },
       { id: "policy_page_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
     ],
     trust: [
@@ -117,22 +117,16 @@ window.NOVA_DASHBOARD_CONFIG = {
     ],
   },
   COMMAND_SUGGESTIONS: [
-    // Everyday goals (outcome-first)
-    "build me a landing page for my business",
-    "help me turn this idea into a plan",
-    "plan my day",
+    // Everyday goals (outcome-first, truth-scoped)
+    "help me make a plan for this",
+    "help me plan my day",
     "research latest technology news",
     "summarize today's headlines",
     "explain this",
-    "help me do this",
-    "why this recommendation",
-    "which one should I download",
+    "help me think through the next steps",
     "search for local weather alerts",
     // Continue work
-    "continue where I left off",
-    "what was I working on",
-    "which project needs attention",
-    "what are my biggest blockers",
+    "show threads",
     "save this decision",
     // News and research
     "summarize politics news",
@@ -141,33 +135,23 @@ window.NOVA_DASHBOARD_CONFIG = {
     "summary of article 1",
     "update tracked stories",
     "create analysis report on AI regulation",
-    // Daily setup
-    "show my schedule",
+    // User-directed scheduling
     "remind me at 2:00 pm to check in",
     "schedule daily brief at 8:00 am",
-    "check my calendar",
     // System
     "system status",
     "open documents",
     "speak that",
-    "volume up",
-    "brightness down",
-    "play",
-    "pause",
   ],
   HELP_EXAMPLES: [
     // Start here — everyday goals
-    "plan my day",
+    "help me plan my day",
     "summarize today's headlines",
     "explain this",
-    "help me do this",
-    "why this recommendation",
-    "which one should I download",
+    "help me make a plan for this",
     "research a topic",
     // Continue work
-    "continue where I left off",
-    "what was I working on",
-    "which project needs attention",
+    "show threads",
     "save this decision",
     // News and research
     "summarize politics news",
@@ -175,25 +159,22 @@ window.NOVA_DASHBOARD_CONFIG = {
     "create analysis report on AI regulation",
     "search for eclipse dates",
     "update tracked stories",
-    // Scheduling
-    "show my schedule",
+    // User-directed scheduling
     "schedule daily brief at 8:00 am",
     "remind me daily at 9:00 am to check in",
     // System and voice
     "system status",
     "open documents",
     "speak that",
-    "set volume 40",
-    "set brightness 50",
   ],
   COMMAND_DISCOVERY_GROUPS: [
     { label: "Get started", commands: ["daily brief", "summarize today's headlines", "explain this"] },
     { label: "Research", commands: ["research a topic", "create analysis report on AI regulation", "search for eclipse dates"] },
-    { label: "Help me decide", commands: ["help me do this", "why this recommendation", "which one should I download"] },
-    { label: "Continue work", commands: ["continue where I left off", "what was I working on", "which project needs attention"] },
+    { label: "Plan and decide", commands: ["help me make a plan for this", "help me plan my day"] },
+    { label: "Continue work", commands: ["show threads"] },
     { label: "Remember things", commands: ["save this decision", "what do I know about this"] },
-    { label: "Schedules", commands: ["show my schedule", "schedule daily brief at 8:00 am", "remind me at 2:00 pm to check in"] },
-    { label: "System", commands: ["system status", "open documents", "volume up"] },
+    { label: "Schedules", commands: ["schedule daily brief at 8:00 am", "remind me at 2:00 pm to check in"] },
+    { label: "System", commands: ["system status", "open documents"] },
   ],
   LONG_MESSAGE_CHAR_LIMIT: 280,
   LONG_MESSAGE_LINE_LIMIT: 4,
