@@ -759,6 +759,48 @@ def test_recovery_foundation_rejects_noncanonical_authority_model(tmp_path):
     )
 
 
+@pytest.mark.parametrize(
+    "claim",
+    (
+        "COMPLETE: rollback/restore proof",
+        "Rollback/restore proof is complete.",
+    ),
+)
+def test_recovery_foundation_rejects_premature_rollback_completion(tmp_path, claim):
+    checker = _load_checker()
+    text = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    foundation = text.replace(
+        "verified main after Lane 5A rollback/restore proof: "
+        "868de9d92c701834f1c4fba422ab9c47a01ea33f",
+        "verified main after Lane 5A authority foundation: "
+        "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
+        1,
+    )
+    foundation = foundation.replace(
+        "COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)\n"
+        "ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; "
+        "1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
+        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: rollback/restore proof\n"
+        "THEN: bounded beta product-translation/readiness pass",
+        1,
+    )
+    assert foundation != text
+    assert checker._preserves_post_405_boundary(
+        foundation, require_lane_5a_recovery_foundation=True
+    )
+
+    contradictory = foundation.replace(
+        "NEXT: rollback/restore proof",
+        claim + "\nNEXT: rollback/restore proof",
+        1,
+    )
+    assert contradictory != foundation
+    assert not checker._preserves_post_405_boundary(
+        contradictory, require_lane_5a_recovery_foundation=True
+    )
+
+
 def test_recovery_closeout_rejects_activation_reopened_after_rollback(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
