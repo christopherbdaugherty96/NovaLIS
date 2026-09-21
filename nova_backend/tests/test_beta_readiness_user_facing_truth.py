@@ -15,17 +15,21 @@ def _read(path: Path) -> str:
 
 def _evaluate_suggestion_availability(providers: dict[str, dict[str, bool]]) -> dict[str, object]:
     source_path = json.dumps(str(STATIC / "dashboard-chat-news.js"))
+    dashboard_path = json.dumps(str(STATIC / "dashboard.js"))
     provider_state = json.dumps(providers)
     script = f"""
 const fs = require("fs");
 const vm = require("vm");
 const source = fs.readFileSync({source_path}, "utf8");
+const dashboardSource = fs.readFileSync({dashboard_path}, "utf8");
 const suggestionSource = source.slice(
-  source.indexOf("function isConnectedSuggestionProvider"),
+  source.indexOf("function isAvailableSuggestionProvider"),
   source.indexOf("function renderQuickActions")
 );
 const headerStart = source.indexOf("function renderHeaderQuickRuns");
 const headerSource = source.slice(headerStart, source.indexOf('window.addEventListener("DOMContentLoaded"', headerStart));
+const introStart = dashboardSource.indexOf("function getIntroFirstSuccessItems");
+const introSource = dashboardSource.slice(introStart, dashboardSource.indexOf("function createIntroFirstSuccessCard", introStart));
 const providers = {provider_state};
 const quickRuns = {{
   children: [],
@@ -34,18 +38,28 @@ const quickRuns = {{
 const context = {{
   threadMapState: {{ threads: [] }},
   getConnectionCardProvider: (providerId) => providers[providerId] || null,
+  getConnectionCardProviders: () => Object.entries(providers).map(([id, provider]) => ({{ id, ...provider }})),
+  getConnectionHealthyCount: () => Object.values(providers).filter((provider) => provider.connected === true).length,
+  getProfileSetupState: () => ({{ hasIdentity: true, displayName: "" }}),
   $: (id) => id === "header-quick-runs" ? quickRuns : null,
   clear: (node) => {{ node.children = []; }},
   document: {{ createElement: () => ({{ addEventListener: () => {{}} }}) }},
 }};
 vm.runInNewContext(suggestionSource, context);
 vm.runInNewContext(headerSource, context);
+vm.runInNewContext(introSource, context);
 context.renderHeaderQuickRuns();
+const intro = context.getIntroFirstSuccessItems([
+  {{ key: "runtime_connection", ready: true }},
+  {{ key: "local_model_route", ready: true }},
+]);
 process.stdout.write(JSON.stringify({{
   weather: context.isUserFacingSuggestionAvailable("weather"),
   research: context.isUserFacingSuggestionAvailable("research latest technology news"),
   news: context.isUserFacingSuggestionAvailable("today's news"),
+  calendar: context.isUserFacingSuggestionAvailable("today's schedule"),
   quickRuns: quickRuns.children.map((item) => item.textContent),
+  introTitles: intro.items.map((item) => item.title),
 }}));
 """
     result = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
@@ -103,7 +117,7 @@ def test_generic_suggestions_exclude_context_and_configuration_only_actions():
     assert 'label: "Create calendar rule"' not in config
     assert 'label: "Create weather rule"' not in config
     assert 'q === "calendar"' in chat
-    assert 'return isConnectedSuggestionProvider("brave")' in chat
+    assert 'return isAvailableSuggestionProvider("brave")' in chat
     assert "hasProjectSuggestionContext()" in chat
     assert 'const actions = getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command));' in chat
     assert 'q.startsWith("create analysis report")' not in chat
@@ -152,6 +166,8 @@ def test_capability_help_describes_local_first_and_bounded_controls():
     assert "bounded local controls" in lowered
     assert "everything runs on your machine" not in lowered
     assert "control parts of your computer" not in lowered
+    assert "built to run entirely on your own computer" not in lowered
+    assert "not one that sends your data somewhere else" not in lowered
 
 
 def test_frontend_truth_surfaces_remain_byte_synced():
@@ -169,10 +185,11 @@ def test_page_quick_actions_use_runtime_availability_gating():
     chat_news = _read(STATIC / "dashboard-chat-news.js")
 
     assert "getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command))" in chat_news
-    assert 'return isConnectedSuggestionProvider("brave")' in chat_news
-    assert 'return isConnectedSuggestionProvider("news")' in chat_news
-    assert 'return isConnectedSuggestionProvider("calendar")' in chat_news
-    assert 'return isConnectedSuggestionProvider("weather")' in chat_news
+    assert 'return isAvailableSuggestionProvider("brave")' in chat_news
+    assert 'return isAvailableSuggestionProvider("news")' in chat_news
+    assert 'return isAvailableSuggestionProvider("calendar")' in chat_news
+    assert 'return isAvailableSuggestionProvider("weather")' in chat_news
+    assert "provider.environment_configured === true && provider.configured === true" in chat_news
     assert "return hasProjectSuggestionContext()" in chat_news
 
 
@@ -195,10 +212,56 @@ def test_header_quick_runs_refresh_with_provider_availability():
     assert "Research a topic" in available["quickRuns"]
     assert "Today's news" in available["quickRuns"]
 
+    environment_configured = _evaluate_suggestion_availability(
+        {
+            "brave": {"configured": True, "environment_configured": True, "connected": False},
+            "news": {"configured": True, "environment_configured": True, "connected": False},
+        }
+    )
+    assert environment_configured["research"] is True
+    assert environment_configured["news"] is True
+    assert "Research a topic" in environment_configured["quickRuns"]
+    assert "Today's news" in environment_configured["quickRuns"]
 
-def test_weather_availability_requires_a_connected_provider():
+
+def test_weather_availability_accepts_a_configured_environment_provider_but_not_a_known_failed_one():
     assert _evaluate_suggestion_availability({})["weather"] is False
     assert _evaluate_suggestion_availability({"weather": {"connected": True}})["weather"] is True
+    assert _evaluate_suggestion_availability(
+        {"weather": {"configured": True, "environment_configured": True, "connected": False}}
+    )["weather"] is True
+    assert _evaluate_suggestion_availability(
+        {"weather": {"configured": True, "environment_configured": False, "connected": False}}
+    )["weather"] is False
+
+
+def test_intro_cards_follow_shared_provider_availability_and_truthful_paths():
+    dashboard = _read(STATIC / "dashboard.js")
+    environment_configured = _evaluate_suggestion_availability(
+        {
+            "weather": {"configured": True, "environment_configured": True, "connected": False},
+            "calendar": {"configured": True, "environment_configured": True, "connected": False},
+            "news": {"configured": True, "environment_configured": True, "connected": False},
+            "openai": {"configured": True, "environment_configured": True, "connected": False},
+        }
+    )
+
+    assert "Daily brief" in environment_configured["introTitles"]
+    assert "Deep research" not in environment_configured["introTitles"]
+    assert 'const weatherLive = isAvailableSuggestionProvider("weather");' in dashboard
+    assert 'const calendarLive = isAvailableSuggestionProvider("calendar");' in dashboard
+    assert 'const newsLive = isAvailableSuggestionProvider("news");' in dashboard
+    assert "if (weatherLive && calendarLive && newsLive)" in dashboard
+    assert "OpenAI cloud assist" not in dashboard
+    assert "Deep research" not in dashboard
+
+    no_news = _evaluate_suggestion_availability(
+        {
+            "weather": {"configured": True, "environment_configured": True, "connected": False},
+            "calendar": {"configured": True, "environment_configured": True, "connected": False},
+        }
+    )
+    assert "Daily brief" not in no_news["introTitles"]
 
 
 def test_privacy_copy_describes_automatic_connected_surface_refreshes():

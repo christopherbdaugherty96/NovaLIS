@@ -1,8 +1,10 @@
 /* Nova Dashboard - Chat, News, And Interaction Surfaces */
 
-function isConnectedSuggestionProvider(providerId) {
+function isAvailableSuggestionProvider(providerId) {
   const provider = getConnectionCardProvider(providerId);
-  return !!(provider && provider.connected === true);
+  if (!provider) return false;
+  return provider.connected === true
+    || (provider.environment_configured === true && provider.configured === true);
 }
 
 function hasProjectSuggestionContext() {
@@ -19,7 +21,7 @@ function isUserFacingSuggestionAvailable(command) {
     || q.startsWith("search for ")
     || q.startsWith("search latest ")
   ) {
-    return isConnectedSuggestionProvider("brave");
+    return isAvailableSuggestionProvider("brave");
   }
 
   if (
@@ -32,15 +34,15 @@ function isUserFacingSuggestionAvailable(command) {
     || q.includes("article ")
     || q.includes("tracked stor")
   ) {
-    return isConnectedSuggestionProvider("news");
+    return isAvailableSuggestionProvider("news");
   }
 
   if (q === "calendar" || q.includes("today's schedule") || q.includes("check my calendar") || q.includes("show my schedule")) {
-    return isConnectedSuggestionProvider("calendar");
+    return isAvailableSuggestionProvider("calendar");
   }
 
   if (q === "weather" || q.includes("weather forecast") || q.includes("weather alert")) {
-    return isConnectedSuggestionProvider("weather");
+    return isAvailableSuggestionProvider("weather");
   }
 
   if (

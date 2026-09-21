@@ -571,10 +571,10 @@ def _classify_out_of_scope(text: str) -> str:
 
 def _build_identity() -> str:
     return (
-        "I'm Nova — a personal AI assistant built to run entirely on your own computer.\n\n"
+        "I'm Nova — a personal AI assistant designed for local-first use on your own computer.\n\n"
         "Nova was created by Christopher Daugherty. The idea is simple: "
-        "you should have an AI that works for you, not one that sends your data somewhere else "
-        "or does things without you knowing.\n\n"
+        "you should have an AI that works for you, with clear control over when governed "
+        "external services may process data and no hidden actions.\n\n"
         "What makes Nova different:\n"
         "  - Nova is local-first; external/network paths are explicit, governed, and visible when used\n"
         "  - Every action is logged so you can always see what happened and why\n"

@@ -1588,7 +1588,9 @@ function getSetupNextStepCopy(items = []) {
   if (!byKey.local_model_route || !byKey.local_model_route.ready) {
     return "Next step: open Trust or Settings and review the local model route. Nova can still help locally, but deeper reasoning stays limited until that path is healthy.";
   }
-  if (healthyConnections === 0) {
+  const hasAvailableConnection = getConnectionCardProviders().some((provider) => isAvailableSuggestionProvider(provider.id));
+
+  if (healthyConnections === 0 && !hasAvailableConnection) {
     return "Next step: open Connections in Settings and add one useful source like weather, news, or your calendar. Nova can stay local-only, but one healthy connection makes everyday use much nicer.";
   }
   if (!byKey.voice_check || !byKey.voice_check.ready) {
@@ -1721,7 +1723,9 @@ function getIntroFirstSuccessItems(items = []) {
       };
   }
 
-  if (healthyConnections === 0) {
+  const hasAvailableConnection = getConnectionCardProviders().some((provider) => isAvailableSuggestionProvider(provider.id));
+
+  if (healthyConnections === 0 && !hasAvailableConnection) {
     return {
       summary: `Nice start${profile.displayName ? `, ${profile.displayName}` : ""}. Your profile is saved. The next high-value step is adding one healthy connection so Nova can help with live weather, news, calendar, or optional cloud reasoning when you want it.`,
       items: [
@@ -1761,19 +1765,16 @@ function getIntroFirstSuccessItems(items = []) {
     ? `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Nova is ready for everyday use on this device. Start with one outcome you care about and let Nova turn it into the next steps.`
     : `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Voice can wait. Text-only use is completely fine while you get your first win.`;
 
-  // Build connection-aware items based on which providers are healthy
-  const providers = Array.isArray(_connectionsData) ? _connectionsData : [];
-  const byProvider = Object.fromEntries(providers.map((p) => [p.id, p]));
+  // Build connection-aware items from the same availability truth used by suggestions.
   const liveItems = [];
 
-  const weatherLive = byProvider.weather && byProvider.weather.connected;
-  const calendarLive = byProvider.calendar && byProvider.calendar.connected;
-  const newsLive = byProvider.news && byProvider.news.connected;
-  const researchLive = byProvider.brave && byProvider.brave.connected;
-  const openaiLive = byProvider.openai && byProvider.openai.connected;
+  const weatherLive = isAvailableSuggestionProvider("weather");
+  const calendarLive = isAvailableSuggestionProvider("calendar");
+  const newsLive = isAvailableSuggestionProvider("news");
+  const researchLive = isAvailableSuggestionProvider("brave");
   const hasProjectThreads = Array.isArray(threadMapState.threads) && threadMapState.threads.length > 0;
 
-  if (weatherLive && calendarLive) {
+  if (weatherLive && calendarLive && newsLive) {
     liveItems.push({
       title: "Daily brief",
       badge: "Full brief",
@@ -1821,19 +1822,6 @@ function getIntroFirstSuccessItems(items = []) {
       },
     });
   }
-  if (openaiLive) {
-    liveItems.push({
-      title: "Deep research",
-      badge: "Cloud",
-      copy: "Ask for a grounded, reasoned answer on any topic with OpenAI cloud assist.",
-      actionLabel: "Research",
-      action: () => {
-        setActivePage("chat");
-        injectUserText("research ", "text");
-      },
-    });
-  }
-
   // Core items remain truth-scoped to what is actually available on this instance.
   const coreItems = [
     {
