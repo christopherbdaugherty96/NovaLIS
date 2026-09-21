@@ -784,8 +784,8 @@ function updateWorkflowFocusProgress(text) {
 
 function updateWorkflowFocusFromAssistant(text) {
   const clean = String(text || "").trim();
-  if (!clean) return;
-  workflowFocusState.status = "Ready for review";
+  if (!clean || !workflowFocusState.awaitingResponse) return;
+  workflowFocusState.status = "Response ready";
   workflowFocusState.copy = "Nova returned a response for the current request. You can refine it, move forward, or switch goals at any time.";
   workflowFocusState.now = extractWorkflowSentence(clean, "Response received.");
   workflowFocusState.next = workflowRequiresHighApproval(workflowFocusState.lastUserInput)
