@@ -665,7 +665,7 @@ function loadingHintForInput(text) {
   if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking online sources";
   if (q.includes("morning") || q.includes("brief") || q.includes("plan my day")) return "Preparing your brief";
   if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
-  if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Turning your idea into a build plan";
+  if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Planning what would be needed";
   if (q.includes("help me") || q.includes("plan")) return "Turning your goal into the next steps";
   return "Nova is working on your request";
 }
@@ -710,7 +710,7 @@ function nextWorkflowHintForInput(text) {
     return "Expect a clear approval checkpoint before Nova touches logins, publishing, or money.";
   }
   if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("page")) {
-    return "Nova should draft the structure first, then help you refine it before the bigger build steps.";
+    return "Nova can help outline the structure and next steps; supported actions stay bounded to current capabilities.";
   }
   if (q.includes("research") || q.includes("search") || q.includes("look up")) {
     return "Nova should bring back sources, a summary, and a suggested next move.";
@@ -739,10 +739,10 @@ function renderWorkflowFocusWidget() {
   const showStepsBtn = $("btn-workflow-show-steps");
 
   if (badge) badge.textContent = workflowFocusState.status || "Ready";
-  if (copy) copy.textContent = workflowFocusState.copy || "Tell Nova the outcome you want, and it will turn that into the next steps.";
-  if (goal) goal.textContent = workflowFocusState.goal || "Start with something simple like \"Build me a landing page for my business.\"";
-  if (now) now.textContent = workflowFocusState.now || "Nova is ready to turn your idea into a workflow.";
-  if (next) next.textContent = workflowFocusState.next || "You can start broad. Nova will draft, explain, and pause when a choice matters.";
+  if (copy) copy.textContent = workflowFocusState.copy || "Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.";
+  if (goal) goal.textContent = workflowFocusState.goal || "Start with something simple like \"Help me plan my day.\"";
+  if (now) now.textContent = workflowFocusState.now || "Nova is ready to help plan, research, explain, or review supported work.";
+  if (next) next.textContent = workflowFocusState.next || "Start with a request. Nova will return a result or ask for the context it needs.";
   if (showStepsBtn) showStepsBtn.disabled = !String(workflowFocusState.lastUserInput || "").trim();
 }
 
@@ -786,8 +786,8 @@ function updateWorkflowFocusFromAssistant(text) {
   const clean = String(text || "").trim();
   if (!clean) return;
   workflowFocusState.status = "Ready for review";
-  workflowFocusState.copy = "Nova finished the current step. You can refine it, move forward, or switch goals at any time.";
-  workflowFocusState.now = extractWorkflowSentence(clean, "Nova finished the current step.");
+  workflowFocusState.copy = "Nova returned a response for the current request. You can refine it, move forward, or switch goals at any time.";
+  workflowFocusState.now = extractWorkflowSentence(clean, "Response received.");
   workflowFocusState.next = workflowRequiresHighApproval(workflowFocusState.lastUserInput)
     ? "If the next step affects logins, publishing, or money, Nova should pause for a fresh approval."
     : "Ask for edits, a deeper pass, or the next step when you are ready.";
