@@ -1,5 +1,63 @@
 /* Nova Dashboard - Chat, News, And Interaction Surfaces */
 
+function isConnectedSuggestionProvider(providerId) {
+  const provider = getConnectionCardProvider(providerId);
+  return !!(provider && provider.connected === true);
+}
+
+function hasProjectSuggestionContext() {
+  return Array.isArray(threadMapState.threads) && threadMapState.threads.length > 0;
+}
+
+function isUserFacingSuggestionAvailable(command) {
+  const q = String(command || "").trim().toLowerCase();
+  if (!q) return false;
+
+  if (
+    q.startsWith("research ")
+    || q === "research a topic"
+    || q.startsWith("create analysis report")
+    || q.startsWith("search for ")
+    || q.startsWith("search latest ")
+  ) {
+    return isConnectedSuggestionProvider("brave");
+  }
+
+  if (
+    q === "news"
+    || q === "today's news"
+    || q.includes("headline")
+    || q.includes("politics news")
+    || q.includes("global news")
+    || q.includes("crypto news")
+    || q.includes("article ")
+    || q.includes("tracked stor")
+  ) {
+    return isConnectedSuggestionProvider("news");
+  }
+
+  if (q === "calendar" || q.includes("today's schedule") || q.includes("check my calendar") || q.includes("show my schedule")) {
+    return isConnectedSuggestionProvider("calendar");
+  }
+
+  if (
+    q === "show threads"
+    || q.startsWith("continue my ")
+    || q.startsWith("project status ")
+    || q.startsWith("memory list thread ")
+  ) {
+    return hasProjectSuggestionContext();
+  }
+
+  return true;
+}
+
+function getAvailableCommandGroups() {
+  return COMMAND_DISCOVERY_GROUPS
+    .map((group) => ({ ...group, commands: (group.commands || []).filter(isUserFacingSuggestionAvailable) }))
+    .filter((group) => group.commands.length > 0);
+}
+
 function renderQuickActions() {
   const host = $("quick-actions");
   if (!host) return;
@@ -2538,27 +2596,7 @@ async function startSTT() {
 
       const transcript = String(result.transcript || "").trim();
       if (transcript) {
-        const wakeWordState = normalizeHeyNovaWakeWordTranscript(transcript);
-        if (wakeWordState.matched && !wakeWordState.command) {
-          appendChatMessage(
-            "assistant",
-            `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want, or just press Talk again and say the request directly.`,
-            null,
-            "Voice input",
-          );
-          return;
-        }
-        const spokenCommand = String(wakeWordState.matched ? (wakeWordState.command || "") : transcript).trim();
-        if (!spokenCommand) {
-          appendChatMessage(
-            "assistant",
-            "I didn't catch the request clearly. Try again and say it in one short phrase.",
-            null,
-            "Voice input",
-          );
-          return;
-        }
-        injectUserText(spokenCommand, "voice");
+        injectUserText(transcript, "voice");
       } else {
         appendChatMessage(
           "assistant",
@@ -3200,6 +3238,9 @@ async function loadConnectionsData() {
     renderIntroPage();
     renderSettingsPage();
     renderHomeLaunchWidget();
+    renderQuickActions();
+    ensureDatalist();
+    renderCommandDiscovery();
   } catch (_) {
     // silently ignore — cards will stay empty until next load
   }
@@ -3788,7 +3829,7 @@ function ensureDatalist() {
   }
 
   clear(list);
-  COMMAND_SUGGESTIONS.forEach((item) => {
+  COMMAND_SUGGESTIONS.filter(isUserFacingSuggestionAvailable).forEach((item) => {
     const opt = document.createElement("option");
     opt.value = item;
     list.appendChild(opt);
@@ -4032,7 +4073,7 @@ function renderCommandDiscovery() {
   if (!host) return;
   clear(host);
 
-  COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+  getAvailableCommandGroups().forEach((group) => {
     const groupEl = document.createElement("div");
     groupEl.className = "command-group";
 
@@ -4070,7 +4111,7 @@ function showHelpModal() {
 
     const groupsWrap = document.createElement("div");
     groupsWrap.className = "command-groups";
-    COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+      getAvailableCommandGroups().forEach((group) => {
       const groupEl = document.createElement("div");
       groupEl.className = "command-group";
 
@@ -4108,7 +4149,10 @@ function showHelpModal() {
 
     const render = (q = "") => {
       clear(ul);
-      HELP_EXAMPLES.filter((x) => x.toLowerCase().includes(q.toLowerCase())).forEach((example) => {
+      HELP_EXAMPLES
+        .filter(isUserFacingSuggestionAvailable)
+        .filter((x) => x.toLowerCase().includes(q.toLowerCase()))
+        .forEach((example) => {
         const li = document.createElement("li");
         const b = document.createElement("button");
         b.type = "button";
@@ -4132,9 +4176,7 @@ function showHelpModal() {
 
 async function refreshPrivacyPanel() {
   const items = {
-    listening: isHeyNovaWakeWordEnabled()
-      ? `Off in the background (only when you press mic, then say "${HEY_NOVA_WAKE_WORD}")`
-      : "Off in the background (only when you press mic)",
+    listening: "Off in the background (only when you press Talk)",
     background: "Off",
     network: "Only when asked",
     execution: "Governed",
