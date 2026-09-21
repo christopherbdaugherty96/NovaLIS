@@ -39,6 +39,10 @@ function isUserFacingSuggestionAvailable(command) {
     return isConnectedSuggestionProvider("calendar");
   }
 
+  if (q === "weather" || q.includes("weather forecast") || q.includes("weather alert")) {
+    return isConnectedSuggestionProvider("weather");
+  }
+
   if (
     q === "show threads"
     || q.startsWith("continue my ")
@@ -3231,6 +3235,7 @@ async function loadConnectionsData() {
     renderQuickActions();
     ensureDatalist();
     renderCommandDiscovery();
+    renderHeaderQuickRuns();
   } catch (_) {
     // silently ignore — cards will stay empty until next load
   }
@@ -4167,8 +4172,8 @@ function showHelpModal() {
 async function refreshPrivacyPanel() {
   const items = {
     listening: "Off in the background (only when you press Talk)",
-    background: "Off",
-    network: "Only when asked",
+    background: "No hidden general background activity",
+    network: "Enabled connected dashboard surfaces may refresh weather, calendar, or news during startup and refresh. Explicit requests can also use network paths.",
     execution: "Governed",
   };
 
@@ -4389,14 +4394,25 @@ function injectHeaderMenus() {
   actionsLabel.textContent = "Quick runs";
   actionsMenu.panel.appendChild(actionsLabel);
   const actionsGrid = document.createElement("div");
+  actionsGrid.id = "header-quick-runs";
   actionsGrid.className = "header-menu-grid";
+  actionsMenu.panel.appendChild(actionsGrid);
+  host.appendChild(actionsMenu.details);
+  renderHeaderQuickRuns();
+}
+
+function renderHeaderQuickRuns() {
+  const actionsGrid = $("header-quick-runs");
+  if (!actionsGrid) return;
+  clear(actionsGrid);
+
   [
     { label: "Daily brief", command: "daily brief", page: "chat" },
     { label: "Explain this", command: "explain this", page: "chat" },
     { label: "Research a topic", command: "research latest technology news", page: "chat" },
     { label: "Show schedules", command: "show schedules", page: "chat" },
     { label: "Today's news", command: "today's news", page: "chat" },
-  ].forEach((item) => {
+  ].filter((item) => isUserFacingSuggestionAvailable(item.command)).forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "header-menu-item";
@@ -4412,8 +4428,6 @@ function injectHeaderMenus() {
     });
     actionsGrid.appendChild(btn);
   });
-  actionsMenu.panel.appendChild(actionsGrid);
-  host.appendChild(actionsMenu.details);
 }
 
 window.addEventListener("DOMContentLoaded", () => {

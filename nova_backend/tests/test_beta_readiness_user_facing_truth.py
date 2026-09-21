@@ -1,3 +1,5 @@
+import json
+import subprocess
 from pathlib import Path
 
 from src.conversation.meta_intent_handler import MetaIntentHandler
@@ -9,6 +11,45 @@ MIRROR = ROOT / "Nova-Frontend-Dashboard"
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
+
+
+def _evaluate_suggestion_availability(providers: dict[str, dict[str, bool]]) -> dict[str, object]:
+    source_path = json.dumps(str(STATIC / "dashboard-chat-news.js"))
+    provider_state = json.dumps(providers)
+    script = f"""
+const fs = require("fs");
+const vm = require("vm");
+const source = fs.readFileSync({source_path}, "utf8");
+const suggestionSource = source.slice(
+  source.indexOf("function isConnectedSuggestionProvider"),
+  source.indexOf("function renderQuickActions")
+);
+const headerStart = source.indexOf("function renderHeaderQuickRuns");
+const headerSource = source.slice(headerStart, source.indexOf('window.addEventListener("DOMContentLoaded"', headerStart));
+const providers = {provider_state};
+const quickRuns = {{
+  children: [],
+  appendChild(child) {{ this.children.push(child); }},
+}};
+const context = {{
+  threadMapState: {{ threads: [] }},
+  getConnectionCardProvider: (providerId) => providers[providerId] || null,
+  $: (id) => id === "header-quick-runs" ? quickRuns : null,
+  clear: (node) => {{ node.children = []; }},
+  document: {{ createElement: () => ({{ addEventListener: () => {{}} }}) }},
+}};
+vm.runInNewContext(suggestionSource, context);
+vm.runInNewContext(headerSource, context);
+context.renderHeaderQuickRuns();
+process.stdout.write(JSON.stringify({{
+  weather: context.isUserFacingSuggestionAvailable("weather"),
+  research: context.isUserFacingSuggestionAvailable("research latest technology news"),
+  news: context.isUserFacingSuggestionAvailable("today's news"),
+  quickRuns: quickRuns.children.map((item) => item.textContent),
+}}));
+"""
+    result = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
 
 
 def test_beta_ui_does_not_advertise_unproven_live_or_builder_claims():
@@ -131,7 +172,40 @@ def test_page_quick_actions_use_runtime_availability_gating():
     assert 'return isConnectedSuggestionProvider("brave")' in chat_news
     assert 'return isConnectedSuggestionProvider("news")' in chat_news
     assert 'return isConnectedSuggestionProvider("calendar")' in chat_news
+    assert 'return isConnectedSuggestionProvider("weather")' in chat_news
     assert "return hasProjectSuggestionContext()" in chat_news
+
+
+def test_header_quick_runs_refresh_with_provider_availability():
+    chat_news = _read(STATIC / "dashboard-chat-news.js")
+
+    assert 'actionsGrid.id = "header-quick-runs"' in chat_news
+    assert 'function renderHeaderQuickRuns()' in chat_news
+    assert '].filter((item) => isUserFacingSuggestionAvailable(item.command)).forEach((item) => {' in chat_news
+    assert 'renderHeaderQuickRuns();' in chat_news
+    unavailable = _evaluate_suggestion_availability({})
+    assert unavailable["research"] is False
+    assert unavailable["news"] is False
+    assert "Research a topic" not in unavailable["quickRuns"]
+    assert "Today's news" not in unavailable["quickRuns"]
+
+    available = _evaluate_suggestion_availability({"brave": {"connected": True}, "news": {"connected": True}})
+    assert available["research"] is True
+    assert available["news"] is True
+    assert "Research a topic" in available["quickRuns"]
+    assert "Today's news" in available["quickRuns"]
+
+
+def test_weather_availability_requires_a_connected_provider():
+    assert _evaluate_suggestion_availability({})["weather"] is False
+    assert _evaluate_suggestion_availability({"weather": {"connected": True}})["weather"] is True
+
+
+def test_privacy_copy_describes_automatic_connected_surface_refreshes():
+    chat_news = _read(STATIC / "dashboard-chat-news.js")
+
+    assert 'network: "Only when asked"' not in chat_news
+    assert "Enabled connected dashboard surfaces may refresh weather, calendar, or news during startup and refresh." in chat_news
 
 
 def test_current_focus_only_changes_for_a_manual_request_response():
