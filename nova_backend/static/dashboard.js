@@ -229,9 +229,9 @@ let settingsRuntimeState = {
 let workflowFocusState = {
   goal: "Start with something simple like \"Summarize today's headlines.\"",
   status: "Ready",
-  copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
-  now: "Nova is ready to turn your idea into a workflow.",
-  next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+  copy: "Tell Nova what you want help with. Planning suggestions do not execute anything.",
+  now: "Nova is ready to help plan or explain the next step.",
+  next: "You can start broad. Nova will explain, plan, or use a proven capability when the request supports it.",
   lastUserInput: "",
   awaitingResponse: false,
 };
