@@ -5,7 +5,7 @@
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
-verified main after Lane 5A authority foundation: 3a3e9d332c6b744dcea0fef9d3532e5fcde60e51
+verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
 #397 through #405: COMPLETE / MERGED
 
 #397 private-state routing safety          COMPLETE / MERGED
@@ -37,8 +37,9 @@ ACTIVATION PROOF: PASS (192 durability tests passed; 1 expected Windows POSIX-FI
 COMPLETE: Lane 5A authority-foundation correction (PR #428; main `3a3e9d33`)
 AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Windows POSIX-FIFO skip)
 RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
-NEXT: rollback/restore proof
-THEN: bounded beta product-translation/readiness pass
+COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)
+ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
+NEXT: bounded beta product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
 THEN: private-beta candidacy/distribution decision
@@ -47,7 +48,7 @@ THEN: private-beta candidacy/distribution decision
 The daily-use presentation stabilization lane is closed. PR #405 passed its hosted
 checks, exact-head review signal, protected merge, and merged-main Home replay before
 and after restart. Issue #406 is complete; its former immediate-lane framing is
-historical. The current immediate lane is rollback/restore proof.
+historical. The current immediate lane is bounded beta product-translation/readiness pass.
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
