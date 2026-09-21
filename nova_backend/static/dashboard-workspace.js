@@ -1020,6 +1020,16 @@ function renderOperationalContextWidget(data = {}) {
   const recentTurns = Array.isArray(snapshot.recent_relevant_turns) ? snapshot.recent_relevant_turns : [];
   const recentActivity = Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : [];
   const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
+  const userFacingRecentTurns = recentTurns.filter(isUserFacingWorkspaceHomeItem);
+  const activeThread = String(snapshot.active_thread || "").trim();
+  const threadCount = Number(snapshot.thread_count || 0);
+  const hasProjectThreadContext = !!activeThread || threadCount > 0;
+  const userFacingSummary = isUserFacingWorkspaceHomeItem(operationalContextState.summary)
+    ? operationalContextState.summary
+    : "";
+  const userFacingSelectedFile = isUserFacingWorkspaceHomeItem(snapshot.selected_file)
+    ? String(snapshot.selected_file || "None").trim() || "None"
+    : "None";
 
   const homeHost = $("workspace-home-operational");
   if (homeHost) {
@@ -1027,7 +1037,7 @@ function renderOperationalContextWidget(data = {}) {
 
     const summary = document.createElement("div");
     summary.className = "workspace-home-doc-copy";
-    summary.textContent = operationalContextState.summary || "Operational context is available here after the next refresh.";
+    summary.textContent = userFacingSummary || (hasProjectThreadContext ? "Project context is available." : "No project thread is active.");
     homeHost.appendChild(summary);
 
     const note = document.createElement("div");
@@ -1040,10 +1050,10 @@ function renderOperationalContextWidget(data = {}) {
     grid.className = "operator-health-grid";
     [
       ["Focus thread", String(snapshot.active_thread || "None").trim() || "None"],
-      ["Goal", String(snapshot.task_goal || "None").trim() || "None"],
-      ["Current step", String(snapshot.current_step || "None").trim() || "None"],
+      ["Goal", hasProjectThreadContext ? String(snapshot.task_goal || "None").trim() || "None" : "None"],
+      ["Current step", hasProjectThreadContext ? String(snapshot.current_step || "None").trim() || "None" : "None"],
       ["Active topic", String(snapshot.active_topic || "None").trim() || "None"],
-      ["Selected file", String(snapshot.selected_file || "None").trim() || "None"],
+      ["Selected file", userFacingSelectedFile],
       ["Turns", `${Number(snapshot.turn_count || 0)}`],
     ].forEach(([labelText, valueText]) => {
       const row = document.createElement("div");
@@ -1060,10 +1070,10 @@ function renderOperationalContextWidget(data = {}) {
     });
     homeHost.appendChild(grid);
 
-    if (recentTurns.length) {
+    if (userFacingRecentTurns.length) {
       const turns = document.createElement("div");
       turns.className = "workspace-home-blocked";
-      turns.textContent = `Recent turns: ${recentTurns.slice(0, 3).map((item) => String(item || "").trim()).filter(Boolean).join(" | ")}`;
+      turns.textContent = `Recent turns: ${userFacingRecentTurns.slice(0, 3).map((item) => String(item || "").trim()).filter(Boolean).join(" | ")}`;
       homeHost.appendChild(turns);
     }
   }
@@ -1144,7 +1154,9 @@ function renderAssistiveNoticesWidget(data = {}) {
 
     const summary = document.createElement("div");
     summary.className = "workspace-home-doc-copy";
-    summary.textContent = assistiveNoticeState.summary || "Assistive notices will appear here after the next refresh.";
+    summary.textContent = isUserFacingWorkspaceHomeItem(assistiveNoticeState.summary)
+      ? (assistiveNoticeState.summary || "Assistive notices will appear here after the next refresh.")
+      : "No current assistive notices.";
     host.appendChild(summary);
 
     const note = document.createElement("div");
