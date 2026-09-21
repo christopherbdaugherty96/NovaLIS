@@ -87,5 +87,64 @@ def test_frontend_truth_surfaces_remain_byte_synced():
         "index.html",
         "dashboard-config.js",
         "dashboard-control-center.js",
+        "dashboard-chat-news.js",
+        "dashboard-workspace.js",
+        "dashboard.js",
     ):
         assert (STATIC / name).read_bytes() == (MIRROR / name).read_bytes()
+
+def test_page_quick_actions_use_runtime_availability_gating():
+    chat_news = _read(STATIC / "dashboard-chat-news.js")
+
+    assert "getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command))" in chat_news
+    assert 'return isConnectedSuggestionProvider("brave")' in chat_news
+    assert 'return isConnectedSuggestionProvider("news")' in chat_news
+    assert 'return isConnectedSuggestionProvider("calendar")' in chat_news
+    assert "return hasProjectSuggestionContext()" in chat_news
+
+
+def test_current_focus_only_changes_for_a_manual_request_response():
+    control = _read(STATIC / "dashboard-control-center.js")
+
+    assert 'if (!clean || !workflowFocusState.awaitingResponse) return;' in control
+    assert 'workflowFocusState.status = "Response ready";' in control
+    assert 'workflowFocusState.status = "Ready for review";' not in control
+
+
+def test_disconnected_news_and_home_copy_do_not_claim_live_or_connected_work():
+    index = _read(STATIC / "index.html")
+
+    assert ">Live briefing<" not in index
+    assert ">Briefing<" in index
+    assert "Nova will show starting points that are available on this device and its connected services." in index
+
+
+def test_remote_bridge_separates_permission_from_runtime_availability():
+    control = _read(STATIC / "dashboard-control-center.js")
+
+    assert '["Permission", permissionEnabled ? "Enabled" : "Paused"]' in control
+    assert '["Availability", availabilityLabel]' in control
+    assert '"Unavailable — token not configured"' in control
+    assert '["Remote permission", setup.remote_bridge_enabled ? "Enabled" : "Paused"]' in control
+    assert '["Remote availability", setup.remote_bridge_enabled && setup.remote_bridge_token_configured' in control
+
+
+def test_home_filters_internal_paths_and_stale_dated_watch_copy():
+    workspace = _read(STATIC / "dashboard-workspace.js")
+
+    assert 'text.includes("local_project_structure_map")' in workspace
+    assert 'text.includes("c:\\\\nova-project")' in workspace
+    assert "isStaleDatedWatch" in workspace
+    assert "No current assistive notices." in workspace
+    assert "userFacingSelectedFile" in workspace
+    assert "hasProjectThreadContext ? String(snapshot.task_goal" in workspace
+    assert "hasProjectThreadContext ? String(snapshot.current_step" in workspace
+
+
+def test_settings_html_does_not_present_wake_word_as_live():
+    index = _read(STATIC / "index.html")
+
+    assert "Hey Nova" not in index
+    assert "wake phrase" not in index.lower()
+    assert "live screen help" not in index.lower()
+
