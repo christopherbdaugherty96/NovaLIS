@@ -3,8 +3,17 @@
 function isAvailableSuggestionProvider(providerId) {
   const provider = getConnectionCardProvider(providerId);
   if (!provider) return false;
-  return provider.connected === true
-    || (provider.environment_configured === true && provider.configured === true);
+  if (provider.configuration_source === "stored") {
+    return provider.has_key === true
+      && provider.connected === true
+      && provider.health_ok !== false;
+  }
+  if (provider.configuration_source === "environment") {
+    return provider.has_key !== true
+      && provider.configured === true
+      && provider.health_ok !== false;
+  }
+  return provider.connected === true;
 }
 
 function hasProjectSuggestionContext() {

@@ -189,7 +189,8 @@ def test_page_quick_actions_use_runtime_availability_gating():
     assert 'return isAvailableSuggestionProvider("news")' in chat_news
     assert 'return isAvailableSuggestionProvider("calendar")' in chat_news
     assert 'return isAvailableSuggestionProvider("weather")' in chat_news
-    assert "provider.environment_configured === true && provider.configured === true" in chat_news
+    assert 'provider.configuration_source === "stored"' in chat_news
+    assert 'provider.configuration_source === "environment"' in chat_news
     assert "return hasProjectSuggestionContext()" in chat_news
 
 
@@ -214,8 +215,8 @@ def test_header_quick_runs_refresh_with_provider_availability():
 
     environment_configured = _evaluate_suggestion_availability(
         {
-            "brave": {"configured": True, "environment_configured": True, "connected": False},
-            "news": {"configured": True, "environment_configured": True, "connected": False},
+            "brave": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
+            "news": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
         }
     )
     assert environment_configured["research"] is True
@@ -228,21 +229,36 @@ def test_weather_availability_accepts_a_configured_environment_provider_but_not_
     assert _evaluate_suggestion_availability({})["weather"] is False
     assert _evaluate_suggestion_availability({"weather": {"connected": True}})["weather"] is True
     assert _evaluate_suggestion_availability(
-        {"weather": {"configured": True, "environment_configured": True, "connected": False}}
+        {"weather": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False}}
     )["weather"] is True
     assert _evaluate_suggestion_availability(
-        {"weather": {"configured": True, "environment_configured": False, "connected": False}}
+        {"weather": {"configured": True, "environment_configured": True, "configuration_source": "stored", "has_key": True, "health_ok": False, "connected": False}}
     )["weather"] is False
+
+
+def test_stored_provider_failure_stays_unavailable_after_environment_propagation():
+    failed_after_save_key = {
+        "configured": True,
+        "environment_configured": True,
+        "configuration_source": "stored",
+        "has_key": True,
+        "health_ok": False,
+        "connected": False,
+    }
+    healthy_stored = {**failed_after_save_key, "health_ok": True, "connected": True}
+
+    assert _evaluate_suggestion_availability({"weather": failed_after_save_key})["weather"] is False
+    assert _evaluate_suggestion_availability({"weather": healthy_stored})["weather"] is True
 
 
 def test_intro_cards_follow_shared_provider_availability_and_truthful_paths():
     dashboard = _read(STATIC / "dashboard.js")
     environment_configured = _evaluate_suggestion_availability(
         {
-            "weather": {"configured": True, "environment_configured": True, "connected": False},
-            "calendar": {"configured": True, "environment_configured": True, "connected": False},
-            "news": {"configured": True, "environment_configured": True, "connected": False},
-            "openai": {"configured": True, "environment_configured": True, "connected": False},
+            "weather": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
+            "calendar": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
+            "news": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
+            "openai": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
         }
     )
 
@@ -257,8 +273,8 @@ def test_intro_cards_follow_shared_provider_availability_and_truthful_paths():
 
     no_news = _evaluate_suggestion_availability(
         {
-            "weather": {"configured": True, "environment_configured": True, "connected": False},
-            "calendar": {"configured": True, "environment_configured": True, "connected": False},
+            "weather": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
+            "calendar": {"configured": True, "environment_configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False},
         }
     )
     assert "Daily brief" not in no_news["introTitles"]
