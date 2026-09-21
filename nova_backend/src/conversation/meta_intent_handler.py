@@ -571,23 +571,24 @@ def _classify_out_of_scope(text: str) -> str:
 
 def _build_identity() -> str:
     return (
-        "I'm Nova — a personal AI assistant built to run entirely on your own computer.\n\n"
+        "I'm Nova — a local-first personal AI assistant with explicit governed external paths "
+        "when a request needs them.\n\n"
         "Nova was created by Christopher Daugherty. The idea is simple: "
-        "you should have an AI that works for you, not one that sends your data somewhere else "
-        "or does things without you knowing.\n\n"
+        "local operation should remain the default, and external access should stay visible, "
+        "bounded, and reviewable.\n\n"
         "What makes Nova different:\n"
-        "  - Everything runs on your machine — no cloud, no third-party servers\n"
-        "  - Every action is logged so you can always see what happened and why\n"
-        "  - Nova only does things it's been specifically built and tested to do\n"
-        "  - You stay in control — it asks before anything important happens\n\n"
+        "  - Nova is local-first; network and cloud/model paths are explicit, governed, and visible when used\n"
+        "  - Governed actions produce ledger or receipt evidence so you can inspect what happened\n"
+        "  - Enabled capabilities are still checked for configuration, device availability, and request-specific authority before use\n"
+        "  - You stay in control — higher-impact actions use the appropriate approval boundary\n\n"
         "Right now Nova is in an early stage. It can answer questions, search the web, "
-        "check the news and weather, draft emails, control parts of your computer, "
-        "and remember things you tell it. It's not yet set up for broader actions "
-        "like sending messages or managing workflows on its own.\n\n"
+        "check the news and weather, prepare email drafts for manual sending, use bounded local "
+        "controls such as volume, media playback, brightness, and approved file/folder opening, "
+        "and remember things you explicitly save. It's not yet set up for broader actions "
+        "like autonomously sending messages or managing unrestricted workflows.\n\n"
         'Say "what can you do" to see the full list, '
         'or just tell me what you need.'
     )
-
 
 def _build_greeting(*, first_time: bool = False) -> str:
     if first_time:
@@ -603,8 +604,8 @@ def _build_what_can_you_do() -> str:
     groups = _all_caps_by_group()
     if not groups:
         return (
-            "I can help with things like checking the news, drafting emails, "
-            "controlling your computer, and more. Just tell me what you need."
+            "I can help with things like checking the news, preparing email drafts for manual "
+            "sending, and using bounded local controls. Just tell me what you need."
         )
 
     enabled_total = sum(1 for entries in groups.values() for item in entries if item.enabled)
@@ -660,14 +661,14 @@ def _build_phase_status() -> str:
     return (
         f"Nova is in an early stage right now — {_CURRENT_TIER}.\n\n"
         f"What that means in plain terms: I can answer questions, search the web, "
-        f"check news and weather, draft emails, control parts of your computer, "
-        f"and remember things you tell me. "
-        f"I'm not yet set up for broader actions like sending messages, "
-        f"booking things, or managing full workflows on my own.\n\n"
+        f"check news and weather, prepare email drafts for manual sending, use bounded local "
+        f"controls such as volume, media playback, brightness, and approved file/folder opening, "
+        f"and remember things you explicitly save. "
+        f"I'm not yet set up for broader actions like autonomously sending messages, "
+        f"booking things, or managing unrestricted workflows.\n\n"
         f"What just shipped: {_CURRENT_STATUS}\n\n"
         f"What's coming next: {_NEXT_UP}"
     )
-
 
 def _build_whats_planned() -> str:
     return (

@@ -227,11 +227,11 @@ let settingsRuntimeState = {
   lastHydratedAt: 0,
 };
 let workflowFocusState = {
-  goal: "Start with something simple like \"Build me a landing page for my business.\"",
+  goal: "Start with something simple like \"Summarize today's headlines.\"",
   status: "Ready",
-  copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
-  now: "Nova is ready to turn your idea into a workflow.",
-  next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+  copy: "Tell Nova what you want help with. Planning suggestions do not execute anything.",
+  now: "Nova is ready to help plan or explain the next step.",
+  next: "You can start broad. Nova will explain, plan, or use a proven capability when the request supports it.",
   lastUserInput: "",
   awaitingResponse: false,
 };
@@ -628,13 +628,9 @@ function setPTTButtonState(state = "idle") {
   btn.classList.remove("mic-idle", "mic-recording", "mic-sending", "mic-error");
   btn.classList.add(`mic-${safeState}`);
 
-  const wakeWordHint = isHeyNovaWakeWordEnabled()
-    ? `Press to record and speak normally. Saying "${HEY_NOVA_WAKE_WORD}" is optional here, but still used during live help.`
-    : "Press to record a short voice question.";
-
   const labels = {
-    idle: { text: "Talk", title: wakeWordHint },
-    recording: { text: "Listening", title: `Nova is listening. Start with "${HEY_NOVA_WAKE_WORD}" and press again to stop.` },
+    idle: { text: "Talk", title: "Press to record a short voice question." },
+    recording: { text: "Listening", title: "Nova is listening. Press again to stop." },
     sending: { text: "Sending", title: "Sending your voice request to Nova" },
     error: { text: "Mic issue", title: "Voice input is unavailable right now" },
   };
@@ -698,7 +694,6 @@ function getLiveHelpPromptSuggestions() {
     return [
       { label: "Explain this page", command: "explain this page" },
       { label: "What matters here?", command: "what matters most here" },
-      { label: "What should I click?", command: "what should i click next" },
     ];
   }
   const analysis = (liveHelpState.lastAnalysis && typeof liveHelpState.lastAnalysis === "object")
@@ -708,7 +703,6 @@ function getLiveHelpPromptSuggestions() {
   const fallback = [
     "explain this page",
     "what matters most here",
-    "what should i click next",
     "read the important part",
   ];
   const merged = [...prompts, ...fallback];
