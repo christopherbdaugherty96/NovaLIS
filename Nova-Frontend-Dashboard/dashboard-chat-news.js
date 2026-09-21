@@ -64,7 +64,7 @@ function renderQuickActions() {
   clear(host);
 
   const page = getActivePage();
-  const actions = getQuickActionsForPage(page);
+  const actions = getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command));
   const selected = new Set(getSelectedQuickActions(page, actions));
   actions.filter((a) => selected.has(a.id)).forEach((action) => {
     const btn = document.createElement("button");
