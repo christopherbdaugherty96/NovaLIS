@@ -900,6 +900,9 @@ def test_recovery_closeout_requires_ordered_rollback_completion_markers(
         "The current lane is rollback/restore proof.",
         "Rollback/restore proof is CURRENT.",
         "Rollback/restore proof is\nCURRENT.",
+        "Rollback/restore proof remains current.",
+        "Rollback/restore proof is the current effort.",
+        "The current effort is the rollback/restore proof.",
     ),
 )
 def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, claim):
@@ -926,9 +929,18 @@ def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, c
     )
 
 
-@pytest.mark.parametrize("separator", (".", ";"))
-def test_recovery_closeout_does_not_conflate_completed_and_current_sentences(
-    tmp_path, separator
+@pytest.mark.parametrize(
+    ("separator", "current_clause"),
+    (
+        (".", "current work is beta readiness."),
+        (";", "current work is beta readiness."),
+        (", and", "current work is beta readiness."),
+        (", but", "current work is beta readiness."),
+        (", but", "current beta-readiness work is active."),
+    ),
+)
+def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
+    tmp_path, separator, current_clause
 ):
     checker = _load_checker()
     _copy_post_405_ordering_surfaces(checker, tmp_path)
@@ -936,7 +948,30 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_sentences(
     original = target.read_text(encoding="utf-8")
     updated = original.replace(
         "NEXT: bounded beta product-translation/readiness pass",
-        f"Rollback/restore proof is complete{separator} current work is beta readiness.\n"
+        f"Rollback/restore proof is complete{separator} {current_clause}\n"
+        "NEXT: bounded beta product-translation/readiness pass",
+        1,
+    )
+    assert updated != original
+    target.write_text(updated, encoding="utf-8")
+
+    assert (
+        checker.check_operational_truth(
+            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        )
+        == []
+    )
+
+
+def test_recovery_closeout_keeps_independent_physical_status_lines_separate(tmp_path):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    updated = original.replace(
+        "NEXT: bounded beta product-translation/readiness pass",
+        "Rollback/restore proof is complete\n"
+        "Current beta-readiness work is in progress.\n"
         "NEXT: bounded beta product-translation/readiness pass",
         1,
     )
@@ -968,6 +1003,11 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_sentences(
         "Rollback/restore proof isn't complete.",
         "Rollback/restore proof has not been completed.",
         "Rollback/restore proof hasn't been completed.",
+        "Rollback/restore proof was not completed.",
+        "Rollback/restore proof wasn't completed.",
+        "Rollback/restore proof was planned, but was not completed.",
+        "Rollback/restore proof was planned, but the current proof was not completed.",
+        "Rollback/restore proof was planned, but the current effort was not completed.",
         "Rollback/restore proof is not finished.",
         "Rollback/restore proof still needs completion.",
         "Rollback/restore proof remains outstanding.",
@@ -995,6 +1035,23 @@ def test_recovery_closeout_rejects_rollback_unfinished_claim(tmp_path, claim):
         and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
+
+
+@pytest.mark.parametrize("replacement", ("", "ROLLBACK_RESTORE_CLOSEOUT_STATE: PENDING"))
+def test_recovery_closeout_requires_canonical_structured_state_marker(tmp_path, replacement):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "docs/CANONICAL/00_INDEX.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(checker.ROLLBACK_RESTORE_CLOSEOUT_STATE_MARKER, replacement, 1)
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any("canonical rollback/restore closeout state marker" in error for error in errors)
 
 
 @pytest.mark.parametrize(
