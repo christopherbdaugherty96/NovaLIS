@@ -690,12 +690,18 @@ def _rollback_restore_prose_directly_contradicts_closeout(
 
     prose_lines = tuple(line for line in structured_lines if line not in canonical_lines)
     for index, line in enumerate(prose_lines):
-        # Markdown may wrap one direct operational sentence across two physical
-        # lines. Join only an unterminated line with its immediate successor;
-        # this is formatting normalization, not clause or noun inference.
+        # Join a wrapped direct rollback predicate only when its unfinished
+        # state demonstrably continues on the next physical line. Independent
+        # status lines otherwise retain their boundary.
         if (
-            not re.search(r"[.!?;]\s*$", line)
+            re.search(r"\b(?:ROLLBACK|RESTORE)\b", line)
+            and re.search(r"\b(?:IS|HAS|WAS)\s*$", line)
             and index + 1 < len(prose_lines)
+            and re.match(
+                r"^\s*(?:NOT\b|IN\s+PROGRESS\b|PENDING\b|INCOMPLETE\b|"
+                r"UNFINISHED\b|OUTSTANDING\b|STILL\b|NEEDS\b)",
+                prose_lines[index + 1],
+            )
         ):
             line = f"{line} {prose_lines[index + 1]}"
         normalized = re.sub(r"\bISN['’]T\b", "IS NOT", line)
@@ -717,7 +723,18 @@ def _rollback_restore_prose_directly_marks_current_or_next(
 
     prose_lines = tuple(line for line in structured_lines if line not in canonical_lines)
     for index, line in enumerate(prose_lines):
-        if not re.search(r"[.!?;]\s*$", line) and index + 1 < len(prose_lines):
+        if (
+            re.search(r"\b(?:IS|ARE|REMAINS|STAYS)\s*$", line)
+            and (
+                re.search(r"\b(?:ROLLBACK|RESTORE)\b", line)
+                or re.search(r"\b(?:NEXT|CURRENT|IMMEDIATE)\s+(?:LANE|EFFORT|WORK|PROOF)\s+(?:IS|ARE|REMAINS|STAYS)\s*$", line)
+            )
+            and index + 1 < len(prose_lines)
+            and re.match(
+                r"^\s*(?:THE\s+)?(?:NEXT|CURRENT|IMMEDIATE|ROLLBACK|RESTORE)\b",
+                prose_lines[index + 1],
+            )
+        ):
             line = f"{line} {prose_lines[index + 1]}"
         normalized = re.sub(r"[^A-Z0-9]+", " ", line)
         if re.search(
@@ -728,6 +745,7 @@ def _rollback_restore_prose_directly_marks_current_or_next(
         ) or re.search(
             r"\b(?:THE\s+)?(?:NEXT|CURRENT|IMMEDIATE)\s+"
             r"(?:(?:LANE|EFFORT|WORK|PROOF)\s+(?:(?:IS|ARE|REMAINS|STAYS)\s+)?)?"
+            r"(?:THE\s+)?"
             r"(?:ROLLBACK|RESTORE)\b",
             normalized,
         ):

@@ -902,6 +902,7 @@ def test_recovery_closeout_requires_ordered_rollback_completion_markers(
         "Rollback/restore proof is\nCURRENT.",
         "Rollback/restore proof remains current.",
         "Rollback/restore proof is the current effort.",
+        "The current effort is the rollback/restore proof.",
     ),
 )
 def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, claim):
@@ -948,6 +949,29 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
     updated = original.replace(
         "NEXT: bounded beta product-translation/readiness pass",
         f"Rollback/restore proof is complete{separator} {current_clause}\n"
+        "NEXT: bounded beta product-translation/readiness pass",
+        1,
+    )
+    assert updated != original
+    target.write_text(updated, encoding="utf-8")
+
+    assert (
+        checker.check_operational_truth(
+            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        )
+        == []
+    )
+
+
+def test_recovery_closeout_keeps_independent_physical_status_lines_separate(tmp_path):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    updated = original.replace(
+        "NEXT: bounded beta product-translation/readiness pass",
+        "Rollback/restore proof is complete\n"
+        "Current beta-readiness work is in progress.\n"
         "NEXT: bounded beta product-translation/readiness pass",
         1,
     )
