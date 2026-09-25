@@ -926,8 +926,8 @@ def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, c
     )
 
 
-@pytest.mark.parametrize("separator", (".", ";"))
-def test_recovery_closeout_does_not_conflate_completed_and_current_sentences(
+@pytest.mark.parametrize("separator", (".", ";", ", and", ", but"))
+def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
     tmp_path, separator
 ):
     checker = _load_checker()
@@ -968,6 +968,7 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_sentences(
         "Rollback/restore proof isn't complete.",
         "Rollback/restore proof has not been completed.",
         "Rollback/restore proof hasn't been completed.",
+        "Rollback/restore proof was not completed.",
         "Rollback/restore proof is not finished.",
         "Rollback/restore proof still needs completion.",
         "Rollback/restore proof remains outstanding.",

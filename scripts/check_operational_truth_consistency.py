@@ -888,12 +888,18 @@ def _preserves_post_405_boundary(
     semantic_active_prose = re.sub(
         r"[.!?;](?=\s|$)", " __SENTENCE_BOUNDARY__ ", semantic_active_prose
     )
+    semantic_active_prose = re.sub(
+        r",\s+(?=(?:AND|BUT|OR|NOR|FOR|SO|YET)\b)",
+        " __SENTENCE_BOUNDARY__ ",
+        semantic_active_prose,
+    )
     semantic_active_prose = re.sub(r"[^A-Z0-9_]+", " ", semantic_active_prose)
     unfinished_state = (
         r"(?:STARTED|IN\s+PROGRESS|NOT\s+STARTED|NOT\s+BEGUN|UNSTARTED|PENDING|"
         r"INCOMPLETE|UNFINISHED|OUTSTANDING|"
         r"IS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+(?:COMPLETE|FINISHED)|"
         r"HAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED|"
+        r"WAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED|"
         r"(?:STILL\s+)?NEEDS(?:\s+[A-Z0-9]+){0,3}\s+COMPLETION)"
     )
     rollback_unfinished_claim = bool(
