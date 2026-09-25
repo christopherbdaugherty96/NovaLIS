@@ -926,9 +926,18 @@ def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, c
     )
 
 
-@pytest.mark.parametrize("separator", (".", ";", ", and", ", but"))
+@pytest.mark.parametrize(
+    ("separator", "current_clause"),
+    (
+        (".", "current work is beta readiness."),
+        (";", "current work is beta readiness."),
+        (", and", "current work is beta readiness."),
+        (", but", "current work is beta readiness."),
+        (", but", "current beta-readiness work is active."),
+    ),
+)
 def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
-    tmp_path, separator
+    tmp_path, separator, current_clause
 ):
     checker = _load_checker()
     _copy_post_405_ordering_surfaces(checker, tmp_path)
@@ -936,7 +945,7 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
     original = target.read_text(encoding="utf-8")
     updated = original.replace(
         "NEXT: bounded beta product-translation/readiness pass",
-        f"Rollback/restore proof is complete{separator} current work is beta readiness.\n"
+        f"Rollback/restore proof is complete{separator} {current_clause}\n"
         "NEXT: bounded beta product-translation/readiness pass",
         1,
     )

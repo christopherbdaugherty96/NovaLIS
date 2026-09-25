@@ -888,6 +888,7 @@ def _preserves_post_405_boundary(
     semantic_active_prose = re.sub(
         r"[.!?;](?=\s|$)", " __SENTENCE_BOUNDARY__ ", semantic_active_prose
     )
+    semantic_clause_prose = re.sub(r"[^A-Z0-9_,]+", " ", semantic_active_prose)
     semantic_active_prose = re.sub(
         r",\s+(?=(?:AND|BUT|OR|NOR|FOR|SO|YET)\s+"
         r"(?!(?:(?:THE|THIS|THAT)\s+)?(?:CURRENT|NEXT|IMMEDIATE)\s+"
@@ -895,7 +896,7 @@ def _preserves_post_405_boundary(
         r"(?:(?:THE|THIS|THAT)\s+)?(?:CURRENT|NEXT|IMMEDIATE)\s+"
         r"[A-Z0-9]+(?:\s+[A-Z0-9]+){0,3}\s+(?:IS|ARE|WAS|WERE|REMAINS|STAYS)\b)",
         " __SENTENCE_BOUNDARY__ ",
-        semantic_active_prose,
+        semantic_clause_prose,
     )
     semantic_active_prose = re.sub(r"[^A-Z0-9_]+", " ", semantic_active_prose)
     unfinished_state = (
