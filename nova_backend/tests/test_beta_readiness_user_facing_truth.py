@@ -375,7 +375,7 @@ def test_connection_cards_keep_configuration_distinct_from_verified_connection()
     stored_failed = _evaluate_connection_card(
         {"id": "weather", "configured": True, "configuration_source": "stored", "has_key": True, "health_ok": False, "connected": False}
     )
-    assert stored_failed["badge"] == "Key saved"
+    assert stored_failed["badge"] == "Needs attention"
     assert "need attention" in stored_failed["summary"]
 
 

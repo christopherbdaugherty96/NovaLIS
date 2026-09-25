@@ -3317,7 +3317,9 @@ function _buildConnectionCard(provider) {
   const stateClass = isConnected ? "conn-card--connected" : hasKey || isConfigured ? "conn-card--needed" : "conn-card--setup";
   const stateLabel = isConnected
     ? "Connected"
-    : hasKey && provider.health_ok === null
+    : hasKey && provider.health_ok === false
+      ? "Needs attention"
+      : hasKey && provider.health_ok === null
       ? "Needs verification"
       : hasKey
         ? "Key saved"
