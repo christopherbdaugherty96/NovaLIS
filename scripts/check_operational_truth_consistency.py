@@ -259,6 +259,16 @@ LANE_5A_ROLLBACK_RESTORE_PROOF = (
     "1 EXPECTED WINDOWS POSIX-FIFO SKIP; RUNTIME STRUCTURAL SMOKE PASS)"
 )
 LANE_5A_ROLLBACK_RESTORE_MAIN_SHA = "868DE9D92C701834F1C4FBA422AB9C47A01EA33F"
+ROLLBACK_RESTORE_CLOSEOUT_STATE_MARKER = "ROLLBACK_RESTORE_CLOSEOUT_STATE: COMPLETE"
+ROLLBACK_RESTORE_CLOSEOUT_COMPLETE = "COMPLETE"
+ROLLBACK_RESTORE_INCOMPLETE_PROSE = re.compile(
+    r"\b(?:STARTED|IN\s+PROGRESS|NOT\s+STARTED|NOT\s+BEGUN|UNSTARTED|PENDING|"
+    r"INCOMPLETE|UNFINISHED|OUTSTANDING|"
+    r"IS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+(?:COMPLETE|FINISHED)|"
+    r"HAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED|"
+    r"WAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED|"
+    r"(?:STILL\s+)?NEEDS(?:\s+[A-Z0-9]+){0,3}\s+COMPLETION)\b"
+)
 
 POST_394_ORDERING_SURFACES = (
     "priority",
@@ -649,6 +659,80 @@ def _extract_post_405_active_block(text: str) -> str | None:
     return "".join(active)
 
 
+def _rollback_restore_closeout_state(text: str) -> str | None:
+    """Return the canonical rollback-closeout state, never an inferred prose state."""
+
+    active = _extract_post_405_active_block(text)
+    if active is None:
+        return None
+    markers = tuple(
+        _normalize_post_405_structured_line(line)
+        for line in active.splitlines()
+        if _normalize_post_405_structured_line(line).startswith(
+            "ROLLBACK_RESTORE_CLOSEOUT_STATE:"
+        )
+    )
+    if markers == (ROLLBACK_RESTORE_CLOSEOUT_STATE_MARKER,):
+        return ROLLBACK_RESTORE_CLOSEOUT_COMPLETE
+    return None
+
+
+def _rollback_restore_prose_directly_contradicts_closeout(
+    structured_lines: tuple[str, ...], canonical_lines: set[str]
+) -> bool:
+    """Reject ambiguous incomplete rollback prose without resolving coreference.
+
+    The canonical marker owns the completion state. Checked operational prose may
+    describe it, but a line that names rollback/restore cannot also carry an
+    incomplete-state phrase. This deliberately avoids clause parsing and noun
+    inference; authors must write separate, unambiguous operational lines.
+    """
+
+    prose_lines = tuple(line for line in structured_lines if line not in canonical_lines)
+    for index, line in enumerate(prose_lines):
+        # Markdown may wrap one direct operational sentence across two physical
+        # lines. Join only an unterminated line with its immediate successor;
+        # this is formatting normalization, not clause or noun inference.
+        if (
+            not re.search(r"[.!?;]\s*$", line)
+            and index + 1 < len(prose_lines)
+        ):
+            line = f"{line} {prose_lines[index + 1]}"
+        normalized = re.sub(r"\bISN['’]T\b", "IS NOT", line)
+        normalized = re.sub(r"\bHASN['’]T\b", "HAS NOT", normalized)
+        normalized = re.sub(r"\bWASN['’]T\b", "WAS NOT", normalized)
+        normalized = re.sub(r"[^A-Z0-9]+", " ", normalized)
+        if (
+            re.search(r"\b(?:ROLLBACK|RESTORE)\b", normalized)
+            and ROLLBACK_RESTORE_INCOMPLETE_PROSE.search(normalized)
+        ):
+            return True
+    return False
+
+
+def _rollback_restore_prose_directly_marks_current_or_next(
+    structured_lines: tuple[str, ...], canonical_lines: set[str]
+) -> bool:
+    """Detect only direct current/next rollback labels, not nearby prose."""
+
+    prose_lines = tuple(line for line in structured_lines if line not in canonical_lines)
+    for index, line in enumerate(prose_lines):
+        if not re.search(r"[.!?;]\s*$", line) and index + 1 < len(prose_lines):
+            line = f"{line} {prose_lines[index + 1]}"
+        normalized = re.sub(r"[^A-Z0-9]+", " ", line)
+        if re.search(
+            r"\b(?:ROLLBACK|RESTORE)(?:\s+(?:ROLLBACK|RESTORE|PROOF)){0,2}\s+"
+            r"(?:IS\s+)?(?:NEXT|CURRENT|IMMEDIATE)\b",
+            normalized,
+        ) or re.search(
+            r"\b(?:THE\s+)?(?:NEXT|CURRENT|IMMEDIATE)\s+"
+            r"(?:LANE\s+(?:IS\s+)?)?(?:ROLLBACK|RESTORE)\b",
+            normalized,
+        ):
+            return True
+    return False
+
+
 def _post_405_sync_start_shas(text: str) -> tuple[str, ...]:
     """Return sync-start SHAs from the current lifecycle section only."""
 
@@ -713,6 +797,7 @@ def _preserves_post_405_boundary(
     require_lane_4_complete: bool = False,
     require_lane_5a_recovery_foundation: bool = False,
     require_lane_5a_rollback_restore_closeout: bool = False,
+    rollback_restore_closeout_state: str | None = None,
 ) -> bool:
     """Require the current beta-readiness order and feature freeze."""
 
@@ -880,55 +965,17 @@ def _preserves_post_405_boundary(
         *LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE,
         *LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
     }
-    semantic_active_prose = " ".join(
-        line for line in structured_lines if line not in canonical_rollback_lines
+    rollback_unfinished_claim = _rollback_restore_prose_directly_contradicts_closeout(
+        structured_lines, canonical_rollback_lines
     )
-    semantic_active_prose = re.sub(r"\bISN['’]T\b", "IS NOT", semantic_active_prose)
-    semantic_active_prose = re.sub(r"\bHASN['’]T\b", "HAS NOT", semantic_active_prose)
-    semantic_active_prose = re.sub(
-        r"[.!?;](?=\s|$)", " __SENTENCE_BOUNDARY__ ", semantic_active_prose
+    rollback_completion_claim = any(
+        re.search(r"\b(?:ROLLBACK|RESTORE)\b", line)
+        and re.search(r"\b(?:COMPLETE|COMPLETED)\b", line)
+        for line in structured_lines
+        if line not in canonical_rollback_lines
     )
-    semantic_clause_prose = re.sub(r"[^A-Z0-9_,]+", " ", semantic_active_prose)
-    semantic_active_prose = re.sub(
-        r",\s+(?=(?:AND|BUT|OR|NOR|FOR|SO|YET)\s+"
-        r"(?!(?:(?:THE|THIS|THAT)\s+)?(?:CURRENT|NEXT|IMMEDIATE)\s+"
-        r"(?:[A-Z0-9]+\s+){0,3}(?:PROOF|ROLLBACK|RESTORE)\b)"
-        r"(?:(?:THE|THIS|THAT)\s+)?(?:CURRENT|NEXT|IMMEDIATE)\s+"
-        r"[A-Z0-9]+(?:\s+[A-Z0-9]+){0,3}\s+(?:IS|ARE|WAS|WERE|REMAINS|STAYS)\b)",
-        " __SENTENCE_BOUNDARY__ ",
-        semantic_clause_prose,
-    )
-    semantic_active_prose = re.sub(r"[^A-Z0-9_]+", " ", semantic_active_prose)
-    unfinished_state = (
-        r"(?:STARTED|IN\s+PROGRESS|NOT\s+STARTED|NOT\s+BEGUN|UNSTARTED|PENDING|"
-        r"INCOMPLETE|UNFINISHED|OUTSTANDING|"
-        r"IS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+(?:COMPLETE|FINISHED)|"
-        r"HAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED|"
-        r"WAS\s+NOT(?:\s+[A-Z0-9]+){0,3}\s+COMPLETED|"
-        r"(?:STILL\s+)?NEEDS(?:\s+[A-Z0-9]+){0,3}\s+COMPLETION)"
-    )
-    rollback_unfinished_claim = bool(
-        re.search(
-            rf"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){{0,8}}\s+{unfinished_state}\b"
-            rf"|\b{unfinished_state}(?:\s+[A-Z0-9]+){{0,8}}\s+(?:ROLLBACK|RESTORE)\b",
-            semantic_active_prose,
-        )
-    )
-    rollback_completion_claim = bool(
-        re.search(
-            r"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){0,8}\s+(?:IS\s+)?"
-            r"(?:COMPLETE|COMPLETED)\b|\b(?:COMPLETE|COMPLETED)"
-            r"(?:\s+[A-Z0-9]+){0,8}\s+(?:ROLLBACK|RESTORE)\b",
-            semantic_active_prose,
-        )
-    )
-    rollback_next_or_current_claim = bool(
-        re.search(
-            r"\b(?:ROLLBACK|RESTORE)(?:\s+[A-Z0-9]+){0,6}\s+"
-            r"(?:NEXT|CURRENT|IMMEDIATE)\b|\b(?:NEXT|CURRENT|IMMEDIATE)"
-            r"(?:\s+[A-Z0-9]+){0,6}\s+(?:ROLLBACK|RESTORE)\b",
-            semantic_active_prose,
-        )
+    rollback_next_or_current_claim = _rollback_restore_prose_directly_marks_current_or_next(
+        structured_lines, canonical_rollback_lines
     )
     obsolete_current_lane_claim = bool(
         re.search(
@@ -1059,6 +1106,7 @@ def _preserves_post_405_boundary(
         and has_lane_5a_authority_model
         and has_lane_5a_rollback_restore_provenance
         and has_lane_5a_rollback_restore_proof
+        and rollback_restore_closeout_state == ROLLBACK_RESTORE_CLOSEOUT_COMPLETE
         and _preserves_lane_5a_milestone_order(
             structured_lines,
             LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
@@ -1281,6 +1329,14 @@ def check_operational_truth(
     if post_405_mode:
         if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#405 ordering surface missing")
+        rollback_restore_closeout_state = _rollback_restore_closeout_state(
+            texts.get("canonical_index", "")
+        )
+        if rollback_restore_closeout_state != ROLLBACK_RESTORE_CLOSEOUT_COMPLETE:
+            errors.append(
+                f"{paths['canonical_index']}: canonical rollback/restore closeout state marker must be "
+                f"{ROLLBACK_RESTORE_CLOSEOUT_STATE_MARKER}"
+            )
         sync_start_shas: dict[str, str] = {}
         for name in POST_405_ORDERING_SURFACES:
             text = texts.get(name)
@@ -1294,6 +1350,7 @@ def check_operational_truth(
                 require_lane_3_closeout=True,
                 require_lane_4_complete=True,
                 require_lane_5a_rollback_restore_closeout=True,
+                rollback_restore_closeout_state=rollback_restore_closeout_state,
             ):
                 errors.append(
                     f"{paths[name]}: current ordering does not preserve the active beta-readiness boundary"

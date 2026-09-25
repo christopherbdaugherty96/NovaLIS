@@ -978,8 +978,10 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
         "Rollback/restore proof has not been completed.",
         "Rollback/restore proof hasn't been completed.",
         "Rollback/restore proof was not completed.",
+        "Rollback/restore proof wasn't completed.",
         "Rollback/restore proof was planned, but was not completed.",
         "Rollback/restore proof was planned, but the current proof was not completed.",
+        "Rollback/restore proof was planned, but the current effort was not completed.",
         "Rollback/restore proof is not finished.",
         "Rollback/restore proof still needs completion.",
         "Rollback/restore proof remains outstanding.",
@@ -1007,6 +1009,23 @@ def test_recovery_closeout_rejects_rollback_unfinished_claim(tmp_path, claim):
         and "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
+
+
+@pytest.mark.parametrize("replacement", ("", "ROLLBACK_RESTORE_CLOSEOUT_STATE: PENDING"))
+def test_recovery_closeout_requires_canonical_structured_state_marker(tmp_path, replacement):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "docs/CANONICAL/00_INDEX.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(checker.ROLLBACK_RESTORE_CLOSEOUT_STATE_MARKER, replacement, 1)
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any("canonical rollback/restore closeout state marker" in error for error in errors)
 
 
 @pytest.mark.parametrize(
