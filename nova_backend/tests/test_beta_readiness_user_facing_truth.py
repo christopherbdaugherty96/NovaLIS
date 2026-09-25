@@ -96,6 +96,39 @@ process.stdout.write(JSON.stringify({{
     return json.loads(result.stdout)
 
 
+def _evaluate_setup_readiness(connection_stats: dict[str, int | bool]) -> dict[str, object]:
+    source_path = json.dumps(str(STATIC / "dashboard.js"))
+    stats_state = json.dumps(connection_stats)
+    script = f"""
+const fs = require("fs");
+const vm = require("vm");
+const source = fs.readFileSync({source_path}, "utf8");
+const start = source.indexOf("function getSetupReadinessItems");
+const end = source.indexOf("function buildSetupReadinessSummary", start);
+const readinessSource = source.slice(start, end);
+const connectionStats = {stats_state};
+const context = {{
+  WebSocket: {{ OPEN: 1 }},
+  ws: {{ readyState: 1 }},
+  getHeaderConnectionPresentation: () => ({{ label: "Connected" }}),
+  getSetupModeMeta: () => ({{ label: "Local", copy: "Local-first setup." }}),
+  getProfileSetupState: () => ({{ hasIdentity: true, displayName: "" }}),
+  getConnectionRuntimeItem: () => ({{ value: "Available", note: "Local model is ready." }}),
+  getConnectionCardStats: () => connectionStats,
+  getConnectionCardProvider: () => null,
+  getConnectionHealthyCount: () => connectionStats.connectedCount || 0,
+  trustReviewState: {{ connectionRuntime: {{}}, voiceRuntime: {{}}, bridgeRuntime: {{}} }},
+  settingsRuntimeState: {{ loaded: true, permissions: {{ remote_bridge_enabled: true, home_agent_enabled: true }} }},
+  openClawAgentState: {{ snapshot: {{}} }},
+}};
+vm.runInNewContext(readinessSource, context);
+const provider = context.getSetupReadinessItems().find((item) => item.key === "provider_keys");
+process.stdout.write(JSON.stringify(provider));
+"""
+    result = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
 def test_beta_ui_does_not_advertise_unproven_live_or_builder_claims():
     index = _read(STATIC / "index.html")
     config = _read(STATIC / "dashboard-config.js")
@@ -378,6 +411,35 @@ def test_connection_cards_keep_configuration_distinct_from_verified_connection()
     assert stored_failed["badge"] == "Needs attention"
     assert "need attention" in stored_failed["summary"]
 
+
+def test_home_readiness_uses_configured_and_unverified_provider_truth():
+    stored_unverified = _evaluate_setup_readiness(
+        {
+            "loaded": True,
+            "savedCount": 1,
+            "configuredCount": 1,
+            "connectedCount": 0,
+            "failedCount": 0,
+            "unverifiedCount": 1,
+        }
+    )
+    assert stored_unverified["status"] == "1 configured; 1 not verified"
+    assert "not verified" in stored_unverified["copy"]
+    assert "healthy" not in stored_unverified["copy"]
+
+    environment_only = _evaluate_setup_readiness(
+        {
+            "loaded": True,
+            "savedCount": 0,
+            "configuredCount": 1,
+            "connectedCount": 0,
+            "failedCount": 0,
+            "unverifiedCount": 1,
+        }
+    )
+    assert environment_only["status"] == "1 configured; 1 not verified"
+    assert environment_only["status"] != "Optional"
+    assert "healthy" not in environment_only["copy"]
 
 def test_current_focus_only_changes_for_a_manual_request_response():
     control = _read(STATIC / "dashboard-control-center.js")

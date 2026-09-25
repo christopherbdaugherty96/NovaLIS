@@ -1385,19 +1385,57 @@ function getSetupReadinessItems() {
   const legacyConnections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
     ? trustReviewState.connectionRuntime
     : {};
-  const connectionStats = getConnectionCardStats();
-  const providerCount = connectionStats.loaded
-    ? connectionStats.savedCount
-    : Number(legacyConnections.configured_provider_count || 0);
-  const connectedProviderCount = connectionStats.loaded
-    ? connectionStats.connectedCount
-    : providerCount;
-  const failedProviderCount = connectionStats.loaded
-    ? connectionStats.failedCount
-    : 0;
   const openaiRuntime = (legacyConnections.openai_runtime && typeof legacyConnections.openai_runtime === "object")
     ? legacyConnections.openai_runtime
     : {};
+  const connectionStats = getConnectionCardStats();
+  const connectionStatsLoaded = connectionStats.loaded;
+  const configuredProviderCount = connectionStats.loaded
+    ? connectionStats.configuredCount
+    : Number(legacyConnections.configured_provider_count || 0);
+  const connectedProviderCount = connectionStats.loaded
+    ? connectionStats.connectedCount
+    : configuredProviderCount;
+  const failedProviderCount = connectionStats.loaded
+    ? connectionStats.failedCount
+    : 0;
+  const unverifiedProviderCount = connectionStats.loaded
+    ? connectionStats.unverifiedCount
+    : 0;
+  const providerStatus = !configuredProviderCount
+    ? "Optional"
+    : failedProviderCount
+      ? `${failedProviderCount} need attention`
+      : unverifiedProviderCount
+        ? `${configuredProviderCount} configured; ${unverifiedProviderCount} not verified`
+        : connectionStatsLoaded
+          ? `${connectedProviderCount} healthy`
+          : `${configuredProviderCount} configured`;
+  const providerTone = failedProviderCount
+    ? "attention"
+    : configuredProviderCount
+      ? "optional-ready"
+      : "optional";
+  const providerCopy = !configuredProviderCount
+    ? (
+      String(openaiRuntime.summary || "").trim()
+      || "Nova can stay fully local. Add a connection later only when you want live data or an optional cloud lane."
+    )
+    : failedProviderCount
+      ? [
+        connectedProviderCount
+          ? `${connectedProviderCount} connection${connectedProviderCount === 1 ? " is" : "s are"} healthy.`
+          : "",
+        `${failedProviderCount} need attention in Settings.`,
+        unverifiedProviderCount
+          ? `${unverifiedProviderCount} configured connection${unverifiedProviderCount === 1 ? " is" : "s are"} not verified.`
+          : "",
+      ].filter(Boolean).join(" ")
+      : unverifiedProviderCount
+        ? `${configuredProviderCount} configured connection${configuredProviderCount === 1 ? " is" : "s are"} not verified. Review Settings to confirm the available setup.`
+        : connectionStatsLoaded
+          ? `${connectedProviderCount} saved connection${connectedProviderCount === 1 ? " is" : "s are"} healthy. You can review, test, or remove them any time from Settings.`
+          : `${configuredProviderCount} connection${configuredProviderCount === 1 ? " is" : "s are"} configured. Review Settings to confirm the available setup.`;
   const bridgeRuntime = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
     ? trustReviewState.bridgeRuntime
     : {};
@@ -1467,21 +1505,10 @@ function getSetupReadinessItems() {
       key: "provider_keys",
       group: "Optional later",
       title: "Connections",
-      status: providerCount
-        ? (failedProviderCount ? `${connectedProviderCount}/${providerCount} healthy` : `${providerCount} configured`)
-        : "Optional",
-      tone: failedProviderCount ? "attention" : providerCount ? "optional-ready" : "optional",
+      status: providerStatus,
+      tone: providerTone,
       ready: true,
-      copy: providerCount
-        ? (
-          failedProviderCount
-            ? `${connectedProviderCount} saved connection${connectedProviderCount === 1 ? "" : "s"} ${connectedProviderCount === 1 ? "is" : "are"} healthy and ${failedProviderCount} need attention in Settings.`
-            : "Your saved connections look healthy. You can review, test, or remove them any time from Settings."
-        )
-        : (
-          String(openaiRuntime.summary || "").trim()
-          || "Nova can stay fully local. Add a connection later only when you want live data or an optional cloud lane."
-        ),
+      copy: providerCopy,
     },
     {
       key: "remote_bridge",
