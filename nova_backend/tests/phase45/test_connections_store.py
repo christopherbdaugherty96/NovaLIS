@@ -126,6 +126,8 @@ class TestSaveKey:
         store.save_key("openai", "sk-newkey99999")
         snap = {p["id"]: p for p in store.snapshot()}
         assert snap["openai"]["health_ok"] is None
+        assert snap["openai"]["configuration_source"] == "stored"
+        assert snap["openai"]["connected"] is False
 
     def test_unknown_provider_raises(self, tmp_path):
         store = _make_store(tmp_path)
@@ -172,6 +174,32 @@ class TestRecordHealth:
         store.record_health("openai", ok=False)
         snap = {p["id"]: p for p in store.snapshot()}
         assert snap["openai"]["connected"] is False
+
+    def test_provider_state_matrix_distinguishes_unverified_healthy_and_failed(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("WEATHER_API_KEY", raising=False)
+        store = _make_store(tmp_path)
+        saved = store.save_key("weather", "vcweather-test-key")
+        assert saved["configuration_source"] == "stored"
+        assert saved["health_ok"] is None
+        assert saved["connected"] is False
+
+        unverified = {p["id"]: p for p in store.snapshot()}["weather"]
+        assert unverified["configured"] is True
+        assert unverified["has_key"] is True
+        assert unverified["environment_configured"] is True
+        assert unverified["configuration_source"] == "stored"
+        assert unverified["health_ok"] is None
+        assert unverified["connected"] is False
+
+        store.record_health("weather", ok=True)
+        healthy = {p["id"]: p for p in store.snapshot()}["weather"]
+        assert healthy["health_ok"] is True
+        assert healthy["connected"] is True
+
+        store.record_health("weather", ok=False)
+        failed = {p["id"]: p for p in store.snapshot()}["weather"]
+        assert failed["health_ok"] is False
+        assert failed["connected"] is False
 
 
 # ---------------------------------------------------------------------------

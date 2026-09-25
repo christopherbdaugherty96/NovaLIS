@@ -227,11 +227,11 @@ let settingsRuntimeState = {
   lastHydratedAt: 0,
 };
 let workflowFocusState = {
-  goal: "Start with something simple like \"Build me a landing page for my business.\"",
+  goal: "Start with something simple like \"Help me plan my day.\"",
   status: "Ready",
-  copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
-  now: "Nova is ready to turn your idea into a workflow.",
-  next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+  copy: "Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.",
+  now: "Nova is ready to help plan, research, explain, or review supported work.",
+  next: "Start with a request. Nova will return a result or ask for the context it needs.",
   lastUserInput: "",
   awaitingResponse: false,
 };
@@ -628,13 +628,9 @@ function setPTTButtonState(state = "idle") {
   btn.classList.remove("mic-idle", "mic-recording", "mic-sending", "mic-error");
   btn.classList.add(`mic-${safeState}`);
 
-  const wakeWordHint = isHeyNovaWakeWordEnabled()
-    ? `Press to record and speak normally. Saying "${HEY_NOVA_WAKE_WORD}" is optional here, but still used during live help.`
-    : "Press to record a short voice question.";
-
   const labels = {
-    idle: { text: "Talk", title: wakeWordHint },
-    recording: { text: "Listening", title: `Nova is listening. Start with "${HEY_NOVA_WAKE_WORD}" and press again to stop.` },
+    idle: { text: "Talk", title: "Press to record a short voice question." },
+    recording: { text: "Listening", title: "Nova is listening. Press again to stop." },
     sending: { text: "Sending", title: "Sending your voice request to Nova" },
     error: { text: "Mic issue", title: "Voice input is unavailable right now" },
   };
@@ -698,7 +694,7 @@ function getLiveHelpPromptSuggestions() {
     return [
       { label: "Explain this page", command: "explain this page" },
       { label: "What matters here?", command: "what matters most here" },
-      { label: "What should I click?", command: "what should i click next" },
+      { label: "Read the important part", command: "read the important part" },
     ];
   }
   const analysis = (liveHelpState.lastAnalysis && typeof liveHelpState.lastAnalysis === "object")
@@ -708,7 +704,6 @@ function getLiveHelpPromptSuggestions() {
   const fallback = [
     "explain this page",
     "what matters most here",
-    "what should i click next",
     "read the important part",
   ];
   const merged = [...prompts, ...fallback];
@@ -1390,22 +1385,65 @@ function getSetupReadinessItems() {
   const legacyConnections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
     ? trustReviewState.connectionRuntime
     : {};
-  const connectionStats = getConnectionCardStats();
-  const providerCount = connectionStats.loaded
-    ? connectionStats.savedCount
-    : Number(legacyConnections.configured_provider_count || 0);
-  const connectedProviderCount = connectionStats.loaded
-    ? connectionStats.connectedCount
-    : providerCount;
-  const failedProviderCount = connectionStats.loaded
-    ? connectionStats.failedCount
-    : 0;
   const openaiRuntime = (legacyConnections.openai_runtime && typeof legacyConnections.openai_runtime === "object")
     ? legacyConnections.openai_runtime
     : {};
+  const connectionStats = getConnectionCardStats();
+  const connectionStatsLoaded = connectionStats.loaded;
+  const configuredProviderCount = connectionStats.loaded
+    ? connectionStats.configuredCount
+    : Number(legacyConnections.configured_provider_count || 0);
+  const connectedProviderCount = connectionStats.loaded
+    ? connectionStats.connectedCount
+    : configuredProviderCount;
+  const failedProviderCount = connectionStats.loaded
+    ? connectionStats.failedCount
+    : 0;
+  const unverifiedProviderCount = connectionStats.loaded
+    ? connectionStats.unverifiedCount
+    : 0;
+  const providerStatus = !configuredProviderCount
+    ? "Optional"
+    : failedProviderCount
+      ? `${failedProviderCount} need attention`
+      : unverifiedProviderCount
+        ? `${configuredProviderCount} configured; ${unverifiedProviderCount} not verified`
+        : connectionStatsLoaded
+          ? `${connectedProviderCount} healthy`
+          : `${configuredProviderCount} configured`;
+  const providerTone = failedProviderCount
+    ? "attention"
+    : unverifiedProviderCount
+      ? "attention"
+    : configuredProviderCount
+      ? "optional-ready"
+      : "optional";
+  const providerCopy = !configuredProviderCount
+    ? (
+      String(openaiRuntime.summary || "").trim()
+      || "Nova can stay fully local. Add a connection later only when you want live data or an optional cloud lane."
+    )
+    : failedProviderCount
+      ? [
+        connectedProviderCount
+          ? `${connectedProviderCount} connection${connectedProviderCount === 1 ? " is" : "s are"} healthy.`
+          : "",
+        `${failedProviderCount} need attention in Settings.`,
+        unverifiedProviderCount
+          ? `${unverifiedProviderCount} configured connection${unverifiedProviderCount === 1 ? " is" : "s are"} not verified.`
+          : "",
+      ].filter(Boolean).join(" ")
+      : unverifiedProviderCount
+        ? `${unverifiedProviderCount} configured connection${unverifiedProviderCount === 1 ? " is" : "s are"} not verified. Review Settings to confirm the available setup.`
+        : connectionStatsLoaded
+          ? `${connectedProviderCount} saved connection${connectedProviderCount === 1 ? " is" : "s are"} healthy. You can review, test, or remove them any time from Settings.`
+          : `${configuredProviderCount} connection${configuredProviderCount === 1 ? " is" : "s are"} configured. Review Settings to confirm the available setup.`;
   const bridgeRuntime = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
     ? trustReviewState.bridgeRuntime
     : {};
+  const bridgePermissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.remote_bridge_enabled);
+  const bridgeTokenConfigured = bridgeRuntime.token_configured === true;
+  const bridgeAvailable = bridgeRuntime.enabled === true;
   const agentRuntime = (legacyConnections.agent_runtime && typeof legacyConnections.agent_runtime === "object")
     ? legacyConnections.agent_runtime
     : ((openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object") ? openClawAgentState.snapshot : {});
@@ -1469,31 +1507,23 @@ function getSetupReadinessItems() {
       key: "provider_keys",
       group: "Optional later",
       title: "Connections",
-      status: providerCount
-        ? (failedProviderCount ? `${connectedProviderCount}/${providerCount} healthy` : `${providerCount} configured`)
-        : "Optional",
-      tone: failedProviderCount ? "attention" : providerCount ? "optional-ready" : "optional",
+      status: providerStatus,
+      tone: providerTone,
       ready: true,
-      copy: providerCount
-        ? (
-          failedProviderCount
-            ? `${connectedProviderCount} saved connection${connectedProviderCount === 1 ? "" : "s"} ${connectedProviderCount === 1 ? "is" : "are"} healthy and ${failedProviderCount} need attention in Settings.`
-            : "Your saved connections look healthy. You can review, test, or remove them any time from Settings."
-        )
-        : (
-          String(openaiRuntime.summary || "").trim()
-          || "Nova can stay fully local. Add a connection later only when you want live data or an optional cloud lane."
-        ),
+      copy: providerCopy,
     },
     {
       key: "remote_bridge",
       group: "Optional later",
       title: "Remote bridge",
-      status: String(bridgeRuntime.status_label || "Optional").trim() || "Optional",
-      tone: bridgeRuntime.enabled ? "optional-ready" : "optional",
+      status: bridgeAvailable ? "Available" : bridgeTokenConfigured ? "Permission paused" : "Token not configured",
+      tone: bridgeAvailable ? "optional-ready" : "optional",
       ready: true,
-      copy: String(bridgeRuntime.summary || "").trim()
-        || "Remote access is optional and stays gated even when you turn it on.",
+      copy: [
+        String(bridgeRuntime.summary || "").trim(),
+        `Permission: ${bridgePermissionEnabled ? "Enabled" : "Paused"}.`,
+        `Availability: ${bridgeAvailable ? "Available" : bridgeTokenConfigured ? "Unavailable while permission is paused" : "Unavailable until a bridge token is configured"}.`,
+      ].filter(Boolean).join(" "),
     },
     {
       key: "home_agent",
@@ -1587,7 +1617,9 @@ function getSetupNextStepCopy(items = []) {
   if (!byKey.local_model_route || !byKey.local_model_route.ready) {
     return "Next step: open Trust or Settings and review the local model route. Nova can still help locally, but deeper reasoning stays limited until that path is healthy.";
   }
-  if (healthyConnections === 0) {
+  const hasAvailableConnection = getConnectionCardProviders().some((provider) => isAvailableSuggestionProvider(provider.id));
+
+  if (healthyConnections === 0 && !hasAvailableConnection) {
     return "Next step: open Connections in Settings and add one useful source like weather, news, or your calendar. Nova can stay local-only, but one healthy connection makes everyday use much nicer.";
   }
   if (!byKey.voice_check || !byKey.voice_check.ready) {
@@ -1720,7 +1752,9 @@ function getIntroFirstSuccessItems(items = []) {
       };
   }
 
-  if (healthyConnections === 0) {
+  const hasAvailableConnection = getConnectionCardProviders().some((provider) => isAvailableSuggestionProvider(provider.id));
+
+  if (healthyConnections === 0 && !hasAvailableConnection) {
     return {
       summary: `Nice start${profile.displayName ? `, ${profile.displayName}` : ""}. Your profile is saved. The next high-value step is adding one healthy connection so Nova can help with live weather, news, calendar, or optional cloud reasoning when you want it.`,
       items: [
@@ -1760,21 +1794,24 @@ function getIntroFirstSuccessItems(items = []) {
     ? `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Nova is ready for everyday use on this device. Start with one outcome you care about and let Nova turn it into the next steps.`
     : `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Voice can wait. Text-only use is completely fine while you get your first win.`;
 
-  // Build connection-aware items based on which providers are healthy
-  const providers = Array.isArray(_connectionsData) ? _connectionsData : [];
-  const byProvider = Object.fromEntries(providers.map((p) => [p.id, p]));
+  // Build connection-aware items from the same availability truth used by suggestions.
   const liveItems = [];
 
-  const weatherLive = byProvider.weather && byProvider.weather.connected;
-  const calendarLive = byProvider.calendar && byProvider.calendar.connected;
-  const newsLive = (byProvider.news && byProvider.news.connected) || (byProvider.brave && byProvider.brave.connected);
-  const openaiLive = byProvider.openai && byProvider.openai.connected;
+  const weatherPresentation = getSuggestionProviderPresentation("weather");
+  const calendarPresentation = getSuggestionProviderPresentation("calendar");
+  const newsPresentation = getSuggestionProviderPresentation("news");
+  const researchPresentation = getSuggestionProviderPresentation("brave");
+  const weatherLive = weatherPresentation.available;
+  const calendarLive = calendarPresentation.available;
+  const newsLive = newsPresentation.available;
+  const researchLive = researchPresentation.available;
+  const hasProjectThreads = Array.isArray(threadMapState.threads) && threadMapState.threads.length > 0;
 
-  if (weatherLive && calendarLive) {
+  if (weatherLive && calendarLive && newsLive) {
     liveItems.push({
       title: "Daily brief",
       badge: "Full brief",
-      copy: "Weather, calendar events, and top news in one daily summary — pulled fresh from your connected sources.",
+      copy: "Weather, calendar events, and top news in one daily summary from your configured sources.",
       actionLabel: "Daily brief",
       action: () => {
         setActivePage("chat");
@@ -1785,7 +1822,7 @@ function getIntroFirstSuccessItems(items = []) {
   if (calendarLive) {
     liveItems.push({
       title: "My schedule today",
-      badge: "Calendar live",
+      badge: calendarPresentation.badge,
       copy: "Check today's calendar without leaving Nova. If you just want the quick version, this is the easiest place to start.",
       actionLabel: "Today's schedule",
       action: () => {
@@ -1797,8 +1834,8 @@ function getIntroFirstSuccessItems(items = []) {
   if (weatherLive && !calendarLive) {
     liveItems.push({
       title: "Today's weather",
-      badge: "Live",
-      copy: "Current conditions and forecast from your connected weather provider.",
+      badge: weatherPresentation.badge,
+      copy: "Current conditions and forecast from your configured weather provider.",
       actionLabel: "Weather",
       action: () => {
         setActivePage("chat");
@@ -1809,8 +1846,8 @@ function getIntroFirstSuccessItems(items = []) {
   if (newsLive) {
     liveItems.push({
       title: "Today's news",
-      badge: "Live",
-      copy: "Top headlines from your connected news source.",
+      badge: newsPresentation.badge,
+      copy: "Top headlines from your configured news source.",
       actionLabel: "Today's news",
       action: () => {
         setActivePage("chat");
@@ -1818,20 +1855,7 @@ function getIntroFirstSuccessItems(items = []) {
       },
     });
   }
-  if (openaiLive) {
-    liveItems.push({
-      title: "Deep research",
-      badge: "Cloud",
-      copy: "Ask for a grounded, reasoned answer on any topic with OpenAI cloud assist.",
-      actionLabel: "Research",
-      action: () => {
-        setActivePage("chat");
-        injectUserText("research ", "text");
-      },
-    });
-  }
-
-  // Core items always available as fallbacks
+  // Core items remain truth-scoped to what is actually available on this instance.
   const coreItems = [
     {
       title: "Explain anything",
@@ -1843,27 +1867,31 @@ function getIntroFirstSuccessItems(items = []) {
         injectUserText("explain this", "text");
       },
     },
-    {
+  ];
+  if (hasProjectThreads) {
+    coreItems.push({
       title: "Continue a project",
       badge: "Continuity",
-      copy: "If you already have work in motion, Nova can help you pick it back up instead of starting from scratch.",
+      copy: "Resume a saved project thread instead of starting from scratch.",
       actionLabel: "Show threads",
       action: () => {
         setActivePage("chat");
         injectUserText("show threads", "text");
       },
-    },
-    {
+    });
+  }
+  if (researchLive) {
+    coreItems.push({
       title: "Research a topic",
-      badge: "Local reasoning",
-      copy: "Ask Nova to research something and return a grounded answer with sources and follow-up ideas.",
+      badge: researchPresentation.verified ? "Search verified" : "Search configured",
+      copy: "Research using your configured web-search source and return grounded results with sources.",
       actionLabel: "Research",
       action: () => {
         setActivePage("chat");
         injectUserText("research latest technology news", "text");
       },
-    },
-  ];
+    });
+  }
 
   // Connection-aware items first, then core to fill up to 4 slots
   const allItems = [...liveItems, ...coreItems].slice(0, 3);

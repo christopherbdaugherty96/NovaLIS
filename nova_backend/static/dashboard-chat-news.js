@@ -1,12 +1,102 @@
 /* Nova Dashboard - Chat, News, And Interaction Surfaces */
 
+function isAvailableSuggestionProvider(providerId) {
+  const provider = getConnectionCardProvider(providerId);
+  if (!provider) return false;
+  if (provider.configuration_source === "stored") {
+    return provider.has_key === true
+      && provider.health_ok !== false;
+  }
+  if (provider.configuration_source === "environment") {
+    return provider.has_key !== true
+      && provider.configured === true
+      && provider.health_ok !== false;
+  }
+  return provider.connected === true;
+}
+
+function getSuggestionProviderPresentation(providerId) {
+  const provider = getConnectionCardProvider(providerId);
+  const available = isAvailableSuggestionProvider(providerId);
+  const verified = Boolean(
+    available
+    && provider
+    && provider.configuration_source === "stored"
+    && provider.has_key === true
+    && provider.health_ok === true
+    && provider.connected === true
+  );
+  return {
+    available,
+    verified,
+    badge: verified ? "Verified" : available ? "Configured" : "Unavailable",
+    source: verified ? "verified" : available ? "configured" : "unavailable",
+  };
+}
+
+function hasProjectSuggestionContext() {
+  return Array.isArray(threadMapState.threads) && threadMapState.threads.length > 0;
+}
+
+function isUserFacingSuggestionAvailable(command) {
+  const q = String(command || "").trim().toLowerCase();
+  if (!q) return false;
+
+  if (
+    q.startsWith("research ")
+    || q === "research a topic"
+    || q.startsWith("search for ")
+    || q.startsWith("search latest ")
+  ) {
+    return isAvailableSuggestionProvider("brave");
+  }
+
+  if (
+    q === "news"
+    || q === "today's news"
+    || q.includes("headline")
+    || q.includes("politics news")
+    || q.includes("global news")
+    || q.includes("crypto news")
+    || q.includes("article ")
+    || q.includes("tracked stor")
+  ) {
+    return isAvailableSuggestionProvider("news");
+  }
+
+  if (q === "calendar" || q.includes("today's schedule") || q.includes("check my calendar") || q.includes("show my schedule")) {
+    return isAvailableSuggestionProvider("calendar");
+  }
+
+  if (q === "weather" || q.includes("weather forecast") || q.includes("weather alert")) {
+    return isAvailableSuggestionProvider("weather");
+  }
+
+  if (
+    q === "show threads"
+    || q.startsWith("continue my ")
+    || q.startsWith("project status ")
+    || q.startsWith("memory list thread ")
+  ) {
+    return hasProjectSuggestionContext();
+  }
+
+  return true;
+}
+
+function getAvailableCommandGroups() {
+  return COMMAND_DISCOVERY_GROUPS
+    .map((group) => ({ ...group, commands: (group.commands || []).filter(isUserFacingSuggestionAvailable) }))
+    .filter((group) => group.commands.length > 0);
+}
+
 function renderQuickActions() {
   const host = $("quick-actions");
   if (!host) return;
   clear(host);
 
   const page = getActivePage();
-  const actions = getQuickActionsForPage(page);
+  const actions = getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command));
   const selected = new Set(getSelectedQuickActions(page, actions));
   actions.filter((a) => selected.has(a.id)).forEach((action) => {
     const btn = document.createElement("button");
@@ -2463,15 +2553,6 @@ function requestDeepSeekSecondOpinion() {
 }
 
 async function startSTT() {
-  if (liveHelpState.active || liveHelpState.starting) {
-    appendChatMessage(
-      "assistant",
-      "Live screen help is already listening for \"Hey Nova.\" Stop live help first if you want to use the regular Talk button instead.",
-      null,
-      "Voice input",
-    );
-    return;
-  }
   if (mediaRecorder) return;
   if (!navigator.mediaDevices || !window.MediaRecorder) {
     flashPTTError();
@@ -2538,27 +2619,7 @@ async function startSTT() {
 
       const transcript = String(result.transcript || "").trim();
       if (transcript) {
-        const wakeWordState = normalizeHeyNovaWakeWordTranscript(transcript);
-        if (wakeWordState.matched && !wakeWordState.command) {
-          appendChatMessage(
-            "assistant",
-            `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want, or just press Talk again and say the request directly.`,
-            null,
-            "Voice input",
-          );
-          return;
-        }
-        const spokenCommand = String(wakeWordState.matched ? (wakeWordState.command || "") : transcript).trim();
-        if (!spokenCommand) {
-          appendChatMessage(
-            "assistant",
-            "I didn't catch the request clearly. Try again and say it in one short phrase.",
-            null,
-            "Voice input",
-          );
-          return;
-        }
-        injectUserText(spokenCommand, "voice");
+        injectUserText(transcript, "voice");
       } else {
         appendChatMessage(
           "assistant",
@@ -3160,14 +3221,18 @@ function getConnectionCardProvider(providerId) {
 function getConnectionCardStats() {
   const providers = getConnectionCardProviders();
   const saved = providers.filter((provider) => provider && provider.has_key === true);
+  const configured = providers.filter((provider) => provider && provider.configured === true);
   const connected = saved.filter((provider) => provider && provider.connected === true);
-  const failed = saved.filter((provider) => provider && provider.connected !== true);
+  const failed = configured.filter((provider) => provider && provider.health_ok === false);
+  const unverified = configured.filter((provider) => provider && provider.connected !== true && provider.health_ok !== false);
   return {
     loaded: providers.length > 0,
     totalProviders: providers.length,
     savedCount: saved.length,
+    configuredCount: configured.length,
     connectedCount: connected.length,
     failedCount: failed.length,
+    unverifiedCount: unverified.length,
   };
 }
 
@@ -3181,11 +3246,17 @@ function buildConnectionsSummaryCopy() {
   if (!stats.loaded) {
     return "Connect your API keys so Nova can access web search, news, weather, and cloud reasoning. All keys stay on this device.";
   }
-  if (!stats.savedCount) {
+  if (!stats.configuredCount) {
     return "Nova is ready to stay local-first. Add connections only when you want live search, weather, news, calendar, or cloud reasoning.";
   }
   if (stats.failedCount) {
-    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy and ${stats.failedCount} need attention. Open a card below to test, fix, or disconnect it.`;
+    const unverified = stats.unverifiedCount
+      ? ` ${stats.unverifiedCount} configured but not verified.`
+      : "";
+    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy and ${stats.failedCount} need attention.${unverified} Open a card below to test, fix, or disconnect it.`;
+  }
+  if (stats.unverifiedCount) {
+    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} verified and ${stats.unverifiedCount} configured but not verified. Open a card below to review the available setup.`;
   }
   return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy. These connections stay on this device and can be reviewed or disconnected any time.`;
 }
@@ -3200,6 +3271,10 @@ async function loadConnectionsData() {
     renderIntroPage();
     renderSettingsPage();
     renderHomeLaunchWidget();
+    renderQuickActions();
+    ensureDatalist();
+    renderCommandDiscovery();
+    renderHeaderQuickRuns();
   } catch (_) {
     // silently ignore — cards will stay empty until next load
   }
@@ -3237,10 +3312,20 @@ function renderConnectionCards() {
 function _buildConnectionCard(provider) {
   const isConnected = provider.connected === true;
   const hasKey = provider.has_key === true;
-  const needsKey = !isConnected;
+  const isConfigured = provider.configured === true;
 
-  const stateClass = isConnected ? "conn-card--connected" : hasKey ? "conn-card--needed" : "conn-card--setup";
-  const stateLabel = isConnected ? "Connected" : hasKey ? "Key saved" : "Not set up";
+  const stateClass = isConnected ? "conn-card--connected" : hasKey || isConfigured ? "conn-card--needed" : "conn-card--setup";
+  const stateLabel = isConnected
+    ? "Connected"
+    : hasKey && provider.health_ok === false
+      ? "Needs attention"
+      : hasKey && provider.health_ok === null
+      ? "Needs verification"
+      : hasKey
+        ? "Key saved"
+        : isConfigured
+          ? "Configured"
+        : "Not set up";
 
   const card = document.createElement("div");
   card.className = `conn-card ${stateClass}`;
@@ -3721,7 +3806,7 @@ function setChatComposerBusy(isBusy) {
     input.setAttribute("aria-busy", busy ? "true" : "false");
     input.placeholder = busy
       ? "Nova is working. Wait for the current response before sending another message."
-      : "What are you trying to get done? Example: build me a landing page for my business.";
+      : "What are you trying to get done? Example: help me plan my day.";
   }
   if (sendBtn) {
     sendBtn.disabled = busy;
@@ -3788,7 +3873,7 @@ function ensureDatalist() {
   }
 
   clear(list);
-  COMMAND_SUGGESTIONS.forEach((item) => {
+  COMMAND_SUGGESTIONS.filter(isUserFacingSuggestionAvailable).forEach((item) => {
     const opt = document.createElement("option");
     opt.value = item;
     list.appendChild(opt);
@@ -4032,7 +4117,7 @@ function renderCommandDiscovery() {
   if (!host) return;
   clear(host);
 
-  COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+  getAvailableCommandGroups().forEach((group) => {
     const groupEl = document.createElement("div");
     groupEl.className = "command-group";
 
@@ -4070,7 +4155,7 @@ function showHelpModal() {
 
     const groupsWrap = document.createElement("div");
     groupsWrap.className = "command-groups";
-    COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+      getAvailableCommandGroups().forEach((group) => {
       const groupEl = document.createElement("div");
       groupEl.className = "command-group";
 
@@ -4108,7 +4193,10 @@ function showHelpModal() {
 
     const render = (q = "") => {
       clear(ul);
-      HELP_EXAMPLES.filter((x) => x.toLowerCase().includes(q.toLowerCase())).forEach((example) => {
+      HELP_EXAMPLES
+        .filter(isUserFacingSuggestionAvailable)
+        .filter((x) => x.toLowerCase().includes(q.toLowerCase()))
+        .forEach((example) => {
         const li = document.createElement("li");
         const b = document.createElement("button");
         b.type = "button";
@@ -4132,11 +4220,9 @@ function showHelpModal() {
 
 async function refreshPrivacyPanel() {
   const items = {
-    listening: isHeyNovaWakeWordEnabled()
-      ? `Off in the background (only when you press mic, then say "${HEY_NOVA_WAKE_WORD}")`
-      : "Off in the background (only when you press mic)",
-    background: "Off",
-    network: "Only when asked",
+    listening: "Off in the background (only when you press Talk)",
+    background: "No hidden general background activity",
+    network: "Enabled connected dashboard surfaces may refresh weather, calendar, or news during startup and refresh. Explicit requests can also use network paths.",
     execution: "Governed",
   };
 
@@ -4229,7 +4315,7 @@ function showQuickCustomizeModal() {
   if (overlay) overlay.remove();
 
   const page = getActivePage();
-  const actions = getQuickActionsForPage(page);
+  const actions = getQuickActionsForPage(page).filter((action) => isUserFacingSuggestionAvailable(action.command));
 
   const shell = createModalShell("quick-customize-modal", "Customize quick actions");
   overlay = shell.overlay;
@@ -4357,14 +4443,25 @@ function injectHeaderMenus() {
   actionsLabel.textContent = "Quick runs";
   actionsMenu.panel.appendChild(actionsLabel);
   const actionsGrid = document.createElement("div");
+  actionsGrid.id = "header-quick-runs";
   actionsGrid.className = "header-menu-grid";
+  actionsMenu.panel.appendChild(actionsGrid);
+  host.appendChild(actionsMenu.details);
+  renderHeaderQuickRuns();
+}
+
+function renderHeaderQuickRuns() {
+  const actionsGrid = $("header-quick-runs");
+  if (!actionsGrid) return;
+  clear(actionsGrid);
+
   [
     { label: "Daily brief", command: "daily brief", page: "chat" },
     { label: "Explain this", command: "explain this", page: "chat" },
     { label: "Research a topic", command: "research latest technology news", page: "chat" },
     { label: "Show schedules", command: "show schedules", page: "chat" },
     { label: "Today's news", command: "today's news", page: "chat" },
-  ].forEach((item) => {
+  ].filter((item) => isUserFacingSuggestionAvailable(item.command)).forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "header-menu-item";
@@ -4380,8 +4477,6 @@ function injectHeaderMenus() {
     });
     actionsGrid.appendChild(btn);
   });
-  actionsMenu.panel.appendChild(actionsGrid);
-  host.appendChild(actionsMenu.details);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -4948,19 +5043,4 @@ window.addEventListener("DOMContentLoaded", () => {
     setActivePage("settings");
   });
 
-  const liveHelpStartBtn = $("btn-live-help-start");
-  if (liveHelpStartBtn) liveHelpStartBtn.addEventListener("click", () => {
-    startLiveHelpSession();
-  });
-
-  const liveHelpExplainBtn = $("btn-live-help-explain");
-  if (liveHelpExplainBtn) liveHelpExplainBtn.addEventListener("click", () => {
-    if (!liveHelpState.active) return;
-    requestLiveHelpAnalysis("explain this page", { echoUserMessage: false, updateFocus: true });
-  });
-
-  const liveHelpStopBtn = $("btn-live-help-stop");
-  if (liveHelpStopBtn) liveHelpStopBtn.addEventListener("click", () => {
-    stopLiveHelpSession();
-  });
 });

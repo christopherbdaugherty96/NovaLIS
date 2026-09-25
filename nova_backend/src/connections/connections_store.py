@@ -129,7 +129,10 @@ class ConnectionsStore:
             entry = providers.get(pid) or {}
             raw_key = entry.get("key") or ""
             environment_configured = bool(str(os.getenv(meta["env_var"]) or "").strip())
-            is_connected = bool(raw_key and entry.get("health_ok") is not False)
+            # A persisted key is not a verified connection until a health check
+            # succeeds. ``None`` is the intentional unverified state after a
+            # save or on first load; it must not be presented as connected.
+            is_connected = bool(raw_key and entry.get("health_ok") is True)
             result.append({
                 "id": pid,
                 "label": meta["label"],
@@ -305,7 +308,7 @@ class ConnectionsStore:
                 "stored" if raw_key else "environment" if environment_configured else "none"
             ),
             "key_hint": _mask_key(raw_key) if raw_key else "",
-            "connected": bool(raw_key and entry.get("health_ok") is not False),
+            "connected": bool(raw_key and entry.get("health_ok") is True),
             "health_ok": entry.get("health_ok"),
             "health_detail": entry.get("health_detail") or "",
             "last_checked": entry.get("last_checked") or "",

@@ -4,7 +4,6 @@ import importlib
 from pathlib import Path
 
 from fastapi.testclient import TestClient
-
 from src import brain_server
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.settings.runtime_settings_store import RuntimeSettingsStore
@@ -65,6 +64,7 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert payload["agent"]["setup"]["status_label"] == "Ready for briefing runs"
     assert payload["agent"]["setup"]["weather_provider_configured"] is False
     assert payload["agent"]["setup"]["calendar_connected"] is False
+    assert payload["agent"]["setup"]["remote_bridge_enabled"] is True
     assert payload["agent"]["setup"]["remote_bridge_token_configured"] is False
     assert "morning_brief" in payload["agent"]["setup"]["runnable_template_ids"]
     assert "project_snapshot" in payload["agent"]["setup"]["runnable_template_ids"]

@@ -64,6 +64,7 @@ def _notification_policy_snapshot(deps) -> dict[str, Any]:
 def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any]:
     permission_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_enabled")
     scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    bridge_permission_enabled = deps.runtime_settings_store.is_permission_enabled("remote_bridge_enabled")
     scheduler_policy = _notification_policy_snapshot(deps)
     bridge_runtime = deps.OSDiagnosticsExecutor._bridge_status_details()
     openai_runtime = deps.OSDiagnosticsExecutor._openai_status_details()
@@ -232,7 +233,10 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
         "local_model_ready": bool(model_ready),
         "weather_provider_configured": weather_configured,
         "calendar_connected": bool(calendar_path),
-        "remote_bridge_enabled": bool(bridge_runtime.get("enabled")),
+        # Setup displays bridge permission and bridge availability separately.  Do
+        # not project the latter into the former: a permission may be enabled
+        # before its required token is configured.
+        "remote_bridge_enabled": bool(bridge_permission_enabled),
         "remote_bridge_token_configured": bool(bridge_runtime.get("token_configured")),
         "scheduler_permission_enabled": scheduler_enabled,
         "runnable_template_ids": runnable_templates,
