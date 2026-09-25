@@ -5,7 +5,6 @@ function isAvailableSuggestionProvider(providerId) {
   if (!provider) return false;
   if (provider.configuration_source === "stored") {
     return provider.has_key === true
-      && provider.connected === true
       && provider.health_ok !== false;
   }
   if (provider.configuration_source === "environment") {
@@ -14,6 +13,25 @@ function isAvailableSuggestionProvider(providerId) {
       && provider.health_ok !== false;
   }
   return provider.connected === true;
+}
+
+function getSuggestionProviderPresentation(providerId) {
+  const provider = getConnectionCardProvider(providerId);
+  const available = isAvailableSuggestionProvider(providerId);
+  const verified = Boolean(
+    available
+    && provider
+    && provider.configuration_source === "stored"
+    && provider.has_key === true
+    && provider.health_ok === true
+    && provider.connected === true
+  );
+  return {
+    available,
+    verified,
+    badge: verified ? "Verified" : available ? "Configured" : "Unavailable",
+    source: verified ? "verified" : available ? "configured" : "unavailable",
+  };
 }
 
 function hasProjectSuggestionContext() {
@@ -3203,14 +3221,18 @@ function getConnectionCardProvider(providerId) {
 function getConnectionCardStats() {
   const providers = getConnectionCardProviders();
   const saved = providers.filter((provider) => provider && provider.has_key === true);
+  const configured = providers.filter((provider) => provider && provider.configured === true);
   const connected = saved.filter((provider) => provider && provider.connected === true);
-  const failed = saved.filter((provider) => provider && provider.connected !== true);
+  const failed = configured.filter((provider) => provider && provider.health_ok === false);
+  const unverified = configured.filter((provider) => provider && provider.connected !== true && provider.health_ok !== false);
   return {
     loaded: providers.length > 0,
     totalProviders: providers.length,
     savedCount: saved.length,
+    configuredCount: configured.length,
     connectedCount: connected.length,
     failedCount: failed.length,
+    unverifiedCount: unverified.length,
   };
 }
 
@@ -3224,11 +3246,17 @@ function buildConnectionsSummaryCopy() {
   if (!stats.loaded) {
     return "Connect your API keys so Nova can access web search, news, weather, and cloud reasoning. All keys stay on this device.";
   }
-  if (!stats.savedCount) {
+  if (!stats.configuredCount) {
     return "Nova is ready to stay local-first. Add connections only when you want live search, weather, news, calendar, or cloud reasoning.";
   }
   if (stats.failedCount) {
-    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy and ${stats.failedCount} need attention. Open a card below to test, fix, or disconnect it.`;
+    const unverified = stats.unverifiedCount
+      ? ` ${stats.unverifiedCount} configured but not verified.`
+      : "";
+    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy and ${stats.failedCount} need attention.${unverified} Open a card below to test, fix, or disconnect it.`;
+  }
+  if (stats.unverifiedCount) {
+    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} verified and ${stats.unverifiedCount} configured but not verified. Open a card below to review the available setup.`;
   }
   return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy. These connections stay on this device and can be reviewed or disconnected any time.`;
 }
@@ -3284,10 +3312,18 @@ function renderConnectionCards() {
 function _buildConnectionCard(provider) {
   const isConnected = provider.connected === true;
   const hasKey = provider.has_key === true;
-  const needsKey = !isConnected;
+  const isConfigured = provider.configured === true;
 
-  const stateClass = isConnected ? "conn-card--connected" : hasKey ? "conn-card--needed" : "conn-card--setup";
-  const stateLabel = isConnected ? "Connected" : hasKey ? "Key saved" : "Not set up";
+  const stateClass = isConnected ? "conn-card--connected" : hasKey || isConfigured ? "conn-card--needed" : "conn-card--setup";
+  const stateLabel = isConnected
+    ? "Connected"
+    : hasKey && provider.health_ok === null
+      ? "Needs verification"
+      : hasKey
+        ? "Key saved"
+        : isConfigured
+          ? "Configured"
+        : "Not set up";
 
   const card = document.createElement("div");
   card.className = `conn-card ${stateClass}`;

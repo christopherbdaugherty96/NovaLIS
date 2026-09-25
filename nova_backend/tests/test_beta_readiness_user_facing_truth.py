@@ -60,6 +60,36 @@ process.stdout.write(JSON.stringify({{
   calendar: context.isUserFacingSuggestionAvailable("today's schedule"),
   quickRuns: quickRuns.children.map((item) => item.textContent),
   introTitles: intro.items.map((item) => item.title),
+  introCards: intro.items.map((item) => ({{ title: item.title, badge: item.badge, copy: item.copy }})),
+}}));
+"""
+    result = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
+def _evaluate_connection_card(provider: dict[str, object]) -> dict[str, str]:
+    source_path = json.dumps(str(STATIC / "dashboard-chat-news.js"))
+    provider_state = json.dumps(provider)
+    script = f"""
+const fs = require("fs");
+const vm = require("vm");
+const source = fs.readFileSync({source_path}, "utf8");
+const start = source.indexOf("let _connectionsData = []");
+const end = source.indexOf("function _setCardHealth", start);
+const connectionSource = source.slice(start, end);
+const provider = {provider_state};
+const makeNode = () => ({{
+  children: [], dataset: {{}}, style: {{}}, className: "", textContent: "", hidden: false,
+  appendChild(child) {{ this.children.push(child); return child; }},
+  addEventListener() {{}}, setAttribute() {{}}, focus() {{}}, remove() {{}},
+}});
+const context = {{ document: {{ createElement: makeNode }}, provider }};
+vm.runInNewContext(connectionSource + "\\n_connectionsData = [provider];", context);
+const card = context._buildConnectionCard(provider);
+process.stdout.write(JSON.stringify({{
+  summary: context.buildConnectionsSummaryCopy(),
+  className: card.className,
+  badge: card.children[0].children[2].textContent,
 }}));
 """
     result = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True)
@@ -191,6 +221,7 @@ def test_page_quick_actions_use_runtime_availability_gating():
     assert 'return isAvailableSuggestionProvider("weather")' in chat_news
     assert 'provider.configuration_source === "stored"' in chat_news
     assert 'provider.configuration_source === "environment"' in chat_news
+    assert 'provider.health_ok !== false' in chat_news
     assert "return hasProjectSuggestionContext()" in chat_news
 
 
@@ -264,12 +295,18 @@ def test_intro_cards_follow_shared_provider_availability_and_truthful_paths():
 
     assert "Daily brief" in environment_configured["introTitles"]
     assert "Deep research" not in environment_configured["introTitles"]
-    assert 'const weatherLive = isAvailableSuggestionProvider("weather");' in dashboard
-    assert 'const calendarLive = isAvailableSuggestionProvider("calendar");' in dashboard
-    assert 'const newsLive = isAvailableSuggestionProvider("news");' in dashboard
+    assert 'const weatherPresentation = getSuggestionProviderPresentation("weather");' in dashboard
+    assert 'const calendarPresentation = getSuggestionProviderPresentation("calendar");' in dashboard
+    assert 'const newsPresentation = getSuggestionProviderPresentation("news");' in dashboard
     assert "if (weatherLive && calendarLive && newsLive)" in dashboard
     assert "OpenAI cloud assist" not in dashboard
     assert "Deep research" not in dashboard
+    configured_cards = [
+        card for card in environment_configured["introCards"]
+        if card["title"] in {"My schedule today", "Today's weather", "Today's news", "Research a topic"}
+    ]
+    assert all(card["badge"] in {"Configured", "Search configured"} for card in configured_cards)
+    assert all(word not in " ".join(card["copy"] for card in environment_configured["introCards"]) for word in ("connected", "fresh", "live"))
 
     no_news = _evaluate_suggestion_availability(
         {
@@ -280,11 +317,66 @@ def test_intro_cards_follow_shared_provider_availability_and_truthful_paths():
     assert "Daily brief" not in no_news["introTitles"]
 
 
+def test_intro_cards_use_verified_language_only_for_verified_stored_providers():
+    stored_unverified = _evaluate_suggestion_availability(
+        {
+            provider: {"configured": True, "configuration_source": "stored", "has_key": True, "health_ok": None, "connected": False}
+            for provider in ("weather", "calendar", "news", "brave")
+        }
+    )
+    unverified_cards = [card for card in stored_unverified["introCards"] if card["title"] != "Explain anything"]
+    assert all(card["badge"] in {"Full brief", "Configured", "Search configured"} for card in unverified_cards)
+
+    stored_healthy = _evaluate_suggestion_availability(
+        {
+            provider: {"configured": True, "configuration_source": "stored", "has_key": True, "health_ok": True, "connected": True}
+            for provider in ("weather", "calendar", "news", "brave")
+        }
+    )
+    assert any(card["badge"] == "Verified" for card in stored_healthy["introCards"])
+    assert all(word not in " ".join(card["copy"] for card in stored_healthy["introCards"]) for word in ("fresh", "connected"))
+
+
 def test_privacy_copy_describes_automatic_connected_surface_refreshes():
     chat_news = _read(STATIC / "dashboard-chat-news.js")
 
     assert 'network: "Only when asked"' not in chat_news
     assert "Enabled connected dashboard surfaces may refresh weather, calendar, or news during startup and refresh." in chat_news
+
+
+def test_connection_cards_keep_configuration_distinct_from_verified_connection():
+    chat_news = _read(STATIC / "dashboard-chat-news.js")
+
+    assert 'const configured = providers.filter((provider) => provider && provider.configured === true);' in chat_news
+    assert 'provider.health_ok === null' in chat_news
+    assert '"Needs verification"' in chat_news
+    assert '"Configured"' in chat_news
+    assert 'provider.connected === true' in chat_news
+
+    environment_only = _evaluate_connection_card(
+        {"id": "weather", "configured": True, "configuration_source": "environment", "has_key": False, "health_ok": None, "connected": False}
+    )
+    assert environment_only["badge"] == "Configured"
+    assert environment_only["className"] == "conn-card conn-card--needed"
+    assert "configured but not verified" in environment_only["summary"]
+
+    stored_unverified = _evaluate_connection_card(
+        {"id": "weather", "configured": True, "configuration_source": "stored", "has_key": True, "health_ok": None, "connected": False}
+    )
+    assert stored_unverified["badge"] == "Needs verification"
+    assert "configured but not verified" in stored_unverified["summary"]
+
+    stored_healthy = _evaluate_connection_card(
+        {"id": "weather", "configured": True, "configuration_source": "stored", "has_key": True, "health_ok": True, "connected": True}
+    )
+    assert stored_healthy["badge"] == "Connected"
+    assert stored_healthy["className"] == "conn-card conn-card--connected"
+
+    stored_failed = _evaluate_connection_card(
+        {"id": "weather", "configured": True, "configuration_source": "stored", "has_key": True, "health_ok": False, "connected": False}
+    )
+    assert stored_failed["badge"] == "Key saved"
+    assert "need attention" in stored_failed["summary"]
 
 
 def test_current_focus_only_changes_for_a_manual_request_response():

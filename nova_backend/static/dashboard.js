@@ -1768,17 +1768,21 @@ function getIntroFirstSuccessItems(items = []) {
   // Build connection-aware items from the same availability truth used by suggestions.
   const liveItems = [];
 
-  const weatherLive = isAvailableSuggestionProvider("weather");
-  const calendarLive = isAvailableSuggestionProvider("calendar");
-  const newsLive = isAvailableSuggestionProvider("news");
-  const researchLive = isAvailableSuggestionProvider("brave");
+  const weatherPresentation = getSuggestionProviderPresentation("weather");
+  const calendarPresentation = getSuggestionProviderPresentation("calendar");
+  const newsPresentation = getSuggestionProviderPresentation("news");
+  const researchPresentation = getSuggestionProviderPresentation("brave");
+  const weatherLive = weatherPresentation.available;
+  const calendarLive = calendarPresentation.available;
+  const newsLive = newsPresentation.available;
+  const researchLive = researchPresentation.available;
   const hasProjectThreads = Array.isArray(threadMapState.threads) && threadMapState.threads.length > 0;
 
   if (weatherLive && calendarLive && newsLive) {
     liveItems.push({
       title: "Daily brief",
       badge: "Full brief",
-      copy: "Weather, calendar events, and top news in one daily summary — pulled fresh from your connected sources.",
+      copy: "Weather, calendar events, and top news in one daily summary from your configured sources.",
       actionLabel: "Daily brief",
       action: () => {
         setActivePage("chat");
@@ -1789,7 +1793,7 @@ function getIntroFirstSuccessItems(items = []) {
   if (calendarLive) {
     liveItems.push({
       title: "My schedule today",
-      badge: "Calendar live",
+      badge: calendarPresentation.badge,
       copy: "Check today's calendar without leaving Nova. If you just want the quick version, this is the easiest place to start.",
       actionLabel: "Today's schedule",
       action: () => {
@@ -1801,8 +1805,8 @@ function getIntroFirstSuccessItems(items = []) {
   if (weatherLive && !calendarLive) {
     liveItems.push({
       title: "Today's weather",
-      badge: "Live",
-      copy: "Current conditions and forecast from your connected weather provider.",
+      badge: weatherPresentation.badge,
+      copy: "Current conditions and forecast from your configured weather provider.",
       actionLabel: "Weather",
       action: () => {
         setActivePage("chat");
@@ -1813,8 +1817,8 @@ function getIntroFirstSuccessItems(items = []) {
   if (newsLive) {
     liveItems.push({
       title: "Today's news",
-      badge: "Live",
-      copy: "Top headlines from your connected news source.",
+      badge: newsPresentation.badge,
+      copy: "Top headlines from your configured news source.",
       actionLabel: "Today's news",
       action: () => {
         setActivePage("chat");
@@ -1850,8 +1854,8 @@ function getIntroFirstSuccessItems(items = []) {
   if (researchLive) {
     coreItems.push({
       title: "Research a topic",
-      badge: "Search connected",
-      copy: "Research with the connected web-search source and return grounded results with sources.",
+      badge: researchPresentation.verified ? "Search verified" : "Search configured",
+      copy: "Research using your configured web-search source and return grounded results with sources.",
       actionLabel: "Research",
       action: () => {
         setActivePage("chat");
