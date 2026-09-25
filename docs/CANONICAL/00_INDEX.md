@@ -49,6 +49,7 @@ AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Window
 RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
 COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)
 ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
+ROLLBACK_RESTORE_CLOSEOUT_STATE: COMPLETE
 NEXT: bounded beta product-translation/readiness pass
 THEN: clean Windows operator proof
 THEN: frozen-SHA full beta acceptance
