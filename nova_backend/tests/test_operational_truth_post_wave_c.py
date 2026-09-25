@@ -900,6 +900,8 @@ def test_recovery_closeout_requires_ordered_rollback_completion_markers(
         "The current lane is rollback/restore proof.",
         "Rollback/restore proof is CURRENT.",
         "Rollback/restore proof is\nCURRENT.",
+        "Rollback/restore proof remains current.",
+        "Rollback/restore proof is the current effort.",
     ),
 )
 def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, claim):

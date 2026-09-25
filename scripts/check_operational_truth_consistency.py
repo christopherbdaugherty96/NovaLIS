@@ -722,11 +722,13 @@ def _rollback_restore_prose_directly_marks_current_or_next(
         normalized = re.sub(r"[^A-Z0-9]+", " ", line)
         if re.search(
             r"\b(?:ROLLBACK|RESTORE)(?:\s+(?:ROLLBACK|RESTORE|PROOF)){0,2}\s+"
-            r"(?:IS\s+)?(?:NEXT|CURRENT|IMMEDIATE)\b",
+            r"(?:(?:IS|ARE|REMAINS|STAYS)\s+)?(?:THE\s+)?"
+            r"(?:NEXT|CURRENT|IMMEDIATE)(?:\s+(?:LANE|EFFORT|WORK|PROOF))?\b",
             normalized,
         ) or re.search(
             r"\b(?:THE\s+)?(?:NEXT|CURRENT|IMMEDIATE)\s+"
-            r"(?:LANE\s+(?:IS\s+)?)?(?:ROLLBACK|RESTORE)\b",
+            r"(?:(?:LANE|EFFORT|WORK|PROOF)\s+(?:(?:IS|ARE|REMAINS|STAYS)\s+)?)?"
+            r"(?:ROLLBACK|RESTORE)\b",
             normalized,
         ):
             return True
