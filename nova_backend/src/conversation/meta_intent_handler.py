@@ -571,17 +571,17 @@ def _classify_out_of_scope(text: str) -> str:
 
 def _build_identity() -> str:
     return (
-        "I'm Nova — a personal AI assistant built to run entirely on your own computer.\n\n"
+        "I'm Nova — a personal AI assistant designed for local-first use on your own computer.\n\n"
         "Nova was created by Christopher Daugherty. The idea is simple: "
-        "you should have an AI that works for you, not one that sends your data somewhere else "
-        "or does things without you knowing.\n\n"
+        "you should have an AI that works for you, with clear control over when governed "
+        "external services may process data and no hidden actions.\n\n"
         "What makes Nova different:\n"
-        "  - Everything runs on your machine — no cloud, no third-party servers\n"
+        "  - Nova is local-first; external/network paths are explicit, governed, and visible when used\n"
         "  - Every action is logged so you can always see what happened and why\n"
         "  - Nova only does things it's been specifically built and tested to do\n"
         "  - You stay in control — it asks before anything important happens\n\n"
         "Right now Nova is in an early stage. It can answer questions, search the web, "
-        "check the news and weather, draft emails, control parts of your computer, "
+        "check the news and weather, draft emails, use bounded local controls such as volume, media, brightness, and approved files/folders, "
         "and remember things you tell it. It's not yet set up for broader actions "
         "like sending messages or managing workflows on its own.\n\n"
         'Say "what can you do" to see the full list, '
@@ -604,7 +604,7 @@ def _build_what_can_you_do() -> str:
     if not groups:
         return (
             "I can help with things like checking the news, drafting emails, "
-            "controlling your computer, and more. Just tell me what you need."
+            "and using a bounded set of supported local controls. Just tell me what you need."
         )
 
     enabled_total = sum(1 for entries in groups.values() for item in entries if item.enabled)
@@ -660,7 +660,7 @@ def _build_phase_status() -> str:
     return (
         f"Nova is in an early stage right now — {_CURRENT_TIER}.\n\n"
         f"What that means in plain terms: I can answer questions, search the web, "
-        f"check news and weather, draft emails, control parts of your computer, "
+        f"check news and weather, draft emails, use bounded local controls such as volume, media, brightness, and approved files/folders, "
         f"and remember things you tell me. "
         f"I'm not yet set up for broader actions like sending messages, "
         f"booking things, or managing full workflows on my own.\n\n"
@@ -686,7 +686,7 @@ def _build_local_status() -> str:
         "- Dashboard navigation: use Intro, Home, Chat, Trust, Memory, Settings, News, Workspace, Agent, and Rules.\n"
         "- Memory visibility: durable memory is explicit, inspectable, and revocable.\n"
         "- Receipts: the Trust API shows recent governed-action receipts, and the Trust page is the visual review surface.\n"
-        "- Safe local actions: system status, response verification, explain-anything, screen help, and some reversible device controls are governed local capabilities.\n"
+        "- Safe local actions: system status, response verification, explain-anything, request-time screen capture and analysis, and some reversible device controls are governed local capabilities.\n"
         "- Email draft boundary: Nova can prepare a local mail-client draft after confirmation, but it does not send email.\n\n"
         "What to try first\n"
         "1. Ask: what does memory do?\n"

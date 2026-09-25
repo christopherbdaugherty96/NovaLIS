@@ -111,6 +111,52 @@ function renderFocusActionRow(host, thread = {}, options = {}) {
   });
 }
 
+function workspaceItemSearchText(item) {
+  if (typeof item === "string") return item;
+  try {
+    return JSON.stringify(item || {});
+  } catch (_) {
+    return String(item || "");
+  }
+}
+
+function isInternalWorkspaceHomeItem(item) {
+  const text = workspaceItemSearchText(item).toLowerCase();
+  return text.includes("local_project_structure_map")
+    || /(?:^|[\s'"`])[a-z]:[\\/]/i.test(text)
+    || /\/(?:users|home|tmp|var)\//i.test(text);
+}
+
+function isStaleDatedWatch(item, now = new Date()) {
+  const text = workspaceItemSearchText(item);
+  const match = text.match(/\bwatch:\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:,?\s+(\d{4}))?/i);
+  if (!match) return false;
+  const months = {
+    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+  };
+  const year = match[3] ? Number(match[3]) : now.getFullYear();
+  const deadline = new Date(year, months[match[1].toLowerCase()], Number(match[2]), 23, 59, 59, 999);
+  return Number.isFinite(deadline.getTime()) && deadline.getTime() < now.getTime();
+}
+
+function isUserFacingWorkspaceHomeItem(item) {
+  return !isInternalWorkspaceHomeItem(item) && !isStaleDatedWatch(item);
+}
+
+function userFacingWorkspaceValue(value, fallback = "None") {
+  const clean = String(value || "").trim();
+  return clean && isUserFacingWorkspaceHomeItem(clean) ? clean : fallback;
+}
+
+function workspaceActionRequiresProjectContext(item) {
+  const text = workspaceItemSearchText(item).toLowerCase();
+  return text.includes("continue my ")
+    || text.includes("resume ")
+    || text.includes("project status")
+    || text.includes("show threads");
+}
+
 function requestWorkspaceHomeRefresh(force = false) {
   const now = Date.now();
   if (!force && now - Number(workspaceHomeState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
@@ -146,10 +192,13 @@ function renderThreadMapWidget(data = {}) {
   const threads = Array.isArray(data && data.threads) ? data.threads : [];
   threadMapState.activeThread = active;
   threadMapState.threads = threads.map((item) => ({ ...(item || {}) }));
+  if (typeof renderQuickActions === "function") renderQuickActions();
+  if (typeof ensureDatalist === "function") ensureDatalist();
+  if (typeof renderCommandDiscovery === "function") renderCommandDiscovery();
 
   if (summary) {
     if (!threads.length) {
-      summary.textContent = "No projects yet. Start working on something and Nova will keep track.";
+      summary.textContent = "No project threads yet. Create or save a thread when you want ongoing continuity.";
     } else if (active) {
       summary.textContent = `Active thread: ${active}`;
     } else {
@@ -359,20 +408,28 @@ function renderWorkspaceHomeWidget(data = {}) {
 
   const snapshot = workspaceHomeState.snapshot || {};
   const focus = (snapshot && typeof snapshot.focus_thread === "object") ? snapshot.focus_thread : {};
-  const recentDocs = Array.isArray(snapshot.recent_documents) ? snapshot.recent_documents : [];
-  const recentActivity = Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : [];
-  const recentMemory = Array.isArray(snapshot.recent_memory_items) ? snapshot.recent_memory_items : [];
-  const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
-  const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
-  const recentThreads = Array.isArray(snapshot.recent_threads) ? snapshot.recent_threads : [];
-  const continuityThreads = getContinuityThreads(2);
+  const recentDocs = (Array.isArray(snapshot.recent_documents) ? snapshot.recent_documents : []).filter(isUserFacingWorkspaceHomeItem);
+  const recentActivity = (Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : []).filter(isUserFacingWorkspaceHomeItem);
+  const recentMemory = (Array.isArray(snapshot.recent_memory_items) ? snapshot.recent_memory_items : []).filter(isUserFacingWorkspaceHomeItem);
+  const blockedConditions = (Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : []).filter(isUserFacingWorkspaceHomeItem);
+  const rawRecommendedActions = (Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : []).filter(isUserFacingWorkspaceHomeItem);
+  const recentThreads = (Array.isArray(snapshot.recent_threads) ? snapshot.recent_threads : []).filter(isUserFacingWorkspaceHomeItem);
+  const continuityThreads = getContinuityThreads(2).filter(isUserFacingWorkspaceHomeItem);
+  const hasProjectThreads = continuityThreads.length > 0 || recentThreads.length > 0 || Number(snapshot.thread_count || 0) > 0;
+  const recommendedActions = rawRecommendedActions.filter((item) => hasProjectThreads || !workspaceActionRequiresProjectContext(item));
 
-  const focusName = String(focus.name || "").trim();
-  const focusNext = String(focus.latest_next_action || "").trim();
-  const focusBlocker = String(focus.latest_blocker || "").trim();
+  const rawFocusName = String(focus.name || "").trim();
+  const focusName = hasProjectThreads && isUserFacingWorkspaceHomeItem(focus) ? rawFocusName : "";
+  const focusNext = focusName ? String(focus.latest_next_action || "").trim() : "";
+  const focusBlocker = focusName ? String(focus.latest_blocker || "").trim() : "";
+  const safeWorkspaceSummary = isUserFacingWorkspaceHomeItem(workspaceHomeState.summary)
+    ? String(workspaceHomeState.summary || "").trim()
+    : "";
   summary.textContent = focusName
     ? `Resume ${focusName}${focusBlocker ? `, which is currently blocked by ${focusBlocker}` : focusNext ? ` with the next step ${focusNext}` : ""}.`
-    : (workspaceHomeState.summary || "Home is preparing the work you are most likely to want next.");
+    : hasProjectThreads
+      ? (safeWorkspaceSummary || `${Number(snapshot.thread_count || recentThreads.length || continuityThreads.length)} project thread(s) available.`)
+      : "No project thread is active right now.";
 
   clear(focusHost);
   if (focusName) {
@@ -431,7 +488,9 @@ function renderWorkspaceHomeWidget(data = {}) {
   } else {
     const empty = document.createElement("div");
     empty.className = "workspace-home-empty";
-    empty.textContent = "No focus project yet. Start with a repo summary, continue a saved project, or save notes from what you are doing.";
+    empty.textContent = hasProjectThreads
+      ? "No focus project is selected. Open a saved thread when you want to resume ongoing work."
+      : "No project thread is active. Start a new thread when you want Nova to preserve ongoing work.";
     focusHost.appendChild(empty);
   }
 
@@ -560,10 +619,15 @@ function renderWorkspaceHomeWidget(data = {}) {
   clear(actionsHost);
   const actions = recommendedActions.length
     ? recommendedActions.slice(0, 2)
-    : [
-        { label: focusName ? "Resume focus thread" : "Open threads", command: focusName ? `continue my ${focusName}` : "show threads" },
-        { label: "Memory overview", command: "memory overview" },
-      ];
+    : hasProjectThreads
+      ? [
+          { label: focusName ? "Resume focus thread" : "Open threads", command: focusName ? `continue my ${focusName}` : "show threads" },
+          { label: "Memory overview", command: "memory overview" },
+        ]
+      : [
+          { label: "Memory overview", command: "memory overview" },
+          { label: "System status", command: "system status" },
+        ];
   actions.forEach((item) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -958,7 +1022,8 @@ function renderOperationalContextWidget(data = {}) {
   }
 
   const snapshot = operationalContextState.snapshot || {};
-  const recentTurns = Array.isArray(snapshot.recent_relevant_turns) ? snapshot.recent_relevant_turns : [];
+  const recentTurns = (Array.isArray(snapshot.recent_relevant_turns) ? snapshot.recent_relevant_turns : [])
+    .filter(isUserFacingWorkspaceHomeItem);
   const recentActivity = Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : [];
   const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
 
@@ -966,9 +1031,15 @@ function renderOperationalContextWidget(data = {}) {
   if (homeHost) {
     clear(homeHost);
 
+    const activeThread = userFacingWorkspaceValue(snapshot.active_thread, "");
+    const hasProjectContext = Boolean(activeThread);
+    const summaryCopy = hasProjectContext && isUserFacingWorkspaceHomeItem(operationalContextState.summary)
+      ? operationalContextState.summary
+      : "No project thread is active right now.";
+
     const summary = document.createElement("div");
     summary.className = "workspace-home-doc-copy";
-    summary.textContent = operationalContextState.summary || "Operational context is available here after the next refresh.";
+    summary.textContent = summaryCopy;
     homeHost.appendChild(summary);
 
     const note = document.createElement("div");
@@ -979,14 +1050,19 @@ function renderOperationalContextWidget(data = {}) {
 
     const grid = document.createElement("div");
     grid.className = "operator-health-grid";
-    [
-      ["Focus thread", String(snapshot.active_thread || "None").trim() || "None"],
-      ["Goal", String(snapshot.task_goal || "None").trim() || "None"],
-      ["Current step", String(snapshot.current_step || "None").trim() || "None"],
-      ["Active topic", String(snapshot.active_topic || "None").trim() || "None"],
-      ["Selected file", String(snapshot.selected_file || "None").trim() || "None"],
-      ["Turns", `${Number(snapshot.turn_count || 0)}`],
-    ].forEach(([labelText, valueText]) => {
+    const homeRows = hasProjectContext
+      ? [
+          ["Focus thread", activeThread],
+          ["Goal", userFacingWorkspaceValue(snapshot.task_goal)],
+          ["Current step", userFacingWorkspaceValue(snapshot.current_step)],
+          ["Active topic", userFacingWorkspaceValue(snapshot.active_topic)],
+          ["Turns", `${Number(snapshot.turn_count || 0)}`],
+        ]
+      : [
+          ["Focus thread", "None"],
+          ["Project state", "No active project thread"],
+        ];
+    homeRows.forEach(([labelText, valueText]) => {
       const row = document.createElement("div");
       row.className = "operator-health-row";
       const label = document.createElement("div");
@@ -1001,7 +1077,7 @@ function renderOperationalContextWidget(data = {}) {
     });
     homeHost.appendChild(grid);
 
-    if (recentTurns.length) {
+    if (hasProjectContext && recentTurns.length) {
       const turns = document.createElement("div");
       turns.className = "workspace-home-blocked";
       turns.textContent = `Recent turns: ${recentTurns.slice(0, 3).map((item) => String(item || "").trim()).filter(Boolean).join(" | ")}`;
@@ -1070,9 +1146,9 @@ function renderAssistiveNoticesWidget(data = {}) {
   }
 
   const snapshot = assistiveNoticeState.snapshot || {};
-  const notices = Array.isArray(snapshot.notices) ? snapshot.notices : [];
+  const notices = (Array.isArray(snapshot.notices) ? snapshot.notices : []).filter(isUserFacingWorkspaceHomeItem);
   const handledNotices = Array.isArray(snapshot.handled_notices) ? snapshot.handled_notices : [];
-  const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
+  const recommendedActions = (Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : []).filter(isUserFacingWorkspaceHomeItem);
   const governanceNote = String(snapshot.governance_note || "").trim()
     || "Notice, ask, then assist remains the governing rule.";
   const suppressedNoticeCount = Number(snapshot.suppressed_notice_count || 0);
@@ -1085,7 +1161,9 @@ function renderAssistiveNoticesWidget(data = {}) {
 
     const summary = document.createElement("div");
     summary.className = "workspace-home-doc-copy";
-    summary.textContent = assistiveNoticeState.summary || "Assistive notices will appear here after the next refresh.";
+    summary.textContent = isUserFacingWorkspaceHomeItem(assistiveNoticeState.summary)
+      ? (assistiveNoticeState.summary || "Assistive notices will appear here after the next refresh.")
+      : "No current assistive notices.";
     host.appendChild(summary);
 
     const note = document.createElement("div");

@@ -665,7 +665,7 @@ function loadingHintForInput(text) {
   if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking online sources";
   if (q.includes("morning") || q.includes("brief") || q.includes("plan my day")) return "Preparing your brief";
   if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
-  if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Turning your idea into a build plan";
+  if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Planning what would be needed";
   if (q.includes("help me") || q.includes("plan")) return "Turning your goal into the next steps";
   return "Nova is working on your request";
 }
@@ -710,7 +710,7 @@ function nextWorkflowHintForInput(text) {
     return "Expect a clear approval checkpoint before Nova touches logins, publishing, or money.";
   }
   if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("page")) {
-    return "Nova should draft the structure first, then help you refine it before the bigger build steps.";
+    return "Nova can help outline the structure and next steps; supported actions stay bounded to current capabilities.";
   }
   if (q.includes("research") || q.includes("search") || q.includes("look up")) {
     return "Nova should bring back sources, a summary, and a suggested next move.";
@@ -739,20 +739,20 @@ function renderWorkflowFocusWidget() {
   const showStepsBtn = $("btn-workflow-show-steps");
 
   if (badge) badge.textContent = workflowFocusState.status || "Ready";
-  if (copy) copy.textContent = workflowFocusState.copy || "Tell Nova the outcome you want, and it will turn that into the next steps.";
-  if (goal) goal.textContent = workflowFocusState.goal || "Start with something simple like \"Build me a landing page for my business.\"";
-  if (now) now.textContent = workflowFocusState.now || "Nova is ready to turn your idea into a workflow.";
-  if (next) next.textContent = workflowFocusState.next || "You can start broad. Nova will draft, explain, and pause when a choice matters.";
+  if (copy) copy.textContent = workflowFocusState.copy || "Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.";
+  if (goal) goal.textContent = workflowFocusState.goal || "Start with something simple like \"Help me plan my day.\"";
+  if (now) now.textContent = workflowFocusState.now || "Nova is ready to help plan, research, explain, or review supported work.";
+  if (next) next.textContent = workflowFocusState.next || "Start with a request. Nova will return a result or ask for the context it needs.";
   if (showStepsBtn) showStepsBtn.disabled = !String(workflowFocusState.lastUserInput || "").trim();
 }
 
 function resetWorkflowFocusState() {
   workflowFocusState = {
-    goal: "Start with something simple like \"Build me a landing page for my business.\"",
+    goal: "Start with something simple like \"Help me plan my day.\"",
     status: "Ready",
-    copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
-    now: "Nova is ready to turn your idea into a workflow.",
-    next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+    copy: "Tell Nova what you want help with. It will respond, ask for context, or show supported next steps.",
+    now: "Nova is ready to help plan, research, explain, or review supported work.",
+    next: "Start with a request. Nova will return a result or ask for the context it needs.",
     lastUserInput: "",
     awaitingResponse: false,
   };
@@ -784,10 +784,10 @@ function updateWorkflowFocusProgress(text) {
 
 function updateWorkflowFocusFromAssistant(text) {
   const clean = String(text || "").trim();
-  if (!clean) return;
-  workflowFocusState.status = "Ready for review";
-  workflowFocusState.copy = "Nova finished the current step. You can refine it, move forward, or switch goals at any time.";
-  workflowFocusState.now = extractWorkflowSentence(clean, "Nova finished the current step.");
+  if (!clean || !workflowFocusState.awaitingResponse) return;
+  workflowFocusState.status = "Response ready";
+  workflowFocusState.copy = "Nova returned a response for the current request. You can refine it, move forward, or switch goals at any time.";
+  workflowFocusState.now = extractWorkflowSentence(clean, "Response received.");
   workflowFocusState.next = workflowRequiresHighApproval(workflowFocusState.lastUserInput)
     ? "If the next step affects logins, publishing, or money, Nova should pause for a fresh approval."
     : "Ask for edits, a deeper pass, or the next step when you are ready.";
@@ -3268,10 +3268,8 @@ function renderTrustCenterPage() {
     const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
       ? trustReviewState.voiceRuntime
       : {};
-    const wakeWordEnabled = isHeyNovaWakeWordEnabled();
     voiceSummary.textContent = [
       String(voice.summary || "").trim(),
-      wakeWordEnabled ? `Wake word available: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
       String(voice.last_status || voice.last_attempt_status || "").trim(),
     ].filter(Boolean).join(" · ") || "Voice status will appear here after the next trust refresh.";
 
@@ -3283,7 +3281,6 @@ function renderTrustCenterPage() {
       ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
       ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
-      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} available for live help` : "Wake word off"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
     });
@@ -3324,20 +3321,30 @@ function renderTrustCenterPage() {
     const bridge = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
       ? trustReviewState.bridgeRuntime
       : {};
+    const permissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.remote_bridge_enabled);
+    const tokenConfigured = bridge.token_configured === true;
+    const available = bridge.enabled === true;
+    const availabilityLabel = available
+      ? "Available"
+      : tokenConfigured
+        ? "Unavailable — permission paused"
+        : "Unavailable — token not configured";
+
     bridgeSummary.textContent = [
       String(bridge.summary || "").trim(),
+      "Permission and runtime availability are shown separately.",
       String(bridge.scope || "").trim(),
     ].filter(Boolean).join(" · ") || "Remote bridge status will appear here after the next trust refresh.";
 
     clear(bridgeGrid);
     [
-      ["Status", String(bridge.status_label || bridge.status || "Unknown").trim() || "Unknown"],
+      ["Permission", permissionEnabled ? "Enabled" : "Paused"],
+      ["Availability", availabilityLabel],
       ["Transport", String(bridge.transport || "HTTP").trim() || "HTTP"],
-      ["Authentication", String(bridge.auth || "Unknown").trim() || "Unknown"],
+      ["Authentication", String(bridge.auth || (tokenConfigured ? "Token configured" : "Token not configured")).trim() || "Unknown"],
       ["Scope", String(bridge.scope || "Read and reasoning only").trim() || "Read and reasoning only"],
       ["Effectful actions", String(bridge.effectful_actions || "Blocked").trim() || "Blocked"],
       ["Continuity", String(bridge.continuity || "Stateless").trim() || "Stateless"],
-      ["Endpoint", String(bridge.endpoint || "/api/openclaw/bridge/message").trim() || "/api/openclaw/bridge/message"],
     ].forEach(([label, value]) => {
       bridgeGrid.appendChild(createOverviewChip(label, value));
     });
@@ -3412,7 +3419,9 @@ function getActivePage() {
 }
 
 function getQuickActionsForPage(page = getActivePage()) {
-  return QUICK_ACTIONS_BY_PAGE[page] || QUICK_ACTIONS_BY_PAGE.chat;
+  const actions = QUICK_ACTIONS_BY_PAGE[page] || QUICK_ACTIONS_BY_PAGE.chat;
+  if (typeof isUserFacingSuggestionAvailable !== "function") return actions;
+  return actions.filter((action) => isUserFacingSuggestionAvailable(action.command));
 }
 
 function quickActionsStorageKey(page) {
@@ -3659,7 +3668,12 @@ function renderOpenClawAgentPage() {
       ["Local summarizer", setup.local_model_ready ? "Ready" : "Fallback mode"],
       ["Weather source", setup.weather_provider_configured ? "Configured" : "Optional"],
       ["Calendar source", setup.calendar_connected ? "Connected" : "Optional"],
-      ["Remote access", setup.remote_bridge_enabled ? "Enabled" : (setup.remote_bridge_token_configured ? "Paused" : "Not configured")],
+      ["Remote permission", setup.remote_bridge_enabled ? "Enabled" : "Paused"],
+      ["Remote availability", setup.remote_bridge_enabled && setup.remote_bridge_token_configured
+        ? "Available"
+        : setup.remote_bridge_token_configured
+          ? "Unavailable — permission paused"
+          : "Unavailable — token not configured"],
       ["Scheduler permission", setup.scheduler_permission_enabled ? "Enabled" : "Paused"],
     ].forEach(([label, value]) => {
       setupGrid.appendChild(createOverviewChip(label, value));
@@ -4057,12 +4071,25 @@ function renderSettingsPage() {
 
         const status = document.createElement("div");
         status.className = "workspace-home-focus-meta";
-        status.textContent = String(item.status_label || (item.enabled ? "Enabled" : "Paused")).trim();
+        const isRemoteBridge = item.id === "remote_bridge_enabled";
+        const bridge = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
+          ? trustReviewState.bridgeRuntime
+          : {};
+        const availability = bridge.enabled === true
+          ? "Available"
+          : bridge.token_configured === true
+            ? "Unavailable — permission paused"
+            : "Unavailable — token not configured";
+        status.textContent = isRemoteBridge
+          ? `Permission: ${item.enabled ? "Enabled" : "Paused"} · Availability: ${availability}`
+          : String(item.status_label || (item.enabled ? "Enabled" : "Paused")).trim();
         card.appendChild(status);
 
         const copy = document.createElement("div");
         copy.className = "workspace-home-focus-copy";
-        copy.textContent = String(item.description || item.summary || "").trim() || "Governed runtime permission.";
+        copy.textContent = isRemoteBridge
+          ? `${String(item.description || item.summary || "").trim() || "Governed runtime permission."} Permission does not make the bridge available without its token.`
+          : String(item.description || item.summary || "").trim() || "Governed runtime permission.";
         card.appendChild(copy);
 
         const actionRow = document.createElement("div");
@@ -4119,10 +4146,8 @@ function renderSettingsPage() {
     const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
       ? trustReviewState.voiceRuntime
       : {};
-    const wakeWordEnabled = isHeyNovaWakeWordEnabled();
     voiceSummary.textContent = [
       String(voice.summary || "").trim() || "Run Voice Check to confirm spoken output on this device.",
-      wakeWordEnabled ? `Wake word available: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
       String(voice.last_attempt_status || "").trim(),
       String(voice.last_engine || "").trim(),
     ].filter(Boolean).join(" · ");
@@ -4135,41 +4160,9 @@ function renderSettingsPage() {
       ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
       ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
-      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} available for live help` : "Wake word off"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
     });
-
-    const wakeWordCard = document.createElement("div");
-    wakeWordCard.className = "workspace-home-focus settings-permission-card";
-
-    const wakeWordTitle = document.createElement("div");
-    wakeWordTitle.className = "workspace-home-focus-title";
-    wakeWordTitle.textContent = "Wake word";
-    wakeWordCard.appendChild(wakeWordTitle);
-
-    const wakeWordStatus = document.createElement("div");
-    wakeWordStatus.className = "workspace-home-focus-meta";
-    wakeWordStatus.textContent = wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} available during live help` : "Off";
-    wakeWordCard.appendChild(wakeWordStatus);
-
-    const wakeWordCopy = document.createElement("div");
-    wakeWordCopy.className = "workspace-home-focus-copy";
-    wakeWordCopy.textContent = wakeWordEnabled
-      ? `Talk button recordings send your spoken request directly. "${HEY_NOVA_WAKE_WORD}" is still useful during live help when Nova is staying with a shared screen.`
-      : "Talk button recordings send whatever you say. Turn the wake word back on if you want live-help sessions to wait for a spoken guardrail.";
-    wakeWordCard.appendChild(wakeWordCopy);
-
-    const wakeWordActions = document.createElement("div");
-    wakeWordActions.className = "workspace-board-actions-toolbar";
-    const wakeWordToggleBtn = document.createElement("button");
-    wakeWordToggleBtn.type = "button";
-    wakeWordToggleBtn.textContent = wakeWordEnabled ? "Turn off live-help wake word" : `Enable ${HEY_NOVA_WAKE_WORD} for live help`;
-    wakeWordToggleBtn.addEventListener("click", () => setHeyNovaWakeWordEnabled(!wakeWordEnabled));
-    wakeWordActions.appendChild(wakeWordToggleBtn);
-    wakeWordCard.appendChild(wakeWordActions);
-
-    voiceGrid.appendChild(wakeWordCard);
   }
 
   if (reasoningSummary && reasoningGrid) {
