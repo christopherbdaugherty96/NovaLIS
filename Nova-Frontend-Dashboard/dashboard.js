@@ -1413,6 +1413,8 @@ function getSetupReadinessItems() {
           : `${configuredProviderCount} configured`;
   const providerTone = failedProviderCount
     ? "attention"
+    : unverifiedProviderCount
+      ? "attention"
     : configuredProviderCount
       ? "optional-ready"
       : "optional";
@@ -1432,7 +1434,7 @@ function getSetupReadinessItems() {
           : "",
       ].filter(Boolean).join(" ")
       : unverifiedProviderCount
-        ? `${configuredProviderCount} configured connection${configuredProviderCount === 1 ? " is" : "s are"} not verified. Review Settings to confirm the available setup.`
+        ? `${unverifiedProviderCount} configured connection${unverifiedProviderCount === 1 ? " is" : "s are"} not verified. Review Settings to confirm the available setup.`
         : connectionStatsLoaded
           ? `${connectedProviderCount} saved connection${connectedProviderCount === 1 ? " is" : "s are"} healthy. You can review, test, or remove them any time from Settings.`
           : `${configuredProviderCount} connection${configuredProviderCount === 1 ? " is" : "s are"} configured. Review Settings to confirm the available setup.`;

@@ -426,6 +426,7 @@ def test_home_readiness_uses_configured_and_unverified_provider_truth():
     assert stored_unverified["status"] == "1 configured; 1 not verified"
     assert "not verified" in stored_unverified["copy"]
     assert "healthy" not in stored_unverified["copy"]
+    assert stored_unverified["tone"] == "attention"
 
     environment_only = _evaluate_setup_readiness(
         {
@@ -440,6 +441,22 @@ def test_home_readiness_uses_configured_and_unverified_provider_truth():
     assert environment_only["status"] == "1 configured; 1 not verified"
     assert environment_only["status"] != "Optional"
     assert "healthy" not in environment_only["copy"]
+    assert environment_only["tone"] == "attention"
+
+    mixed_verification = _evaluate_setup_readiness(
+        {
+            "loaded": True,
+            "savedCount": 2,
+            "configuredCount": 2,
+            "connectedCount": 1,
+            "failedCount": 0,
+            "unverifiedCount": 1,
+        }
+    )
+    assert mixed_verification["status"] == "2 configured; 1 not verified"
+    assert "1 configured connection is not verified" in mixed_verification["copy"]
+    assert "2 configured connections are not verified" not in mixed_verification["copy"]
+    assert mixed_verification["tone"] == "attention"
 
 def test_current_focus_only_changes_for_a_manual_request_response():
     control = _read(STATIC / "dashboard-control-center.js")
