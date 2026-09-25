@@ -970,6 +970,7 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
         "Rollback/restore proof hasn't been completed.",
         "Rollback/restore proof was not completed.",
         "Rollback/restore proof was planned, but was not completed.",
+        "Rollback/restore proof was planned, but the current proof was not completed.",
         "Rollback/restore proof is not finished.",
         "Rollback/restore proof still needs completion.",
         "Rollback/restore proof remains outstanding.",

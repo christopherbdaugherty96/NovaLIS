@@ -890,6 +890,8 @@ def _preserves_post_405_boundary(
     )
     semantic_active_prose = re.sub(
         r",\s+(?=(?:AND|BUT|OR|NOR|FOR|SO|YET)\s+"
+        r"(?!(?:(?:THE|THIS|THAT)\s+)?(?:CURRENT|NEXT|IMMEDIATE)\s+"
+        r"(?:[A-Z0-9]+\s+){0,3}(?:PROOF|ROLLBACK|RESTORE)\b)"
         r"(?:(?:THE|THIS|THAT)\s+)?(?:CURRENT|NEXT|IMMEDIATE)\s+"
         r"[A-Z0-9]+(?:\s+[A-Z0-9]+){0,3}\s+(?:IS|ARE|WAS|WERE|REMAINS|STAYS)\b)",
         " __SENTENCE_BOUNDARY__ ",
