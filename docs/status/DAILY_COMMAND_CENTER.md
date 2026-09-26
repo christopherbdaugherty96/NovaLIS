@@ -39,16 +39,21 @@ AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Window
 RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
 COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)
 ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
-NEXT: bounded beta product-translation/readiness pass
+COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)
+COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)
+FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)
+NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)
+THEN: fix only reproduced P0/P1/hard beta blockers
 THEN: clean Windows operator proof
-THEN: frozen-SHA full beta acceptance
-THEN: private-beta candidacy/distribution decision
+THEN: freeze exact beta SHA + intended distribution artifact
+THEN: frozen-candidate acceptance
+THEN: 3 real non-developer users
 ```
 
 The daily-use presentation stabilization lane is closed. PR #405 passed its hosted
 checks, exact-head review signal, protected merge, and merged-main Home replay before
 and after restart. Issue #406 is complete; its former immediate-lane framing is
-historical. The current immediate lane is bounded beta product-translation/readiness pass.
+historical. The current immediate lane is #434 Synthetic Beta Cohort v1: test-only, immutable during the run, with no fixes between journeys.
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
