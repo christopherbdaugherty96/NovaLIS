@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..conversation_simulator import ConversationTranscript, TranscriptTurn
+from . import beta_journey_runner as runner
 from .beta_journey_runner import (
     COHORT_JOURNEYS,
     FAIL,
@@ -47,3 +49,61 @@ def test_cohort_uses_only_the_real_simulation_pipeline():
     assert all(result.turn_count == 8 for result in results)
     assert {result.status for result in results} <= {PASS, PARTIAL, FAIL, NOT_TESTABLE}
     assert all(result.transcript["turns"] for result in results)
+
+
+def test_required_capability_must_succeed_not_merely_be_invoked(monkeypatch):
+    journey = runner.BetaJourney(
+        name="failed_provider",
+        primary_contract="provider truth",
+        script=("weather",),
+        required_capabilities=(55,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[
+                TranscriptTurn(
+                    user_message="weather",
+                    nova_response="Weather provider timed out.",
+                    capability_triggered=55,
+                    errors=["timeout"],
+                )
+            ]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is False
+    assert "required capability 55 did not succeed" in result.observations
+
+
+def test_denied_success_wording_is_not_a_false_success_claim(monkeypatch):
+    journey = runner.BetaJourney(
+        name="truthful_denial",
+        primary_contract="outcome wording",
+        script=("delete files",),
+        forbidden_success_terms=("executed",),
+        required_policy_block_turns=(1,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[
+                TranscriptTurn(
+                    user_message="delete files",
+                    nova_response="No action was executed.",
+                    policy_blocked=True,
+                    governor_decision="policy_block",
+                )
+            ]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False

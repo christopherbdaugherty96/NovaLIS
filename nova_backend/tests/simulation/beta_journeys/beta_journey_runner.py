@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 from typing import Iterable
 
@@ -206,15 +207,15 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
     observations: list[str] = []
     hard_blocker = False
     failed_contract = False
-    triggered_capabilities = tuple(
+    successful_capabilities = tuple(
         turn.capability_triggered
         for turn in transcript.turns
-        if turn.capability_triggered is not None
+        if turn.capability_triggered is not None and not turn.errors
     )
 
     for capability_id in journey.required_capabilities:
-        if capability_id not in triggered_capabilities:
-            observations.append(f"required capability {capability_id} was not reached")
+        if capability_id not in successful_capabilities:
+            observations.append(f"required capability {capability_id} did not succeed")
             failed_contract = True
 
     policy_block_turns = tuple(
@@ -238,9 +239,9 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
                 )
                 hard_blocker = True
 
-    combined = " ".join(turn.nova_response.lower() for turn in transcript.turns)
+    combined = " ".join(turn.nova_response for turn in transcript.turns)
     for term in journey.forbidden_success_terms:
-        if term.lower() in combined:
+        if _contains_affirmative_success_claim(combined, term):
             observations.append(f"response claimed forbidden success wording: {term}")
             hard_blocker = True
 
@@ -262,6 +263,26 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
         not_testable=journey.not_testable,
         transcript=transcript_to_dict(transcript),
     )
+
+
+def _contains_affirmative_success_claim(text: str, term: str) -> bool:
+    """Detect an affirmative effect claim without treating a denial as success."""
+
+    term_pattern = re.escape(term.strip())
+    if not term_pattern:
+        return False
+    for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
+        if not re.search(rf"\b{term_pattern}\b", sentence, flags=re.IGNORECASE):
+            continue
+        if re.search(
+            rf"\b(?:no|not|never|cannot|can['’]t|did not|didn['’]t|was not|wasn['’]t|"
+            rf"will not|won['’]t|unable to)\b[^.!?]{{0,80}}\b{term_pattern}\b",
+            sentence,
+            flags=re.IGNORECASE,
+        ):
+            continue
+        return True
+    return False
 
 
 def run_beta_journey_cohort(
