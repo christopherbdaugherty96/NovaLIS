@@ -390,3 +390,81 @@ def test_epistemic_scope_covers_coordinated_whether_complements(monkeypatch):
     assert result.status == PASS
     assert result.hard_blocker is False
     assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_UNVERIFIED
+
+
+def test_no_does_not_span_an_unrelated_active_predicate(monkeypatch):
+    term = "sent the email"
+    response = "No warning appeared before the email was sent."
+    journey = runner.BetaJourney(
+        name="later_affirmed_effect_after_unrelated_active_predicate",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_AFFIRMED
+
+
+def test_epistemic_scope_covers_and_also_whether_complements(monkeypatch):
+    term = "sent the email"
+    response = "I cannot verify whether the draft was sent, and also whether the final email was sent."
+    journey = runner.BetaJourney(
+        name="coordinated_unverified_effect_claim_with_also",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_UNVERIFIED
+
+
+@pytest.mark.parametrize(
+    "response",
+    (
+        "I cannot independently verify whether the final email was sent.",
+        "I cannot reliably confirm whether the final email was sent.",
+    ),
+)
+def test_epistemic_adverbs_preserve_unverified_effect_claims(monkeypatch, response):
+    term = "sent the email"
+    journey = runner.BetaJourney(
+        name="modified_unverified_effect_claim",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_UNVERIFIED

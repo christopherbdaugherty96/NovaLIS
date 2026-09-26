@@ -18,6 +18,7 @@ EFFECT_UNVERIFIED = "unverified"
 _BOUNDED_EFFECT_MODIFIER_PATTERN = (
     r"(?:(?:successfully|already|just|finally|now|yet|ever)\s+){0,2}"
 )
+_BOUNDED_EPISTEMIC_MODIFIER_PATTERN = r"(?:(?:\w+ly)\s+){0,2}"
 
 
 @dataclass(frozen=True)
@@ -282,7 +283,7 @@ def _classify_forbidden_effect_claim(text: str, term: str) -> str | None:
     classifications: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
         clauses = re.split(
-            r"(?:[;:]\s*|,\s*and\s+(?!whether\b)|,\s*(?:but|yet|however)\s+|\s*[—–]\s*)",
+            r"(?:[;:]\s*|,\s*and\s+(?!(?:also\s+)?whether\b)|,\s*(?:but|yet|however)\s+|\s*[—–]\s*)",
             sentence,
         )
         for clause in clauses:
@@ -345,7 +346,7 @@ def _is_epistemically_unverified(prefix: str) -> bool:
     return bool(
         re.search(
             r"\b(?:cannot|unable\s+to|do\s+not|did\s+not|will\s+not)\s+"
-            r"(?:verify|confirm)\b",
+            rf"{_BOUNDED_EPISTEMIC_MODIFIER_PATTERN}(?:verify|confirm)\b",
             normalized_prefix,
             flags=re.IGNORECASE,
         )
@@ -357,7 +358,7 @@ def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool
 
     normalized_context = _normalize_negated_auxiliary_contractions(local_context)
     patterns = (
-        rf"\bno\s+(?:(?!(?:is|are|was|were|has|have|had)\b)\w+\s+){{0,5}}"
+        rf"\bno\s+(?:(?!(?:is|are|was|were|has|have|had)\b)\w+\s+){{1,3}}"
         rf"(?:is|are|was|were|has|have|had)\s+"
         rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+"
