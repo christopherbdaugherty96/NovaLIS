@@ -272,19 +272,30 @@ def _contains_affirmative_success_claim(text: str, term: str) -> bool:
     if not term_pattern:
         return False
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
-        clauses = re.split(r"(?:[;:]\s*|,\s*(?:but|yet|however)\s+)", sentence)
+        clauses = re.split(
+            r"(?:[;:]\s*|,\s*(?:but|yet|however)\s+|\s*[—–]\s*)",
+            sentence,
+        )
         for clause in clauses:
             for match in re.finditer(rf"\b{term_pattern}\b", clause, flags=re.IGNORECASE):
                 local_context = clause[: match.end()]
-                if re.search(
-                    rf"\b(?:no|not|never|cannot|can['’]t|did not|didn['’]t|was not|wasn['’]t|"
-                    rf"will not|won['’]t|unable to)\b[^;:.]{{0,80}}\b{term_pattern}\b$",
-                    local_context,
-                    flags=re.IGNORECASE,
-                ):
+                if _is_negated_success_predicate(local_context, term_pattern):
                     continue
                 return True
     return False
+
+
+def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool:
+    """Return true only when negation grammatically attaches to this occurrence."""
+
+    patterns = (
+        rf"\bno\s+(?:\w+\s+){{0,5}}(?:is|are|was|were|has|have|had)\s+{term_pattern}\b$",
+        rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+{term_pattern}\b$",
+        rf"\b(?:did\s+not|didn['’]t|cannot|can['’]t|will\s+not|won['’]t|unable\s+to)\s+"
+        rf"(?:have\s+)?{term_pattern}\b$",
+        rf"\b(?:not|never)\s+{term_pattern}\b$",
+    )
+    return any(re.search(pattern, local_context, flags=re.IGNORECASE) for pattern in patterns)
 
 
 def run_beta_journey_cohort(

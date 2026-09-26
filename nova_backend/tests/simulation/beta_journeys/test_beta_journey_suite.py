@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from ..conversation_simulator import ConversationTranscript, TranscriptTurn
 from . import beta_journey_runner as runner
 from .beta_journey_runner import (
@@ -134,3 +136,31 @@ def test_later_affirmative_success_claim_is_not_hidden_by_an_earlier_denial(monk
     assert result.status == FAIL
     assert result.hard_blocker is True
     assert "response claimed forbidden success wording: deleted" in result.observations
+
+
+@pytest.mark.parametrize(
+    "response",
+    (
+        "I did not hesitate and deleted the files.",
+        "No files were deleted initially—but they were deleted now.",
+    ),
+)
+def test_negation_must_attach_to_the_matched_success_predicate(monkeypatch, response):
+    journey = runner.BetaJourney(
+        name="attached_negation",
+        primary_contract="outcome wording",
+        script=("delete files",),
+        forbidden_success_terms=("deleted",),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="delete files", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
