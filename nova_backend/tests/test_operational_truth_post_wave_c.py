@@ -693,8 +693,15 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         assert structured_lines.count(checker.LANE_5A_AUTHORITY_MODEL) == 1
         assert structured_lines.count(checker.LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.LANE_5A_ROLLBACK_RESTORE_PROOF) == 1
+        assert structured_lines.count(checker.POST_433_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.POST_436_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.POST_436_FRESH_MAIN_PROOF) == 1
         assert checker.LANE_5A_AUTHORIZATION_MARKER in normalized
-        assert "NEXT: BOUNDED BETA PRODUCT-TRANSLATION/READINESS PASS" in normalized
+        assert tuple(
+            line
+            for line in structured_lines
+            if line.startswith(("NEXT:", "THEN:"))
+        ) == checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE
 
 
 @pytest.mark.parametrize(
@@ -806,23 +813,31 @@ def test_recovery_foundation_rejects_premature_rollback_completion(tmp_path, cla
         "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
         1,
     )
-    foundation = foundation.replace(
+    recovery_closeout = (
         "COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)\n"
         "ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; "
         "1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
-        "NEXT: rollback/restore proof\n"
-        "THEN: bounded beta product-translation/readiness pass",
-        1,
+        "COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)\n"
+        "COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)\n"
+        "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; "
+        "operational-truth consistency; runtime structural smoke)\n"
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)\n"
+        "THEN: fix only reproduced P0/P1/hard beta blockers\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: freeze exact beta SHA + intended distribution artifact\n"
+        "THEN: frozen-candidate acceptance\n"
+        "THEN: 3 real non-developer users"
     )
+    recovery_foundation = "\n".join(checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE)
+    foundation = foundation.replace(recovery_closeout, recovery_foundation, 1)
     assert foundation != text
     assert checker._preserves_post_405_boundary(
         foundation, require_lane_5a_recovery_foundation=True
     )
 
     contradictory = foundation.replace(
-        "NEXT: rollback/restore proof",
-        claim + "\nNEXT: rollback/restore proof",
+        checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE[0],
+        claim + "\n" + checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE[0],
         1,
     )
     assert contradictory != foundation
@@ -1100,7 +1115,8 @@ def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_
     target = tmp_path / "docs/status/DAILY_COMMAND_CENTER.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "The current immediate lane is bounded beta product-translation/readiness pass.",
+        "The current immediate lane is #434 Synthetic Beta Cohort v1: "
+        "test-only, immutable during the run, with no fixes between journeys.",
         claim,
         1,
     )
@@ -1387,6 +1403,9 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
             checker.LANE_5A_AUTHORITY_MODEL,
             checker.LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,
             checker.LANE_5A_ROLLBACK_RESTORE_PROOF,
+            checker.POST_433_COMPLETE_PROVENANCE,
+            checker.POST_436_COMPLETE_PROVENANCE,
+            checker.POST_436_FRESH_MAIN_PROOF,
             *checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
         )
     )
@@ -1444,10 +1463,15 @@ def test_pre_406_sequence_is_historical_only():
         "RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection\n"
         "COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)\n"
         "ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
+        "COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)\n"
+        "COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)\n"
+        "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)\n"
         "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)\n"
+        "THEN: fix only reproduced P0/P1/hard beta blockers\n"
         "THEN: clean Windows operator proof\n"
-        "THEN: frozen-SHA full beta acceptance\n"
-        "THEN: private-beta candidacy/distribution decision",
+        "THEN: freeze exact beta SHA + intended distribution artifact\n"
+        "THEN: frozen-candidate acceptance\n"
+        "THEN: 3 real non-developer users",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
         "THEN: evidence-authorized durability implementation\n"
