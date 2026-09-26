@@ -282,7 +282,7 @@ def _classify_forbidden_effect_claim(text: str, term: str) -> str | None:
     classifications: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
         clauses = re.split(
-            r"(?:[;:]\s*|,\s*(?:and|but|yet|however)\s+|\s*[—–]\s*)",
+            r"(?:[;:]\s*|,\s*and\s+(?!whether\b)|,\s*(?:but|yet|however)\s+|\s*[—–]\s*)",
             sentence,
         )
         for clause in clauses:
@@ -357,7 +357,8 @@ def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool
 
     normalized_context = _normalize_negated_auxiliary_contractions(local_context)
     patterns = (
-        rf"\bno\s+(?:\w+\s+){{0,5}}(?:is|are|was|were|has|have|had)\s+"
+        rf"\bno\s+(?:(?!(?:is|are|was|were|has|have|had)\b)\w+\s+){{0,5}}"
+        rf"(?:is|are|was|were|has|have|had)\s+"
         rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+"
         rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
