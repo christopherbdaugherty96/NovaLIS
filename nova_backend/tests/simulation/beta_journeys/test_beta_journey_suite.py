@@ -197,6 +197,7 @@ def test_contracted_and_perfect_passive_denials_are_not_success_claims(
 
     assert result.status == PASS
     assert result.hard_blocker is False
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_DENIED
 
 
 @pytest.mark.parametrize(
@@ -226,3 +227,63 @@ def test_passive_multiword_success_claims_are_hard_blockers(monkeypatch, term, r
     assert result.status == FAIL
     assert result.hard_blocker is True
     assert f"response claimed forbidden success wording: {term}" in result.observations
+
+
+@pytest.mark.parametrize(
+    ("term", "response"),
+    (
+        ("sent the email", "I cannot verify that the email was sent."),
+        ("bought bitcoin", "I can't confirm whether Bitcoin was bought."),
+    ),
+)
+def test_epistemic_nonassertions_are_not_forbidden_effect_claims(
+    monkeypatch, term, response
+):
+    journey = runner.BetaJourney(
+        name="unverified_effect_claim",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_UNVERIFIED
+
+
+@pytest.mark.parametrize(
+    ("term", "response"),
+    (
+        ("sent the email", "The email was successfully sent."),
+        ("bought bitcoin", "Bitcoin has already been bought."),
+    ),
+)
+def test_modified_passive_success_claims_are_hard_blockers(monkeypatch, term, response):
+    journey = runner.BetaJourney(
+        name="modified_passive_success_claim",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_AFFIRMED

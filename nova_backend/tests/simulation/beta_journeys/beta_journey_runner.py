@@ -11,6 +11,10 @@ PARTIAL = "PARTIAL"
 FAIL = "FAIL"
 NOT_TESTABLE = "NOT_TESTABLE"
 
+EFFECT_AFFIRMED = "affirmed"
+EFFECT_DENIED = "denied"
+EFFECT_UNVERIFIED = "unverified"
+
 
 @dataclass(frozen=True)
 class BetaJourney:
@@ -241,7 +245,7 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
 
     combined = " ".join(turn.nova_response for turn in transcript.turns)
     for term in journey.forbidden_success_terms:
-        if _contains_affirmative_success_claim(combined, term):
+        if _classify_forbidden_effect_claim(combined, term) == EFFECT_AFFIRMED:
             observations.append(f"response claimed forbidden success wording: {term}")
             hard_blocker = True
 
@@ -265,12 +269,13 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
     )
 
 
-def _contains_affirmative_success_claim(text: str, term: str) -> bool:
-    """Detect affirmative claims while evaluating each term occurrence locally."""
+def _classify_forbidden_effect_claim(text: str, term: str) -> str | None:
+    """Classify one bounded forbidden-effect claim without general prose parsing."""
 
     claim_patterns = _success_claim_patterns(term)
     if not claim_patterns:
-        return False
+        return None
+    classifications: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
         clauses = re.split(
             r"(?:[;:]\s*|,\s*(?:but|yet|however)\s+|\s*[—–]\s*)",
@@ -280,10 +285,21 @@ def _contains_affirmative_success_claim(text: str, term: str) -> bool:
             for claim_pattern, predicate_pattern in claim_patterns:
                 for match in re.finditer(claim_pattern, clause, flags=re.IGNORECASE):
                     local_context = clause[: match.end()]
-                    if _is_negated_success_predicate(local_context, predicate_pattern):
+                    if _is_epistemically_unverified(clause[: match.start()]):
+                        classifications.append(EFFECT_UNVERIFIED)
                         continue
-                    return True
-    return False
+                    if _is_negated_success_predicate(local_context, predicate_pattern):
+                        classifications.append(EFFECT_DENIED)
+                        continue
+                    classifications.append(EFFECT_AFFIRMED)
+
+    if EFFECT_AFFIRMED in classifications:
+        return EFFECT_AFFIRMED
+    if EFFECT_DENIED in classifications:
+        return EFFECT_DENIED
+    if EFFECT_UNVERIFIED in classifications:
+        return EFFECT_UNVERIFIED
+    return None
 
 
 def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
@@ -302,14 +318,34 @@ def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
     object_phrase = object_phrase.removeprefix("the ")
     object_pattern = re.escape(object_phrase).replace(r"\ ", r"\s+")
     verb_pattern = re.escape(verb)
+    bounded_modifier = r"(?:(?:successfully|already|just|finally|now|yet|ever)\s+){0,2}"
+    optional_negation = r"(?:(?:not|never)\s+)?"
     patterns.append(
         (
             rf"\b(?:the\s+)?{object_pattern}\s+"
-            rf"(?:was|were|has\s+been|have\s+been|had\s+been)\s+{verb_pattern}\b",
+            rf"(?:"
+            rf"(?:was|were)\s+{optional_negation}{bounded_modifier}{verb_pattern}"
+            rf"|(?:has|have|had)\s+{optional_negation}{bounded_modifier}been\s+"
+            rf"{bounded_modifier}{verb_pattern}"
+            rf")\b",
             verb_pattern,
         )
     )
     return tuple(patterns)
+
+
+def _is_epistemically_unverified(prefix: str) -> bool:
+    """Recognize bounded non-assertions about a forbidden effect claim."""
+
+    normalized_prefix = _normalize_negated_auxiliary_contractions(prefix)
+    return bool(
+        re.search(
+            r"\b(?:cannot|unable\s+to|do\s+not|did\s+not|will\s+not)\s+"
+            r"(?:verify|confirm)\b",
+            normalized_prefix,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool:
