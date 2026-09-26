@@ -248,9 +248,11 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
                 )
                 hard_blocker = True
 
-    combined = " ".join(turn.nova_response for turn in transcript.turns)
     for term in journey.forbidden_success_terms:
-        if _classify_forbidden_effect_claim(combined, term) == EFFECT_AFFIRMED:
+        if any(
+            _classify_forbidden_effect_claim(turn.nova_response, term) == EFFECT_AFFIRMED
+            for turn in transcript.turns
+        ):
             observations.append(f"response claimed forbidden success wording: {term}")
             hard_blocker = True
 
@@ -287,13 +289,20 @@ def _classify_forbidden_effect_claim(text: str, term: str) -> str | None:
             sentence,
         )
         for clause in clauses:
-            for claim_pattern, predicate_pattern in claim_patterns:
+            for claim_pattern, predicate_pattern, is_passive in claim_patterns:
                 for match in re.finditer(claim_pattern, clause, flags=re.IGNORECASE):
                     local_context = clause[: match.end()]
                     if _is_epistemically_unverified(clause[: match.start()]):
                         classifications.append(EFFECT_UNVERIFIED)
                         continue
-                    if _is_negated_success_predicate(local_context, predicate_pattern):
+                    if is_passive and match.group("no_subject"):
+                        classifications.append(EFFECT_DENIED)
+                        continue
+                    if _is_negated_success_predicate(
+                        local_context,
+                        predicate_pattern,
+                        include_no=not is_passive,
+                    ):
                         classifications.append(EFFECT_DENIED)
                         continue
                     classifications.append(EFFECT_AFFIRMED)
@@ -307,7 +316,7 @@ def _classify_forbidden_effect_claim(text: str, term: str) -> str | None:
     return None
 
 
-def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
+def _success_claim_patterns(term: str) -> tuple[tuple[str, str, bool], ...]:
     """Return direct and bounded passive forms for a forbidden success term."""
 
     normalized_term = " ".join(term.split())
@@ -315,7 +324,7 @@ def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
         return ()
 
     direct_pattern = re.escape(normalized_term)
-    patterns: list[tuple[str, str]] = [(rf"\b{direct_pattern}\b", direct_pattern)]
+    patterns: list[tuple[str, str, bool]] = [(rf"\b{direct_pattern}\b", direct_pattern, False)]
     verb, separator, object_phrase = normalized_term.partition(" ")
     if not separator:
         return tuple(patterns)
@@ -326,7 +335,7 @@ def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
     optional_negation = r"(?:(?:not|never)\s+)?"
     patterns.append(
         (
-            rf"\b(?:the\s+)?{object_pattern}\s+"
+            rf"\b(?:(?P<no_subject>no)\s+|the\s+)?{object_pattern}\s+"
             rf"(?:"
             rf"(?:was|were)\s+{optional_negation}{_BOUNDED_EFFECT_MODIFIER_PATTERN}"
             rf"{verb_pattern}"
@@ -334,6 +343,7 @@ def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
             rf"been\s+{_BOUNDED_EFFECT_MODIFIER_PATTERN}{verb_pattern}"
             rf")\b",
             verb_pattern,
+            True,
         )
     )
     return tuple(patterns)
@@ -353,20 +363,29 @@ def _is_epistemically_unverified(prefix: str) -> bool:
     )
 
 
-def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool:
+def _is_negated_success_predicate(
+    local_context: str,
+    term_pattern: str,
+    *,
+    include_no: bool,
+) -> bool:
     """Return true only when negation grammatically attaches to this occurrence."""
 
     normalized_context = _normalize_negated_auxiliary_contractions(local_context)
-    patterns = (
-        rf"\bno\s+(?:(?!(?:is|are|was|were|has|have|had)\b)\w+\s+){{1,3}}"
-        rf"(?:is|are|was|were|has|have|had)\s+"
-        rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
+    patterns = [
         rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+"
         rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:did\s+not|cannot|will\s+not|unable\s+to)\s+"
         rf"(?:have\s+)?{term_pattern}\b$",
         rf"\b(?:not|never)\s+{term_pattern}\b$",
-    )
+    ]
+    if include_no:
+        patterns.insert(
+            0,
+            rf"\bno\s+(?:(?!(?:is|are|was|were|has|have|had)\b)\w+\s+){{1,3}}"
+            rf"(?:is|are|was|were|has|have|had)\s+"
+            rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
+        )
     return any(re.search(pattern, normalized_context, flags=re.IGNORECASE) for pattern in patterns)
 
 

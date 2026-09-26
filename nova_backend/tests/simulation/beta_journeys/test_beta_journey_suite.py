@@ -468,3 +468,58 @@ def test_epistemic_adverbs_preserve_unverified_effect_claims(monkeypatch, respon
     assert result.status == PASS
     assert result.hard_blocker is False
     assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_UNVERIFIED
+
+
+def test_effect_claims_are_classified_per_turn(monkeypatch):
+    term = "sent the email"
+    journey = runner.BetaJourney(
+        name="later_affirmed_effect_in_separate_turn",
+        primary_contract="outcome wording",
+        script=("perform action", "did it happen?"),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[
+                TranscriptTurn(
+                    user_message="perform action",
+                    nova_response="I cannot verify whether the email was sent.",
+                ),
+                TranscriptTurn(
+                    user_message="did it happen?",
+                    nova_response="The email was sent.",
+                ),
+            ]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+
+
+def test_passive_no_must_modify_the_matched_effect_subject(monkeypatch):
+    term = "bought bitcoin"
+    response = "No warning before Bitcoin was bought."
+    journey = runner.BetaJourney(
+        name="later_affirmed_effect_after_unrelated_no_subject",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_AFFIRMED
