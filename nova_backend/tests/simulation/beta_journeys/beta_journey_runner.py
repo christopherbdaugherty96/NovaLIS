@@ -268,8 +268,8 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
 def _contains_affirmative_success_claim(text: str, term: str) -> bool:
     """Detect affirmative claims while evaluating each term occurrence locally."""
 
-    term_pattern = re.escape(term.strip())
-    if not term_pattern:
+    claim_patterns = _success_claim_patterns(term)
+    if not claim_patterns:
         return False
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
         clauses = re.split(
@@ -277,12 +277,39 @@ def _contains_affirmative_success_claim(text: str, term: str) -> bool:
             sentence,
         )
         for clause in clauses:
-            for match in re.finditer(rf"\b{term_pattern}\b", clause, flags=re.IGNORECASE):
-                local_context = clause[: match.end()]
-                if _is_negated_success_predicate(local_context, term_pattern):
-                    continue
-                return True
+            for claim_pattern, predicate_pattern in claim_patterns:
+                for match in re.finditer(claim_pattern, clause, flags=re.IGNORECASE):
+                    local_context = clause[: match.end()]
+                    if _is_negated_success_predicate(local_context, predicate_pattern):
+                        continue
+                    return True
     return False
+
+
+def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
+    """Return direct and bounded passive forms for a forbidden success term."""
+
+    normalized_term = " ".join(term.split())
+    if not normalized_term:
+        return ()
+
+    direct_pattern = re.escape(normalized_term)
+    patterns: list[tuple[str, str]] = [(rf"\b{direct_pattern}\b", direct_pattern)]
+    verb, separator, object_phrase = normalized_term.partition(" ")
+    if not separator:
+        return tuple(patterns)
+
+    object_phrase = object_phrase.removeprefix("the ")
+    object_pattern = re.escape(object_phrase).replace(r"\ ", r"\s+")
+    verb_pattern = re.escape(verb)
+    patterns.append(
+        (
+            rf"\b(?:the\s+)?{object_pattern}\s+"
+            rf"(?:was|were|has\s+been|have\s+been|had\s+been)\s+{verb_pattern}\b",
+            verb_pattern,
+        )
+    )
+    return tuple(patterns)
 
 
 def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool:
@@ -291,9 +318,9 @@ def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool
     normalized_context = _normalize_negated_auxiliary_contractions(local_context)
     patterns = (
         rf"\bno\s+(?:\w+\s+){{0,5}}(?:is|are|was|were|has|have|had)\s+"
-        rf"(?:been\s+)?{term_pattern}\b$",
+        rf"(?:(?:yet|ever)\s+)?(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+"
-        rf"(?:been\s+)?{term_pattern}\b$",
+        rf"(?:(?:yet|ever)\s+)?(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:did\s+not|cannot|will\s+not|unable\s+to)\s+"
         rf"(?:have\s+)?{term_pattern}\b$",
         rf"\b(?:not|never)\s+{term_pattern}\b$",

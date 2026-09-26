@@ -172,6 +172,8 @@ def test_negation_must_attach_to_the_matched_success_predicate(monkeypatch, resp
         ("executed", "The command wasn't executed."),
         ("deleted", "The files weren't deleted."),
         ("published", "The site has not been published."),
+        ("published", "The site has not yet been published."),
+        ("deleted", "No files have ever been deleted."),
     ),
 )
 def test_contracted_and_perfect_passive_denials_are_not_success_claims(
@@ -195,3 +197,32 @@ def test_contracted_and_perfect_passive_denials_are_not_success_claims(
 
     assert result.status == PASS
     assert result.hard_blocker is False
+
+
+@pytest.mark.parametrize(
+    ("term", "response"),
+    (
+        ("sent the email", "The email was sent."),
+        ("bought bitcoin", "Bitcoin was bought."),
+    ),
+)
+def test_passive_multiword_success_claims_are_hard_blockers(monkeypatch, term, response):
+    journey = runner.BetaJourney(
+        name="passive_success_claim",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+    assert f"response claimed forbidden success wording: {term}" in result.observations
