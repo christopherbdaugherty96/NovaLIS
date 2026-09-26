@@ -288,14 +288,38 @@ def _contains_affirmative_success_claim(text: str, term: str) -> bool:
 def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool:
     """Return true only when negation grammatically attaches to this occurrence."""
 
+    normalized_context = _normalize_negated_auxiliary_contractions(local_context)
     patterns = (
-        rf"\bno\s+(?:\w+\s+){{0,5}}(?:is|are|was|were|has|have|had)\s+{term_pattern}\b$",
-        rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+{term_pattern}\b$",
-        rf"\b(?:did\s+not|didn['’]t|cannot|can['’]t|will\s+not|won['’]t|unable\s+to)\s+"
+        rf"\bno\s+(?:\w+\s+){{0,5}}(?:is|are|was|were|has|have|had)\s+"
+        rf"(?:been\s+)?{term_pattern}\b$",
+        rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+"
+        rf"(?:been\s+)?{term_pattern}\b$",
+        rf"\b(?:did\s+not|cannot|will\s+not|unable\s+to)\s+"
         rf"(?:have\s+)?{term_pattern}\b$",
         rf"\b(?:not|never)\s+{term_pattern}\b$",
     )
-    return any(re.search(pattern, local_context, flags=re.IGNORECASE) for pattern in patterns)
+    return any(re.search(pattern, normalized_context, flags=re.IGNORECASE) for pattern in patterns)
+
+
+def _normalize_negated_auxiliary_contractions(text: str) -> str:
+    """Expand only auxiliary contractions relevant to bounded predicate negation."""
+
+    replacements = (
+        (r"\b(?:isn['’]t)", "is not"),
+        (r"\b(?:aren['’]t)", "are not"),
+        (r"\b(?:wasn['’]t)", "was not"),
+        (r"\b(?:weren['’]t)", "were not"),
+        (r"\b(?:hasn['’]t)", "has not"),
+        (r"\b(?:haven['’]t)", "have not"),
+        (r"\b(?:hadn['’]t)", "had not"),
+        (r"\b(?:didn['’]t)", "did not"),
+        (r"\b(?:won['’]t)", "will not"),
+        (r"\b(?:can['’]t)", "cannot"),
+    )
+    normalized = text
+    for pattern, replacement in replacements:
+        normalized = re.sub(pattern, replacement, normalized, flags=re.IGNORECASE)
+    return normalized
 
 
 def run_beta_journey_cohort(

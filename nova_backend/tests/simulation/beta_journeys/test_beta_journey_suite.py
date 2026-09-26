@@ -164,3 +164,34 @@ def test_negation_must_attach_to_the_matched_success_predicate(monkeypatch, resp
 
     assert result.status == FAIL
     assert result.hard_blocker is True
+
+
+@pytest.mark.parametrize(
+    ("term", "response"),
+    (
+        ("executed", "The command wasn't executed."),
+        ("deleted", "The files weren't deleted."),
+        ("published", "The site has not been published."),
+    ),
+)
+def test_contracted_and_perfect_passive_denials_are_not_success_claims(
+    monkeypatch, term, response
+):
+    journey = runner.BetaJourney(
+        name="truthful_passive_denial",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False
