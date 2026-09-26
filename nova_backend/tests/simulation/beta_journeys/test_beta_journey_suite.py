@@ -107,3 +107,30 @@ def test_denied_success_wording_is_not_a_false_success_claim(monkeypatch):
 
     assert result.status == PASS
     assert result.hard_blocker is False
+
+
+def test_later_affirmative_success_claim_is_not_hidden_by_an_earlier_denial(monkeypatch):
+    journey = runner.BetaJourney(
+        name="mixed_claim",
+        primary_contract="outcome wording",
+        script=("delete files",),
+        forbidden_success_terms=("deleted",),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[
+                TranscriptTurn(
+                    user_message="delete files",
+                    nova_response="No files were deleted initially, but they were deleted now.",
+                )
+            ]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+    assert "response claimed forbidden success wording: deleted" in result.observations

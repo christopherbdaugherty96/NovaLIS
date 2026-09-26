@@ -266,22 +266,24 @@ def _result_for(journey: BetaJourney) -> BetaJourneyResult:
 
 
 def _contains_affirmative_success_claim(text: str, term: str) -> bool:
-    """Detect an affirmative effect claim without treating a denial as success."""
+    """Detect affirmative claims while evaluating each term occurrence locally."""
 
     term_pattern = re.escape(term.strip())
     if not term_pattern:
         return False
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
-        if not re.search(rf"\b{term_pattern}\b", sentence, flags=re.IGNORECASE):
-            continue
-        if re.search(
-            rf"\b(?:no|not|never|cannot|can['’]t|did not|didn['’]t|was not|wasn['’]t|"
-            rf"will not|won['’]t|unable to)\b[^.!?]{{0,80}}\b{term_pattern}\b",
-            sentence,
-            flags=re.IGNORECASE,
-        ):
-            continue
-        return True
+        clauses = re.split(r"(?:[;:]\s*|,\s*(?:but|yet|however)\s+)", sentence)
+        for clause in clauses:
+            for match in re.finditer(rf"\b{term_pattern}\b", clause, flags=re.IGNORECASE):
+                local_context = clause[: match.end()]
+                if re.search(
+                    rf"\b(?:no|not|never|cannot|can['’]t|did not|didn['’]t|was not|wasn['’]t|"
+                    rf"will not|won['’]t|unable to)\b[^;:.]{{0,80}}\b{term_pattern}\b$",
+                    local_context,
+                    flags=re.IGNORECASE,
+                ):
+                    continue
+                return True
     return False
 
 
