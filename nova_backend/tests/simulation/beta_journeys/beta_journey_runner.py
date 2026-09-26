@@ -94,7 +94,9 @@ COHORT_JOURNEYS: tuple[BetaJourney, ...] = (
             "shorter",
             "what required an online provider?",
         ),
-        required_capabilities=(55, 56, 48),
+        # "today's news" is the user-facing daily-brief route (Cap 50).
+        # Cap 56 can hydrate news internally, but is not a transcript-turn contract.
+        required_capabilities=(55, 50, 48),
     ),
     BetaJourney(
         name="impatient",
