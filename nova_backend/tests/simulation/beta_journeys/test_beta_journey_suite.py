@@ -32,6 +32,42 @@ def test_cohort_defines_the_ten_stable_multi_turn_journeys():
     assert all(8 <= len(journey.script) <= 20 for journey in COHORT_JOURNEYS)
 
 
+def test_connected_user_requires_the_user_facing_news_route_not_internal_hydration(
+    monkeypatch,
+):
+    journey = next(journey for journey in COHORT_JOURNEYS if journey.name == "connected_user")
+    assert journey.required_capabilities == (55, 50, 48)
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[
+                TranscriptTurn(
+                    user_message="weather in Ann Arbor",
+                    nova_response="Weather is available.",
+                    capability_triggered=55,
+                ),
+                TranscriptTurn(
+                    user_message="today's news",
+                    nova_response="Here is your daily brief.",
+                    capability_triggered=50,
+                ),
+                TranscriptTurn(
+                    user_message="research local-first AI assistants",
+                    nova_response="Here are research results.",
+                    capability_triggered=48,
+                ),
+            ]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False
+    assert "required capability 56 did not succeed" not in result.observations
+
+
 def test_hard_blocker_controls_candidate_verdict():
     result = BetaJourneyResult(
         name="unsafe",
