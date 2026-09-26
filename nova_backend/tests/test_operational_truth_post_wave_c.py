@@ -547,6 +547,36 @@ def test_current_repository_operational_truth_is_consistent():
     assert checker.check_operational_truth(checker.ROOT) == []
 
 
+@pytest.mark.parametrize(
+    "provenance",
+    (
+        "COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)",
+        "COMPLETE: rollback/restore operational-truth checker contract "
+        "(PR #436; main `0003a2e`)",
+        "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; "
+        "operational-truth consistency; runtime structural smoke)",
+    ),
+)
+def test_current_sequence_requires_post_436_process_truth(tmp_path, provenance):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    corrupted = original.replace(provenance, "", 1)
+    assert corrupted != original
+    target.write_text(corrupted, encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
 def test_current_cli_reports_master_roadmap_validation_truthfully(capsys):
     checker = _load_checker()
 
@@ -598,7 +628,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, tar
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -663,8 +693,62 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         assert structured_lines.count(checker.LANE_5A_AUTHORITY_MODEL) == 1
         assert structured_lines.count(checker.LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE) == 1
         assert structured_lines.count(checker.LANE_5A_ROLLBACK_RESTORE_PROOF) == 1
+        assert structured_lines.count(checker.POST_433_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.POST_436_COMPLETE_PROVENANCE) == 1
+        assert structured_lines.count(checker.POST_436_FRESH_MAIN_PROOF) == 1
         assert checker.LANE_5A_AUTHORIZATION_MARKER in normalized
-        assert "NEXT: BOUNDED BETA PRODUCT-TRANSLATION/READINESS PASS" in normalized
+        assert tuple(
+            line
+            for line in structured_lines
+            if line.startswith(("NEXT:", "THEN:"))
+        ) == checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE
+
+
+@pytest.mark.parametrize(
+    ("earlier_marker", "later_marker"),
+    (
+        ("POST_433_COMPLETE_PROVENANCE", "POST_436_COMPLETE_PROVENANCE"),
+        ("POST_436_COMPLETE_PROVENANCE", "POST_436_FRESH_MAIN_PROOF"),
+        ("POST_436_FRESH_MAIN_PROOF", "LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE"),
+    ),
+)
+def test_recovery_closeout_rejects_misordered_post_430_markers(
+    tmp_path, earlier_marker, later_marker
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    lines = original.splitlines()
+
+    earlier = getattr(checker, earlier_marker)
+    later = (
+        checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0]
+        if later_marker == "LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE"
+        else getattr(checker, later_marker)
+    )
+    earlier_index = next(
+        index
+        for index, line in enumerate(lines)
+        if checker._normalize_post_405_structured_line(line).upper() == earlier
+    )
+    later_index = next(
+        index
+        for index, line in enumerate(lines)
+        if checker._normalize_post_405_structured_line(line).upper() == later
+    )
+    lines[earlier_index], lines[later_index] = lines[later_index], lines[earlier_index]
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
 
 
 @pytest.mark.parametrize(
@@ -776,23 +860,31 @@ def test_recovery_foundation_rejects_premature_rollback_completion(tmp_path, cla
         "3a3e9d332c6b744dcea0fef9d3532e5fcde60e51",
         1,
     )
-    foundation = foundation.replace(
+    recovery_closeout = (
         "COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)\n"
         "ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; "
         "1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
-        "NEXT: bounded beta product-translation/readiness pass",
-        "NEXT: rollback/restore proof\n"
-        "THEN: bounded beta product-translation/readiness pass",
-        1,
+        "COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)\n"
+        "COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)\n"
+        "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; "
+        "operational-truth consistency; runtime structural smoke)\n"
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)\n"
+        "THEN: fix only reproduced P0/P1/hard beta blockers\n"
+        "THEN: clean Windows operator proof\n"
+        "THEN: freeze exact beta SHA + intended distribution artifact\n"
+        "THEN: frozen-candidate acceptance\n"
+        "THEN: 3 real non-developer users"
     )
+    recovery_foundation = "\n".join(checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE)
+    foundation = foundation.replace(recovery_closeout, recovery_foundation, 1)
     assert foundation != text
     assert checker._preserves_post_405_boundary(
         foundation, require_lane_5a_recovery_foundation=True
     )
 
     contradictory = foundation.replace(
-        "NEXT: rollback/restore proof",
-        claim + "\nNEXT: rollback/restore proof",
+        checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE[0],
+        claim + "\n" + checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE[0],
         1,
     )
     assert contradictory != foundation
@@ -807,7 +899,7 @@ def test_recovery_closeout_rejects_activation_reopened_after_rollback(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         "NEXT: candidate activation",
         1,
     )
@@ -831,7 +923,7 @@ def test_recovery_closeout_rejects_rollback_as_next(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         "NEXT: rollback/restore proof",
         1,
     )
@@ -859,7 +951,7 @@ def test_recovery_closeout_rejects_rollback_as_next(tmp_path):
         ),
         (
             "ROLLBACK/RESTORE PROOF:",
-            "NEXT: bounded beta product-translation/readiness pass",
+            "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
             False,
         ),
     ),
@@ -911,8 +1003,8 @@ def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, c
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
-        claim + "\nNEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        claim + "\nNEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         1,
     )
     assert corrupted != original
@@ -947,9 +1039,9 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     updated = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         f"Rollback/restore proof is complete{separator} {current_clause}\n"
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         1,
     )
     assert updated != original
@@ -969,10 +1061,10 @@ def test_recovery_closeout_keeps_independent_physical_status_lines_separate(tmp_
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     updated = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         "Rollback/restore proof is complete\n"
         "Current beta-readiness work is in progress.\n"
-        "NEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         1,
     )
     assert updated != original
@@ -1019,8 +1111,8 @@ def test_recovery_closeout_rejects_rollback_unfinished_claim(tmp_path, claim):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: bounded beta product-translation/readiness pass",
-        claim + "\nNEXT: bounded beta product-translation/readiness pass",
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        claim + "\nNEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
         1,
     )
     assert corrupted != original
@@ -1070,7 +1162,8 @@ def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_
     target = tmp_path / "docs/status/DAILY_COMMAND_CENTER.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "The current immediate lane is bounded beta product-translation/readiness pass.",
+        "The current immediate lane is #434 Synthetic Beta Cohort v1: "
+        "test-only, immutable during the run, with no fixes between journeys.",
         claim,
         1,
     )
@@ -1313,7 +1406,7 @@ def test_lane_4_complete_rejects_later_durability_authorization(
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    next_line = "NEXT: bounded beta product-translation/readiness pass"
+    next_line = "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)"
     corrupted = original.replace(
         next_line,
         f"{authority_prefix}: {later_work}\n" + next_line,
@@ -1357,6 +1450,9 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
             checker.LANE_5A_AUTHORITY_MODEL,
             checker.LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,
             checker.LANE_5A_ROLLBACK_RESTORE_PROOF,
+            checker.POST_433_COMPLETE_PROVENANCE,
+            checker.POST_436_COMPLETE_PROVENANCE,
+            checker.POST_436_FRESH_MAIN_PROOF,
             *checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
         )
     )
@@ -1414,10 +1510,15 @@ def test_pre_406_sequence_is_historical_only():
         "RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection\n"
         "COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)\n"
         "ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)\n"
-        "NEXT: bounded beta product-translation/readiness pass\n"
+        "COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)\n"
+        "COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)\n"
+        "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)\n"
+        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)\n"
+        "THEN: fix only reproduced P0/P1/hard beta blockers\n"
         "THEN: clean Windows operator proof\n"
-        "THEN: frozen-SHA full beta acceptance\n"
-        "THEN: private-beta candidacy/distribution decision",
+        "THEN: freeze exact beta SHA + intended distribution artifact\n"
+        "THEN: frozen-candidate acceptance\n"
+        "THEN: 3 real non-developer users",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
         "THEN: evidence-authorized durability implementation\n"
@@ -1466,7 +1567,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target = tmp_path / relative
         original = target.read_text(encoding="utf-8")
         corrupted = original.replace(
-            "NEXT: bounded beta product-translation/readiness pass",
+            "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
             "NEXT: Google identity-only live proof",
             1,
         )
