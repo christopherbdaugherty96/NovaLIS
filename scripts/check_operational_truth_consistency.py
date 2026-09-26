@@ -1160,6 +1160,9 @@ def _preserves_post_405_boundary(
             (
                 LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,
                 LANE_5A_ROLLBACK_RESTORE_PROOF,
+                POST_433_COMPLETE_PROVENANCE,
+                POST_436_COMPLETE_PROVENANCE,
+                POST_436_FRESH_MAIN_PROOF,
             ),
         )
         and _post_405_sync_start_shas(text) == (LANE_5A_ROLLBACK_RESTORE_MAIN_SHA,)

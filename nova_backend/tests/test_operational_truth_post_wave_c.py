@@ -705,6 +705,53 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
 
 
 @pytest.mark.parametrize(
+    ("earlier_marker", "later_marker"),
+    (
+        ("POST_433_COMPLETE_PROVENANCE", "POST_436_COMPLETE_PROVENANCE"),
+        ("POST_436_COMPLETE_PROVENANCE", "POST_436_FRESH_MAIN_PROOF"),
+        ("POST_436_FRESH_MAIN_PROOF", "LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE"),
+    ),
+)
+def test_recovery_closeout_rejects_misordered_post_430_markers(
+    tmp_path, earlier_marker, later_marker
+):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    lines = original.splitlines()
+
+    earlier = getattr(checker, earlier_marker)
+    later = (
+        checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0]
+        if later_marker == "LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE"
+        else getattr(checker, later_marker)
+    )
+    earlier_index = next(
+        index
+        for index, line in enumerate(lines)
+        if checker._normalize_post_405_structured_line(line).upper() == earlier
+    )
+    later_index = next(
+        index
+        for index, line in enumerate(lines)
+        if checker._normalize_post_405_structured_line(line).upper() == later
+    )
+    lines[earlier_index], lines[later_index] = lines[later_index], lines[earlier_index]
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+
+    assert any(
+        str(target) in error
+        and "current ordering does not preserve the active beta-readiness boundary" in error
+        for error in errors
+    )
+
+
+@pytest.mark.parametrize(
     "milestone_prefix",
     (
         "COMPLETE: #406 governed-memory ID collision correctness",
