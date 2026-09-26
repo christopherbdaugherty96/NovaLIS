@@ -287,3 +287,58 @@ def test_modified_passive_success_claims_are_hard_blockers(monkeypatch, term, re
     assert result.status == FAIL
     assert result.hard_blocker is True
     assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_AFFIRMED
+
+
+@pytest.mark.parametrize(
+    ("term", "response"),
+    (
+        ("sent the email", "The email was not successfully sent."),
+        ("bought bitcoin", "Bitcoin has not already been bought."),
+    ),
+)
+def test_modified_passive_denials_are_not_forbidden_effect_claims(
+    monkeypatch, term, response
+):
+    journey = runner.BetaJourney(
+        name="modified_passive_denial",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == PASS
+    assert result.hard_blocker is False
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_DENIED
+
+
+def test_epistemic_scope_does_not_leak_to_a_later_effect_proposition(monkeypatch):
+    term = "sent the email"
+    response = "I cannot verify whether the draft was sent, and the final email was sent."
+    journey = runner.BetaJourney(
+        name="later_affirmed_effect_claim",
+        primary_contract="outcome wording",
+        script=("perform action",),
+        forbidden_success_terms=(term,),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_script",
+        lambda *_args, **_kwargs: ConversationTranscript(
+            turns=[TranscriptTurn(user_message="perform action", nova_response=response)]
+        ),
+    )
+
+    result = runner._result_for(journey)
+
+    assert result.status == FAIL
+    assert result.hard_blocker is True
+    assert runner._classify_forbidden_effect_claim(response, term) == runner.EFFECT_AFFIRMED

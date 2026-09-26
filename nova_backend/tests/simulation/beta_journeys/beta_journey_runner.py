@@ -15,6 +15,10 @@ EFFECT_AFFIRMED = "affirmed"
 EFFECT_DENIED = "denied"
 EFFECT_UNVERIFIED = "unverified"
 
+_BOUNDED_EFFECT_MODIFIER_PATTERN = (
+    r"(?:(?:successfully|already|just|finally|now|yet|ever)\s+){0,2}"
+)
+
 
 @dataclass(frozen=True)
 class BetaJourney:
@@ -278,7 +282,7 @@ def _classify_forbidden_effect_claim(text: str, term: str) -> str | None:
     classifications: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+", str(text or "")):
         clauses = re.split(
-            r"(?:[;:]\s*|,\s*(?:but|yet|however)\s+|\s*[—–]\s*)",
+            r"(?:[;:]\s*|,\s*(?:and|but|yet|however)\s+|\s*[—–]\s*)",
             sentence,
         )
         for clause in clauses:
@@ -318,15 +322,15 @@ def _success_claim_patterns(term: str) -> tuple[tuple[str, str], ...]:
     object_phrase = object_phrase.removeprefix("the ")
     object_pattern = re.escape(object_phrase).replace(r"\ ", r"\s+")
     verb_pattern = re.escape(verb)
-    bounded_modifier = r"(?:(?:successfully|already|just|finally|now|yet|ever)\s+){0,2}"
     optional_negation = r"(?:(?:not|never)\s+)?"
     patterns.append(
         (
             rf"\b(?:the\s+)?{object_pattern}\s+"
             rf"(?:"
-            rf"(?:was|were)\s+{optional_negation}{bounded_modifier}{verb_pattern}"
-            rf"|(?:has|have|had)\s+{optional_negation}{bounded_modifier}been\s+"
-            rf"{bounded_modifier}{verb_pattern}"
+            rf"(?:was|were)\s+{optional_negation}{_BOUNDED_EFFECT_MODIFIER_PATTERN}"
+            rf"{verb_pattern}"
+            rf"|(?:has|have|had)\s+{optional_negation}{_BOUNDED_EFFECT_MODIFIER_PATTERN}"
+            rf"been\s+{_BOUNDED_EFFECT_MODIFIER_PATTERN}{verb_pattern}"
             rf")\b",
             verb_pattern,
         )
@@ -354,9 +358,9 @@ def _is_negated_success_predicate(local_context: str, term_pattern: str) -> bool
     normalized_context = _normalize_negated_auxiliary_contractions(local_context)
     patterns = (
         rf"\bno\s+(?:\w+\s+){{0,5}}(?:is|are|was|were|has|have|had)\s+"
-        rf"(?:(?:yet|ever)\s+)?(?:been\s+)?{term_pattern}\b$",
+        rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:is|are|was|were|has|have|had)\s+(?:not|never)\s+"
-        rf"(?:(?:yet|ever)\s+)?(?:been\s+)?{term_pattern}\b$",
+        rf"{_BOUNDED_EFFECT_MODIFIER_PATTERN}(?:been\s+)?{term_pattern}\b$",
         rf"\b(?:did\s+not|cannot|will\s+not|unable\s+to)\s+"
         rf"(?:have\s+)?{term_pattern}\b$",
         rf"\b(?:not|never)\s+{term_pattern}\b$",
