@@ -165,10 +165,12 @@ LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE = (
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
 LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE = (
-    "NEXT: BOUNDED BETA PRODUCT-TRANSLATION/READINESS PASS",
+    "NEXT: #434 SYNTHETIC BETA COHORT V1 (TEST-ONLY; IMMUTABLE CANDIDATE; NO FIXES DURING RUN)",
+    "THEN: FIX ONLY REPRODUCED P0/P1/HARD BETA BLOCKERS",
     "THEN: CLEAN WINDOWS OPERATOR PROOF",
-    "THEN: FROZEN-SHA FULL BETA ACCEPTANCE",
-    "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
+    "THEN: FREEZE EXACT BETA SHA + INTENDED DISTRIBUTION ARTIFACT",
+    "THEN: FROZEN-CANDIDATE ACCEPTANCE",
+    "THEN: 3 REAL NON-DEVELOPER USERS",
 )
 POST_408_COMPLETE_MARKER = "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION"
 POST_408_COMPLETE_PROVENANCE = (
@@ -259,6 +261,16 @@ LANE_5A_ROLLBACK_RESTORE_PROOF = (
     "1 EXPECTED WINDOWS POSIX-FIFO SKIP; RUNTIME STRUCTURAL SMOKE PASS)"
 )
 LANE_5A_ROLLBACK_RESTORE_MAIN_SHA = "868DE9D92C701834F1C4FBA422AB9C47A01EA33F"
+POST_433_COMPLETE_PROVENANCE = (
+    "COMPLETE: BETA USER-FACING TRUTH PASS (PR #433; MAIN `AD64048E`)"
+)
+POST_436_COMPLETE_PROVENANCE = (
+    "COMPLETE: ROLLBACK/RESTORE OPERATIONAL-TRUTH CHECKER CONTRACT (PR #436; MAIN `0003A2E`)"
+)
+POST_436_FRESH_MAIN_PROOF = (
+    "FRESH-MAIN PROOF: PASS (39 FOCUSED CHECKER-CONTRACT TESTS; RUFF; "
+    "OPERATIONAL-TRUTH CONSISTENCY; RUNTIME STRUCTURAL SMOKE)"
+)
 ROLLBACK_RESTORE_CLOSEOUT_STATE_MARKER = "ROLLBACK_RESTORE_CLOSEOUT_STATE: COMPLETE"
 ROLLBACK_RESTORE_CLOSEOUT_COMPLETE = "COMPLETE"
 ROLLBACK_RESTORE_INCOMPLETE_PROSE = re.compile(
@@ -895,6 +907,15 @@ def _preserves_post_405_boundary(
         for line in structured_lines
         if line.startswith("COMPLETE: LANE 5A STEP 4 - ROLLBACK/RESTORE PROOF")
     )
+    post_433_completion_lines = tuple(
+        line for line in structured_lines if line.startswith(POST_433_COMPLETE_PROVENANCE)
+    )
+    post_436_completion_lines = tuple(
+        line for line in structured_lines if line.startswith(POST_436_COMPLETE_PROVENANCE)
+    )
+    post_436_fresh_main_lines = tuple(
+        line for line in structured_lines if line.startswith(POST_436_FRESH_MAIN_PROOF)
+    )
     fresh_main_closeout_lines = tuple(
         line for line in structured_lines if line.startswith("FRESH-MAIN CLOSEOUT:")
     )
@@ -939,6 +960,9 @@ def _preserves_post_405_boundary(
     has_lane_5a_rollback_restore_proof = (
         rollback_restore_proof_lines == (LANE_5A_ROLLBACK_RESTORE_PROOF,)
     )
+    has_post_433_provenance = post_433_completion_lines == (POST_433_COMPLETE_PROVENANCE,)
+    has_post_436_provenance = post_436_completion_lines == (POST_436_COMPLETE_PROVENANCE,)
+    has_post_436_fresh_main_proof = post_436_fresh_main_lines == (POST_436_FRESH_MAIN_PROOF,)
     authority_prefix_pattern = r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
     durability_authorizations = tuple(
         line
@@ -1126,6 +1150,9 @@ def _preserves_post_405_boundary(
         and has_lane_5a_authority_model
         and has_lane_5a_rollback_restore_provenance
         and has_lane_5a_rollback_restore_proof
+        and has_post_433_provenance
+        and has_post_436_provenance
+        and has_post_436_fresh_main_proof
         and rollback_restore_closeout_state == ROLLBACK_RESTORE_CLOSEOUT_COMPLETE
         and _preserves_lane_5a_milestone_order(
             structured_lines,
