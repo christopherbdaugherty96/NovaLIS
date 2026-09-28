@@ -35,11 +35,15 @@ ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows PO
 COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)
 COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)
 FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)
-NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)
-THEN: fix only reproduced P0/P1/hard beta blockers
-THEN: clean Windows operator proof
-THEN: freeze exact beta SHA + intended distribution artifact
-THEN: frozen-candidate acceptance
+COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)
+COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)
+CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.
+NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)
+THEN: fresh-main security and truth proof
+THEN: installer supply-chain and privacy/Data-Out/secrets audit
+THEN: build a new exact Windows candidate artifact; the prior artifact is historical only
+THEN: clean Windows operator proof against that exact artifact
+THEN: freeze an accepted candidate and rerun #434 against it
 THEN: 3 real non-developer users
 ```
 

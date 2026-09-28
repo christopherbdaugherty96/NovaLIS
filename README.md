@@ -39,11 +39,15 @@ ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows PO
 COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)
 COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)
 FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)
-NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)
-THEN: fix only reproduced P0/P1/hard beta blockers
-THEN: clean Windows operator proof
-THEN: freeze exact beta SHA + intended distribution artifact
-THEN: frozen-candidate acceptance
+COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)
+COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)
+CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.
+NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)
+THEN: fresh-main security and truth proof
+THEN: installer supply-chain and privacy/Data-Out/secrets audit
+THEN: build a new exact Windows candidate artifact; the prior artifact is historical only
+THEN: clean Windows operator proof against that exact artifact
+THEN: freeze an accepted candidate and rerun #434 against it
 THEN: 3 real non-developer users
 ```
 
@@ -145,7 +149,13 @@ Selected historical and current proof records:
 - [Recorded Demo Flow](docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm)
 - [Live User Simulation Results — 2026-05-19](docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md)
 
-Recent local-first proof captures:
+Historical visual proof captures — 2026-04-28:
+
+These are authentic, dated local captures of the UI paths described in their checklist. They do
+not identify the current source SHA and therefore are not proof of the current candidate,
+installer, local-boundary security, or beta acceptance. See the
+[proof evidence index](docs/capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md) for
+the scope and status of current evidence.
 
 ![Nova local-first dashboard](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png)
 

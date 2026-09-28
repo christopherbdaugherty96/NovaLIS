@@ -628,7 +628,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, tar
     target = tmp_path / target_relative
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         "NEXT: Google identity-only live proof",
         1,
     )
@@ -700,7 +700,7 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         assert tuple(
             line
             for line in structured_lines
-            if line.startswith(("NEXT:", "THEN:"))
+                if line.startswith(("NEXT:", "NEXT REQUIRED ENGINEERING:", "THEN:"))
         ) == checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE
 
 
@@ -868,11 +868,15 @@ def test_recovery_foundation_rejects_premature_rollback_completion(tmp_path, cla
         "COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)\n"
         "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; "
         "operational-truth consistency; runtime structural smoke)\n"
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)\n"
-        "THEN: fix only reproduced P0/P1/hard beta blockers\n"
-        "THEN: clean Windows operator proof\n"
-        "THEN: freeze exact beta SHA + intended distribution artifact\n"
-        "THEN: frozen-candidate acceptance\n"
+            "COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)\n"
+            "COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)\n"
+            "CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.\n"
+            "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)\n"
+            "THEN: fresh-main security and truth proof\n"
+            "THEN: installer supply-chain and privacy/Data-Out/secrets audit\n"
+            "THEN: build a new exact Windows candidate artifact; the prior artifact is historical only\n"
+            "THEN: clean Windows operator proof against that exact artifact\n"
+            "THEN: freeze an accepted candidate and rerun #434 against it\n"
         "THEN: 3 real non-developer users"
     )
     recovery_foundation = "\n".join(checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE)
@@ -899,7 +903,7 @@ def test_recovery_closeout_rejects_activation_reopened_after_rollback(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         "NEXT: candidate activation",
         1,
     )
@@ -923,7 +927,7 @@ def test_recovery_closeout_rejects_rollback_as_next(tmp_path):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         "NEXT: rollback/restore proof",
         1,
     )
@@ -951,7 +955,7 @@ def test_recovery_closeout_rejects_rollback_as_next(tmp_path):
         ),
         (
             "ROLLBACK/RESTORE PROOF:",
-            "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+            "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
             False,
         ),
     ),
@@ -1003,8 +1007,8 @@ def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, c
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
-        claim + "\nNEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
+        claim + "\nNEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         1,
     )
     assert corrupted != original
@@ -1039,9 +1043,9 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     updated = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         f"Rollback/restore proof is complete{separator} {current_clause}\n"
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         1,
     )
     assert updated != original
@@ -1061,10 +1065,10 @@ def test_recovery_closeout_keeps_independent_physical_status_lines_separate(tmp_
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     updated = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         "Rollback/restore proof is complete\n"
         "Current beta-readiness work is in progress.\n"
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         1,
     )
     assert updated != original
@@ -1111,8 +1115,8 @@ def test_recovery_closeout_rejects_rollback_unfinished_claim(tmp_path, claim):
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
-        claim + "\nNEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
+        claim + "\nNEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
         1,
     )
     assert corrupted != original
@@ -1406,7 +1410,7 @@ def test_lane_4_complete_rejects_later_durability_authorization(
     _copy_current_checked_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    next_line = "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)"
+    next_line = "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)"
     corrupted = original.replace(
         next_line,
         f"{authority_prefix}: {later_work}\n" + next_line,
@@ -1453,6 +1457,9 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
             checker.POST_433_COMPLETE_PROVENANCE,
             checker.POST_436_COMPLETE_PROVENANCE,
             checker.POST_436_FRESH_MAIN_PROOF,
+            checker.POST_438_COMPLETE_PROVENANCE,
+            checker.POST_439_COMPLETE_PROVENANCE,
+            checker.LOCAL_BOUNDARY_P1_MARKER,
             *checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
         )
     )
@@ -1513,11 +1520,15 @@ def test_pre_406_sequence_is_historical_only():
         "COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)\n"
         "COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)\n"
         "FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)\n"
-        "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)\n"
-        "THEN: fix only reproduced P0/P1/hard beta blockers\n"
-        "THEN: clean Windows operator proof\n"
-        "THEN: freeze exact beta SHA + intended distribution artifact\n"
-        "THEN: frozen-candidate acceptance\n"
+        "COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)\n"
+        "COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)\n"
+        "CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.\n"
+        "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)\n"
+        "THEN: fresh-main security and truth proof\n"
+        "THEN: installer supply-chain and privacy/Data-Out/secrets audit\n"
+        "THEN: build a new exact Windows candidate artifact; the prior artifact is historical only\n"
+        "THEN: clean Windows operator proof against that exact artifact\n"
+        "THEN: freeze an accepted candidate and rerun #434 against it\n"
         "THEN: 3 real non-developer users",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
@@ -1567,7 +1578,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target = tmp_path / relative
         original = target.read_text(encoding="utf-8")
         corrupted = original.replace(
-            "NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)",
+            "NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)",
             "NEXT: Google identity-only live proof",
             1,
         )
@@ -1589,6 +1600,35 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         "current ordering does not preserve the active beta-readiness boundary" in error
         for error in errors
     )
+
+
+@pytest.mark.parametrize(
+    "marker_name",
+    ("POST_438_COMPLETE_PROVENANCE", "POST_439_COMPLETE_PROVENANCE", "LOCAL_BOUNDARY_P1_MARKER"),
+)
+def test_current_lifecycle_rejects_duplicate_or_misordered_new_gate_markers(tmp_path, marker_name):
+    checker = _load_checker()
+    _copy_current_checked_surfaces(checker, tmp_path)
+    marker = getattr(checker, marker_name)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    duplicated = original.replace(marker, f"{marker}\n{marker}", 1)
+    target.write_text(duplicated, encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert any(str(target) in error for error in errors)
+
+    moved = original.replace(marker, "", 1).replace(
+        checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0],
+        f"{checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0]}\n{marker}",
+        1,
+    )
+    target.write_text(moved, encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert any(str(target) in error for error in errors)
 
 
 def test_post_405_mode_rejects_noncanonical_migration_checkpoint_sha(tmp_path):

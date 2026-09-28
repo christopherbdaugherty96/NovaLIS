@@ -15,6 +15,15 @@ It exists to prevent a common documentation failure: automated tests pass, but t
 - Prefer proof that shows both the user-facing outcome and the backend receipt/ledger evidence.
 - If proof is missing, say `ready for human`, `blocked`, or `not yet signed off` instead of complete.
 
+## Evidence Scope
+
+Every new proof packet must state its exact source SHA, artifact identifier/hash when one is
+used, date, environment, and the narrow claim exercised. A screenshot proves only what was
+visibly rendered in that environment. It does not by itself prove local-boundary security,
+installer provenance, authorization correctness, persistence durability, or an external outcome.
+Use focused tests, inspection, receipts, artifact hashes, and clean-environment runs for those
+claims. Evidence without a revision binding must be labeled **historical visual evidence**.
+
 ---
 
 ## Proof Record Template
@@ -27,6 +36,8 @@ Use this table in signoff notes, PR bodies, audit reports, or proof folders.
 | Date |  |
 | Operator |  |
 | Environment |  |
+| Source SHA |  |
+| Artifact identifier / hash | n/a or  |
 | Checklist used |  |
 | Evidence path / screenshot path |  |
 | Receipt event observed |  |

@@ -14,6 +14,14 @@ Windows is the primary beta-support target. macOS and Linux source setup remains
 developer-only and unverified for beta support; this is not a cross-platform end-user
 support claim.
 
+### Local-boundary safety notice
+
+Use Nova only on its default loopback-only local configuration during the current private-beta
+preparation period. Do not set `NOVA_HOST` to a LAN/public address, reverse-proxy Nova, or expose
+the service to the network. A confirmed P1 in the current local-boundary enforcement must be
+repaired and freshly proven before any beta acceptance run. This is a safety boundary, not a
+supported remote-access setup option.
+
 For source-based local setup, Nova has:
 - canonical packaging and runtime dependency metadata in `pyproject.toml`
 - a mechanically checked compatibility requirements file

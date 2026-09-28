@@ -18,7 +18,7 @@ produced from the code and forbids manual edits.
 ## Snapshot (from the generated doc, regenerate before trusting exact numbers)
 
 - **Active capabilities:** 27 enabled, 0 disabled.
-- **Governor modules:** 6. **Executors:** 22. **Skills:** 5.
+- **Governor modules:** 6. **Executors:** 24. **Skills:** 5.
 - **Route protection:** 47 local-only, 1 token-gated remote, 2 public, 0 unclassified.
 - **Engineering phase matrix:** 3.5 / 4 / 4.2 / 5 / 6 / 7 COMPLETE; 4.5 PARTIAL; 8 / 9 ACTIVE.
 
@@ -29,8 +29,10 @@ produced from the code and forbids manual edits.
 
 - No broad autonomy.
 - No hidden background execution outside the explicit OpenClaw scheduler carve-out.
-- All actions pass GovernorMediator; all outbound HTTP passes NetworkMediator; all execution is
-  logged to the ledger.
+- Registered governed capability execution inspected by the generator routes through
+  `GovernorMediator`. Outbound network paths are mediated where wired; the direct-request
+  scanner reports separately. Ledger claims apply to the governed execution paths inspected by
+  the generator, not every persistence or side-effect path in the repository.
 
 See [03_GOVERNANCE_TRUTH.md](03_GOVERNANCE_TRUTH.md) for how these are enforced.
 

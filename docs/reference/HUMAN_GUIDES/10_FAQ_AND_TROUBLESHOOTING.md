@@ -1,5 +1,5 @@
 # FAQ and Troubleshooting
-Updated: 2026-03-26
+Updated: 2026-09-28
 
 ## Purpose
 This guide answers common practical questions about using Nova.
@@ -34,17 +34,19 @@ If you want the full install and startup guide, read:
 ## 2. Why didn't Nova do anything automatically?
 Usually because Nova is designed not to act automatically.
 
-Nova is built around explicit invocation.
-That means it should not:
+Nova is built around visible authority boundaries. It does not silently execute arbitrary actions,
+turn ordinary chat into a task, or treat a suggestion as permission. It should not:
 - silently execute actions
 - silently save memory
 - silently monitor the screen
-- silently continue tasks in the background
+- silently continue arbitrary tasks in the background
 
 If you want Nova to do something, ask directly.
 
 ## 3. Why didn't Nova save that automatically?
-Because memory in Nova is meant to be explicit.
+Because user-directed memory in Nova is meant to be explicit. Nova also maintains operational
+state such as settings, receipts, caches, and routine state; that is not the same as silently
+turning every conversation into authoritative long-term memory.
 
 Nova's memory model is designed to behave more like:
 - deliberate filing
@@ -194,10 +196,15 @@ If you want a schedule, ask directly with something like:
 - `remind me daily at 9:00 am to review project threads`
 
 ## 15. Do scheduled items run actions automatically?
-No, not in the intended current model.
+Only the narrow, explicitly configured briefing-template/routine surface may run under its visible
+settings and policy controls. It is not a general background agent: it does not authorize arbitrary
+actions, external writes, or ordinary-chat automation. Review or disable routine settings if you
+do not want that configured behavior.
 
-Scheduled items are supposed to surface quietly and remain user-visible.
-They can remind you or offer the next step, but they should not silently execute actions on your behalf.
+## 15A. Can I expose Nova on my network?
+No. During private-beta preparation, use the default loopback-only setup and do not set a
+non-loopback `NOVA_HOST` or expose Nova to a LAN/internet. A confirmed local-boundary P1 repair
+is still required before beta acceptance. See `26_LOCAL_SETUP_AND_STARTUP.md`.
 
 ## 16. How do I view or cancel schedules?
 Use:
