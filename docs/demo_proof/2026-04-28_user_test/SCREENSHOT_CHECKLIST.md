@@ -1,5 +1,12 @@
 # Screenshot Checklist - 2026-04-28 User Test
 
+> **Historical visual evidence.** These are real captures from the stated local URL, but the
+> folder does not bind them to a source SHA or distributable artifact. They prove only the visible
+> state/path captured that day; they do not prove the current main branch, installer integrity,
+> local-boundary security, action authority, or beta acceptance. For the current evidence
+> boundary, see
+> [`docs/capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md`](../../capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md).
+
 ## Captured Screenshots
 
 All screenshots below are real captures from `http://127.0.0.1:8000`.

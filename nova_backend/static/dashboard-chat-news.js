@@ -4007,7 +4007,7 @@ function showFirstRunGuide(force = false) {
 
   const trustNote = document.createElement("p");
   trustNote.className = "first-run-note";
-  trustNote.textContent = "No background automation. No hidden memory. No surprises. Just intelligence under your control.";
+  trustNote.textContent = "No hidden autonomy. User-directed memory and configured routines stay inspectable. Intelligence under your control.";
   card.appendChild(trustNote);
 
   const row = document.createElement("div");
