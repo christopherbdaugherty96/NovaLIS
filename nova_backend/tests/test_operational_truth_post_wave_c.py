@@ -876,7 +876,9 @@ def test_recovery_foundation_rejects_premature_rollback_completion(tmp_path, cla
             "THEN: installer supply-chain and privacy/Data-Out/secrets audit\n"
             "THEN: build a new exact Windows candidate artifact; the prior artifact is historical only\n"
             "THEN: clean Windows operator proof against that exact artifact\n"
-            "THEN: freeze an accepted candidate and rerun #434 against it\n"
+            "THEN: freeze exact candidate identity\n"
+            "THEN: rerun #434 and remaining acceptance checks against that frozen candidate\n"
+            "THEN: owner acceptance/distribution decision\n"
         "THEN: 3 real non-developer users"
     )
     recovery_foundation = "\n".join(checker.LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE)
@@ -1527,7 +1529,9 @@ def test_pre_406_sequence_is_historical_only():
         "THEN: installer supply-chain and privacy/Data-Out/secrets audit\n"
         "THEN: build a new exact Windows candidate artifact; the prior artifact is historical only\n"
         "THEN: clean Windows operator proof against that exact artifact\n"
-        "THEN: freeze an accepted candidate and rerun #434 against it\n"
+        "THEN: freeze exact candidate identity\n"
+        "THEN: rerun #434 and remaining acceptance checks against that frozen candidate\n"
+        "THEN: owner acceptance/distribution decision\n"
         "THEN: 3 real non-developer users",
         "NEXT: #406 governed-memory ID collision correctness\n"
         "THEN: #408 durability/state-ownership decision\n"
@@ -3035,7 +3039,15 @@ def test_current_engineering_label_wrappers_are_checked(tmp_path, opening, closi
     "marker_name",
     ("POST_438_COMPLETE_PROVENANCE", "POST_439_COMPLETE_PROVENANCE", "LOCAL_BOUNDARY_P1_MARKER"),
 )
-def test_current_gate_rejects_conflicting_marker_alongside_valid_one(tmp_path, marker_name):
+@pytest.mark.parametrize(
+    "opening,closing,prefix,whole_label",
+    (("", "", "", False), ("**", "**", "", False),
+     ("**_", "_**", "> - ", True), ("`**", "**`", "- > ", True)),
+)
+@pytest.mark.parametrize("conflict", (True, False))
+def test_current_gate_validates_wrapped_markers(
+    tmp_path, marker_name, opening, closing, prefix, whole_label, conflict
+):
     checker = _load_checker()
     _copy_post_405_ordering_surfaces(checker, tmp_path)
     target = tmp_path / "README.md"
@@ -3048,8 +3060,50 @@ def test_current_gate_rejects_conflicting_marker_alongside_valid_one(tmp_path, m
     else:
         conflicting = "CONFIRMED P1 BEFORE BETA ACCEPTANCE: WAIVED; WINDOWS ACCEPTANCE MAY START."
     assert conflicting != marker
+    candidate = conflicting if conflict else marker
+    label = (
+        candidate.split(" (", 1)[0]
+        if whole_label and marker_name != "LOCAL_BOUNDARY_P1_MARKER"
+        else candidate.split(":", 1)[0] + ":"
+    )
+    formatted = prefix + opening + label + closing + candidate[len(label):]
     lifecycle = "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
-    target.write_text(original.replace(lifecycle, lifecycle + conflicting + "\n", 1), encoding="utf-8")
+    if conflict:
+        changed = original.replace(lifecycle, lifecycle + formatted + "\n", 1)
+    else:
+        source = next(line for line in original.splitlines() if line.upper() == marker)
+        changed = original.replace(source, formatted, 1)
+    assert changed != original
+    target.write_text(changed, encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    if conflict:
+        assert any("README.md: current ordering does not preserve" in error for error in errors)
+    else:
+        assert errors == []
+
+
+@pytest.mark.parametrize("corruption", ("accepted_before_checks", "decision_before_checks"))
+def test_candidate_identity_freeze_precedes_acceptance(tmp_path, corruption):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    freeze = "THEN: freeze exact candidate identity"
+    checks = "THEN: rerun #434 and remaining acceptance checks against that frozen candidate"
+    decision = "THEN: owner acceptance/distribution decision"
+    sequence = "\n".join((freeze, checks, decision))
+    assert sequence in original
+    assert checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    ) == []
+    if corruption == "accepted_before_checks":
+        changed = original.replace(freeze, "THEN: freeze an accepted candidate", 1)
+    else:
+        changed = original.replace(sequence, "\n".join((freeze, decision, checks)), 1)
+    assert changed != original
+    target.write_text(changed, encoding="utf-8")
     errors = checker.check_operational_truth(
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )

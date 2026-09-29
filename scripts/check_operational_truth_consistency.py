@@ -170,7 +170,9 @@ LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE = (
     "THEN: INSTALLER SUPPLY-CHAIN AND PRIVACY/DATA-OUT/SECRETS AUDIT",
     "THEN: BUILD A NEW EXACT WINDOWS CANDIDATE ARTIFACT; THE PRIOR ARTIFACT IS HISTORICAL ONLY",
     "THEN: CLEAN WINDOWS OPERATOR PROOF AGAINST THAT EXACT ARTIFACT",
-    "THEN: FREEZE AN ACCEPTED CANDIDATE AND RERUN #434 AGAINST IT",
+    "THEN: FREEZE EXACT CANDIDATE IDENTITY",
+    "THEN: RERUN #434 AND REMAINING ACCEPTANCE CHECKS AGAINST THAT FROZEN CANDIDATE",
+    "THEN: OWNER ACCEPTANCE/DISTRIBUTION DECISION",
     "THEN: 3 REAL NON-DEVELOPER USERS",
 )
 POST_438_COMPLETE_PROVENANCE = (
@@ -592,7 +594,12 @@ def _normalize_post_405_structured_line(line: str) -> str:
     trailing = normalized[len(stripped) :]
     normalized = _unwrap_balanced_markdown(stripped) + trailing
     label = re.match(
-        r"^(?P<opening>[*_`]*)(?P<label>NEXT REQUIRED ENGINEERING:|NEXT:|THEN:)", normalized
+        r"^(?P<opening>[*_`]*)(?P<label>"
+        r"COMPLETE: FIRST SYNTHETIC BETA COHORT V1|"
+        r"COMPLETE: CONNECTED-USER COHORT TEST-SPEC CORRECTION|"
+        r"[A-Z][A-Z0-9 /_-]*:)",
+        normalized,
+        re.IGNORECASE,
     )
     if label:
         closing = label.group("opening")[::-1]

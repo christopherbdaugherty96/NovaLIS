@@ -41,7 +41,9 @@ THEN: fresh-main security and truth proof
 THEN: installer supply-chain and privacy/Data-Out/secrets audit
 THEN: build a new exact Windows candidate artifact; the prior artifact is historical only
 THEN: clean Windows operator proof against that exact artifact
-THEN: freeze an accepted candidate and rerun #434 against it
+THEN: freeze exact candidate identity
+THEN: rerun #434 and remaining acceptance checks against that frozen candidate
+THEN: owner acceptance/distribution decision
 THEN: 3 real non-developer users
 ```
 
