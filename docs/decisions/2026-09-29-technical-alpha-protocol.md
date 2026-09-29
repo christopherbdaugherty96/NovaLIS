@@ -46,13 +46,14 @@ The owner must record evidence for every item against an exact source revision a
 
 Deliver privately to the first named tester. Review their installation and reporting experience
 before extending access to two more named technical testers. A public GitHub prerelease is
-publicly downloadable and cannot enforce this initial access boundary.
+publicly downloadable and cannot enforce the required pre-acceptance access boundary.
 
-Broader technical-alpha distribution requires another recorded owner decision after reviewing
-the initial reports, addressing consequential findings, rechecking entry requirements on the
-intended artifact, and confirming support/reporting procedures work. The public listing must
-identify it as experimental technical validation and list outstanding acceptance checks.
-Neither that decision nor a prerelease label establishes product-beta acceptance.
+Before product acceptance, every artifact delivery must remain private and access-controlled
+to named technical operators within the one-to-three-tester limit. No public artifact listing,
+download, or release is permitted until clean-Windows proof, normal frozen-candidate acceptance,
+and the owner acceptance/distribution decision are complete for that exact artifact. A separate
+technical-alpha expansion decision or prerelease label cannot waive these gates. The public
+project overview may remain visible with its installer-unavailable status.
 
 ## Required operator procedure and report
 
@@ -73,8 +74,14 @@ Record PASS / FAIL / NOT EXECUTED with evidence for:
 4. Close and restart Nova, then reboot Windows; inspect retained test state and startup behavior.
 5. Perform the applicable accepted #408 backup/recovery procedure using disposable fixtures.
    Include failure/partial-restore truth checks; preserve before/after evidence.
-6. Exercise removal/reinstallation and documented retained-state behavior. Where upgrade proof
-   is required, use a separately documented prior-version fixture; fresh install alone is insufficient.
+6. Exercise removal/reinstallation and documented retained-state behavior. If the candidate
+   supports upgrades, upgrade proof is a mandatory clean-Windows gate: identify the supported
+   prior-version fixture and its artifact/state baseline, upgrade to the exact candidate, and
+   record PASS / FAIL / NOT EXECUTED with startup and retained-state evidence for each supported
+   upgrade path. FAIL, NOT EXECUTED, or a missing fixture/result prevents this report from
+   satisfying the freeze gate. Fresh installation does not substitute for upgrade proof.
+   If upgrades are unsupported, record that explicit candidate limitation in the report and
+   installation instructions; do not imply upgrade support or count an untested upgrade as PASS.
 7. Report reproduction steps, expected/actual result, identity, assistance, and sanitized evidence.
    Missing evidence or a required NOT EXECUTED item leaves the corresponding gate incomplete.
 

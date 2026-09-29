@@ -70,8 +70,10 @@ merged, its designated external technical operators may receive an exact experim
 to obtain clean-Windows evidence before this frozen-candidate gate. This requires the protocol's
 security, distribution-permission, reporting, and artifact-specific owner authorization gates.
 Hard blockers remain binding. Technical operators are not product-cohort participants for this
-evidence, and their reports do not establish product acceptance. Broader technical distribution
-requires the protocol's separate expansion decision; ordinary product users remain gated below.
+evidence, and their reports do not establish product acceptance. Before acceptance, artifact
+delivery remains private and access-controlled to the protocol's named technical operators.
+Public artifact listings/downloads require clean-Windows proof, normal frozen-candidate acceptance,
+and the owner acceptance/distribution decision. Ordinary product users remain gated below.
 
 ### Product distribution
 
