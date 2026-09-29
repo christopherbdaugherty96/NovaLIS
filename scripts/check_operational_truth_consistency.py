@@ -591,7 +591,9 @@ def _normalize_post_405_structured_line(line: str) -> str:
     stripped = normalized.rstrip()
     trailing = normalized[len(stripped) :]
     normalized = _unwrap_balanced_markdown(stripped) + trailing
-    label = re.match(r"^(?P<opening>[*_`]*)(?P<label>NEXT:|THEN:)", normalized)
+    label = re.match(
+        r"^(?P<opening>[*_`]*)(?P<label>NEXT REQUIRED ENGINEERING:|NEXT:|THEN:)", normalized
+    )
     if label:
         closing = label.group("opening")[::-1]
         end = label.end() + len(closing)
@@ -976,9 +978,19 @@ def _preserves_post_405_boundary(
     has_post_433_provenance = post_433_completion_lines == (POST_433_COMPLETE_PROVENANCE,)
     has_post_436_provenance = post_436_completion_lines == (POST_436_COMPLETE_PROVENANCE,)
     has_post_436_fresh_main_proof = post_436_fresh_main_lines == (POST_436_FRESH_MAIN_PROOF,)
-    has_post_438_provenance = structured_lines.count(POST_438_COMPLETE_PROVENANCE) == 1
-    has_post_439_provenance = structured_lines.count(POST_439_COMPLETE_PROVENANCE) == 1
-    has_local_boundary_p1_marker = structured_lines.count(LOCAL_BOUNDARY_P1_MARKER) == 1
+    post_438_completion_lines = tuple(
+        line for line in structured_lines if line.startswith("COMPLETE: FIRST SYNTHETIC BETA COHORT V1")
+    )
+    post_439_completion_lines = tuple(
+        line for line in structured_lines
+        if line.startswith("COMPLETE: CONNECTED-USER COHORT TEST-SPEC CORRECTION")
+    )
+    local_boundary_p1_lines = tuple(
+        line for line in structured_lines if line.startswith("CONFIRMED P1 BEFORE BETA ACCEPTANCE:")
+    )
+    has_post_438_provenance = post_438_completion_lines == (POST_438_COMPLETE_PROVENANCE,)
+    has_post_439_provenance = post_439_completion_lines == (POST_439_COMPLETE_PROVENANCE,)
+    has_local_boundary_p1_marker = local_boundary_p1_lines == (LOCAL_BOUNDARY_P1_MARKER,)
     authority_prefix_pattern = r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
     durability_authorizations = tuple(
         line
@@ -1195,41 +1207,6 @@ def _preserves_post_405_boundary(
         and not rollback_unfinished_claim
         and not rollback_next_or_current_claim
         and not obsolete_current_lane_claim
-    )
-    # The first cohort and its route-spec correction are completed history, while the P1 repair
-    # is the active gate. Keep that state independently checkable without pretending that the
-    # old cohort-first directive sequence remains current.
-    preserves_lane_5a_rollback_restore_closeout = (
-        preserves_lane_5a_rollback_restore_closeout
-        or (
-            directives == LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE
-            and has_lane_5a_rollback_restore_provenance
-            and has_lane_5a_rollback_restore_proof
-            and has_post_433_provenance
-            and has_post_436_provenance
-            and has_post_436_fresh_main_proof
-            and has_post_438_provenance
-            and has_post_439_provenance
-            and has_local_boundary_p1_marker
-            and rollback_restore_closeout_state == ROLLBACK_RESTORE_CLOSEOUT_COMPLETE
-            and _preserves_lane_5a_milestone_order(
-                structured_lines,
-                LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE,
-                (
-                    LANE_5A_ROLLBACK_RESTORE_COMPLETE_PROVENANCE,
-                    LANE_5A_ROLLBACK_RESTORE_PROOF,
-                    POST_433_COMPLETE_PROVENANCE,
-                    POST_436_COMPLETE_PROVENANCE,
-                    POST_436_FRESH_MAIN_PROOF,
-                    POST_438_COMPLETE_PROVENANCE,
-                    POST_439_COMPLETE_PROVENANCE,
-                    LOCAL_BOUNDARY_P1_MARKER,
-                ),
-            )
-            and not rollback_unfinished_claim
-            and not rollback_next_or_current_claim
-            and not obsolete_current_lane_claim
-        )
     )
     preserves_allowed_state = (
         preserves_initial_order

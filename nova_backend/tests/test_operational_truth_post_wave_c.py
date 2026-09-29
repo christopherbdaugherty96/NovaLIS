@@ -1166,9 +1166,8 @@ def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_
     target = tmp_path / "docs/status/DAILY_COMMAND_CENTER.md"
     original = target.read_text(encoding="utf-8")
     corrupted = original.replace(
-        "The current immediate lane is #434 Synthetic Beta Cohort v1: "
-        "test-only, immutable during the run, with no fixes between journeys.",
-        claim,
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n",
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE\n" + claim + "\n",
         1,
     )
     assert corrupted != original
@@ -1612,18 +1611,28 @@ def test_current_lifecycle_rejects_duplicate_or_misordered_new_gate_markers(tmp_
     marker = getattr(checker, marker_name)
     target = tmp_path / "README.md"
     original = target.read_text(encoding="utf-8")
-    duplicated = original.replace(marker, f"{marker}\n{marker}", 1)
+    source_marker = next(line for line in original.splitlines() if line.upper() == marker)
+    source_directive = next(
+        line for line in original.splitlines()
+        if line.upper() == checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0]
+    )
+    duplicated = original.replace(source_marker, f"{source_marker}\n{source_marker}", 1)
+    assert duplicated != original
+    assert duplicated.splitlines().count(source_marker) == 2
     target.write_text(duplicated, encoding="utf-8")
     errors = checker.check_operational_truth(
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
     )
     assert any(str(target) in error for error in errors)
 
-    moved = original.replace(marker, "", 1).replace(
-        checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0],
-        f"{checker.LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE[0]}\n{marker}",
+    moved = original.replace(source_marker + "\n", "", 1).replace(
+        source_directive,
+        f"{source_directive}\n{source_marker}",
         1,
     )
+    assert moved != original
+    assert moved.splitlines().count(source_marker) == 1
+    assert moved.index(source_marker) > moved.index(source_directive)
     target.write_text(moved, encoding="utf-8")
     errors = checker.check_operational_truth(
         tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
@@ -2948,3 +2957,100 @@ def test_nested_containers_preserve_plain_payload_markdown(prefix):
         checker._normalize_post_405_structured_line(prefix + "**NEXT:* payload")
         == "**NEXT:* payload"
     )
+
+
+@pytest.mark.parametrize("coordinated", (False, True))
+def test_current_closeout_requires_canonical_revision_not_just_agreement(tmp_path, coordinated):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    surfaces = checker.CURRENT_CHECKED_SURFACES if coordinated else ("README.md",)
+    changed_surfaces = 0
+    for relative in surfaces:
+        target = tmp_path / relative
+        original = target.read_text(encoding="utf-8")
+        changed = original.replace(checker.LANE_5A_ROLLBACK_RESTORE_MAIN_SHA.lower(), "a" * 40)
+        if coordinated and "BETA_READINESS_SEQUENCE_V1: ACTIVE" not in original:
+            continue
+        assert changed != original
+        changed_surfaces += 1
+        target.write_text(changed, encoding="utf-8")
+    assert changed_surfaces == (len(checker.POST_405_ORDERING_SURFACES) if coordinated else 1)
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert any("README.md: current ordering does not preserve" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "extra",
+    (
+        "duplicate",
+        "APPROVED: Lane 5A recovery construction (different authority)",
+        "AUTHORIZED: durability implementation lane 6 - new scope",
+        "ACTIVE: maintenance locking + mutation quiescence",
+    ),
+)
+def test_current_closeout_rejects_competing_authorizations(tmp_path, extra):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    if extra == "duplicate":
+        extra = checker.LANE_5A_AUTHORIZATION_MARKER
+    marker = "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+    target.write_text(original.replace(marker, marker + extra + "\n", 1), encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert any("README.md: current ordering does not preserve" in error for error in errors)
+
+
+@pytest.mark.parametrize("opening,closing", (("**", "**"), ("**_", "_**"), ("`**", "**`")))
+@pytest.mark.parametrize("prefix", ("", "> - ", "- > 1. > "))
+@pytest.mark.parametrize("competing", (False, True))
+def test_current_engineering_label_wrappers_are_checked(tmp_path, opening, closing, prefix, competing):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    label = "NEXT REQUIRED ENGINEERING:"
+    wrapped = prefix + opening + label + closing
+    if competing:
+        marker = "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+        changed = original.replace(marker, marker + wrapped + "Google identity-only live proof\n", 1)
+    else:
+        changed = original.replace(label + " ", wrapped, 1)
+    assert changed != original
+    target.write_text(changed, encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    if competing:
+        assert any("README.md: current ordering does not preserve" in error for error in errors)
+    else:
+        assert errors == []
+
+
+@pytest.mark.parametrize(
+    "marker_name",
+    ("POST_438_COMPLETE_PROVENANCE", "POST_439_COMPLETE_PROVENANCE", "LOCAL_BOUNDARY_P1_MARKER"),
+)
+def test_current_gate_rejects_conflicting_marker_alongside_valid_one(tmp_path, marker_name):
+    checker = _load_checker()
+    _copy_post_405_ordering_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    original = target.read_text(encoding="utf-8")
+    marker = getattr(checker, marker_name)
+    if marker_name == "POST_438_COMPLETE_PROVENANCE":
+        conflicting = marker.replace("NOT PRODUCT ACCEPTANCE", "PRODUCT ACCEPTANCE COMPLETE")
+    elif marker_name == "POST_439_COMPLETE_PROVENANCE":
+        conflicting = marker.replace("486AD3DDDC3F75412085B968C28561AB57E25686", "A" * 40)
+    else:
+        conflicting = "CONFIRMED P1 BEFORE BETA ACCEPTANCE: WAIVED; WINDOWS ACCEPTANCE MAY START."
+    assert conflicting != marker
+    lifecycle = "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
+    target.write_text(original.replace(lifecycle, lifecycle + conflicting + "\n", 1), encoding="utf-8")
+    errors = checker.check_operational_truth(
+        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+    )
+    assert any("README.md: current ordering does not preserve" in error for error in errors)

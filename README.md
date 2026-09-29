@@ -205,11 +205,12 @@ Current grounded status:
 - PR #366 truth-hygiene provenance: MERGED
 - PR #378 narration/front-door package: MERGED / VERIFIED
 - #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-- #368: NEXT BOUNDED TECHNICAL LANE
-- #387: AFTER #368 / DOCS-ONLY
-- PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
-- PR #335 Google Workspace Foundation remains draft/unmerged historical Foundation/auth/identity code;
-  it is not a current capability and must be reconstructed/reviewed separately before any merge
+- #368: COMPLETE
+- #387: COMPLETE / DOCS-ONLY
+- #394: GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+- historical PR #335 implementation path: SUPERSEDED BY MERGED PR #394;
+  retain it as historical reference only, not a reconstruction or merge lane
+- the Foundation is identity/auth infrastructure, not permission for Google domain-data access
 - Google Tasks and Gmail are not built as current Nova capabilities
 - Operational Continuity is strategically accepted but implementation-inactive and non-authorizing
 - no broad browser/computer-use, financial-write, autonomous outreach, contracting,
@@ -224,7 +225,7 @@ Historical sequencing references (May 2026; superseded by the master roadmap for
 [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
 [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
 
-Current decision sequence:
+Historical pre-#394 decision sequence (superseded; not current work or authorization):
 
 ```text
 1. Issue #388 is COMPLETE; its TRUTH-CHECKER PREREQUISITE is SATISFIED.
