@@ -165,12 +165,27 @@ LANE_5A_RECOVERY_FOUNDATION_DIRECTIVE_SEQUENCE = (
     "THEN: PRIVATE-BETA CANDIDACY/DISTRIBUTION DECISION",
 )
 LANE_5A_RECOVERY_COMPLETE_DIRECTIVE_SEQUENCE = (
-    "NEXT: #434 SYNTHETIC BETA COHORT V1 (TEST-ONLY; IMMUTABLE CANDIDATE; NO FIXES DURING RUN)",
-    "THEN: FIX ONLY REPRODUCED P0/P1/HARD BETA BLOCKERS",
-    "THEN: CLEAN WINDOWS OPERATOR PROOF",
-    "THEN: FREEZE EXACT BETA SHA + INTENDED DISTRIBUTION ARTIFACT",
-    "THEN: FROZEN-CANDIDATE ACCEPTANCE",
+    "NEXT REQUIRED ENGINEERING: BOUNDED LOCAL-BOUNDARY P1 REPAIR (NO REMOTE MODE OR AUTHORITY EXPANSION)",
+    "THEN: FRESH-MAIN SECURITY AND TRUTH PROOF",
+    "THEN: INSTALLER SUPPLY-CHAIN AND PRIVACY/DATA-OUT/SECRETS AUDIT",
+    "THEN: BUILD A NEW EXACT WINDOWS CANDIDATE ARTIFACT; THE PRIOR ARTIFACT IS HISTORICAL ONLY",
+    "THEN: CLEAN WINDOWS OPERATOR PROOF AGAINST THAT EXACT ARTIFACT",
+    "THEN: FREEZE EXACT CANDIDATE IDENTITY",
+    "THEN: RERUN #434 AND REMAINING ACCEPTANCE CHECKS AGAINST THAT FROZEN CANDIDATE",
+    "THEN: OWNER ACCEPTANCE/DISTRIBUTION DECISION",
     "THEN: 3 REAL NON-DEVELOPER USERS",
+)
+POST_438_COMPLETE_PROVENANCE = (
+    "COMPLETE: FIRST SYNTHETIC BETA COHORT V1 (PR #438; TEST-ONLY EVIDENCE, NOT PRODUCT ACCEPTANCE)"
+)
+POST_439_COMPLETE_PROVENANCE = (
+    "COMPLETE: CONNECTED-USER COHORT TEST-SPEC CORRECTION "
+    "(PR #439; MAIN `486AD3DDDC3F75412085B968C28561AB57E25686`)"
+)
+LOCAL_BOUNDARY_P1_MARKER = (
+    "CONFIRMED P1 BEFORE BETA ACCEPTANCE: THE LOCAL-ONLY BOUNDARY IS UNSAFE IF "
+    "`NOVA_HOST` ACCEPTS A NON-LOOPBACK BIND; REPAIR AND FRESH PROOF ARE REQUIRED BEFORE "
+    "ANY WINDOWS ACCEPTANCE RUN."
 )
 POST_408_COMPLETE_MARKER = "COMPLETE: #408 DURABILITY/STATE-OWNERSHIP DECISION"
 POST_408_COMPLETE_PROVENANCE = (
@@ -578,7 +593,14 @@ def _normalize_post_405_structured_line(line: str) -> str:
     stripped = normalized.rstrip()
     trailing = normalized[len(stripped) :]
     normalized = _unwrap_balanced_markdown(stripped) + trailing
-    label = re.match(r"^(?P<opening>[*_`]*)(?P<label>NEXT:|THEN:)", normalized)
+    label = re.match(
+        r"^(?P<opening>[*_`]*)(?P<label>"
+        r"COMPLETE: FIRST SYNTHETIC BETA COHORT V1|"
+        r"COMPLETE: CONNECTED-USER COHORT TEST-SPEC CORRECTION|"
+        r"[A-Z][A-Z0-9 /_-]*:)",
+        normalized,
+        re.IGNORECASE,
+    )
     if label:
         closing = label.group("opening")[::-1]
         end = label.end() + len(closing)
@@ -840,7 +862,7 @@ def _preserves_post_405_boundary(
         normalized_line
         for line in active.splitlines()
         if re.match(
-            r"^(?:NEXT|THEN):",
+            r"^(?:NEXT(?: REQUIRED ENGINEERING)?|THEN):",
             normalized_line := _normalize_post_405_structured_line(line),
         )
     )
@@ -963,6 +985,19 @@ def _preserves_post_405_boundary(
     has_post_433_provenance = post_433_completion_lines == (POST_433_COMPLETE_PROVENANCE,)
     has_post_436_provenance = post_436_completion_lines == (POST_436_COMPLETE_PROVENANCE,)
     has_post_436_fresh_main_proof = post_436_fresh_main_lines == (POST_436_FRESH_MAIN_PROOF,)
+    post_438_completion_lines = tuple(
+        line for line in structured_lines if line.startswith("COMPLETE: FIRST SYNTHETIC BETA COHORT V1")
+    )
+    post_439_completion_lines = tuple(
+        line for line in structured_lines
+        if line.startswith("COMPLETE: CONNECTED-USER COHORT TEST-SPEC CORRECTION")
+    )
+    local_boundary_p1_lines = tuple(
+        line for line in structured_lines if line.startswith("CONFIRMED P1 BEFORE BETA ACCEPTANCE:")
+    )
+    has_post_438_provenance = post_438_completion_lines == (POST_438_COMPLETE_PROVENANCE,)
+    has_post_439_provenance = post_439_completion_lines == (POST_439_COMPLETE_PROVENANCE,)
+    has_local_boundary_p1_marker = local_boundary_p1_lines == (LOCAL_BOUNDARY_P1_MARKER,)
     authority_prefix_pattern = r"^(?:AUTHORIZED(?:\s*/\s*ACTIVE)?|APPROVED|ACTIVE):"
     durability_authorizations = tuple(
         line
@@ -1153,6 +1188,9 @@ def _preserves_post_405_boundary(
         and has_post_433_provenance
         and has_post_436_provenance
         and has_post_436_fresh_main_proof
+        and has_post_438_provenance
+        and has_post_439_provenance
+        and has_local_boundary_p1_marker
         and rollback_restore_closeout_state == ROLLBACK_RESTORE_CLOSEOUT_COMPLETE
         and _preserves_lane_5a_milestone_order(
             structured_lines,
@@ -1163,6 +1201,9 @@ def _preserves_post_405_boundary(
                 POST_433_COMPLETE_PROVENANCE,
                 POST_436_COMPLETE_PROVENANCE,
                 POST_436_FRESH_MAIN_PROOF,
+                POST_438_COMPLETE_PROVENANCE,
+                POST_439_COMPLETE_PROVENANCE,
+                LOCAL_BOUNDARY_P1_MARKER,
             ),
         )
         and _post_405_sync_start_shas(text) == (LANE_5A_ROLLBACK_RESTORE_MAIN_SHA,)
