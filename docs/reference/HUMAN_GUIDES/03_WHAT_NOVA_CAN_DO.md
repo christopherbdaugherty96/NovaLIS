@@ -1,334 +1,88 @@
 # What Nova Can Do
-Updated: 2026-05-03
 
-## Overview
-Nova's active capability surface now covers these big areas:
-- research and information work
-- computer help and local control
-- voice and screen understanding
-- continuity across ongoing work
-- governed memory and persistence
-- manual response-style control
-- user-directed scheduled updates and reminders
-- opt-in pattern review for ongoing work
-- visible workspace and trust review surfaces
-- visible policy review surfaces for disabled delegated drafts
-- token-gated remote bridge access for read/reasoning requests
-- a manual home-agent operator surface for briefing templates and delivery review
-- an emerging local code-operator path that starts with read-only project analysis through the Agent page
+Updated: 2026-09-28
 
-## 1. Research and Information Work
-Nova can:
-- search the web through its governed search path
-- answer first and show sources on demand
-- open source pages in the browser
-- summarize headlines
-- give more detail on a selected story
-- summarize the page behind a story link when available
-- search for a news topic and route that into research
-- summarize cleaner news channels such as politics, global, local, tech, and crypto
-- create multi-source reports
-- build intelligence briefs
-- verify a statement or prior response
-- request a governed external second opinion from the chat bar or with `second opinion`
-- create session analysis documents
-- track stories over time
+## The honest short version
 
-Examples:
-- `search for local AI sovereignty tools`
-- `open source 2`
-- `summarize headline 3`
-- `summary of article 1`
-- `today's news`
-- `daily brief`
-- `verify this`
-- `second opinion`
-- `review this answer`
-- `create analysis report on robotics startups`
-- `track story EU AI Act`
+Nova is a local-first, governance-first personal intelligence and decision-support system. It
+can help gather context, explain and prioritize it, and carry out only the bounded operations
+that its capability and approval rules allow. Intelligence is not authority: a useful suggestion,
+saved context, or a plan never grants Nova permission to act.
 
-## 2. Computer Help and Local Control
-Nova can:
-- open websites
-- open approved files and folders
-- speak text aloud through the local speech path
-- change volume
-- control media playback
-- change brightness
-- report system status and model readiness
+This guide describes the bounded current surface. It is not a beta-acceptance certificate. For
+exact mechanically inspected runtime facts, use
+[`CURRENT_RUNTIME_STATE.md`](../../current_runtime/CURRENT_RUNTIME_STATE.md); for current
+proof status, use the [proof evidence index](../../capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md).
 
-Examples:
-- `open github`
-- `open downloads`
-- `speak that`
-- `mute`
-- `pause`
-- `set brightness to 70`
-- `system status`
+## What Nova can help with today
 
-## 2.5 Email Drafting (Governed External Write)
-Nova can compose a draft email and open it in your system mail client.
+### Understand and organize
 
-It does not send email on its own - it opens the draft so you can review, edit, and decide.
-You will always see a confirmation prompt before anything opens.
+Nova can provide local status and, when configured, bounded information and reasoning help such
+as weather, news, calendar-oriented context, research, summaries, source-backed explanations,
+and recommendations. Availability depends on the configured capability, local dependencies, and
+the source/provider being available. A recommendation is advice, not an instruction or authority
+to take the next action.
 
-Nova can:
-- compose an email body using the local LLM
-- open the draft in your default mail client via mailto:
-- include a recipient, subject, and body
-- fall back to a structured template if the LLM is unavailable
+### Work with explicit context
 
-Examples:
-- `draft an email to john@example.com about the quarterly review`
-- `compose an email to the team about Friday's meeting`
-- `write an email to sarah@company.com about the project update`
-- `email alex@example.com about the deployment schedule`
+Nova can keep user-directed continuity and governed memory, show why particular context was used,
+and let a user review, update, or remove memory through the supported surfaces. Durable state
+also includes operational data such as settings, caches, history, receipts/ledger data, and
+scheduled-template state. Those stores help the system operate; they do not create permission.
 
-Governance note:
-- This is Nova's first external-write capability.
-- It requires your explicit confirmation before opening the mail client.
-- Nova cannot send email - it can only prepare and open a draft.
-- The action is logged in the ledger under `EMAIL_DRAFT_CREATED`.
+### Use bounded local and external capabilities
 
-## 3. Snapshots and Daily Surfaces
-Nova can load quick information views for:
-- weather
-- news
-- calendar
-- system state
-- memory
-- workspace continuity
-- trust review
-- introduction and settings guidance
-- the Agent page for manual home-agent briefings
+The registered capability surface includes bounded local/operator actions and selected
+information paths. Each route may be read-only, require confirmation, be unavailable in a given
+environment, or be blocked by policy. Email is draft-only: Nova can prepare a mail-client draft
+after the applicable confirmation; it does not send mail or access an inbox through that path.
 
-Examples:
-- `weather`
-- `news`
-- `calendar`
-- `system status`
-- `intro`
-- `settings`
-- `workspace home`
-- `workspace board`
-- `trust center`
+### Make governance visible
 
-## 4. Voice, Screen, and Explain Mode
-Nova can:
-- transcribe speech into text
-- speak text back aloud
-- capture a screenshot region on request
-- analyze the visible screen
-- explain what you are looking at
-- route explain requests to the right source, such as screen or file
-- auto-speak voice-origin answers through the runtime speech helper
+Nova exposes Trust, Settings, capability, status, and receipt-oriented surfaces so a user can
+inspect important boundaries. These are aids to review, not a guarantee that every repository
+path or future integration has been certified.
 
-Examples:
-- `take a screenshot`
-- `analyze this screen`
-- `explain this`
-- `what is this?`
-- `which one should I download?`
+### Run narrow user-configured routines
 
-Important note:
-- screenshot and screen analysis are live
-- wake word is still planned, not live runtime
-- voice output is improved in code and still depends on final local device/audio validation for full confidence
+Nova has a bounded scheduler/routine surface for explicitly configured briefing templates and
+related visible settings. This is not a general background worker and does not authorize arbitrary
+actions, external writes, or ordinary-chat automation. A user can inspect and disable those
+settings.
 
-## 5. Continuity and Ongoing Work
-Nova can now help with ongoing work rather than only one-off prompts.
+## What Nova does not promise
 
-It can:
-- create and continue project threads
-- show thread health and blockers
-- show what changed since last view
-- show latest decision and memory depth
-- identify the most blocked project
-- explain why it is recommending a next step
-- open a thread detail panel with the current project snapshot
-- show a broader Workspace page for project continuity
+- It is not an autonomous employee, universal agent, or background task runner.
+- It does not treat memory, continuity, model output, or a plan as execution permission.
+- It does not claim a live Google domain-data experience; foundation code is not the same as a
+  connected user flow or live account proof.
+- It does not send email, access an inbox, post to social media, move money, or perform other
+  external writes merely because a related connector or idea appears in the repository.
+- It does not claim that every feature shown in older guides, screenshots, roadmaps, or UI copy is
+  currently available or beta-accepted.
 
-Examples:
-- `create thread deployment issue`
-- `show threads`
-- `continue my deployment issue`
-- `project status deployment issue`
-- `biggest blocker in deployment issue`
-- `which project is most blocked right now`
-- `thread detail deployment issue`
-- `workspace board`
+## Local-first and privacy boundaries
 
-## 6. Governed Memory
-Nova has an explicit, user-initiated conversational memory loop.
-Memory is never saved silently. Every save is confirmed with a receipt.
-Memory is never used before you have had a chance to review and remove it.
+Nova is intended to run locally first, with optional network/model/provider paths only where a
+configured capability uses them. Local-first does not mean that no data ever leaves the machine;
+the active capability, provider settings, and receipts are the relevant source for a specific
+request. Screen understanding is request-time rather than an always-on surveillance claim.
 
-The implemented Stage 3 memory loop includes:
+During the current private-beta preparation period, use the default loopback-only local setup.
+Do not expose Nova on a LAN or the internet or set a non-loopback `NOVA_HOST`: that mode is not
+supported and a confirmed local-boundary P1 repair is required before any beta acceptance run.
 
-- `remember [content]` — save a new memory item
-- `review memories` / `memory list` — list saved items with IDs and source labels
-- `update memory [id]: [new content]` — supersede an existing item with a newer one
-- `forget [id]` — remove an item permanently; it will not be reused
-- `why-used` / `what memory are you using` — explain which memory context is active
-  and why each item was selected
+## How to interpret proof
 
-Examples:
-- `remember this: the client supplies alcohol`
-- `remember: meeting cadence is every other Tuesday`
-- `review memories`
-- `update memory MEM-20260502-061244-7794: the client now supplies only beer`
-- `forget MEM-20260502-061244-7794`
-- `why-used`
-- `what memory are you using right now`
+Screenshots can demonstrate a visible UI state on the recorded machine and date. They cannot
+prove the security of a network boundary, a release artifact, hidden state behavior, or a
+real-world outcome. Nova records and documentation should say exactly what was tested, at which
+revision and environment, and what remains unproven.
 
-Important boundaries:
-- Nova does not save memory unless you explicitly ask it to
-- Soft-deleted items are permanently excluded from all read paths — forgotten means gone
-- Memory items saved automatically by the system (if any) are shown with their source label so
-  you can review and remove them before they influence anything
-- Memory does not authorize action — it provides context only
+## Practical next steps
 
-Note: broader memory UI surfaces (dedicated Memory page, thread-linked memory, lock/defer)
-may exist in some runtime configurations but are not part of the current core memory loop.
-The commands above are the implemented and proven scope.
-
-## 7. Trust And Workspace Visibility
-Nova now has clearer product surfaces for understanding what it is doing and where current work lives.
-
-It can:
-- show a landing-preview page for product messaging review
-- show an Agent page
-- show a Trust page
-- show a Policies page
-- show a Settings page
-- show an Introduction page
-- show remote bridge status
-- show provider and connection status
-- show estimated governed reasoning usage and budget state in Trust and Settings
-- change setup mode in Settings
-- pause or re-enable governed second-opinion review in Settings
-- pause or re-enable remote bridge access in Settings
-- pause or re-enable the manual home-agent foundation in Settings
-- summarize recent governed actions
-- show blocked conditions
-- let you drill into why a recent action happened
-- show current operating mode and failure state
-- show a Workspace page
-- show a local-project Structure Map
-- inspect disabled policy drafts
-- simulate a policy draft
-- run a safe draft once manually
-- show voice runtime status and a voice-check path
-- show reasoning provider, route, and authority truth when a second opinion is used
-- review manual home-agent briefing templates, delivery modes, and recent runs
-
-Examples:
-- `intro`
-- `settings`
-- `trust center`
-- `policy center`
-- `policy overview`
-- `trust status`
-- `bridge status`
-- `connection status`
-- `voice status`
-- `voice check`
-- `second opinion`
-- `workspace board`
-- `visualize this repo`
-- `show structure map`
-
-## 8. Local Project Understanding
-Nova can locally:
-- summarize a repo
-- give a local project overview
-- create a local architecture report
-- show a human-facing Structure Map for the repo
-- move toward a governed Agent-page project snapshot flow that can explain the current workspace before any future patching work
-
-Examples:
-- `audit this repo`
-- `summarize this repo`
-- `create analysis report on this repo architecture`
-- `visualize this repo`
-
-## 9. What Is Planned But Not Fully Live Yet
-Some important ideas are documented and partly scaffolded, but are not fully active runtime features today.
-
-The biggest examples are:
-- wake word
-- richer connectors
-- full in-app provider key entry and richer connector management beyond the current runtime-permission controls
-- deeper project/workspace system work
-- richer visualizer stages beyond the current structured graph view
-- approval-gated patch proposal and apply flows for the future local code operator
-- delegated trigger runtime for policies
-- Brain mode contracts surfaced in the UI (mode classification exists as code, not yet visible
-  to the user)
-- Memory UX surfaces beyond the conversational loop (dedicated page, export, thread-linking)
-
-Note:
-Context Pack injection into the general-chat runtime prompt path is already implemented
-(Stage 6). Context is now assembled through a bounded Context Pack before reaching the
-reasoning layer on every turn.
-
-## 10. Response Style Control
-Nova can expose and adjust its manual presentation tone without changing what it is allowed to do.
-
-It can:
-- show the current global tone profile
-- show active per-domain overrides
-- let the user set manual tone profiles
-- let the user reset one domain or all tone settings
-- show recent tone changes in an inspectable way
-
-Examples:
-- `tone status`
-- `tone set concise`
-- `tone set research detailed`
-- `tone reset all`
-
-## 11. Scheduled Updates and Reminders
-Nova can support calm, user-directed scheduling without turning into a background actor.
-
-Examples:
-- `show schedules`
-- `schedule daily brief at 8:00 am`
-- `remind me at 2:00 pm to review deployment issue`
-- `set quiet hours from 10:00 pm to 7:00 am`
-- `cancel schedule SCH-123`
-
-Important boundary:
-- schedules are created only when the user asks
-- scheduled items do not auto-run arbitrary actions
-- the narrow home-agent scheduler only runs explicitly configured briefing templates under visible settings and policy controls
-- Nova does not turn ordinary chat into hidden background automation
-
-## 12. Pattern Review
-Nova can help review repeated patterns across threads and durable memory, but only if you explicitly opt in first.
-
-Examples:
-- `pattern opt in`
-- `pattern status`
-- `review patterns`
-- `accept pattern PAT-...`
-- `dismiss pattern PAT-...`
-
-## Short Summary
-Today Nova can already:
-- research
-- explain
-- summarize
-- inspect
-- continue project work
-- remember things explicitly — and forget them when asked
-- expose trust and workspace state more clearly
-- help with the current screen
-- help with the local computer in bounded ways
-- draft emails for review
-
-The memory loop (Stage 3), context pack foundation (Stage 4), and brain mode
-contracts (Stage 5) are implemented, proven, and wired into the general-chat runtime path.
-
-That is enough for Nova to behave more like a personal intelligence workspace than a simple
-assistant — one that remembers, stays bounded, and keeps you in control.
+Start with the [local setup guide](26_LOCAL_SETUP_AND_STARTUP.md), then use Settings and Trust to
+understand your configured boundaries. If a request matters, ask Nova to explain the proposed
+action and review the relevant receipt or outcome rather than assuming that a fluent response
+means it has authority.

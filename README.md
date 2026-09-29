@@ -39,11 +39,17 @@ ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows PO
 COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)
 COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)
 FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)
-NEXT: #434 Synthetic Beta Cohort v1 (test-only; immutable candidate; no fixes during run)
-THEN: fix only reproduced P0/P1/hard beta blockers
-THEN: clean Windows operator proof
-THEN: freeze exact beta SHA + intended distribution artifact
-THEN: frozen-candidate acceptance
+COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)
+COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)
+CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.
+NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)
+THEN: fresh-main security and truth proof
+THEN: installer supply-chain and privacy/Data-Out/secrets audit
+THEN: build a new exact Windows candidate artifact; the prior artifact is historical only
+THEN: clean Windows operator proof against that exact artifact
+THEN: freeze exact candidate identity
+THEN: rerun #434 and remaining acceptance checks against that frozen candidate
+THEN: owner acceptance/distribution decision
 THEN: 3 real non-developer users
 ```
 
@@ -145,7 +151,13 @@ Selected historical and current proof records:
 - [Recorded Demo Flow](docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm)
 - [Live User Simulation Results — 2026-05-19](docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md)
 
-Recent local-first proof captures:
+Historical visual proof captures — 2026-04-28:
+
+These are authentic, dated local captures of the UI paths described in their checklist. They do
+not identify the current source SHA and therefore are not proof of the current candidate,
+installer, local-boundary security, or beta acceptance. See the
+[proof evidence index](docs/capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md) for
+the scope and status of current evidence.
 
 ![Nova local-first dashboard](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png)
 
@@ -195,11 +207,12 @@ Current grounded status:
 - PR #366 truth-hygiene provenance: MERGED
 - PR #378 narration/front-door package: MERGED / VERIFIED
 - #388: COMPLETE / TRUTH-CHECKER PREREQUISITE SATISFIED
-- #368: NEXT BOUNDED TECHNICAL LANE
-- #387: AFTER #368 / DOCS-ONLY
-- PR #335 reconstruction: PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED
-- PR #335 Google Workspace Foundation remains draft/unmerged historical Foundation/auth/identity code;
-  it is not a current capability and must be reconstructed/reviewed separately before any merge
+- #368: COMPLETE
+- #387: COMPLETE / DOCS-ONLY
+- #394: GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED
+- historical PR #335 implementation path: SUPERSEDED BY MERGED PR #394;
+  retain it as historical reference only, not a reconstruction or merge lane
+- the Foundation is identity/auth infrastructure, not permission for Google domain-data access
 - Google Tasks and Gmail are not built as current Nova capabilities
 - Operational Continuity is strategically accepted but implementation-inactive and non-authorizing
 - no broad browser/computer-use, financial-write, autonomous outreach, contracting,
@@ -214,7 +227,7 @@ Historical sequencing references (May 2026; superseded by the master roadmap for
 [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
 [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
 
-Current decision sequence:
+Historical pre-#394 decision sequence (superseded; not current work or authorization):
 
 ```text
 1. Issue #388 is COMPLETE; its TRUTH-CHECKER PREREQUISITE is SATISFIED.

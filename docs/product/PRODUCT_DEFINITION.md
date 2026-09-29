@@ -141,9 +141,10 @@ idea can be recorded without becoming current work.
 
 ## The five layers
 
-1. **Core Engine** (complete, production quality) — governance, capability system, read-only
-   execution, governed memory, runtime truth, capability locking, deterministic
-   recommendations, honest degradation.
+1. **Core Engine** (implemented governance foundation for the bounded current scope) —
+   governance, capability system, read-only execution, governed memory, runtime truth,
+   capability locking, deterministic recommendations, and honest degradation. This is not a
+   claim of beta-release certification or broad production readiness.
 2. **Awareness** (good, verified) — weather, news, calendar, business priority.
 3. **Business** (strong) — C1 decision surface: many trusted inputs → one recommendation.
 4. **Personal** (incomplete) — Gmail, Google Tasks/Reminders, Traffic are absent (not broken).
@@ -152,8 +153,8 @@ idea can be recorded without becoming current work.
 ## The decision engine (reusable foundation)
 
 C1 completed **Version 1 of the decision engine**: deterministic · governed · honest ·
-testable · explainable. The engine is the same whether the input is Auralis, weather, email,
-or calendar — only the inputs change. Future surfaces reuse this engine.
+testable · explainable. It is a reusable design and implementation foundation, not evidence
+that every named input or future surface is connected, user-ready, or release-certified.
 
 ## Trust classes — epistemic honesty (core principle)
 
