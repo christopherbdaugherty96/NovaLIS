@@ -1,6 +1,6 @@
 # Nova Proof Evidence Index
 
-Last reviewed: 2026-09-28  
+Last reviewed: 2026-09-29
 Repository reference for this review: `origin/main@486ad3dddc3f75412085b968c28561ab57e25686`
 
 ## Purpose
@@ -15,7 +15,7 @@ generators inspect.
 | Evidence | What it supports | What it does not support |
 | --- | --- | --- |
 | PR #438 first Synthetic Beta Cohort v1 | Test-only cohort evidence for the candidate it exercised | Product acceptance, a clean Windows install, or security certification |
-| PR #439 connected-user cohort expectation correction | Correction of the cohort route expectation on current main | A rerun against a new accepted candidate |
+| PR #439 connected-user cohort expectation correction | Correction of the cohort route expectation on current main | A rerun against a new frozen candidate |
 | Generated runtime truth | Mechanically inspected registered runtime properties | Uninspected direct paths, user acceptance, or release readiness |
 | `docs/demo_proof/2026-04-28_user_test/` | Historical visible UI states from that date | Current main, source provenance, installer integrity, local-boundary security, authority, or beta acceptance |
 
@@ -25,7 +25,7 @@ A confirmed P1 affects the local-only boundary: if `NOVA_HOST` accepts a non-loo
 HTTP/WebSocket locality checks can trust attacker-controlled `Host`/`Origin` values rather than
 the peer address. This means Nova must remain on the default loopback-only configuration; LAN or
 internet exposure is unsupported. The bounded repair and fresh security proof are required before
-a Windows acceptance run or a new accepted candidate.
+a Windows acceptance run or a new frozen candidate.
 
 This index records the boundary; it does not claim the repair has landed.
 
@@ -36,8 +36,11 @@ This index records the boundary; it does not claim the repair has landed.
 3. Run installer, supply-chain, privacy/Data-Out, and secrets checks with their actual output.
 4. Perform clean Windows operator proof against that exact artifact, with environment and
    operator recorded.
-5. Re-run Issue #434's frozen cohort against the accepted candidate; retain failures and results.
-6. Treat three non-developer users as a later acceptance input, not as a substitute for the
+5. Freeze the exact candidate identity, then re-run Issue #434 and the remaining acceptance
+   checks against that frozen candidate; retain failures and results.
+6. Record the owner's acceptance/distribution decision after those checks. Freezing establishes
+   candidate identity, not acceptance.
+7. Treat three non-developer users as a later acceptance input, not as a substitute for the
    technical/security evidence above.
 
 ## Screenshot standard
