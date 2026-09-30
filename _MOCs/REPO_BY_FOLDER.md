@@ -493,19 +493,12 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This folder contains the detailed Brain architecture package.
 - [doc] [[docs/brain/TASK_ENVIRONMENT_ROUTER|Task Environment Router]]
   summary: The Task Environment Router is the missing middle layer between conversation and execution.
-- [doc] [[docs/business/README|docs/business — Business-execution reference (not Nova runtime)]]
   summary: This folder holds business-execution materials for the owner's Website LLC / Auralis
-- [code] [[docs/business/website_llc/demo_hub/about-christopher.html|about-christopher]]
   summary: <!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Christo...
-- [code] [[docs/business/website_llc/demo_hub/index.html|index - website_llc/demo_hub]]
   summary: <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Webs...
-- [code] [[docs/business/website_llc/demo_hub/restaurant-demo.html|restaurant-demo]]
   summary: <!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Restaur...
-- [doc] [[docs/business/website_llc/WEBSITE_LLC_EXECUTION_SYSTEM_2026-04-23|Website LLC Execution System (2026-04-23)]]
   summary: Turn Website LLC into a real, repeatable service business.
-- [code] [[docs/business/website_llc/website_llc_landing_page.html|website_llc_landing_page]]
   summary: <!DOCTYPE html>
-- [doc] [[docs/business/website_llc/WEBSITE_LLC_REVENUE_ASSETS_2026-04-23|Website LLC Revenue Assets (2026-04-23)]]
   summary: Simple assets that help turn outreach into conversations and conversations into paying clients.
 - [doc] [[docs/CANONICAL/00_INDEX|Nova Canonical Truth — Index]]
   summary: Last assembled: 2026-07-08.
@@ -1205,19 +1198,12 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: Template
 - [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/02_PROJECTS/NovaLIS/Nova Vision|Nova Vision]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/AI Work Queue|AI Work Queue]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Auralis Digital Master Context|Auralis Digital Master Context]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Business Operations Backlog|Business Operations Backlog]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Lucid Creations Master Context|Lucid Creations Master Context]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Printify Product Pipeline|Printify Product Pipeline]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/RJ Print Master Context|RJ Print Master Context]]
   summary: Status: Template
-- [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/Shopify Commerce Plan|Shopify Commerce Plan]]
   summary: Status: Template
 - [doc] [[docs/future/ai_ecosystem_operating_model/vault_template/04_DECISIONS/Decision Log|Decision Log]]
   summary: Status: Template
@@ -1233,17 +1219,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: Reference — kept current
 - [code] [[docs/future/Auralis-Novalis merger goals|Auralis-Novalis merger goals]]
   summary: Yes — that is the better framing.
-- [doc] [[docs/future/AURALIS_CLIENT_FUNNEL|Auralis Client Funnel]]
   summary: Date: 2026-04-26
-- [doc] [[docs/future/auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK|Auralis Social Content Workflow Pack]]
   summary: Status: future planning.
-- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS|Auralis Digital Client Intake OS]]
   summary: Last updated: 2026-05-06
-- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_AGREED_DECISION|Auralis Digital Client Intake OS — Agreed Decision]]
   summary: Last updated: 2026-05-06
-- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS|Auralis Digital Client Intake OS — Second Pass Review]]
   summary: Last updated: 2026-05-06
-- [doc] [[docs/future/AURALIS_LEAD_CONSOLE_V1|Auralis Lead Console v1]]
   summary: Status: future planning only.
 - [code] [[docs/future/auralis_mock_leads/mock_barber_shop_001.json|mock_barber_shop_001]]
   summary: scenario_id": "mock_barber_shop_001",
@@ -1253,17 +1233,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: scenario_id": "mock_mobile_detailing_ypsilanti_001",
 - [doc] [[docs/future/auralis_mock_leads/README|Auralis Mock Lead Fixture Library]]
   summary: Status: planning/test fixtures for future workflow
-- [doc] [[docs/future/AURALIS_MVP_EXECUTION_PLAN|Auralis MVP Execution Plan]]
   summary: Date: 2026-04-26
-- [doc] [[docs/future/AURALIS_NOVALIS_INTEGRATION_GOALS|Auralis Digital and NovaLIS Integration Goals]]
   summary: Date: 2026-04-26
-- [doc] [[docs/future/AURALIS_PRICING_AND_PACKAGES|Auralis Pricing and Packages]]
   summary: Date: 2026-04-26
-- [doc] [[docs/future/AURALIS_RISK_AND_POLICY|Auralis Risk and Policy]]
   summary: Date: 2026-04-26
-- [doc] [[docs/future/AURALIS_TECHNICAL_INTEGRATION_SPEC|Auralis Technical Integration Spec]]
   summary: Date: 2026-04-26
-- [doc] [[docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW|Auralis Website Coworker Workflow]]
   summary: Status: future business workflow / not shipped runtime capability
 - [doc] [[docs/future/BRAIN_HUMAN_GUIDE|Nova Brain Human Guide]]
   summary: Status: planning guide / human-readable architecture summary.
@@ -1317,9 +1291,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: planning / architecture recommendation.
 - [doc] [[docs/future/NOVA_APPROVAL_QUEUE_PRODUCT_PLAN_2026-04-27|Nova Approval Queue Product Plan]]
   summary: Date: 2026-04-27
-- [doc] [[docs/future/NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18|Nova / Auralis Big Picture Operating Model - 2026-05-18]]
   summary: Status: future planning / not runtime truth.
-- [doc] [[docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE|Nova x Auralis Digital Website Engine]]
   summary: Status: future concept / business application
 - [doc] [[docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN|Nova Background Reasoning, Not Background Automation Plan]]
   summary: Date: 2026-04-27

@@ -39,7 +39,8 @@ layout.)
 canonical layer and are **`active/cited`** — e.g. the current Google connector foundation
 (`GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md`, `NOVA_GOOGLE_CONNECTOR_MODEL.md`), the
 brain/learning/routine specs listed in `docs/future/README.md`, `GOVERNED_GOAL_CARDS_DESIGN.md`,
-`NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md`, and `NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md`.
+and `NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md`. Private Auralis commercial planning is
+outside the public-source boundary; see `../security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md`.
 Those are not re-listed below. This map focuses on the **80 orphaned** top-level docs.
 
 ---
@@ -54,15 +55,7 @@ HARD PAUSE (2026-04-27).
 
 | Doc | Status | Intended home |
 | --- | --- | --- |
-| AURALIS_NOVALIS_INTEGRATION_GOALS.md | owner-paused | H12 / merger paused 2026-04-27 |
-| AURALIS_MVP_EXECUTION_PLAN.md | owner-paused | H12 |
-| AURALIS_TECHNICAL_INTEGRATION_SPEC.md | owner-paused | H12 |
-| AURALIS_WEBSITE_COWORKER_WORKFLOW.md | owner-paused | H12 |
-| NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md | owner-paused | H12 |
-| AURALIS_CLIENT_FUNNEL.md | horizon | H12 |
-| AURALIS_LEAD_CONSOLE_V1.md | horizon | H12 |
-| AURALIS_PRICING_AND_PACKAGES.md | horizon | H12 |
-| AURALIS_RISK_AND_POLICY.md | horizon | H12 |
+| Private Auralis commercial planning | owner-paused; private | Outside public Nova source; see `../security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md` |
 | README_CREATIVE_COMMERCE_ORCHESTRATION.md | design-history | H12 |
 | PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22.md | superseded | archive candidate |
 | commerce_marketing_operator_decision.md | design-history | H12 (do not promote — read-only boundary) |
@@ -186,8 +179,6 @@ active (`docs/status/CURRENT_WORK_STATUS.md`).
 | auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK.md | owner-paused | Auralis second business |
 | FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22.md | horizon | portfolio operating model |
 | active_screen_command_layer/README.md | horizon | screen-command surface (future) |
-| `Auralis-Novalis merger goals` (no extension, top level) | owner-paused | merger HARD PAUSE 2026-04-27 |
-
 ---
 
 ## Archive candidates (do not move without a separate reviewed pass)

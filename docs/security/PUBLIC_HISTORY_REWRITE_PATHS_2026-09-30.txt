@@ -1,0 +1,29 @@
+# Personal ChatGPT/account export and companion assets
+NovaLIS-Governance/OLD_VISION.md.html
+NovaLIS-Governance/OLD_VISION.md_files/
+docs/archive/OLD_VISION.md_files/
+docs/archive/phase 3/NovaLIS-Governance(older)/OLD_VISION.md_files/
+docs/GOVERNANCE/NovaLIS-Governance(older)/OLD_VISION.md_files/
+
+# Runtime/user state that must never have been published
+nova_backend/src/data/ledger.jsonl
+nova_backend/memory/quick_corrections.jsonl
+
+# Private business execution material
+docs/business/
+docs/future/ai_ecosystem_operating_model/vault_template/03_BUSINESS/
+docs/future/auralis_digital/
+docs/future/AURALIS_CLIENT_FUNNEL.md
+docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS.md
+docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_AGREED_DECISION.md
+docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS.md
+docs/future/AURALIS_LEAD_CONSOLE_V1.md
+docs/future/AURALIS_MVP_EXECUTION_PLAN.md
+docs/future/AURALIS_NOVALIS_INTEGRATION_GOALS.md
+docs/future/AURALIS_PRICING_AND_PACKAGES.md
+docs/future/AURALIS_RISK_AND_POLICY.md
+docs/future/AURALIS_TECHNICAL_INTEGRATION_SPEC.md
+docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md
+docs/future/Auralis-Novalis merger goals
+docs/future/NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md
+docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md

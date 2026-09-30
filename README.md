@@ -265,8 +265,7 @@ The documents below remain design references; the master roadmap decides sequenc
 - [Free-First Cost Governance First Steps](docs/design/Phase%206/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md)
 - [Governed Media and E-Commerce Engine](docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)
 - [Media Engine Safe Implementation Roadmap](docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP.md)
-- [Nova x Auralis Digital Website Engine](docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
-- [Auralis Website Coworker Workflow](docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
+- [Auralis public-source boundary](docs/security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md)
 - [YouTubeLIS Tool Folder](docs/tools/youtubelis.md)
 
 ## Core Principles

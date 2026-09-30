@@ -39,9 +39,7 @@ Then onboarding and reference:
 - [Google Read-Only Connector Foundation](future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md)
 - [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Governed Goal Cards Design](future/GOVERNED_GOAL_CARDS_DESIGN.md)
-- [Auralis Digital Client Intake OS](future/AURALIS_DIGITAL_CLIENT_INTAKE_OS.md)
-- [Auralis Digital Client Intake OS — Second Pass](future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS.md)
-- [Auralis Digital Client Intake OS — Agreed Decision](future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_AGREED_DECISION.md)
+- [Auralis public-source boundary](security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md)
 
 ## What Nova Is
 Nova is a governed local AI runtime focused on separating reasoning from execution.

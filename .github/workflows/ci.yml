@@ -47,6 +47,10 @@ jobs:
         run: |
           python scripts/check_release_identity.py
 
+      - name: Verify public-source hygiene
+        run: |
+          python scripts/check_public_source_hygiene.py
+
       - name: Ruff lint
         run: |
           ruff check nova_backend/src
@@ -102,6 +106,10 @@ jobs:
       - name: Verify release identity consistency
         run: |
           python scripts/check_release_identity.py
+
+      - name: Verify public-source hygiene
+        run: |
+          python scripts/check_public_source_hygiene.py
 
       - name: Pytest — adversarial suite (Windows)
         env:

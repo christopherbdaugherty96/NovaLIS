@@ -17,6 +17,7 @@ PHASE-2 RULES:
 
 import os
 import subprocess
+from pathlib import Path
 from typing import Any, Dict
 
 from ...actions.action_request import ActionRequest
@@ -40,11 +41,11 @@ def _allowed_folders() -> Dict[str, Dict[str, Any]]:
     return {
         "documents": {
             "name": "Documents",
-            "path": r"C:\Users\NovaUser\Documents",
+            "path": str(Path.home() / "Documents"),
         },
         "downloads": {
             "name": "Downloads",
-            "path": r"C:\Users\NovaUser\Downloads",
+            "path": str(Path.home() / "Downloads"),
         },
     }
 

@@ -260,8 +260,8 @@ def apply_tone_safeguard(text: str) -> str:
 # ==================== PHASE-2 ACTION ALLOWLISTS ====================
 
 ALLOWED_FOLDERS = {
-    "downloads": r"C:\Users\NovaUser\Downloads",
-    "documents": r"C:\Users\NovaUser\Documents",
+    "downloads": str(Path.home() / "Downloads"),
+    "documents": str(Path.home() / "Documents"),
 }
 
 ALLOWED_APPS = {

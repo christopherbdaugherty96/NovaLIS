@@ -47,7 +47,8 @@ The implemented system is a **partial realization** of these ideas, not full com
   strategic compass for Nova as a local-first authority and decision operating system. The
   master roadmap still controls ordering and lane locks still control scope.
 
-- `NOVA_AURALIS_BIG_PICTURE_OPERATING_MODEL_2026-05-18.md` - future Nova/Auralis operating-model and measurement-spine direction.
+- Private Auralis commercial planning has moved outside the public-source boundary. See
+  `../security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md`.
 
 - `ROADMAP.md` — historical phased expansion path; **superseded for ordering** by
   `NOVA_MASTER_ROADMAP_2026-07-05.md`.

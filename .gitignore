@@ -68,8 +68,35 @@ Untitled.base
 nova_backend/Untitled.base
 nova_data/
 
-# Environment secrets - NEVER commit this
+# Environment secrets - NEVER commit these
+.env
+.env.*
+!.env.example
+!**/.env.example
 nova_backend/.env
+**/credentials.json
+**/client_secret*.json
+**/oauth_token*.json
+**/provider_keys.json
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Personal/account exports and private business workspace material
+*chatgpt*export*
+*conversation*export*
+*.har
+private/
+docs/private/
+docs/business/
+docs/future/private_business/
+
+# Release artifacts require an explicit release review; do not track binaries
+*.msi
+*.msix
+*.appx
+*.dmg
 
 # Python packaging build artifacts (Tier 1.4)
 *.egg-info/
