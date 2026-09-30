@@ -7,7 +7,10 @@ bounded execution, explicit user authority, and inspectable outcomes.**
 
 ## A supported workflow today
 
-On a configured development installation, ask Nova to draft an email about tomorrow's plans.
+On a configured development installation, ask:
+
+> Draft an email to test@example.com about tomorrow's plans.
+
 Confirm the governed draft action, then review the draft in your local mail client and inspect
 the governed-action receipt. You review and send the message yourself: Nova does not send email.
 A receipt records the governed action and available outcome evidence; opening a draft is not
