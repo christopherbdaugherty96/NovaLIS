@@ -1,5 +1,7 @@
 # NovaLIS
 
+**Version 0.5 Alpha — Current State**
+
 **Nova is a governance-first, local-first AI system that connects model intelligence to
 bounded execution, explicit user authority, and inspectable outcomes.**
 
@@ -23,7 +25,7 @@ foundation model or a universal interface to every model provider.
 
 ## Current maturity and limits
 
-Version 0.5 Alpha is preparing for private-beta validation, not an accepted or
+This alpha is preparing for private-beta validation, not an accepted or
 distribution-ready beta. Usefulness and repeat use with outside users remain to be established.
 
 - Local-first does not mean offline-only: configured search, data sources, and external
