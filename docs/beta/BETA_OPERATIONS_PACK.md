@@ -143,6 +143,11 @@ candidate can help with; do not promise unavailable provider access or automatic
 5. Add testers 4–5 only after a recorded owner checkpoint and only if blocker-free. Favorable
    product feedback never waives the acceptance/stop policy.
 
+All five testers must use the same frozen source SHA and intended distribution artifact as
+testers 1–3. If either identity changes, obtain acceptance for the replacement candidate and
+restart the cohort. Retain earlier observations separately; never combine different candidates
+in the 4/5 completion/comprehension or 3/5 voluntary-return thresholds.
+
 This staged gate does not override the acceptance/stop policy or convert a desirable unsupported
 request into a beta failure.
 
