@@ -63,7 +63,21 @@ Freeze is a stop condition, not a claim of beta success.
 
 ## Exact frozen-SHA gate
 
-Before any non-developer receives the candidate, rerun acceptance against the **exact frozen SHA and intended distribution artifact** without changing code:
+### Controlled technical-validation exception
+
+Once the [technical-alpha protocol](2026-09-29-technical-alpha-protocol.md) is reviewed and
+merged, its designated external technical operators may receive an exact experimental artifact
+to obtain clean-Windows evidence before this frozen-candidate gate. This requires the protocol's
+security, distribution-permission, reporting, and artifact-specific owner authorization gates.
+Hard blockers remain binding. Technical operators are not product-cohort participants for this
+evidence, and their reports do not establish product acceptance. Before acceptance, artifact
+delivery remains private and access-controlled to the protocol's named technical operators.
+Public artifact listings/downloads require clean-Windows proof, normal frozen-candidate acceptance,
+and the owner acceptance/distribution decision. Ordinary product users remain gated below.
+
+### Product distribution
+
+Before any ordinary product tester receives the candidate (outside the controlled technical-validation exception above), rerun acceptance against the **exact frozen SHA and intended distribution artifact** without changing code:
 
 - full hero loop from startup through awareness, recommendation, governed action/outcome, and end-of-day use;
 - relevant degraded/failure behavior;
