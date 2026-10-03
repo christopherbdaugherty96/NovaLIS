@@ -61,7 +61,9 @@ Capability describes what the runtime can technically do; it does not grant perm
 ## What Nova is not yet
 
 - not an autonomous agent or workflow automation system
-- not remotely accessible (local-only by design for Alpha 0)
+- not supported for remote access: Nova is meant to be local-only, but a token-gated remote
+  bridge route still exists in code and is being disabled for Alpha 0; do not expose Nova to a
+  network
 - not a Google Workspace or email-reading assistant
 - not a recovery/restore product for end users
 - not a polished daily-use product
