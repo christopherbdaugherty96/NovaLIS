@@ -26,11 +26,15 @@ published; earlier installer artifacts are historical and unsupported.
 
 Nova is designed to run on, and be reachable only from, the user's own machine.
 
-- **Local-only.** Nova binds to loopback by default. Exposing it to a network, tunnel, or
-  reverse proxy is unsupported. Remote access is not supported in the current release.
+- **Local-only (intended and default deployment).** Nova binds to loopback by default.
+  Enforcement based on the actual network peer, and bind validation in every launcher, are being
+  closed for Alpha 0. Until then, current `main` must not be exposed to any network, tunnel,
+  reverse proxy, or port forward. Remote access is not supported.
 - **Intelligence is not authority.** Model output, memory, conversation context, and connection
   state never authorize an action by themselves. Sensitive actions require a single-use approval
-  bound to the session, the capability, and the exact action.
+  bound to the session, the capability, and the exact action. The parsing of yes/no replies that
+  issues those approvals is being hardened for Alpha 0; answer confirmation prompts with a plain
+  `yes` or `no`.
 - **Governed outbound access.** Governed capabilities make outbound requests through Nova's
   network mediator. Known exceptions are tracked in the generated
   [Bypass Surfaces](docs/current_runtime/BYPASS_SURFACES.md) report.

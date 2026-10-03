@@ -2,9 +2,10 @@
 
 **Version 0.5 Alpha — Current State**
 
-> **Nova is a local-first personal AI that keeps your context and your authority on your own
-> machine.** Models can help Nova think; only Nova decides what they see, what is allowed to
-> happen, and what is recorded about what actually happened.
+> **Nova is a local-first personal AI built to keep your context and your authority on your own
+> machine.** Models can help Nova think; Nova is being built so that it alone decides what they
+> see, what is allowed to happen, and what is recorded about what actually happened. Governed
+> paths already work this way; closing the remaining gaps is the current Alpha 0 work.
 
 Nova separates intelligence from authority. Reasoning can be broad; real execution stays
 bounded, approved, inspectable, and recorded.
@@ -38,7 +39,9 @@ key is configured.
   Nova does not send email.
 - **Read-only business data:** Shopify intelligence reports. No Shopify writes.
 - **Approval for sensitive actions:** single-use approvals bound to the session, the capability,
-  and the exact action. A replayed, expired, or changed action is refused.
+  and the exact action. A replayed, expired, or changed action is refused. The yes/no reply
+  handling that issues an approval is being hardened for Alpha 0; answer confirmation prompts
+  with a plain `yes` or `no`.
 - **Receipts and outcome truth:** attempted, completed, failed, degraded (receipt failed), and
   unknown (timed out) outcomes are kept distinct.
 

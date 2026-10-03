@@ -39,7 +39,7 @@ NOT AUTHORIZED: bridge repair/redesign, recovery wiring before step 10,
 new capabilities, connector expansion, broad documentation synchronization.
 ```
 
-Coordination and handoffs for active work live in `.agent_context/handoffs/`.
+When used, coordination handoffs follow the protocol in `.agent_context/handoffs/README.md`.
 Those files are collaboration records, not runtime truth or execution authority.
 
 ## Post-#405 beta-readiness truth — 2026-09-20

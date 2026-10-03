@@ -45,7 +45,7 @@ Generated from code by `scripts/generate_runtime_docs.py`; do not edit by hand:
   `nova_backend/static/`; when they disagree, `nova_backend/static/` is what users see
 - `installer/windows/`: Windows installer definition and bootstrap script
 - `scripts/`: launchers, runtime-truth generation, and consistency checks
-- `.agent_context/`: current priority and agent context; `handoffs/` holds Codex/Claude handoffs
+- `.agent_context/`: current priority and agent context; `handoffs/README.md` is the Codex/Claude handoff protocol
 - `automations/`: tracked Codex automation definitions
 
 ## Backend orientation
