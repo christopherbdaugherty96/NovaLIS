@@ -1115,43 +1115,22 @@ class OSDiagnosticsExecutor:
 
     @staticmethod
     def _bridge_status_details() -> dict[str, object]:
-        token = OSDiagnosticsExecutor._bridge_token_value()
-        bridge_permission_enabled = runtime_settings_store.is_permission_enabled(
-            "remote_bridge_enabled"
-        )
-        token_configured = bool(token)
-        enabled = bool(token and bridge_permission_enabled)
-        if enabled:
-            status = "enabled"
-            summary = (
-                "OpenClaw bridge is enabled. Token-authenticated remote requests can enter Nova through the governed bridge "
-                "without widening execution authority."
-            )
-        elif token_configured:
-            status = "paused"
-            summary = (
-                "OpenClaw bridge is configured but paused in Settings. Remote requests stay blocked until you re-enable the bridge."
-            )
-        else:
-            status = "disabled"
-            summary = "OpenClaw bridge is disabled until a bridge token is configured."
         return {
-            "status": status,
-            "enabled": enabled,
-            "token_configured": token_configured,
-            "summary": summary,
+            "status": "unavailable",
+            "enabled": False,
+            "token_configured": False,
+            "summary": "Remote bridge is unavailable in the local-only Alpha 0 build.",
             "name": "OpenClaw Bridge",
-            "transport": "HTTP",
-            "auth": "Token required" if token_configured else "Token not configured",
-            "scope": "Read and reasoning only",
+            "transport": "Unavailable",
+            "auth": "Unavailable",
+            "scope": "Disabled for Alpha 0",
             "effectful_actions": "Blocked",
-            "continuity": "Stateless stage-1 bridge",
+            "continuity": "Unavailable",
             "endpoint": "/api/openclaw/bridge/message",
-            "status_label": (
-                "Enabled" if enabled else "Paused" if token_configured else "Disabled"
-            ),
-            "auth_label": "Configured" if token_configured else "Missing",
-            "settings_permission": "enabled" if bridge_permission_enabled else "paused",
+            "status_label": "Unavailable in Alpha 0",
+            "auth_label": "Unavailable",
+            "settings_permission": "unavailable",
+            "alpha0_disabled": True,
         }
 
     @staticmethod

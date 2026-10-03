@@ -31,15 +31,21 @@ import time
 import webbrowser
 from pathlib import Path
 
-HOST = os.environ.get("NOVA_HOST", "127.0.0.1")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+BACKEND_DIR = PROJECT_ROOT / "nova_backend"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.utils.loopback_bind import require_loopback_bind_host
+
+HOST = require_loopback_bind_host(os.environ.get("NOVA_HOST", "127.0.0.1"))
 PORT = int(os.environ.get("NOVA_PORT", "8000"))
-BASE_URL = f"http://{HOST}:{PORT}"
+URL_HOST = f"[{HOST}]" if ":" in HOST else HOST
+BASE_URL = f"http://{URL_HOST}:{PORT}"
 HEALTH_ENDPOINT = f"{BASE_URL}/phase-status"
 STARTUP_TIMEOUT = int(os.environ.get("NOVA_STARTUP_TIMEOUT", "90"))  # seconds
 PID_DIR = Path(__file__).resolve().parent / "pids"
 PID_FILE = PID_DIR / "nova_backend.pid"
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-BACKEND_DIR = PROJECT_ROOT / "nova_backend"
 
 
 def _is_running() -> bool:

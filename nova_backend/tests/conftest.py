@@ -17,6 +17,35 @@ from __future__ import annotations
 import pytest
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _testclient_uses_loopback_peer():
+    """Keep synthetic test transport identity out of production locality code."""
+    from starlette.testclient import TestClient
+
+    original_init = TestClient.__init__
+    original_websocket_connect = TestClient.websocket_connect
+
+    def _loopback_init(self, *args, **kwargs):
+        kwargs.setdefault("client", ("127.0.0.1", 50000))
+        kwargs.setdefault("base_url", "http://localhost")
+        return original_init(self, *args, **kwargs)
+
+    def _loopback_websocket_connect(self, url, *args, **kwargs):
+        # Starlette builds websocket URLs from a hard-coded ws://testserver base,
+        # ignoring base_url; give relative paths a loopback host instead.
+        if isinstance(url, str) and url.startswith("/"):
+            url = "ws://localhost" + url
+        return original_websocket_connect(self, url, *args, **kwargs)
+
+    TestClient.__init__ = _loopback_init
+    TestClient.websocket_connect = _loopback_websocket_connect
+    try:
+        yield
+    finally:
+        TestClient.__init__ = original_init
+        TestClient.websocket_connect = original_websocket_connect
+
+
 @pytest.fixture(autouse=True)
 def _block_external_browser_launches(monkeypatch: pytest.MonkeyPatch):
     """Prevent automated tests from opening the user's real browser.

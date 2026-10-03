@@ -109,15 +109,16 @@ def test_runtime_settings_can_pause_remote_bridge(monkeypatch, tmp_path):
     assert pause_response.status_code == 200
     payload = pause_response.json()
     assert payload["settings"]["permissions"]["remote_bridge_enabled"] is False
-    assert payload["bridge"]["status"] == "paused"
+    assert payload["bridge"]["status"] == "unavailable"
+    assert payload["bridge"]["alpha0_disabled"] is True
 
     bridge_response = client.post(
         "/api/openclaw/bridge/message",
         json={"text": "daily brief"},
         headers={"X-Nova-Bridge-Token": "secret-token"},
     )
-    assert bridge_response.status_code == 403
-    assert "paused in settings" in bridge_response.json()["detail"].lower()
+    assert bridge_response.status_code == 503
+    assert "unavailable" in bridge_response.json()["detail"].lower()
 
 
 def test_runtime_settings_permission_updates_sync_openclaw_scheduler(monkeypatch, tmp_path):

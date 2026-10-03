@@ -13,6 +13,7 @@ from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.governor.execute_boundary.execute_boundary import GOVERNED_ACTIONS_ENABLED
 from src.governor.governor_mediator import GovernorMediator, Invocation
 from src.utils.route_protection import (
+    DISABLED_ALPHA0_ROUTE_PREFIXES,
     LOCAL_ONLY_ROUTE_PROTECTIONS,
     PUBLIC_ROUTE_PREFIXES,
     REMOTE_TOKEN_GATED_ROUTE_PREFIXES,
@@ -872,6 +873,7 @@ def _governed_remote_bridge_present() -> bool:
         "build_bridge_router" in brain_src
         and '"/api/openclaw/bridge/message"' in bridge_api_src
         and "openclaw_bridge" in bridge_api_src
+        and '"alpha0_disabled": True' not in bridge_api_src
     )
 
 
@@ -1464,6 +1466,8 @@ def _route_protection_for_path(path: str) -> str:
     local_prefixes = tuple(item.prefix for item in LOCAL_ONLY_ROUTE_PROTECTIONS)
     if text.startswith(local_prefixes):
         return "local_only"
+    if text.startswith(DISABLED_ALPHA0_ROUTE_PREFIXES):
+        return "disabled_alpha0"
     if text.startswith(REMOTE_TOKEN_GATED_ROUTE_PREFIXES):
         return "token_gated_remote"
     if text == "/" or text.startswith(tuple(prefix for prefix in PUBLIC_ROUTE_PREFIXES if prefix != "/")):
@@ -1500,6 +1504,7 @@ def render_route_protection_coverage_markdown() -> str:
         "## Summary",
         "",
         f"- local_only: {counts.get('local_only', 0)}",
+        f"- disabled_alpha0: {counts.get('disabled_alpha0', 0)}",
         f"- token_gated_remote: {counts.get('token_gated_remote', 0)}",
         f"- public: {counts.get('public', 0)}",
         f"- unclassified: {counts.get('unclassified', 0)}",
@@ -1508,6 +1513,15 @@ def render_route_protection_coverage_markdown() -> str:
         "",
     ]
     lines.extend(f"- `{item.prefix}` - {item.reason}" for item in LOCAL_ONLY_ROUTE_PROTECTIONS)
+
+    lines.extend(
+        [
+            "",
+            "## Alpha 0 Disabled Prefixes",
+            "",
+        ]
+    )
+    lines.extend(f"- `{prefix}`" for prefix in DISABLED_ALPHA0_ROUTE_PREFIXES)
 
     lines.extend(
         [
@@ -1832,6 +1846,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "## Route Protection Coverage",
         "",
         f"- Local-only routes: {route_protection['counts'].get('local_only', 0)}",
+        f"- Alpha 0 disabled routes: {route_protection['counts'].get('disabled_alpha0', 0)}",
         f"- Token-gated remote routes: {route_protection['counts'].get('token_gated_remote', 0)}",
         f"- Public routes: {route_protection['counts'].get('public', 0)}",
         f"- Unclassified routes: {route_protection['counts'].get('unclassified', 0)}",

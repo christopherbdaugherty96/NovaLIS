@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import json
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
 from fastapi import WebSocketDisconnect
-
 from src import brain_server
 from src.conversation.session_router import GateResult
 
@@ -17,7 +17,8 @@ class _ScriptedWebSocket:
     def __init__(self, messages: list[object]) -> None:
         self._messages = list(messages)
         self.sent_messages: list[dict] = []
-        self.headers = {"host": "testserver", "origin": "http://testserver"}
+        self.client = SimpleNamespace(host="127.0.0.1", port=50000)
+        self.headers = {"host": "localhost", "origin": "http://localhost"}
 
     async def accept(self) -> None:
         return None

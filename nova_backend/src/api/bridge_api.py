@@ -233,11 +233,29 @@ def _build_bridge_response(
 def build_bridge_router(deps) -> APIRouter:
     router = APIRouter()
 
+    alpha0_unavailable = {
+        "status": "unavailable",
+        "enabled": False,
+        "token_configured": False,
+        "summary": "Remote bridge is unavailable in the local-only Alpha 0 build.",
+        "name": "OpenClaw Bridge",
+        "transport": "Unavailable",
+        "auth": "Unavailable",
+        "scope": "Disabled for Alpha 0",
+        "effectful_actions": "Blocked",
+        "continuity": "Unavailable",
+        "endpoint": "/api/openclaw/bridge/message",
+        "status_label": "Unavailable in Alpha 0",
+        "auth_label": "Unavailable",
+        "settings_permission": "unavailable",
+        "alpha0_disabled": True,
+    }
+
     @router.get("/api/openclaw/bridge/status")
     async def openclaw_bridge_status():
         def _build():
             return {
-                "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),
+                "bridge": dict(alpha0_unavailable),
                 "connections": deps.OSDiagnosticsExecutor._connection_status_details(),
                 "settings": deps.runtime_settings_store.snapshot(),
             }
@@ -249,49 +267,13 @@ def build_bridge_router(deps) -> APIRouter:
         x_nova_bridge_token: str | None = Header(default=None),
         authorization: str | None = Header(default=None),
     ):
-        bridge_runtime = deps.OSDiagnosticsExecutor._bridge_status_details()
-        if not deps.runtime_settings_store.is_permission_enabled("remote_bridge_enabled"):
-            raise HTTPException(
-                status_code=403,
-                detail="OpenClaw bridge is paused in Settings. Re-enable it before sending remote requests.",
-            )
-        expected_token = deps.OSDiagnosticsExecutor._bridge_token_value()
-        if not expected_token:
-            raise HTTPException(status_code=503, detail="OpenClaw bridge is disabled until a bridge token is configured.")
-
-        provided_token = str(x_nova_bridge_token or "").strip() or _extract_bridge_bearer_token(authorization)
-        if not provided_token or provided_token != expected_token:
-            raise HTTPException(status_code=401, detail="Bridge token is missing or invalid.")
-
-        text = str(payload.get("text") or "").strip()
-        if not text:
-            raise HTTPException(status_code=400, detail="Bridge request must include non-empty text.")
-
-        blocked_reason = _bridge_scope_block_reason(text, hard_action_prefixes=deps.HARD_ACTION_PREFIXES)
-        if blocked_reason:
-            return {
-                "ok": False,
-                "request_text": text,
-                "reply": blocked_reason,
-                "bridge": bridge_runtime,
-                "widgets": [],
-                "errors": [{"code": "bridge_scope_limited", "message": blocked_reason}],
-                "event_count": 0,
-            }
-
-        bridge_messages = [
-            {
-                "type": "chat",
-                "text": text,
-                "channel": "text",
-                "invocation_source": "openclaw_bridge",
-            }
-        ]
-        runner = getattr(deps, "_run_bridge_messages", None)
-        if callable(runner):
-            events = await runner(bridge_messages)
-        else:
-            events = await _run_bridge_messages(deps.websocket_endpoint, bridge_messages)
-        return _build_bridge_response(request_text=text, bridge_runtime=bridge_runtime, events=events)
+        # Alpha 0 is mechanically local-only. Keep the route as a truthful,
+        # configuration-independent refusal so settings or environment tokens
+        # cannot re-enable remote ingress.
+        del payload, x_nova_bridge_token, authorization
+        raise HTTPException(
+            status_code=503,
+            detail="OpenClaw remote bridge is unavailable in the local-only Alpha 0 build.",
+        )
 
     return router
