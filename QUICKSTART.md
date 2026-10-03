@@ -56,8 +56,9 @@ settings, or Nova's prompt change, model-backed replies stay blocked until you c
 model by typing `confirm model update` in the chat. The confirmation is recorded in Nova's
 ledger.
 
-Start Ollama before Nova. If Nova cannot reach Ollama it cannot read the model's fingerprint,
-and the lock stays on until Ollama is reachable and you confirm again.
+Start Ollama before Nova, and confirm only while Ollama is running. If Nova cannot reach Ollama
+it cannot read the model's fingerprint; confirming in that state unlocks inference without a real
+fingerprint, and no second confirmation is requested when Ollama comes back during that session.
 
 ## First commands
 

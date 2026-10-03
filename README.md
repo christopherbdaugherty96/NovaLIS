@@ -18,7 +18,14 @@ Intelligence proposes. Nova governs. You decide.
 ## What Nova does today
 
 Nova runs locally on Windows as a Python backend with a browser dashboard. It uses a local model
-through Ollama by default and can consult external reasoning providers when you allow it.
+through Ollama by default and can consult an external reasoning provider (DeepSeek) when a provider
+key is configured.
+
+> **Data-out note:** the Settings switch for external reasoning currently governs only the
+> explicit second-opinion capability. Other reasoning paths can still send prompts to the provider
+> while that switch is off. Making every provider setting block every matching outbound path is
+> an Alpha 0 item. Until it lands, leave `DEEPSEEK_API_KEY` unset if no prompt should leave your
+> machine.
 
 - **Daily awareness:** weather, news, local calendar (ICS), headline summaries, daily briefs, and
   story tracking, with grounded follow-up questions about what was loaded.
