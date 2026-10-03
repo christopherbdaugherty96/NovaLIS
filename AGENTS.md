@@ -22,6 +22,11 @@ The consolidated August Product/Platform strategy is merged as strategy-only gui
 
 ## Read Order
 
+Current work ordering lives in the top Alpha 0 block of
+`.agent_context/current_priority.md`. Older ordering blocks below it are historical where they
+conflict. Agent handoffs live in `.agent_context/handoffs/` and never override owner authority,
+this file, current priority, code, tests, or generated runtime truth.
+
 Current post-#405 override (2026-09-20):
 
 ```text

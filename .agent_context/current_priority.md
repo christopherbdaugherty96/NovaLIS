@@ -1,5 +1,47 @@
 # Current Priority
 
+## Alpha 0 decision — 2026-10-02 (supersedes ordering below)
+
+```text
+ALPHA_0_SEQUENCE: ACTIVE
+sanitized protected main: 34b8adc6952fb0698bfb2975e68b3f8a15610628
+verified main 868de9d9 (below): HISTORICAL
+
+ALPHA 0 CONTRACT:
+- local-only; actual-peer locality closed for HTTP and WebSocket
+- remote bridge DISABLED IN CODE (refuses in every configuration)
+- no reachable restore/recovery activation; no recovery, restore, or upgrade claims
+- built only from a clean exact-SHA export plus artifact forbidden-content scan
+- every provider toggle blocks every corresponding outbound path
+- attributable to exact source SHA and proof package
+
+SEQUENCE:
+1. Locality closure (missing peer fails closed; no production testclient/testserver;
+   one bind check for every launcher; /docs, /redoc, /openapi.json restricted; real TCP/WS tests)
+2. Remote bridge disabled in code
+3. Authorization input + timeout/receipt repairs (negation-safe confirmation;
+   APPROVAL_GRANTED persisted; durable outcome-unknown + retry hold; concurrency proof)
+4. Provider-toggle / Data-Out enforcement (caps 31, 48, 62, general-chat deep mode)
+5. Clean-export installer pipeline + artifact-content scan
+6. Alpha 0 combined proof (A-set)
+7. New attributable Windows artifact
+8. One external technical Windows operator
+9. Evidence-driven corrections
+10. Recovery adoption with restrictive restore semantics
+11. Full locality + authorization + recovery proof (A-set + R-set)
+12. Frozen private-beta candidate
+13. Three-user private beta
+
+ALSO REQUIRED: inspect any archived earlier installer; if it contains src\data,
+provider_keys.json, credentials, or runtime state, treat affected credentials as exposed and rotate.
+
+NOT AUTHORIZED: bridge repair/redesign, recovery wiring before step 10,
+new capabilities, connector expansion, broad documentation synchronization.
+```
+
+Coordination and handoffs for active work live in `.agent_context/handoffs/`.
+Those files are collaboration records, not runtime truth or execution authority.
+
 ## Post-#405 beta-readiness truth — 2026-09-20
 
 ```text
