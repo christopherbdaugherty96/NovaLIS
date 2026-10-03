@@ -78,6 +78,8 @@ nova_backend/.env
 **/client_secret*.json
 **/oauth_token*.json
 **/provider_keys.json
+**/google_workspace_credentials.json
+nova_backend/src/secrets/
 *.pem
 *.p12
 *.pfx

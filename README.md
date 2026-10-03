@@ -2,14 +2,195 @@
 
 **Version 0.5 Alpha — Current State**
 
-> **Nova is a local-first, governed awareness and decision-support system that maintains
-> context, identifies what matters, reduces uncertainty, and coordinates authorized tools only
-> when evidence and authority justify action.**
+> **Nova is a local-first personal AI built to keep your context and your authority on your own
+> machine.** Models can help Nova think; Nova is being built so that it alone decides what they
+> see, what is allowed to happen, and what is recorded about what actually happened. Governed
+> paths already work this way; closing the remaining gaps is the current Alpha 0 work.
 
-Nova separates intelligence from authority so useful reasoning can remain broad while real
-execution stays bounded, inspectable, revocable, and provable.
+Nova separates intelligence from authority. Reasoning can be broad; real execution stays
+bounded, approved, inspectable, and recorded.
 
-## Current post-#405 beta-readiness order — 2026-09-20
+```text
+Awareness -> Decision -> Authority -> Execution -> Outcome
+```
+
+Intelligence proposes. Nova governs. You decide.
+
+## What Nova does today
+
+Nova runs locally on Windows as a Python backend with a browser dashboard. It uses a local model
+through Ollama by default and can consult an external reasoning provider (DeepSeek) when a provider
+key is configured.
+
+> **Data-out note:** the Settings switch for external reasoning currently governs only the
+> explicit second-opinion capability. Other reasoning paths can still send prompts to the provider
+> while that switch is off. Making every provider setting block every matching outbound path is
+> an Alpha 0 item. Until it lands, leave `DEEPSEEK_API_KEY` unset if no prompt should leave your
+> machine.
+
+- **Daily awareness:** weather, news, local calendar (ICS), headline summaries, daily briefs, and
+  story tracking, with grounded follow-up questions about what was loaded.
+- **Research and reasoning:** governed web search, multi-source reports, analysis documents,
+  "explain anything", and an optional second opinion from an external reasoning provider.
+- **Governed memory:** explicit saves with provenance, confidence, conflict handling, editing,
+  locking, and deletion. Ordinary chat does not silently become durable memory.
+- **Bounded local actions:** volume, media, brightness, opening a website or an approved folder,
+  explicit screen capture and analysis, and email drafts that open in your own mail client.
+  Nova does not send email.
+- **Read-only business data:** Shopify intelligence reports. No Shopify writes.
+- **Approval for sensitive actions:** single-use approvals bound to the session, the capability,
+  and the exact action. A replayed, expired, or changed action is refused. The yes/no reply
+  handling that issues an approval is being hardened for Alpha 0; answer confirmation prompts
+  with a plain `yes` or `no`.
+- **Receipts and outcome truth:** attempted, completed, failed, degraded (receipt failed), and
+  unknown (timed out) outcomes are kept distinct.
+
+The generated [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) lists the 27
+active capabilities and their authority classes. Active is not the same as certified,
+configured, or authorized for a particular request.
+
+## What Nova does not do
+
+- No autonomous goal pursuit, background outreach, purchases, posting, or financial writes.
+- No broad browser or computer control. OpenClaw integration exists as bounded, manual-first
+  infrastructure; its presence does not imply broad autonomy.
+- No Gmail, Google Tasks, or other Google domain data. The Google connection foundation is
+  identity infrastructure only.
+- No supported remote access. Nova is local-only; do not expose it to a network.
+- No recovery or restore feature for end users yet. Snapshot machinery exists internally.
+
+## Current Status
+
+Version 0.5 Alpha is a technical-user / early-adopter state, not a finished mainstream release.
+
+Windows is Nova's primary beta-support target. The Windows installer path exists, but
+clean-machine certification is still a later acceptance gate. macOS and Linux may be
+used for source-based development only; they are not certified or supported beta
+platforms.
+
+**Current milestone: Alpha 0**, a deliberately limited first build for one external technical
+Windows tester. Alpha 0 work in progress:
+
+1. Close the local-only boundary so only this machine can reach Nova's interfaces.
+2. Disable the remote bridge in code for this release.
+3. Harden approval handling and timeout/receipt records.
+4. Make every provider setting block every matching outbound connection.
+5. Build the installer only from a clean, exact source export, with an automatic content scan.
+6. Produce one attributable Windows build and test it on a machine that is not the developer's.
+
+No installer is currently published. The exact ordering and boundaries live in
+[`.agent_context/current_priority.md`](.agent_context/current_priority.md); older ordering
+records further down are historical where they conflict with it.
+
+## Future Directions
+
+This is direction, not a description of current behavior, and it authorizes no work by itself.
+
+Nova is moving toward being a **personal custody and authority layer** between your life and
+the AI models you use:
+
+- **Custody:** Nova keeps the durable understanding of you locally: a timeline of your context
+  with provenance and sensitivity on every entry.
+- **Disclosure you can inspect:** every request to an outside model is a minimal context
+  packet, and Nova records exactly what left your custody, why, to which provider, and under
+  what approval.
+- **Models as consultants:** Claude, GPT, or local models contribute analysis under Nova's
+  persona; vendor-side memory stays off; statements about what was verified, approved, or done
+  come only from Nova's own records.
+- **Governed tool access:** a read-only MCP gateway first, so agents reach your data and tools
+  only through Nova's approvals and receipts.
+
+The work after Alpha 0 is ordered in `.agent_context/current_priority.md`.
+
+## Quick start
+
+Requirements: Windows 10/11, Python 3.10 to 3.12, and [Ollama](https://ollama.com) with a local
+model (default `gemma4:e4b`).
+
+```bash
+git clone https://github.com/christopherbdaugherty96/NovaLIS.git
+cd NovaLIS
+pip install -e .
+nova-start
+```
+
+Then open `http://127.0.0.1:8000`. Keep Nova bound to loopback; do not set `NOVA_HOST` to a
+network address. See [Quickstart](QUICKSTART.md) for details.
+
+## How Nova is built
+
+Every governed action takes the same path:
+
+```text
+User -> GovernorMediator -> Governor -> CapabilityRegistry -> SingleActionQueue
+     -> LedgerWriter -> ExecuteBoundary -> Executor -> receipt and outcome
+```
+
+- **Governor** owns approval grants, dispatch, timeouts, and outcome records.
+- **CapabilityRegistry** declares each capability, its authority class, and whether it needs
+  confirmation.
+- **NetworkMediator** carries governed outbound requests, with rate and budget limits.
+- **Ledger** is an append-only record of attempts, completions, and degraded outcomes.
+- **Runtime truth generator** writes the documents in `docs/current_runtime/` from the code.
+
+Repository truth rules: code is authoritative for behavior; tests are evidence only for the
+revision they ran on; generated runtime documents are authoritative only for what their
+generators measure. See [Repo Map](REPO_MAP.md) and the
+[Canonical Truth Index](docs/CANONICAL/00_INDEX.md).
+
+## Core Principles
+
+**Intelligence is not authority.**
+
+**Visibility is not authority.**
+
+**Capability is not permission.**
+
+**Outcome learning may improve recommendations, never authority.**
+
+Memory, conversation context, recommendations, model confidence, connection state, and past
+approvals never authorize an action by themselves.
+
+## Documentation
+
+- [Start Here](START_HERE.md): shortest human path
+- [Quickstart](QUICKSTART.md): install and first run
+- [Current priority](.agent_context/current_priority.md): what is being worked on now
+- [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md): generated runtime truth
+- [Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md): verification status
+- [Product Definition](docs/product/PRODUCT_DEFINITION.md): identity and architecture
+- [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+- [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md): detailed work chronology
+- [Proof evidence index](docs/capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md):
+  what earlier proof packages do and do not cover
+- [Security policy](SECURITY.md)
+
+Screenshots and proof packages under `docs/demo_proof/` are dated historical captures. They do
+not identify the current source revision and are not proof of the current build.
+
+## AI Workflow Note
+
+Nova is built with AI coding agents (currently Codex as implementer and Claude as independent
+reviewer), coordinated through owner decisions and written handoffs. AI-generated work is
+reviewed before it is treated as final, and GitHub remains the durable source of truth.
+
+See [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md) and
+[AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md).
+
+## License
+
+See [LICENSE](LICENSE).
+
+## Operational truth record (machine-checked)
+
+The blocks below are kept verbatim because `scripts/check_operational_truth_consistency.py`
+validates them. They record the beta-readiness ledger that preceded the Alpha 0 decision. For
+current ordering, use `.agent_context/current_priority.md`.
+
+<details>
+<summary>Beta-readiness ledger and stabilization record</summary>
+
+### Beta-readiness ledger (post-#405, 2026-09-20)
 
 ```text
 BETA_READINESS_SEQUENCE_V1: ACTIVE
@@ -58,133 +239,6 @@ New capabilities remain paused. Voice expansion remains paused. Broader UI work 
 Other feature expansion remains paused. This current order supersedes older ordering language below and
 grants no new capability or authority.
 
-## Why Nova
-Most assistants wait for a command. Nova is being built to establish what changed, what matters,
-what remains uncertain, and which decision deserves attention before choosing whether a tool is
-relevant.
-
-Its permanent architectural model is:
-
-```text
-Awareness -> Decision -> Authority -> Execution -> Outcome
-```
-
-Capability is a property of the governed runtime: what Nova can technically do. It is not
-permission. Authority decides whether an exact action may occur. In Nova’s target architecture,
-Outcome is responsible for verifying what actually happened and reconciling it into future
-awareness without expanding permission.
-
-The intended operating loop is:
-
-```text
-Observe -> build awareness -> identify relevance -> expose uncertainty -> recommend
--> authorize -> execute -> evaluate outcome -> reconcile -> record
-```
-
-Intelligence proposes. Nova governs. You decide.
-
-Canonical ordering authority for all future work:
-- [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md)
-
-Canonical future-product summary:
-- [Nova Authority and Decision OS Direction](docs/future/NOVA_AUTHORITY_AND_DECISION_OS_DIRECTION_2026-07-28.md)
-
-See:
-- [Product Definition](docs/product/PRODUCT_DEFINITION.md)
-- [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
-- [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
-- [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
-- [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
-
-## Start Here
-
-Current truth first (recommended reading order):
-
-1. [Canonical Truth Index](docs/CANONICAL/00_INDEX.md) — how to read repo truth
-2. [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md) — where the project is right now
-3. [Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md) — what verifiably works
-4. [Product Definition](docs/product/PRODUCT_DEFINITION.md) — identity, mission, phases
-5. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) — generated runtime truth
-
-For runtime-existence claims, generated runtime docs win; CANONICAL explains how to resolve conflicts.
-
-Then the human onboarding path:
-
-6. [Start Here](START_HERE.md)
-7. [Quickstart](QUICKSTART.md)
-8. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
-9. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-10. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
-11. [Nova Brain](docs/brain.md)
-12. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
-13. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-14. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
-
-## Proof Layer
-- [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
-- [Trust Review Card Plan](docs/product/TRUST_REVIEW_CARD_PLAN.md)
-- [See It Work](docs/product/SEE_IT_WORK.md)
-- [Trust Model](docs/product/TRUST_MODEL.md)
-- [Demo Script](docs/product/DEMO_SCRIPT.md)
-- [Screenshot Asset Plan](docs/product/SCREENSHOT_ASSET_PLAN.md)
-- [Trust UI Spec](docs/product/TRUST_UI_SPEC.md)
-- [Capability Verification Status](docs/capability_verification/STATUS.md)
-- [Capability Signoff Matrix](docs/product/CAPABILITY_SIGNOFF_MATRIX.md)
-- [Proof Capture Checklist](docs/product/PROOF_CAPTURE_CHECKLIST.md)
-
-## Selected Proof Packages
-Selected historical and current proof records:
-
-- [Seven-Morning Synthesis — 2026-07-22](docs/observation/SEVEN_MORNING_SYNTHESIS_2026-07-22.md)
-- [Grounded Brief Routing Closeout — 2026-07-23](docs/status/GROUNDED_BRIEF_ROUTING_CLOSEOUT_2026-07-23.md)
-- [Current Capability Inventory](docs/capability_verification/CAPABILITY_INVENTORY.md)
-
-- [2026-04-29 Conversation + Search Proof](docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md)
-- [Conversation + Search Proof Index](docs/demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX.md)
-- [Brain Live Test Report](docs/demo_proof/brain_live_test/REPORT.md)
-- [Brain Live Test Proof Index](docs/demo_proof/brain_live_test/PROOF_INDEX.md)
-- [2026-04-28 User Test Report](docs/demo_proof/2026-04-28_user_test/USER_TEST_REPORT.md)
-- [Proof Index](docs/demo_proof/2026-04-28_user_test/PROOF_INDEX.md)
-- [Demo Script](docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT.md)
-- [Friction Log](docs/demo_proof/2026-04-28_user_test/FRICTION_LOG.md)
-- [Screenshot Checklist](docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST.md)
-- [Recorded Demo Flow](docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm)
-- [Live User Simulation Results — 2026-05-19](docs/audits/LIVE_USER_SIMULATION_RESULTS_2026-05-19.md)
-
-Historical visual proof captures — 2026-04-28:
-
-These are authentic, dated local captures of the UI paths described in their checklist. They do
-not identify the current source SHA and therefore are not proof of the current candidate,
-installer, local-boundary security, or beta acceptance. See the
-[proof evidence index](docs/capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md) for
-the scope and status of current evidence.
-
-![Nova local-first dashboard](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png)
-
-![Nova Trust receipts](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png)
-
-![Nova memory authority boundary](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png)
-
-Current proof verdict:
-
-```text
-Governance paths are now strongly evidenced for the current confirmation-bound scope.
-Everyday live-session reliability workstream closed 2026-05-19 (75% -> 97% pass, 0 timeouts).
-Seven-morning observation and its rank-1 grounded-routing repair are complete.
-Later current-state and acceptance-provenance details live in the Daily Command Center.
-Nova is not yet a finished consumer product.
-```
-
-## Current Status
-Version 0.5 Alpha is a technical-user / early-adopter state, not a finished mainstream release.
-
-### Beta support boundary
-
-Windows is Nova's primary beta-support target. The Windows installer path exists, but
-clean-machine certification is still a later acceptance gate. macOS and Linux may be
-used for source-based development only; they are not certified or supported beta
-platforms.
-
 Current grounded status:
 
 ```text
@@ -219,79 +273,4 @@ Current grounded status:
   autonomous-business, broad provider-routing, or expanded OpenClaw authority lane is active
 ```
 
-For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
-
-For current human-readable work continuity, including the current gate, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
-
-Historical sequencing references (May 2026; superseded by the master roadmap for ordering):
-[Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md),
-[Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md).
-
-Historical pre-#394 decision sequence (superseded; not current work or authorization):
-
-```text
-1. Issue #388 is COMPLETE; its TRUTH-CHECKER PREREQUISITE is SATISFIED.
-2. Issue #368 is the NEXT BOUNDED TECHNICAL LANE.
-3. Issue #387 is AFTER #368 / DOCS-ONLY.
-4. PR #335 reconstruction remains PENDING SEPARATE OWNER DECISION / NOT AUTHORIZED.
-5. The owner may later decide whether to authorize reconstruction/reconciliation of PR #335
-   against exact validated baseline
-   ec20a7146f7d6d55b8983cb7d6d3918d5fad9915.
-6. If separately authorized, harden the bounded Google Foundation lifecycle/security defects
-   identified during review, then rerun exact-head verification and independent security/architecture review.
-7. Make the #335 merge decision separately.
-8. Prove Google identity-only connection live without treating OAuth scope as Nova authority.
-9. Add Google Tasks READ as the first provider-backed Google evidence vertical and prove
-   provenance/freshness/evidence boundaries.
-10. Only then evaluate an evidence-based Operational Continuity implementation warrant.
-
-This summary authorizes nothing. The Daily Command Center, canonical roadmap truth, Issue #343,
-and lane-specific locks hold current ordering and implementation scope.
-```
-
-## Future Directions
-
-Ordering authority: [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md).
-The documents below remain design references; the master roadmap decides sequence.
-
-- [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
-- [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
-- [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
-- [Five-Pass Stability And Operational Roadmap](docs/status/FIVE_PASS_STABILITY_AND_OPERATIONAL_ROADMAP_2026-05-12.md)
-- [Repo Sync And Roadmap Update](docs/status/REPO_SYNC_AND_ROADMAP_UPDATE_2026-05-12.md)
-- [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
-- [Google Connector Model](docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
-- [Google Connector Implementation Roadmap](docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
-- [Free-First Cost Governance First Steps](docs/design/Phase%206/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md)
-- [Governed Media and E-Commerce Engine](docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)
-- [Media Engine Safe Implementation Roadmap](docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP.md)
-- [Auralis public-source boundary](docs/security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md)
-- [YouTubeLIS Tool Folder](docs/tools/youtubelis.md)
-
-## Core Principles
-**Intelligence is not authority.**
-
-**Visibility is not authority.**
-
-**Capability is not permission.**
-
-**Outcome learning may improve recommendations, never authority.**
-
-Nova may reason, summarize, search, draft, and recommend. Conversation context and memory can improve understanding, but they do not authorize execution. Real actions should remain bounded by capability checks, execution boundaries, confirmation where required, and visible receipts.
-
-Visibility surfaces, dashboards, proofs, and status views do not grant execution authority. They exist to help the operator understand what is active, what is locked, what is pending, and what actually happened.
-
-## AI Workflow Note
-This project may use AI tools for planning, coding support, audits, review, and prototyping.
-
-- GitHub remains the durable source of truth for code, docs, commits, and project status.
-- Runtime truth should be grounded in implementation, tests, and generated runtime artifacts.
-- Visual builders or prototype tools may help present ideas, but do not replace Nova's governed runtime.
-- AI-generated work should be reviewed before being treated as final.
-
-See:
-- [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
-- [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
-
-## License
-See [LICENSE].
+</details>
