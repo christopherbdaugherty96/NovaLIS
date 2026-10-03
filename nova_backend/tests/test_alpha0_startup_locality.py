@@ -54,6 +54,14 @@ def test_shell_launcher_uses_validated_brain_server_entrypoint():
     assert "-m uvicorn" not in source
 
 
+def test_shell_launcher_health_url_tracks_configured_loopback_host_and_port():
+    source = (ROOT / "start_nova.sh").read_text(encoding="utf-8")
+    assert 'NOVA_BIND_HOST="${NOVA_HOST:-127.0.0.1}"' in source
+    assert 'NOVA_BIND_PORT="${NOVA_PORT:-8000}"' in source
+    assert 'NOVA_URL_HOST="[$NOVA_BIND_HOST]"' in source
+    assert 'DASHBOARD_URL="http://$NOVA_URL_HOST:$NOVA_BIND_PORT"' in source
+
+
 def test_windows_launchers_delegate_to_validated_daemon():
     installer = (ROOT / "installer" / "windows" / "nova_setup.iss").read_text(encoding="utf-8")
     bootstrap = (ROOT / "installer" / "windows" / "nova_bootstrap.ps1").read_text(

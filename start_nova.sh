@@ -7,7 +7,14 @@ PID_DIR="$ROOT_DIR/scripts/pids"
 PID_FILE="$PID_DIR/nova_backend.pid"
 OUT_LOG="$PID_DIR/nova_backend.out.log"
 ERR_LOG="$PID_DIR/nova_backend.err.log"
-DASHBOARD_URL="http://127.0.0.1:8000"
+NOVA_BIND_HOST="${NOVA_HOST:-127.0.0.1}"
+NOVA_BIND_PORT="${NOVA_PORT:-8000}"
+if [[ "$NOVA_BIND_HOST" == *:* ]]; then
+  NOVA_URL_HOST="[$NOVA_BIND_HOST]"
+else
+  NOVA_URL_HOST="$NOVA_BIND_HOST"
+fi
+DASHBOARD_URL="http://$NOVA_URL_HOST:$NOVA_BIND_PORT"
 
 if [[ ! -d "$BACKEND_DIR" ]]; then
   echo "[Nova] Missing backend directory: $BACKEND_DIR"
