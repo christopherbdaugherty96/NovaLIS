@@ -2,61 +2,53 @@
 
 **Version 0.5 Alpha — Current State**
 
-> **Nova is a local-first, governed awareness and decision-support system that maintains
-> context, identifies what matters, reduces uncertainty, and coordinates authorized tools only
-> when evidence and authority justify action.**
+**Nova is a governance-first, local-first AI system that connects model intelligence to
+bounded execution, explicit user authority, and inspectable outcomes.**
 
-Nova separates intelligence from authority so useful reasoning can remain broad while real
-execution stays bounded, inspectable, revocable, and provable.
+## A supported workflow today
 
-## Current post-#405 beta-readiness order — 2026-09-20
+On a configured development installation, ask:
 
-```text
-BETA_READINESS_SEQUENCE_V1: ACTIVE
-verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
-#397 through #405: COMPLETE / MERGED
-COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
-COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
-COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
-COMPLETE: durability implementation lane 2 - corruption-safe readers (PR #416; main `80e1c86f`)
-COMPLETE: durability implementation lane 3 - maintenance locking + mutation quiescence (PR #419; main `2bfe202e`)
-COMPLETE: durability implementation lane 4 - versioned snapshot + manifest (PR #421; main `4e32b501`)
-FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
-COMPLETE: #409 release integrity / repository control (PR #423; main `aa39515f`)
-COMPLETE: #410 private-beta freeze criteria (PR #410; main `3ad3f544`)
-AUTHORIZED / ACTIVE: Lane 5A recovery construction (owner authorization; base main `3ad3f544`)
-COMPLETE: Lane 5A step 1 - inactive recovery candidate migration (PR #424; main `298b7731`)
-MIGRATION PROOF: PASS (173 durability tests passed; 1 expected Windows POSIX-FIFO skip)
-COMPLETE: Lane 5A step 2 - recovery candidate validation (PR #426; main `9de640cd`)
-VALIDATION PROOF: PASS (184 durability tests passed; 1 expected Windows POSIX-FIFO skip)
-COMPLETE: Lane 5A step 3 - controlled recovery activation (PR #427; main `678dda6c`)
-ACTIVATION PROOF: PASS (192 durability tests passed; 1 expected Windows POSIX-FIFO skip)
-COMPLETE: Lane 5A authority-foundation correction (PR #428; main `3a3e9d33`)
-AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Windows POSIX-FIFO skip)
-RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
-COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)
-ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
-COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)
-COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)
-FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)
-COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)
-COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)
-CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.
-NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)
-THEN: fresh-main security and truth proof
-THEN: installer supply-chain and privacy/Data-Out/secrets audit
-THEN: build a new exact Windows candidate artifact; the prior artifact is historical only
-THEN: clean Windows operator proof against that exact artifact
-THEN: freeze exact candidate identity
-THEN: rerun #434 and remaining acceptance checks against that frozen candidate
-THEN: owner acceptance/distribution decision
-THEN: 3 real non-developer users
-```
+> Draft an email to test@example.com about tomorrow's plans.
 
-Google/provider expansion remains paused. Operational Continuity implementation remains paused.
-New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
-Other feature expansion remains paused. This current order supersedes older ordering language below and
-grants no new capability or authority.
+Confirm the governed draft action, then review the draft in your local mail client and inspect
+the governed-action receipt. You review and send the message yourself: Nova does not send email.
+A receipt records the governed action and available outcome evidence; opening a draft is not
+proof that a message was sent.
+
+This is one bounded workflow, not an autonomous assistant taking over your accounts.
+[First 5 Minutes](docs/product/FIRST_5_MINUTES.md) describes more evaluation steps.
+
+## Why use Nova alongside powerful models?
+
+Models provide reasoning and language; Nova provides a governed local system around supported
+tools, explicit memory, and action receipts. A recommendation is not permission, memory is not
+authority, and an accepted request is not a verified outcome. Nova is not a replacement
+foundation model or a universal interface to every model provider.
+
+## Current maturity and limits
+
+This alpha is preparing for private-beta validation, not an accepted or
+distribution-ready beta. Usefulness and repeat use with outside users remain to be established.
+
+- Local-first does not mean offline-only: configured search, data sources, and external
+  reasoning paths may contact providers.
+- Full Operational Continuity and broad autonomous execution are not implemented.
+- Windows is the primary beta target; clean-machine acceptance remains outstanding.
+- A known local-boundary P1 must be repaired and freshly proven before Windows acceptance.
+  Do not expose the development server to a LAN or the internet.
+
+## Evidence and current status
+
+- [Daily Command Center](docs/status/DAILY_COMMAND_CENTER.md) — current gates and ordering.
+- [Proof evidence index](docs/capability_verification/PROOF_EVIDENCE_INDEX_2026-09-28.md) —
+  what the recorded evidence does and does not establish.
+- [Canonical Truth Index](docs/CANONICAL/00_INDEX.md) — how to distinguish implementation,
+  measured evidence, and future direction.
+- [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md) — generated claims,
+  limited to the properties its checks measure.
+- [Detailed readiness sequence](#current-post-405-beta-readiness-order--2026-09-20) — preserved
+  engineering gates and proof history below.
 
 ## Why Nova
 Most assistants wait for a command. Nova is being built to establish what changed, what matters,
@@ -248,6 +240,55 @@ Historical pre-#394 decision sequence (superseded; not current work or authoriza
 This summary authorizes nothing. The Daily Command Center, canonical roadmap truth, Issue #343,
 and lane-specific locks hold current ordering and implementation scope.
 ```
+
+## Current post-#405 beta-readiness order — 2026-09-20
+
+```text
+BETA_READINESS_SEQUENCE_V1: ACTIVE
+verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
+#397 through #405: COMPLETE / MERGED
+COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
+COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)
+COMPLETE: durability implementation lane 1 - canonical state registry/migration detection (PR #413; main `e74fdca0`)
+COMPLETE: durability implementation lane 2 - corruption-safe readers (PR #416; main `80e1c86f`)
+COMPLETE: durability implementation lane 3 - maintenance locking + mutation quiescence (PR #419; main `2bfe202e`)
+COMPLETE: durability implementation lane 4 - versioned snapshot + manifest (PR #421; main `4e32b501`)
+FRESH-MAIN CLOSEOUT: PASS (314 focused durability/operational-truth tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
+COMPLETE: #409 release integrity / repository control (PR #423; main `aa39515f`)
+COMPLETE: #410 private-beta freeze criteria (PR #410; main `3ad3f544`)
+AUTHORIZED / ACTIVE: Lane 5A recovery construction (owner authorization; base main `3ad3f544`)
+COMPLETE: Lane 5A step 1 - inactive recovery candidate migration (PR #424; main `298b7731`)
+MIGRATION PROOF: PASS (173 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+COMPLETE: Lane 5A step 2 - recovery candidate validation (PR #426; main `9de640cd`)
+VALIDATION PROOF: PASS (184 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+COMPLETE: Lane 5A step 3 - controlled recovery activation (PR #427; main `678dda6c`)
+ACTIVATION PROOF: PASS (192 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+COMPLETE: Lane 5A authority-foundation correction (PR #428; main `3a3e9d33`)
+AUTHORITY FOUNDATION PROOF: PASS (201 durability tests passed; 1 expected Windows POSIX-FIFO skip)
+RECOVERY AUTHORITY MODEL: dual-slot highest-valid-generation selection
+COMPLETE: Lane 5A step 4 - rollback/restore proof (PR #430; main `868de9d9`)
+ROLLBACK/RESTORE PROOF: PASS (208 durability tests passed; 1 expected Windows POSIX-FIFO skip; runtime structural smoke PASS)
+COMPLETE: beta user-facing truth pass (PR #433; main `ad64048e`)
+COMPLETE: rollback/restore operational-truth checker contract (PR #436; main `0003a2e`)
+FRESH-MAIN PROOF: PASS (39 focused checker-contract tests; Ruff; operational-truth consistency; runtime structural smoke)
+COMPLETE: first Synthetic Beta Cohort v1 (PR #438; test-only evidence, not product acceptance)
+COMPLETE: connected-user cohort test-spec correction (PR #439; main `486ad3dddc3f75412085b968c28561ab57e25686`)
+CONFIRMED P1 BEFORE BETA ACCEPTANCE: the local-only boundary is unsafe if `NOVA_HOST` accepts a non-loopback bind; repair and fresh proof are required before any Windows acceptance run.
+NEXT REQUIRED ENGINEERING: bounded local-boundary P1 repair (no remote mode or authority expansion)
+THEN: fresh-main security and truth proof
+THEN: installer supply-chain and privacy/Data-Out/secrets audit
+THEN: build a new exact Windows candidate artifact; the prior artifact is historical only
+THEN: clean Windows operator proof against that exact artifact
+THEN: freeze exact candidate identity
+THEN: rerun #434 and remaining acceptance checks against that frozen candidate
+THEN: owner acceptance/distribution decision
+THEN: 3 real non-developer users
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Other feature expansion remains paused. This current order supersedes older ordering language below and
+grants no new capability or authority.
 
 ## Future Directions
 
