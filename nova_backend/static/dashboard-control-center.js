@@ -3324,7 +3324,10 @@ function renderTrustCenterPage() {
     const permissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.remote_bridge_enabled);
     const tokenConfigured = bridge.token_configured === true;
     const available = bridge.enabled === true;
-    const availabilityLabel = available
+    const alpha0Disabled = bridge.alpha0_disabled === true;
+    const availabilityLabel = alpha0Disabled
+      ? "Unavailable in Alpha 0"
+      : available
       ? "Available"
       : tokenConfigured
         ? "Unavailable — permission paused"
@@ -3338,7 +3341,7 @@ function renderTrustCenterPage() {
 
     clear(bridgeGrid);
     [
-      ["Permission", permissionEnabled ? "Enabled" : "Paused"],
+      ["Permission", alpha0Disabled ? "Unavailable in Alpha 0" : permissionEnabled ? "Enabled" : "Paused"],
       ["Availability", availabilityLabel],
       ["Transport", String(bridge.transport || "HTTP").trim() || "HTTP"],
       ["Authentication", String(bridge.auth || (tokenConfigured ? "Token configured" : "Token not configured")).trim() || "Unknown"],
@@ -3668,8 +3671,10 @@ function renderOpenClawAgentPage() {
       ["Local summarizer", setup.local_model_ready ? "Ready" : "Fallback mode"],
       ["Weather source", setup.weather_provider_configured ? "Configured" : "Optional"],
       ["Calendar source", setup.calendar_connected ? "Connected" : "Optional"],
-      ["Remote permission", setup.remote_bridge_enabled ? "Enabled" : "Paused"],
-      ["Remote availability", setup.remote_bridge_enabled && setup.remote_bridge_token_configured
+      ["Remote permission", setup.remote_bridge_alpha0_disabled ? "Unavailable in Alpha 0" : setup.remote_bridge_enabled ? "Enabled" : "Paused"],
+      ["Remote availability", setup.remote_bridge_alpha0_disabled
+        ? "Unavailable in Alpha 0"
+        : setup.remote_bridge_enabled && setup.remote_bridge_token_configured
         ? "Available"
         : setup.remote_bridge_token_configured
           ? "Unavailable — permission paused"

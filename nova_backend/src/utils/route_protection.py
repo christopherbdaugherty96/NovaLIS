@@ -27,9 +27,11 @@ LOCAL_ONLY_ROUTE_PROTECTIONS: tuple[RouteProtection, ...] = (
     RouteProtection("/system/audit", "local_only", "Runtime audit endpoints expose internal topology."),
 )
 
-REMOTE_TOKEN_GATED_ROUTE_PREFIXES: tuple[str, ...] = (
+DISABLED_ALPHA0_ROUTE_PREFIXES: tuple[str, ...] = (
     "/api/openclaw/bridge/message",
 )
+
+REMOTE_TOKEN_GATED_ROUTE_PREFIXES: tuple[str, ...] = ()
 
 PUBLIC_ROUTE_PREFIXES: tuple[str, ...] = (
     "/",

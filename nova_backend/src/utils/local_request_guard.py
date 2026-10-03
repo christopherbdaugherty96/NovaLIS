@@ -3,13 +3,13 @@ from __future__ import annotations
 from urllib.parse import urlparse
 
 from fastapi import HTTPException, Request, WebSocket
+from src.utils.loopback_bind import is_loopback_address
 from src.utils.route_protection import is_local_only_path, local_only_prefixes
 
 _ALLOWED_LOOPBACK_HOSTS = {
     "localhost",
     "127.0.0.1",
     "::1",
-    "testserver",
 }
 _LOCAL_ONLY_API_PREFIXES = local_only_prefixes()
 
@@ -63,6 +63,9 @@ def describe_request_rebinding_violation(host: str | None, origin: str | None) -
 def describe_http_rebinding_violation(request: Request) -> str | None:
     if not is_local_only_http_path(request.url.path):
         return None
+    peer = getattr(getattr(request, "client", None), "host", None)
+    if not is_loopback_address(peer):
+        return "Local Nova API access requires a loopback socket peer."
     return describe_request_rebinding_violation(
         request.headers.get("host"),
         request.headers.get("origin"),
@@ -76,6 +79,9 @@ def require_local_http_request(request: Request) -> None:
 
 
 def describe_websocket_rebinding_violation(ws: WebSocket) -> str | None:
+    peer = getattr(getattr(ws, "client", None), "host", None)
+    if not is_loopback_address(peer):
+        return "Local Nova websocket access requires a loopback socket peer."
     headers = getattr(ws, "headers", {}) or {}
     return describe_request_rebinding_violation(
         headers.get("host"),

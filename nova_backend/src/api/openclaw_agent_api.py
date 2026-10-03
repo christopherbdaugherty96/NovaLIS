@@ -64,9 +64,7 @@ def _notification_policy_snapshot(deps) -> dict[str, Any]:
 def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any]:
     permission_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_enabled")
     scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
-    bridge_permission_enabled = deps.runtime_settings_store.is_permission_enabled("remote_bridge_enabled")
     scheduler_policy = _notification_policy_snapshot(deps)
-    bridge_runtime = deps.OSDiagnosticsExecutor._bridge_status_details()
     openai_runtime = deps.OSDiagnosticsExecutor._openai_status_details()
     model_status, model_note, model_hint, model_ready = deps.OSDiagnosticsExecutor._model_status_details()
     weather_configured = bool(str(os.getenv("WEATHER_API_KEY") or "").strip())
@@ -160,20 +158,10 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
         {
             "id": "remote_bridge",
             "label": "Remote bridge",
-            "status": str(bridge_runtime.get("status") or "disabled").strip() or "disabled",
-            "status_label": (
-                "Enabled"
-                if bool(bridge_runtime.get("enabled"))
-                else "Optional"
-                if bool(bridge_runtime.get("token_configured"))
-                else "Not configured"
-            ),
-            "summary": (
-                "Token-authenticated remote requests can enter Nova through the governed bridge."
-                if bool(bridge_runtime.get("enabled"))
-                else "Remote bridge is optional and stays disabled until a bridge token is configured and the setting is enabled."
-            ),
-            "ready": bool(bridge_runtime.get("enabled")),
+            "status": "unavailable",
+            "status_label": "Unavailable in Alpha 0",
+            "summary": "The remote bridge is mechanically disabled in the Alpha 0 build.",
+            "ready": False,
         },
         {
             "id": "scheduler",
@@ -233,11 +221,9 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
         "local_model_ready": bool(model_ready),
         "weather_provider_configured": weather_configured,
         "calendar_connected": bool(calendar_path),
-        # Setup displays bridge permission and bridge availability separately.  Do
-        # not project the latter into the former: a permission may be enabled
-        # before its required token is configured.
-        "remote_bridge_enabled": bool(bridge_permission_enabled),
-        "remote_bridge_token_configured": bool(bridge_runtime.get("token_configured")),
+        "remote_bridge_enabled": False,
+        "remote_bridge_token_configured": False,
+        "remote_bridge_alpha0_disabled": True,
         "scheduler_permission_enabled": scheduler_enabled,
         "runnable_template_ids": runnable_templates,
         "schedule_ready_template_ids": schedule_ready_templates,

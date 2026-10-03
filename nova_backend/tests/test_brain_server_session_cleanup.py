@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from types import SimpleNamespace
 
 import pytest
 from fastapi import WebSocketDisconnect
@@ -14,7 +15,8 @@ from src.governor.governor_mediator import GovernorMediator, Invocation
 class _DisconnectingWebSocket:
     def __init__(self) -> None:
         self.sent_messages: list[dict] = []
-        self.headers = {"host": "testserver", "origin": "http://testserver"}
+        self.client = SimpleNamespace(host="127.0.0.1", port=50000)
+        self.headers = {"host": "localhost", "origin": "http://localhost"}
 
     async def accept(self) -> None:
         return None
@@ -30,7 +32,8 @@ class _ScriptedWebSocket:
     def __init__(self, messages: list[str]) -> None:
         self._messages = list(messages)
         self.sent_messages: list[dict] = []
-        self.headers = {"host": "testserver", "origin": "http://testserver"}
+        self.client = SimpleNamespace(host="127.0.0.1", port=50000)
+        self.headers = {"host": "localhost", "origin": "http://localhost"}
 
     async def accept(self) -> None:
         return None

@@ -477,11 +477,11 @@ def test_disconnected_news_and_home_copy_do_not_claim_live_or_connected_work():
 def test_remote_bridge_separates_permission_from_runtime_availability():
     control = _read(STATIC / "dashboard-control-center.js")
 
-    assert '["Permission", permissionEnabled ? "Enabled" : "Paused"]' in control
+    assert '["Permission", alpha0Disabled ? "Unavailable in Alpha 0" : permissionEnabled ? "Enabled" : "Paused"]' in control
     assert '["Availability", availabilityLabel]' in control
     assert '"Unavailable — token not configured"' in control
-    assert '["Remote permission", setup.remote_bridge_enabled ? "Enabled" : "Paused"]' in control
-    assert '["Remote availability", setup.remote_bridge_enabled && setup.remote_bridge_token_configured' in control
+    assert '["Remote permission", setup.remote_bridge_alpha0_disabled ? "Unavailable in Alpha 0" : setup.remote_bridge_enabled ? "Enabled" : "Paused"]' in control
+    assert '["Remote availability", setup.remote_bridge_alpha0_disabled' in control
     assert 'Permission: ${item.enabled ? "Enabled" : "Paused"} · Availability: ${availability}' in control
     assert "Permission does not make the bridge available without its token." in control
 

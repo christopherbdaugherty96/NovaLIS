@@ -117,7 +117,7 @@ def test_render_current_runtime_state_uses_phase5_complete_note():
     assert "Governed memory, continuity," not in rendered
 
 
-def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkeypatch):
+def test_render_current_runtime_state_omits_alpha0_disabled_remote_bridge(monkeypatch):
     import src.audit.runtime_auditor as ra
 
     registry = {"capabilities": []}
@@ -127,15 +127,15 @@ def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkey
         if path == ra.BRAIN_SERVER_PATH:
             return "build_bridge_router"
         if path == ra.BRIDGE_API_PATH:
-            return '"/api/openclaw/bridge/message"\nopenclaw_bridge'
+            return '"/api/openclaw/bridge/message"\nopenclaw_bridge\n"alpha0_disabled": True'
         return original_safe_read(path)
 
     monkeypatch.setattr(ra, "_safe_read", _fake_safe_read)
 
     rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
 
-    assert "Governed Remote Bridge" in rendered
-    assert "Token-gated read/reasoning ingress active" in rendered
+    assert "Governed Remote Bridge" not in rendered
+    assert "Token-gated read/reasoning ingress active" not in rendered
 
 
 def test_route_protection_coverage_mentions_profile_and_no_unclassified_routes():
@@ -146,7 +146,7 @@ def test_route_protection_coverage_mentions_profile_and_no_unclassified_routes()
     assert "`/api/profile`" in rendered
     assert "- unclassified: 0" in rendered
     assert "POST | `/api/profile/identity` | local_only" in rendered
-    assert "POST | `/api/openclaw/bridge/message` | token_gated_remote" in rendered
+    assert "POST | `/api/openclaw/bridge/message` | disabled_alpha0" in rendered
 
 
 def test_current_runtime_state_includes_route_protection_summary():

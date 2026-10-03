@@ -64,8 +64,9 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert payload["agent"]["setup"]["status_label"] == "Ready for briefing runs"
     assert payload["agent"]["setup"]["weather_provider_configured"] is False
     assert payload["agent"]["setup"]["calendar_connected"] is False
-    assert payload["agent"]["setup"]["remote_bridge_enabled"] is True
+    assert payload["agent"]["setup"]["remote_bridge_enabled"] is False
     assert payload["agent"]["setup"]["remote_bridge_token_configured"] is False
+    assert payload["agent"]["setup"]["remote_bridge_alpha0_disabled"] is True
     assert "morning_brief" in payload["agent"]["setup"]["runnable_template_ids"]
     assert "project_snapshot" in payload["agent"]["setup"]["runnable_template_ids"]
     assert "inbox_check" in [item["id"] for item in payload["agent"]["setup"]["blocked_templates"]]
@@ -114,7 +115,12 @@ def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_p
     setup = payload["agent"]["setup"]
     assert setup["weather_provider_configured"] is True
     assert setup["calendar_connected"] is True
-    assert setup["remote_bridge_token_configured"] is True
+    assert setup["remote_bridge_token_configured"] is False
+    assert setup["remote_bridge_alpha0_disabled"] is True
+    assert any(
+        item["label"] == "Remote bridge" and item["status_label"] == "Unavailable in Alpha 0"
+        for item in setup["source_cards"]
+    )
     assert any(item["label"] == "OpenAI lane" and item["status_label"] == "Available" for item in setup["source_cards"])
     assert any(item["label"] == "Calendar source" and item["status_label"] == "Ready" for item in setup["source_cards"])
 

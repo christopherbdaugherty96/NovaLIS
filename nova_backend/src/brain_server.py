@@ -110,6 +110,7 @@ from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.openclaw.agent_scheduler import openclaw_agent_scheduler
 from src.connectors.shopify_connector import bootstrap_shopify_connector
 from src.utils.local_request_guard import describe_http_rebinding_violation
+from src.utils.loopback_bind import require_loopback_bind_host
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.nova_style_contract import NovaStyleContract
@@ -201,7 +202,12 @@ async def _lifespan(_app: FastAPI):
         await openclaw_agent_scheduler.stop()
 
 
-app = FastAPI(lifespan=_lifespan)
+app = FastAPI(
+    lifespan=_lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
 
 
 @app.middleware("http")
@@ -3945,10 +3951,9 @@ def main() -> None:
     beyond starting the server so imports of this module stay cheap.
     """
     import os
-
     import uvicorn
 
-    host = os.environ.get("NOVA_HOST", "127.0.0.1")
+    host = require_loopback_bind_host(os.environ.get("NOVA_HOST", "127.0.0.1"))
     port = int(os.environ.get("NOVA_PORT", "8000"))
     uvicorn.run("src.brain_server:app", host=host, port=port)
 

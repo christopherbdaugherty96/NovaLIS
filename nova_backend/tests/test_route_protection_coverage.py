@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
-
 from src import brain_server
 from src.utils.local_request_guard import is_local_only_http_path
 from src.utils.route_protection import (
+    DISABLED_ALPHA0_ROUTE_PREFIXES,
     LOCAL_ONLY_ROUTE_PROTECTIONS,
-    PUBLIC_ROUTE_PREFIXES,
     REMOTE_TOKEN_GATED_ROUTE_PREFIXES,
 )
-
 
 SENSITIVE_LOCAL_ROUTES = (
     ("GET", "/api/profile", {}),
@@ -45,18 +43,18 @@ def test_media_upload_routes_are_local_only_by_policy():
     assert is_local_only_http_path("/stt/transcribe")
 
 
-def test_remote_bridge_message_is_token_gated_not_local_only():
+def test_remote_bridge_message_is_disabled_for_alpha0_not_local_only():
     assert not is_local_only_http_path("/api/openclaw/bridge/message")
+    assert "/api/openclaw/bridge/message" in DISABLED_ALPHA0_ROUTE_PREFIXES
 
     client = TestClient(brain_server.app)
     response = client.post(
         "/api/openclaw/bridge/message",
-        headers={"Host": "evil.example", "Origin": "https://evil.example"},
+        headers={"Host": "localhost", "Origin": "http://localhost"},
         json={"text": "daily brief"},
     )
 
-    assert response.status_code in {401, 503}
-    assert response.status_code != 403
+    assert response.status_code == 503
 
 
 def test_every_registered_runtime_route_has_explicit_protection_classification():
@@ -74,6 +72,7 @@ def test_every_registered_runtime_route_has_explicit_protection_classification()
         public = text == "/" or text.startswith(("/landing", "/static"))
         classified = (
             text.startswith(local_prefixes)
+            or text.startswith(DISABLED_ALPHA0_ROUTE_PREFIXES)
             or text.startswith(REMOTE_TOKEN_GATED_ROUTE_PREFIXES)
             or public
         )

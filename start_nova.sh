@@ -81,7 +81,7 @@ fi
 echo "[Nova] Starting backend..."
 (
   cd "$BACKEND_DIR"
-  nohup "$PYTHON_EXE" -m uvicorn src.brain_server:app --host 127.0.0.1 --port 8000 >"$OUT_LOG" 2>"$ERR_LOG" &
+  nohup "$PYTHON_EXE" -m src.brain_server >"$OUT_LOG" 2>"$ERR_LOG" &
   echo $! >"$PID_FILE"
 )
 
