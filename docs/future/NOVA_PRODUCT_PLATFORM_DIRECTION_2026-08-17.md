@@ -522,6 +522,146 @@ Older Second Brain, learning, Brain/Daily Brief, agent-workspace, multi-model, e
 
 Implementation contracts should be created **when their lane activates**, not speculatively. Strategy should preserve requirements; active implementation should define schemas/interfaces against current runtime and current provider APIs.
 
+## 19A. Post-beta governed capability expansion refinement
+
+Status: strategic refinement / non-authorizing. This section records a post-beta operating principle and sharpens several future substrate requirements. It does not change current beta ordering, activate implementation, widen authority, or supersede the existing Product / Platform architecture.
+
+After the governance foundation is proved as a product with outside users, Nova should transition from governance construction to **evidence-driven governed capability expansion**.
+
+```text
+governance foundation
+-> beta product proof
+-> evidence-driven governed capability expansion
+```
+
+This does not mean racing competitors feature-for-feature. Commodity agent capabilities should be added through shared Nova contracts when repeated user evidence warrants them, rather than as one-off parity work.
+
+```text
+bad:
+competitor added feature X
+-> Nova must build feature X
+
+preferred:
+repeated user need identifies a capability gap
+-> select the smallest reusable governed substrate
+-> implement under existing Nova authority / data / outcome contracts
+-> measure again
+```
+
+The post-beta expansion principle is therefore:
+
+> **Nova should pursue broad practical capability through reusable governed substrates, not competitor-by-competitor feature cloning.**
+
+### Future substrate refinement: generalized connection / credential / permission broker
+
+Existing provider strategy already requires local ownership of secrets, exact granted scopes, encrypted credential lifecycle, and permanent separation of connection, capability, provider scope, and Nova authority.
+
+A future generalized broker may consolidate those requirements across providers:
+
+```text
+service connection
+-> credential reference
+-> granted provider scopes
+-> capability eligibility
+-> request-specific Nova authority
+```
+
+Workers and reasoning providers should receive the minimum reference/eligibility information required for a task rather than raw passwords, API keys, refresh tokens, session credentials, or unrelated secrets.
+
+Permanent distinctions remain:
+
+```text
+connection != capability
+provider scope != Nova authority
+credential possession != permission to act
+```
+
+The real interfaces and storage contract must be designed only when an authorized provider/credential lane activates.
+
+### Future substrate refinement: explicit Data-Out / Data-In governance
+
+Existing data minimization, provider policy, network mediation, provenance, and receipt requirements should eventually become user-inspectable provider-transfer truth.
+
+A future provider/model receipt should be able to represent, where safe and useful:
+
+```text
+provider
+purpose
+data classes / selected context sent
+explicitly excluded sensitive classes
+returned artifact / response reference
+request / receipt identity
+timestamp
+```
+
+The intended user-level question is:
+
+> **What information left my machine, why, and what came back?**
+
+Do not log secrets or duplicate sensitive payloads merely to prove minimization. Receipts should describe or safely reference transferred data at the minimum fidelity required for auditability.
+
+### Existing governed-run architecture should be consolidated, not reinvented
+
+Nova already has substantial future design and partial runtime foundations for TaskEnvelope / governed desktop, browser, scheduled, continuous, and OpenClaw runs. Future work should consolidate those foundations with the newer authority and outcome-truth semantics rather than create a parallel background-task architecture.
+
+In particular, run lifecycle must preserve the distinction between execution completion and verified outcome. A future implementation may use different exact names, but it must be able to represent concepts equivalent to:
+
+```text
+proposed / created
+-> planned / pending approval
+-> authorized / approved
+-> running
+-> paused / waiting for approval
+-> completed_unverified
+-> verified
+
+plus terminal or blocking conditions such as:
+failed
+blocked / policy denied
+cancelled
+timeout
+scope violation
+```
+
+The active implementation contract must reconcile with then-current TaskEnvelope, ApprovalGrant, receipt, durability, and Continuity state models.
+
+### Existing browser/computer-use direction: prefer an isolated governed browser workspace first
+
+Governed browser/computer use is already anticipated by the TaskEnvelope/OpenClaw strategy. When broad execution becomes warranted after beta, the preferred first broad execution environment should be an **isolated governed browser workspace** before arbitrary desktop-wide autonomy where that satisfies the demonstrated user need.
+
+A future browser workspace may require:
+
+```text
+ephemeral per-run session/workspace
+explicit allowed domains
+credential references rather than raw credentials
+network mediation and redirect re-authorization
+bounded upload/download staging
+bounded filesystem bridge
+step/action budgets
+pause / cancel / revocation
+session cleanup
+step-level receipts
+```
+
+This is a prioritization refinement, not implementation authorization. If beta evidence points to a different smaller substrate first, evidence wins.
+
+### Post-beta selection rule
+
+Phase-C-style capability expansion must remain evidence-selected:
+
+```text
+outside-user friction
+-> identify repeated capability bottleneck
+-> select smallest reusable governed substrate
+-> define exact implementation contract against current runtime
+-> implement and prove
+-> rerun stable beta/product journeys
+-> measure again
+```
+
+Candidate future substrates include the generalized credential/permission broker, Data-Out/Data-In governance, governed-run consolidation, isolated browser workspace, broader OpenClaw execution, model routing, and provider integrations. Their listing here is not an ordering decision and activates none of them.
+
 ## 20. Final direction
 
 The durable hierarchy is:
