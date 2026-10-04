@@ -20,3 +20,8 @@ def test_mediator_mapped_ids_subset_of_registry_enabled_ids():
 def test_runtime_auditor_maps_shopify_capability_65():
     mapped = set(_mediator_surface_map()["mapped_capability_ids"])
     assert 65 in mapped
+
+
+def test_runtime_auditor_probes_do_not_share_clarification_state():
+    surface = _mediator_surface_map()
+    assert all(probe["matched"] for probe in surface["probes"])

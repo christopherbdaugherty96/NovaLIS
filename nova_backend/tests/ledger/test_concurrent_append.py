@@ -53,3 +53,16 @@ def test_distinct_writers_refuse_existing_corruption_without_overwrite(tmp_path)
     with ThreadPoolExecutor(max_workers=8) as pool:
         list(pool.map(append, range(8)))
     assert path.read_bytes() == original
+
+
+def test_writer_revalidates_when_ledger_changes_outside_writer(tmp_path):
+    path = tmp_path / "ledger.jsonl"
+    writer = LedgerWriter(path)
+    writer.log_event("ACTION_COMPLETED", {"sequence": 1})
+    original = path.read_bytes() + b'{"event_type":'
+    path.write_bytes(original)
+
+    with pytest.raises(LedgerWriteFailed):
+        writer.log_event("ACTION_COMPLETED", {"sequence": 2})
+
+    assert path.read_bytes() == original

@@ -44,7 +44,11 @@ def _is_allowed_loopback_host(host: str) -> bool:
     normalized = _normalize_host(host)
     if not normalized:
         return False
-    return normalized in _ALLOWED_LOOPBACK_HOSTS or normalized.endswith(".localhost")
+    return (
+        normalized in _ALLOWED_LOOPBACK_HOSTS
+        or normalized.endswith(".localhost")
+        or is_loopback_address(normalized)
+    )
 
 
 def is_local_only_http_path(path: str) -> bool:

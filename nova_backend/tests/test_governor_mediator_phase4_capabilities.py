@@ -840,12 +840,6 @@ def test_governor_mediator_uses_capability_registry_profile_overrides(monkeypatc
     )
 
     monkeypatch.setattr(capability_registry_module, "REGISTRY_PATH", registry_path)
-    monkeypatch.setattr(
-        capability_registry_module.CapabilityRegistry,
-        "_emit_profile_lifecycle_events",
-        lambda self: None,
-    )
-
     governor_mediator_module._enabled_capability_ids_cache = None
     governor_mediator_module._enabled_capability_ids_cache_at = 0.0
     governor_mediator_module._enabled_capability_ids_cache_profile = ""

@@ -29,6 +29,16 @@ def test_loopback_peer_with_local_headers_is_allowed():
     assert describe_http_rebinding_violation(_request("127.0.0.1")) is None
 
 
+def test_supported_nondefault_loopback_bind_is_allowed_by_host_guard():
+    assert describe_http_rebinding_violation(
+        _request(
+            "127.0.0.2",
+            host="127.0.0.2:8000",
+            origin="http://127.0.0.2:8000",
+        )
+    ) is None
+
+
 def test_missing_http_peer_fails_closed():
     violation = describe_http_rebinding_violation(_request(None))
     assert violation and "socket peer" in violation

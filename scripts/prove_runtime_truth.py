@@ -91,7 +91,12 @@ def main() -> int:
         proof.fail(f"FastAPI TestClient imports ({type(exc).__name__}: {exc})")
         return proof.finish()
 
-    client = TestClient(app, raise_server_exceptions=False)
+    client = TestClient(
+        app,
+        base_url="http://127.0.0.1",
+        client=("127.0.0.1", 50000),
+        raise_server_exceptions=False,
+    )
 
     root = proof.check("dashboard root returns 200", lambda: client.get("/"))
     if root is not None:
@@ -102,7 +107,10 @@ def main() -> int:
         proof.require(getattr(phase, "status_code", None) == 200, "phase-status status is 200", f"status={getattr(phase, 'status_code', None)}")
 
     def websocket_connects() -> None:
-        with client.websocket_connect("/ws"):
+        with client.websocket_connect(
+            "/ws",
+            headers={"Host": "127.0.0.1", "Origin": "http://127.0.0.1"},
+        ):
             return None
 
     proof.check("websocket /ws accepts a connection", websocket_connects)

@@ -280,8 +280,13 @@ def _mediator_surface_map() -> dict[str, Any]:
     entries = []
     capability_ids = set()
 
-    for phrase, group in MEDIATOR_TRIGGER_PROBES.items():
-        parsed = GovernorMediator.parse_governed_invocation(phrase, session_id="audit-runtime")
+    for index, (phrase, group) in enumerate(MEDIATOR_TRIGGER_PROBES.items()):
+        # Probes must be independent. Reusing one session lets clarification
+        # state from an earlier phrase consume later probes as follow-ups.
+        parsed = GovernorMediator.parse_governed_invocation(
+            phrase,
+            session_id=f"audit-runtime:{index}:{group}",
+        )
         cap_id = getattr(parsed, "capability_id", None)
         if cap_id is not None:
             capability_ids.add(cap_id)
@@ -1123,9 +1128,9 @@ def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
 
 def _path_for_report(path: Path) -> str:
     try:
-        return str(path.relative_to(PROJECT_ROOT))
+        return path.relative_to(PROJECT_ROOT).as_posix()
     except Exception:
-        return str(path)
+        return path.as_posix()
 
 
 def _build_discrepancies(
