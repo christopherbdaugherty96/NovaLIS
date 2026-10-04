@@ -1123,9 +1123,9 @@ def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
 
 def _path_for_report(path: Path) -> str:
     try:
-        return str(path.relative_to(PROJECT_ROOT))
+        return path.relative_to(PROJECT_ROOT).as_posix()
     except Exception:
-        return str(path)
+        return path.as_posix()
 
 
 def _build_discrepancies(
