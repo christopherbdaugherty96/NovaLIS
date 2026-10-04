@@ -53,9 +53,12 @@ def test_registry_construction_does_not_write_lifecycle_receipts(monkeypatch):
     from src.governor.capability_registry import CapabilityRegistry
     from src.ledger.writer import LedgerWriter
 
-    def fail_on_write(self, event_type, metadata):
-        raise AssertionError(f"registry construction wrote {event_type}: {metadata}")
+    calls = []
 
-    monkeypatch.setattr(LedgerWriter, "log_event", fail_on_write)
+    def record_write(self, event_type, metadata):
+        calls.append((event_type, metadata))
+
+    monkeypatch.setattr(LedgerWriter, "log_event", record_write)
     registry = CapabilityRegistry()
     assert registry.all_capabilities()
+    assert calls == []
