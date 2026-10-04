@@ -36,18 +36,18 @@ jobs:
         shell: pwsh
         run: |
           python -c "
-import sys
-import os
-sys.path.insert(0, os.path.join(os.getcwd(), 'nova_backend'))
-import importlib
-eb = importlib.import_module('src.governor.execute_boundary.execute_boundary')
-b = eb.ExecuteBoundary()
-assert isinstance(b.allow_execution(), bool)
-previous = eb.GOVERNED_ACTIONS_ENABLED
-eb.GOVERNED_ACTIONS_ENABLED = False
-try:
-    assert b.allow_execution() is False
-finally:
-    eb.GOVERNED_ACTIONS_ENABLED = previous
-print('PASS: ExecuteBoundary is fail-closed when execution is disabled')
-"
+          import sys
+          import os
+          sys.path.insert(0, os.path.join(os.getcwd(), 'nova_backend'))
+          import importlib
+          eb = importlib.import_module('src.governor.execute_boundary.execute_boundary')
+          b = eb.ExecuteBoundary()
+          assert isinstance(b.allow_execution(), bool)
+          previous = eb.GOVERNED_ACTIONS_ENABLED
+          eb.GOVERNED_ACTIONS_ENABLED = False
+          try:
+              assert b.allow_execution() is False
+          finally:
+              eb.GOVERNED_ACTIONS_ENABLED = previous
+          print('PASS: ExecuteBoundary is fail-closed when execution is disabled')
+          "
