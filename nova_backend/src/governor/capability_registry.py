@@ -68,7 +68,6 @@ class CapabilityRegistry:
         self._selected_profile: str = DEFAULT_RUNTIME_PROFILE
         self._selected_groups: tuple[str, ...] = tuple()
         self._capabilities: Dict[int, Capability] = self._load_registry()
-        self._emit_profile_lifecycle_events()
 
     def _load_registry(self) -> Dict[int, Capability]:
         if not REGISTRY_PATH.exists():
@@ -222,38 +221,6 @@ class CapabilityRegistry:
             capabilities[cid]["enabled"] = enabled_value
 
         return {cid: Capability(**entry) for cid, entry in capabilities.items()}
-
-    def _emit_profile_lifecycle_events(self) -> None:
-        try:
-            from src.ledger.writer import LedgerWriter
-
-            writer = LedgerWriter()
-            enabled_caps = [
-                cap
-                for _, cap in sorted(self._capabilities.items(), key=lambda item: item[0])
-                if cap.enabled and cap.status == "active"
-            ]
-            writer.log_event(
-                "CAPABILITY_PROFILE_APPLIED",
-                {
-                    "runtime_profile": self._selected_profile,
-                    "groups": list(self._selected_groups),
-                    "enabled_capability_ids": [cap.id for cap in enabled_caps],
-                },
-            )
-            for cap in enabled_caps:
-                writer.log_event(
-                    "CAPABILITY_INSTALLED",
-                    {
-                        "capability_id": cap.id,
-                        "capability_name": cap.name,
-                        "risk_level": cap.risk_level,
-                        "authority_scope": cap.authority_scope,
-                    },
-                )
-        except Exception:
-            # Lifecycle telemetry must never block capability loading.
-            return
 
     def get(self, capability_id: int) -> Capability:
         """Return capability; raises if unknown."""

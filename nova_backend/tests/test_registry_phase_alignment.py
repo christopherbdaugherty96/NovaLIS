@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 REGISTRY_PATH = Path(__file__).resolve().parents[1] / "src" / "config" / "registry.json"
 
 
@@ -20,8 +19,8 @@ def test_registry_phase_matches_expected_phase():
 
 def test_registry_phase_is_current_build_phase():
     """Registry and expected phase must both reflect build phase 8."""
-    from src.governor.capability_registry import EXPECTED_PHASE
     from src.build_phase import BUILD_PHASE
+    from src.governor.capability_registry import EXPECTED_PHASE
 
     assert EXPECTED_PHASE == str(BUILD_PHASE), (
         f"EXPECTED_PHASE '{EXPECTED_PHASE}' does not match BUILD_PHASE '{BUILD_PHASE}'"
@@ -47,3 +46,16 @@ def test_registry_loads_without_phase_error():
     topology = CapabilityTopology(registry)
     entries = topology.all_entries()
     assert len(entries) > 0, "Topology produced no entries"
+
+
+def test_registry_construction_does_not_write_lifecycle_receipts(monkeypatch):
+    """Reading registry configuration must not impersonate install activity."""
+    from src.governor.capability_registry import CapabilityRegistry
+    from src.ledger.writer import LedgerWriter
+
+    def fail_on_write(self, event_type, metadata):
+        raise AssertionError(f"registry construction wrote {event_type}: {metadata}")
+
+    monkeypatch.setattr(LedgerWriter, "log_event", fail_on_write)
+    registry = CapabilityRegistry()
+    assert registry.all_capabilities()
