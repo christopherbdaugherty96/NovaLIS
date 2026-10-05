@@ -1,3 +1,5 @@
+FROZEN 2026-10-05 at main 1dfd6862: no new work. See README known limitations. Resume only per the day-30 nova-guard decision.
+
 # Current Priority
 
 ## Alpha 0 decision — 2026-10-02 (supersedes ordering below)
