@@ -6,6 +6,7 @@ EVENT_TYPES = frozenset(
     {
         f"{_ACTION}_ATTEMPTED",
         f"{_ACTION}_COMPLETED",
+        "APPROVAL_GRANTED",
         "SEARCH_QUERY",
         "WEBPAGE_LAUNCH",
         "WEBPAGE_PREVIEW",

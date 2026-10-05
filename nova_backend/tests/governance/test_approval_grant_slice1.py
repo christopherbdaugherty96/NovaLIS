@@ -6,10 +6,13 @@ import pytest
 from src.actions.action_result import ActionResult
 from src.governor.approval_grants import (
     ApprovalAuthorityMetadataError,
+    ApprovalGrantError,
     ApprovalGrantStore,
     normalized_action_hash,
 )
 from src.governor.governor import Governor
+from src.ledger.reader import LedgerAnalyzer
+from src.ledger.writer import LedgerWriter
 
 
 class _Ledger:
@@ -294,17 +297,42 @@ def test_issuance_ledger_uses_non_reversible_grant_fingerprint():
     assert grant.approval_id not in str(payload)
 
 
-def test_issuance_audit_failure_is_explicitly_degraded_not_execution_authority():
+def test_real_ledger_persists_approval_before_grant_is_returned(tmp_path):
+    governor = Governor()
+    path = tmp_path / "ledger.jsonl"
+    governor._ledger = LedgerWriter(path)
+
+    grant = _grant(governor, {"target": "documents"})
+
+    records = LedgerAnalyzer(path).last_n(1)
+    assert records[0]["event_type"] == "APPROVAL_GRANTED"
+    assert records[0]["approval_fingerprint"]
+    assert grant.approval_id not in str(records[0])
+
+
+def test_real_ledger_failure_revokes_unissued_approval(tmp_path):
+    governor = Governor()
+    blocked_parent = tmp_path / "not-a-directory"
+    blocked_parent.write_text("occupied", encoding="utf-8")
+    governor._ledger = LedgerWriter(blocked_parent / "ledger.jsonl")
+
+    with pytest.raises(
+        ApprovalGrantError,
+        match="Approval receipt could not be persisted; approval was not issued",
+    ):
+        _grant(governor, {"target": "documents"})
+
+    assert governor._approval_grants._grants == {}
+
+
+def test_issuance_audit_failure_does_not_leave_execution_authority():
     governor, dispatch = _governor()
     governor._ledger.log_event = Mock(side_effect=RuntimeError("ledger unavailable"))
-    params = {"target": "documents"}
 
-    grant = _grant(governor, params)
-    result = governor.handle_governed_invocation(
-        22, params, session_id="session-a", approval_id=grant.approval_id
-    )
+    with pytest.raises(ApprovalGrantError):
+        _grant(governor, {"target": "documents"})
 
-    assert result.success is False
+    assert governor._approval_grants._grants == {}
     dispatch.assert_not_called()
 
 

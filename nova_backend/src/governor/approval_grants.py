@@ -209,3 +209,11 @@ class ApprovalGrantStore:
 
             grant.consumed_at = _utc_iso(wall_now)
             return ApprovalDecision(True, "consumed", replace(grant))
+
+    def revoke_unissued(self, approval_id: str) -> None:
+        """Remove authority that could not be durably recorded before issuance."""
+        normalized_id = str(approval_id or "").strip()
+        if not normalized_id:
+            return
+        with self._lock:
+            self._grants.pop(normalized_id, None)
