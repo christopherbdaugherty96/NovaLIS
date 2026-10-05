@@ -1653,6 +1653,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                         await _complete_immediate_turn(prompt, remember_response=False, tone_domain="system")
                         continue
+                    if reminder_resolution == "reprompt":
+                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
+                        session_state["pending_reminder"] = pending_reminder
+                        await _complete_immediate_turn(
+                            "I want to make sure before saving that reminder. "
+                            "Reply 'yes' to continue or 'no' to cancel.",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
                     session_state["pending_reminder"] = None
 
                 elif pending_stage == "time":

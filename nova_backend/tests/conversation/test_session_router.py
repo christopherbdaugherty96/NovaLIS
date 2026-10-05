@@ -73,6 +73,12 @@ def test_whole_reply_confirmation_does_not_classify_sentence_content():
             == "none"
         )
     assert SessionRouter.route_pending_web_confirmation("No!", whole_reply_only=True).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("not yet", whole_reply_only=True).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("cancel it", whole_reply_only=True).action == "cancel"
+    assert (
+        SessionRouter.route_pending_web_confirmation("cancel reminder", whole_reply_only=True).action
+        == "cancel"
+    )
     assert SessionRouter.route_pending_web_confirmation("yes...", whole_reply_only=True).action == "confirm"
 
 

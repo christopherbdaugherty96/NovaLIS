@@ -31,6 +31,7 @@ WEB_OPEN_CONFIRM_YES = {
 WEB_OPEN_CONFIRM_NO = {
     "no",
     "no thanks",
+    "not yet",
     "nope",
     "nah",
     "cancel",
@@ -49,6 +50,11 @@ WEB_OPEN_CONFIRM_NO = {
 _CONFIRMATION_NEGATION_RE = re.compile(
     r"\b(?:no|not|nope|nah|cancel|abort|stop|wait|hold\s+on|hang\s+on|never|"
     r"nevermind|never\s+mind|dont|don't|do\s+not|cannot|can't|wont|won't)\b"
+    r"|\b(?:ain|aren|couldn|didn|doesn|hadn|hasn|haven|isn|mustn|needn|"
+    r"shouldn|wasn|weren|wouldn)'?t\b"
+)
+_WHOLE_REPLY_CANCEL_RE = re.compile(
+    r"^(?:cancel|abort|stop)(?:\s+(?:it|that|this|reminder|request|action))?$"
 )
 _CONFIRMATION_YES_RE = re.compile(
     r"^(?:yes|yeah|yep|ok|okay|sure|confirm|proceed|go\s+ahead|"
@@ -192,7 +198,7 @@ class SessionRouter:
         if has_yes and has_no:
             return WebOpenDecision(action="reprompt")
         if has_no:
-            if normalized in WEB_OPEN_CONFIRM_NO:
+            if normalized in WEB_OPEN_CONFIRM_NO or _WHOLE_REPLY_CANCEL_RE.fullmatch(normalized):
                 return WebOpenDecision(action="cancel")
             if whole_reply_only:
                 return WebOpenDecision(action="none")
