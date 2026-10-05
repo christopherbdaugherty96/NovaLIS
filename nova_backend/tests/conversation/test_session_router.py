@@ -61,6 +61,21 @@ def test_pending_confirmation_parser_is_negation_safe_and_punctuation_tolerant()
     assert SessionRouter.route_pending_web_confirmation("go ahead, no wait").action == "reprompt"
 
 
+def test_whole_reply_confirmation_does_not_classify_sentence_content():
+    for reply in (
+        "why is my code not working",
+        "I can't sleep tonight",
+        "tell me about Japan, no rush",
+        "stop sign colors",
+    ):
+        assert (
+            SessionRouter.route_pending_web_confirmation(reply, whole_reply_only=True).action
+            == "none"
+        )
+    assert SessionRouter.route_pending_web_confirmation("No!", whole_reply_only=True).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("yes...", whole_reply_only=True).action == "confirm"
+
+
 def test_normalization_change_flag_for_stt_phrase():
     out = SessionRouter.normalize_and_route("open A B C new", {})
     assert out.normalization_changed is True

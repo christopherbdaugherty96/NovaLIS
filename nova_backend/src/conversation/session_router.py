@@ -30,8 +30,16 @@ WEB_OPEN_CONFIRM_YES = {
 
 WEB_OPEN_CONFIRM_NO = {
     "no",
+    "no thanks",
+    "nope",
+    "nah",
     "cancel",
+    "abort",
     "stop",
+    "wait",
+    "hold on",
+    "hang on",
+    "never",
     "nevermind",
     "never mind",
     "dont",
@@ -39,8 +47,8 @@ WEB_OPEN_CONFIRM_NO = {
 }
 
 _CONFIRMATION_NEGATION_RE = re.compile(
-    r"\b(?:no|not|cancel|stop|nevermind|never\s+mind|dont|don't|do\s+not|"
-    r"cannot|can't|wont|won't)\b"
+    r"\b(?:no|not|nope|nah|cancel|abort|stop|wait|hold\s+on|hang\s+on|never|"
+    r"nevermind|never\s+mind|dont|don't|do\s+not|cannot|can't|wont|won't)\b"
 )
 _CONFIRMATION_YES_RE = re.compile(
     r"^(?:yes|yeah|yep|ok|okay|sure|confirm|proceed|go\s+ahead|"
@@ -168,8 +176,13 @@ class SessionRouter:
         return GateResult(handled=True, message=clarification.response)
 
     @staticmethod
-    def route_pending_web_confirmation(lowered_text: str) -> WebOpenDecision:
-        normalized = re.sub(r"[^\w\s']", " ", str(lowered_text or "").lower())
+    def route_pending_web_confirmation(
+        lowered_text: str,
+        *,
+        whole_reply_only: bool = False,
+    ) -> WebOpenDecision:
+        text = str(lowered_text or "").lower().translate(str.maketrans({"’": "'", "‘": "'"}))
+        normalized = re.sub(r"[^\w\s']", " ", text)
         normalized = " ".join(normalized.split())
         if not normalized:
             return WebOpenDecision(action="reprompt")
@@ -179,7 +192,17 @@ class SessionRouter:
         if has_yes and has_no:
             return WebOpenDecision(action="reprompt")
         if has_no:
-            return WebOpenDecision(action="cancel")
+            if normalized in WEB_OPEN_CONFIRM_NO:
+                return WebOpenDecision(action="cancel")
+            if whole_reply_only:
+                return WebOpenDecision(action="none")
+            if len(normalized.split()) <= 4:
+                return WebOpenDecision(action="cancel")
+            return WebOpenDecision(action="none")
+        if whole_reply_only:
+            if normalized in WEB_OPEN_CONFIRM_YES:
+                return WebOpenDecision(action="confirm")
+            return WebOpenDecision(action="none")
         if has_yes and len(normalized.split()) <= 4:
             return WebOpenDecision(action="confirm")
         if has_yes:

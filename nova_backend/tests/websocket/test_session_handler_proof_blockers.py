@@ -23,7 +23,17 @@ def test_pending_confirmation_resolution_only_accepts_explicit_yes_no_cancel():
 
 
 def test_pending_confirmation_resolution_reprompts_mixed_replies():
-    for reply in ("yes, don't", "ok wait no", "sure... actually stop", "yes please no"):
+    for reply in (
+        "yes, don't",
+        "yes, don’t",
+        "yes wait",
+        "yes but wait",
+        "yes hold on",
+        "sure, actually nah",
+        "ok wait no",
+        "sure... actually stop",
+        "yes please no",
+    ):
         assert pending_confirmation_resolution_action(SessionRouter, reply) == "reprompt"
 
 

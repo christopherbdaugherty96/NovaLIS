@@ -501,6 +501,26 @@ def test_session_unrelated_input_cancels_pending_without_execution(monkeypatch):
     assert any("Cancelled the pending action before handling your new command." in message for message in chat_messages)
 
 
+@pytest.mark.parametrize(
+    "message",
+    [
+        "why is my code not working",
+        "I can't sleep tonight",
+        "tell me about Japan, no rush",
+        "stop sign colors",
+    ],
+)
+def test_session_without_pending_action_does_not_hijack_normal_chat(monkeypatch, message):
+    _install_session_gate_baseline(monkeypatch, {})
+    ws = _ScriptedWebSocket([message])
+    with patch("src.skills.general_chat.generate_chat", return_value="ordinary model reply"):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    messages = _chat_messages(ws)
+    assert any("ordinary model reply" in reply for reply in messages)
+    assert not any("No action is waiting for confirmation" in reply for reply in messages)
+
+
 def test_session_mixed_confirmation_reprompts_then_accepts_clean_yes(monkeypatch):
     calls: list[tuple[int, dict]] = []
     _install_session_gate_baseline(

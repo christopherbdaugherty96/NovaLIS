@@ -127,6 +127,35 @@ def test_calendar_offer_preserves_subject_then_persists_real_reminder(monkeypatc
     assert any("will not fire automatically" in message for message in messages)
 
 
+def test_reminder_body_with_negation_is_saved_as_content(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me at 5 PM", "call mom, not dad"],
+        store,
+    )
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call mom, not dad"
+    messages = _chat_messages(ws)
+    assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
+    assert not any("No Nova reminder was created" in message for message in messages)
+
+
+def test_reminder_time_text_with_negation_is_not_treated_as_cancel(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me to pick up the kids", "5 PM, no later"],
+        store,
+    )
+
+    assert store.created == []
+    messages = _chat_messages(ws)
+    assert any("I still need a reminder time" in message for message in messages)
+    assert not any("No Nova reminder was created" in message for message in messages)
+
+
 @pytest.mark.parametrize(
     "management_command",
     ["show schedules", "reminders", "are there any reminders today?"],

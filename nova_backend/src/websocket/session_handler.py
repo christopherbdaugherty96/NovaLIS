@@ -1622,7 +1622,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if pending_reminder:
                 pending_stage = str(pending_reminder.get("stage") or "").strip().lower()
                 reminder_reply = raw_text.strip().rstrip(".?!")
-                reminder_resolution = pending_confirmation_resolution_action(SessionRouter, reminder_reply)
+                reminder_decision = SessionRouter.route_pending_web_confirmation(
+                    reminder_reply,
+                    whole_reply_only=pending_stage != "offer",
+                )
+                reminder_resolution = (
+                    reminder_decision.action
+                    if reminder_decision.action in {"confirm", "cancel", "reprompt"}
+                    else ""
+                )
 
                 if reminder_resolution == "cancel":
                     session_state["pending_reminder"] = None
@@ -1714,7 +1722,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                     continue
 
-            no_pending_confirmation = SessionRouter.route_pending_web_confirmation(raw_text)
+            no_pending_confirmation = SessionRouter.route_pending_web_confirmation(
+                raw_text,
+                whole_reply_only=True,
+            )
             if (
                 no_pending_confirmation.action in {"confirm", "cancel"}
                 and not session_state.get("pending_escalation")
