@@ -19,8 +19,9 @@ known limitations:
   DeepSeek when a DeepSeek API key is configured. Remove or disable the key if outbound DeepSeek
   access must be prevented.
 - **The Windows installer can package runtime data.** The installer copies the backend tree
-  broadly, so files present under `nova_backend/src/data` can be included in a built installer.
-  Build only from a clean source export and inspect the artifact before distribution.
+  broadly, so files present under `nova_backend/src/data` — including saved provider API keys
+  (`nova_state/connections/provider_keys.json`) — can be included in a built installer. Build
+  only from a clean source export and inspect the artifact before distribution.
 - **Tests can write into the source tree.** The test configuration does not consistently set
   `NOVA_RUNTIME_DIR`; some runs can create `ledger.jsonl` or `nova_state` under
   `nova_backend/src/data`. Use an isolated checkout and inspect it for generated runtime state
