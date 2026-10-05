@@ -26,6 +26,11 @@ WEB_OPEN_CONFIRM_YES = {
     "do it",
     "do that",
     "sure",
+    "yes please",
+    "yes open it",
+    "yes do it",
+    "yes do that",
+    "yes set a reminder",
 }
 
 WEB_OPEN_CONFIRM_NO = {
@@ -205,12 +210,10 @@ class SessionRouter:
             if len(normalized.split()) <= 4:
                 return WebOpenDecision(action="cancel")
             return WebOpenDecision(action="none")
-        if whole_reply_only:
-            if normalized in WEB_OPEN_CONFIRM_YES:
-                return WebOpenDecision(action="confirm")
-            return WebOpenDecision(action="none")
-        if has_yes and len(normalized.split()) <= 4:
+        if normalized in WEB_OPEN_CONFIRM_YES:
             return WebOpenDecision(action="confirm")
+        if whole_reply_only:
+            return WebOpenDecision(action="none")
         if has_yes:
             return WebOpenDecision(action="reprompt")
         return WebOpenDecision(action="none")

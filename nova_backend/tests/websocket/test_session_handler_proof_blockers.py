@@ -41,6 +41,11 @@ def test_pending_confirmation_resolution_reprompts_mixed_replies():
         assert pending_confirmation_resolution_action(SessionRouter, reply) == "reprompt"
 
 
+def test_pending_confirmation_reprompts_timing_and_condition_suffixes():
+    for reply in ("do it tomorrow", "open it later", "do it if safe"):
+        assert pending_confirmation_resolution_action(SessionRouter, reply) == "reprompt"
+
+
 def test_headline_summary_uses_loaded_news_cache():
     message = render_headline_summary_from_cache(
         [
