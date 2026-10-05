@@ -22,7 +22,7 @@ from src.conversation.brief_followup_grounding import (
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
-from src.governor.approval_grants import ApprovalGrantError
+from src.governor.approval_grants import ApprovalCapabilityDisabledError, ApprovalGrantError
 from src.llm.llm_gateway import model_status_snapshot
 from src.openclaw.run_state_machine import run_event_hub
 from src.system_control.system_control_executor import SystemControlExecutor
@@ -119,15 +119,8 @@ def local_chat_usage_meta(user_text: str, response_text: str) -> dict[str, Any]:
 def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) -> str:
     """Return confirm/cancel only for explicit replies to a pending confirmation."""
     decision = SessionRouter.route_pending_web_confirmation(raw_text)
-    if decision.action in {"confirm", "cancel"}:
+    if decision.action in {"confirm", "cancel", "reprompt"}:
         return decision.action
-
-    normalized = re.sub(r"[^\w\s']", " ", str(raw_text or "").lower())
-    normalized = " ".join(normalized.split())
-    if re.match(r"^(?:yes|yeah|yep|ok|okay|sure)\b", normalized):
-        return "confirm"
-    if re.match(r"^(?:no|cancel|stop|never mind|nevermind|don't|dont)\b", normalized):
-        return "cancel"
     return ""
 
 
@@ -1505,6 +1498,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             capability_id=capability_id,
                             params=params,
                         )
+                    except ApprovalCapabilityDisabledError:
+                        session_state["pending_governed_confirm"] = None
+                        await send_chat_message(
+                            ws,
+                            "That capability was disabled before approval, so nothing was authorized or executed.",
+                        )
+                        await send_chat_done(ws)
+                        continue
                     except ApprovalGrantError:
                         session_state["pending_governed_confirm"] = None
                         await send_chat_message(
@@ -1533,6 +1534,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_message(ws, "Cancelled pending action.")
                     await send_chat_done(ws)
                     continue
+                if confirm_action == "reprompt":
+                    await _complete_immediate_turn(
+                        "I want to make sure before authorizing that action. "
+                        "Reply 'yes' to continue or 'no' to cancel.",
+                        remember_response=False,
+                    )
+                    continue
                 session_state["pending_governed_confirm"] = None
                 await send_chat_message(
                     ws,
@@ -1552,6 +1560,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             capability_id=17,
                             params=web_params,
                         )
+                    except ApprovalCapabilityDisabledError:
+                        session_state["pending_web_open"] = None
+                        await send_chat_message(
+                            ws,
+                            "Website opening was disabled before approval, so nothing was authorized or executed.",
+                        )
+                        await send_chat_done(ws)
+                        continue
                     except ApprovalGrantError:
                         session_state["pending_web_open"] = None
                         await send_chat_message(
@@ -1582,6 +1598,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_state["pending_web_open"] = None
                     await send_chat_message(ws, "Cancelled website open request.")
                     await send_chat_done(ws)
+                    continue
+                if web_action == "reprompt":
+                    await _complete_immediate_turn(
+                        "I want to make sure before opening that website. "
+                        "Reply 'yes' to continue or 'no' to cancel.",
+                        remember_response=False,
+                    )
                     continue
                 session_state["pending_web_open"] = None
                 await send_chat_message(

@@ -22,6 +22,11 @@ def test_pending_confirmation_resolution_only_accepts_explicit_yes_no_cancel():
     assert pending_confirmation_resolution_action(SessionRouter, "do that") == "confirm"
 
 
+def test_pending_confirmation_resolution_reprompts_mixed_replies():
+    for reply in ("yes, don't", "ok wait no", "sure... actually stop", "yes please no"):
+        assert pending_confirmation_resolution_action(SessionRouter, reply) == "reprompt"
+
+
 def test_headline_summary_uses_loaded_news_cache():
     message = render_headline_summary_from_cache(
         [

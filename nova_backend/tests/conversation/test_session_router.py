@@ -47,7 +47,18 @@ def test_evaluate_gate_repeats_same_turn_clarification_message():
 def test_pending_web_confirmation_yes_no_reprompt():
     assert SessionRouter.route_pending_web_confirmation("go ahead").action == "confirm"
     assert SessionRouter.route_pending_web_confirmation("never mind").action == "cancel"
-    assert SessionRouter.route_pending_web_confirmation("maybe").action == "reprompt"
+    assert SessionRouter.route_pending_web_confirmation("maybe").action == "none"
+
+
+def test_pending_confirmation_parser_is_negation_safe_and_punctuation_tolerant():
+    for reply in ("yes, don't", "ok wait no", "sure... actually stop"):
+        assert SessionRouter.route_pending_web_confirmation(reply).action == "reprompt"
+    for reply in ("Yes!", "okay...", "go ahead?"):
+        assert SessionRouter.route_pending_web_confirmation(reply).action == "confirm"
+    for reply in ("No!", "cancel...", "never mind?"):
+        assert SessionRouter.route_pending_web_confirmation(reply).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("yes please no").action == "reprompt"
+    assert SessionRouter.route_pending_web_confirmation("go ahead, no wait").action == "reprompt"
 
 
 def test_normalization_change_flag_for_stt_phrase():

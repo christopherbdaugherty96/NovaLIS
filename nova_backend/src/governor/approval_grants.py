@@ -21,6 +21,10 @@ class ApprovalGrantError(ValueError):
     """Raised when an approval grant cannot be issued safely."""
 
 
+class ApprovalCapabilityDisabledError(ApprovalGrantError):
+    """Raised when a capability is disabled before approval can be issued."""
+
+
 class ApprovalAuthorityMetadataError(ApprovalGrantError):
     """Raised when action parameters contain reserved authority metadata."""
 

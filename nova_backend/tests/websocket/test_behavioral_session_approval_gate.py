@@ -263,6 +263,25 @@ def test_session_receipt_failure_reports_no_authority_and_does_not_invoke(monkey
     )
 
 
+def test_session_disabled_capability_reports_the_actual_failure(monkeypatch):
+    _install_session_gate_baseline(
+        monkeypatch,
+        {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
+    )
+    invoke = Mock(side_effect=AssertionError("capability must not run"))
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", invoke)
+    monkeypatch.setattr(brain_server.RUNTIME_GOVERNOR.registry, "is_enabled", lambda capability_id: False)
+
+    ws = _ScriptedWebSocket(["open documents", "yes"])
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    invoke.assert_not_called()
+    messages = _chat_messages(ws)
+    assert any("capability was disabled" in message for message in messages)
+    assert not any("couldn't record your approval" in message for message in messages)
+
+
 def test_session_approved_cap22_uses_real_governor_ledger_sequence(monkeypatch):
     from src.system_control.system_control_executor import (
         OpenPathLaunchResult,
@@ -480,6 +499,27 @@ def test_session_unrelated_input_cancels_pending_without_execution(monkeypatch):
     assert "ACTION_COMPLETED" not in _event_types(ledger)
     chat_messages = _chat_messages(ws)
     assert any("Cancelled the pending action before handling your new command." in message for message in chat_messages)
+
+
+def test_session_mixed_confirmation_reprompts_then_accepts_clean_yes(monkeypatch):
+    calls: list[tuple[int, dict]] = []
+    _install_session_gate_baseline(
+        monkeypatch,
+        {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
+    )
+
+    async def _fake_invoke(_governor, capability_id: int, params: dict, **authority):
+        calls.append((capability_id, {**params, "_authority": authority}))
+        return ActionResult.ok("Opened.", request_id="mixed-then-yes")
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke)
+    ws = _ScriptedWebSocket(["open documents", "yes, don't", "yes"])
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(calls) == 1
+    assert calls[0][0] == 22
+    assert any("Reply 'yes' to continue or 'no' to cancel" in message for message in _chat_messages(ws))
 
 
 @pytest.mark.slow

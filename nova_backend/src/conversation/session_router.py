@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -36,6 +37,15 @@ WEB_OPEN_CONFIRM_NO = {
     "dont",
     "don't",
 }
+
+_CONFIRMATION_NEGATION_RE = re.compile(
+    r"\b(?:no|not|cancel|stop|nevermind|never\s+mind|dont|don't|do\s+not|"
+    r"cannot|can't|wont|won't)\b"
+)
+_CONFIRMATION_YES_RE = re.compile(
+    r"^(?:yes|yeah|yep|ok|okay|sure|confirm|proceed|go\s+ahead|"
+    r"open\s+it|do\s+it|do\s+that)\b"
+)
 
 
 @dataclass(frozen=True)
@@ -159,14 +169,22 @@ class SessionRouter:
 
     @staticmethod
     def route_pending_web_confirmation(lowered_text: str) -> WebOpenDecision:
-        lowered = (lowered_text or "").strip().lower()
-        if not lowered:
+        normalized = re.sub(r"[^\w\s']", " ", str(lowered_text or "").lower())
+        normalized = " ".join(normalized.split())
+        if not normalized:
             return WebOpenDecision(action="reprompt")
-        if lowered in WEB_OPEN_CONFIRM_YES:
-            return WebOpenDecision(action="confirm")
-        if lowered in WEB_OPEN_CONFIRM_NO:
+
+        has_yes = _CONFIRMATION_YES_RE.search(normalized) is not None
+        has_no = _CONFIRMATION_NEGATION_RE.search(normalized) is not None
+        if has_yes and has_no:
+            return WebOpenDecision(action="reprompt")
+        if has_no:
             return WebOpenDecision(action="cancel")
-        return WebOpenDecision(action="reprompt")
+        if has_yes and len(normalized.split()) <= 4:
+            return WebOpenDecision(action="confirm")
+        if has_yes:
+            return WebOpenDecision(action="reprompt")
+        return WebOpenDecision(action="none")
 
     @staticmethod
     def ready_prompt() -> str:

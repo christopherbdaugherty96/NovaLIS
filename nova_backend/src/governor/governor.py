@@ -19,6 +19,7 @@ from src.durability.maintenance import authoritative_mutation
 from src.governor.approval_grants import (
     DEFAULT_APPROVAL_TTL_SECONDS,
     ApprovalAuthorityMetadataError,
+    ApprovalCapabilityDisabledError,
     ApprovalGrant,
     ApprovalGrantError,
     ApprovalGrantStore,
@@ -224,7 +225,7 @@ class Governor:
     ) -> ApprovalGrant:
         cap = self.registry.get(capability_id)
         if not self.registry.is_enabled(capability_id):
-            raise ApprovalGrantError("Cannot approve a disabled capability.")
+            raise ApprovalCapabilityDisabledError("Cannot approve a disabled capability.")
         action_params = canonical_action_snapshot(params)
         grant = self._approval_grants.issue(
             session_id=session_id,
