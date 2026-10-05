@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
-from src.governor.approval_grants import ApprovalGrantStore
+from src.governor.approval_grants import ApprovalGrantError, ApprovalGrantStore
 from src.governor.governor_mediator import GovernorMediator, Invocation
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
@@ -237,6 +237,30 @@ def test_session_yes_resumes_pending_cap64_only_through_governed_invocation(monk
     assert str(params.get("session_id") or "").strip()
     assert _event_types(ledger) == ["ACTION_ATTEMPTED", "ACTION_COMPLETED"]
     assert any("Draft opened." in message for message in _chat_messages(ws))
+
+
+def test_session_receipt_failure_reports_no_authority_and_does_not_invoke(monkeypatch):
+    _install_session_gate_baseline(
+        monkeypatch,
+        {"open documents": Invocation(capability_id=22, params={"target": "documents"})},
+    )
+    invoke = Mock(side_effect=AssertionError("capability must not run"))
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", invoke)
+    monkeypatch.setattr(
+        brain_server.RUNTIME_GOVERNOR,
+        "issue_approval_grant",
+        Mock(side_effect=ApprovalGrantError("receipt unavailable")),
+    )
+
+    ws = _ScriptedWebSocket(["open documents", "yes"])
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    invoke.assert_not_called()
+    assert any(
+        "nothing was authorized or executed" in message
+        for message in _chat_messages(ws)
+    )
 
 
 def test_session_approved_cap22_uses_real_governor_ledger_sequence(monkeypatch):

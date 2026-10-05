@@ -22,6 +22,7 @@ from src.conversation.brief_followup_grounding import (
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
+from src.governor.approval_grants import ApprovalGrantError
 from src.llm.llm_gateway import model_status_snapshot
 from src.openclaw.run_state_machine import run_event_hub
 from src.system_control.system_control_executor import SystemControlExecutor
@@ -1498,11 +1499,21 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     params = dict(pending_governed_confirm.get("params") or {})
                     params.pop("confirmed", None)
                     params.setdefault("session_id", session_id)
-                    grant = governor.issue_approval_grant(
-                        session_id=session_id,
-                        capability_id=capability_id,
-                        params=params,
-                    )
+                    try:
+                        grant = governor.issue_approval_grant(
+                            session_id=session_id,
+                            capability_id=capability_id,
+                            params=params,
+                        )
+                    except ApprovalGrantError:
+                        session_state["pending_governed_confirm"] = None
+                        await send_chat_message(
+                            ws,
+                            "I couldn't record your approval, so nothing was authorized or executed. "
+                            "Please try again.",
+                        )
+                        await send_chat_done(ws)
+                        continue
                     action_result = await invoke_governed_capability(
                         governor,
                         capability_id,
@@ -1535,11 +1546,21 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if web_action == "confirm":
                     web_params = dict(pending_web_open)
                     web_params["session_id"] = session_id
-                    grant = governor.issue_approval_grant(
-                        session_id=session_id,
-                        capability_id=17,
-                        params=web_params,
-                    )
+                    try:
+                        grant = governor.issue_approval_grant(
+                            session_id=session_id,
+                            capability_id=17,
+                            params=web_params,
+                        )
+                    except ApprovalGrantError:
+                        session_state["pending_web_open"] = None
+                        await send_chat_message(
+                            ws,
+                            "I couldn't record your approval, so nothing was authorized or executed. "
+                            "Please try again.",
+                        )
+                        await send_chat_done(ws)
+                        continue
                     action_result = await invoke_governed_capability(
                         governor,
                         17,

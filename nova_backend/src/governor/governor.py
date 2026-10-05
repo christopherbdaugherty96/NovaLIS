@@ -247,11 +247,11 @@ class Governor:
                     "expires_at": grant.expires_at,
                 },
             )
-        except Exception:
-            # Slice 1 policy: authority may exist without an issuance receipt.
-            # Execution still requires the exact grant, and ACTION_ATTEMPTED
-            # remains a separate fail-closed ledger boundary.
-            pass
+        except Exception as exc:
+            self._approval_grants.revoke_unissued(grant.approval_id)
+            raise ApprovalGrantError(
+                "Approval receipt could not be persisted; approval was not issued."
+            ) from exc
         return grant
 
     @staticmethod
