@@ -22,6 +22,30 @@ def test_pending_confirmation_resolution_only_accepts_explicit_yes_no_cancel():
     assert pending_confirmation_resolution_action(SessionRouter, "do that") == "confirm"
 
 
+def test_pending_confirmation_resolution_reprompts_mixed_replies():
+    for reply in (
+        "yes, don't",
+        "yes, don’t",
+        "yes wait",
+        "yes but wait",
+        "yes hold on",
+        "sure, actually nah",
+        "yes, I shouldn't",
+        "yes but I wouldn't",
+        "okay, I couldn't",
+        "sure, it isn't",
+        "ok wait no",
+        "sure... actually stop",
+        "yes please no",
+    ):
+        assert pending_confirmation_resolution_action(SessionRouter, reply) == "reprompt"
+
+
+def test_pending_confirmation_reprompts_timing_and_condition_suffixes():
+    for reply in ("do it tomorrow", "open it later", "do it if safe"):
+        assert pending_confirmation_resolution_action(SessionRouter, reply) == "reprompt"
+
+
 def test_headline_summary_uses_loaded_news_cache():
     message = render_headline_summary_from_cache(
         [

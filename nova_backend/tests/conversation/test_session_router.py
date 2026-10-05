@@ -47,7 +47,39 @@ def test_evaluate_gate_repeats_same_turn_clarification_message():
 def test_pending_web_confirmation_yes_no_reprompt():
     assert SessionRouter.route_pending_web_confirmation("go ahead").action == "confirm"
     assert SessionRouter.route_pending_web_confirmation("never mind").action == "cancel"
-    assert SessionRouter.route_pending_web_confirmation("maybe").action == "reprompt"
+    assert SessionRouter.route_pending_web_confirmation("maybe").action == "none"
+
+
+def test_pending_confirmation_parser_is_negation_safe_and_punctuation_tolerant():
+    for reply in ("yes, don't", "ok wait no", "sure... actually stop"):
+        assert SessionRouter.route_pending_web_confirmation(reply).action == "reprompt"
+    for reply in ("Yes!", "okay...", "go ahead?"):
+        assert SessionRouter.route_pending_web_confirmation(reply).action == "confirm"
+    for reply in ("No!", "cancel...", "never mind?"):
+        assert SessionRouter.route_pending_web_confirmation(reply).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("yes please no").action == "reprompt"
+    assert SessionRouter.route_pending_web_confirmation("go ahead, no wait").action == "reprompt"
+
+
+def test_whole_reply_confirmation_does_not_classify_sentence_content():
+    for reply in (
+        "why is my code not working",
+        "I can't sleep tonight",
+        "tell me about Japan, no rush",
+        "stop sign colors",
+    ):
+        assert (
+            SessionRouter.route_pending_web_confirmation(reply, whole_reply_only=True).action
+            == "none"
+        )
+    assert SessionRouter.route_pending_web_confirmation("No!", whole_reply_only=True).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("not yet", whole_reply_only=True).action == "cancel"
+    assert SessionRouter.route_pending_web_confirmation("cancel it", whole_reply_only=True).action == "cancel"
+    assert (
+        SessionRouter.route_pending_web_confirmation("cancel reminder", whole_reply_only=True).action
+        == "cancel"
+    )
+    assert SessionRouter.route_pending_web_confirmation("yes...", whole_reply_only=True).action == "confirm"
 
 
 def test_normalization_change_flag_for_stt_phrase():

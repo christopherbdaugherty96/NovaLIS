@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -25,17 +26,45 @@ WEB_OPEN_CONFIRM_YES = {
     "do it",
     "do that",
     "sure",
+    "yes please",
+    "yes open it",
+    "yes do it",
+    "yes do that",
+    "yes set a reminder",
 }
 
 WEB_OPEN_CONFIRM_NO = {
     "no",
+    "no thanks",
+    "not yet",
+    "nope",
+    "nah",
     "cancel",
+    "abort",
     "stop",
+    "wait",
+    "hold on",
+    "hang on",
+    "never",
     "nevermind",
     "never mind",
     "dont",
     "don't",
 }
+
+_CONFIRMATION_NEGATION_RE = re.compile(
+    r"\b(?:no|not|nope|nah|cancel|abort|stop|wait|hold\s+on|hang\s+on|never|"
+    r"nevermind|never\s+mind|dont|don't|do\s+not|cannot|can't|wont|won't)\b"
+    r"|\b(?:ain|aren|couldn|didn|doesn|hadn|hasn|haven|isn|mustn|needn|"
+    r"shouldn|wasn|weren|wouldn)'?t\b"
+)
+_WHOLE_REPLY_CANCEL_RE = re.compile(
+    r"^(?:cancel|abort|stop)(?:\s+(?:it|that|this|reminder|request|action))?$"
+)
+_CONFIRMATION_YES_RE = re.compile(
+    r"^(?:yes|yeah|yep|ok|okay|sure|confirm|proceed|go\s+ahead|"
+    r"open\s+it|do\s+it|do\s+that)\b"
+)
 
 
 @dataclass(frozen=True)
@@ -158,15 +187,36 @@ class SessionRouter:
         return GateResult(handled=True, message=clarification.response)
 
     @staticmethod
-    def route_pending_web_confirmation(lowered_text: str) -> WebOpenDecision:
-        lowered = (lowered_text or "").strip().lower()
-        if not lowered:
+    def route_pending_web_confirmation(
+        lowered_text: str,
+        *,
+        whole_reply_only: bool = False,
+    ) -> WebOpenDecision:
+        text = str(lowered_text or "").lower().translate(str.maketrans({"’": "'", "‘": "'"}))
+        normalized = re.sub(r"[^\w\s']", " ", text)
+        normalized = " ".join(normalized.split())
+        if not normalized:
             return WebOpenDecision(action="reprompt")
-        if lowered in WEB_OPEN_CONFIRM_YES:
+
+        has_yes = _CONFIRMATION_YES_RE.search(normalized) is not None
+        has_no = _CONFIRMATION_NEGATION_RE.search(normalized) is not None
+        if has_yes and has_no:
+            return WebOpenDecision(action="reprompt")
+        if has_no:
+            if normalized in WEB_OPEN_CONFIRM_NO or _WHOLE_REPLY_CANCEL_RE.fullmatch(normalized):
+                return WebOpenDecision(action="cancel")
+            if whole_reply_only:
+                return WebOpenDecision(action="none")
+            if len(normalized.split()) <= 4:
+                return WebOpenDecision(action="cancel")
+            return WebOpenDecision(action="none")
+        if normalized in WEB_OPEN_CONFIRM_YES:
             return WebOpenDecision(action="confirm")
-        if lowered in WEB_OPEN_CONFIRM_NO:
-            return WebOpenDecision(action="cancel")
-        return WebOpenDecision(action="reprompt")
+        if whole_reply_only:
+            return WebOpenDecision(action="none")
+        if has_yes:
+            return WebOpenDecision(action="reprompt")
+        return WebOpenDecision(action="none")
 
     @staticmethod
     def ready_prompt() -> str:
