@@ -1,8 +1,10 @@
+import json
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
 import pytest
 from src.governor.exceptions import LedgerWriteFailed
+from src.ledger import writer as writer_module
 from src.ledger.reader import LedgerAnalyzer
 from src.ledger.writer import LedgerWriter
 from src.trust import receipt_store
@@ -66,3 +68,22 @@ def test_writer_revalidates_when_ledger_changes_outside_writer(tmp_path):
         writer.log_event("ACTION_COMPLETED", {"sequence": 2})
 
     assert path.read_bytes() == original
+
+
+def test_cache_refresh_failure_does_not_misreport_durable_append(tmp_path, monkeypatch):
+    path = tmp_path / "ledger.jsonl"
+    cache_key = writer_module._path_key(path)
+    writer_module._VALIDATED_FILE_SIGNATURES[cache_key] = (0, 0)
+
+    def fail_cache_signature(_path):
+        raise OSError("cache refresh failed")
+
+    monkeypatch.setattr(writer_module, "_file_signature", fail_cache_signature)
+
+    LedgerWriter(path).log_event("ACTION_COMPLETED", {"sequence": 1})
+
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert len(records) == 1
+    assert records[0]["event_type"] == "ACTION_COMPLETED"
+    assert records[0]["sequence"] == 1
+    assert cache_key not in writer_module._VALIDATED_FILE_SIGNATURES

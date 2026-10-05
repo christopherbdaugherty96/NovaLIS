@@ -64,12 +64,16 @@ class LedgerWriter:
             # Serialize separate writer instances in this process. Windows append
             # handles can otherwise overlap, corrupting acknowledged history.
             with self._lock:
+                cache_key = _path_key(self.path)
                 if self.path.exists():
                     _validate_existing_ledger(self.path)
                 with open(self.path, "a", encoding="utf-8") as f:
                     f.write(json.dumps(entry) + "\n")
                     f.flush()
                     os.fsync(f.fileno())
-                _VALIDATED_FILE_SIGNATURES[_path_key(self.path)] = _file_signature(self.path)
+                try:
+                    _VALIDATED_FILE_SIGNATURES[cache_key] = _file_signature(self.path)
+                except Exception:
+                    _VALIDATED_FILE_SIGNATURES.pop(cache_key, None)
         except Exception as e:
             raise LedgerWriteFailed(f"Ledger write failed: {e}") from e
