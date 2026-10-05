@@ -9,6 +9,26 @@
 Nova separates intelligence from authority so useful reasoning can remain broad while real
 execution stays bounded, inspectable, revocable, and provable.
 
+## Known security and privacy limitations
+
+Before running Nova with provider keys or building a distributable installer, account for these
+known limitations:
+
+- **Data-Out is not fully enforced.** Turning off the DeepSeek / “Governed second opinion”
+  setting does not currently prevent general chat or capabilities 31, 48, and 54 from contacting
+  DeepSeek when a DeepSeek API key is configured. Remove or disable the key if outbound DeepSeek
+  access must be prevented.
+- **The Windows installer can package runtime data.** The installer copies the backend tree
+  broadly, so files present under `nova_backend/src/data` — including saved provider API keys
+  (`nova_state/connections/provider_keys.json`) — can be included in a built installer. Build
+  only from a clean source export and inspect the artifact before distribution.
+- **Tests can write into the source tree.** The test configuration does not consistently set
+  `NOVA_RUNTIME_DIR`; some runs can create `ledger.jsonl` or `nova_state` under
+  `nova_backend/src/data`. Use an isolated checkout and inspect it for generated runtime state
+  after testing.
+
+These are disclosure notes, not mitigations or proof that other data paths are safe.
+
 ## Current post-#405 beta-readiness order — 2026-09-20
 
 ```text
