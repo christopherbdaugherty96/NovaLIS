@@ -171,6 +171,22 @@ def test_recovery_before_private_beta_is_rejected(tmp_path):
     )
 
 
+@pytest.mark.parametrize("relative", ORDERING_SURFACES)
+def test_missing_no_authority_boundary_is_rejected(tmp_path, relative):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = _mutate(
+        tmp_path,
+        relative,
+        "This sequence grants no new capability or authority.",
+        "This sequence expands Data-Out authority.",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
+    )
+
+
 def test_missing_recovery_reconciliation_is_rejected(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)

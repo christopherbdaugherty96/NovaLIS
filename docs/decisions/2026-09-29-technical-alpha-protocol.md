@@ -38,6 +38,13 @@ with that explicit limitation; they are not silently reactivated, and an unprove
 remains a stop condition. Restoring a recovery requirement needs a later explicit owner decision
 or evidence-backed need.
 
+`NOT APPLICABLE (Alpha-0: no recovery claim)` is an accepted result for exactly these items and
+no others: the development-machine #408 recovery checks, the recovery part of the accompanying
+instructions, and operator step 5. It satisfies those items only when the artifact, its
+instructions, and its user-facing text make no recovery, restore, or upgrade claim, and the
+instructions say plainly that recovery is not offered in this build. Every other item keeps the
+PASS / FAIL / NOT EXECUTED vocabulary and its gate rules unchanged.
+
 ## Purpose and boundary
 
 An external Windows operator may supply clean-machine evidence on hardware the owner does not
@@ -50,8 +57,9 @@ This is a narrow exception to the pre-distribution acceptance requirement in
 may receive a validation artifact before clean-Windows proof and frozen-candidate acceptance.
 All hard blockers remain binding. General product distribution still requires full acceptance.
 
-The current workflow remains #441/#443 review and owner decisions, then the bounded
-local-boundary repair and fresh proof. This document does not start that repair or change its scope.
+Until 2026-10-08 the workflow was #441/#443 review and owner decisions, then the bounded
+local-boundary repair and fresh proof; PR #447 completed that repair. This document did not start
+that repair or change its scope. The current workflow is the sequence in the alignment section above.
 NovaLIS remains private. Nova remains the public overview; source publication remains held for
 separate license review. No license changes or historical installer publication are authorized.
 
@@ -65,12 +73,15 @@ The owner must record evidence for every item against an exact source revision a
   checks complete. Distribution permissions for Nova, bundled dependencies, assets, and any
   model weights are established; do not assume the current license resolves these permissions.
 - Installation/startup and applicable #408 recovery checks pass in the development environment,
-  clearly labeled as development-machine evidence. Clean external proof may remain NOT EXECUTED.
+  clearly labeled as development-machine evidence (recovery checks: `NOT APPLICABLE (Alpha-0: no
+  recovery claim)` under the alignment section above). Clean external proof may remain NOT EXECUTED.
 - Exact source SHA, build procedure/environment, version, artifact filename and SHA-256 recorded.
   Every recipient receives identical identified bytes; corrections produce a new identity.
 - Document prerequisites and expected resource needs with their evidence and uncertainties.
   Do not present unmeasured RAM requirements or untested Windows versions as validated support.
-- Working installation, removal, recovery, reporting, and stop-use instructions accompany the build.
+- Working installation, removal, recovery, reporting, and stop-use instructions accompany the build
+  (recovery: `NOT APPLICABLE (Alpha-0: no recovery claim)` plus an explicit statement that
+  recovery is not offered in this build).
 - Private security-reporting contact and access-controlled delivery method are verified before use.
 - Each named tester agrees to the procedure and use of disposable test data on a machine they
   control. Tests must stay within their own environment and explicitly agreed provider scope.
@@ -98,7 +109,8 @@ or a documented clean physical-machine baseline with no prior Nova installation/
 checkout, developer environment dependencies, or preconfigured Nova model setup. Record any
 preexisting prerequisites; an environment that depends on undeclared developer setup cannot pass.
 
-Record PASS / FAIL / NOT EXECUTED with evidence for:
+Record PASS / FAIL / NOT EXECUTED with evidence for each item below (`NOT APPLICABLE (Alpha-0: no
+recovery claim)` is accepted only where the alignment section above allows it):
 
 1. Verify installer checksum; record Windows edition/build, CPU, RAM, GPU, free storage,
    permissions, relevant security software, and all prerequisites.
@@ -108,7 +120,9 @@ Record PASS / FAIL / NOT EXECUTED with evidence for:
    one supported workflow and inspect its receipt and actual outcome.
 4. Close and restart Nova, then reboot Windows; inspect retained test state and startup behavior.
 5. Perform the applicable accepted #408 backup/recovery procedure using disposable fixtures.
-   Include failure/partial-restore truth checks; preserve before/after evidence.
+   Include failure/partial-restore truth checks; preserve before/after evidence. For an Alpha-0
+   artifact, record `NOT APPLICABLE (Alpha-0: no recovery claim)` and confirm that no recovery,
+   restore, or upgrade claim appears in the artifact or its instructions.
 6. Exercise removal/reinstallation and documented retained-state behavior. If the candidate
    supports upgrades, upgrade proof is a mandatory clean-Windows gate: identify the supported
    prior-version fixture and its artifact/state baseline, upgrade to the exact candidate, and

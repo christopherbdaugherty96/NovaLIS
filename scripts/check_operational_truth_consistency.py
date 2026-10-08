@@ -115,6 +115,7 @@ OWNER_SEQUENCE_PAUSED_CATEGORIES = (
     "GUARD EXPANSION",
     "RECOVERY WIRING",
 )
+OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY = "THIS SEQUENCE GRANTS NO NEW CAPABILITY OR AUTHORITY."
 MASTER_ROADMAP_SUPERSESSION_NOTE = (
     f"SUPERSEDED AS CURRENT ORDERING AUTHORITY BY {OWNER_SEQUENCE_KEY}"
 )
@@ -1438,6 +1439,8 @@ def _preserves_owner_sequence(text: str) -> bool:
     if lifecycle_states != ("ACTIVE",):
         return False
     normalized = " ".join(active.split())
+    if normalized.count(OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY) != 1:
+        return False
     if not all(
         re.search(rf"{re.escape(category)}\s+REMAINS? PAUSED", normalized)
         for category in OWNER_SEQUENCE_PAUSED_CATEGORIES
