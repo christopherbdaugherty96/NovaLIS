@@ -64,6 +64,11 @@ durability/recovery line of the freeze condition is satisfied only by a candidat
 corrupts no authoritative state silently and makes no recovery, restore, or upgrade claim it has
 not proven on that exact candidate. Every other freeze condition and hard blocker is unchanged.
 
+Under that same condition, `NOT APPLICABLE (no recovery claim)` is an accepted result for the
+recovery entries of the Product distribution checklist below, and only for those entries.
+Restart behavior and the #408 durability checks (no silent authoritative-state loss or
+corruption) still apply and still need PASS evidence on the exact frozen SHA.
+
 ## Freeze condition
 
 Freeze an exact private-beta candidate SHA only when:
@@ -108,8 +113,10 @@ Before any ordinary product tester receives the candidate (outside the controlle
 
 - full hero loop from startup through awareness, recommendation, governed action/outcome, and end-of-day use;
 - relevant degraded/failure behavior;
-- restart/recovery behavior;
-- #408-required durability/recovery checks;
+- restart behavior; recovery behavior (or `NOT APPLICABLE (no recovery claim)` under the
+  2026-10-08 alignment above);
+- #408-required durability checks; #408 recovery checks (or `NOT APPLICABLE (no recovery claim)`
+  under the 2026-10-08 alignment above);
 - secret/privacy/support-artifact review;
 - version/build identity and supported-platform truth;
 - clean Windows install/startup from the intended beta distribution path;

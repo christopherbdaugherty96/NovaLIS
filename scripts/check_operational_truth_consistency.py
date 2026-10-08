@@ -1495,7 +1495,7 @@ def _superseded_ordering_errors(text: str) -> tuple[str, ...]:
 
 
 def _non_historical_text(text: str) -> str:
-    """Whitespace-normalized non-historical text (fence-aware) so wrapped prose matches.
+    """Normalized non-historical text (fence-aware) so wrapped or emphasized prose matches.
 
     Historical sections are replaced by a hard separator so a phrase can never be
     assembled from current text on one side and historical text on the other.
@@ -1504,7 +1504,9 @@ def _non_historical_text(text: str) -> str:
     parts: list[str] = []
     for _, line, _, _, historical in _markdown_structure(text, fence_aware=True):
         parts.append(" | " if historical else line)
-    return " ".join(" ".join(parts).split())
+    # Inline emphasis/code markers (*, _, `, ~) are formatting, not words; dropping
+    # them keeps "**has resumed**" or "`Guard expansion`" from hiding a match.
+    return " ".join(re.sub(r"[*_`~]+", "", " ".join(parts)).split())
 
 
 def _paused_category_contradicted_outside_history(text: str) -> bool:

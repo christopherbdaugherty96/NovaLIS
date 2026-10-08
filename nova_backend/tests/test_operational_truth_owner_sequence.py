@@ -448,6 +448,30 @@ def test_fenced_heading_cannot_open_a_second_owner_section(tmp_path):
     assert _owner_errors(checker, tmp_path) == []
 
 
+@pytest.mark.parametrize(
+    ("tail", "fragment"),
+    (
+        ("Recovery wiring **has resumed**.", "paused category contradicted outside history"),
+        ("*Recovery wiring* has resumed.", "paused category contradicted outside history"),
+        ("`Guard expansion` is __now active__.", "paused category contradicted outside history"),
+        (
+            "**NEXT REQUIRED ENGINEERING:** bounded local-boundary P1 repair",
+            "superseded ordering language outside history",
+        ),
+    ),
+)
+def test_inline_markdown_emphasis_does_not_hide_current_text(tmp_path, tail, fragment):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8") + f"\n## Current notes\n\n{tail}\n",
+        encoding="utf-8",
+    )
+
+    _assert_rejected(_owner_errors(checker, tmp_path), target, fragment)
+
+
 def test_post_405_contract_remains_available_as_historical_generation():
     checker = _load_checker()
     snapshot = (
