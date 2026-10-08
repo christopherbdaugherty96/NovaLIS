@@ -130,6 +130,9 @@ SUPERSEDED_ORDERING_LANGUAGE = (
     re.compile(r"LONG-LIVED ORDERING AUTHORITY"),
     re.compile(r"ORDERING AUTHORITY:\s*\[NOVA MASTER ROADMAP"),
     re.compile(r"SINGLE SOURCE OF TRUTH FOR WHAT COMES NEXT"),
+    re.compile(r"THIS DOCUMENT ORDERS WORK"),
+    re.compile(r"THIS ROADMAP STILL DETERMINES ORDERING"),
+    re.compile(r"SUPERSEDES, AS ORDERING AUTHORITY"),
 )
 POST_405_DIRECTIVE_SEQUENCE = (
     "NEXT: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS",
@@ -1454,6 +1457,21 @@ def _superseded_ordering_errors(text: str) -> tuple[str, ...]:
     return tuple(errors)
 
 
+def _paused_category_contradicted_outside_history(text: str) -> bool:
+    """Return True when any non-historical text resumes an owner-sequence paused category."""
+
+    current = " ".join(
+        " ".join(line.split())
+        for _, line, _, _, historical in _markdown_structure(text)
+        if not historical
+    )
+    return any(
+        re.search(rf"{re.escape(category)}\s+{state}", current)
+        for category in OWNER_SEQUENCE_PAUSED_CATEGORIES
+        for state in _PAUSED_CONTRADICTORY_STATES
+    )
+
+
 def _records_master_roadmap_supersession(text: str) -> bool:
     return any(
         MASTER_ROADMAP_SUPERSESSION_NOTE in " ".join(line.split())
@@ -1596,6 +1614,11 @@ def check_operational_truth(
                 continue
             for error in _superseded_ordering_errors(text):
                 errors.append(f"{paths[name]}: {error}")
+            if _paused_category_contradicted_outside_history(text):
+                errors.append(
+                    f"{paths[name]}: paused category contradicted outside history "
+                    "(owner-sequence paused categories must stay paused)"
+                )
     elif post_405_mode:
         if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#405 ordering surface missing")

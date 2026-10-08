@@ -6,7 +6,7 @@ and the canonical status surfaces. This document was the 2026-07-05 ordering doc
 audit, and a full mining pass over all three archive trees (docs/future/, future/,
 "4-15-26 NEW ROADMAP").
 
-Historical authority rules (2026-07-05; the ordering role ended 2026-10-08):
+## Historical authority rules (2026-07-05; the ordering role ended 2026-10-08)
 
 ```text
 1. This document ORDERS work. It does not re-scope work.
@@ -83,7 +83,7 @@ chain.
 
 That document is a strategic compass, not an ordering or scope authority. It synthesizes
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
-This roadmap still determines ordering; lane locks still determine scope; owner decisions still
+The owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_08`) determines ordering; lane locks still determine scope; owner decisions still
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
@@ -1038,9 +1038,9 @@ LATER (unchanged horizon ordering)
   H1-H31 horizon, graduated deliberately via the promotion ladder - never as scope creep.
 ```
 
-## Supersession Note
+## Historical Supersession Note (2026-07-05; the ordering role ended 2026-10-08)
 
-This document supersedes, as ordering authority only:
+This document superseded, as ordering authority only, until 2026-10-08:
 
 ```text
 docs/future/ROADMAP.md and all dated plan/vision docs in docs/future/

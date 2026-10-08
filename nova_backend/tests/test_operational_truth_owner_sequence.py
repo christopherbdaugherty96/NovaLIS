@@ -212,6 +212,9 @@ def test_guard_gating_return_is_rejected(tmp_path):
         "- the July master roadmap remains the long-lived ordering authority.",
         "Ordering authority: [Nova Master Roadmap 2026-07-05](docs/future/x.md).",
         "Status: canonical ordering document — the single source of truth for what comes next",
+        "1. This document ORDERS work. It does not re-scope work.",
+        "This roadmap still determines ordering; lane locks still determine scope.",
+        "This document supersedes, as ordering authority only:",
     ),
 )
 @pytest.mark.parametrize(
@@ -308,6 +311,37 @@ def test_paused_categories_cannot_be_resumed_inside_owner_block(tmp_path, claim)
     _assert_rejected(
         _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
     )
+
+
+@pytest.mark.parametrize("relative", ("README.md", "docs/status/CURRENT_WORK_STATUS.md"))
+@pytest.mark.parametrize(
+    "claim", ("Recovery wiring is now active.", "Guard expansion resumed.")
+)
+def test_paused_categories_cannot_be_resumed_in_any_current_section(tmp_path, relative, claim):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / relative
+    target.write_text(
+        target.read_text(encoding="utf-8") + f"\n## Current recovery work\n\n{claim}\n",
+        encoding="utf-8",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "paused category contradicted outside history"
+    )
+
+
+def test_paused_category_wording_is_allowed_as_historical_provenance(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8")
+        + "\n## Historical recovery lane (superseded)\n\nRecovery wiring is now active.\n",
+        encoding="utf-8",
+    )
+
+    assert _owner_errors(checker, tmp_path) == []
 
 
 def test_post_405_contract_remains_available_as_historical_generation():
