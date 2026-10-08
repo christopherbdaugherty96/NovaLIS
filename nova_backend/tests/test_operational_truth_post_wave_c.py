@@ -8,6 +8,17 @@ import pytest
 
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 
+# Issue #457 moved the live repository to OWNER_OPERATING_SEQUENCE_2026_10_08.
+# The post-#405 beta-readiness contract below stays under regression test as a
+# historical lifecycle generation against an exact snapshot of the operational
+# truth surfaces at main 210c0085 (PR #456).
+POST_405_SNAPSHOT_ROOT = (
+    Path(__file__).resolve().parent
+    / "fixtures"
+    / "operational_truth"
+    / "post_405_main_210c0085"
+)
+
 
 def _load_checker():
     repo_root = Path(__file__).resolve().parents[2]
@@ -527,7 +538,7 @@ def test_checker_still_requires_current_head_vs_validated_baseline_boundary(tmp_
 
 def _copy_current_checked_surfaces(checker, destination: Path) -> None:
     for relative in checker.CHECKED_SURFACES:
-        source = checker.ROOT / relative
+        source = POST_405_SNAPSHOT_ROOT / relative
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
@@ -535,7 +546,7 @@ def _copy_current_checked_surfaces(checker, destination: Path) -> None:
 
 def _copy_post_405_ordering_surfaces(checker, destination: Path) -> None:
     for relative in checker.CURRENT_CHECKED_SURFACES:
-        source = checker.ROOT / relative
+        source = POST_405_SNAPSHOT_ROOT / relative
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
@@ -567,7 +578,7 @@ def test_current_sequence_requires_post_436_process_truth(tmp_path, provenance):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -621,7 +632,7 @@ def test_checker_rejects_pre_merge_388_lifecycle_after_closeout(tmp_path):
 def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, target_relative):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    master = POST_405_SNAPSHOT_ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
@@ -636,7 +647,7 @@ def test_current_repository_shape_rejects_corrupted_post_405_order(tmp_path, tar
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -661,7 +672,7 @@ def test_current_repository_shape_records_lane_3_lane_4_and_lane_5a_migration():
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
         "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md",
     ):
-        text = (checker.ROOT / relative).read_text(encoding="utf-8")
+        text = (POST_405_SNAPSHOT_ROOT / relative).read_text(encoding="utf-8")
         active = checker._extract_post_405_active_block(text)
         assert active is not None
         structured_lines = tuple(
@@ -741,7 +752,7 @@ def test_recovery_closeout_rejects_misordered_post_430_markers(
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -779,7 +790,7 @@ def test_lane_5a_migration_requires_full_ordered_milestone_chain(tmp_path, miles
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -809,7 +820,7 @@ def test_recovery_foundation_rejects_corrupt_completion_provenance(
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -833,7 +844,7 @@ def test_recovery_foundation_rejects_noncanonical_authority_model(tmp_path):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -852,7 +863,7 @@ def test_recovery_foundation_rejects_noncanonical_authority_model(tmp_path):
 )
 def test_recovery_foundation_rejects_premature_rollback_completion(tmp_path, claim):
     checker = _load_checker()
-    text = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    text = (POST_405_SNAPSHOT_ROOT / "README.md").read_text(encoding="utf-8")
     foundation = text.replace(
         "verified main after Lane 5A rollback/restore proof: "
         "868de9d92c701834f1c4fba422ab9c47a01ea33f",
@@ -913,7 +924,7 @@ def test_recovery_closeout_rejects_activation_reopened_after_rollback(tmp_path):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -937,7 +948,7 @@ def test_recovery_closeout_rejects_rollback_as_next(tmp_path):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -980,7 +991,7 @@ def test_recovery_closeout_requires_ordered_rollback_completion_markers(
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1017,7 +1028,7 @@ def test_recovery_closeout_rejects_rollback_as_next_or_current_prose(tmp_path, c
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1055,7 +1066,7 @@ def test_recovery_closeout_does_not_conflate_completed_and_current_clauses(
 
     assert (
         checker.check_operational_truth(
-            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+            tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
         )
         == []
     )
@@ -1078,7 +1089,7 @@ def test_recovery_closeout_keeps_independent_physical_status_lines_separate(tmp_
 
     assert (
         checker.check_operational_truth(
-            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+            tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
         )
         == []
     )
@@ -1125,7 +1136,7 @@ def test_recovery_closeout_rejects_rollback_unfinished_claim(tmp_path, claim):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1146,7 +1157,7 @@ def test_recovery_closeout_requires_canonical_structured_state_marker(tmp_path, 
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any("canonical rollback/restore closeout state marker" in error for error in errors)
@@ -1176,7 +1187,7 @@ def test_recovery_foundation_rejects_obsolete_current_validation_lane_claim(tmp_
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1204,7 +1215,7 @@ def test_lane_4_complete_rejects_corrupt_merge_provenance(tmp_path, provenance, 
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1230,7 +1241,7 @@ def test_lane_2_closeout_rejects_corrupt_merge_provenance(
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1265,7 +1276,7 @@ def test_lane_1_sequence_rejects_corrupt_406_provenance(
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1292,7 +1303,7 @@ def test_lane_1_sequence_rejects_conflicting_duplicate_406_completion(tmp_path):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1327,7 +1338,7 @@ def test_lane_1_sequence_rejects_borrowed_408_provenance(
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1355,7 +1366,7 @@ def test_lane_3_closeout_rejects_competing_durability_authorization(tmp_path, au
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1382,7 +1393,7 @@ def test_lane_3_closeout_rejects_corrupt_merge_provenance(tmp_path, provenance, 
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1421,7 +1432,7 @@ def test_lane_4_complete_rejects_later_durability_authorization(
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1478,7 +1489,7 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
     target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1490,7 +1501,7 @@ def test_current_lifecycle_rejects_regression_to_lane_1_closeout(tmp_path):
 
 def test_pre_406_sequence_is_historical_only():
     checker = _load_checker()
-    current = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    current = (POST_405_SNAPSHOT_ROOT / "README.md").read_text(encoding="utf-8")
     pre_406 = current.replace(
         "COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)\n"
         "COMPLETE: #408 durability/state-ownership decision (PR #412; main `2592ad91`)\n"
@@ -1561,7 +1572,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
 ):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    master = POST_405_SNAPSHOT_ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
@@ -1596,7 +1607,7 @@ def test_post_405_marker_prevents_coordinated_fallback_to_historical_order(
         target.write_text(corrupted, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1625,7 +1636,7 @@ def test_current_lifecycle_rejects_duplicate_or_misordered_new_gate_markers(tmp_
     assert duplicated.splitlines().count(source_marker) == 2
     target.write_text(duplicated, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any(str(target) in error for error in errors)
 
@@ -1639,7 +1650,7 @@ def test_current_lifecycle_rejects_duplicate_or_misordered_new_gate_markers(tmp_
     assert moved.index(source_marker) > moved.index(source_directive)
     target.write_text(moved, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any(str(target) in error for error in errors)
 
@@ -1647,7 +1658,7 @@ def test_current_lifecycle_rejects_duplicate_or_misordered_new_gate_markers(tmp_
 def test_post_405_mode_rejects_noncanonical_migration_checkpoint_sha(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    master = POST_405_SNAPSHOT_ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
@@ -1673,7 +1684,7 @@ def test_post_405_mode_rejects_noncanonical_migration_checkpoint_sha(tmp_path):
         target.write_text(updated, encoding="utf-8")
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any(
         "current ordering does not preserve the active beta-readiness boundary" in error
@@ -1695,7 +1706,7 @@ def test_post_405_mode_rejects_one_current_surface_with_different_sync_sha(tmp_p
     )
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1719,7 +1730,7 @@ def test_post_405_mode_rejects_two_groups_of_current_sync_shas(tmp_path):
         )
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert any(
@@ -1740,7 +1751,7 @@ def test_post_405_mode_ignores_historical_different_sync_sha(tmp_path):
 
     assert (
         checker.check_operational_truth(
-            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+            tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
         )
         == []
     )
@@ -1785,21 +1796,21 @@ def _replace_completed_closeout_with_active(checker, root, names):
 def test_post_405_mode_requires_all_completed_closeout_surfaces(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    master = POST_405_SNAPSHOT_ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
 
     assert (
         checker.check_operational_truth(
-            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+            tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
         )
         == []
     )
 
     _replace_completed_closeout_with_active(checker, tmp_path, checker.LANE_PATTERNS)
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert sum("requires completed PR #366 closeout state" in error for error in errors) == 7
@@ -1808,14 +1819,14 @@ def test_post_405_mode_requires_all_completed_closeout_surfaces(tmp_path):
 def test_post_405_mode_rejects_one_active_or_missing_completed_surface(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    master = POST_405_SNAPSHOT_ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
 
     _replace_completed_closeout_with_active(checker, tmp_path, ("agents",))
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any(
         "AGENTS.md: current post-#405 lifecycle requires completed PR #366 closeout state" in error
@@ -1828,7 +1839,7 @@ def test_post_405_mode_rejects_one_active_or_missing_completed_surface(tmp_path)
         encoding="utf-8",
     )
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any(
         "AGENTS.md: current post-#405 lifecycle requires completed PR #366 closeout state" in error
@@ -1839,7 +1850,7 @@ def test_post_405_mode_rejects_one_active_or_missing_completed_surface(tmp_path)
 def test_post_405_mode_preserves_historical_active_closeout_wording(tmp_path):
     checker = _load_checker()
     _copy_current_checked_surfaces(checker, tmp_path)
-    master = checker.ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+    master = POST_405_SNAPSHOT_ROOT / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master = tmp_path / "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
     copied_master.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master, copied_master)
@@ -1849,7 +1860,7 @@ def test_post_405_mode_preserves_historical_active_closeout_wording(tmp_path):
 
     assert (
         checker.check_operational_truth(
-            tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+            tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
         )
         == []
     )
@@ -2742,7 +2753,7 @@ def test_current_lifecycle_rejects_coordinated_legacy_active_lane(tmp_path):
     _post_wave_c_active_fixture(tmp_path)
 
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
 
     assert errors
@@ -2857,7 +2868,7 @@ def test_current_closeout_cannot_be_satisfied_by_historical_markers(tmp_path, po
             text += historical
         target.write_text(text, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert sum("requires completed PR #366 closeout state" in error for error in errors) == 7
 
@@ -2883,7 +2894,7 @@ def test_full_checker_validates_nested_directive_labels(tmp_path, opening, closi
             text = text.replace(label, f"{opening}{label}{closing}")
     target.write_text(text, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     if competing:
         assert any("README.md: current ordering does not preserve" in error for error in errors)
@@ -2937,7 +2948,7 @@ def test_full_checker_structure_corrections(tmp_path, case, conflict):
         )
     target.write_text(text, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     if conflict:
         expected = (
@@ -2980,7 +2991,7 @@ def test_current_closeout_requires_canonical_revision_not_just_agreement(tmp_pat
         target.write_text(changed, encoding="utf-8")
     assert changed_surfaces == (len(checker.POST_405_ORDERING_SURFACES) if coordinated else 1)
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any("README.md: current ordering does not preserve" in error for error in errors)
 
@@ -3004,7 +3015,7 @@ def test_current_closeout_rejects_competing_authorizations(tmp_path, extra):
     marker = "BETA_READINESS_SEQUENCE_V1: ACTIVE\n"
     target.write_text(original.replace(marker, marker + extra + "\n", 1), encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any("README.md: current ordering does not preserve" in error for error in errors)
 
@@ -3027,7 +3038,7 @@ def test_current_engineering_label_wrappers_are_checked(tmp_path, opening, closi
     assert changed != original
     target.write_text(changed, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     if competing:
         assert any("README.md: current ordering does not preserve" in error for error in errors)
@@ -3076,7 +3087,7 @@ def test_current_gate_validates_wrapped_markers(
     assert changed != original
     target.write_text(changed, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     if conflict:
         assert any("README.md: current ordering does not preserve" in error for error in errors)
@@ -3096,7 +3107,7 @@ def test_candidate_identity_freeze_precedes_acceptance(tmp_path, corruption):
     sequence = "\n".join((freeze, checks, decision))
     assert sequence in original
     assert checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     ) == []
     if corruption == "accepted_before_checks":
         changed = original.replace(freeze, "THEN: freeze an accepted candidate", 1)
@@ -3105,6 +3116,6 @@ def test_candidate_identity_freeze_precedes_acceptance(tmp_path, corruption):
     assert changed != original
     target.write_text(changed, encoding="utf-8")
     errors = checker.check_operational_truth(
-        tmp_path, lifecycle_generation=checker.CURRENT_LIFECYCLE_GENERATION
+        tmp_path, lifecycle_generation=checker.POST_405_LIFECYCLE_GENERATION
     )
     assert any("README.md: current ordering does not preserve" in error for error in errors)
