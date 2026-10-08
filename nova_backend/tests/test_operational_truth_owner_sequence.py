@@ -483,6 +483,23 @@ def test_inline_markdown_emphasis_does_not_hide_current_text(tmp_path, tail, fra
     _assert_rejected(_owner_errors(checker, tmp_path), target, fragment)
 
 
+@pytest.mark.parametrize("indent", (" ", "  ", "   "))
+def test_indented_current_heading_ends_a_historical_section(tmp_path, indent):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8")
+        + "\n## Historical old note\n\nOld text.\n\n"
+        + f"{indent}## Current recovery work\n\nRecovery wiring has resumed.\n",
+        encoding="utf-8",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "paused category contradicted outside history"
+    )
+
+
 def test_post_405_contract_remains_available_as_historical_generation():
     checker = _load_checker()
     snapshot = (

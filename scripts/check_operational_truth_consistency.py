@@ -724,7 +724,11 @@ def _markdown_structure(text: str, *, fence_aware: bool = False):
                 if closes and not line.strip()[len(marker) :].strip():
                     fence = None
         elif fence is None:
-            heading = _normalized_heading(line)
+            # CommonMark allows up to three spaces before an ATX heading; the
+            # owner-sequence (fence-aware) parse honors that, history parse does not.
+            heading = _normalized_heading(
+                re.sub(r"^ {1,3}(?=#)", "", line) if fence_aware else line
+            )
         if heading:
             level, title = heading
             while stack and stack[-1][0] >= level:
