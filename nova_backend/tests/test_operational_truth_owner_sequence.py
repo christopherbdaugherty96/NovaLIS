@@ -390,6 +390,64 @@ def test_paused_category_wording_is_allowed_as_historical_provenance(tmp_path):
     assert _owner_errors(checker, tmp_path) == []
 
 
+@pytest.mark.parametrize("relative", ("README.md", ".agent_context/current_priority.md"))
+def test_stale_ordering_wrapped_across_lines_is_rejected(tmp_path, relative):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / relative
+    target.write_text(
+        target.read_text(encoding="utf-8")
+        + "\n## Current engineering\n\nNEXT REQUIRED ENGINEERING:\n"
+        "bounded local-boundary P1 repair (no remote mode or authority expansion)\n",
+        encoding="utf-8",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "superseded ordering language outside history"
+    )
+
+
+@pytest.mark.parametrize(
+    ("tail", "fragment"),
+    (
+        ("Recovery wiring has resumed.\n", "paused category contradicted outside history"),
+        (
+            "Resume only per the day-30 nova-guard decision.\n",
+            "superseded ordering language outside history",
+        ),
+    ),
+)
+def test_fenced_historical_heading_does_not_hide_current_text(tmp_path, tail, fragment):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8")
+        + "\n## Current notes\n\n```text\n## Historical example\n```\n\n"
+        + tail,
+        encoding="utf-8",
+    )
+
+    _assert_rejected(_owner_errors(checker, tmp_path), target, fragment)
+
+
+def test_fenced_heading_cannot_open_a_second_owner_section(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    text = target.read_text(encoding="utf-8")
+    # A fenced fake heading inside the owner section must not truncate the owner block.
+    patched = text.replace(
+        "NEXT: egress inventory",
+        "NEXT: egress inventory\n```\n\n```text\n## Historical fake\n",
+        1,
+    )
+    assert patched != text
+    target.write_text(patched, encoding="utf-8")
+
+    assert _owner_errors(checker, tmp_path) == []
+
+
 def test_post_405_contract_remains_available_as_historical_generation():
     checker = _load_checker()
     snapshot = (

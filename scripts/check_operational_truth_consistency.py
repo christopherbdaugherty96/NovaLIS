@@ -699,13 +699,31 @@ def _normalized_heading(line: str) -> tuple[int, str] | None:
     return len(match.group("marks")), title.upper()
 
 
-def _markdown_structure(text: str):
-    """Yield offsets, lines, heading ancestry and historical state consistently."""
+def _markdown_structure(text: str, *, fence_aware: bool = False):
+    """Yield offsets, lines, heading ancestry and historical state consistently.
+
+    With ``fence_aware`` (owner-sequence checks), ATX headings inside fenced code
+    blocks are content, not headings, so a fenced "## Historical" line cannot open
+    a historical section. The historical post-#405 generation keeps the original
+    behavior unchanged.
+    """
 
     stack: list[tuple[int, str, int]] = []
     offset = 0
+    fence: str | None = None
     for line in text.upper().splitlines(keepends=True):
-        heading = _normalized_heading(line)
+        heading = None
+        fence_marker = re.match(r"^ {0,3}(`{3,}|~{3,})", line) if fence_aware else None
+        if fence_marker:
+            marker = fence_marker.group(1)
+            if fence is None:
+                fence = marker
+            else:
+                closes = marker[0] == fence[0] and len(marker) >= len(fence)
+                if closes and not line.strip()[len(marker) :].strip():
+                    fence = None
+        elif fence is None:
+            heading = _normalized_heading(line)
         if heading:
             level, title = heading
             while stack and stack[-1][0] >= level:
@@ -717,12 +735,12 @@ def _markdown_structure(text: str):
 
 
 def _non_historical_lifecycle_declarations(
-    text: str, key: str
+    text: str, key: str, *, fence_aware: bool = False
 ) -> tuple[tuple[int, str], ...]:
     """Return ``key`` lifecycle declarations outside explicitly historical sections."""
 
     declarations: list[tuple[int, str]] = []
-    for offset, line, _, _, historical in _markdown_structure(text):
+    for offset, line, _, _, historical in _markdown_structure(text, fence_aware=fence_aware):
         lifecycle_state = _lifecycle_state(line, key)
         if lifecycle_state is not None and not historical:
             marker_start = line.find(f"{key}:")
@@ -747,17 +765,19 @@ def _extract_post_405_active_block(text: str) -> str | None:
 def _extract_owner_sequence_block(text: str) -> str | None:
     """Return the governing current section of the single active owner sequence."""
 
-    return _extract_active_lifecycle_block(text, OWNER_SEQUENCE_KEY)
+    return _extract_active_lifecycle_block(text, OWNER_SEQUENCE_KEY, fence_aware=True)
 
 
-def _extract_active_lifecycle_block(text: str, key: str) -> str | None:
+def _extract_active_lifecycle_block(
+    text: str, key: str, *, fence_aware: bool = False
+) -> str | None:
     """Return the governing non-historical section for exactly one ACTIVE ``key``."""
 
-    declarations = _non_historical_lifecycle_declarations(text, key)
+    declarations = _non_historical_lifecycle_declarations(text, key, fence_aware=fence_aware)
     if len(declarations) != 1 or declarations[0][1] != "ACTIVE":
         return None
     marker_start = declarations[0][0]
-    lines = tuple(_markdown_structure(text))
+    lines = tuple(_markdown_structure(text, fence_aware=fence_aware))
     section_start, section_level = 0, 6
     for offset, line, _, ancestors, _ in lines:
         if offset <= marker_start < offset + len(line):
@@ -1462,25 +1482,35 @@ def _superseded_ordering_errors(text: str) -> tuple[str, ...]:
             "superseded lifecycle marker declared ACTIVE "
             "(BETA_READINESS_SEQUENCE_V1 / ALPHA_0_SEQUENCE must be historical)"
         )
-    for _, line, _, _, historical in _markdown_structure(text):
-        if historical:
-            continue
-        if any(pattern.search(line) for pattern in SUPERSEDED_ORDERING_LANGUAGE):
+    current = _non_historical_text(text)
+    for pattern in SUPERSEDED_ORDERING_LANGUAGE:
+        match = pattern.search(current)
+        if match:
             errors.append(
-                "superseded ordering language outside history: " + " ".join(line.split())[:160]
+                "superseded ordering language outside history: "
+                + current[max(0, match.start() - 40) : match.end() + 80]
             )
             break
     return tuple(errors)
 
 
+def _non_historical_text(text: str) -> str:
+    """Whitespace-normalized non-historical text (fence-aware) so wrapped prose matches.
+
+    Historical sections are replaced by a hard separator so a phrase can never be
+    assembled from current text on one side and historical text on the other.
+    """
+
+    parts: list[str] = []
+    for _, line, _, _, historical in _markdown_structure(text, fence_aware=True):
+        parts.append(" | " if historical else line)
+    return " ".join(" ".join(parts).split())
+
+
 def _paused_category_contradicted_outside_history(text: str) -> bool:
     """Return True when any non-historical text resumes an owner-sequence paused category."""
 
-    current = " ".join(
-        " ".join(line.split())
-        for _, line, _, _, historical in _markdown_structure(text)
-        if not historical
-    )
+    current = _non_historical_text(text)
     return any(
         re.search(rf"{re.escape(category)}\s+{state}", current)
         for category in OWNER_SEQUENCE_PAUSED_CATEGORIES
@@ -1491,7 +1521,7 @@ def _paused_category_contradicted_outside_history(text: str) -> bool:
 def _records_master_roadmap_supersession(text: str) -> bool:
     return any(
         MASTER_ROADMAP_SUPERSESSION_NOTE in " ".join(line.split())
-        for _, line, _, _, historical in _markdown_structure(text)
+        for _, line, _, _, historical in _markdown_structure(text, fence_aware=True)
         if not historical
     )
 
