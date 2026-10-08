@@ -455,6 +455,14 @@ def test_fenced_heading_cannot_open_a_second_owner_section(tmp_path):
         ("*Recovery wiring* has resumed.", "paused category contradicted outside history"),
         ("`Guard expansion` is __now active__.", "paused category contradicted outside history"),
         (
+            "Recovery wiring [has resumed](https://example.invalid/status).",
+            "paused category contradicted outside history",
+        ),
+        ("Recovery wiring [has resumed][status].", "paused category contradicted outside history"),
+        ("Recovery wiring <b>has resumed</b>.", "paused category contradicted outside history"),
+        ("Recovery wiring has&nbsp;resumed.", "paused category contradicted outside history"),
+        ("Recovery wiring has\\ resumed.", "paused category contradicted outside history"),
+        (
             "**NEXT REQUIRED ENGINEERING:** bounded local-boundary P1 repair",
             "superseded ordering language outside history",
         ),

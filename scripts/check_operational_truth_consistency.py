@@ -47,6 +47,7 @@ runtime certification.
 
 from __future__ import annotations
 
+import html
 import re
 from pathlib import Path
 
@@ -129,7 +130,7 @@ SUPERSEDED_ORDERING_LANGUAGE = (
     re.compile(r"NEXT REQUIRED ENGINEERING:\s*BOUNDED LOCAL-BOUNDARY P1 REPAIR"),
     re.compile(r"CANONICAL ORDERING AUTHORITY"),
     re.compile(r"LONG-LIVED ORDERING AUTHORITY"),
-    re.compile(r"ORDERING AUTHORITY:\s*\[NOVA MASTER ROADMAP"),
+    re.compile(r"ORDERING AUTHORITY:\s*\[?NOVA MASTER ROADMAP"),
     re.compile(r"SINGLE SOURCE OF TRUTH FOR WHAT COMES NEXT"),
     re.compile(r"THIS DOCUMENT ORDERS WORK"),
     re.compile(r"THIS ROADMAP STILL DETERMINES ORDERING"),
@@ -1504,9 +1505,25 @@ def _non_historical_text(text: str) -> str:
     parts: list[str] = []
     for _, line, _, _, historical in _markdown_structure(text, fence_aware=True):
         parts.append(" | " if historical else line)
-    # Inline emphasis/code markers (*, _, `, ~) are formatting, not words; dropping
-    # them keeps "**has resumed**" or "`Guard expansion`" from hiding a match.
-    return " ".join(re.sub(r"[*_`~]+", "", " ".join(parts)).split())
+    return " ".join(_markdown_inline_to_plain(" ".join(parts)).split())
+
+
+def _markdown_inline_to_plain(text: str) -> str:
+    """Reduce inline Markdown/HTML to its visible words before phrase matching.
+
+    Links and images keep only their label, HTML tags are dropped, entities and
+    backslash escapes are decoded, and emphasis/code markers (*, _, `, ~) are
+    removed, so ordinary formatting cannot hide a phrase from the owner scans.
+    """
+
+    plain = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    plain = re.sub(r"!?\[([^\]]*)\]\[[^\]]*\]", r"\1", plain)
+    plain = re.sub(r"<[^<>]*>", "", plain)
+    # Scanned text is upper-cased; entity names are case-sensitive, so lower them first.
+    plain = re.sub(r"&([A-Z][A-Z0-9]*);", lambda m: f"&{m.group(1).lower()};", plain)
+    plain = html.unescape(plain)
+    plain = re.sub(r"\\(.)", r"\1", plain)
+    return re.sub(r"[*_`~]+", "", plain)
 
 
 def _paused_category_contradicted_outside_history(text: str) -> bool:
