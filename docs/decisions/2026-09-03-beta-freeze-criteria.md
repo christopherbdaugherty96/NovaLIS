@@ -37,6 +37,33 @@ These block candidate freeze or outside-user distribution regardless of P-level 
 
 A hard blocker is never averaged away by otherwise successful tests or positive feedback.
 
+## Current sequence alignment — 2026-10-08 (Issue #457)
+
+The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08` (Issue #457), recorded at the
+top of `.agent_context/current_priority.md` and the canonical status surfaces:
+
+```text
+NEXT: egress inventory
+THEN: provider-neutral Data-Out enforcement at the common outbound boundary
+THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
+THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
+THEN: one defined external technical-operator workflow against that exact artifact
+THEN: evidence-driven blocker-only fixes
+THEN: frozen private-beta candidate
+THEN: three real users
+THEN: minimal Continuity only if product evidence earns it
+```
+
+The "Current execution order" block below is historical; it no longer orders work.
+
+Recovery reconciliation: Lane 5A recovery construction and proof (PRs #424 through #430) are
+preserved foundations, not current lanes. Recovery adoption and full recovery proof are not
+prerequisites for the frozen private-beta candidate, and recovery wiring stays paused. Until a
+later explicit owner decision or evidence-backed need restores a recovery requirement, the
+durability/recovery line of the freeze condition is satisfied only by a candidate that loses or
+corrupts no authoritative state silently and makes no recovery, restore, or upgrade claim it has
+not proven on that exact candidate. Every other freeze condition and hard blocker is unchanged.
+
 ## Freeze condition
 
 Freeze an exact private-beta candidate SHA only when:
@@ -171,7 +198,7 @@ Users return and depend on the hero loop
 
 Do not add capabilities because they are merely technically possible.
 
-## Current execution order
+## Historical execution order (superseded 2026-10-08)
 
 ```text
 COMPLETE: #407 operational-truth sync

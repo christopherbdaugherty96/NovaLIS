@@ -183,3 +183,11 @@ def test_workflow_exposes_stable_commit_identity_check():
     assert "github.event.pull_request.head.sha" in rendered
     assert "github.event.before" in rendered
     assert "python scripts/check_commit_identity.py" in rendered
+
+
+def test_unresolvable_range_fails_closed(repo, capsys):
+    checker = _load_checker()
+    head = _commit(repo, "only", author=NOREPLY_USER, committer=GITHUB_NOREPLY)
+
+    assert checker.main(["--repo", str(repo), "--base", "f" * 40, "--head", head]) == 2
+    assert "commit-identity: ERROR" in capsys.readouterr().out

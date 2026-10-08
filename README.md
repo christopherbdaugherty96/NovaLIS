@@ -29,10 +29,45 @@ known limitations:
 
 These are disclosure notes, not mitigations or proof that other data paths are safe.
 
-## Current post-#405 beta-readiness order — 2026-09-20
+## Current owner operating sequence — 2026-10-08
 
 ```text
-BETA_READINESS_SEQUENCE_V1: ACTIVE
+OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE
+owner decision: NovaLIS #457 (2026-10-08); product direction: christopherbdaugherty96/Nova#3
+GOAL: Nova is the product.
+GUARD: Nova subsystem; Guard adoption and 30-day metrics do not gate Nova
+COMPLETE: nova-guard PR #7 (closed cleanly; Guard frozen)
+COMPLETE: actual-peer locality P1 (PR #447)
+COMPLETE ON MERGE: #457 bounded operational-truth + repository-governance migration (no runtime change)
+NEXT: egress inventory
+THEN: provider-neutral Data-Out enforcement at the common outbound boundary
+THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
+THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
+THEN: one defined external technical-operator workflow against that exact artifact
+THEN: evidence-driven blocker-only fixes
+THEN: frozen private-beta candidate
+THEN: three real users
+THEN: minimal Continuity only if product evidence earns it
+RECOVERY: foundations preserved (Lane 5A); further recovery implementation needs a later explicit owner decision or evidence-backed need; not a prerequisite for the private-beta candidate
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
+This sequence grants no new capability or authority. Data-Out work closes the existing outbound
+boundary at the common outbound layer; it is not caller-by-caller provider patching or provider
+expansion.
+
+This block supersedes the post-#405 beta-readiness order (2026-09-20), the Alpha 0 sequence
+(2026-10-02), and the 2026-10-05 freeze with its day-30 Guard gate. Those blocks remain below
+only as historical provenance; any older current, next, or ordering language in this document is
+superseded by this block. The July master roadmap is long-term architecture history, not the
+current work order. Permanent truth boundaries remain in force.
+
+## Historical post-#405 beta-readiness order — 2026-09-20 (superseded 2026-10-08)
+
+```text
+BETA_READINESS_SEQUENCE_V1: SUPERSEDED
 verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
 #397 through #405: COMPLETE / MERGED
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
@@ -75,8 +110,8 @@ THEN: 3 real non-developer users
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
-Other feature expansion remains paused. This current order supersedes older ordering language below and
-grants no new capability or authority.
+Other feature expansion remains paused. This order superseded older ordering language below and
+granted no new capability or authority.
 
 ## Why Nova
 Most assistants wait for a command. Nova is being built to establish what changed, what matters,
@@ -103,7 +138,7 @@ Observe -> build awareness -> identify relevance -> expose uncertainty -> recomm
 
 Intelligence proposes. Nova governs. You decide.
 
-Canonical ordering authority for all future work:
+Long-term architecture history (not the current work order; the owner operating sequence above orders work):
 - [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md)
 
 Canonical future-product summary:
@@ -265,14 +300,17 @@ Historical pre-#394 decision sequence (superseded; not current work or authoriza
    provenance/freshness/evidence boundaries.
 10. Only then evaluate an evidence-based Operational Continuity implementation warrant.
 
-This summary authorizes nothing. The Daily Command Center, canonical roadmap truth, Issue #343,
-and lane-specific locks hold current ordering and implementation scope.
+This summary authorizes nothing. The owner operating sequence at the top of this README (mirrored in
+the Daily Command Center and canonical roadmap truth) holds current ordering; lane-specific locks hold
+implementation scope. Issue #343 is historical stabilization provenance.
 ```
 
 ## Future Directions
 
-Ordering authority: [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md).
-The documents below remain design references; the master roadmap decides sequence.
+Current work order: the owner operating sequence at the top of this README
+(`OWNER_OPERATING_SEQUENCE_2026_10_08`). Long-term architecture history:
+[Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md).
+The documents below remain design references; none of them decides sequence.
 
 - [Nova Personal/Home/Business Operating System Summary](docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY.md)
 - [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)

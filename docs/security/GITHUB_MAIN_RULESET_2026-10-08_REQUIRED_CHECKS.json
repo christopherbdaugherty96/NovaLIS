@@ -1,0 +1,44 @@
+{
+  "name": "NovaLIS main public baseline",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {"type": "deletion"},
+    {"type": "non_fast_forward"},
+    {
+      "type": "pull_request",
+      "parameters": {
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": true,
+        "allowed_merge_methods": ["squash"]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {"context": "lint-and-test (3.10)", "integration_id": 15368},
+          {"context": "test-windows (3.10)", "integration_id": 15368},
+          {"context": "governance", "integration_id": 15368},
+          {"context": "runtime-docs", "integration_id": 15368},
+          {"context": "check-invariants", "integration_id": 15368},
+          {"context": "verify-phase35", "integration_id": 15368},
+          {"context": "fingerprint-clean", "integration_id": 15368},
+          {"context": "commit-identity", "integration_id": 15368}
+        ]
+      }
+    }
+  ]
+}

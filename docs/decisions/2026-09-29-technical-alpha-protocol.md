@@ -3,6 +3,41 @@
 Status: proposed protocol amendment; effective only after review and owner merge decision.
 Distribution requires the separate artifact-specific decision below.
 
+## Current sequence alignment — 2026-10-08 (Issue #457)
+
+The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08` (Issue #457), recorded at the
+top of `.agent_context/current_priority.md` and the canonical status surfaces:
+
+```text
+NEXT: egress inventory
+THEN: provider-neutral Data-Out enforcement at the common outbound boundary
+THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
+THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
+THEN: one defined external technical-operator workflow against that exact artifact
+THEN: evidence-driven blocker-only fixes
+THEN: frozen private-beta candidate
+THEN: three real users
+THEN: minimal Continuity only if product evidence earns it
+```
+
+Where this protocol names an older current workflow (the #441/#443 review, then the bounded
+local-boundary repair), that wording is historical. The local-boundary P1 was completed by PR #447;
+its entry requirement is met only by fresh security and operational-truth proof on the exact
+artifact source SHA. The privacy/Data-Out entry requirement is met only by the zero-attempt denial
+proof above; disclosure of the gap is not a substitute.
+
+This protocol is the defined external technical-operator workflow: one named technical operator
+first, against the exact Alpha-0 artifact identity. Expansion still follows the delivery rules below.
+
+Recovery reconciliation: the Lane 5A recovery foundations (PRs #424 through #430) remain preserved
+work, but recovery adoption and full recovery proof are no longer ordered before the private-beta
+candidate. The Alpha-0 artifact makes no recovery, restore, or upgrade claim and exposes no
+reachable restore activation. For that artifact, the recovery items below (development-machine
+#408 recovery checks, recovery instructions, and operator step 5) are recorded as NOT APPLICABLE
+with that explicit limitation; they are not silently reactivated, and an unproven recovery claim
+remains a stop condition. Restoring a recovery requirement needs a later explicit owner decision
+or evidence-backed need.
+
 ## Purpose and boundary
 
 An external Windows operator may supply clean-machine evidence on hardware the owner does not

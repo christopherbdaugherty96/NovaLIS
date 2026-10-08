@@ -1,0 +1,45 @@
+name: Commit Identity
+
+# Issue #457: newly introduced commits must use GitHub noreply author and
+# committer addresses. Only the PR's own commits (or the range newly pushed to
+# main) are checked; accepted history is never re-checked or rewritten.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  commit-identity:
+    name: commit-identity
+    runs-on: ubuntu-latest
+    steps:
+      # Full history so base..head resolves; the PR merge ref has the head as a parent.
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check commits introduced by this pull request
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python scripts/check_commit_identity.py --base "$BASE_SHA" --head "$HEAD_SHA"
+
+      - name: Audit the range newly pushed to main
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          python scripts/check_commit_identity.py --base "$BEFORE_SHA" --head "$AFTER_SHA"

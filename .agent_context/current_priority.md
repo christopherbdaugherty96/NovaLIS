@@ -1,11 +1,51 @@
-FROZEN 2026-10-05 at main 1dfd6862: no new work. See README known limitations. Resume only per the day-30 nova-guard decision.
-
 # Current Priority
 
-## Alpha 0 decision — 2026-10-02 (supersedes ordering below)
+## Current owner operating sequence — 2026-10-08
 
 ```text
-ALPHA_0_SEQUENCE: ACTIVE
+OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE
+owner decision: NovaLIS #457 (2026-10-08); product direction: christopherbdaugherty96/Nova#3
+GOAL: Nova is the product.
+GUARD: Nova subsystem; Guard adoption and 30-day metrics do not gate Nova
+COMPLETE: nova-guard PR #7 (closed cleanly; Guard frozen)
+COMPLETE: actual-peer locality P1 (PR #447)
+COMPLETE ON MERGE: #457 bounded operational-truth + repository-governance migration (no runtime change)
+NEXT: egress inventory
+THEN: provider-neutral Data-Out enforcement at the common outbound boundary
+THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
+THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
+THEN: one defined external technical-operator workflow against that exact artifact
+THEN: evidence-driven blocker-only fixes
+THEN: frozen private-beta candidate
+THEN: three real users
+THEN: minimal Continuity only if product evidence earns it
+RECOVERY: foundations preserved (Lane 5A); further recovery implementation needs a later explicit owner decision or evidence-backed need; not a prerequisite for the private-beta candidate
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
+This sequence grants no new capability or authority. Data-Out work closes the existing outbound
+boundary at the common outbound layer; it is not caller-by-caller provider patching or provider
+expansion.
+
+This block supersedes the post-#405 beta-readiness order (2026-09-20), the Alpha 0 sequence
+(2026-10-02), and the 2026-10-05 freeze with its day-30 Guard gate. Those blocks remain below
+only as historical provenance; any older current, next, or ordering language in this document is
+superseded by this block. The July master roadmap is long-term architecture history, not the
+current work order. Permanent truth boundaries remain in force.
+
+## Historical freeze — 2026-10-05 (superseded 2026-10-08)
+
+FROZEN 2026-10-05 at main 1dfd6862: no new work. See README known limitations. Resume only per the day-30 nova-guard decision.
+
+Superseded 2026-10-08: Guard metrics do not gate Nova; work resumes only under the owner
+operating sequence above.
+
+## Historical Alpha 0 decision — 2026-10-02 (superseded 2026-10-08)
+
+```text
+ALPHA_0_SEQUENCE: SUPERSEDED
 sanitized protected main: 34b8adc6952fb0698bfb2975e68b3f8a15610628
 verified main 868de9d9 (below): HISTORICAL
 
@@ -44,10 +84,10 @@ new capabilities, connector expansion, broad documentation synchronization.
 Coordination and handoffs for active work live in `.agent_context/handoffs/`.
 Those files are collaboration records, not runtime truth or execution authority.
 
-## Post-#405 beta-readiness truth — 2026-09-20
+## Historical post-#405 beta-readiness truth — 2026-09-20 (superseded 2026-10-08)
 
 ```text
-BETA_READINESS_SEQUENCE_V1: ACTIVE
+BETA_READINESS_SEQUENCE_V1: SUPERSEDED
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
 
@@ -104,7 +144,7 @@ Other feature expansion remains paused. Intelligence remains separate from autho
 does not grant new execution authority. Older priority text below is historical
 wherever it conflicts with this block.
 
-## Post-#394 truth — 2026-08-28
+## Historical post-#394 truth — 2026-08-28
 
 ```text
 #388: COMPLETE
