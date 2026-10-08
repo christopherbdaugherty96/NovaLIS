@@ -500,6 +500,39 @@ def test_indented_current_heading_ends_a_historical_section(tmp_path, indent):
     )
 
 
+@pytest.mark.parametrize("underline", ("---------------------", "=====================", "---"))
+def test_setext_current_heading_ends_a_historical_section(tmp_path, underline):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8")
+        + "\n## Historical old note\n\nOld text.\n\n"
+        + f"Current recovery work\n{underline}\n\nRecovery wiring has resumed.\n",
+        encoding="utf-8",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "paused category contradicted outside history"
+    )
+
+
+def test_thematic_break_is_not_a_setext_heading(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8")
+        + "\n## Historical old note\n\nRecovery wiring has resumed.\n\n---\n\n"
+        "- list item\n---\n\nRecovery wiring was restarted.\n",
+        encoding="utf-8",
+    )
+
+    # A blank-line thematic break or a list item before "---" is not a heading,
+    # so this text stays inside the historical section.
+    assert _owner_errors(checker, tmp_path) == []
+
+
 def test_post_405_contract_remains_available_as_historical_generation():
     checker = _load_checker()
     snapshot = (

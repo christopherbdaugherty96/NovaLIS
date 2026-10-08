@@ -700,6 +700,28 @@ def _normalized_heading(line: str) -> tuple[int, str] | None:
     return len(match.group("marks")), title.upper()
 
 
+def _setext_heading(line: str, next_line: str) -> tuple[int, str] | None:
+    """Conservatively recognize a one-line setext heading (owner parsing only).
+
+    A non-blank paragraph line directly followed by an ``===`` or ``---`` underline is a
+    heading. List items, block quotes, table rows, and indented code are excluded, so a
+    thematic break after a blank line or a list item never becomes a heading.
+    """
+
+    underline = re.match(r"^ {0,3}(=+|-+)[ \t]*$", next_line.rstrip("\r\n"))
+    stripped = line.strip()
+    if (
+        underline is None
+        or not stripped
+        or line.startswith("    ")
+        or re.match(r"^ {0,3}(?:[-*+>|]|\d+[.)])(?:\s|$)", line)
+        or stripped.startswith("|")
+    ):
+        return None
+    level = 1 if underline.group(1).startswith("=") else 2
+    return level, _unwrap_balanced_markdown(stripped).upper()
+
+
 def _markdown_structure(text: str, *, fence_aware: bool = False):
     """Yield offsets, lines, heading ancestry and historical state consistently.
 
@@ -712,7 +734,8 @@ def _markdown_structure(text: str, *, fence_aware: bool = False):
     stack: list[tuple[int, str, int]] = []
     offset = 0
     fence: str | None = None
-    for line in text.upper().splitlines(keepends=True):
+    lines = text.upper().splitlines(keepends=True)
+    for index, line in enumerate(lines):
         heading = None
         fence_marker = re.match(r"^ {0,3}(`{3,}|~{3,})", line) if fence_aware else None
         if fence_marker:
@@ -729,6 +752,8 @@ def _markdown_structure(text: str, *, fence_aware: bool = False):
             heading = _normalized_heading(
                 re.sub(r"^ {1,3}(?=#)", "", line) if fence_aware else line
             )
+            if heading is None and fence_aware:
+                heading = _setext_heading(line, lines[index + 1] if index + 1 < len(lines) else "")
         if heading:
             level, title = heading
             while stack and stack[-1][0] >= level:
