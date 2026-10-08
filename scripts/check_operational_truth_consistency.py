@@ -1414,14 +1414,16 @@ def _preserves_post_405_boundary(
     return True
 
 
-# Owner-sequence contradiction grammar: a paused category followed by up to three
-# auxiliary/adverb words (any tense: is, has, have been, was, will, can now, ...) and a
+# Owner-sequence contradiction grammar: a paused category followed by up to four
+# auxiliary/adverb words (any tense or aspect: is, has, have been, remains, continues
+# to be, is going to, can now, ...) and a
 # resumption state. A negation ("not", "never") is not an auxiliary, so "will not
 # resume" or "is not active" never matches.
 _PAUSED_AUXILIARIES = (
     r"(?:IS|ARE|WAS|WERE|BE|BEEN|BEING|HAS|HAVE|HAD|WILL|SHALL|CAN|COULD|MAY|MIGHT|"
     r"SHOULD|WOULD|MUST|NOW|ALREADY|ALSO|GET|GETS|GOT|GOTTEN|BECOME|BECOMES|BECAME|"
-    r"OFFICIALLY|FORMALLY|FULLY)"
+    r"OFFICIALLY|FORMALLY|FULLY|REMAIN|REMAINS|REMAINED|STAY|STAYS|STAYED|CONTINUE|"
+    r"CONTINUES|CONTINUED|TO|SET|GOING)"
 )
 _PAUSED_RESUMPTION_STATES = (
     r"(?:ACTIVE|ACTIVATED|REACTIVATED|AUTHORIZED|REAUTHORIZED|ENABLED|RE-ENABLED|"
@@ -1430,7 +1432,7 @@ _PAUSED_RESUMPTION_STATES = (
     r"IN\s+PROGRESS|NO\s+LONGER\s+PAUSED)"
 )
 _PAUSED_CONTRADICTORY_STATES = (
-    rf"(?:{_PAUSED_AUXILIARIES}\s+){{0,3}}{_PAUSED_RESUMPTION_STATES}\b",
+    rf"(?:{_PAUSED_AUXILIARIES}\s+){{0,4}}{_PAUSED_RESUMPTION_STATES}\b",
     r"(?:IS|ARE)\s+NOT\s+PAUSED",
     r"(?:DOES|DO)\s+NOT\s+REMAIN\s+PAUSED",
 )

@@ -69,6 +69,12 @@ recovery entries of the Product distribution checklist below, and only for those
 Restart behavior and the #408 durability checks (no silent authoritative-state loss or
 corruption) still apply and still need PASS evidence on the exact frozen SHA.
 
+Upgrade proof in the freeze condition applies only to a candidate that supports upgrades, as the
+technical-alpha protocol (operator step 6) already defines. A candidate that does not support
+upgrades records that explicit limitation in its report and installation instructions instead of
+upgrade proof, and must not imply upgrade support. Clean supported-Windows install and startup
+proof is still required.
+
 ## Freeze condition
 
 Freeze an exact private-beta candidate SHA only when:
@@ -81,6 +87,7 @@ Freeze an exact private-beta candidate SHA only when:
 minimum durability/recovery implementation passes the accepted #408 contract
 +
 clean supported-Windows install/upgrade/startup proof passes on the candidate revision
+(upgrade: only if the candidate supports upgrades; see the 2026-10-08 alignment above)
 +
 no known hard trust/state blocker
 +

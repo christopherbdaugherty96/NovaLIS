@@ -341,6 +341,9 @@ def test_paused_categories_cannot_be_resumed_inside_owner_block(tmp_path, claim)
         "Guard expansion is now underway.",
         "Recovery wiring can now begin.",
         "Voice expansion is no longer paused.",
+        "Recovery wiring remains active.",
+        "Guard expansion stays enabled.",
+        "Recovery wiring continues to be active.",
     ),
 )
 def test_paused_categories_cannot_be_resumed_in_any_current_section(tmp_path, relative, claim):
