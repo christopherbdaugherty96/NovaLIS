@@ -315,7 +315,17 @@ def test_paused_categories_cannot_be_resumed_inside_owner_block(tmp_path, claim)
 
 @pytest.mark.parametrize("relative", ("README.md", "docs/status/CURRENT_WORK_STATUS.md"))
 @pytest.mark.parametrize(
-    "claim", ("Recovery wiring is now active.", "Guard expansion resumed.")
+    "claim",
+    (
+        "Recovery wiring is now active.",
+        "Guard expansion resumed.",
+        "Recovery wiring has resumed.",
+        "New capabilities have been reactivated.",
+        "Recovery wiring was restarted.",
+        "Guard expansion is now underway.",
+        "Recovery wiring can now begin.",
+        "Voice expansion is no longer paused.",
+    ),
 )
 def test_paused_categories_cannot_be_resumed_in_any_current_section(tmp_path, relative, claim):
     checker = _load_checker()
@@ -329,6 +339,26 @@ def test_paused_categories_cannot_be_resumed_in_any_current_section(tmp_path, re
     _assert_rejected(
         _owner_errors(checker, tmp_path), target, "paused category contradicted outside history"
     )
+
+
+@pytest.mark.parametrize(
+    "statement",
+    (
+        "Recovery wiring will not resume without a later explicit owner decision.",
+        "Recovery wiring is not active.",
+        "Guard expansion has not resumed.",
+    ),
+)
+def test_negated_paused_category_statements_are_allowed(tmp_path, statement):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = tmp_path / "README.md"
+    target.write_text(
+        target.read_text(encoding="utf-8") + f"\n## Current recovery note\n\n{statement}\n",
+        encoding="utf-8",
+    )
+
+    assert _owner_errors(checker, tmp_path) == []
 
 
 def test_paused_category_wording_is_allowed_as_historical_provenance(tmp_path):

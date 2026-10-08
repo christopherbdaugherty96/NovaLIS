@@ -21,6 +21,7 @@ the fact.
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -30,14 +31,22 @@ GITHUB_WEB_FLOW_NOREPLY = "noreply@github.com"
 ZERO_SHA = "0" * 40
 
 
-def is_noreply_address(email: str) -> bool:
-    """Return True only for GitHub noreply addresses."""
+# Whole-address match: optional numeric ID, a GitHub login (letters, digits, hyphens),
+# optional "[bot]", then the noreply domain. Exactly one "@"; nothing may precede or
+# follow, so a personal address cannot hide inside an otherwise noreply-looking value.
+GITHUB_USER_NOREPLY = re.compile(
+    r"(?:[0-9]+\+)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\[bot\])?"
+    + re.escape(GITHUB_USER_NOREPLY_SUFFIX)
+)
 
-    normalized = email.strip().lower()
-    if normalized == GITHUB_WEB_FLOW_NOREPLY:
-        return True
-    local, at, _ = normalized.partition("@")
-    return bool(local) and bool(at) and normalized.endswith(GITHUB_USER_NOREPLY_SUFFIX)
+
+def is_noreply_address(email: str) -> bool:
+    """Return True only for a complete, well-formed GitHub noreply address."""
+
+    normalized = email.lower()
+    return normalized == GITHUB_WEB_FLOW_NOREPLY or bool(
+        GITHUB_USER_NOREPLY.fullmatch(normalized)
+    )
 
 
 def _git(repo: Path, *args: str) -> str:

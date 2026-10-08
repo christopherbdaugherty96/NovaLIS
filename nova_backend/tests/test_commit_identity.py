@@ -84,6 +84,14 @@ def repo(tmp_path: Path) -> Path:
         ("x@notusers.noreply.github.com", False),
         ("noreply@github.com.evil.example", False),
         ("", False),
+        ("41898282+github-actions[bot]@users.noreply.github.com", True),
+        ("198982749+Copilot@users.noreply.github.com", True),
+        ("personal@example.com@users.noreply.github.com", False),
+        ("foo@@users.noreply.github.com", False),
+        ("a b@users.noreply.github.com", False),
+        ("12+@users.noreply.github.com", False),
+        ("@users.noreply.github.com", False),
+        ("x@users.noreply.github.com\nother@example.com", False),
     ),
 )
 def test_noreply_classification(email, accepted):
