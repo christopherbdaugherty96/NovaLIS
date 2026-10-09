@@ -86,6 +86,7 @@ the existing HTTP mediator.
 | STT executable and TTS/media player | Configured local binaries / OS player | `subprocess.run` / `subprocess.Popen` | Audio path/data and process arguments; no network is requested by Nova code | Local execution configuration and executor controls | Nova does not inspect whether a user-supplied binary networks | Classify as subprocess-owned behavior. No external-provider PASS may be inferred from process launch alone |
 | Ollama availability status | Loopback `localhost:11434/api/tags` | Direct `urllib.request.urlopen` in `provider_status.py` | Local HTTP request only | Fixed loopback endpoint; no durable network receipt | No provider Data-Out policy; local attempt occurs when status is read | Explicit local-only exception; keep outside external Data-Out while testing that it cannot become nonlocal |
 | Startup Ollama probe | Configurable `OLLAMA_URL` plus any proxy selected by `urllib` | `scripts/start_daemon.py` calls `urllib.request.urlopen` before starting the backend and while polling a newly launched Ollama process | Probe URL and ordinary HTTP metadata; no prompt payload, but a nonlocal URL or proxy causes pre-runtime outbound traffic | No loopback/private validation, common mediator, capability check, disclosure decision, or durable receipt | The attempt occurs before Nova's runtime boundary exists; failure is swallowed and may be followed by launching/polling `ollama serve` | Hard pre-start bypass. The launcher must prove a direct local/private destination or deny without calling `urlopen`; it must not inherit an unclassified proxy route |
+| Shell-launcher readiness and dashboard handoff | Configurable `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `curl` or `urllib`, and the OS default browser | `start_nova.sh` calls `curl` or Python `urllib.request.urlopen` for `/phase-status`, then delegates the dashboard URL through `xdg-open` or `open` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application. A nonloopback host or proxy can make both operations external | No launcher-local loopback validation, common mediator, disclosure decision, or durable receipt before readiness or handoff | Readiness can attempt traffic before the backend proves its locality; browser handoff can independently cause navigation | Hard pre-runtime/delegated bypass. Prove a direct loopback target with proxies bypassed/disabled before readiness; otherwise touch neither HTTP client nor dashboard opener |
 | Landing-page waitlist form | Formspree placeholder endpoint | Browser-side `fetch` in static landing script when a real form ID is configured | Email address entered on landing page | Placeholder configuration; outside backend mediator/ledger | Browser makes the request directly | Separate website/privacy surface. It must not be represented as governed Nova runtime egress |
 | Archived quarantine code | Historical OpenAI/STT and phase-3.5 handlers | Non-imported archived source | Historical only | Excluded from current runtime | Not applicable unless restored | Keep excluded, and add a regression that restored runtime imports trigger inventory review |
 
@@ -121,6 +122,9 @@ the existing HTTP mediator.
     that external traffic reaches only the declared destination.
 12. The startup launcher probes configurable `OLLAMA_URL` directly before the
     backend and its mediators exist.
+13. The supported macOS/Linux shell launcher derives readiness and dashboard URLs
+    from configurable `NOVA_HOST`, can inherit proxy settings, and can hand that
+    URL to another application before a governed runtime boundary applies.
 
 ## Required common enforcement contract
 
@@ -135,9 +139,10 @@ in-process boundary must receive an immutable request containing:
   class **derived by the boundary from the actual transport URL**;
 - transport class (`http`, OAuth setup, browser handoff, mail-client handoff,
   subprocess/application handoff, or local/private model);
-- data categories being disclosed (for example prompt, conversation context,
-  location, search query, document text, task report, shop data, OAuth material);
-- credential category, never the credential value;
+- boundary-verified data categories being disclosed (for example prompt,
+  conversation context, location, search query, document text, task report, shop
+  data, OAuth material), bound to the actual body, parameters, and headers;
+- boundary-verified credential categories and presence, never credential values;
 - purpose and whether the action is user-initiated, approved, or automatic;
 - the applicable owner policy version.
 
@@ -147,6 +152,14 @@ is an additional destination/intermediary, not an invisible implementation
 detail. Local/private classification is valid only when the client is proven not
 to route through an unclassified proxy.
 
+The boundary must not trust free-form caller labels for disclosed data or
+credentials. Boundary-owned typed adapters for each supported request shape must
+map the actual body fields, query parameters, and header names to disclosure and
+credential categories. An undeclared, omitted, extra, ambiguous, or
+adapter-unknown outgoing field fails closed. Evidence stores only verified
+categories/presence and safe structural metadata, never payload or credential
+values.
+
 The policy returns `ALLOW`, `DENY`, or `UNKNOWN`. Only `ALLOW` can continue.
 `DENY` and `UNKNOWN` must return an explicit local result before DNS resolution,
 socket/session/client creation, `requests`/`urllib`, `webbrowser.open`, or process
@@ -154,6 +167,11 @@ launch. Caller-side checks may improve UX but are not the security boundary. An
 HTTP redirect is a new destination: the boundary must derive and authorize every
 redirect target after reading `Location` and **before** issuing the next request.
 Authorization of the original URL never carries across a redirect hop.
+Original headers, parameters, credentials, and bodies also do not automatically
+carry across hops. On a cross-origin redirect, origin-bound fields must be stripped
+by default. Any retained or reconstructed field set—even on a same-origin
+redirect—must pass the typed adapter and a new decision for the exact next-hop
+method, URL, body, parameters, and headers before transmission.
 
 The decision must produce durable evidence without payloads or secrets:
 decision, provider/destination class, data categories, caller/capability,
@@ -179,9 +197,11 @@ These are review-sized slices, in order. None is implemented by this inventory.
 2. **Final HTTP boundary.** Enforce the contract inside `NetworkMediator.request`
    and `connection_request` immediately before URL validation/DNS/client use.
    Derive destination identity from the transport URL, verify caller metadata,
-   classify or disable effective proxies, and re-run the complete decision for
-   every redirect target before the next request. Prohibit silent defaults for
-   external destinations.
+   bind categories to actual outgoing fields through boundary-owned typed
+   adapters, classify or disable effective proxies, and re-run the complete
+   decision for every redirect target and exact field set before the next request.
+   Strip origin-bound fields by default on cross-origin redirects. Prohibit silent
+   defaults for external destinations.
 3. **Known model leak closure.** Route general chat, caps 31/48/54/62, and the
    OpenAI fallback through the final-boundary decision while preserving cap 62's
    existing `external_reasoning_enabled` caller gate. Align capability/runtime
@@ -197,7 +217,9 @@ These are review-sized slices, in order. None is implemented by this inventory.
 7. **Local model and startup paths.** Disable/bypass environment proxies for
    traffic classified as local/private (or authorize the proxy as a separate
    destination), and fail closed on a nonlocal, ambiguous, or proxied
-   `OLLAMA_URL` before the launcher's first probe.
+   `OLLAMA_URL` before the Python launcher's first probe. Apply the same direct
+   loopback proof to `start_nova.sh` before either readiness HTTP or dashboard
+   handoff.
 8. **Static enforcement and generated truth.** Expand network-mechanism scanning
    beyond `requests`, require every external transport/handoff to name the common
    boundary, and regenerate capability/bypass truth.
@@ -243,22 +265,34 @@ Required test layers:
    `HTTP_PROXY`/`HTTPS_PROXY` without a matching `NO_PROXY` and prove no prompt,
    DNS lookup, proxy connection, or session request occurs under the local-only
    classification.
-6. **Startup proof:** run launcher decision logic with a nonlocal `OLLAMA_URL`, a
-   relative/invalid URL, and a local URL subject to an environment proxy. Prove
-   `urllib.request.urlopen` and process launch are untouched on denial. A valid
-   direct loopback probe remains a separately tested local exception.
+6. **Startup proof:** run Python-launcher decision logic with a nonlocal
+   `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
+   proxy. Prove `urllib.request.urlopen` and process launch are untouched on
+   denial. Exercise `start_nova.sh` with nonloopback/invalid `NOVA_HOST` and with
+   `http_proxy`/`HTTP_PROXY` lacking a matching `NO_PROXY`; prove `curl`, Python
+   `urlopen`, `xdg-open`, and `open` are all untouched. Valid direct-loopback
+   probes and handoffs remain separately tested local exceptions.
 7. **Redirect and identity tests:** allow the initial URL, return a redirect to a
    denied provider/destination, and prove the second request is never issued and
    the denial is recorded. Supply caller metadata that disagrees with the actual
-   URL and prove rejection before DNS/client use. Cover cross-host and
-   same-provider redirects because policy may distinguish destination classes.
-8. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
+   URL and prove rejection before DNS/client use. On a cross-origin redirect,
+   prove authorization/API headers, query credentials, and request bodies are not
+   reused. Where a same-origin or explicitly reconstructed redirect retains any
+   field, prove a new decision binds the exact next-hop method/URL/fields. Cover
+   cross-host and same-provider redirects because policy may distinguish
+   destination classes.
+8. **Disclosure binding tests:** omit or mislabel a document body, prompt/context
+   field, location/query parameter, OAuth form field, bearer/API-key header, and
+   an adapter-unknown extra field. Prove each fails before DNS/client use. Then
+   prove each supported typed adapter derives the expected categories from the
+   actual outgoing structure without persisting values.
+9. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
    browser handoffs, and process launch. A new surface must either use the common
    boundary or appear as an unresolved inventory failure.
-9. **End-to-end session proof:** through the real websocket/session route, turn a
+10. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
    denial, a durable decision record, and zero transport attempts.
-10. **Negative proof:** run each new regression against `bab4a6c` or the relevant
+11. **Negative proof:** run each new regression against `bab4a6c` or the relevant
    pre-fix slice and retain the failure evidence in the PR.
 
 ## Review gate
