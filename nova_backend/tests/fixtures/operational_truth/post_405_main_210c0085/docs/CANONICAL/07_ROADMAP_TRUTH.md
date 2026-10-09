@@ -2,66 +2,29 @@
 
 **Status: current ordering summary.**
 
-This file does not redesign Nova's roadmap. It records the current owner operating sequence and
-keeps earlier checkpoints as historical provenance.
-
-## Current owner operating sequence — 2026-10-08
-
-```text
-OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE
-owner decision: NovaLIS #457 (2026-10-08); product direction: christopherbdaugherty96/Nova#3
-GOAL: Nova is the product.
-GUARD: Nova subsystem; Guard adoption and 30-day metrics do not gate Nova
-COMPLETE: nova-guard PR #7 (closed cleanly; Guard frozen)
-COMPLETE: actual-peer locality P1 (PR #447)
-COMPLETE ON MERGE: #457 bounded operational-truth + repository-governance migration (no runtime change)
-NEXT: egress inventory
-THEN: provider-neutral Data-Out enforcement at the common outbound boundary
-THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
-THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
-THEN: one defined external technical-operator workflow against that exact artifact
-THEN: evidence-driven blocker-only fixes
-THEN: frozen private-beta candidate
-THEN: three real users
-THEN: minimal Continuity only if product evidence earns it
-RECOVERY: foundations preserved (Lane 5A); further recovery implementation needs a later explicit owner decision or evidence-backed need; not a prerequisite for the private-beta candidate
-```
-
-Google/provider expansion remains paused. Operational Continuity implementation remains paused.
-New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
-Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
-This sequence grants no new capability or authority. Data-Out work closes the existing outbound
-boundary at the common outbound layer; it is not caller-by-caller provider patching or provider
-expansion.
-
-This block supersedes the post-#405 beta-readiness order (2026-09-20), the Alpha 0 sequence
-(2026-10-02), and the 2026-10-05 freeze with its day-30 Guard gate. Those blocks remain below
-only as historical provenance; any older current, next, or ordering language in this document is
-superseded by this block. The July master roadmap is long-term architecture history, not the
-current work order. Permanent truth boundaries remain in force.
+This file does not redesign Nova's roadmap. It reconciles the current post-Wave-C decision boundary around the existing roadmap and points to the master ordering document.
 
 ## Ordering authority
 
-- The owner operating sequence above (`OWNER_OPERATING_SEQUENCE_2026_10_08`, Issue #457) is the current work order.
-- [`../future/NOVA_MASTER_ROADMAP_2026-07-05.md`](../future/NOVA_MASTER_ROADMAP_2026-07-05.md) is retained as long-term architecture history; it does not order current work.
-- Issue #343 is the historical detailed stabilization checkpoint/order.
+- [`../future/NOVA_MASTER_ROADMAP_2026-07-05.md`](../future/NOVA_MASTER_ROADMAP_2026-07-05.md) remains the long-lived ordering authority.
+- Issue #343 is the current detailed stabilization checkpoint/order.
 - Lane-specific lock/spec documents remain scope authority for their lane.
 - Explicit reviewed owner authorization remains required to activate implementation where the governing lane requires it.
 
 Ordering and scope are distinct:
 
 ```text
-owner sequence       -> what comes before what
+roadmap / Issue #343 -> what comes before what
 lane contract         -> what the lane may change
 implementation/proof  -> what actually changed and was verified
 ```
 
-## Historical checkpoints (superseded 2026-10-08)
+## Current checkpoint — 2026-08-28
 
-### Historical post-#405 beta-readiness override — 2026-09-20
+### Post-#405 beta-readiness override — 2026-09-20
 
 ```text
-BETA_READINESS_SEQUENCE_V1: SUPERSEDED
+BETA_READINESS_SEQUENCE_V1: ACTIVE
 POST-WAVE-C DOCUMENTATION CLOSEOUT: COMPLETE
 verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
 #397 through #405: COMPLETE / MERGED
@@ -241,7 +204,7 @@ Foundation/auth/identity only
 
 It must not be merged, reconstructed, or rebased. Merged PR #394 supersedes it as the implementation path; retain #335 only as historical reference.
 
-## Historical stabilization / decision boundary (post-#394)
+## Current stabilization / decision boundary
 
 The roadmap itself remains intact. The current state is:
 

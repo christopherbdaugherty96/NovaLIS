@@ -1,0 +1,11 @@
+Historical test fixture. Not current operational truth.
+
+These files are byte-for-byte copies of the operational truth surfaces at
+NovaLIS main 210c00855bf18ed2896b9bca42c924d2ea3f5388 (PR #456), the last
+revision whose active lifecycle was BETA_READINESS_SEQUENCE_V1 (post-#405).
+
+Issue #457 replaced that lifecycle with OWNER_OPERATING_SEQUENCE_2026_10_08.
+The snapshot keeps the post-#405 checker contract under regression test as the
+historical lifecycle generation (POST_405_BETA_READINESS_V1). Do not edit these
+files to reflect later truth; verify them with
+  git diff 210c0085:<path> nova_backend/tests/fixtures/operational_truth/post_405_main_210c0085/<path>

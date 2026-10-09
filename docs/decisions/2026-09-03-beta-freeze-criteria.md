@@ -37,6 +37,44 @@ These block candidate freeze or outside-user distribution regardless of P-level 
 
 A hard blocker is never averaged away by otherwise successful tests or positive feedback.
 
+## Current sequence alignment — 2026-10-08 (Issue #457)
+
+The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08` (Issue #457), recorded at the
+top of `.agent_context/current_priority.md` and the canonical status surfaces:
+
+```text
+NEXT: egress inventory
+THEN: provider-neutral Data-Out enforcement at the common outbound boundary
+THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
+THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
+THEN: one defined external technical-operator workflow against that exact artifact
+THEN: evidence-driven blocker-only fixes
+THEN: frozen private-beta candidate
+THEN: three real users
+THEN: minimal Continuity only if product evidence earns it
+```
+
+The "Current execution order" block below is historical; it no longer orders work.
+
+Recovery reconciliation: Lane 5A recovery construction and proof (PRs #424 through #430) are
+preserved foundations, not current lanes. Recovery adoption and full recovery proof are not
+prerequisites for the frozen private-beta candidate, and recovery wiring stays paused. Until a
+later explicit owner decision or evidence-backed need restores a recovery requirement, the
+durability/recovery line of the freeze condition is satisfied only by a candidate that loses or
+corrupts no authoritative state silently and makes no recovery, restore, or upgrade claim it has
+not proven on that exact candidate. Every other freeze condition and hard blocker is unchanged.
+
+Under that same condition, `NOT APPLICABLE (no recovery claim)` is an accepted result for the
+recovery entries of the Product distribution checklist below, and only for those entries.
+Restart behavior and the #408 durability checks (no silent authoritative-state loss or
+corruption) still apply and still need PASS evidence on the exact frozen SHA.
+
+Upgrade proof in the freeze condition applies only to a candidate that supports upgrades, as the
+technical-alpha protocol (operator step 6) already defines. A candidate that does not support
+upgrades records that explicit limitation in its report and installation instructions instead of
+upgrade proof, and must not imply upgrade support. Clean supported-Windows install and startup
+proof is still required.
+
 ## Freeze condition
 
 Freeze an exact private-beta candidate SHA only when:
@@ -49,6 +87,7 @@ Freeze an exact private-beta candidate SHA only when:
 minimum durability/recovery implementation passes the accepted #408 contract
 +
 clean supported-Windows install/upgrade/startup proof passes on the candidate revision
+(upgrade: only if the candidate supports upgrades; see the 2026-10-08 alignment above)
 +
 no known hard trust/state blocker
 +
@@ -81,8 +120,10 @@ Before any ordinary product tester receives the candidate (outside the controlle
 
 - full hero loop from startup through awareness, recommendation, governed action/outcome, and end-of-day use;
 - relevant degraded/failure behavior;
-- restart/recovery behavior;
-- #408-required durability/recovery checks;
+- restart behavior; recovery behavior (or `NOT APPLICABLE (no recovery claim)` under the
+  2026-10-08 alignment above);
+- #408-required durability checks; #408 recovery checks (or `NOT APPLICABLE (no recovery claim)`
+  under the 2026-10-08 alignment above);
 - secret/privacy/support-artifact review;
 - version/build identity and supported-platform truth;
 - clean Windows install/startup from the intended beta distribution path;
@@ -171,7 +212,7 @@ Users return and depend on the hero loop
 
 Do not add capabilities because they are merely technically possible.
 
-## Current execution order
+## Historical execution order (superseded 2026-10-08)
 
 ```text
 COMPLETE: #407 operational-truth sync

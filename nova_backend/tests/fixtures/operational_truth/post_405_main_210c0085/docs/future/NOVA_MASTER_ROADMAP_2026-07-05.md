@@ -1,12 +1,11 @@
 # Nova Master Roadmap - 2026-07-05 (Final)
 
-Status: long-term architecture history, superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_08
-(NovaLIS #457, 2026-10-08). The current work order lives in `.agent_context/current_priority.md`
-and the canonical status surfaces. This document was the 2026-07-05 ordering document. Assembled 2026-07-05 from the live session, the pre-PR-4 code
+Status: canonical ordering document — the single source of truth for what comes next and in
+what order, across all lanes. Assembled 2026-07-05 from the live session, the pre-PR-4 code
 audit, and a full mining pass over all three archive trees (docs/future/, future/,
 "4-15-26 NEW ROADMAP").
 
-## Historical authority rules (2026-07-05; the ordering role ended 2026-10-08)
+Authority rules:
 
 ```text
 1. This document ORDERS work. It does not re-scope work.
@@ -19,10 +18,10 @@ audit, and a full mining pass over all three archive trees (docs/future/, future
    document wins. When they disagree on scope, the lane lock wins.
 ```
 
-## Historical post-#405 beta-readiness order — 2026-09-20 (superseded 2026-10-08)
+## Current post-#405 beta-readiness order — 2026-09-20
 
 ```text
-BETA_READINESS_SEQUENCE_V1: SUPERSEDED
+BETA_READINESS_SEQUENCE_V1: ACTIVE
 verified main after Lane 5A rollback/restore proof: 868de9d92c701834f1c4fba422ab9c47a01ea33f
 #397 through #405: COMPLETE / MERGED
 COMPLETE: #406 governed-memory ID collision correctness (PR #411; main `ca66a06d`)
@@ -65,7 +64,7 @@ THEN: 3 real non-developer users
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
-Other feature expansion remains paused. This order superseded older current-order language below and granted
+Other feature expansion remains paused. This order supersedes older current-order language below and grants
 no new capability or authority.
 
 ## Long-Term Direction Compass (non-authorizing)
@@ -83,11 +82,11 @@ chain.
 
 That document is a strategic compass, not an ordering or scope authority. It synthesizes
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
-The owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_08`) determines ordering; lane locks still determine scope; owner decisions still
+This roadmap still determines ordering; lane locks still determine scope; owner decisions still
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
-## Historical Ordering — 2026-08-28
+## Current Ordering — 2026-08-28
 
 The post-#394 boundary is now:
 
@@ -995,7 +994,7 @@ governed runtime integration -> generated runtime truth -> docs
 
 No horizon item skips stages. Usefulness is not implementation.
 
-## Historical Ordering Summary (superseded)
+## Historical Ordering Summary (superseded by the current ordering above)
 
 ```text
 DONE (this cycle)
@@ -1038,9 +1037,9 @@ LATER (unchanged horizon ordering)
   H1-H31 horizon, graduated deliberately via the promotion ladder - never as scope creep.
 ```
 
-## Historical Supersession Note (2026-07-05; the ordering role ended 2026-10-08)
+## Supersession Note
 
-This document superseded, as ordering authority only, until 2026-10-08:
+This document supersedes, as ordering authority only:
 
 ```text
 docs/future/ROADMAP.md and all dated plan/vision docs in docs/future/

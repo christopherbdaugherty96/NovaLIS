@@ -3,6 +3,48 @@
 Status: proposed protocol amendment; effective only after review and owner merge decision.
 Distribution requires the separate artifact-specific decision below.
 
+## Current sequence alignment — 2026-10-08 (Issue #457)
+
+The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08` (Issue #457), recorded at the
+top of `.agent_context/current_priority.md` and the canonical status surfaces:
+
+```text
+NEXT: egress inventory
+THEN: provider-neutral Data-Out enforcement at the common outbound boundary
+THEN: zero-attempt denial proof (deny -> zero transmission, zero attempted external connection, explicit local result, durable decision/disclosure evidence)
+THEN: clean attributable Alpha-0 Windows artifact (exact-SHA clean export + forbidden-content scan)
+THEN: one defined external technical-operator workflow against that exact artifact
+THEN: evidence-driven blocker-only fixes
+THEN: frozen private-beta candidate
+THEN: three real users
+THEN: minimal Continuity only if product evidence earns it
+```
+
+Where this protocol names an older current workflow (the #441/#443 review, then the bounded
+local-boundary repair), that wording is historical. The local-boundary P1 was completed by PR #447;
+its entry requirement is met only by fresh security and operational-truth proof on the exact
+artifact source SHA. The privacy/Data-Out entry requirement is met only by the zero-attempt denial
+proof above; disclosure of the gap is not a substitute.
+
+This protocol is the defined external technical-operator workflow: one named technical operator
+first, against the exact Alpha-0 artifact identity. Expansion still follows the delivery rules below.
+
+Recovery reconciliation: the Lane 5A recovery foundations (PRs #424 through #430) remain preserved
+work, but recovery adoption and full recovery proof are no longer ordered before the private-beta
+candidate. The Alpha-0 artifact makes no recovery, restore, or upgrade claim and exposes no
+reachable restore activation. For that artifact, the recovery items below (development-machine
+#408 recovery checks, recovery instructions, and operator step 5) are recorded as NOT APPLICABLE
+with that explicit limitation; they are not silently reactivated, and an unproven recovery claim
+remains a stop condition. Restoring a recovery requirement needs a later explicit owner decision
+or evidence-backed need.
+
+`NOT APPLICABLE (Alpha-0: no recovery claim)` is an accepted result for exactly these items and
+no others: the development-machine #408 recovery checks, the recovery part of the accompanying
+instructions, and operator step 5. It satisfies those items only when the artifact, its
+instructions, and its user-facing text make no recovery, restore, or upgrade claim, and the
+instructions say plainly that recovery is not offered in this build. Every other item keeps the
+PASS / FAIL / NOT EXECUTED vocabulary and its gate rules unchanged.
+
 ## Purpose and boundary
 
 An external Windows operator may supply clean-machine evidence on hardware the owner does not
@@ -15,8 +57,9 @@ This is a narrow exception to the pre-distribution acceptance requirement in
 may receive a validation artifact before clean-Windows proof and frozen-candidate acceptance.
 All hard blockers remain binding. General product distribution still requires full acceptance.
 
-The current workflow remains #441/#443 review and owner decisions, then the bounded
-local-boundary repair and fresh proof. This document does not start that repair or change its scope.
+Until 2026-10-08 the workflow was #441/#443 review and owner decisions, then the bounded
+local-boundary repair and fresh proof; PR #447 completed that repair. This document did not start
+that repair or change its scope. The current workflow is the sequence in the alignment section above.
 NovaLIS remains private. Nova remains the public overview; source publication remains held for
 separate license review. No license changes or historical installer publication are authorized.
 
@@ -30,12 +73,15 @@ The owner must record evidence for every item against an exact source revision a
   checks complete. Distribution permissions for Nova, bundled dependencies, assets, and any
   model weights are established; do not assume the current license resolves these permissions.
 - Installation/startup and applicable #408 recovery checks pass in the development environment,
-  clearly labeled as development-machine evidence. Clean external proof may remain NOT EXECUTED.
+  clearly labeled as development-machine evidence (recovery checks: `NOT APPLICABLE (Alpha-0: no
+  recovery claim)` under the alignment section above). Clean external proof may remain NOT EXECUTED.
 - Exact source SHA, build procedure/environment, version, artifact filename and SHA-256 recorded.
   Every recipient receives identical identified bytes; corrections produce a new identity.
 - Document prerequisites and expected resource needs with their evidence and uncertainties.
   Do not present unmeasured RAM requirements or untested Windows versions as validated support.
-- Working installation, removal, recovery, reporting, and stop-use instructions accompany the build.
+- Working installation, removal, recovery, reporting, and stop-use instructions accompany the build
+  (recovery: `NOT APPLICABLE (Alpha-0: no recovery claim)` plus an explicit statement that
+  recovery is not offered in this build).
 - Private security-reporting contact and access-controlled delivery method are verified before use.
 - Each named tester agrees to the procedure and use of disposable test data on a machine they
   control. Tests must stay within their own environment and explicitly agreed provider scope.
@@ -63,7 +109,8 @@ or a documented clean physical-machine baseline with no prior Nova installation/
 checkout, developer environment dependencies, or preconfigured Nova model setup. Record any
 preexisting prerequisites; an environment that depends on undeclared developer setup cannot pass.
 
-Record PASS / FAIL / NOT EXECUTED with evidence for:
+Record PASS / FAIL / NOT EXECUTED with evidence for each item below (`NOT APPLICABLE (Alpha-0: no
+recovery claim)` is accepted only where the alignment section above allows it):
 
 1. Verify installer checksum; record Windows edition/build, CPU, RAM, GPU, free storage,
    permissions, relevant security software, and all prerequisites.
@@ -73,7 +120,9 @@ Record PASS / FAIL / NOT EXECUTED with evidence for:
    one supported workflow and inspect its receipt and actual outcome.
 4. Close and restart Nova, then reboot Windows; inspect retained test state and startup behavior.
 5. Perform the applicable accepted #408 backup/recovery procedure using disposable fixtures.
-   Include failure/partial-restore truth checks; preserve before/after evidence.
+   Include failure/partial-restore truth checks; preserve before/after evidence. For an Alpha-0
+   artifact, record `NOT APPLICABLE (Alpha-0: no recovery claim)` and confirm that no recovery,
+   restore, or upgrade claim appears in the artifact or its instructions.
 6. Exercise removal/reinstallation and documented retained-state behavior. If the candidate
    supports upgrades, upgrade proof is a mandatory clean-Windows gate: identify the supported
    prior-version fixture and its artifact/state baseline, upgrade to the exact candidate, and

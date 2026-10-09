@@ -18,7 +18,12 @@ Checked here:
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
 - the post-#394 completion boundary on active operational surfaces;
-- the post-#405 beta-readiness order through #406 and the durability/install gates;
+- the current owner operating sequence (OWNER_OPERATING_SEQUENCE_2026_10_08, issue
+  #457) as the single current lifecycle on every ordering surface, with the
+  superseded post-#405 / Alpha-0 / day-30 Guard ordering allowed only as
+  explicitly historical provenance;
+- the historical post-#405 beta-readiness order (selectable lifecycle generation
+  POST_405_BETA_READINESS_V1) through #406 and the durability/install gates;
 - PR #335 remaining explicitly historical and UNMERGED while its implementation
   path is marked SUPERSEDED BY MERGED PR #394;
 - Google/provider expansion and the other frozen feature categories remaining
@@ -42,6 +47,7 @@ runtime certification.
 
 from __future__ import annotations
 
+import html
 import re
 from pathlib import Path
 
@@ -73,8 +79,63 @@ POST_WAVE_C_ACTIVE_LANE = f"{POST_WAVE_C_LANE}_ACTIVE"
 POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 POST_405_LIFECYCLE_MARKER = "BETA_READINESS_SEQUENCE_V1: ACTIVE"
-CURRENT_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
+POST_405_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
+OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_08"
+OWNER_SEQUENCE_MARKER = f"{OWNER_SEQUENCE_KEY}: ACTIVE"
+CURRENT_LIFECYCLE_GENERATION = OWNER_SEQUENCE_KEY
 HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
+# Issue #457 owner operating sequence. Lines are compared after bounded Markdown
+# normalization and upper-casing, exactly like the historical post-#405 lines.
+OWNER_SEQUENCE_DIRECTIVES = (
+    "NEXT: EGRESS INVENTORY",
+    "THEN: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT AT THE COMMON OUTBOUND BOUNDARY",
+    "THEN: ZERO-ATTEMPT DENIAL PROOF (DENY -> ZERO TRANSMISSION, ZERO ATTEMPTED EXTERNAL "
+    "CONNECTION, EXPLICIT LOCAL RESULT, DURABLE DECISION/DISCLOSURE EVIDENCE)",
+    "THEN: CLEAN ATTRIBUTABLE ALPHA-0 WINDOWS ARTIFACT (EXACT-SHA CLEAN EXPORT + "
+    "FORBIDDEN-CONTENT SCAN)",
+    "THEN: ONE DEFINED EXTERNAL TECHNICAL-OPERATOR WORKFLOW AGAINST THAT EXACT ARTIFACT",
+    "THEN: EVIDENCE-DRIVEN BLOCKER-ONLY FIXES",
+    "THEN: FROZEN PRIVATE-BETA CANDIDATE",
+    "THEN: THREE REAL USERS",
+    "THEN: MINIMAL CONTINUITY ONLY IF PRODUCT EVIDENCE EARNS IT",
+)
+OWNER_SEQUENCE_REQUIRED_LINES = (
+    "GUARD: NOVA SUBSYSTEM; GUARD ADOPTION AND 30-DAY METRICS DO NOT GATE NOVA",
+    "COMPLETE: ACTUAL-PEER LOCALITY P1 (PR #447)",
+    "RECOVERY: FOUNDATIONS PRESERVED (LANE 5A); FURTHER RECOVERY IMPLEMENTATION NEEDS A "
+    "LATER EXPLICIT OWNER DECISION OR EVIDENCE-BACKED NEED; NOT A PREREQUISITE FOR THE "
+    "PRIVATE-BETA CANDIDATE",
+)
+OWNER_SEQUENCE_PAUSED_CATEGORIES = (
+    "GOOGLE/PROVIDER EXPANSION",
+    "OPERATIONAL CONTINUITY IMPLEMENTATION",
+    "NEW CAPABILITIES",
+    "VOICE EXPANSION",
+    "BROADER UI WORK",
+    "OTHER FEATURE EXPANSION",
+    "GUARD EXPANSION",
+    "RECOVERY WIRING",
+)
+OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY = "THIS SEQUENCE GRANTS NO NEW CAPABILITY OR AUTHORITY."
+MASTER_ROADMAP_SUPERSESSION_NOTE = (
+    f"SUPERSEDED AS CURRENT ORDERING AUTHORITY BY {OWNER_SEQUENCE_KEY}"
+)
+# Superseded lifecycles may survive only as historical provenance, never as ACTIVE.
+SUPERSEDED_ACTIVE_LIFECYCLE = re.compile(
+    r"\b(?:BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)[*_`\s]*:[*_`\s]*ACTIVE\b"
+)
+# Superseded current-ordering language allowed only under explicitly historical headings.
+SUPERSEDED_ORDERING_LANGUAGE = (
+    re.compile(r"RESUME ONLY PER THE DAY-30 NOVA-GUARD DECISION"),
+    re.compile(r"NEXT REQUIRED ENGINEERING:\s*BOUNDED LOCAL-BOUNDARY P1 REPAIR"),
+    re.compile(r"CANONICAL ORDERING AUTHORITY"),
+    re.compile(r"LONG-LIVED ORDERING AUTHORITY"),
+    re.compile(r"ORDERING AUTHORITY:\s*\[?NOVA MASTER ROADMAP"),
+    re.compile(r"SINGLE SOURCE OF TRUTH FOR WHAT COMES NEXT"),
+    re.compile(r"THIS DOCUMENT ORDERS WORK"),
+    re.compile(r"THIS ROADMAP STILL DETERMINES ORDERING"),
+    re.compile(r"SUPERSEDES, AS ORDERING AUTHORITY"),
+)
 POST_405_DIRECTIVE_SEQUENCE = (
     "NEXT: #406 GOVERNED-MEMORY ID COLLISION CORRECTNESS",
     "THEN: #408 DURABILITY/STATE-OWNERSHIP DECISION",
@@ -613,14 +674,20 @@ def _normalize_post_405_structured_line(line: str) -> str:
     return normalized
 
 
-def _post_405_lifecycle_state(line: str) -> str | None:
-    """Return a lifecycle state after bounded Markdown normalization."""
+def _lifecycle_state(line: str, key: str) -> str | None:
+    """Return a lifecycle state for ``key`` after bounded Markdown normalization."""
 
     lifecycle = re.match(
-        r"^BETA_READINESS_SEQUENCE_V1:\s*(?P<state>\S+)\s*$",
+        rf"^{re.escape(key)}:\s*(?P<state>\S+)\s*$",
         _normalize_post_405_structured_line(line).rstrip(),
     )
     return lifecycle.group("state") if lifecycle else None
+
+
+def _post_405_lifecycle_state(line: str) -> str | None:
+    """Return a post-#405 lifecycle state after bounded Markdown normalization."""
+
+    return _lifecycle_state(line, "BETA_READINESS_SEQUENCE_V1")
 
 
 def _normalized_heading(line: str) -> tuple[int, str] | None:
@@ -633,13 +700,60 @@ def _normalized_heading(line: str) -> tuple[int, str] | None:
     return len(match.group("marks")), title.upper()
 
 
-def _markdown_structure(text: str):
-    """Yield offsets, lines, heading ancestry and historical state consistently."""
+def _setext_heading(line: str, next_line: str) -> tuple[int, str] | None:
+    """Conservatively recognize a one-line setext heading (owner parsing only).
+
+    A non-blank paragraph line directly followed by an ``===`` or ``---`` underline is a
+    heading. List items, block quotes, table rows, and indented code are excluded, so a
+    thematic break after a blank line or a list item never becomes a heading.
+    """
+
+    underline = re.match(r"^ {0,3}(=+|-+)[ \t]*$", next_line.rstrip("\r\n"))
+    stripped = line.strip()
+    if (
+        underline is None
+        or not stripped
+        or line.startswith("    ")
+        or re.match(r"^ {0,3}(?:[-*+>|]|\d+[.)])(?:\s|$)", line)
+        or stripped.startswith("|")
+    ):
+        return None
+    level = 1 if underline.group(1).startswith("=") else 2
+    return level, _unwrap_balanced_markdown(stripped).upper()
+
+
+def _markdown_structure(text: str, *, fence_aware: bool = False):
+    """Yield offsets, lines, heading ancestry and historical state consistently.
+
+    With ``fence_aware`` (owner-sequence checks), ATX headings inside fenced code
+    blocks are content, not headings, so a fenced "## Historical" line cannot open
+    a historical section. The historical post-#405 generation keeps the original
+    behavior unchanged.
+    """
 
     stack: list[tuple[int, str, int]] = []
     offset = 0
-    for line in text.upper().splitlines(keepends=True):
-        heading = _normalized_heading(line)
+    fence: str | None = None
+    lines = text.upper().splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        heading = None
+        fence_marker = re.match(r"^ {0,3}(`{3,}|~{3,})", line) if fence_aware else None
+        if fence_marker:
+            marker = fence_marker.group(1)
+            if fence is None:
+                fence = marker
+            else:
+                closes = marker[0] == fence[0] and len(marker) >= len(fence)
+                if closes and not line.strip()[len(marker) :].strip():
+                    fence = None
+        elif fence is None:
+            # CommonMark allows up to three spaces before an ATX heading; the
+            # owner-sequence (fence-aware) parse honors that, history parse does not.
+            heading = _normalized_heading(
+                re.sub(r"^ {1,3}(?=#)", "", line) if fence_aware else line
+            )
+            if heading is None and fence_aware:
+                heading = _setext_heading(line, lines[index + 1] if index + 1 < len(lines) else "")
         if heading:
             level, title = heading
             while stack and stack[-1][0] >= level:
@@ -650,28 +764,50 @@ def _markdown_structure(text: str):
         offset += len(line)
 
 
+def _non_historical_lifecycle_declarations(
+    text: str, key: str, *, fence_aware: bool = False
+) -> tuple[tuple[int, str], ...]:
+    """Return ``key`` lifecycle declarations outside explicitly historical sections."""
+
+    declarations: list[tuple[int, str]] = []
+    for offset, line, _, _, historical in _markdown_structure(text, fence_aware=fence_aware):
+        lifecycle_state = _lifecycle_state(line, key)
+        if lifecycle_state is not None and not historical:
+            marker_start = line.find(f"{key}:")
+            declarations.append((offset + marker_start, lifecycle_state))
+    return tuple(declarations)
+
+
 def _non_historical_post_405_lifecycle_declarations(
     text: str,
 ) -> tuple[tuple[int, str], ...]:
-    """Return lifecycle declarations outside explicitly historical sections."""
+    """Return post-#405 lifecycle declarations outside explicitly historical sections."""
 
-    declarations: list[tuple[int, str]] = []
-    for offset, line, _, _, historical in _markdown_structure(text):
-        lifecycle_state = _post_405_lifecycle_state(line)
-        if lifecycle_state is not None and not historical:
-            marker_start = line.find("BETA_READINESS_SEQUENCE_V1:")
-            declarations.append((offset + marker_start, lifecycle_state))
-    return tuple(declarations)
+    return _non_historical_lifecycle_declarations(text, "BETA_READINESS_SEQUENCE_V1")
 
 
 def _extract_post_405_active_block(text: str) -> str | None:
     """Validate the governing current section, not just the marker's subsection."""
 
-    declarations = _non_historical_post_405_lifecycle_declarations(text)
+    return _extract_active_lifecycle_block(text, "BETA_READINESS_SEQUENCE_V1")
+
+
+def _extract_owner_sequence_block(text: str) -> str | None:
+    """Return the governing current section of the single active owner sequence."""
+
+    return _extract_active_lifecycle_block(text, OWNER_SEQUENCE_KEY, fence_aware=True)
+
+
+def _extract_active_lifecycle_block(
+    text: str, key: str, *, fence_aware: bool = False
+) -> str | None:
+    """Return the governing non-historical section for exactly one ACTIVE ``key``."""
+
+    declarations = _non_historical_lifecycle_declarations(text, key, fence_aware=fence_aware)
     if len(declarations) != 1 or declarations[0][1] != "ACTIVE":
         return None
     marker_start = declarations[0][0]
-    lines = tuple(_markdown_structure(text))
+    lines = tuple(_markdown_structure(text, fence_aware=fence_aware))
     section_start, section_level = 0, 6
     for offset, line, _, ancestors, _ in lines:
         if offset <= marker_start < offset + len(line):
@@ -1307,6 +1443,139 @@ def _preserves_post_405_boundary(
     return True
 
 
+# Owner-sequence contradiction grammar: a paused category followed by up to four
+# auxiliary/adverb words (any tense or aspect: is, has, have been, remains, continues
+# to be, is going to, can now, ...) and a
+# resumption state. A negation ("not", "never") is not an auxiliary, so "will not
+# resume" or "is not active" never matches.
+_PAUSED_AUXILIARIES = (
+    r"(?:IS|ARE|WAS|WERE|BE|BEEN|BEING|HAS|HAVE|HAD|WILL|SHALL|CAN|COULD|MAY|MIGHT|"
+    r"SHOULD|WOULD|MUST|NOW|ALREADY|ALSO|GET|GETS|GOT|GOTTEN|BECOME|BECOMES|BECAME|"
+    r"OFFICIALLY|FORMALLY|FULLY|REMAIN|REMAINS|REMAINED|STAY|STAYS|STAYED|CONTINUE|"
+    r"CONTINUES|CONTINUED|TO|SET|GOING)"
+)
+_PAUSED_RESUMPTION_STATES = (
+    r"(?:ACTIVE|ACTIVATED|REACTIVATED|AUTHORIZED|REAUTHORIZED|ENABLED|RE-ENABLED|"
+    r"RESUME|RESUMES|RESUMED|RESUMING|UNPAUSED|RESTART|RESTARTS|RESTARTED|"
+    r"START|STARTS|STARTED|BEGIN|BEGINS|BEGAN|BEGUN|UNBLOCKED|LIFTED|UNDERWAY|"
+    r"IN\s+PROGRESS|NO\s+LONGER\s+PAUSED)"
+)
+_PAUSED_CONTRADICTORY_STATES = (
+    rf"(?:{_PAUSED_AUXILIARIES}\s+){{0,4}}{_PAUSED_RESUMPTION_STATES}\b",
+    r"(?:IS|ARE)\s+NOT\s+PAUSED",
+    r"(?:DOES|DO)\s+NOT\s+REMAIN\s+PAUSED",
+)
+
+
+def _preserves_owner_sequence(text: str) -> bool:
+    """Require one active owner operating sequence with the exact #457 order."""
+
+    active = _extract_owner_sequence_block(text)
+    if active is None:
+        return False
+    structured_lines = tuple(
+        _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
+    )
+    directives = tuple(
+        line for line in structured_lines if re.match(r"^(?:NEXT(?: [A-Z ]+)?|THEN):", line)
+    )
+    if directives != OWNER_SEQUENCE_DIRECTIVES:
+        return False
+    if any(structured_lines.count(required) != 1 for required in OWNER_SEQUENCE_REQUIRED_LINES):
+        return False
+    lifecycle_states = tuple(
+        state
+        for line in active.splitlines()
+        if (state := _lifecycle_state(line, OWNER_SEQUENCE_KEY)) is not None
+    )
+    if lifecycle_states != ("ACTIVE",):
+        return False
+    normalized = " ".join(active.split())
+    if normalized.count(OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY) != 1:
+        return False
+    if not all(
+        re.search(rf"{re.escape(category)}\s+REMAINS? PAUSED", normalized)
+        for category in OWNER_SEQUENCE_PAUSED_CATEGORIES
+    ):
+        return False
+    return not any(
+        re.search(rf"{re.escape(category)}\s+{state}", normalized)
+        for category in OWNER_SEQUENCE_PAUSED_CATEGORIES
+        for state in _PAUSED_CONTRADICTORY_STATES
+    )
+
+
+def _superseded_ordering_errors(text: str) -> tuple[str, ...]:
+    """Reject superseded lifecycles as ACTIVE anywhere and stale ordering outside history."""
+
+    errors: list[str] = []
+    if SUPERSEDED_ACTIVE_LIFECYCLE.search(text.upper()):
+        errors.append(
+            "superseded lifecycle marker declared ACTIVE "
+            "(BETA_READINESS_SEQUENCE_V1 / ALPHA_0_SEQUENCE must be historical)"
+        )
+    current = _non_historical_text(text)
+    for pattern in SUPERSEDED_ORDERING_LANGUAGE:
+        match = pattern.search(current)
+        if match:
+            errors.append(
+                "superseded ordering language outside history: "
+                + current[max(0, match.start() - 40) : match.end() + 80]
+            )
+            break
+    return tuple(errors)
+
+
+def _non_historical_text(text: str) -> str:
+    """Normalized non-historical text (fence-aware) so wrapped or emphasized prose matches.
+
+    Historical sections are replaced by a hard separator so a phrase can never be
+    assembled from current text on one side and historical text on the other.
+    """
+
+    parts: list[str] = []
+    for _, line, _, _, historical in _markdown_structure(text, fence_aware=True):
+        parts.append(" | " if historical else line)
+    return " ".join(_markdown_inline_to_plain(" ".join(parts)).split())
+
+
+def _markdown_inline_to_plain(text: str) -> str:
+    """Reduce inline Markdown/HTML to its visible words before phrase matching.
+
+    Links and images keep only their label, HTML tags are dropped, entities and
+    backslash escapes are decoded, and emphasis/code markers (*, _, `, ~) are
+    removed, so ordinary formatting cannot hide a phrase from the owner scans.
+    """
+
+    plain = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    plain = re.sub(r"!?\[([^\]]*)\]\[[^\]]*\]", r"\1", plain)
+    plain = re.sub(r"<[^<>]*>", "", plain)
+    # Scanned text is upper-cased; entity names are case-sensitive, so lower them first.
+    plain = re.sub(r"&([A-Z][A-Z0-9]*);", lambda m: f"&{m.group(1).lower()};", plain)
+    plain = html.unescape(plain)
+    plain = re.sub(r"\\(.)", r"\1", plain)
+    return re.sub(r"[*_`~]+", "", plain)
+
+
+def _paused_category_contradicted_outside_history(text: str) -> bool:
+    """Return True when any non-historical text resumes an owner-sequence paused category."""
+
+    current = _non_historical_text(text)
+    return any(
+        re.search(rf"{re.escape(category)}\s+{state}", current)
+        for category in OWNER_SEQUENCE_PAUSED_CATEGORIES
+        for state in _PAUSED_CONTRADICTORY_STATES
+    )
+
+
+def _records_master_roadmap_supersession(text: str) -> bool:
+    return any(
+        MASTER_ROADMAP_SUPERSESSION_NOTE in " ".join(line.split())
+        for _, line, _, _, historical in _markdown_structure(text, fence_aware=True)
+        if not historical
+    )
+
+
 def _preserves_current_order(text: str) -> bool:
     prerequisite = _ordering_line_index(
         text, 388, ("COMPLETE", "TRUTH-CHECKER", "PREREQUISITE", "SATISFIED")
@@ -1378,7 +1647,8 @@ def check_operational_truth(
     post_394_mode = any(
         "GOOGLE WORKSPACE FOUNDATION COMPLETE / MERGED" in text.upper() for text in texts.values()
     )
-    post_405_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
+    owner_mode = lifecycle_generation == CURRENT_LIFECYCLE_GENERATION
+    post_405_mode = lifecycle_generation == POST_405_LIFECYCLE_GENERATION
     if post_405_mode:
         required_completed_surfaces = set(LANE_PATTERNS)
         current_completed_surfaces = {
@@ -1417,7 +1687,35 @@ def check_operational_truth(
                 f"{paths[name]}: completed closeout does not bind the separate owner decision to #335 reconstruction"
             )
 
-    if post_405_mode:
+    if owner_mode:
+        if "master_roadmap" not in texts:
+            errors.append(f"{master_path}: required owner-sequence surface missing")
+        elif not _records_master_roadmap_supersession(texts["master_roadmap"]):
+            errors.append(
+                f"{master_path}: master roadmap does not record supersession by the owner "
+                f"operating sequence ({MASTER_ROADMAP_SUPERSESSION_NOTE})"
+            )
+        for name in CURRENT_ORDERING_SURFACES:
+            text = texts.get(name)
+            if text is None:
+                continue
+            if not _preserves_owner_sequence(text):
+                errors.append(
+                    f"{paths[name]}: current ordering does not preserve the owner operating "
+                    f"sequence ({OWNER_SEQUENCE_MARKER})"
+                )
+        for name in (*CURRENT_ORDERING_SURFACES, "master_roadmap"):
+            text = texts.get(name)
+            if text is None:
+                continue
+            for error in _superseded_ordering_errors(text):
+                errors.append(f"{paths[name]}: {error}")
+            if _paused_category_contradicted_outside_history(text):
+                errors.append(
+                    f"{paths[name]}: paused category contradicted outside history "
+                    "(owner-sequence paused categories must stay paused)"
+                )
+    elif post_405_mode:
         if "master_roadmap" not in texts:
             errors.append(f"{master_path}: required post-#405 ordering surface missing")
         rollback_restore_closeout_state = _rollback_restore_closeout_state(
