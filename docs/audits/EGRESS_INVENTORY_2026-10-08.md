@@ -54,7 +54,7 @@ the existing HTTP mediator.
 | Cap 54 `analysis_document` create/explain | DeepSeek, same endpoint | `AnalysisDocumentExecutor` -> `DeepSeekBridge` -> provider -> mediator cap 62 | Topic or selected document section and instructions; API key | Cap 54 controls plus cap 62 enabled and budget; no provider-neutral disclosure check | Cap-62 mediator and usage evidence; cap 54 metadata describes the surface as local/no-network | No provider Data-Out denial exists | **No** | Nested cap-62 egress; registry/runtime classification understates network use |
 | Cap 62 governed second opinion | DeepSeek, same endpoint | Normal user-facing route: `ExternalReasoningExecutor` -> `ResponseVerificationExecutor` -> `DeepSeekBridge` -> provider -> mediator cap 62 | Explicit answer/exchange and review prompt; API key | `ExternalReasoningExecutor` first checks `external_reasoning_enabled`; lower layers then check cap 62, key, and usage budget | Local paused result when the setting denies; otherwise mediator and provider-usage events | On the normal governed cap-62 route, a disabled `external_reasoning_enabled` setting returns locally before the bridge and makes zero network attempts | **Yes on the normal cap-62 executor route; not an invariant of the lower-level provider/transport** | Existing caller-side setting gate is real and must be preserved, but other callers of `DeepSeekBridge` and direct lower-level calls do not inherit it; the final egress boundary still lacks provider-neutral Data-Out policy/evidence |
 | OpenClaw metered summarization fallback (within cap 63 runs) | OpenAI Responses API, `api.openai.com/v1/responses` | `OpenAIResponsesLane` -> `NetworkMediator.request` using cap 62 | Full task-report prompt, system prompt, task content; OpenAI key | Caller normally invokes `plan_for_openclaw_fallback`: routing mode `budgeted_fallback`, `metered_openai_enabled`, key, budget. `summarize_task_report` itself only requires the key | Mediator metadata plus provider-usage result | The normal caller returns deterministic/local output when the plan denies. A direct method caller could skip the plan | **Yes on the normal OpenClaw caller; not guaranteed at the transport method** | Policy is caller-side rather than an invariant at final egress |
-| Local chat / local reasoning / OpenClaw local summary | Configured Ollama-compatible endpoint | `LLMManager` -> `ModelNetworkMediator` -> `requests.Session.request` | Prompts/context and generated output; no hosted-provider key by default | Endpoint must resolve to loopback/private/link-local; concurrency and timeout controls | `MODEL_NETWORK_CALL` / `MODEL_NETWORK_CALL_FAILED` metadata | Invalid/public endpoints fail before the request | Yes for invalid/public endpoint | Separate local/private model boundary, not external provider Data-Out; must remain explicitly classified |
+| Local chat / local reasoning / OpenClaw local summary | Configured Ollama-compatible endpoint **and any effective environment proxy** | `LLMManager` -> `ModelNetworkMediator` -> default `requests.Session.request` | Prompts/context and generated output; no hosted-provider key by default. With `HTTP_PROXY`/`HTTPS_PROXY` and no matching `NO_PROXY`, the proxy can receive prompt-bearing traffic even when the URL host is local/private | Endpoint must resolve to loopback/private/link-local; concurrency and timeout controls. The session retains Requests' default `trust_env=True`, so endpoint validation does not prove a direct local route | `MODEL_NETWORK_CALL` / `MODEL_NETWORK_CALL_FAILED` metadata records the model URL, not the effective proxy intermediary | Invalid/public model endpoints fail before the request; a valid private endpoint can still be routed through an unclassified proxy | **No when an environment proxy applies** | Not safely classifiable as local/private until proxy use is disabled/bypassed or the effective proxy is independently classified and authorized |
 
 ### Search, news, weather, commerce, and provider setup
 
@@ -77,6 +77,7 @@ the existing HTTP mediator.
 
 | Caller / surface | Destination / owner | Transport creation point | Data disclosed | Current check and evidence | DENY / zero-attempt status | Disposition for Data-Out design |
 |---|---|---|---|---|---|---|
+| Environment-proxy intermediary (cross-cutting) | Host selected by `HTTP_PROXY` / `HTTPS_PROXY` unless excluded by `NO_PROXY` | Default Requests sessions/calls and `urllib` openers can consult process environment | Whatever payload and credentials the proxied caller sends; for HTTPS the proxy still observes connection destination, while plain HTTP proxying can expose request content | No common effective-route classification or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary or prove a direct connection | The final boundary must disable/bypass proxies where direct routing is required, or derive, classify, authorize, and evidence the proxy as an additional destination |
 | Cap 63 OpenClaw network tools | Weather, RSS/news, web search, source pages | Allowlisted tool implementations use `MeteredNetworkProxy`, then `NetworkMediator` | Tool query, location, source URL, provider keys as applicable | Manual envelope preflight and per-run network-call budget; mediator receipts | Envelope/capability limits can deny before mediator; no provider-neutral Data-Out decision | Keep tool allowlist, but require every tool request to carry a disclosure decision into the final mediator. Budget is not custody |
 | Cap 63 OpenClaw model fallback | OpenAI, described above | `OpenAIResponsesLane` | Task report and key | Caller-side routing/permission/budget plan | Normal caller has pre-call denial; final method does not enforce it | Move/duplicate the decisive policy at final egress so alternate callers cannot bypass it |
 | Webpage launch capability | Default browser and arbitrary planned HTTPS site | `webbrowser.open(url)` | Destination URL; browser subsequently sends its own headers/cookies and may load the site | URL planner plus capability/Governor path; `WEBPAGE_LAUNCH` receipt records handoff result | A denied capability can stop handoff. After handoff Nova cannot prove zero connections or payload behavior | Treat handing a URL to the OS as egress initiation. Gate before `webbrowser.open`; receipt must say “delegated/opened,” never “site reached” |
@@ -84,6 +85,7 @@ the existing HTTP mediator.
 | System/app/file launch | Arbitrary installed application selected by bounded system-control logic | `os.startfile` or `subprocess.run` | File path/arguments; launched application may independently use the network | Governed system-control action and OS process result, not child-network mediation | Nova can deny process launch; after launch it cannot observe/prove the child's network attempts | Do not claim child traffic is mediated. Gate the delegated action and mark child-owned networking outside proof unless a separately controlled proxy exists |
 | STT executable and TTS/media player | Configured local binaries / OS player | `subprocess.run` / `subprocess.Popen` | Audio path/data and process arguments; no network is requested by Nova code | Local execution configuration and executor controls | Nova does not inspect whether a user-supplied binary networks | Classify as subprocess-owned behavior. No external-provider PASS may be inferred from process launch alone |
 | Ollama availability status | Loopback `localhost:11434/api/tags` | Direct `urllib.request.urlopen` in `provider_status.py` | Local HTTP request only | Fixed loopback endpoint; no durable network receipt | No provider Data-Out policy; local attempt occurs when status is read | Explicit local-only exception; keep outside external Data-Out while testing that it cannot become nonlocal |
+| Startup Ollama probe | Configurable `OLLAMA_URL` plus any proxy selected by `urllib` | `scripts/start_daemon.py` calls `urllib.request.urlopen` before starting the backend and while polling a newly launched Ollama process | Probe URL and ordinary HTTP metadata; no prompt payload, but a nonlocal URL or proxy causes pre-runtime outbound traffic | No loopback/private validation, common mediator, capability check, disclosure decision, or durable receipt | The attempt occurs before Nova's runtime boundary exists; failure is swallowed and may be followed by launching/polling `ollama serve` | Hard pre-start bypass. The launcher must prove a direct local/private destination or deny without calling `urlopen`; it must not inherit an unclassified proxy route |
 | Landing-page waitlist form | Formspree placeholder endpoint | Browser-side `fetch` in static landing script when a real form ID is configured | Email address entered on landing page | Placeholder configuration; outside backend mediator/ledger | Browser makes the request directly | Separate website/privacy surface. It must not be represented as governed Nova runtime egress |
 | Archived quarantine code | Historical OpenAI/STT and phase-3.5 handlers | Non-imported archived source | Historical only | Excluded from current runtime | Not applicable unless restored | Keep excluded, and add a regression that restored runtime imports trigger inventory review |
 
@@ -114,6 +116,11 @@ the existing HTTP mediator.
    does not cover all mechanisms listed here.
 10. The default provider-budget objects include `enabled`, but budget-state
     computation does not use it. The field must not be treated as an egress gate.
+11. Requests and `urllib` can inherit environment proxy configuration. Validating
+    only the URL host does not prove that local/private traffic stays local or
+    that external traffic reaches only the declared destination.
+12. The startup launcher probes configurable `OLLAMA_URL` directly before the
+    backend and its mediators exist.
 
 ## Required common enforcement contract
 
@@ -124,7 +131,8 @@ Before **any** external transport creation or delegated egress handoff, the fina
 in-process boundary must receive an immutable request containing:
 
 - initiating capability/caller and request/session/action identifiers;
-- provider and normalized destination/destination class;
+- caller-declared provider/purpose plus the normalized destination and destination
+  class **derived by the boundary from the actual transport URL**;
 - transport class (`http`, OAuth setup, browser handoff, mail-client handoff,
   subprocess/application handoff, or local/private model);
 - data categories being disclosed (for example prompt, conversation context,
@@ -133,10 +141,19 @@ in-process boundary must receive an immutable request containing:
 - purpose and whether the action is user-initiated, approved, or automatic;
 - the applicable owner policy version.
 
+The boundary must reject a caller-declared provider or destination that does not
+match the URL-derived identity. It must also derive the effective route: a proxy
+is an additional destination/intermediary, not an invisible implementation
+detail. Local/private classification is valid only when the client is proven not
+to route through an unclassified proxy.
+
 The policy returns `ALLOW`, `DENY`, or `UNKNOWN`. Only `ALLOW` can continue.
 `DENY` and `UNKNOWN` must return an explicit local result before DNS resolution,
 socket/session/client creation, `requests`/`urllib`, `webbrowser.open`, or process
-launch. Caller-side checks may improve UX but are not the security boundary.
+launch. Caller-side checks may improve UX but are not the security boundary. An
+HTTP redirect is a new destination: the boundary must derive and authorize every
+redirect target after reading `Location` and **before** issuing the next request.
+Authorization of the original URL never carries across a redirect hop.
 
 The decision must produce durable evidence without payloads or secrets:
 decision, provider/destination class, data categories, caller/capability,
@@ -146,8 +163,10 @@ at what Nova observed (for example `browser_handoff_accepted`) and must not impl
 that a site loaded, mail was sent, or a child process made no network calls.
 
 Local/private model traffic requires an explicit policy class rather than an
-implicit exemption. It may follow a different default, but the endpoint must be
-proven local/private before it receives that classification.
+implicit exemption. It may follow a different default, but both the endpoint and
+effective route must be proven local/private before it receives that
+classification. The startup launcher must enforce the same property before its
+first `urlopen`, even though the backend is not running yet.
 
 ## Proposed implementation slices
 
@@ -159,7 +178,9 @@ These are review-sized slices, in order. None is implemented by this inventory.
    unavailable.
 2. **Final HTTP boundary.** Enforce the contract inside `NetworkMediator.request`
    and `connection_request` immediately before URL validation/DNS/client use.
-   Require callers to supply disclosure metadata; prohibit silent defaults for
+   Derive destination identity from the transport URL, verify caller metadata,
+   classify or disable effective proxies, and re-run the complete decision for
+   every redirect target before the next request. Prohibit silent defaults for
    external destinations.
 3. **Known model leak closure.** Route general chat, caps 31/48/54/62, and the
    OpenAI fallback through the final-boundary decision while preserving cap 62's
@@ -173,7 +194,11 @@ These are review-sized slices, in order. None is implemented by this inventory.
 6. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked.
-7. **Static enforcement and generated truth.** Expand network-mechanism scanning
+7. **Local model and startup paths.** Disable/bypass environment proxies for
+   traffic classified as local/private (or authorize the proxy as a separate
+   destination), and fail closed on a nonlocal, ambiguous, or proxied
+   `OLLAMA_URL` before the launcher's first probe.
+8. **Static enforcement and generated truth.** Expand network-mechanism scanning
    beyond `requests`, require every external transport/handoff to name the common
    boundary, and regenerate capability/bypass truth.
 
@@ -213,15 +238,27 @@ Required test layers:
 4. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
    prove the OS handoff function is untouched.
 5. **Local/private classification tests:** prove loopback/private model traffic is
-   classified separately and that public, DNS-rebound, or ambiguous endpoints do
-   not inherit the local exemption.
-6. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
+   classified separately and that public, DNS-rebound, ambiguous, or
+   environment-proxied endpoints do not inherit the local exemption. Set
+   `HTTP_PROXY`/`HTTPS_PROXY` without a matching `NO_PROXY` and prove no prompt,
+   DNS lookup, proxy connection, or session request occurs under the local-only
+   classification.
+6. **Startup proof:** run launcher decision logic with a nonlocal `OLLAMA_URL`, a
+   relative/invalid URL, and a local URL subject to an environment proxy. Prove
+   `urllib.request.urlopen` and process launch are untouched on denial. A valid
+   direct loopback probe remains a separately tested local exception.
+7. **Redirect and identity tests:** allow the initial URL, return a redirect to a
+   denied provider/destination, and prove the second request is never issued and
+   the denial is recorded. Supply caller metadata that disagrees with the actual
+   URL and prove rejection before DNS/client use. Cover cross-host and
+   same-provider redirects because policy may distinguish destination classes.
+8. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
    browser handoffs, and process launch. A new surface must either use the common
    boundary or appear as an unresolved inventory failure.
-7. **End-to-end session proof:** through the real websocket/session route, turn a
+9. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
    denial, a durable decision record, and zero transport attempts.
-8. **Negative proof:** run each new regression against `bab4a6c` or the relevant
+10. **Negative proof:** run each new regression against `bab4a6c` or the relevant
    pre-fix slice and retain the failure evidence in the PR.
 
 ## Review gate
