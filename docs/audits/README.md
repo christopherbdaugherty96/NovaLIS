@@ -13,6 +13,9 @@ true today use the generated
 
 Titles carry the date — trust the newest for a given subject. Rough currency:
 
+- **Current custody input:** `EGRESS_INVENTORY_2026-10-08.md` maps outbound runtime and
+  delegated-egress paths on `main@bab4a6c`; it is an implementation design input, not proof
+  that provider-neutral Data-Out enforcement exists.
 - **More recent signals:** `USER_SIMULATION_RESULTS_2026-07-06.md`,
   `PERSONALITY_GATE_WRAPPING_LIVE_VALIDATION_2026-06-05.md`,
   `UI_SIMPLIFICATION_AUDIT_2026-05-26.md`, and the 2026-05-19 conversation-model / simulation
