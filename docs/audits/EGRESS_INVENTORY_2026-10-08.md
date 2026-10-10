@@ -54,7 +54,7 @@ the existing HTTP mediator.
 | Cap 54 `analysis_document` create/explain | DeepSeek, same endpoint | `AnalysisDocumentExecutor` -> `DeepSeekBridge` -> provider -> mediator cap 62 | Topic or selected document section and instructions; API key | Cap 54 controls plus cap 62 enabled and budget; no provider-neutral disclosure check | Cap-62 mediator and usage evidence; cap 54 metadata describes the surface as local/no-network | No provider Data-Out denial exists | **No** | Nested cap-62 egress; registry/runtime classification understates network use |
 | Cap 62 governed second opinion | DeepSeek, same endpoint | Normal user-facing route: `ExternalReasoningExecutor` -> `ResponseVerificationExecutor` -> `DeepSeekBridge` -> provider -> mediator cap 62 | Explicit answer/exchange and review prompt; API key | `ExternalReasoningExecutor` first checks `external_reasoning_enabled`; lower layers then check cap 62, key, and usage budget | Local paused result when the setting denies; otherwise mediator and provider-usage events | On the normal governed cap-62 route, a disabled `external_reasoning_enabled` setting returns locally before the bridge and makes zero network attempts | **Yes on the normal cap-62 executor route; not an invariant of the lower-level provider/transport** | Existing caller-side setting gate is real and must be preserved, but other callers of `DeepSeekBridge` and direct lower-level calls do not inherit it; the final egress boundary still lacks provider-neutral Data-Out policy/evidence |
 | OpenClaw metered summarization fallback (within cap 63 runs) | OpenAI Responses API, `api.openai.com/v1/responses` | `OpenAIResponsesLane` -> `NetworkMediator.request` using cap 62 | Full task-report prompt, system prompt, task content; OpenAI key | Caller normally invokes `plan_for_openclaw_fallback`: routing mode `budgeted_fallback`, `metered_openai_enabled`, key, budget. `summarize_task_report` itself only requires the key | Mediator metadata plus provider-usage result | The normal caller returns deterministic/local output when the plan denies. A direct method caller could skip the plan | **Yes on the normal OpenClaw caller; not guaranteed at the transport method** | Policy is caller-side rather than an invariant at final egress |
-| Local chat / local reasoning / OpenClaw local summary | Configured Ollama-compatible endpoint **and any effective environment proxy** | `LLMManager` -> `ModelNetworkMediator` -> default `requests.Session.request` | Prompts/context and generated output; no hosted-provider key by default. With `HTTP_PROXY`/`HTTPS_PROXY` and no matching `NO_PROXY`, the proxy can receive prompt-bearing traffic even when the URL host is local/private | Endpoint must resolve to loopback/private/link-local; concurrency and timeout controls. The session retains Requests' default `trust_env=True`, so endpoint validation does not prove a direct local route | `MODEL_NETWORK_CALL` / `MODEL_NETWORK_CALL_FAILED` metadata records the model URL, not the effective proxy intermediary | Invalid/public model endpoints fail before the request; a valid private endpoint can still be routed through an unclassified proxy | **No when an environment proxy applies** | Not safely classifiable as local/private until proxy use is disabled/bypassed or the effective proxy is independently classified and authorized |
+| Local chat / local reasoning / OpenClaw local summary | Configured Ollama-compatible endpoint **and any effective environment proxy** | `LLMManager` -> `ModelNetworkMediator` -> default `requests.Session.request` | Prompts/context and generated output; no hosted-provider key by default. With `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (including lowercase forms) and no matching `NO_PROXY`, the proxy can receive prompt-bearing traffic even when the URL host is local/private | Endpoint must resolve to loopback/private/link-local; concurrency and timeout controls. The session retains Requests' default `trust_env=True`, so endpoint validation does not prove a direct local route | `MODEL_NETWORK_CALL` / `MODEL_NETWORK_CALL_FAILED` metadata records the model URL, not the effective proxy intermediary | Invalid/public model endpoints fail before the request; a valid private endpoint can still be routed through an unclassified proxy | **No when an environment proxy applies** | Not safely classifiable as local/private until proxy use is disabled/bypassed or the effective proxy is independently classified and authorized |
 
 ### Search, news, weather, commerce, and provider setup
 
@@ -65,7 +65,7 @@ the existing HTTP mediator.
 | Cap 56 news / RSS | Multiple publisher RSS endpoints | `fetch_rss_headlines` -> `NetworkMediator.request` | Feed URL requests; normally no credential | Cap 56 enabled; fixed/configured source list | Mediator events per request | Disabled cap stops mediator calls | Yes for cap disable; no broader destination policy | Mediated external feed reads; distinct from caps 49/50 source-page reads |
 | Cap 49 headline and story-page summary | Article/source hosts selected from the cached news surface | `NewsIntelligenceExecutor.execute_summary` -> `_collect_source_packets` or `_summarize_story_page` -> `_fetch_source_text` -> `NetworkMediator.request` with cap 49 | Selected source URLs and ordinary HTTP request metadata; returned article text is then passed to the local analysis lane | Cap 49 enabled; cached headline selection and bounded source-read limits; no provider-neutral destination/Data-Out check | Mediator events for each source-page read; result/summary evidence at the capability layer | Disabled cap stops execution; no source/destination Data-Out deny exists | Yes for cap disable; no provider/destination-policy guarantee | Mediated external source reads owned by cap 49, not cap 56 |
 | Cap 50 daily intelligence brief with `read_sources` | Article/source hosts selected from cached headlines | `NewsIntelligenceExecutor.execute_brief` -> `_collect_source_packets` -> `_fetch_source_text` -> `NetworkMediator.request` with cap 50 | Up to the bounded set of selected source URLs and ordinary HTTP request metadata; returned excerpts feed local brief synthesis | Cap 50 enabled and `read_sources` requested; bounded source-read limits; no provider-neutral destination/Data-Out check | Mediator events for each source-page read; brief result evidence at the capability layer | Disabled cap stops execution; actions that reuse cached clusters do not read sources, but a source-reading brief has no Data-Out deny | Yes for cap disable; no provider/destination-policy guarantee | Conditional mediated external source reads owned by cap 50, not cap 56 |
-| Cap 55 weather | Visual Crossing | `WeatherService` -> `NetworkMediator.request` | User/default location and forecast scope; weather API key as query parameter | Cap 55 enabled and key present; no provider-neutral Data-Out check | Mediator event includes URL but not params/key | Missing key or disabled cap prevents request | Cap disable yes; provider-off no | Mediated; location is personal data requiring disclosure classification |
+| Cap 55 weather | Visual Crossing | `WeatherService` -> `NetworkMediator.request` | User/default location and forecast scope; weather API key as query parameter | Cap 55 enabled and key present; no provider-neutral Data-Out check | Success metadata omits params/key, but on HTTP failure `NetworkMediator` persists raw `str(exception)` in `NETWORK_CALL_FAILED`; Requests can include the fully prepared credential-bearing URL in that text. Tracked as current P1 defect #461 | Missing key or disabled cap prevents request; an attempted request can persist the query credential on failure | Cap disable yes; provider-off no | Mediated, but failure evidence is not secret-safe today; location is personal data requiring disclosure classification |
 | Cap 65 Shopify read-only connector | User's Shopify Admin GraphQL endpoint | `HttpShopifyConnector._gql` creates a mediator per call | GraphQL query/variables; shop domain; Admin access token header; returned store/order/inventory data | Cap 65 enabled; connector configuration; no common Data-Out decision | Mediator metadata; higher-level connector errors | Disabled cap stops mediator call | Yes for cap disable; no provider-policy guarantee | Mediated external read with credential and tenant-data disclosure |
 | Google Workspace OAuth setup, refresh, identity, revoke | Google OAuth token, userinfo, and revoke endpoints | `GoogleAuthSession` -> `NetworkMediator.connection_request` | Authorization code, client credentials, refresh/access token, redirect URI; bearer token for identity | Static provider/operation/method/URL allowlist and rate/SSRF controls; deliberately no capability/Governor check | `CONNECTION_NETWORK_CALL` / failure metadata, without payload/header values | Non-allowlisted operation is rejected before transport. There is no global Data-Out deny | No | Explicit setup exception; needs a setup-specific disclosure decision at the same final boundary |
 | Settings connection health: OpenAI | OpenAI models endpoint | Direct `requests.get` in `connections_api.py` | Saved API key in bearer header | Local administrative API call after save/test; no mediator, capability, or provider Data-Out check | Health status in connection store; no durable network/disclosure receipt | No Data-Out deny path | **No** | Documented direct-network exception and hard bypass |
@@ -77,7 +77,7 @@ the existing HTTP mediator.
 
 | Caller / surface | Destination / owner | Transport creation point | Data disclosed | Current check and evidence | DENY / zero-attempt status | Disposition for Data-Out design |
 |---|---|---|---|---|---|---|
-| Environment-proxy intermediary (cross-cutting) | Host selected by `HTTP_PROXY` / `HTTPS_PROXY` unless excluded by `NO_PROXY` | Default Requests sessions/calls and `urllib` openers can consult process environment | Whatever payload and credentials the proxied caller sends; for HTTPS the proxy still observes connection destination, while plain HTTP proxying can expose request content | No common effective-route classification or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary or prove a direct connection | The final boundary must disable/bypass proxies where direct routing is required, or derive, classify, authorize, and evidence the proxy as an additional destination |
+| Environment-proxy intermediary (cross-cutting) | Host selected by `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (and lowercase forms) unless excluded by `NO_PROXY` / `no_proxy` | Default Requests sessions/calls, `urllib` openers, and launcher tools such as `curl` can consult process environment | Whatever payload and credentials the proxied caller sends; for HTTPS the proxy still observes connection destination, while plain HTTP proxying can expose request content | No common effective-route classification or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary or prove a direct connection | The final boundary must disable/bypass every supported proxy source where direct routing is required, or derive, classify, authorize, and evidence the proxy as an additional destination |
 | Ambient Requests authentication (cross-cutting) | Host credentials selected from `~/.netrc` or the file named by `NETRC` | Requests can apply netrc authentication while preparing a request when `Session.trust_env=True` and explicit auth is absent | Username/password become an `Authorization` header even though that header was not present in the caller's inputs | No boundary check of the fully prepared request and no netrc-specific evidence | Caller-input validation can pass before Requests injects a credential | Disable ambient netrc authentication at governed boundaries, or validate and authorize the fully prepared request—including the injected header—before any DNS/socket/send operation |
 | Cap 63 OpenClaw network tools | Weather, RSS/news, web search, source pages | Allowlisted tool implementations use `MeteredNetworkProxy`, then `NetworkMediator` | Tool query, location, source URL, provider keys as applicable | Manual envelope preflight and per-run network-call budget; mediator receipts | Envelope/capability limits can deny before mediator; no provider-neutral Data-Out decision | Keep tool allowlist, but require every tool request to carry a disclosure decision into the final mediator. Budget is not custody |
 | Cap 63 OpenClaw model fallback | OpenAI, described above | `OpenAIResponsesLane` | Task report and key | Caller-side routing/permission/budget plan | Normal caller has pre-call denial; final method does not enforce it | Move/duplicate the decisive policy at final egress so alternate callers cannot bypass it |
@@ -90,6 +90,7 @@ the existing HTTP mediator.
 | Python-launcher Nova readiness and browser handoff | Loopback-validated `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `urllib`, and Edge/Chrome/default browser | `scripts/start_daemon.py` polls `HEALTH_ENDPOINT` with `urllib.request.urlopen`, then uses `subprocess.Popen` for Edge/Chrome app mode or `webbrowser.open(BASE_URL)` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application | `require_loopback_bind_host` validates the URL host, but readiness does not disable/classify proxies and browser delegation has no disclosure decision or durable handoff receipt | A proxy can turn the readiness probe into external egress; after browser handoff Nova cannot prove navigation behavior | Prove a direct loopback route before readiness and handoff. On denial, touch neither `urlopen`, Edge/Chrome process launch, nor `webbrowser.open` |
 | Shell-launcher readiness and dashboard handoff | Configurable `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `curl` or `urllib`, and the OS default browser | `start_nova.sh` calls `curl` or Python `urllib.request.urlopen` for `/phase-status`, then delegates the dashboard URL through `xdg-open` or `open` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application. A nonloopback host or proxy can make both operations external | No launcher-local loopback validation, common mediator, disclosure decision, or durable receipt before readiness or handoff | Readiness can attempt traffic before the backend proves its locality; browser handoff can independently cause navigation | Hard pre-runtime/delegated bypass. Prove a direct loopback target with proxies bypassed/disabled before readiness; otherwise touch neither HTTP client nor dashboard opener |
 | Installer/default-model acquisition | Ollama's model registry and any other networking owned by the installed `ollama` executable | `installer/windows/nova_bootstrap.ps1` runs `scripts/fetch_models.py`; that script invokes `subprocess.run(["ollama", "pull", model])` | Requested model name plus protocol/credentials/configuration owned by Ollama; downloaded model bytes return to Ollama's store | Installer step can be skipped with `-SkipModel`, but the executed child is not mediated by Nova and has no Nova disclosure decision/receipt | Nova can prevent process launch, but once allowed it cannot prove or govern the child's individual network attempts | Reviewed setup exception only: require explicit setup authorization and evidence before launch, constrain the model identifier, record the delegated outcome truthfully, and never claim child traffic is mediated or zero-attempt after handoff |
+| Installer Python dependency acquisition | PyPI/package indexes and any proxy or alternate index used by pip | `installer/windows/nova_bootstrap.ps1` runs the venv interpreter with `-m pip install --upgrade pip`, then `-m pip install -e <install-dir>`; an uncached editable install may resolve and download project dependencies | Package names, versions, platform/Python metadata, index/proxy credentials configured for pip, and downloaded packages | Required by the supported bootstrap path; no Nova runtime boundary, disclosure decision, or durable receipt. Pip owns resolution and transport | The bootstrap invokes pip before Nova starts; without an explicit offline/deny mode, external attempts can occur | Reviewed setup exception only: make online dependency acquisition explicit and separately skippable/offline-capable, authorize before subprocess launch, prefer a locked/verified artifact source, record delegated outcome only, and never claim Nova mediated pip traffic |
 | Landing-page waitlist form | Formspree placeholder endpoint | Browser-side `fetch` in static landing script when a real form ID is configured | Email address entered on landing page | Placeholder configuration; outside backend mediator/ledger | Browser makes the request directly | Separate website/privacy surface. It must not be represented as governed Nova runtime egress |
 | Archived quarantine code | Historical OpenAI/STT and phase-3.5 handlers | Non-imported archived source | Historical only | Excluded from current runtime | Not applicable unless restored | Keep excluded, and add a regression that restored runtime imports trigger inventory review |
 
@@ -135,6 +136,14 @@ the existing HTTP mediator.
     caller-supplied metadata was formed.
 16. Windows setup can delegate model download to `ollama pull`; Nova controls the
     subprocess launch, not the child's network transport.
+17. Windows bootstrap runs pip upgrade/editable-install commands before Nova
+    starts. An uncached install can contact PyPI or configured indexes and
+    proxies; those child-owned requests are not currently authorized or evidenced.
+18. `NETWORK_CALL_FAILED` currently stores raw exception text. For callers such
+    as WeatherService that place credentials in query parameters, Requests can
+    include the credential-bearing prepared URL in that text. This reachable P1
+    persistence defect is tracked separately as #461 and must be repaired before
+    the provider-neutral Data-Out slices begin.
 
 ## Required common enforcement contract
 
@@ -194,7 +203,11 @@ method, URL, body, parameters, and headers before transmission.
 The decision must produce durable evidence without payloads or secrets:
 decision, provider/destination class, data categories, caller/capability,
 purpose, policy version, correlation identifiers, and reason. Transport outcome
-evidence remains separate. For delegated actions, outcome vocabulary must stop
+evidence remains separate and must pass a boundary-owned sanitizer before any
+ledger write. Raw exception strings and credential-bearing URLs are not safe
+evidence; query values, userinfo, credential/header values, and other secret-bearing
+fields must be removed or replaced with bounded classifications. For delegated
+actions, outcome vocabulary must stop
 at what Nova observed (for example `browser_handoff_accepted`) and must not imply
 that a site loaded, mail was sent, or a child process made no network calls.
 
@@ -207,6 +220,8 @@ first `urlopen`, even though the backend is not running yet.
 ## Proposed implementation slices
 
 These are review-sized slices, in order. None is implemented by this inventory.
+The current failure-evidence credential leak is a separate narrow P1 (#461):
+after this inventory merges, repair and prove that hotfix before Slice 1.
 
 1. **Pure policy and evidence vocabulary.** Add immutable disclosure request and
    decision types, provider/destination classification, data-category vocabulary,
@@ -232,8 +247,9 @@ These are review-sized slices, in order. None is implemented by this inventory.
 6. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
-   `ollama pull` as an explicit setup exception with a pre-launch decision, bounded
-   model identifier, and delegated-outcome evidence.
+   `ollama pull` and pip dependency acquisition as explicit setup exceptions with
+   pre-launch decisions, bounded inputs or locked artifacts, offline/skip paths,
+   and delegated-outcome evidence.
 7. **Local model and startup paths.** Disable/bypass environment proxies for
    traffic classified as local/private (or authorize the proxy as a separate
    destination), and fail closed on a nonlocal, ambiguous, or proxied
@@ -282,9 +298,9 @@ Required test layers:
 5. **Local/private classification tests:** prove loopback/private model traffic is
    classified separately and that public, DNS-rebound, ambiguous, or
    environment-proxied endpoints do not inherit the local exemption. Set
-   `HTTP_PROXY`/`HTTPS_PROXY` without a matching `NO_PROXY` and prove no prompt,
-   DNS lookup, proxy connection, or session request occurs under the local-only
-   classification.
+   `HTTP_PROXY`, `HTTPS_PROXY`, and `ALL_PROXY` (including lowercase forms)
+   without a matching `NO_PROXY` / `no_proxy` and prove no prompt, DNS lookup,
+   proxy connection, or session request occurs under the local-only classification.
 6. **Startup proof:** run Python-launcher decision logic with a nonlocal
    `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
    proxy. Prove `urllib.request.urlopen` and process launch are untouched on
@@ -312,17 +328,22 @@ Required test layers:
    `NETRC` for the destination and prove ambient credentials are either disabled
    or appear in the fully prepared request's verified credential categories;
    prove no post-decision credential injection is possible.
-9. **Installer setup exception tests:** deny or skip model acquisition and prove
-   `subprocess.run(["ollama", "pull", ...])` is untouched. On explicit allow,
-   validate the bounded model identifier and record only delegated launch/outcome
-   evidence; do not assert that Nova controlled the child's sockets or payloads.
-10. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
+9. **Installer setup exception tests:** deny, skip, or select offline setup and
+   prove neither `subprocess.run(["ollama", "pull", ...])` nor either pip install
+   subprocess is launched. On explicit allow, validate the bounded model/package
+   inputs or locked artifact source and record only delegated launch/outcome
+   evidence; do not assert that Nova controlled child sockets or payloads.
+10. **Evidence-hygiene regression:** use a fake Visual Crossing query credential,
+   force an HTTP failure through the real `LedgerWriter`, and prove the credential,
+   prepared query values, and raw exception text never reach `ledger.jsonl` or any
+   other persisted failure evidence. Run it red against the #461 pre-fix code.
+11. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
    browser handoffs, and process launch. A new surface must either use the common
    boundary or appear as an unresolved inventory failure.
-11. **End-to-end session proof:** through the real websocket/session route, turn a
+12. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
    denial, a durable decision record, and zero transport attempts.
-12. **Negative proof:** run each new regression against `bab4a6c` or the relevant
+13. **Negative proof:** run each new regression against `bab4a6c` or the relevant
    pre-fix slice and retain the failure evidence in the PR.
 
 ## Review gate
