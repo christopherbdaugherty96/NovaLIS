@@ -106,7 +106,7 @@ the existing HTTP mediator.
 | Email draft capability | Default mail client via `mailto:` | `webbrowser.open(mailto_uri)` | Recipient, subject, and full draft body are handed to another application | Governed draft/open flow; draft event exists | A denied action can stop handoff. Nova cannot prove whether the mail client synchronizes or sends after handoff | Gate before OS handoff; classify as disclosure to a local external application, distinct from email transmission |
 | System/app/file launch | Arbitrary installed application selected by bounded system-control logic | `os.startfile` or `subprocess.run` | File path/arguments; launched application may independently use the network | Governed system-control action and OS process result, not child-network mediation | Nova can deny process launch; after launch it cannot observe/prove the child's network attempts | Do not claim child traffic is mediated. Gate the delegated action and mark child-owned networking outside proof unless a separately controlled proxy exists |
 | STT executable and TTS/media player | Configured local binaries / OS player | `subprocess.run` / `subprocess.Popen` | Audio path/data and process arguments; no network is requested by Nova code | Local execution configuration and executor controls | Nova does not inspect whether a user-supplied binary networks | Classify as subprocess-owned behavior. No external-provider PASS may be inferred from process launch alone |
-| Ollama availability status | Loopback `localhost:11434/api/tags` | Direct `urllib.request.urlopen` in `provider_status.py` | Local HTTP request only | Fixed loopback endpoint; no durable network receipt | No provider Data-Out policy; local attempt occurs when status is read | Explicit local-only exception; keep outside external Data-Out while testing that it cannot become nonlocal |
+| Ollama availability status | Nominal loopback `localhost:11434/api/tags` **and any effective proxy** | Direct default `urllib.request.urlopen` in `provider_status.py` | Status probe URL and ordinary HTTP metadata; no prompt or provider credential, but an external proxy receives the nominally local request | Fixed loopback origin, but the default urllib opener can inherit environment or OS proxy configuration; no effective-route check or durable network receipt | No provider Data-Out policy; reading provider status can contact an external proxy when loopback is not bypassed | Local-only exception is valid only after proving direct loopback routing. Otherwise classify/authorize the proxy or deny before `urlopen`; never infer local-only from the origin URL alone |
 | Startup Ollama probe | Configurable `OLLAMA_URL` plus any proxy selected by `urllib` | `scripts/start_daemon.py` calls `urllib.request.urlopen` before starting the backend and while polling a newly launched Ollama process | Probe URL and ordinary HTTP metadata; no prompt payload, but a nonlocal URL or proxy causes pre-runtime outbound traffic | No loopback/private validation, common mediator, capability check, disclosure decision, or durable receipt | The attempt occurs before Nova's runtime boundary exists; failure is swallowed and may be followed by launching/polling `ollama serve` | Hard pre-start bypass. The launcher must prove a direct local/private destination or deny without calling `urlopen`; it must not inherit an unclassified proxy route |
 | Python-launcher Nova readiness and browser handoff | Loopback-validated `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `urllib`, and Edge/Chrome/default browser | `scripts/start_daemon.py` polls `HEALTH_ENDPOINT` with `urllib.request.urlopen`, then uses `subprocess.Popen` for Edge/Chrome app mode or `webbrowser.open(BASE_URL)` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application | `require_loopback_bind_host` validates the URL host, but readiness does not disable/classify proxies and browser delegation has no disclosure decision or durable handoff receipt | A proxy can turn the readiness probe into external egress; after browser handoff Nova cannot prove navigation behavior | Prove a direct loopback route before readiness and handoff. On denial, touch neither `urlopen`, Edge/Chrome process launch, nor `webbrowser.open` |
 | Shell-launcher readiness and dashboard handoff | Configurable `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `curl` or `urllib`, and the OS default browser | `start_nova.sh` calls `curl` or Python `urllib.request.urlopen` for `/phase-status`, then delegates the dashboard URL through `xdg-open` or `open` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application. A nonloopback host or proxy can make both operations external | No launcher-local loopback validation, common mediator, disclosure decision, or durable receipt before readiness or handoff | Readiness can attempt traffic before the backend proves its locality; browser handoff can independently cause navigation | Hard pre-runtime/delegated bypass. Prove a direct loopback target with proxies bypassed/disabled before readiness; otherwise touch neither HTTP client nor dashboard opener |
@@ -186,6 +186,9 @@ the existing HTTP mediator.
     include the credential-bearing prepared URL in that text. This reachable P1
     persistence defect is tracked separately as #461 and must be repaired before
     the provider-neutral Data-Out slices begin.
+24. The runtime provider-status probe uses the default urllib opener. Its fixed
+    loopback URL can still route through an environment- or OS-configured proxy,
+    so status inspection is not a proven local-only exception today.
 
 ## Required common enforcement contract
 
@@ -314,7 +317,8 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    origin userinfo, sanitize model URLs in evidence, and disable automatic model
    redirects or reauthorize every hop before the redirected send. Apply the same
    direct loopback proof to `start_nova.sh` before either readiness HTTP or
-   dashboard handoff.
+   dashboard handoff, and to `provider_status.py` before its Ollama availability
+   `urlopen`.
 8. **Static enforcement and generated truth.** Expand network-mechanism scanning
    beyond `requests`, require every external transport/handoff to name the common
    boundary, and regenerate capability/bypass truth.
@@ -367,6 +371,10 @@ Required test layers:
    Configure `OLLAMA_URL` with fake userinfo and prove the origin credential is
    denied or explicitly classified before send, and absent from all persisted
    model success/failure evidence.
+   Exercise `_ollama_status()` with environment and Windows system proxies lacking
+   a loopback bypass; prove the effective proxy is classified/authorized or
+   `urllib.request.urlopen` remains untouched. A direct-loopback case must remain
+   the separately proven local exception.
 6. **Startup proof:** run Python-launcher decision logic with a nonlocal
    `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
    proxy. Prove `urllib.request.urlopen` and process launch are untouched on
