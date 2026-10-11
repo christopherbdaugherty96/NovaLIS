@@ -18,6 +18,27 @@ browser-side JavaScript. The existing runtime auditor's requests-library scan is
 useful but narrower: it does not establish the absence of `urllib`, sockets,
 browser/OS delegation, subprocess-owned networking, or browser-side requests.
 
+### Frozen closure scope
+
+The final mechanism-closure sweep covers supported production/runtime and setup
+surfaces only:
+
+- Python HTTP creation through Requests/sessions and `urllib`, including DNS,
+  sockets, redirects, prepared requests, and failure evidence;
+- environment and platform proxy discovery, bypass rules, and proxy credentials;
+- ambient credentials such as `.netrc` / `NETRC` and credentials injected after
+  caller arguments are formed;
+- every supported installer/launcher child capable of networking: all Ollama CLI
+  invocations, pip, winget, browser/application handoffs, and startup probes;
+- supported browser-side external requests and delegated OpenClaw/provider paths;
+- credentials or sensitive values carried in query, header, body, proxy, or
+  persisted error fields.
+
+Developer-only certification/audit scripts, tests, archived/quarantined code,
+inactive future paths, and hypothetical mechanisms are outside this closure
+scope. A concrete production defect found later is tracked separately unless it
+invalidates an inventory claim about one of the supported surfaces above.
+
 ## Executive finding
 
 There is no single provider-neutral Data-Out decision today.
@@ -77,7 +98,7 @@ the existing HTTP mediator.
 
 | Caller / surface | Destination / owner | Transport creation point | Data disclosed | Current check and evidence | DENY / zero-attempt status | Disposition for Data-Out design |
 |---|---|---|---|---|---|---|
-| Proxy intermediary (cross-cutting) | Host selected by `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (and lowercase forms), or by OS proxy configuration such as Windows Internet Settings, unless bypassed | Default Requests sessions/calls and `urllib` openers use `urllib.request.getproxies()`, which can consult both process environment and platform configuration; launcher tools such as `curl` can also consult proxy settings | Whatever payload and credentials the proxied caller sends; for HTTPS the proxy still observes connection destination, while plain HTTP proxying can expose request content | No common effective-route classification, complete proxy-source disablement, or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary or prove a direct connection | The final boundary must disable/bypass **all** platform and environment proxy discovery where direct routing is required, or derive, classify, authorize, and evidence every effective proxy as an additional destination |
+| Proxy intermediary and proxy authentication (cross-cutting) | Host selected by `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (and lowercase forms), or by OS proxy configuration such as Windows Internet Settings, unless bypassed | Default Requests sessions/calls and `urllib` openers use `urllib.request.getproxies()`, which can consult both process environment and platform configuration; launcher tools such as `curl` can also consult proxy settings. Requests can derive `Proxy-Authorization` from userinfo in the effective proxy URL during adapter handling | Whatever payload and credentials the proxied caller sends; proxy URL userinfo can become a transmitted proxy credential after ordinary caller/prepared-request inspection. For HTTPS the proxy observes the connection destination; plain HTTP proxying can expose request content | No common effective-route classification, complete proxy-source disablement, proxy-credential classification, or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary, prove a direct connection, or authorize credentials injected for the proxy | The final boundary must disable/bypass **all** platform and environment proxy discovery where direct routing is required, or derive, classify, authorize, and evidence every effective proxy plus proxy-credential **presence** before send; values must never enter evidence |
 | Ambient Requests authentication (cross-cutting) | Host credentials selected from `~/.netrc` or the file named by `NETRC` | Requests can apply netrc authentication while preparing a request when `Session.trust_env=True` and explicit auth is absent | Username/password become an `Authorization` header even though that header was not present in the caller's inputs | No boundary check of the fully prepared request and no netrc-specific evidence | Caller-input validation can pass before Requests injects a credential | Disable ambient netrc authentication at governed boundaries, or validate and authorize the fully prepared request—including the injected header—before any DNS/socket/send operation |
 | Cap 63 OpenClaw network tools | Weather, RSS/news, web search, source pages | Allowlisted tool implementations use `MeteredNetworkProxy`, then `NetworkMediator` | Tool query, location, source URL, provider keys as applicable | Manual envelope preflight and per-run network-call budget; mediator receipts | Envelope/capability limits can deny before mediator; no provider-neutral Data-Out decision | Keep tool allowlist, but require every tool request to carry a disclosure decision into the final mediator. Budget is not custody |
 | Cap 63 OpenClaw model fallback | OpenAI, described above | `OpenAIResponsesLane` | Task report and key | Caller-side routing/permission/budget plan | Normal caller has pre-call denial; final method does not enforce it | Move/duplicate the decisive policy at final egress so alternate callers cannot bypass it |
@@ -89,7 +110,7 @@ the existing HTTP mediator.
 | Startup Ollama probe | Configurable `OLLAMA_URL` plus any proxy selected by `urllib` | `scripts/start_daemon.py` calls `urllib.request.urlopen` before starting the backend and while polling a newly launched Ollama process | Probe URL and ordinary HTTP metadata; no prompt payload, but a nonlocal URL or proxy causes pre-runtime outbound traffic | No loopback/private validation, common mediator, capability check, disclosure decision, or durable receipt | The attempt occurs before Nova's runtime boundary exists; failure is swallowed and may be followed by launching/polling `ollama serve` | Hard pre-start bypass. The launcher must prove a direct local/private destination or deny without calling `urlopen`; it must not inherit an unclassified proxy route |
 | Python-launcher Nova readiness and browser handoff | Loopback-validated `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `urllib`, and Edge/Chrome/default browser | `scripts/start_daemon.py` polls `HEALTH_ENDPOINT` with `urllib.request.urlopen`, then uses `subprocess.Popen` for Edge/Chrome app mode or `webbrowser.open(BASE_URL)` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application | `require_loopback_bind_host` validates the URL host, but readiness does not disable/classify proxies and browser delegation has no disclosure decision or durable handoff receipt | A proxy can turn the readiness probe into external egress; after browser handoff Nova cannot prove navigation behavior | Prove a direct loopback route before readiness and handoff. On denial, touch neither `urlopen`, Edge/Chrome process launch, nor `webbrowser.open` |
 | Shell-launcher readiness and dashboard handoff | Configurable `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `curl` or `urllib`, and the OS default browser | `start_nova.sh` calls `curl` or Python `urllib.request.urlopen` for `/phase-status`, then delegates the dashboard URL through `xdg-open` or `open` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application. A nonloopback host or proxy can make both operations external | No launcher-local loopback validation, common mediator, disclosure decision, or durable receipt before readiness or handoff | Readiness can attempt traffic before the backend proves its locality; browser handoff can independently cause navigation | Hard pre-runtime/delegated bypass. Prove a direct loopback target with proxies bypassed/disabled before readiness; otherwise touch neither HTTP client nor dashboard opener |
-| Installer/default-model acquisition | Ollama's model registry and any other networking owned by the installed `ollama` executable | `installer/windows/nova_bootstrap.ps1` runs `scripts/fetch_models.py`; that script invokes `subprocess.run(["ollama", "pull", model])` | Requested model name plus protocol/credentials/configuration owned by Ollama; downloaded model bytes return to Ollama's store | Installer step can be skipped with `-SkipModel`, but the executed child is not mediated by Nova and has no Nova disclosure decision/receipt | Nova can prevent process launch, but once allowed it cannot prove or govern the child's individual network attempts | Reviewed setup exception only: require explicit setup authorization and evidence before launch, constrain the model identifier, record the delegated outcome truthfully, and never claim child traffic is mediated or zero-attempt after handoff |
+| Installer and launcher Ollama CLI | Endpoint selected by `OLLAMA_HOST`, Ollama's model registry, and any other networking owned by the installed `ollama` executable | `nova_bootstrap.ps1` invokes `ollama --version`; `fetch_models.py` invokes `ollama --version`, `ollama list`, and `ollama pull <model>`; `start_daemon.py` can launch `ollama serve` | Version/list probes can disclose request metadata to a remote `OLLAMA_HOST`; pull discloses the model identifier and uses child-owned credentials/configuration; downloaded model bytes return to Ollama's store. `ollama serve` is a local process launch, not proof of local-only child behavior | `-SkipModel` skips `fetch_models.py` but not the bootstrap `ollama --version` probe. No invocation has a Nova disclosure decision/receipt, and Nova does not mediate the child transport | Any Ollama CLI invocation can occur before Nova's runtime boundary; denying only `pull` does not stop version/list probes | Reviewed setup/launcher exception only: classify `OLLAMA_HOST`, require authorization before **any** Ollama subprocess, constrain commands/model identifiers, record delegated outcome truthfully, and never claim child traffic is mediated or zero-attempt after handoff |
 | Installer Python dependency acquisition | PyPI/package indexes and any proxy or alternate index used by pip | `installer/windows/nova_bootstrap.ps1` runs the venv interpreter with `-m pip install --upgrade pip`, then `-m pip install -e <install-dir>`; an uncached editable install may resolve and download project dependencies | Package names, versions, platform/Python metadata, index/proxy credentials configured for pip, and downloaded packages | Required by the supported bootstrap path; no Nova runtime boundary, disclosure decision, or durable receipt. Pip owns resolution and transport | The bootstrap invokes pip before Nova starts; without an explicit offline/deny mode, external attempts can occur | Reviewed setup exception only: make online dependency acquisition explicit and separately skippable/offline-capable, authorize before subprocess launch, prefer a locked/verified artifact source, record delegated outcome only, and never claim Nova mediated pip traffic |
 | Installer prerequisite acquisition | Microsoft winget sources, Python/Ollama package sources, and child-owned redirects/CDNs | `installer/windows/nova_bootstrap.ps1` can run `winget install Python.Python.3.12` and `winget install Ollama.Ollama` when prerequisites are absent | Package identifiers, platform/device metadata exposed by winget, configured source credentials, and downloaded installers/packages | Supported noninteractive bootstrap accepts required agreements and invokes winget before Nova exists; no disclosure decision or Nova receipt | A fresh install can make external attempts automatically unless a preflight denial/offline mode stops before winget invocation | Reviewed setup exception only: detect missing prerequisites, disclose the required online acquisition, require explicit setup authorization or fail with offline/manual instructions, constrain package IDs/sources, and record only delegated process outcome |
 | Landing-page waitlist form | Formspree placeholder endpoint | Browser-side `fetch` in static landing script when a real form ID is configured | Email address entered on landing page | Placeholder configuration; outside backend mediator/ledger | Browser makes the request directly | Separate website/privacy surface. It must not be represented as governed Nova runtime egress |
@@ -145,7 +166,14 @@ the existing HTTP mediator.
 18. Windows bootstrap can invoke winget to install Python and Ollama before Nova
     starts. Those prerequisite downloads and their redirects are child-owned
     external traffic with no current disclosure decision or Nova evidence.
-19. `NETWORK_CALL_FAILED` currently stores raw exception text. For callers such
+19. Ollama CLI checks are not necessarily local: `ollama --version` and `ollama
+    list` can contact the service selected by `OLLAMA_HOST`. `-SkipModel` does not
+    skip the bootstrap's version probe, so blocking only `ollama pull` is
+    insufficient.
+20. Requests can derive proxy authentication from userinfo in an effective proxy
+    URL during adapter handling. Validating caller headers or ambient netrc alone
+    does not classify that subsequently transmitted credential.
+21. `NETWORK_CALL_FAILED` currently stores raw exception text. For callers such
     as WeatherService that place credentials in query parameters, Requests can
     include the credential-bearing prepared URL in that text. This reachable P1
     persistence defect is tracked separately as #461 and must be repaired before
@@ -178,6 +206,9 @@ detail. Local/private classification is valid only when the client is proven not
 to route through an unclassified proxy. That proof must account for both
 environment variables and platform proxy sources (including Windows Internet
 Settings), rather than treating an empty proxy environment as direct routing.
+If the effective proxy URL contains credentials, the boundary must derive and
+authorize proxy-credential presence before adapter send; it must never persist
+the userinfo or generated `Proxy-Authorization` value.
 
 The boundary must not trust free-form caller labels for disclosed data or
 credentials. Boundary-owned typed adapters for each supported request shape must
@@ -255,10 +286,11 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
 6. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
-   `ollama pull`, pip dependency acquisition, and winget prerequisite acquisition
-   as explicit setup exceptions with pre-launch decisions, bounded package/model
-   identifiers and sources or locked artifacts, offline/skip paths, and
-   delegated-outcome evidence.
+   every Ollama CLI invocation (`--version`, `list`, `pull`, and launcher
+   `serve`), pip dependency acquisition, and winget prerequisite acquisition as
+   explicit setup/launcher exceptions with pre-launch decisions, bounded
+   commands/package/model identifiers and sources or locked artifacts,
+   offline/skip paths, and delegated-outcome evidence.
 7. **Local model and startup paths.** Disable/bypass environment proxies for
    traffic classified as local/private (or authorize the proxy as a separate
    destination), and fail closed on a nonlocal, ambiguous, or proxied
@@ -311,7 +343,9 @@ Required test layers:
    without a matching `NO_PROXY` / `no_proxy`, then separately configure a
    Windows Internet Settings proxy with those variables absent. Prove neither
    case can earn a local/private classification or cause prompt, DNS, proxy, or
-   session activity after denial.
+   session activity after denial. Use an effective proxy URL with userinfo and
+   prove proxy-credential presence is classified and authorized before adapter
+   send while no credential value enters evidence.
 6. **Startup proof:** run Python-launcher decision logic with a nonlocal
    `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
    proxy. Prove `urllib.request.urlopen` and process launch are untouched on
@@ -339,10 +373,11 @@ Required test layers:
    `NETRC` for the destination and prove ambient credentials are either disabled
    or appear in the fully prepared request's verified credential categories;
    prove no post-decision credential injection is possible.
-9. **Installer setup exception tests:** deny, skip, or select offline setup and
-   prove no `ollama pull`, pip install, or `winget install` subprocess is launched.
-   Cover both missing-Python and missing-Ollama bootstrap branches. On explicit
-   allow, validate bounded package/model identifiers and sources or a locked
+9. **Installer/launcher setup exception tests:** deny, skip, or select offline
+   setup and prove no Ollama subprocess (`--version`, `list`, `pull`, or `serve`),
+   pip install, or `winget install` is launched. Cover `-SkipModel`, remote
+   `OLLAMA_HOST`, missing-Python, and missing-Ollama branches. On explicit allow,
+   validate bounded commands/package/model identifiers and sources or a locked
    artifact source, and record only delegated launch/outcome evidence; do not
    assert that Nova controlled child sockets, redirects, or payloads.
 10. **Evidence-hygiene regression:** use a fake Visual Crossing query credential,
@@ -360,10 +395,18 @@ Required test layers:
 
 ## Review gate
 
-Implementation should not start until review confirms that this inventory has no
-missing runtime egress class, that each documented exception has an explicit
-disposition, and that the common contract can enforce denial at the last
-in-process point before transport or delegation.
+Implementation should not start until a closure review confirms that every
+supported runtime/setup egress mechanism in the frozen closure scope has an
+inventory disposition, every credential- and proxy-derived route has a
+disposition, every delegated boundary is identified, and there are no unresolved
+P0/P1 omissions or misclassifications on those surfaces. The common contract must
+be able to enforce denial at the last in-process point before transport or
+delegation.
+
+Once that gate passes, wording improvements, P2/P3 polish, developer-only tools,
+archived code, future paths, and speculative mechanisms do not reopen #460. A
+new concrete runtime defect becomes a separate issue unless it invalidates the
+safety claim made by this inventory.
 
 The next lane is provider-neutral Data-Out implementation test-first. It is not
 authorized by this document alone.
