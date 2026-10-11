@@ -87,7 +87,7 @@ the existing HTTP mediator.
 | Cap 49 headline and story-page summary | Article/source hosts selected from the cached news surface | `NewsIntelligenceExecutor.execute_summary` -> `_collect_source_packets` or `_summarize_story_page` -> `_fetch_source_text` -> `NetworkMediator.request` with cap 49 | Selected source URLs and ordinary HTTP request metadata; returned article text is then passed to the local analysis lane | Cap 49 enabled; cached headline selection and bounded source-read limits; no provider-neutral destination/Data-Out check | Mediator events for each source-page read; result/summary evidence at the capability layer | Disabled cap stops execution; no source/destination Data-Out deny exists | Yes for cap disable; no provider/destination-policy guarantee | Mediated external source reads owned by cap 49, not cap 56 |
 | Cap 50 daily intelligence brief with `read_sources` | Article/source hosts selected from cached headlines | `NewsIntelligenceExecutor.execute_brief` -> `_collect_source_packets` -> `_fetch_source_text` -> `NetworkMediator.request` with cap 50 | Up to the bounded set of selected source URLs and ordinary HTTP request metadata; returned excerpts feed local brief synthesis | Cap 50 enabled and `read_sources` requested; bounded source-read limits; no provider-neutral destination/Data-Out check | Mediator events for each source-page read; brief result evidence at the capability layer | Disabled cap stops execution; actions that reuse cached clusters do not read sources, but a source-reading brief has no Data-Out deny | Yes for cap disable; no provider/destination-policy guarantee | Conditional mediated external source reads owned by cap 50, not cap 56 |
 | Cap 55 weather | Visual Crossing | `WeatherService` -> `NetworkMediator.request` | User/default location and forecast scope; weather API key as query parameter | Cap 55 enabled and key present; no provider-neutral Data-Out check | Success metadata omits params/key, but on HTTP failure `NetworkMediator` persists raw `str(exception)` in `NETWORK_CALL_FAILED`; Requests can include the fully prepared credential-bearing URL in that text. Tracked as current P1 defect #461 | Missing key or disabled cap prevents request; an attempted request can persist the query credential on failure | Cap disable yes; provider-off no | Mediated, but failure evidence is not secret-safe today; location is personal data requiring disclosure classification |
-| Cap 65 Shopify read-only connector | User's Shopify Admin GraphQL endpoint | `HttpShopifyConnector._gql` creates a mediator per call | GraphQL query/variables; shop domain; Admin access token header; returned store/order/inventory data | Cap 65 enabled; connector configuration; no common Data-Out decision | Mediator metadata; higher-level connector errors | Disabled cap stops mediator call | Yes for cap disable; no provider-policy guarantee | Mediated external read with credential and tenant-data disclosure |
+| Cap 65 Shopify read-only connector | Host configured by `NOVA_SHOPIFY_SHOP_DOMAIN`; intended to be the store's Shopify Admin GraphQL endpoint but currently accepts an arbitrary public host | `HttpShopifyConnector._gql` builds `https://<configured-domain>/admin/api/<version>/graphql.json` and creates a mediator per call | GraphQL query/variables; configured domain; Shopify Admin access-token header; returned store/order/inventory data. A malicious or mistaken non-Shopify host receives the token and query | Cap 65 enabled and connector configuration; the constructor strips a scheme but does not constrain the normalized host to an approved Shopify Admin domain; no common Data-Out decision | Mediator metadata; higher-level connector errors | Disabled cap stops mediator call, but an enabled cap can prepare and send the credential-bearing request to any configured host | Yes for cap disable; no provider/destination-policy guarantee | Credential-bearing mediated read with a caller-configurable destination. Normalize and require an approved Shopify Admin host before request preparation; reject userinfo, ports, paths, and non-Shopify hosts before constructing headers/body or invoking the mediator |
 | Google Workspace OAuth setup, refresh, identity, revoke | Google OAuth token, userinfo, and revoke endpoints | `GoogleAuthSession` -> `NetworkMediator.connection_request` | Authorization code, client credentials, refresh/access token, redirect URI; bearer token for identity | Static provider/operation/method/URL allowlist and rate/SSRF controls; deliberately no capability/Governor check | `CONNECTION_NETWORK_CALL` / failure metadata, without payload/header values | Non-allowlisted operation is rejected before transport. There is no global Data-Out deny | No | Explicit setup exception; needs a setup-specific disclosure decision at the same final boundary |
 | Settings connection health: OpenAI | OpenAI models endpoint | Direct `requests.get` in `connections_api.py` | Saved API key in bearer header | Local administrative API call after save/test; no mediator, capability, or provider Data-Out check | Health status in connection store; no durable network/disclosure receipt | No Data-Out deny path | **No** | Documented direct-network exception and hard bypass |
 | Settings connection health: Brave | Brave Search | Direct `requests.get` in `connections_api.py` | Literal query `test`; subscription token | Same as above | Same as above | No Data-Out deny path | **No** | Hard bypass |
@@ -191,6 +191,9 @@ the existing HTTP mediator.
 24. The runtime provider-status probe uses the default urllib opener. Its fixed
     loopback URL can still route through an environment- or OS-configured proxy,
     so status inspection is not a proven local-only exception today.
+25. `NOVA_SHOPIFY_SHOP_DOMAIN` is treated as a domain string, but the connector
+    does not constrain it to an approved Shopify Admin host before constructing a
+    request containing the Admin access token and GraphQL data.
 
 ## Required common enforcement contract
 
@@ -303,7 +306,10 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    an explicitly governed setup/health transport using the same disclosure
    decision and evidence contract.
 5. **Search/weather/news/commerce/connectors.** Add precise data categories and
-   provider/destination identities for caps 16/48/55/56/65 and Google OAuth.
+   provider/destination identities for caps 16/48/55/56/65 and Google OAuth. For
+   cap 65, normalize and constrain the configured destination to an approved
+   Shopify Admin host before request/header/body preparation; reject userinfo,
+   ports, paths, and non-Shopify hosts locally.
 6. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
@@ -356,7 +362,9 @@ Required test layers:
    49, 50, 54, 62, 63, plus caps 16, 55, 56, and 65, proving the final transport
    spy sees zero calls. Cap 48 must prove both its search and nested reasoning
    legs. Cap 49 must cover both selected-headline packets and the direct
-   story-page action. Cap 50 must cover the `read_sources` brief path.
+   story-page action. Cap 50 must cover the `read_sources` brief path. Cap 65 must
+   set `NOVA_SHOPIFY_SHOP_DOMAIN` to a non-Shopify host and prove rejection occurs
+   before token/header/body preparation, mediator construction, DNS, or transport.
 3. **Setup regressions:** save/test provider credentials and Google OAuth
    operations under denial; prove no direct or mediated request occurs and no
    credential appears in evidence.
