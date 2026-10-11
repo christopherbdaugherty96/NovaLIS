@@ -31,8 +31,8 @@ surfaces only:
 - every supported installer/launcher child capable of networking: all Ollama CLI
   invocations, pip, winget, browser/application handoffs, and startup probes;
 - supported browser-side external requests and delegated OpenClaw/provider paths;
-- credentials or sensitive values carried in query, header, body, proxy, or
-  persisted error fields.
+- credentials or sensitive values carried in origin URLs, query, header, body,
+  proxy, or persisted error fields.
 
 Developer-only certification/audit scripts, tests, archived/quarantined code,
 inactive future paths, and hypothetical mechanisms are outside this closure
@@ -75,7 +75,7 @@ the existing HTTP mediator.
 | Cap 54 `analysis_document` create/explain | DeepSeek, same endpoint | `AnalysisDocumentExecutor` -> `DeepSeekBridge` -> provider -> mediator cap 62 | Topic or selected document section and instructions; API key | Cap 54 controls plus cap 62 enabled and budget; no provider-neutral disclosure check | Cap-62 mediator and usage evidence; cap 54 metadata describes the surface as local/no-network | No provider Data-Out denial exists | **No** | Nested cap-62 egress; registry/runtime classification understates network use |
 | Cap 62 governed second opinion | DeepSeek, same endpoint | Normal user-facing route: `ExternalReasoningExecutor` -> `ResponseVerificationExecutor` -> `DeepSeekBridge` -> provider -> mediator cap 62 | Explicit answer/exchange and review prompt; API key | `ExternalReasoningExecutor` first checks `external_reasoning_enabled`; lower layers then check cap 62, key, and usage budget | Local paused result when the setting denies; otherwise mediator and provider-usage events | On the normal governed cap-62 route, a disabled `external_reasoning_enabled` setting returns locally before the bridge and makes zero network attempts | **Yes on the normal cap-62 executor route; not an invariant of the lower-level provider/transport** | Existing caller-side setting gate is real and must be preserved, but other callers of `DeepSeekBridge` and direct lower-level calls do not inherit it; the final egress boundary still lacks provider-neutral Data-Out policy/evidence |
 | OpenClaw metered summarization fallback (within cap 63 runs) | OpenAI Responses API, `api.openai.com/v1/responses` | `OpenAIResponsesLane` -> `NetworkMediator.request` using cap 62 | Full task-report prompt, system prompt, task content; OpenAI key | Caller normally invokes `plan_for_openclaw_fallback`: routing mode `budgeted_fallback`, `metered_openai_enabled`, key, budget. `summarize_task_report` itself only requires the key | Mediator metadata plus provider-usage result | The normal caller returns deterministic/local output when the plan denies. A direct method caller could skip the plan | **Yes on the normal OpenClaw caller; not guaranteed at the transport method** | Policy is caller-side rather than an invariant at final egress |
-| Local chat / local reasoning / OpenClaw local summary | Configured Ollama-compatible endpoint **and any effective proxy** | `LLMManager` -> `ModelNetworkMediator` -> default `requests.Session.request` | Prompts/context and generated output; no hosted-provider key by default. Environment variables or OS proxy configuration can route prompt-bearing traffic through a proxy even when the URL host is local/private | Endpoint must resolve to loopback/private/link-local; concurrency and timeout controls. The session retains Requests' default `trust_env=True`, so Requests/`urllib.request.getproxies()` can use `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, or Windows Internet Settings registry proxies; endpoint validation does not prove a direct local route | `MODEL_NETWORK_CALL` / `MODEL_NETWORK_CALL_FAILED` metadata records the model URL, not the effective proxy intermediary | Invalid/public model endpoints fail before the request; a valid private endpoint can still be routed through an unclassified environment- or OS-configured proxy | **No when any discovered proxy applies** | Not safely classifiable as local/private until all proxy discovery is disabled/bypassed or every effective proxy is independently classified and authorized |
+| Local chat / local reasoning / OpenClaw local summary | Configured Ollama-compatible endpoint, every redirect target, **and any effective proxy** | `LLMManager` -> `ModelNetworkMediator` -> default `requests.Session.request` / `.post` | Prompts/context and generated output; no hosted-provider key by default. Userinfo in `OLLAMA_URL` can become an origin `Authorization` header. Environment or OS proxy configuration can route prompt-bearing traffic through a proxy even when the initial host is local/private | Only the initial endpoint must resolve to loopback/private/link-local. The Requests session retains `trust_env=True` and automatic redirects, so a local endpoint can redirect a prompt-bearing 307/308 request to a public host; proxy discovery and origin-URL credentials are also not independently authorized | `MODEL_NETWORK_CALL` / `MODEL_NETWORK_CALL_FAILED` stores the complete model URL, so origin userinfo can be persisted; evidence does not record redirect targets or effective proxy intermediaries | An initially invalid/public endpoint fails before the request; an allowed private endpoint may still redirect externally or use an unclassified proxy/credential | **No for automatic redirects, discovered proxies, or origin-URL credentials** | Not safely local/private until origin credentials and effective routing are classified, automatic redirects are disabled or every hop is authorized before send, and every persisted URL is sanitized |
 
 ### Search, news, weather, commerce, and provider setup
 
@@ -173,7 +173,15 @@ the existing HTTP mediator.
 20. Requests can derive proxy authentication from userinfo in an effective proxy
     URL during adapter handling. Validating caller headers or ambient netrc alone
     does not classify that subsequently transmitted credential.
-21. `NETWORK_CALL_FAILED` currently stores raw exception text. For callers such
+21. `ModelNetworkMediator` validates only the initial endpoint and permits
+    Requests to follow redirects automatically. A local/private endpoint can
+    redirect a prompt-bearing POST to a public destination without a new policy
+    decision.
+22. Userinfo embedded in `OLLAMA_URL` can become an origin `Authorization` header,
+    while model success/failure evidence currently persists the complete URL.
+    The credential is therefore both unclassified for transmission and unsafe in
+    durable evidence.
+23. `NETWORK_CALL_FAILED` currently stores raw exception text. For callers such
     as WeatherService that place credentials in query parameters, Requests can
     include the credential-bearing prepared URL in that text. This reachable P1
     persistence defect is tracked separately as #461 and must be repaired before
@@ -210,6 +218,11 @@ If the effective proxy URL contains credentials, the boundary must derive and
 authorize proxy-credential presence before adapter send; it must never persist
 the userinfo or generated `Proxy-Authorization` value.
 
+Origin URLs must not be treated as harmless destination strings. The boundary
+must reject unsupported userinfo or derive and authorize origin-credential
+presence before preparation/send. Durable evidence must store a normalized,
+sanitized destination with userinfo and credential-bearing query values removed.
+
 The boundary must not trust free-form caller labels for disclosed data or
 credentials. Boundary-owned typed adapters for each supported request shape must
 map the actual body fields, query parameters, and header names to disclosure and
@@ -230,8 +243,10 @@ The policy returns `ALLOW`, `DENY`, or `UNKNOWN`. Only `ALLOW` can continue.
 `DENY` and `UNKNOWN` must return an explicit local result before DNS resolution,
 socket/session/client creation, `requests`/`urllib`, `webbrowser.open`, or process
 launch. Caller-side checks may improve UX but are not the security boundary. An
-HTTP redirect is a new destination: the boundary must derive and authorize every
-redirect target after reading `Location` and **before** issuing the next request.
+HTTP redirect is a new destination in **every governed HTTP client**, including
+`NetworkMediator` and `ModelNetworkMediator`: the boundary must derive and
+authorize every redirect target after reading `Location` and **before** issuing
+the next request.
 Authorization of the original URL never carries across a redirect hop.
 Original headers, parameters, credentials, and bodies also do not automatically
 carry across hops. On a cross-origin redirect, origin-bound fields must be stripped
@@ -266,8 +281,9 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    decision types, provider/destination classification, data-category vocabulary,
    durable allow/deny evidence, and fail-closed behavior when policy/evidence is
    unavailable.
-2. **Final HTTP boundary.** Enforce the contract inside `NetworkMediator.request`
-   and `connection_request` immediately before URL validation/DNS/client use.
+2. **Final HTTP boundary.** Enforce the contract inside `NetworkMediator.request`,
+   `connection_request`, and `ModelNetworkMediator` immediately before URL
+   validation/DNS/client use.
    Derive destination identity from the transport URL, verify caller metadata,
    bind categories to actual outgoing fields through boundary-owned typed
    adapters, classify or disable effective proxies, and re-run the complete
@@ -294,9 +310,11 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
 7. **Local model and startup paths.** Disable/bypass environment proxies for
    traffic classified as local/private (or authorize the proxy as a separate
    destination), and fail closed on a nonlocal, ambiguous, or proxied
-   `OLLAMA_URL` before the Python launcher's first probe. Apply the same direct
-   loopback proof to `start_nova.sh` before either readiness HTTP or dashboard
-   handoff.
+   `OLLAMA_URL` before the Python launcher's first probe. Reject or authorize
+   origin userinfo, sanitize model URLs in evidence, and disable automatic model
+   redirects or reauthorize every hop before the redirected send. Apply the same
+   direct loopback proof to `start_nova.sh` before either readiness HTTP or
+   dashboard handoff.
 8. **Static enforcement and generated truth.** Expand network-mechanism scanning
    beyond `requests`, require every external transport/handoff to name the common
    boundary, and regenerate capability/bypass truth.
@@ -346,6 +364,9 @@ Required test layers:
    session activity after denial. Use an effective proxy URL with userinfo and
    prove proxy-credential presence is classified and authorized before adapter
    send while no credential value enters evidence.
+   Configure `OLLAMA_URL` with fake userinfo and prove the origin credential is
+   denied or explicitly classified before send, and absent from all persisted
+   model success/failure evidence.
 6. **Startup proof:** run Python-launcher decision logic with a nonlocal
    `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
    proxy. Prove `urllib.request.urlopen` and process launch are untouched on
@@ -356,7 +377,8 @@ Required test layers:
    matching `NO_PROXY`; prove `curl`, Python `urlopen`, `xdg-open`, and `open` are
    all untouched. Valid direct-loopback probes and handoffs remain separately
    tested local exceptions.
-7. **Redirect and identity tests:** allow the initial URL, return a redirect to a
+7. **Redirect and identity tests:** run against both the external HTTP mediator
+   and the local-model mediator. Allow the initial URL, return a redirect to a
    denied provider/destination, and prove the second request is never issued and
    the denial is recorded. Supply caller metadata that disagrees with the actual
    URL and prove rejection before DNS/client use. On a cross-origin redirect,
@@ -364,7 +386,9 @@ Required test layers:
    reused. Where a same-origin or explicitly reconstructed redirect retains any
    field, prove a new decision binds the exact next-hop method/URL/fields. Cover
    cross-host and same-provider redirects because policy may distinguish
-   destination classes.
+   destination classes. For the model path specifically, return a 307/308 from an
+   allowed private endpoint to a public host and prove the prompt-bearing POST is
+   never sent to the redirect target.
 8. **Disclosure binding tests:** omit or mislabel a document body, prompt/context
    field, location/query parameter, OAuth form field, bearer/API-key header, and
    an adapter-unknown extra field. Prove each fails before DNS/client use. Then
