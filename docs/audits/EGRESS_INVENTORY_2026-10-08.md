@@ -88,7 +88,7 @@ the existing HTTP mediator.
 | Cap 50 daily intelligence brief with `read_sources` | Article/source hosts selected from cached headlines | `NewsIntelligenceExecutor.execute_brief` -> `_collect_source_packets` -> `_fetch_source_text` -> `NetworkMediator.request` with cap 50 | Up to the bounded set of selected source URLs and ordinary HTTP request metadata; returned excerpts feed local brief synthesis | Cap 50 enabled and `read_sources` requested; bounded source-read limits; no provider-neutral destination/Data-Out check | Mediator events for each source-page read; brief result evidence at the capability layer | Disabled cap stops execution; actions that reuse cached clusters do not read sources, but a source-reading brief has no Data-Out deny | Yes for cap disable; no provider/destination-policy guarantee | Conditional mediated external source reads owned by cap 50, not cap 56 |
 | Cap 55 weather | Visual Crossing | `WeatherService` -> `NetworkMediator.request` | User/default location and forecast scope; weather API key as query parameter | Cap 55 enabled and key present; no provider-neutral Data-Out check | Success metadata omits params/key, but on HTTP failure `NetworkMediator` persists raw `str(exception)` in `NETWORK_CALL_FAILED`; Requests can include the fully prepared credential-bearing URL in that text. Tracked as current P1 defect #461 | Missing key or disabled cap prevents request; an attempted request can persist the query credential on failure | Cap disable yes; provider-off no | Mediated, but failure evidence is not secret-safe today; location is personal data requiring disclosure classification |
 | Cap 65 Shopify read-only connector | Host configured by `NOVA_SHOPIFY_SHOP_DOMAIN`; intended to be the store's Shopify Admin GraphQL endpoint but currently accepts an arbitrary public host | `HttpShopifyConnector._gql` builds `https://<configured-domain>/admin/api/<version>/graphql.json` and creates a mediator per call | GraphQL query/variables; configured domain; Shopify Admin access-token header; returned store/order/inventory data. A malicious or mistaken non-Shopify host receives the token and query | Cap 65 enabled and connector configuration; the constructor strips a scheme but does not constrain the normalized host to an approved Shopify Admin domain; no common Data-Out decision | Mediator metadata; higher-level connector errors | Disabled cap stops mediator call, but an enabled cap can prepare and send the credential-bearing request to any configured host | Yes for cap disable; no provider/destination-policy guarantee | Credential-bearing mediated read with a caller-configurable destination. Normalize and require an approved Shopify Admin host before request preparation; reject userinfo, ports, paths, and non-Shopify hosts before constructing headers/body or invoking the mediator |
-| Runtime-state persistence | Path selected by `NOVA_RUNTIME_DIR`; intended to be local storage but may be a UNC path, mapped/network drive, or remote filesystem mount | `runtime_root` / `runtime_path` and downstream ledger, connections, memory, durability, and state stores perform ordinary filesystem operations | Provider keys, ledger events, memory, receipts, snapshots, connection state, and other sensitive runtime data | Override is accepted as a `Path`, expanded, and created without proving the backing storage is local; no disclosure decision or remote-storage receipt | Ordinary storage receipts describe application state, not whether the filesystem transported it off-device | A filesystem write can authenticate to and transmit data through SMB/NFS or another remote filesystem even when every HTTP/process boundary denies | **No** | Network-backed storage is external egress. Prove the effective filesystem backing is local before any create/read/write, or classify and authorize the remote-storage destination; `UNKNOWN`/`DENY` must fail before touching the path |
+| Runtime-state persistence | Effective root selected by `NOVA_RUNTIME_DIR`, the source-tree `src` root, the `LOCALAPPDATA/Nova` writable fallback, or the home-directory `AppData/Local/Nova` fallback; every candidate may be UNC, redirected, mapped/network-drive, reparse-backed, or remotely mounted | `runtime_root` / `runtime_path`, `canonical_user_data_root`, and downstream ledger, connections, memory, durability, and state stores resolve/create and perform ordinary filesystem operations | Provider keys, ledger events, memory, receipts, snapshots, connection state, screenshots, and other sensitive runtime data | The override and every default/fallback candidate are accepted without proving effective backing local; `runtime_root` creates the selected root, while canonical durability paths call `resolve`; no disclosure decision or remote-storage receipt exists | Ordinary storage receipts describe application state, not whether the filesystem transported it off-device | An unset override is not proof of locality: resolution, directory creation, or a later write can authenticate to and transmit through remote backing even when every HTTP/process boundary denies | **No** | Classify **every** effective override/default/fallback root before `resolve`, writability/existence probes, `mkdir`, or storage access; authorize remote storage or fail closed. `UNKNOWN`/`DENY` must touch none of the candidates |
 | Goal state | Installation-relative `nova_backend/data/goals.json`; the installation root may itself be a UNC path, mapped/network drive, or remote mount | Import constructs `_GOALS_FILE` from `Path(__file__).resolve`; module singleton `GoalStore()` immediately calls `read_json_state`; `_save` calls `mkdir`, `open`, and `replace` | Goal titles, steps, statuses, permission envelopes, ledger references, timestamps, path metadata, and ambient share authentication | This store bypasses `runtime_root`; neither the installation root nor the goal path is classified before import-time resolution/read or later writes. The durability ownership record already marks it as migration-required | Goal records are application state, not remote-storage disclosure evidence | Merely importing the singleton can resolve/read a network-backed path; create/update can persist goal content remotely even when HTTP egress is denied | **No** | Supported setup must establish a locally backed installation root before Nova imports runtime code. Until this store migrates to governed runtime storage, classify/authorize its backing before the first path resolution, read, directory creation, temporary write, or replace; `DENY`/`UNKNOWN` touches none |
 | Caps 52/53 story tracker state | Installation-relative `nova_workspace/story_tracker/`; the installation root may itself be network-backed | `StoryTrackerExecutor` derives `PROJECT_ROOT` with `Path(__file__).resolve`; `_read_json` uses `read_json_state`; `_write_json` calls `mkdir` and `write_text` for topics, graph, and per-story snapshots | Tracked topics, relationship links, story snapshots/events, timestamps, source-derived content, path metadata, and ambient share authentication | This store bypasses `runtime_root`; its backing is not classified before path construction/read/write. The durability ownership record already marks it as migration-required | Capability outcomes describe tracker operations, not whether state crossed a remote filesystem | View/update operations can probe/read/write a network-backed installation tree before any disclosure decision | **No** | Establish a locally backed installation root before runtime startup and classify/authorize the story-store backing before its first path operation; `DENY`/`UNKNOWN` must precede `resolve`, `read_json_state`, `mkdir`, `write_text`, or any story read/write. Migration is later implementation work, not part of this inventory |
 | Cap 57 local calendar snapshot and calendar connection check | Path selected by `NOVA_CALENDAR_ICS_PATH`; intended to be a local `.ics` file but may be UNC/network-mounted storage | `connections_api._check_calendar` calls `Path.exists`; `CalendarSkill._calendar_path` calls `exists`/`is_file`, then `_read_events_for_range` calls `read_text` | Filesystem path; OS/network-share authentication metadata; calendar contents returned over the mounted transport | Cap 57 governance applies to the skill invocation, but the configured path is accepted without proving local backing; the settings health check is outside the capability path | Capability result/widget and settings status; no remote-filesystem disclosure decision or transport evidence | Existence/type checks alone can initiate remote access and credential authentication before calendar content is read | **No** for a remote path | Treat network-backed calendar access as external disclosure. Verify local backing or authorize the remote-storage destination before `exists`, `is_file`, or `read_text`; deny/unknown must touch none of them |
@@ -109,7 +109,7 @@ the existing HTTP mediator.
 | Caller / surface | Destination / owner | Transport creation point | Data disclosed | Current check and evidence | DENY / zero-attempt status | Disposition for Data-Out design |
 |---|---|---|---|---|---|---|
 | Proxy intermediary and proxy authentication (cross-cutting) | Host selected by `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (and lowercase forms), or by OS proxy configuration such as Windows Internet Settings, unless bypassed | Default Requests sessions/calls and `urllib` openers use `urllib.request.getproxies()`, which can consult both process environment and platform configuration; launcher tools such as `curl` can also consult proxy settings. Requests can derive `Proxy-Authorization` from userinfo in the effective proxy URL during adapter handling | Whatever payload and credentials the proxied caller sends; proxy URL userinfo can become a transmitted proxy credential after ordinary caller/prepared-request inspection. For HTTPS the proxy observes the connection destination; plain HTTP proxying can expose request content | No common effective-route classification, complete proxy-source disablement, proxy-credential classification, or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary, prove a direct connection, or authorize credentials injected for the proxy | The final boundary must disable/bypass **all** platform and environment proxy discovery where direct routing is required, or derive, classify, authorize, and evidence every effective proxy plus proxy-credential **presence** before send; values must never enter evidence |
-| Ambient Requests authentication (cross-cutting) | Host credentials selected from `~/.netrc` or the file named by `NETRC` | Requests can apply netrc authentication while preparing a request when `Session.trust_env=True` and explicit auth is absent | Username/password become an `Authorization` header even though that header was not present in the caller's inputs | No boundary check of the fully prepared request and no netrc-specific evidence | Caller-input validation can pass before Requests injects a credential | Disable ambient netrc authentication at governed boundaries, or validate and authorize the fully prepared request—including the injected header—before any DNS/socket/send operation |
+| Ambient Requests authentication and netrc storage (cross-cutting) | Host credentials selected from `~/.netrc` or the file named by `NETRC`; the authentication file itself may be UNC/network-mounted or reached through a redirected home | With `Session.trust_env=True` and no explicit auth, `Session.prepare_request()` calls Requests netrc discovery, which can probe/open the authentication file before the fully prepared HTTP request exists | Filesystem path and ambient share authentication during discovery; netrc username/password later become an `Authorization` header even though absent from caller inputs | No backing classification before netrc discovery/read, no final-boundary check of the fully prepared request, and no netrc-specific evidence | Caller-input validation can pass, then preparation can already cause remote-filesystem egress before injecting a credential | Governed boundaries should disable ambient netrc **before preparation**. If intentionally supported, safely classify/authorize the netrc backing before any existence/read operation, then prepare without I/O beyond that approved file and authorize the injected credential before DNS/socket/send; `DENY`/`UNKNOWN` touches no netrc path |
 | Cap 63 OpenClaw network tools | Weather, RSS/news, web search, source pages | Allowlisted tool implementations use `MeteredNetworkProxy`, then `NetworkMediator` | Tool query, location, source URL, provider keys as applicable | Manual envelope preflight and per-run network-call budget; mediator receipts | Envelope/capability limits can deny before mediator; no provider-neutral Data-Out decision | Keep tool allowlist, but require every tool request to carry a disclosure decision into the final mediator. Budget is not custody |
 | Cap 63 OpenClaw model fallback | OpenAI, described above | `OpenAIResponsesLane` | Task report and key | Caller-side routing/permission/budget plan | Normal caller has pre-call denial; final method does not enforce it | Move/duplicate the decisive policy at final egress so alternate callers cannot bypass it |
 | Webpage launch capability | Default browser and arbitrary planned HTTPS site | `webbrowser.open(url)` | Destination URL; browser subsequently sends its own headers/cookies and may load the site | URL planner plus capability/Governor path; `WEBPAGE_LAUNCH` receipt records handoff result | A denied capability can stop handoff. After handoff Nova cannot prove zero connections or payload behavior | Treat handing a URL to the OS as egress initiation. Gate before `webbrowser.open`; receipt must say “delegated/opened,” never “site reached” |
@@ -123,6 +123,7 @@ the existing HTTP mediator.
 | Installer and launcher Ollama CLI | Endpoint selected by `OLLAMA_HOST`, Ollama's model registry, and any other networking owned by the installed `ollama` executable | `nova_bootstrap.ps1` invokes `ollama --version`; `fetch_models.py` invokes `ollama --version`, `ollama list`, and `ollama pull <model>`; `start_daemon.py` can launch `ollama serve` | Version/list probes can disclose request metadata to a remote `OLLAMA_HOST`; pull discloses the model identifier and uses child-owned credentials/configuration; downloaded model bytes return to Ollama's store. `ollama serve` is a local process launch, not proof of local-only child behavior | `-SkipModel` skips `fetch_models.py` but not the bootstrap `ollama --version` probe. No invocation has a Nova disclosure decision/receipt, and Nova does not mediate the child transport | Any Ollama CLI invocation can occur before Nova's runtime boundary; denying only `pull` does not stop version/list probes | Reviewed setup/launcher exception only: classify `OLLAMA_HOST`, require authorization before **any** Ollama subprocess, constrain commands/model identifiers, record delegated outcome truthfully, and never claim child traffic is mediated or zero-attempt after handoff |
 | Installer Python dependency acquisition | PyPI/package indexes and any proxy or alternate index used by pip | `installer/windows/nova_bootstrap.ps1` runs the venv interpreter with `-m pip install --upgrade pip`, then `-m pip install -e <install-dir>`; an uncached editable install may resolve and download project dependencies | Package names, versions, platform/Python metadata, index/proxy credentials configured for pip, and downloaded packages | Required by the supported bootstrap path; no Nova runtime boundary, disclosure decision, or durable receipt. Pip owns resolution and transport | The bootstrap invokes pip before Nova starts; without an explicit offline/deny mode, external attempts can occur | Reviewed setup exception only: make online dependency acquisition explicit and separately skippable/offline-capable, authorize before subprocess launch, prefer a locked/verified artifact source, record delegated outcome only, and never claim Nova mediated pip traffic |
 | Installer prerequisite acquisition | Microsoft winget sources, Python/Ollama package sources, and child-owned redirects/CDNs | `installer/windows/nova_bootstrap.ps1` can run `winget install Python.Python.3.12` and `winget install Ollama.Ollama` when prerequisites are absent | Package identifiers, platform/device metadata exposed by winget, configured source credentials, and downloaded installers/packages | Supported noninteractive bootstrap accepts required agreements and invokes winget before Nova exists; no disclosure decision or Nova receipt | A fresh install can make external attempts automatically unless a preflight denial/offline mode stops before winget invocation | Reviewed setup exception only: detect missing prerequisites, disclose the required online acquisition, require explicit setup authorization or fail with offline/manual instructions, constrain package IDs/sources, and record only delegated process outcome |
+| Windows shortcut creation | Effective Start Menu and optional desktop shell folders, which may be redirected to UNC/network-backed storage independently of the installation root | Standalone `nova_bootstrap.ps1` derives the Start Menu folder from `APPDATA`, calls `Test-Path`/`New-Item`, and saves a WScript `.lnk`; Inno Setup independently writes `{group}` and optional `{autodesktop}` icons | Shortcut target/arguments and description, installation paths, filesystem metadata, and ambient network-share authentication | `-SkipShortcut` covers only the standalone bootstrap branch used by Inno; neither path classifies the effective shell-folder backing before probing/creating/writing | A local `-InstallDir` can still produce SMB/network access and remote shortcut persistence during setup | Classify every effective Start Menu/desktop shell-folder destination before `Test-Path`, directory creation, COM `CreateShortcut`/`Save`, or Inno `[Icons]` processing; `DENY`/`UNKNOWN` skips shortcut creation without touching the destination and reports local/manual instructions |
 | Landing-page waitlist form | Formspree placeholder endpoint | Browser-side `fetch` in static landing script when a real form ID is configured | Email address entered on landing page | Placeholder configuration; outside backend mediator/ledger | Browser makes the request directly | Separate website/privacy surface. It must not be represented as governed Nova runtime egress |
 | Archived quarantine code | Historical OpenAI/STT and phase-3.5 handlers | Non-imported archived source | Historical only | Excluded from current runtime | Not applicable unless restored | Keep excluded, and add a regression that restored runtime imports trigger inventory review |
 
@@ -221,6 +222,20 @@ the existing HTTP mediator.
     there before validating the install root. These stores are already recorded
     as migration obligations, but no current gate proves their installation
     backing local before path resolution, read, or write.
+28. Runtime storage is not selected only by `NOVA_RUNTIME_DIR`. With no override,
+    writable-source discovery can fall back to `LOCALAPPDATA/Nova`, and canonical
+    durability state independently uses `LOCALAPPDATA` or the home-directory
+    fallback. Redirected or network-backed defaults can therefore be resolved,
+    created, and populated without any configured override.
+29. Ambient netrc is itself a filesystem egress surface. A remote `NETRC` or
+    redirected-home `.netrc` can be probed/read by Requests during
+    `prepare_request()` before the boundary has a fully prepared request to
+    inspect, so merely authorizing injected credentials afterward is too late.
+30. Windows shortcut destinations are independent of `-InstallDir`. The
+    standalone bootstrap uses `APPDATA` for its Start Menu folder, while Inno
+    Setup writes `{group}` and optional `{autodesktop}` entries; redirected shell
+    folders can cause remote probes, directory creation, and shortcut writes even
+    when the installation root is proven local.
 
 ## Required common enforcement contract
 
@@ -270,9 +285,11 @@ categories/presence and safe structural metadata, never payload or credential
 values.
 
 Validation must cover the request that will actually be sent, not only the
-caller's arguments. Governed HTTP clients should disable ambient netrc auth. If
-ambient auth is intentionally supported, the boundary must prepare the request
-without performing I/O, inspect the resulting method/URL/body/query/header names,
+caller's arguments. Governed HTTP clients should disable ambient netrc auth
+before request preparation. If ambient auth is intentionally supported, the
+boundary must first classify and authorize the netrc file's effective backing
+without probing the untrusted path, then prepare the request without any other
+I/O, inspect the resulting method/URL/body/query/header names,
 derive the injected credential category, and run policy on that exact prepared
 request before DNS, socket creation, or send. Any mutation after authorization
 invalidates the decision.
@@ -350,7 +367,9 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    validation/DNS/client use.
    Derive destination identity from the transport URL, verify caller metadata,
    bind categories to actual outgoing fields through boundary-owned typed
-   adapters, classify or disable effective proxies, and re-run the complete
+   adapters, disable ambient netrc before preparation (or pre-authorize its
+   verified local/remote backing and injected credential), classify or disable
+   effective proxies, and re-run the complete
    decision for every redirect target and exact field set before the next request.
    Strip origin-bound fields by default on cross-origin redirects. Prohibit silent
    defaults for external destinations.
@@ -377,12 +396,17 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    requiring an explicit disclosure decision; fail closed on `DENY` or
    unverifiable backing before the first filesystem or child-process operation.
    Establish a trusted local evidence sink before any configured runtime root.
+   Classify every effective runtime-root candidate, including `LOCALAPPDATA` and
+   home-directory defaults, before resolution, creation, or storage access.
    Require a verified local installation backing before bootstrap logging,
    runtime import, `GoalStore` singleton construction, or caps 52/53 story-store
    access; later migrate both repository-relative stores under governed runtime
    state rather than treating their current location as implicitly local.
-7. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
-   before delegation; use truthful handoff-only receipts. Define which child-owned
+7. **Delegated egress and setup shell folders.** Gate browser, mail-client, app,
+   subprocess, and shortcut handoffs before delegation; classify effective
+   redirected Start Menu/desktop destinations before either bootstrap or Inno
+   Setup probes/creates/writes them, and skip locally on `DENY`/`UNKNOWN`.
+   Use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
    every Ollama CLI invocation (`--version`, `list`, `pull`, and launcher
    `serve`), pip dependency acquisition, and winget prerequisite acquisition as
@@ -439,12 +463,15 @@ Required test layers:
 3. **Setup regressions:** save/test provider credentials and Google OAuth
    operations under denial; prove no direct or mediated request occurs and no
    credential appears in evidence.
-4. **Remote-filesystem regressions:** configure `NOVA_RUNTIME_DIR`,
+4. **Remote-filesystem regressions:** configure `NOVA_RUNTIME_DIR`, then repeat
+   with it unset while `LOCALAPPDATA` and the home-directory fallback separately
+   resolve to remote/redirected backing. Also configure
    `NOVA_CALENDAR_ICS_PATH`, the effective tempfile root (`TEMP`/platform
    equivalent), `NOVA_PIPER_MODEL_PATH`, cap 22 explicit and preset folders, cap
    60's selected `file_path`, and local-project explicit/working-context/
    remembered targets as Windows UNC/network-drive/redirected/reparse-backed
-   paths and POSIX remote mounts/symlinks. Exercise runtime-state persistence,
+   paths and POSIX remote mounts/symlinks. Exercise runtime-root selection and
+   canonical durability-root selection plus runtime-state persistence,
    calendar connection/read, `/stt/transcribe`, `/api/live-screen/analyze`, Piper
    readiness, cap 18, ordinary `nova_speak`, caps 22/60, and every local-project
    summary/map/architecture inspection path. Prove the classifier itself performs
@@ -452,7 +479,8 @@ Required test layers:
    `TemporaryDirectory`, `NamedTemporaryFile`, `mkdir`, `exists`, `is_file`,
    `iterdir`, `open`, `read_text`, ledger/key/state writes, Piper/ffmpeg/OCR/vision
    invocation, playback, or OS handoff. `DENY`/`UNKNOWN` touches none. Separately
-   prove denial evidence uses the trusted local bootstrap sink rather than the
+   prove no default/fallback candidate is resolved, probed, created, or written
+   before its backing decision. Prove denial evidence uses the trusted local bootstrap sink rather than the
    unverified configured runtime root, and revalidate backing at authorized use.
    Separately run the supported Windows bootstrap with `-InstallDir` on UNC,
    mapped/network-drive, and reparse-backed storage and prove `DENY`/`UNKNOWN`
@@ -511,8 +539,10 @@ Required test layers:
    an adapter-unknown extra field. Prove each fails before DNS/client use. Then
    prove each supported typed adapter derives the expected categories from the
    actual outgoing structure without persisting values. Configure `~/.netrc` or
-   `NETRC` for the destination and prove ambient credentials are either disabled
-   or appear in the fully prepared request's verified credential categories;
+   `NETRC` for the destination, including UNC/network-mounted and redirected-home
+   files, and prove ambient auth is disabled before preparation or its backing is
+   classified/authorized before any existence/read operation. Then prove any
+   injected credential appears in the fully prepared request's verified categories;
    prove no post-decision credential injection is possible.
 10. **Installer/launcher setup exception tests:** deny, skip, or select offline
    setup and prove no Ollama subprocess (`--version`, `list`, `pull`, or `serve`),
@@ -520,7 +550,11 @@ Required test layers:
    `OLLAMA_HOST`, missing-Python, and missing-Ollama branches. On explicit allow,
    validate bounded commands/package/model identifiers and sources or a locked
    artifact source, and record only delegated launch/outcome evidence; do not
-   assert that Nova controlled child sockets, redirects, or payloads.
+   assert that Nova controlled child sockets, redirects, or payloads. Independently
+   redirect `APPDATA`, the Start Menu group, and the optional desktop shell folder
+   to UNC/network-backed locations while keeping `-InstallDir` local; prove denial
+   precedes `Test-Path`, `New-Item`, WScript `CreateShortcut`/`Save`, and Inno icon
+   creation, and that the installer continues without touching those destinations.
 11. **Evidence-hygiene regression:** use a fake Visual Crossing query credential,
    force an HTTP failure through the real `LedgerWriter`, and prove the credential,
    prepared query values, and raw exception text never reach `ledger.jsonl` or any
@@ -530,7 +564,8 @@ Required test layers:
 12. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
     browser handoffs, process launch, tempfile creation, and configured,
     user-selected, remembered, preset, or discovered filesystem roots/files that
-    can resolve to network-backed storage. A new surface must either use the
+    can resolve to network-backed storage, including default/fallback data roots,
+    ambient authentication files, and setup shell folders. A new surface must either use the
     common boundary or appear as an unresolved inventory failure.
 13. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
