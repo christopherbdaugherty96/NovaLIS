@@ -110,6 +110,8 @@ the existing HTTP mediator.
 |---|---|---|---|---|---|---|
 | Proxy intermediary and proxy authentication (cross-cutting) | Host selected by `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (and lowercase forms), or by OS proxy configuration such as Windows Internet Settings, unless bypassed | Default Requests sessions/calls and `urllib` openers use `urllib.request.getproxies()`, which can consult both process environment and platform configuration; launcher tools such as `curl` can also consult proxy settings. Requests can derive `Proxy-Authorization` from userinfo in the effective proxy URL during adapter handling | Whatever payload and credentials the proxied caller sends; proxy URL userinfo can become a transmitted proxy credential after ordinary caller/prepared-request inspection. For HTTPS the proxy observes the connection destination; plain HTTP proxying can expose request content | No common effective-route classification, complete proxy-source disablement, proxy-credential classification, or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary, prove a direct connection, or authorize credentials injected for the proxy | The final boundary must disable/bypass **all** platform and environment proxy discovery where direct routing is required, or derive, classify, authorize, and evidence every effective proxy plus proxy-credential **presence** before send; values must never enter evidence |
 | Ambient Requests authentication and netrc storage (cross-cutting) | Host credentials selected from `~/.netrc` or the file named by `NETRC`; the authentication file itself may be UNC/network-mounted or reached through a redirected home | With `Session.trust_env=True` and no explicit auth, `Session.prepare_request()` calls Requests netrc discovery, which can probe/open the authentication file before the fully prepared HTTP request exists | Filesystem path and ambient share authentication during discovery; netrc username/password later become an `Authorization` header even though absent from caller inputs | No backing classification before netrc discovery/read, no final-boundary check of the fully prepared request, and no netrc-specific evidence | Caller-input validation can pass, then preparation can already cause remote-filesystem egress before injecting a credential | Governed boundaries should disable ambient netrc **before preparation**. If intentionally supported, safely classify/authorize the netrc backing before any existence/read operation, then prepare without I/O beyond that approved file and authorize the injected credential before DNS/socket/send; `DENY`/`UNKNOWN` touches no netrc path |
+| Ambient Requests CA-bundle storage (cross-cutting) | Certificate bundle selected by `REQUESTS_CA_BUNDLE` or `CURL_CA_BUNDLE`; the file may be UNC/network-mounted or reached through redirected storage | With `trust_env=True`, Requests merges environment settings and `HTTPAdapter.cert_verify` probes/uses the selected CA-bundle path before the HTTPS send | Bundle-path metadata, CA file contents read over the filesystem, and ambient network-share authentication | No backing classification or disclosure decision precedes CA-bundle existence/type validation and read | A request can be denied for its HTTP destination only after the client has already touched an external filesystem path | Disable ambient CA-bundle selection at governed boundaries or safely classify/authorize the effective bundle backing before its first probe/read; `DENY`/`UNKNOWN` must not call `exists`, `is_file`, `stat`, `open`, or read on that path |
+| Inherited subprocess environment (cross-cutting) | Every supported child process: ffmpeg, Piper/media players, system/app/browser launchers, Ollama, pip, winget, and Nova/startup children | `subprocess.run` / `subprocess.Popen` without an explicit scrubbed `env` inherits `os.environ`; `ConnectionsStore` injects saved provider keys into that process environment at startup and when keys change | Provider API keys and other unrelated secrets/configuration, plus proxy/netrc/CA environment controls; a networking child may transmit them independently | Process/capability admission generally classifies command/arguments, not the exact environment inherited by the child | Denying network intent while allowing process launch still discloses all inherited environment variables to the child; child networking remains outside Nova's proof | Build a minimal boundary-owned child environment and classify/authorize every retained credential/config category before process creation. `DENY`/`UNKNOWN` must prevent `run`/`Popen`; values never enter evidence. Do not pass unrelated provider keys merely because the parent process holds them |
 | Cap 63 OpenClaw network tools | Weather, RSS/news, web search, source pages | Allowlisted tool implementations use `MeteredNetworkProxy`, then `NetworkMediator` | Tool query, location, source URL, provider keys as applicable | Manual envelope preflight and per-run network-call budget; mediator receipts | Envelope/capability limits can deny before mediator; no provider-neutral Data-Out decision | Keep tool allowlist, but require every tool request to carry a disclosure decision into the final mediator. Budget is not custody |
 | Cap 63 OpenClaw model fallback | OpenAI, described above | `OpenAIResponsesLane` | Task report and key | Caller-side routing/permission/budget plan | Normal caller has pre-call denial; final method does not enforce it | Move/duplicate the decisive policy at final egress so alternate callers cannot bypass it |
 | Webpage launch capability | Default browser and arbitrary planned HTTPS site | `webbrowser.open(url)` | Destination URL; browser subsequently sends its own headers/cookies and may load the site | URL planner plus capability/Governor path; `WEBPAGE_LAUNCH` receipt records handoff result | A denied capability can stop handoff. After handoff Nova cannot prove zero connections or payload behavior | Treat handing a URL to the OS as egress initiation. Gate before `webbrowser.open`; receipt must say “delegated/opened,” never “site reached” |
@@ -242,6 +244,15 @@ the existing HTTP mediator.
     `exists()`. Redirected, mapped, reparse-backed, UNC, or unverifiable roots can
     cause network access and ambient authentication even when the later
     `subprocess.Popen` or default-browser handoff is denied.
+32. Saved provider keys are injected into `os.environ`, while supported
+    `subprocess.run`/`Popen` calls normally inherit the entire environment. This
+    discloses unrelated credentials to ffmpeg, Piper/players, system/browser
+    launchers, Ollama, pip, winget, and other children before any child-owned
+    network behavior occurs; command authorization alone does not govern it.
+33. Requests also consumes ambient certificate-bundle paths. A network-backed
+    `REQUESTS_CA_BUNDLE` or `CURL_CA_BUNDLE` can be probed/read during adapter TLS
+    setup, causing remote-filesystem access and ambient authentication before the
+    governed HTTPS send. Proxy and netrc coverage does not cover this file path.
 
 ## Required common enforcement contract
 
@@ -263,6 +274,8 @@ immutable request containing:
   conversation context, location, search query, document text, task report, shop
   data, OAuth material), bound to the actual body, parameters, and headers;
 - boundary-verified credential categories and presence, never credential values;
+- for subprocess/application handoffs, the exact boundary-built environment and
+  credential/configuration categories retained for the child, never values;
 - purpose and whether the action is user-initiated, approved, or automatic;
 - the applicable owner policy version.
 
@@ -299,6 +312,18 @@ I/O, inspect the resulting method/URL/body/query/header names,
 derive the injected credential category, and run policy on that exact prepared
 request before DNS, socket creation, or send. Any mutation after authorization
 invalidates the decision.
+
+Ambient TLS configuration is also pre-transport input. Governed Requests clients
+must disable environment CA-bundle selection or classify and authorize the
+effective `REQUESTS_CA_BUNDLE`/`CURL_CA_BUNDLE` backing before any probe or read.
+An HTTP destination decision cannot authorize an unverified certificate file on
+external storage.
+
+Subprocess admission must bind the exact child environment as well as the command
+and arguments. The boundary must construct a minimal environment, retain only
+required non-secret configuration plus explicitly authorized credential
+categories, and never persist values. Default inheritance of the parent's
+provider-key-bearing `os.environ` is not an acceptable implicit handoff.
 
 Filesystem locality classification must not cross the boundary it is meant to
 guard. The preflight may reject lexical UNC/network forms and consult trusted OS
@@ -374,7 +399,8 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    Derive destination identity from the transport URL, verify caller metadata,
    bind categories to actual outgoing fields through boundary-owned typed
    adapters, disable ambient netrc before preparation (or pre-authorize its
-   verified local/remote backing and injected credential), classify or disable
+   verified local/remote backing and injected credential), disable ambient CA
+   bundle selection or pre-authorize its verified backing, classify or disable
    effective proxies, and re-run the complete
    decision for every redirect target and exact field set before the next request.
    Strip origin-bound fields by default on cross-origin redirects. Prohibit silent
@@ -412,7 +438,9 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    subprocess, and shortcut handoffs before delegation; classify effective
    redirected Start Menu/desktop destinations before either bootstrap or Inno
    Setup probes/creates/writes them, and skip locally on `DENY`/`UNKNOWN`.
-   Use truthful handoff-only receipts. Define which child-owned
+   Construct and authorize a minimal exact environment for every child; scrub
+   unrelated provider keys, proxy/netrc/CA controls, and other secrets rather
+   than inheriting `os.environ`. Use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
    every Ollama CLI invocation (`--version`, `list`, `pull`, and launcher
    `serve`), pip dependency acquisition, and winget prerequisite acquisition as
@@ -461,7 +489,9 @@ Required test layers:
 1. **Boundary unit tests:** inject spies that fail if `socket.getaddrinfo`,
    `requests.request`, `requests.Session`, session `.request`, `urllib.urlopen`,
    `webbrowser.open`, `os.startfile`, `subprocess.run`, or `subprocess.Popen` is
-   touched after denial. Use the real ledger/event taxonomy for decision evidence.
+   touched after denial. For every process boundary, also capture the exact `env`
+   argument and fail if it is omitted or contains an undeclared provider secret.
+   Use the real ledger/event taxonomy for decision evidence.
 2. **Real caller regressions:** exercise general chat and capabilities 31, 48,
    49, 50, 54, 62, 63, plus caps 16, 55, 56, and 65, proving the final transport
    spy sees zero calls. Cap 48 must prove both its search and nested reasoning
@@ -508,7 +538,11 @@ Required test layers:
 5. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
    prove the OS handoff function is untouched. For Windows dashboard app mode,
    separately prove discovery admission before all candidate probes and handoff
-   admission before `subprocess.Popen` or `webbrowser.open`.
+   admission before `subprocess.Popen` or `webbrowser.open`. Seed `os.environ`
+   with fake saved-provider keys, then allow each supported ffmpeg, Piper/player,
+   system/browser, Ollama, pip, winget, and startup child in turn; prove its exact
+   boundary-built environment contains only authorized categories and never the
+   unrelated fake keys. On `DENY`/`UNKNOWN`, prove no child is created.
 6. **Local/private classification tests:** prove loopback/private model traffic is
    classified separately and that public, DNS-rebound, ambiguous, or
    environment-proxied endpoints do not inherit the local exemption. Set
@@ -559,7 +593,11 @@ Required test layers:
    files, and prove ambient auth is disabled before preparation or its backing is
    classified/authorized before any existence/read operation. Then prove any
    injected credential appears in the fully prepared request's verified categories;
-   prove no post-decision credential injection is possible.
+   prove no post-decision credential injection is possible. Separately point
+   `REQUESTS_CA_BUNDLE` and `CURL_CA_BUNDLE` at UNC/network-mounted,
+   redirected, reparse-backed, and unknown files; prove ambient selection is
+   disabled or backing authorization occurs before any existence/type probe or
+   read, and that `DENY`/`UNKNOWN` touches neither bundle nor HTTP transport.
 10. **Installer/launcher setup exception tests:** deny, skip, or select offline
    setup and prove no Ollama subprocess (`--version`, `list`, `pull`, or `serve`),
    pip install, or `winget install` is launched. Cover `-SkipModel`, remote
@@ -582,7 +620,8 @@ Required test layers:
     user-selected, remembered, preset, or discovered filesystem roots/files that
     can resolve to network-backed storage, including default/fallback data roots,
     ambient authentication files, setup shell folders, and executable discovery
-    roots. A new surface must either use the
+    roots. Also scan subprocess calls for omitted/unbounded child environments and
+    HTTP clients for ambient CA-bundle consumption. A new surface must either use the
     common boundary or appear as an unresolved inventory failure.
 13. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
