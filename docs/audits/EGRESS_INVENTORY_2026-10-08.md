@@ -89,6 +89,8 @@ the existing HTTP mediator.
 | Cap 55 weather | Visual Crossing | `WeatherService` -> `NetworkMediator.request` | User/default location and forecast scope; weather API key as query parameter | Cap 55 enabled and key present; no provider-neutral Data-Out check | Success metadata omits params/key, but on HTTP failure `NetworkMediator` persists raw `str(exception)` in `NETWORK_CALL_FAILED`; Requests can include the fully prepared credential-bearing URL in that text. Tracked as current P1 defect #461 | Missing key or disabled cap prevents request; an attempted request can persist the query credential on failure | Cap disable yes; provider-off no | Mediated, but failure evidence is not secret-safe today; location is personal data requiring disclosure classification |
 | Cap 65 Shopify read-only connector | Host configured by `NOVA_SHOPIFY_SHOP_DOMAIN`; intended to be the store's Shopify Admin GraphQL endpoint but currently accepts an arbitrary public host | `HttpShopifyConnector._gql` builds `https://<configured-domain>/admin/api/<version>/graphql.json` and creates a mediator per call | GraphQL query/variables; configured domain; Shopify Admin access-token header; returned store/order/inventory data. A malicious or mistaken non-Shopify host receives the token and query | Cap 65 enabled and connector configuration; the constructor strips a scheme but does not constrain the normalized host to an approved Shopify Admin domain; no common Data-Out decision | Mediator metadata; higher-level connector errors | Disabled cap stops mediator call, but an enabled cap can prepare and send the credential-bearing request to any configured host | Yes for cap disable; no provider/destination-policy guarantee | Credential-bearing mediated read with a caller-configurable destination. Normalize and require an approved Shopify Admin host before request preparation; reject userinfo, ports, paths, and non-Shopify hosts before constructing headers/body or invoking the mediator |
 | Runtime-state persistence | Path selected by `NOVA_RUNTIME_DIR`; intended to be local storage but may be a UNC path, mapped/network drive, or remote filesystem mount | `runtime_root` / `runtime_path` and downstream ledger, connections, memory, durability, and state stores perform ordinary filesystem operations | Provider keys, ledger events, memory, receipts, snapshots, connection state, and other sensitive runtime data | Override is accepted as a `Path`, expanded, and created without proving the backing storage is local; no disclosure decision or remote-storage receipt | Ordinary storage receipts describe application state, not whether the filesystem transported it off-device | A filesystem write can authenticate to and transmit data through SMB/NFS or another remote filesystem even when every HTTP/process boundary denies | **No** | Network-backed storage is external egress. Prove the effective filesystem backing is local before any create/read/write, or classify and authorize the remote-storage destination; `UNKNOWN`/`DENY` must fail before touching the path |
+| Goal state | Installation-relative `nova_backend/data/goals.json`; the installation root may itself be a UNC path, mapped/network drive, or remote mount | Import constructs `_GOALS_FILE` from `Path(__file__).resolve`; module singleton `GoalStore()` immediately calls `read_json_state`; `_save` calls `mkdir`, `open`, and `replace` | Goal titles, steps, statuses, permission envelopes, ledger references, timestamps, path metadata, and ambient share authentication | This store bypasses `runtime_root`; neither the installation root nor the goal path is classified before import-time resolution/read or later writes. The durability ownership record already marks it as migration-required | Goal records are application state, not remote-storage disclosure evidence | Merely importing the singleton can resolve/read a network-backed path; create/update can persist goal content remotely even when HTTP egress is denied | **No** | Supported setup must establish a locally backed installation root before Nova imports runtime code. Until this store migrates to governed runtime storage, classify/authorize its backing before the first path resolution, read, directory creation, temporary write, or replace; `DENY`/`UNKNOWN` touches none |
+| Caps 52/53 story tracker state | Installation-relative `nova_workspace/story_tracker/`; the installation root may itself be network-backed | `StoryTrackerExecutor` derives `PROJECT_ROOT` with `Path(__file__).resolve`; `_read_json` uses `read_json_state`; `_write_json` calls `mkdir` and `write_text` for topics, graph, and per-story snapshots | Tracked topics, relationship links, story snapshots/events, timestamps, source-derived content, path metadata, and ambient share authentication | This store bypasses `runtime_root`; its backing is not classified before path construction/read/write. The durability ownership record already marks it as migration-required | Capability outcomes describe tracker operations, not whether state crossed a remote filesystem | View/update operations can probe/read/write a network-backed installation tree before any disclosure decision | **No** | Establish a locally backed installation root before runtime startup and classify/authorize the story-store backing before its first path operation; `DENY`/`UNKNOWN` must precede `resolve`, `read_json_state`, `mkdir`, `write_text`, or any story read/write. Migration is later implementation work, not part of this inventory |
 | Cap 57 local calendar snapshot and calendar connection check | Path selected by `NOVA_CALENDAR_ICS_PATH`; intended to be a local `.ics` file but may be UNC/network-mounted storage | `connections_api._check_calendar` calls `Path.exists`; `CalendarSkill._calendar_path` calls `exists`/`is_file`, then `_read_events_for_range` calls `read_text` | Filesystem path; OS/network-share authentication metadata; calendar contents returned over the mounted transport | Cap 57 governance applies to the skill invocation, but the configured path is accepted without proving local backing; the settings health check is outside the capability path | Capability result/widget and settings status; no remote-filesystem disclosure decision or transport evidence | Existence/type checks alone can initiate remote access and credential authentication before calendar content is read | **No** for a remote path | Treat network-backed calendar access as external disclosure. Verify local backing or authorize the remote-storage destination before `exists`, `is_file`, or `read_text`; deny/unknown must touch none of them |
 | STT upload transcription | Temporary directory selected by the OS/Python tempfile configuration, including `TEMP`; intended to be local but may resolve to UNC or network-mounted storage | `/stt/transcribe` -> `transcribe_bytes` -> `tempfile.TemporaryDirectory`, then `open(..., "wb")` writes the uploaded audio and ffmpeg writes converted WAV data | Raw user audio, converted audio, path metadata, and ambient network-share authentication | Route is local-only and transcription is local, but the temporary-storage backing is not classified before directory creation/write | No disclosure decision or receipt for temporary-storage transport | `TemporaryDirectory` creation or the first audio write can authenticate to and persist sensitive audio on remote storage | **No** for remote temp backing | Verify temp backing is local or authorize the remote-storage destination before `TemporaryDirectory`; `DENY`/`UNKNOWN` must create no directory/file and invoke no ffmpeg process |
 | Live-screen frame analysis | Temporary file location selected by the OS/Python tempfile configuration, including `TEMP`; intended to be local but may resolve to UNC or network-mounted storage | `/api/live-screen/analyze` -> `tempfile.NamedTemporaryFile`, then OCR/vision analysis reads the saved frame | Sensitive shared-screen image bytes, path metadata, and ambient network-share authentication | Route protection is local-only, but temporary-storage locality is not checked before file creation/write | No disclosure decision or receipt for temporary-storage transport | `NamedTemporaryFile` can authenticate to and persist a screen frame remotely before analysis | **No** for remote temp backing | Verify temp backing is local or authorize the remote-storage destination before `NamedTemporaryFile`; `DENY`/`UNKNOWN` must create/write no file and invoke no OCR/vision reader |
@@ -211,6 +213,14 @@ the existing HTTP mediator.
     folders, reparse points/junctions/symlinks, or remote mounts can therefore
     transmit sensitive state, audio, speech, screen frames, calendar/project/file
     data—and trigger OS network authentication—through ordinary filesystem calls.
+27. Goal and story state remain installation-relative rather than runtime-rooted:
+    `GoalStore` derives `nova_backend/data/goals.json` and constructs a loading
+    singleton at import time, while caps 52/53 derive
+    `nova_workspace/story_tracker/`. A supported Windows `-InstallDir` can point
+    at network-backed storage, and the bootstrap attempts `Start-Transcript`
+    there before validating the install root. These stores are already recorded
+    as migration obligations, but no current gate proves their installation
+    backing local before path resolution, read, or write.
 
 ## Required common enforcement contract
 
@@ -283,6 +293,15 @@ establish an independently trusted local evidence sink (or fail closed without
 writing to the configured path). A denial receipt written to unauthorized remote
 storage would violate the zero-external-attempt claim it is meant to prove.
 
+Installation-relative storage creates an earlier bootstrap dependency. The
+supported installer/bootstrap must prove the effective installation backing is
+local before `Start-Transcript`, resolving the installation tree, launching Nova,
+or importing modules whose constants/singletons resolve and load goal/story
+paths. Runtime checks cannot retroactively make execution from a remote install
+local. Goal and story storage should later migrate under governed runtime state,
+but until then their actual installation-relative paths require the same
+fail-closed disclosure/locality decision.
+
 The policy returns `ALLOW`, `DENY`, or `UNKNOWN`. Only `ALLOW` can continue.
 `DENY` and `UNKNOWN` must return an explicit local result before DNS resolution,
 socket/session/client creation, `requests`/`urllib`, filesystem resolution/probe/
@@ -347,9 +366,10 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    cap 65, normalize and constrain the configured destination to an approved
    Shopify Admin host before request/header/body preparation; reject userinfo,
    ports, paths, and non-Shopify hosts locally.
-6. **Runtime storage, temporary files, and selected local files.** Before resolving,
-   creating, checking, reading, or writing runtime/calendar paths, tempfile roots,
-   Piper model/output paths, cap 22/60 paths, or local-project explicit,
+6. **Runtime and installation-relative storage, temporary files, and selected local files.** Before resolving,
+   creating, checking, reading, or writing runtime/calendar paths, the
+   installation-relative goal and story stores, tempfile roots, Piper
+   model/output paths, cap 22/60 paths, or local-project explicit,
    working-context, remembered, preset, allowed-root, or discovered paths, derive
    whether the effective filesystem backing is local without first touching the
    target. Treat UNC paths, mapped/network drives, redirected folders,
@@ -357,6 +377,10 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    requiring an explicit disclosure decision; fail closed on `DENY` or
    unverifiable backing before the first filesystem or child-process operation.
    Establish a trusted local evidence sink before any configured runtime root.
+   Require a verified local installation backing before bootstrap logging,
+   runtime import, `GoalStore` singleton construction, or caps 52/53 story-store
+   access; later migrate both repository-relative stores under governed runtime
+   state rather than treating their current location as implicitly local.
 7. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
@@ -430,6 +454,15 @@ Required test layers:
    invocation, playback, or OS handoff. `DENY`/`UNKNOWN` touches none. Separately
    prove denial evidence uses the trusted local bootstrap sink rather than the
    unverified configured runtime root, and revalidate backing at authorized use.
+   Separately run the supported Windows bootstrap with `-InstallDir` on UNC,
+   mapped/network-drive, and reparse-backed storage and prove `DENY`/`UNKNOWN`
+   occurs before `Start-Transcript`, install-tree resolution, dependency/model
+   subprocesses, or Nova launch. With the installation/repository root classified
+   as remote, exercise `GoalStore` import/initial load/create/update and caps
+   52/53 story view/update paths; prove the decision precedes `Path.resolve`,
+   `read_json_state`, `mkdir`, `open`, `write_text`, temporary-file replacement,
+   and every goal/story read or write. These regressions lock the current paths;
+   migration into governed runtime storage remains a later implementation slice.
 5. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
    prove the OS handoff function is untouched.
 6. **Local/private classification tests:** prove loopback/private model traffic is
