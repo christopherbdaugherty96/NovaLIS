@@ -88,6 +88,8 @@ the existing HTTP mediator.
 | Cap 50 daily intelligence brief with `read_sources` | Article/source hosts selected from cached headlines | `NewsIntelligenceExecutor.execute_brief` -> `_collect_source_packets` -> `_fetch_source_text` -> `NetworkMediator.request` with cap 50 | Up to the bounded set of selected source URLs and ordinary HTTP request metadata; returned excerpts feed local brief synthesis | Cap 50 enabled and `read_sources` requested; bounded source-read limits; no provider-neutral destination/Data-Out check | Mediator events for each source-page read; brief result evidence at the capability layer | Disabled cap stops execution; actions that reuse cached clusters do not read sources, but a source-reading brief has no Data-Out deny | Yes for cap disable; no provider/destination-policy guarantee | Conditional mediated external source reads owned by cap 50, not cap 56 |
 | Cap 55 weather | Visual Crossing | `WeatherService` -> `NetworkMediator.request` | User/default location and forecast scope; weather API key as query parameter | Cap 55 enabled and key present; no provider-neutral Data-Out check | Success metadata omits params/key, but on HTTP failure `NetworkMediator` persists raw `str(exception)` in `NETWORK_CALL_FAILED`; Requests can include the fully prepared credential-bearing URL in that text. Tracked as current P1 defect #461 | Missing key or disabled cap prevents request; an attempted request can persist the query credential on failure | Cap disable yes; provider-off no | Mediated, but failure evidence is not secret-safe today; location is personal data requiring disclosure classification |
 | Cap 65 Shopify read-only connector | Host configured by `NOVA_SHOPIFY_SHOP_DOMAIN`; intended to be the store's Shopify Admin GraphQL endpoint but currently accepts an arbitrary public host | `HttpShopifyConnector._gql` builds `https://<configured-domain>/admin/api/<version>/graphql.json` and creates a mediator per call | GraphQL query/variables; configured domain; Shopify Admin access-token header; returned store/order/inventory data. A malicious or mistaken non-Shopify host receives the token and query | Cap 65 enabled and connector configuration; the constructor strips a scheme but does not constrain the normalized host to an approved Shopify Admin domain; no common Data-Out decision | Mediator metadata; higher-level connector errors | Disabled cap stops mediator call, but an enabled cap can prepare and send the credential-bearing request to any configured host | Yes for cap disable; no provider/destination-policy guarantee | Credential-bearing mediated read with a caller-configurable destination. Normalize and require an approved Shopify Admin host before request preparation; reject userinfo, ports, paths, and non-Shopify hosts before constructing headers/body or invoking the mediator |
+| Runtime-state persistence | Path selected by `NOVA_RUNTIME_DIR`; intended to be local storage but may be a UNC path, mapped/network drive, or remote filesystem mount | `runtime_root` / `runtime_path` and downstream ledger, connections, memory, durability, and state stores perform ordinary filesystem operations | Provider keys, ledger events, memory, receipts, snapshots, connection state, and other sensitive runtime data | Override is accepted as a `Path`, expanded, and created without proving the backing storage is local; no disclosure decision or remote-storage receipt | Ordinary storage receipts describe application state, not whether the filesystem transported it off-device | A filesystem write can authenticate to and transmit data through SMB/NFS or another remote filesystem even when every HTTP/process boundary denies | **No** | Network-backed storage is external egress. Prove the effective filesystem backing is local before any create/read/write, or classify and authorize the remote-storage destination; `UNKNOWN`/`DENY` must fail before touching the path |
+| Cap 57 local calendar snapshot and calendar connection check | Path selected by `NOVA_CALENDAR_ICS_PATH`; intended to be a local `.ics` file but may be UNC/network-mounted storage | `connections_api._check_calendar` calls `Path.exists`; `CalendarSkill._calendar_path` calls `exists`/`is_file`, then `_read_events_for_range` calls `read_text` | Filesystem path; OS/network-share authentication metadata; calendar contents returned over the mounted transport | Cap 57 governance applies to the skill invocation, but the configured path is accepted without proving local backing; the settings health check is outside the capability path | Capability result/widget and settings status; no remote-filesystem disclosure decision or transport evidence | Existence/type checks alone can initiate remote access and credential authentication before calendar content is read | **No** for a remote path | Treat network-backed calendar access as external disclosure. Verify local backing or authorize the remote-storage destination before `exists`, `is_file`, or `read_text`; deny/unknown must touch none of them |
 | Google Workspace OAuth setup, refresh, identity, revoke | Google OAuth token, userinfo, and revoke endpoints | `GoogleAuthSession` -> `NetworkMediator.connection_request` | Authorization code, client credentials, refresh/access token, redirect URI; bearer token for identity | Static provider/operation/method/URL allowlist and rate/SSRF controls; deliberately no capability/Governor check | `CONNECTION_NETWORK_CALL` / failure metadata, without payload/header values | Non-allowlisted operation is rejected before transport. There is no global Data-Out deny | No | Explicit setup exception; needs a setup-specific disclosure decision at the same final boundary |
 | Settings connection health: OpenAI | OpenAI models endpoint | Direct `requests.get` in `connections_api.py` | Saved API key in bearer header | Local administrative API call after save/test; no mediator, capability, or provider Data-Out check | Health status in connection store; no durable network/disclosure receipt | No Data-Out deny path | **No** | Documented direct-network exception and hard bypass |
 | Settings connection health: Brave | Brave Search | Direct `requests.get` in `connections_api.py` | Literal query `test`; subscription token | Same as above | Same as above | No Data-Out deny path | **No** | Hard bypass |
@@ -194,20 +196,27 @@ the existing HTTP mediator.
 25. `NOVA_SHOPIFY_SHOP_DOMAIN` is treated as a domain string, but the connector
     does not constrain it to an approved Shopify Admin host before constructing a
     request containing the Admin access token and GraphQL data.
+26. Paths configured through `NOVA_RUNTIME_DIR` and `NOVA_CALENDAR_ICS_PATH` are
+    assumed local without verifying their backing storage. UNC paths, mapped
+    drives, or remote mounts can therefore transmit sensitive state or calendar
+    data—and trigger OS network authentication—through ordinary filesystem calls.
 
 ## Required common enforcement contract
 
 The implementation lane should introduce one provider-neutral contract, not a
 set of provider-specific toggle checks.
 
-Before **any** external transport creation or delegated egress handoff, the final
-in-process boundary must receive an immutable request containing:
+Before **any** external transport creation, network-backed filesystem operation,
+or delegated egress handoff, the final in-process boundary must receive an
+immutable request containing:
 
 - initiating capability/caller and request/session/action identifiers;
 - caller-declared provider/purpose plus the normalized destination and destination
-  class **derived by the boundary from the actual transport URL**;
+  class **derived by the boundary from the actual transport URL or configured
+  filesystem path and its verified backing**;
 - transport class (`http`, OAuth setup, browser handoff, mail-client handoff,
-  subprocess/application handoff, or local/private model);
+  subprocess/application handoff, network-backed filesystem, or local/private
+  model/storage);
 - boundary-verified data categories being disclosed (for example prompt,
   conversation context, location, search query, document text, task report, shop
   data, OAuth material), bound to the actual body, parameters, and headers;
@@ -216,10 +225,10 @@ in-process boundary must receive an immutable request containing:
 - the applicable owner policy version.
 
 The boundary must reject a caller-declared provider or destination that does not
-match the URL-derived identity. It must also derive the effective route: a proxy
-is an additional destination/intermediary, not an invisible implementation
-detail. Local/private classification is valid only when the client is proven not
-to route through an unclassified proxy. That proof must account for both
+match the URL- or storage-derived identity. It must also derive the effective
+route: a proxy is an additional destination/intermediary, not an invisible
+implementation detail. Local/private classification is valid only when the
+client is proven not to route through an unclassified proxy. That proof must account for both
 environment variables and platform proxy sources (including Windows Internet
 Settings), rather than treating an empty proxy environment as direct routing.
 If the effective proxy URL contains credentials, the boundary must derive and
@@ -310,7 +319,12 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    cap 65, normalize and constrain the configured destination to an approved
    Shopify Admin host before request/header/body preparation; reject userinfo,
    ports, paths, and non-Shopify hosts locally.
-6. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
+6. **Runtime storage and configured local files.** Before resolving, creating,
+   checking, reading, or writing configured runtime/calendar paths, derive whether
+   the effective filesystem backing is local. Treat UNC paths, mapped/network
+   drives, and remote mounts as external destinations requiring an explicit
+   disclosure decision; fail closed on `DENY` or unverifiable backing.
+7. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
    every Ollama CLI invocation (`--version`, `list`, `pull`, and launcher
@@ -318,7 +332,7 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    explicit setup/launcher exceptions with pre-launch decisions, bounded
    commands/package/model identifiers and sources or locked artifacts,
    offline/skip paths, and delegated-outcome evidence.
-7. **Local model and startup paths.** Disable/bypass environment proxies for
+8. **Local model and startup paths.** Disable/bypass environment proxies for
    traffic classified as local/private (or authorize the proxy as a separate
    destination), and fail closed on a nonlocal, ambiguous, or proxied
    `OLLAMA_URL` before the Python launcher's first probe. Reject or authorize
@@ -329,7 +343,7 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    ambient curl configuration cannot add transfers, proxies, or credentials.
    Apply the direct-loopback proof to `provider_status.py` before its Ollama
    availability `urlopen` as well.
-8. **Static enforcement and generated truth.** Expand network-mechanism scanning
+9. **Static enforcement and generated truth.** Expand network-mechanism scanning
    beyond `requests`, require every external transport/handoff to name the common
    boundary, and regenerate capability/bypass truth.
 
@@ -368,9 +382,14 @@ Required test layers:
 3. **Setup regressions:** save/test provider credentials and Google OAuth
    operations under denial; prove no direct or mediated request occurs and no
    credential appears in evidence.
-4. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
+4. **Remote-filesystem regressions:** configure `NOVA_RUNTIME_DIR` and
+   `NOVA_CALENDAR_ICS_PATH` as Windows UNC/network-drive paths and POSIX remote
+   mounts. Prove local-backing classification or explicit authorization occurs
+   before `mkdir`, `exists`, `is_file`, `read_text`, ledger/key/state writes, or
+   any OS authentication/network access; `DENY`/`UNKNOWN` touches none of them.
+5. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
    prove the OS handoff function is untouched.
-5. **Local/private classification tests:** prove loopback/private model traffic is
+6. **Local/private classification tests:** prove loopback/private model traffic is
    classified separately and that public, DNS-rebound, ambiguous, or
    environment-proxied endpoints do not inherit the local exemption. Set
    `HTTP_PROXY`, `HTTPS_PROXY`, and `ALL_PROXY` (including lowercase forms)
@@ -387,7 +406,7 @@ Required test layers:
    a loopback bypass; prove the effective proxy is classified/authorized or
    `urllib.request.urlopen` remains untouched. A direct-loopback case must remain
    the separately proven local exception.
-6. **Startup proof:** run Python-launcher decision logic with a nonlocal
+7. **Startup proof:** run Python-launcher decision logic with a nonlocal
    `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
    proxy. Prove `urllib.request.urlopen` and process launch are untouched on
    denial. For the same Python launcher, prove its Nova `HEALTH_ENDPOINT` polling,
@@ -399,7 +418,7 @@ Required test layers:
    proxy, and credentials, and prove the launcher's curl invocation places
    `-q`/`--disable` first so none can be loaded or attempted. Valid direct-loopback
    probes and handoffs remain separately tested local exceptions.
-7. **Redirect and identity tests:** run against both the external HTTP mediator
+8. **Redirect and identity tests:** run against both the external HTTP mediator
    and the local-model mediator. Allow the initial URL, return a redirect to a
    denied provider/destination, and prove the second request is never issued and
    the denial is recorded. Supply caller metadata that disagrees with the actual
@@ -411,7 +430,7 @@ Required test layers:
    destination classes. For the model path specifically, return a 307/308 from an
    allowed private endpoint to a public host and prove the prompt-bearing POST is
    never sent to the redirect target.
-8. **Disclosure binding tests:** omit or mislabel a document body, prompt/context
+9. **Disclosure binding tests:** omit or mislabel a document body, prompt/context
    field, location/query parameter, OAuth form field, bearer/API-key header, and
    an adapter-unknown extra field. Prove each fails before DNS/client use. Then
    prove each supported typed adapter derives the expected categories from the
@@ -419,24 +438,25 @@ Required test layers:
    `NETRC` for the destination and prove ambient credentials are either disabled
    or appear in the fully prepared request's verified credential categories;
    prove no post-decision credential injection is possible.
-9. **Installer/launcher setup exception tests:** deny, skip, or select offline
+10. **Installer/launcher setup exception tests:** deny, skip, or select offline
    setup and prove no Ollama subprocess (`--version`, `list`, `pull`, or `serve`),
    pip install, or `winget install` is launched. Cover `-SkipModel`, remote
    `OLLAMA_HOST`, missing-Python, and missing-Ollama branches. On explicit allow,
    validate bounded commands/package/model identifiers and sources or a locked
    artifact source, and record only delegated launch/outcome evidence; do not
    assert that Nova controlled child sockets, redirects, or payloads.
-10. **Evidence-hygiene regression:** use a fake Visual Crossing query credential,
+11. **Evidence-hygiene regression:** use a fake Visual Crossing query credential,
    force an HTTP failure through the real `LedgerWriter`, and prove the credential,
    prepared query values, and raw exception text never reach `ledger.jsonl` or any
    other persisted failure evidence. Run it red against the #461 pre-fix code.
-11. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
-   browser handoffs, and process launch. A new surface must either use the common
-   boundary or appear as an unresolved inventory failure.
-12. **End-to-end session proof:** through the real websocket/session route, turn a
+12. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
+    browser handoffs, process launch, and configured filesystem roots/files that
+    can resolve to network-backed storage. A new surface must either use the common
+    boundary or appear as an unresolved inventory failure.
+13. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
    denial, a durable decision record, and zero transport attempts.
-13. **Negative proof:** run each new regression against `bab4a6c` or the relevant
+14. **Negative proof:** run each new regression against `bab4a6c` or the relevant
    pre-fix slice and retain the failure evidence in the PR.
 
 ## Review gate
