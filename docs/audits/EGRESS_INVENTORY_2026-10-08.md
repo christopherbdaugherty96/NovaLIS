@@ -92,7 +92,10 @@ the existing HTTP mediator.
 | Cap 57 local calendar snapshot and calendar connection check | Path selected by `NOVA_CALENDAR_ICS_PATH`; intended to be a local `.ics` file but may be UNC/network-mounted storage | `connections_api._check_calendar` calls `Path.exists`; `CalendarSkill._calendar_path` calls `exists`/`is_file`, then `_read_events_for_range` calls `read_text` | Filesystem path; OS/network-share authentication metadata; calendar contents returned over the mounted transport | Cap 57 governance applies to the skill invocation, but the configured path is accepted without proving local backing; the settings health check is outside the capability path | Capability result/widget and settings status; no remote-filesystem disclosure decision or transport evidence | Existence/type checks alone can initiate remote access and credential authentication before calendar content is read | **No** for a remote path | Treat network-backed calendar access as external disclosure. Verify local backing or authorize the remote-storage destination before `exists`, `is_file`, or `read_text`; deny/unknown must touch none of them |
 | STT upload transcription | Temporary directory selected by the OS/Python tempfile configuration, including `TEMP`; intended to be local but may resolve to UNC or network-mounted storage | `/stt/transcribe` -> `transcribe_bytes` -> `tempfile.TemporaryDirectory`, then `open(..., "wb")` writes the uploaded audio and ffmpeg writes converted WAV data | Raw user audio, converted audio, path metadata, and ambient network-share authentication | Route is local-only and transcription is local, but the temporary-storage backing is not classified before directory creation/write | No disclosure decision or receipt for temporary-storage transport | `TemporaryDirectory` creation or the first audio write can authenticate to and persist sensitive audio on remote storage | **No** for remote temp backing | Verify temp backing is local or authorize the remote-storage destination before `TemporaryDirectory`; `DENY`/`UNKNOWN` must create no directory/file and invoke no ffmpeg process |
 | Live-screen frame analysis | Temporary file location selected by the OS/Python tempfile configuration, including `TEMP`; intended to be local but may resolve to UNC or network-mounted storage | `/api/live-screen/analyze` -> `tempfile.NamedTemporaryFile`, then OCR/vision analysis reads the saved frame | Sensitive shared-screen image bytes, path metadata, and ambient network-share authentication | Route protection is local-only, but temporary-storage locality is not checked before file creation/write | No disclosure decision or receipt for temporary-storage transport | `NamedTemporaryFile` can authenticate to and persist a screen frame remotely before analysis | **No** for remote temp backing | Verify temp backing is local or authorize the remote-storage destination before `NamedTemporaryFile`; `DENY`/`UNKNOWN` must create/write no file and invoke no OCR/vision reader |
+| Cap 18 and ordinary Piper speech output | Model path selected by `NOVA_PIPER_MODEL_PATH` and WAV output under `TEMP`/the platform temp directory; either may be network-backed | Cap 18 `execute_tts()` and ordinary `nova_speak()` both reach `SpeechRenderer.render`; `inspect_voice_runtime()` reaches `_voice_preferred_engine_status` without rendering | Model-path metadata and ambient share authentication; model bytes read by Piper; synthesized user speech written to the WAV output path | Voice readiness and rendering treat model/output paths as local without backing classification. The status path calls `model_file.exists`; render calls `exists`, constructs the output path, then launches Piper | Speech events describe rendering/playback outcome, not remote-storage disclosure; readiness has no disclosure receipt | The readiness probe alone can authenticate to remote storage. Rendering can read a remote model and persist synthesized speech remotely before playback/cleanup | **No** for remote model or temp backing | Classify both model and output backing before the first `exists` or output-path operation. `DENY`/`UNKNOWN` must not probe the model, create/write/unlink the WAV, launch Piper, or start playback; cover cap 18, `nova_speak`, and readiness independently |
 | Cap 60 explain selected file | Arbitrary path supplied through selected/working-context `file_path`; may resolve to UNC, mapped drive, or remote mount | `ExplainAnythingExecutor._explain_file` calls `Path.exists`, `is_file`, and `open`/`read` | Path metadata, ambient network-share authentication, and selected file contents returned over remote storage | Cap 60 governance controls invocation, but path backing is not classified before filesystem access | Capability outcome evidence; no remote-filesystem disclosure decision or transport evidence | `exists`/`is_file` can initiate remote access before the file is opened; remote content is then read into Nova | **No** for a remote path | Verify local backing or authorize the remote-storage destination before the first path operation; `DENY`/`UNKNOWN` must not call `exists`, `is_file`, `open`, or `read` |
+| Cap 22 open folder/path | Explicit `path` or preset user folder; preset/allowed roots may be redirected, mapped, reparse-backed, or remotely mounted | `OpenFolderExecutor.execute` calls `exists` before `SystemControlExecutor.open_path_result`; allowed-root/path normalization can call `resolve`, `is_dir`, and related probes before OS handoff | Requested path metadata, ambient share authentication, and the delegated path handed to the OS | Cap 22 and system-control rules govern the eventual handoff, but explicit and preset branches touch the filesystem before backing/locality is established | Action outcome records launch acceptance/visibility, not preliminary remote filesystem access | Remote access/authentication can occur even if the later launcher or allowed-root check rejects the request | **No** for remote backing | Classify explicit, preset, redirected-folder, allowed-root, symlink/junction/reparse, and mount backing before `resolve`, `exists`, type checks, or handoff; deny/unknown touches none |
+| Local-project chat and inspection | Explicit project target, current working directory, working-context selected file, remembered `last_object`, and discovered project roots | `_resolve_existing_local_path`, `_candidate_local_project_paths`, and `_resolve_local_project_path`, followed by project summary/map/architecture helpers using `resolve`, `exists`, `is_dir`, `is_file`, `iterdir`, and `read_text` | Path metadata, ambient share authentication, directory structure, project files, README/architecture/source excerpts | User-facing local-project handlers are read-only, but neither explicit nor remembered/discovered candidates prove local backing before resolution and inspection | Chat/project widgets summarize inspected data; no remote-filesystem disclosure decision or transport evidence | Resolution, marker checks, enumeration, and reads can authenticate to or retrieve data from remote storage before any later response | **No** for remote backing | Classify explicit targets and every working-context/remembered/discovered candidate before the first resolve/probe; authorize remote storage or fail closed before enumeration, nested inspection, or reads |
 | Google Workspace OAuth setup, refresh, identity, revoke | Google OAuth token, userinfo, and revoke endpoints | `GoogleAuthSession` -> `NetworkMediator.connection_request` | Authorization code, client credentials, refresh/access token, redirect URI; bearer token for identity | Static provider/operation/method/URL allowlist and rate/SSRF controls; deliberately no capability/Governor check | `CONNECTION_NETWORK_CALL` / failure metadata, without payload/header values | Non-allowlisted operation is rejected before transport. There is no global Data-Out deny | No | Explicit setup exception; needs a setup-specific disclosure decision at the same final boundary |
 | Settings connection health: OpenAI | OpenAI models endpoint | Direct `requests.get` in `connections_api.py` | Saved API key in bearer header | Local administrative API call after save/test; no mediator, capability, or provider Data-Out check | Health status in connection store; no durable network/disclosure receipt | No Data-Out deny path | **No** | Documented direct-network exception and hard bypass |
 | Settings connection health: Brave | Brave Search | Direct `requests.get` in `connections_api.py` | Literal query `test`; subscription token | Same as above | Same as above | No Data-Out deny path | **No** | Hard bypass |
@@ -191,20 +194,23 @@ the existing HTTP mediator.
 23. `NETWORK_CALL_FAILED` currently stores raw exception text. For callers such
     as WeatherService that place credentials in query parameters, Requests can
     include the credential-bearing prepared URL in that text. This reachable P1
-    persistence defect is tracked separately as #461 and must be repaired before
-    the provider-neutral Data-Out slices begin.
+    persistence defect is tracked separately as #461. `NetworkMediatorError` also
+    interpolates the same raw exception into its propagated message, so #461 must
+    prove the secret cannot escape into any downstream persisted evidence path,
+    not only the first ledger event, before the Data-Out slices begin.
 24. The runtime provider-status probe uses the default urllib opener. Its fixed
     loopback URL can still route through an environment- or OS-configured proxy,
     so status inspection is not a proven local-only exception today.
 25. `NOVA_SHOPIFY_SHOP_DOMAIN` is treated as a domain string, but the connector
     does not constrain it to an approved Shopify Admin host before constructing a
     request containing the Admin access token and GraphQL data.
-26. Paths configured through `NOVA_RUNTIME_DIR`, `NOVA_CALENDAR_ICS_PATH`, the
-    OS/Python temporary directory, and cap 60's selected `file_path` are assumed
-    local without verifying their backing storage. UNC paths, mapped drives, or
-    remote mounts can therefore transmit sensitive state, audio, screen frames,
-    calendar data, or selected-file content—and trigger OS network authentication—
-    through ordinary filesystem calls.
+26. Paths configured through `NOVA_RUNTIME_DIR`, `NOVA_CALENDAR_ICS_PATH`,
+    `NOVA_PIPER_MODEL_PATH`, the OS/Python temporary directory, caps 22/60, and
+    local-project chat/working-context discovery are assumed local without safely
+    verifying their effective backing. UNC paths, mapped drives, redirected user
+    folders, reparse points/junctions/symlinks, or remote mounts can therefore
+    transmit sensitive state, audio, speech, screen frames, calendar/project/file
+    data—and trigger OS network authentication—through ordinary filesystem calls.
 
 ## Required common enforcement contract
 
@@ -261,10 +267,27 @@ derive the injected credential category, and run policy on that exact prepared
 request before DNS, socket creation, or send. Any mutation after authorization
 invalidates the decision.
 
+Filesystem locality classification must not cross the boundary it is meant to
+guard. The preflight may reject lexical UNC/network forms and consult trusted OS
+mount/drive metadata, but it must not begin by calling `resolve`, `exists`, `stat`,
+directory enumeration, or another operation on the untrusted target. Redirected
+folders, mapped drives, junctions/reparse points, symlinks, POSIX mount points, and
+backing changes between classification and use must be accounted for. If backing
+cannot be established without touching the target, it is `UNKNOWN`, not local;
+the authorized operation must also bind/revalidate the effective backing at use.
+
+Remote runtime storage creates a bootstrap dependency: the disclosure boundary
+and its denial evidence cannot rely on a ledger rooted in an unverified
+`NOVA_RUNTIME_DIR`. Before configured runtime storage is touched, Nova must
+establish an independently trusted local evidence sink (or fail closed without
+writing to the configured path). A denial receipt written to unauthorized remote
+storage would violate the zero-external-attempt claim it is meant to prove.
+
 The policy returns `ALLOW`, `DENY`, or `UNKNOWN`. Only `ALLOW` can continue.
 `DENY` and `UNKNOWN` must return an explicit local result before DNS resolution,
-socket/session/client creation, `requests`/`urllib`, `webbrowser.open`, or process
-launch. Caller-side checks may improve UX but are not the security boundary. An
+socket/session/client creation, `requests`/`urllib`, filesystem resolution/probe/
+read/write, tempfile creation, `webbrowser.open`, or process launch. Caller-side
+checks may improve UX but are not the security boundary. An
 HTTP redirect is a new destination in **every governed HTTP client**, including
 `NetworkMediator` and `ModelNetworkMediator`: the boundary must derive and
 authorize every redirect target after reading `Location` and **before** issuing
@@ -326,10 +349,14 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    ports, paths, and non-Shopify hosts locally.
 6. **Runtime storage, temporary files, and selected local files.** Before resolving,
    creating, checking, reading, or writing runtime/calendar paths, tempfile roots,
-   or cap 60 selected files, derive whether the effective filesystem backing is
-   local. Treat UNC paths, mapped/network drives, and remote mounts as external
-   destinations requiring an explicit disclosure decision; fail closed on `DENY`
-   or unverifiable backing before the first filesystem or child-process operation.
+   Piper model/output paths, cap 22/60 paths, or local-project explicit,
+   working-context, remembered, preset, allowed-root, or discovered paths, derive
+   whether the effective filesystem backing is local without first touching the
+   target. Treat UNC paths, mapped/network drives, redirected folders,
+   junctions/reparse points/symlinks, and remote mounts as external destinations
+   requiring an explicit disclosure decision; fail closed on `DENY` or
+   unverifiable backing before the first filesystem or child-process operation.
+   Establish a trusted local evidence sink before any configured runtime root.
 7. **Delegated egress.** Gate browser, mail-client, app, and subprocess handoffs
    before delegation; use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
@@ -390,13 +417,19 @@ Required test layers:
    credential appears in evidence.
 4. **Remote-filesystem regressions:** configure `NOVA_RUNTIME_DIR`,
    `NOVA_CALENDAR_ICS_PATH`, the effective tempfile root (`TEMP`/platform
-   equivalent), and cap 60's selected `file_path` as Windows UNC/network-drive
-   paths and POSIX remote mounts. Exercise runtime-state persistence, calendar
-   connection/read, `/stt/transcribe`, `/api/live-screen/analyze`, and cap 60.
-   Prove local-backing classification or explicit authorization occurs before
+   equivalent), `NOVA_PIPER_MODEL_PATH`, cap 22 explicit and preset folders, cap
+   60's selected `file_path`, and local-project explicit/working-context/
+   remembered targets as Windows UNC/network-drive/redirected/reparse-backed
+   paths and POSIX remote mounts/symlinks. Exercise runtime-state persistence,
+   calendar connection/read, `/stt/transcribe`, `/api/live-screen/analyze`, Piper
+   readiness, cap 18, ordinary `nova_speak`, caps 22/60, and every local-project
+   summary/map/architecture inspection path. Prove the classifier itself performs
+   no target `resolve`/`stat`/probe and that authorization occurs before
    `TemporaryDirectory`, `NamedTemporaryFile`, `mkdir`, `exists`, `is_file`,
-   `open`, `read_text`, ledger/key/state writes, ffmpeg/OCR/vision invocation, or
-   any OS authentication/network access; `DENY`/`UNKNOWN` touches none of them.
+   `iterdir`, `open`, `read_text`, ledger/key/state writes, Piper/ffmpeg/OCR/vision
+   invocation, playback, or OS handoff. `DENY`/`UNKNOWN` touches none. Separately
+   prove denial evidence uses the trusted local bootstrap sink rather than the
+   unverified configured runtime root, and revalidate backing at authorized use.
 5. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
    prove the OS handoff function is untouched.
 6. **Local/private classification tests:** prove loopback/private model traffic is
@@ -458,12 +491,14 @@ Required test layers:
 11. **Evidence-hygiene regression:** use a fake Visual Crossing query credential,
    force an HTTP failure through the real `LedgerWriter`, and prove the credential,
    prepared query values, and raw exception text never reach `ledger.jsonl` or any
-   other persisted failure evidence. Run it red against the #461 pre-fix code.
+   other persisted failure evidence. Also prove the propagated
+   `NetworkMediatorError` message is sanitized before any downstream caller can
+   persist it. Run both paths red against the #461 pre-fix code.
 12. **Static mechanism test:** scan runtime imports/calls for HTTP clients, sockets,
-    browser handoffs, process launch, tempfile creation, and configured or
-    user-selected filesystem roots/files that can resolve to network-backed
-    storage. A new surface must either use the common boundary or appear as an
-    unresolved inventory failure.
+    browser handoffs, process launch, tempfile creation, and configured,
+    user-selected, remembered, preset, or discovered filesystem roots/files that
+    can resolve to network-backed storage. A new surface must either use the
+    common boundary or appear as an unresolved inventory failure.
 13. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
    denial, a durable decision record, and zero transport attempts.
