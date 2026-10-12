@@ -111,7 +111,10 @@ the existing HTTP mediator.
 | Proxy intermediary and proxy authentication (cross-cutting) | Host selected by `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (and lowercase forms), or by OS proxy configuration such as Windows Internet Settings, unless bypassed | Default Requests sessions/calls and `urllib` openers use `urllib.request.getproxies()`, which can consult both process environment and platform configuration; launcher tools such as `curl` can also consult proxy settings. Requests can derive `Proxy-Authorization` from userinfo in the effective proxy URL during adapter handling | Whatever payload and credentials the proxied caller sends; proxy URL userinfo can become a transmitted proxy credential after ordinary caller/prepared-request inspection. For HTTPS the proxy observes the connection destination; plain HTTP proxying can expose request content | No common effective-route classification, complete proxy-source disablement, proxy-credential classification, or proxy-specific disclosure evidence | A URL-host allow decision does not deny the proxy intermediary, prove a direct connection, or authorize credentials injected for the proxy | The final boundary must disable/bypass **all** platform and environment proxy discovery where direct routing is required, or derive, classify, authorize, and evidence every effective proxy plus proxy-credential **presence** before send; values must never enter evidence |
 | Ambient Requests authentication and netrc storage (cross-cutting) | Host credentials selected from `~/.netrc` or the file named by `NETRC`; the authentication file itself may be UNC/network-mounted or reached through a redirected home | With `Session.trust_env=True` and no explicit auth, `Session.prepare_request()` calls Requests netrc discovery, which can probe/open the authentication file before the fully prepared HTTP request exists | Filesystem path and ambient share authentication during discovery; netrc username/password later become an `Authorization` header even though absent from caller inputs | No backing classification before netrc discovery/read, no final-boundary check of the fully prepared request, and no netrc-specific evidence | Caller-input validation can pass, then preparation can already cause remote-filesystem egress before injecting a credential | Governed boundaries should disable ambient netrc **before preparation**. If intentionally supported, safely classify/authorize the netrc backing before any existence/read operation, then prepare without I/O beyond that approved file and authorize the injected credential before DNS/socket/send; `DENY`/`UNKNOWN` touches no netrc path |
 | Ambient Requests CA-bundle storage (cross-cutting) | Certificate bundle selected by `REQUESTS_CA_BUNDLE` or `CURL_CA_BUNDLE`; the file may be UNC/network-mounted or reached through redirected storage | With `trust_env=True`, Requests merges environment settings and `HTTPAdapter.cert_verify` probes/uses the selected CA-bundle path before the HTTPS send | Bundle-path metadata, CA file contents read over the filesystem, and ambient network-share authentication | No backing classification or disclosure decision precedes CA-bundle existence/type validation and read | A request can be denied for its HTTP destination only after the client has already touched an external filesystem path | Disable ambient CA-bundle selection at governed boundaries or safely classify/authorize the effective bundle backing before its first probe/read; `DENY`/`UNKNOWN` must not call `exists`, `is_file`, `stat`, `open`, or read on that path |
+| Ambient TLS key logging (cross-cutting) | File selected by `SSLKEYLOGFILE`; it may be UNC/network-mounted or reached through redirected storage | urllib3 can assign the path to `SSLContext.keylog_filename` during TLS-context construction, causing the TLS stack to open/write it as sessions are established | TLS session secrets, path metadata, and ambient network-share authentication | No backing classification, disclosure decision, or evidence precedes TLS-context use of the path | An otherwise allowed HTTPS request can persist decryption material externally before or during transport | Disable TLS key logging before TLS-context creation, or explicitly authorize both the verified backing and session-secret disclosure before any path use; `DENY`/`UNKNOWN` creates no using context and performs no probe/open/write |
 | Inherited subprocess environment (cross-cutting) | Every supported child process: ffmpeg, Piper/media players, system/app/browser launchers, Ollama, pip, winget, and Nova/startup children | `subprocess.run` / `subprocess.Popen` without an explicit scrubbed `env` inherits `os.environ`; `ConnectionsStore` injects saved provider keys into that process environment at startup and when keys change | Provider API keys and other unrelated secrets/configuration, plus proxy/netrc/CA environment controls; a networking child may transmit them independently | Process/capability admission generally classifies command/arguments, not the exact environment inherited by the child | Denying network intent while allowing process launch still discloses all inherited environment variables to the child; child networking remains outside Nova's proof | Build a minimal boundary-owned child environment and classify/authorize every retained credential/config category before process creation. `DENY`/`UNKNOWN` must prevent `run`/`Popen`; values never enter evidence. Do not pass unrelated provider keys merely because the parent process holds them |
+| `/phase-status` source-identity Git children | Local Git executable and source tree; executable discovery may itself use `PATH` | `audit_api._runtime_build_identity` runs four Git commands (`rev-parse`, unstaged diff, staged diff, and untracked files) for every phase-status response without an explicit `env` | Entire inherited parent environment, including saved provider keys; source-root path and Git arguments | Route is local/status-only, but does not scrub the child environment or classify executable lookup | A readiness/status request can disclose unrelated credentials to four children without an explicit external action | Include all four calls in process policy: classify executable discovery, build one minimal credential-free environment, and admit command/arguments/environment before the first child; denial returns bounded unavailable identity without launching Git |
+| PATH-backed STT/TTS executable discovery | Every directory in `PATH`, including UNC, mapped-drive, redirected, reparse-backed, mounted, relative, empty/current-directory, or unverifiable entries | STT calls `shutil.which("ffmpeg")`; TTS readiness/render/playback calls `which` for Piper, media players, PowerShell/pwsh, and ffplay before process admission | Search paths, ambient network-share authentication, and the discovered executable location | Binaries are treated as local tooling, but search-root backing is not classified before lookup | A later process denial does not undo SMB/NFS access during executable discovery | Parse/classify every effective search directory without probing it; reject relative/empty/current-directory and `DENY`/`UNKNOWN` backing before `shutil.which` or equivalent lookup. Govern discovery separately from executable/process admission |
 | Cap 63 OpenClaw network tools | Weather, RSS/news, web search, source pages | Allowlisted tool implementations use `MeteredNetworkProxy`, then `NetworkMediator` | Tool query, location, source URL, provider keys as applicable | Manual envelope preflight and per-run network-call budget; mediator receipts | Envelope/capability limits can deny before mediator; no provider-neutral Data-Out decision | Keep tool allowlist, but require every tool request to carry a disclosure decision into the final mediator. Budget is not custody |
 | Cap 63 OpenClaw model fallback | OpenAI, described above | `OpenAIResponsesLane` | Task report and key | Caller-side routing/permission/budget plan | Normal caller has pre-call denial; final method does not enforce it | Move/duplicate the decisive policy at final egress so alternate callers cannot bypass it |
 | Webpage launch capability | Default browser and arbitrary planned HTTPS site | `webbrowser.open(url)` | Destination URL; browser subsequently sends its own headers/cookies and may load the site | URL planner plus capability/Governor path; `WEBPAGE_LAUNCH` receipt records handoff result | A denied capability can stop handoff. After handoff Nova cannot prove zero connections or payload behavior | Treat handing a URL to the OS as egress initiation. Gate before `webbrowser.open`; receipt must say “delegated/opened,” never “site reached” |
@@ -253,6 +256,17 @@ the existing HTTP mediator.
     `REQUESTS_CA_BUNDLE` or `CURL_CA_BUNDLE` can be probed/read during adapter TLS
     setup, causing remote-filesystem access and ambient authentication before the
     governed HTTPS send. Proxy and netrc coverage does not cover this file path.
+34. urllib3 can honor `SSLKEYLOGFILE` during TLS-context construction. A
+    network-backed destination can receive TLS session secrets and ambient share
+    authentication even when the HTTPS destination itself is authorized; CA
+    bundle classification does not govern this write path.
+35. `/phase-status` is not process-free: source identity launches four Git
+    children without `env=`, exposing the provider-key-bearing parent environment
+    unless those calls are explicitly scrubbed and governed.
+36. STT/TTS executable discovery probes `PATH` through `shutil.which` before
+    process admission. Network-backed, redirected, relative, empty/current-dir,
+    or unverifiable search entries can cause filesystem egress even when the
+    eventual ffmpeg, Piper, player, or PowerShell launch is denied.
 
 ## Required common enforcement contract
 
@@ -318,6 +332,11 @@ must disable environment CA-bundle selection or classify and authorize the
 effective `REQUESTS_CA_BUNDLE`/`CURL_CA_BUNDLE` backing before any probe or read.
 An HTTP destination decision cannot authorize an unverified certificate file on
 external storage.
+
+TLS key logging is a separate sensitive-output boundary. Governed clients must
+clear `SSLKEYLOGFILE` before TLS-context creation unless policy explicitly
+authorizes both the verified file backing and disclosure of TLS session secrets.
+An allowed HTTPS destination does not authorize an unverified key-log path.
 
 Subprocess admission must bind the exact child environment as well as the command
 and arguments. The boundary must construct a minimal environment, retain only
@@ -400,7 +419,9 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    bind categories to actual outgoing fields through boundary-owned typed
    adapters, disable ambient netrc before preparation (or pre-authorize its
    verified local/remote backing and injected credential), disable ambient CA
-   bundle selection or pre-authorize its verified backing, classify or disable
+   bundle selection or pre-authorize its verified backing, disable TLS key
+   logging before context construction or explicitly authorize its backing and
+   session-secret category, classify or disable
    effective proxies, and re-run the complete
    decision for every redirect target and exact field set before the next request.
    Strip origin-bound fields by default on cross-origin redirects. Prohibit silent
@@ -433,14 +454,17 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    Require a verified local installation backing before bootstrap logging,
    runtime import, `GoalStore` singleton construction, or caps 52/53 story-store
    access; later migrate both repository-relative stores under governed runtime
-   state rather than treating their current location as implicitly local.
+   state rather than treating their current location as implicitly local. Treat
+   every `PATH` search directory as another untrusted filesystem root and admit
+   executable discovery separately from the resulting process launch.
 7. **Delegated egress and setup shell folders.** Gate browser, mail-client, app,
    subprocess, and shortcut handoffs before delegation; classify effective
    redirected Start Menu/desktop destinations before either bootstrap or Inno
    Setup probes/creates/writes them, and skip locally on `DENY`/`UNKNOWN`.
    Construct and authorize a minimal exact environment for every child; scrub
    unrelated provider keys, proxy/netrc/CA controls, and other secrets rather
-   than inheriting `os.environ`. Use truthful handoff-only receipts. Define which child-owned
+   than inheriting `os.environ`. This includes every `/phase-status` Git command,
+   not only visibly external tools. Use truthful handoff-only receipts. Define which child-owned
    networking is out of proof rather than claiming it is blocked. Treat installer
    every Ollama CLI invocation (`--version`, `list`, `pull`, and launcher
    `serve`), pip dependency acquisition, and winget prerequisite acquisition as
@@ -535,6 +559,11 @@ Required test layers:
    selecting Windows app-window mode. Prove denial occurs before the first Edge/
    Chrome candidate `exists()` call; executable discovery must not be conflated
    with the later process/browser handoff decision.
+   Populate `PATH` with UNC, mapped-drive, redirected, reparse-backed, mounted,
+   relative, empty/current-directory, and unknown entries before local entries;
+   exercise STT and every Piper/player readiness/render path and prove denial
+   occurs before `shutil.which` or any candidate probe. Separately authorize the
+   discovered executable and its process launch.
 5. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
    prove the OS handoff function is untouched. For Windows dashboard app mode,
    separately prove discovery admission before all candidate probes and handoff
@@ -542,7 +571,9 @@ Required test layers:
    with fake saved-provider keys, then allow each supported ffmpeg, Piper/player,
    system/browser, Ollama, pip, winget, and startup child in turn; prove its exact
    boundary-built environment contains only authorized categories and never the
-   unrelated fake keys. On `DENY`/`UNKNOWN`, prove no child is created.
+   unrelated fake keys. Exercise all four `/phase-status` Git commands under the
+   same proof and require bounded unavailable identity when denied. On
+   `DENY`/`UNKNOWN`, prove no child is created.
 6. **Local/private classification tests:** prove loopback/private model traffic is
    classified separately and that public, DNS-rebound, ambiguous, or
    environment-proxied endpoints do not inherit the local exemption. Set
@@ -598,6 +629,10 @@ Required test layers:
    redirected, reparse-backed, and unknown files; prove ambient selection is
    disabled or backing authorization occurs before any existence/type probe or
    read, and that `DENY`/`UNKNOWN` touches neither bundle nor HTTP transport.
+   Point `SSLKEYLOGFILE` at the same remote/unknown backing classes and prove it
+   is cleared before TLS-context creation or explicitly authorized for backing
+   and session-secret disclosure; denial creates no using context and performs
+   no probe/open/write or HTTPS transport.
 10. **Installer/launcher setup exception tests:** deny, skip, or select offline
    setup and prove no Ollama subprocess (`--version`, `list`, `pull`, or `serve`),
    pip install, or `winget install` is launched. Cover `-SkipModel`, remote
@@ -621,7 +656,8 @@ Required test layers:
     can resolve to network-backed storage, including default/fallback data roots,
     ambient authentication files, setup shell folders, and executable discovery
     roots. Also scan subprocess calls for omitted/unbounded child environments and
-    HTTP clients for ambient CA-bundle consumption. A new surface must either use the
+    HTTP clients for ambient CA-bundle/key-log consumption, plus executable
+    discovery APIs such as `shutil.which`. A new surface must either use the
     common boundary or appear as an unresolved inventory failure.
 13. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
