@@ -118,7 +118,7 @@ the existing HTTP mediator.
 | STT executable and TTS/media player | Configured local binaries / OS player | `subprocess.run` / `subprocess.Popen` | Audio path/data and process arguments; no network is requested by Nova code | Local execution configuration and executor controls | Nova does not inspect whether a user-supplied binary networks | Classify as subprocess-owned behavior. No external-provider PASS may be inferred from process launch alone |
 | Ollama availability status | Nominal loopback `localhost:11434/api/tags` **and any effective proxy** | Direct default `urllib.request.urlopen` in `provider_status.py` | Status probe URL and ordinary HTTP metadata; no prompt or provider credential, but an external proxy receives the nominally local request | Fixed loopback origin, but the default urllib opener can inherit environment or OS proxy configuration; no effective-route check or durable network receipt | No provider Data-Out policy; reading provider status can contact an external proxy when loopback is not bypassed | Local-only exception is valid only after proving direct loopback routing. Otherwise classify/authorize the proxy or deny before `urlopen`; never infer local-only from the origin URL alone |
 | Startup Ollama probe | Configurable `OLLAMA_URL` plus any proxy selected by `urllib` | `scripts/start_daemon.py` calls `urllib.request.urlopen` before starting the backend and while polling a newly launched Ollama process | Probe URL and ordinary HTTP metadata; no prompt payload, but a nonlocal URL or proxy causes pre-runtime outbound traffic | No loopback/private validation, common mediator, capability check, disclosure decision, or durable receipt | The attempt occurs before Nova's runtime boundary exists; failure is swallowed and may be followed by launching/polling `ollama serve` | Hard pre-start bypass. The launcher must prove a direct local/private destination or deny without calling `urlopen`; it must not inherit an unclassified proxy route |
-| Python-launcher Nova readiness and browser handoff | Loopback-validated `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `urllib`, and Edge/Chrome/default browser | `scripts/start_daemon.py` polls `HEALTH_ENDPOINT` with `urllib.request.urlopen`, then uses `subprocess.Popen` for Edge/Chrome app mode or `webbrowser.open(BASE_URL)` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application | `require_loopback_bind_host` validates the URL host, but readiness does not disable/classify proxies and browser delegation has no disclosure decision or durable handoff receipt | A proxy can turn the readiness probe into external egress; after browser handoff Nova cannot prove navigation behavior | Prove a direct loopback route before readiness and handoff. On denial, touch neither `urlopen`, Edge/Chrome process launch, nor `webbrowser.open` |
+| Python-launcher Nova readiness, Windows browser discovery, and browser handoff | Loopback-validated `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `urllib`, Edge/Chrome candidates derived from `ProgramFiles`, `ProgramFiles(x86)`, and `LOCALAPPDATA`, and the default browser | `scripts/start_daemon.py` polls `HEALTH_ENDPOINT`; Windows app-window mode then calls `exists()` on each executable candidate before `subprocess.Popen`, otherwise it calls `webbrowser.open(BASE_URL)` | Readiness URL and HTTP metadata; candidate path metadata and ambient share authentication; dashboard URL handed to another application | Host validation does not disable/classify proxies. Browser candidate roots may be UNC, mapped, redirected, reparse-backed, or unknown and are probed before any handoff admission; delegation has no disclosure decision or durable receipt | Blocking `Popen`/`webbrowser.open` does not prevent earlier SMB/network access from `browser.exists()`; after handoff Nova cannot prove navigation behavior | Treat executable discovery and application handoff as separate decisions. Classify every candidate root before the first `exists()`; `DENY`/`UNKNOWN` probes no candidate. Separately prove a direct loopback route and authorize the later `Popen`/default-browser handoff |
 | Shell-launcher readiness and dashboard handoff | Configurable `NOVA_HOST`/`NOVA_PORT`, any proxy selected by `curl` or `urllib`, any additional URL/proxy/credential loaded by ambient curl configuration, and the OS default browser | `start_nova.sh` calls `curl` or Python `urllib.request.urlopen` for `/phase-status`, then delegates the dashboard URL through `xdg-open` or `open`; current `curl -fsS` permits automatic loading of `~/.curlrc` | Readiness URL and ordinary HTTP metadata; dashboard URL handed to another application. A nonloopback host, proxy, or ambient curl-configured transfer can make the launcher perform external transport or disclose credentials | No launcher-local loopback validation, curl configuration disablement, common mediator, disclosure decision, or durable receipt before readiness or handoff | Readiness can attempt traffic beyond the intended loopback URL before the backend proves its locality; browser handoff can independently cause navigation | Hard pre-runtime/delegated bypass. Invoke curl with `-q`/`--disable` as its first argument and prove a direct loopback target with proxies bypassed/disabled before readiness; otherwise touch neither HTTP client nor dashboard opener |
 | Installer and launcher Ollama CLI | Endpoint selected by `OLLAMA_HOST`, Ollama's model registry, and any other networking owned by the installed `ollama` executable | `nova_bootstrap.ps1` invokes `ollama --version`; `fetch_models.py` invokes `ollama --version`, `ollama list`, and `ollama pull <model>`; `start_daemon.py` can launch `ollama serve` | Version/list probes can disclose request metadata to a remote `OLLAMA_HOST`; pull discloses the model identifier and uses child-owned credentials/configuration; downloaded model bytes return to Ollama's store. `ollama serve` is a local process launch, not proof of local-only child behavior | `-SkipModel` skips `fetch_models.py` but not the bootstrap `ollama --version` probe. No invocation has a Nova disclosure decision/receipt, and Nova does not mediate the child transport | Any Ollama CLI invocation can occur before Nova's runtime boundary; denying only `pull` does not stop version/list probes | Reviewed setup/launcher exception only: classify `OLLAMA_HOST`, require authorization before **any** Ollama subprocess, constrain commands/model identifiers, record delegated outcome truthfully, and never claim child traffic is mediated or zero-attempt after handoff |
 | Installer Python dependency acquisition | PyPI/package indexes and any proxy or alternate index used by pip | `installer/windows/nova_bootstrap.ps1` runs the venv interpreter with `-m pip install --upgrade pip`, then `-m pip install -e <install-dir>`; an uncached editable install may resolve and download project dependencies | Package names, versions, platform/Python metadata, index/proxy credentials configured for pip, and downloaded packages | Required by the supported bootstrap path; no Nova runtime boundary, disclosure decision, or durable receipt. Pip owns resolution and transport | The bootstrap invokes pip before Nova starts; without an explicit offline/deny mode, external attempts can occur | Reviewed setup exception only: make online dependency acquisition explicit and separately skippable/offline-capable, authorize before subprocess launch, prefer a locked/verified artifact source, record delegated outcome only, and never claim Nova mediated pip traffic |
@@ -236,6 +236,12 @@ the existing HTTP mediator.
     Setup writes `{group}` and optional `{autodesktop}` entries; redirected shell
     folders can cause remote probes, directory creation, and shortcut writes even
     when the installation root is proven local.
+31. Windows app-window browser discovery is a filesystem surface before it is a
+    process handoff. Candidate Edge/Chrome executables are derived from
+    `ProgramFiles`, `ProgramFiles(x86)`, and `LOCALAPPDATA`, then probed with
+    `exists()`. Redirected, mapped, reparse-backed, UNC, or unverifiable roots can
+    cause network access and ambient authentication even when the later
+    `subprocess.Popen` or default-browser handoff is denied.
 
 ## Required common enforcement contract
 
@@ -423,7 +429,10 @@ after this inventory merges, repair and prove that hotfix before Slice 1.
    dashboard handoff; require `curl -q`/`--disable` as the first curl argument so
    ambient curl configuration cannot add transfers, proxies, or credentials.
    Apply the direct-loopback proof to `provider_status.py` before its Ollama
-   availability `urlopen` as well.
+   availability `urlopen` as well. On Windows app-window startup, classify
+   `ProgramFiles`, `ProgramFiles(x86)`, and `LOCALAPPDATA` browser-candidate
+   backing before executable discovery; only then may the independently governed
+   application handoff be considered.
 9. **Static enforcement and generated truth.** Expand network-mechanism scanning
    beyond `requests`, require every external transport/handoff to name the common
    boundary, and regenerate capability/bypass truth.
@@ -491,8 +500,15 @@ Required test layers:
    `read_json_state`, `mkdir`, `open`, `write_text`, temporary-file replacement,
    and every goal/story read or write. These regressions lock the current paths;
    migration into governed runtime storage remains a later implementation slice.
+   Also set `ProgramFiles`, `ProgramFiles(x86)`, and `LOCALAPPDATA` independently
+   to UNC, mapped-drive, redirected, reparse-backed, and unknown locations while
+   selecting Windows app-window mode. Prove denial occurs before the first Edge/
+   Chrome candidate `exists()` call; executable discovery must not be conflated
+   with the later process/browser handoff decision.
 5. **Delegation regressions:** deny webpage, mail draft, and system/app launch;
-   prove the OS handoff function is untouched.
+   prove the OS handoff function is untouched. For Windows dashboard app mode,
+   separately prove discovery admission before all candidate probes and handoff
+   admission before `subprocess.Popen` or `webbrowser.open`.
 6. **Local/private classification tests:** prove loopback/private model traffic is
    classified separately and that public, DNS-rebound, ambiguous, or
    environment-proxied endpoints do not inherit the local exemption. Set
@@ -514,8 +530,8 @@ Required test layers:
    `OLLAMA_URL`, a relative/invalid URL, and a local URL subject to an environment
    proxy. Prove `urllib.request.urlopen` and process launch are untouched on
    denial. For the same Python launcher, prove its Nova `HEALTH_ENDPOINT` polling,
-   Edge/Chrome `Popen`, and `webbrowser.open` are untouched when the effective
-   route is proxied or unverified. Exercise `start_nova.sh` with
+   Edge/Chrome candidate `exists`, `Popen`, and `webbrowser.open` are untouched
+   when the route or candidate backing is unverified. Exercise `start_nova.sh` with
    nonloopback/invalid `NOVA_HOST` and with `http_proxy`/`HTTP_PROXY` lacking a
    matching `NO_PROXY`; prove `curl`, Python `urlopen`, `xdg-open`, and `open` are
    all untouched. Supply an ambient curl config containing an external URL,
@@ -565,7 +581,8 @@ Required test layers:
     browser handoffs, process launch, tempfile creation, and configured,
     user-selected, remembered, preset, or discovered filesystem roots/files that
     can resolve to network-backed storage, including default/fallback data roots,
-    ambient authentication files, and setup shell folders. A new surface must either use the
+    ambient authentication files, setup shell folders, and executable discovery
+    roots. A new surface must either use the
     common boundary or appear as an unresolved inventory failure.
 13. **End-to-end session proof:** through the real websocket/session route, turn a
    provider off, invoke each user-visible route, and assert an explicit local
