@@ -125,6 +125,23 @@ def test_everyday_non_action_language_has_no_truth_note(answer):
     assert ACTION_CLAIM_NOTE not in guard_general_chat_action_claim(answer, turn_receipts=[])
 
 
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "Yes, I emailed your team. Anything else?",
+        "Done, your reminder is set for 3pm. Need anything else?",
+        "I have set a reminder for 3pm. Want me to add another?",
+    ],
+)
+def test_trailing_question_does_not_exempt_prior_action_claim(claim):
+    assert guard_general_chat_action_claim(claim, turn_receipts=[]) == _guarded(claim)
+
+
+def test_action_language_inside_a_question_stays_unchanged():
+    answer = "Did you mean the reminder was set or not?"
+    assert guard_general_chat_action_claim(answer, turn_receipts=[]) == answer
+
+
 def test_unreceipted_model_claim_is_never_streamed(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
