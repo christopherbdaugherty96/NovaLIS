@@ -507,6 +507,11 @@ SHOW_SCHEDULES_COMMANDS = {
     "notification schedules",
     "scheduled updates",
     "reminders",
+    "show my reminders",
+    "what reminders do i have",
+    "what do i still need to follow up on",
+    "what's still open",
+    "whats still open",
 }
 NOTIFICATION_SETTINGS_COMMANDS = {
     "notification settings",

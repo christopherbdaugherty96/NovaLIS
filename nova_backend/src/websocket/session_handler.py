@@ -439,6 +439,88 @@ def _reminder_body_from_request(raw: str, body_pattern: Any) -> str:
     return ""
 
 
+_BODY_FIRST_REMINDER_WITH_TIME_RE = re.compile(
+    r"^\s*remind\s+me\s+to\s+(?P<body>.+?)\s+"
+    r"(?P<time>(?:(?:today|tomorrow)\s+(?:at\s+)?|on\s+)?"
+    r"(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)?"
+    r"(?:\s+at\s+)?(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)))\s*$",
+    re.IGNORECASE,
+)
+
+
+def _body_first_reminder_parts(raw: str) -> tuple[str, str] | None:
+    match = _BODY_FIRST_REMINDER_WITH_TIME_RE.match(str(raw or "").strip().rstrip(".?!"))
+    if not match:
+        return None
+    body = str(match.group("body") or "").strip()[:400]
+    time_text = str(match.group("time") or "").strip()
+    return (body, time_text) if body and time_text else None
+
+
+_ACTION_CLAIM_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("reminder_set", re.compile(r"\b(?:i\s+)?(?:set|saved)\s+(?:the|a|that|your)\s+reminder\b", re.I)),
+    ("remembered", re.compile(r"\b(?:i(?:'ll|\s+will)?\s+)?remember(?:ed)?\s+that\b", re.I)),
+    ("forgot", re.compile(r"\b(?:i\s+)?(?:forgot|removed)\s+(?:that|the)\s+memory\b", re.I)),
+    ("deleted", re.compile(r"\b(?:i\s+)?deleted\s+(?:it|that|the\s+\w+)\b", re.I)),
+    ("cancelled", re.compile(r"\b(?:i\s+)?cancelled\s+(?:it|that|the\s+\w+)\b", re.I)),
+    ("completed", re.compile(r"\b(?:i\s+)?completed\s+(?:it|that|the\s+\w+)\b", re.I)),
+    ("sent", re.compile(r"\b(?:i\s+)?(?:emailed|sent)\s+(?:it|that|the\s+\w+)\b", re.I)),
+    ("scheduled", re.compile(r"\b(?:i\s+)?scheduled\s+(?:it|that|the\s+\w+)\b", re.I)),
+    ("saved", re.compile(r"\b(?:i\s+)?saved\s+(?:it|that|the\s+\w+|.+?for\s+you)\b", re.I)),
+)
+
+
+def guard_general_chat_action_claim(
+    message: str,
+    *,
+    turn_receipts: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+) -> str:
+    """Block model-authored completion claims without matching same-turn evidence."""
+    clean = str(message or "")
+    claimed_actions = [action for action, pattern in _ACTION_CLAIM_PATTERNS if pattern.search(clean)]
+    if not claimed_actions:
+        return clean
+    proven_actions = {
+        str(receipt.get("action_kind") or "").strip().lower()
+        for receipt in turn_receipts
+        if isinstance(receipt, dict)
+        and str(receipt.get("event_type") or "").strip().upper()
+        in {"ACTION_COMPLETED", "NOTIFICATION_SCHEDULE_CREATED", "NOTIFICATION_SCHEDULE_CANCELLED"}
+        and receipt.get("success", True) is not False
+    }
+    if all(action in proven_actions for action in claimed_actions):
+        return clean
+    return "I didn't do that."
+
+
+def _ledger_position(ledger: Any) -> int | None:
+    path = getattr(ledger, "path", None)
+    if path is None:
+        return None
+    try:
+        return int(Path(path).stat().st_size)
+    except (OSError, TypeError, ValueError):
+        return None
+
+
+def _ledger_events_since(ledger: Any, position: int | None) -> list[dict[str, Any]]:
+    """Read only events appended after the turn snapshot; failure yields no proof."""
+    path = getattr(ledger, "path", None)
+    if path is None or position is None:
+        return []
+    events: list[dict[str, Any]] = []
+    try:
+        with Path(path).open("r", encoding="utf-8") as handle:
+            handle.seek(position)
+            for line in handle:
+                payload = json.loads(line)
+                if isinstance(payload, dict):
+                    events.append(payload)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        return []
+    return events
+
+
 # ---------------------------------------------------------------------------
 # Deterministic arithmetic — avoids Ollama for simple math
 # ---------------------------------------------------------------------------
@@ -1666,6 +1748,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_state["pending_reminder"] = None
 
                 elif pending_stage == "time":
+                    reminder_time = ""
                     time_match = REMINDER_TIME_ONLY_RE.match(reminder_reply)
                     if time_match:
                         reminder_time = str(time_match.group("time") or "").strip()
@@ -1673,34 +1756,35 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             pending_reminder["recurrence"] = "daily"
                     elif REMINDER_PLAIN_TIME_RE.match(reminder_reply):
                         reminder_time = reminder_reply
+                    elif re.match(
+                        r"^\s*(?:on\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+                        r"\s+at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\s*$",
+                        reminder_reply,
+                        re.IGNORECASE,
+                    ):
+                        reminder_time = reminder_reply
                     else:
-                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 1
+                        session_state["pending_reminder"] = None
+
+                    if reminder_time:
+                        pending_reminder["reminder_time"] = reminder_time
+                        reminder_body = str(pending_reminder.get("body") or "").strip()
+                        if reminder_body:
+                            await _save_local_reminder(
+                                reminder_body=reminder_body,
+                                time_text=reminder_time,
+                                recurrence=str(pending_reminder.get("recurrence") or "once"),
+                            )
+                            continue
+                        pending_reminder["stage"] = "body"
+                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
                         session_state["pending_reminder"] = pending_reminder
                         await _complete_immediate_turn(
-                            "I still need a reminder time, such as 2 PM or tomorrow at 9 AM.",
+                            "What should the Nova reminder say?",
                             remember_response=False,
                             tone_domain="system",
                         )
                         continue
-
-                    pending_reminder["reminder_time"] = reminder_time
-                    reminder_body = str(pending_reminder.get("body") or "").strip()
-                    if reminder_body:
-                        await _save_local_reminder(
-                            reminder_body=reminder_body,
-                            time_text=reminder_time,
-                            recurrence=str(pending_reminder.get("recurrence") or "once"),
-                        )
-                        continue
-                    pending_reminder["stage"] = "body"
-                    pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
-                    session_state["pending_reminder"] = pending_reminder
-                    await _complete_immediate_turn(
-                        "What should the Nova reminder say?",
-                        remember_response=False,
-                        tone_domain="system",
-                    )
-                    continue
 
                 elif pending_stage == "body":
                     reminder_body = _reminder_body_from_request(reminder_reply, REMINDER_BODY_FIRST_RE)
@@ -2382,6 +2466,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # Reminder creation remains deterministic through persistence. No
             # action-shaped reminder request may reach streamed GeneralChat.
+            body_first_parts = _body_first_reminder_parts(command_text)
+            if body_first_parts is not None:
+                reminder_body, reminder_time = body_first_parts
+                await _save_local_reminder(
+                    reminder_body=reminder_body,
+                    time_text=reminder_time,
+                    recurrence="once",
+                )
+                continue
+
             time_first_reminder = REMINDER_TIME_ONLY_RE.match(command_text)
             if time_first_reminder:
                 reminder_time = str(time_first_reminder.group("time") or "").strip()
@@ -5498,26 +5592,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     },
                 )
 
-            # Streaming UX callback: sends early chat_stream frames
-            # so the client sees tokens arriving before the full
-            # response is assembled and post-processed. This is purely
-            # additive UX -- it does not change governance behavior.
-            _stream_loop = asyncio.get_running_loop()
+            # Buffer model chunks until the completed text passes the receipt
+            # claim guard. This prevents an unsupported action claim from being
+            # streamed before Nova can validate same-turn evidence.
+            advisory_chunks: list[str] = []
 
             def _on_advisory_chunk(text: str) -> None:
-                asyncio.run_coroutine_threadsafe(
-                    ws_send(
-                        ws,
-                        {
-                            "type": "chat_stream",
-                            "text": text,
-                            "turn_id": incoming_turn_id,
-                        },
-                    ),
-                    _stream_loop,
-                )
+                advisory_chunks.append(str(text or ""))
 
             session_state["foreground_model_busy"] = True
+            advisory_ledger_position = _ledger_position(getattr(governor, "ledger", None))
             try:
                 from src.conversation.awareness_brief_handler import (
                     governed_surface_request_guard_response,
@@ -5546,6 +5630,27 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 message = getattr(skill_result, "message", "") or ""
                 widget_data = getattr(skill_result, "widget_data", None)
                 result_data = getattr(skill_result, "data", {}) or {}
+
+                original_message = str(message)
+                if skill_name == "general_chat":
+                    turn_receipts = _ledger_events_since(
+                        getattr(governor, "ledger", None),
+                        advisory_ledger_position,
+                    )
+                    message = guard_general_chat_action_claim(message, turn_receipts=turn_receipts)
+                    if message == original_message:
+                        for chunk in advisory_chunks:
+                            if chunk:
+                                await ws_send(
+                                    ws,
+                                    {
+                                        "type": "chat_stream",
+                                        "text": chunk,
+                                        "turn_id": incoming_turn_id,
+                                    },
+                                )
+                    else:
+                        result_data["speakable_text"] = message
 
                 if skill_name == "general_chat" and result_data.get("speakable_text"):
                     message = str(message or "").strip()
