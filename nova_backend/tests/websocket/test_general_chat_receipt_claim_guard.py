@@ -11,6 +11,12 @@ from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSo
 
 pytestmark = pytest.mark.slow
 
+ACTION_CLAIM_NOTE = "Chat can't take actions. Nothing was saved, sent, scheduled or changed."
+
+
+def _guarded(claim):
+    return f"{claim}\n\n{ACTION_CLAIM_NOTE}"
+
 
 @pytest.mark.parametrize(
     "claim",
@@ -39,14 +45,14 @@ pytestmark = pytest.mark.slow
 )
 def test_general_chat_action_claim_is_always_blocked(claim):
     guarded = guard_general_chat_action_claim(claim, turn_receipts=[])
-    assert guarded == "I didn't do that."
+    assert guarded == _guarded(claim)
 
     fake_matching_receipt = [
         {"event_type": "ACTION_COMPLETED", "action_kind": "sent", "success": True}
     ]
     assert (
         guard_general_chat_action_claim(claim, turn_receipts=fake_matching_receipt)
-        == "I didn't do that."
+        == _guarded(claim)
     )
 
 
@@ -85,7 +91,38 @@ def test_quoted_hypothetical_and_explanatory_action_language_passes(answer):
     ],
 )
 def test_passive_or_subjectless_action_claim_is_blocked(claim):
-    assert guard_general_chat_action_claim(claim, turn_receipts=[]) == "I didn't do that."
+    assert guard_general_chat_action_claim(claim, turn_receipts=[]) == _guarded(claim)
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "I booked the table for you.",
+        "I texted your sister.",
+        "Your email to the team has been sent.",
+        "Sure, I just sent it.",
+        "Got it, saved.",
+        "I updated your calendar.",
+        "I don't have direct access to your calendar, but I've scheduled the event for you.",
+    ],
+)
+def test_everyday_external_action_claim_gets_truth_note(claim):
+    assert guard_general_chat_action_claim(claim, turn_receipts=[]) == _guarded(claim)
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "I added some examples below.",
+        "I removed the jargon from this explanation.",
+        "I remember you asked about TCP earlier.",
+        "Did you mean the reminder was set or not?",
+        "You could say: I sent the report.",
+    ],
+)
+def test_everyday_non_action_language_has_no_truth_note(answer):
+    assert guard_general_chat_action_claim(answer, turn_receipts=[]) == answer
+    assert ACTION_CLAIM_NOTE not in guard_general_chat_action_claim(answer, turn_receipts=[])
 
 
 def test_unreceipted_model_claim_is_never_streamed(monkeypatch):
@@ -104,4 +141,4 @@ def test_unreceipted_model_claim_is_never_streamed(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
-    assert "I didn't do that." in _chat_messages(ws)
+    assert ACTION_CLAIM_NOTE in _chat_messages(ws)

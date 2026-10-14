@@ -580,6 +580,26 @@ def test_unrelated_question_during_pending_time_is_not_consumed_and_prompt_expir
     assert not any("I still need a reminder time" in message for message in messages)
 
 
+def test_abandoned_new_reminder_replaces_stale_saved_evidence(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to test Nova",
+            "remind me to call insurance",
+            "explain TCP vs UDP",
+            "did you save that reminder?",
+        ],
+        store,
+    )
+
+    messages = _chat_messages(ws)
+    assert len(store.created) == 1
+    assert any("reminder was not saved" in message.lower() for message in messages)
+    assert any("did not save the most recent reminder request" in message for message in messages)
+    assert sum("Yes. Nova saved reminder" in message for message in messages) == 0
+
+
 @pytest.mark.parametrize(
     "phrase",
     [
