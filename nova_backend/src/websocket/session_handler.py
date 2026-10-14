@@ -501,6 +501,9 @@ def _action_claim_is_quoted_or_hypothetical(message: str, start: int) -> bool:
     after = message[start:]
     if before.count('"') % 2 == 1 and after.count('"') % 2 == 1:
         return True
+    sentence_end = re.search(r"[.!?](?:\s|$)", after)
+    if sentence_end and sentence_end.group(0).lstrip().startswith("?"):
+        return True
     sentence_start = max(before.rfind("."), before.rfind("!"), before.rfind("?"), before.rfind("\n"))
     prefix = before[sentence_start + 1 :].strip().lower()
     return bool(
@@ -521,8 +524,6 @@ def guard_general_chat_action_claim(
     """Block action claims from GeneralChat, which has no execution authority."""
     del turn_receipts
     clean = str(message or "")
-    if clean.strip().endswith("?"):
-        return clean
     for pattern in _ACTION_CLAIM_PATTERNS:
         for match in pattern.finditer(clean):
             if not _action_claim_is_quoted_or_hypothetical(clean, match.start()):
