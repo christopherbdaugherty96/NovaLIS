@@ -159,3 +159,66 @@ def test_unreceipted_model_claim_is_never_streamed(monkeypatch):
 
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
     assert any(ACTION_CLAIM_NOTE in message for message in _chat_messages(ws))
+
+
+def test_claim_removed_by_tone_shaping_never_replays_raw_chunks(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
+        lambda self, **kwargs: [],
+    )
+    ws = _ScriptedWebSocket(["please think about this"])
+    raw_reply = (
+        "TCP is connection-oriented. UDP is datagram-oriented. I sent the report."
+    )
+
+    def _stream_reply(*args, **kwargs):
+        on_chunk = kwargs.get("on_chunk")
+        if on_chunk:
+            for chunk in (
+                "TCP is connection-oriented. ",
+                "UDP is datagram-oriented. ",
+                "I sent the report.",
+            ):
+                on_chunk(chunk)
+        return raw_reply
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_stream_reply):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+    assert all("I sent the report" not in str(message) for message in ws.sent_messages)
+    assert any(
+        "TCP is connection-oriented. UDP is datagram-oriented." in message
+        for message in _chat_messages(ws)
+    )
+
+
+def test_clean_general_chat_reply_uses_final_message_without_stream_frames(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
+        lambda self, **kwargs: [],
+    )
+    ws = _ScriptedWebSocket(["compare TCP and UDP"])
+    clean_reply = "TCP is connection-oriented. UDP is datagram-oriented."
+
+    def _stream_reply(*args, **kwargs):
+        on_chunk = kwargs.get("on_chunk")
+        if on_chunk:
+            on_chunk(clean_reply)
+        return clean_reply
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_stream_reply):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+    assert any(clean_reply in message for message in _chat_messages(ws))
