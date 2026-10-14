@@ -502,3 +502,63 @@ def test_summary_failure_does_not_retract_successful_persistence(monkeypatch):
     assert any("Text: call mom" in message for message in messages)
     assert any("Schedule overview is temporarily unavailable" in message for message in messages)
     assert not any("No reminder was created" in message for message in messages)
+
+
+def test_body_first_reminder_with_time_suffix_saves_without_prompt(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me to call insurance tomorrow at 3pm"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call insurance"
+    assert store.created[0]["next_run_at"].hour == 15
+    assert not any("What time should Nova" in message for message in _chat_messages(ws))
+
+
+def test_weekday_time_in_initial_reminder_request_saves(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me to call insurance on Friday at 10am"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call insurance"
+    assert store.created[0]["next_run_at"].weekday() == 4
+    assert store.created[0]["next_run_at"].hour == 10
+
+
+def test_weekday_time_in_pending_time_reply_saves(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me to call insurance", "on Friday at 10am"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call insurance"
+    assert store.created[0]["next_run_at"].weekday() == 4
+
+
+def test_unrelated_question_during_pending_time_is_not_consumed_and_prompt_expires(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me to call insurance", "what is TCP?", "3 PM"],
+        store,
+    )
+
+    assert store.created == []
+    messages = _chat_messages(ws)
+    assert any("TCP" in message for message in messages)
+    assert not any("I still need a reminder time" in message for message in messages)
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "what do I still need to follow up on?",
+        "what's still open?",
+        "show my reminders",
+        "what reminders do I have?",
+    ],
+)
+def test_natural_reminder_list_phrases_route_to_authoritative_store(monkeypatch, phrase):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, [phrase], store)
+
+    assert any("Scheduled Updates" in message for message in _chat_messages(ws))
+    assert any(message.get("type") == "notification_schedule" for message in ws.sent_messages)
