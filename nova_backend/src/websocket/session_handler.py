@@ -441,9 +441,9 @@ def _reminder_body_from_request(raw: str, body_pattern: Any) -> str:
 
 _BODY_FIRST_REMINDER_WITH_TIME_RE = re.compile(
     r"^\s*remind\s+me\s+to\s+(?P<body>.+?)\s+"
-    r"(?P<time>(?:(?:today|tomorrow)\s+(?:at\s+)?|on\s+)?"
-    r"(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)?"
-    r"(?:\s+at\s+)?(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)))\s*$",
+    r"(?P<time>(?:(?:today|tomorrow)\s+(?:at\s+)?"
+    r"|(?:on\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+at\s+"
+    r"|at\s+)(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)))\s*$",
     re.IGNORECASE,
 )
 
@@ -454,71 +454,35 @@ def _body_first_reminder_parts(raw: str) -> tuple[str, str] | None:
         return None
     body = str(match.group("body") or "").strip()[:400]
     time_text = str(match.group("time") or "").strip()
+    if time_text.lower().startswith("at "):
+        time_text = time_text[3:].strip()
     return (body, time_text) if body and time_text else None
 
 
-_ACTION_CLAIM_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("reminder_set", re.compile(r"\b(?:i\s+)?(?:set|saved)\s+(?:the|a|that|your)\s+reminder\b", re.I)),
-    ("remembered", re.compile(r"\b(?:i(?:'ll|\s+will)?\s+)?remember(?:ed)?\s+that\b", re.I)),
-    ("forgot", re.compile(r"\b(?:i\s+)?(?:forgot|removed)\s+(?:that|the)\s+memory\b", re.I)),
-    ("deleted", re.compile(r"\b(?:i\s+)?deleted\s+(?:it|that|the\s+\w+)\b", re.I)),
-    ("cancelled", re.compile(r"\b(?:i\s+)?cancelled\s+(?:it|that|the\s+\w+)\b", re.I)),
-    ("completed", re.compile(r"\b(?:i\s+)?completed\s+(?:it|that|the\s+\w+)\b", re.I)),
-    ("sent", re.compile(r"\b(?:i\s+)?(?:emailed|sent)\s+(?:it|that|the\s+\w+)\b", re.I)),
-    ("scheduled", re.compile(r"\b(?:i\s+)?scheduled\s+(?:it|that|the\s+\w+)\b", re.I)),
-    ("saved", re.compile(r"\b(?:i\s+)?saved\s+(?:it|that|the\s+\w+|.+?for\s+you)\b", re.I)),
+_ACTION_CLAIM_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"\bi(?:'ve|'ll|'d|\s+have|\s+will)?\s+"
+        r"(?:saved|remember|remembered|forgot|forgotten|deleted|removed|set|cancelled|canceled|"
+        r"completed|emailed|sent|scheduled|added)\b",
+        re.I,
+    ),
+    re.compile(r"\bi(?:'ll|\s+will)\s+remind\s+you\b", re.I),
+    re.compile(r"\byour\s+reminder\s+(?:is|was)\s+set\b", re.I),
+    re.compile(r"\b(?:done|all\s+set)\b[^.!?]*\breminder\s+(?:is\s+|was\s+)?created\b", re.I),
 )
 
 
 def guard_general_chat_action_claim(
     message: str,
     *,
-    turn_receipts: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+    turn_receipts: list[dict[str, Any]] | tuple[dict[str, Any], ...] = (),
 ) -> str:
-    """Block model-authored completion claims without matching same-turn evidence."""
+    """Block action claims from GeneralChat, which has no execution authority."""
+    del turn_receipts
     clean = str(message or "")
-    claimed_actions = [action for action, pattern in _ACTION_CLAIM_PATTERNS if pattern.search(clean)]
-    if not claimed_actions:
-        return clean
-    proven_actions = {
-        str(receipt.get("action_kind") or "").strip().lower()
-        for receipt in turn_receipts
-        if isinstance(receipt, dict)
-        and str(receipt.get("event_type") or "").strip().upper()
-        in {"ACTION_COMPLETED", "NOTIFICATION_SCHEDULE_CREATED", "NOTIFICATION_SCHEDULE_CANCELLED"}
-        and receipt.get("success", True) is not False
-    }
-    if all(action in proven_actions for action in claimed_actions):
+    if not any(pattern.search(clean) for pattern in _ACTION_CLAIM_PATTERNS):
         return clean
     return "I didn't do that."
-
-
-def _ledger_position(ledger: Any) -> int | None:
-    path = getattr(ledger, "path", None)
-    if path is None:
-        return None
-    try:
-        return int(Path(path).stat().st_size)
-    except (OSError, TypeError, ValueError):
-        return None
-
-
-def _ledger_events_since(ledger: Any, position: int | None) -> list[dict[str, Any]]:
-    """Read only events appended after the turn snapshot; failure yields no proof."""
-    path = getattr(ledger, "path", None)
-    if path is None or position is None:
-        return []
-    events: list[dict[str, Any]] = []
-    try:
-        with Path(path).open("r", encoding="utf-8") as handle:
-            handle.seek(position)
-            for line in handle:
-                payload = json.loads(line)
-                if isinstance(payload, dict):
-                    events.append(payload)
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
-        return []
-    return events
 
 
 # ---------------------------------------------------------------------------
@@ -1765,6 +1729,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         reminder_time = reminder_reply
                     else:
                         session_state["pending_reminder"] = None
+                        await send_chat_message(
+                            ws,
+                            "That reminder was not saved because your reply was not a supported reminder time.",
+                            tone_domain="system",
+                        )
 
                     if reminder_time:
                         pending_reminder["reminder_time"] = reminder_time
@@ -5592,16 +5561,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     },
                 )
 
-            # Buffer model chunks until the completed text passes the receipt
-            # claim guard. This prevents an unsupported action claim from being
-            # streamed before Nova can validate same-turn evidence.
+            # Buffer model chunks until the completed text passes the action-
+            # claim guard. GeneralChat has no execution authority, so it cannot
+            # truthfully claim that it changed state.
             advisory_chunks: list[str] = []
 
             def _on_advisory_chunk(text: str) -> None:
                 advisory_chunks.append(str(text or ""))
 
             session_state["foreground_model_busy"] = True
-            advisory_ledger_position = _ledger_position(getattr(governor, "ledger", None))
             try:
                 from src.conversation.awareness_brief_handler import (
                     governed_surface_request_guard_response,
@@ -5633,11 +5601,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
                 original_message = str(message)
                 if skill_name == "general_chat":
-                    turn_receipts = _ledger_events_since(
-                        getattr(governor, "ledger", None),
-                        advisory_ledger_position,
-                    )
-                    message = guard_general_chat_action_claim(message, turn_receipts=turn_receipts)
+                    message = guard_general_chat_action_claim(message)
                     if message == original_message:
                         for chunk in advisory_chunks:
                             if chunk:
