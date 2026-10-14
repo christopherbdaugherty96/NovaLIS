@@ -191,7 +191,9 @@ def test_claim_removed_by_tone_shaping_never_replays_raw_chunks(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
-    assert all("I sent the report" not in str(message) for message in ws.sent_messages)
+    final = _chat_messages(ws)[-1]
+    assert "I sent the report" in final
+    assert "Chat can't take actions" in final
     assert any(
         "TCP is connection-oriented. UDP is datagram-oriented." in message
         for message in _chat_messages(ws)

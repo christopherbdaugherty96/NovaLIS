@@ -1087,6 +1087,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             session_state,
             str(speakable_message if speakable_message is not None else presented_message or "").strip(),
         )
+        session_context.extend(
+            [
+                {"role": "user", "content": str(session_state.get("_current_user_text") or "").strip()},
+                {"role": "nova_result", "content": clean_message.strip()},
+            ]
+        )
+        del session_context[:-20]
         session_state["turn_count"] += 1
 
     async def _save_local_reminder(
@@ -1183,6 +1190,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 log.exception("Local Nova reminder widget failed after persistence")
         await send_chat_done(ws)
         _maybe_auto_speak_for_voice_turn(session_state, str(presented_message or "").strip())
+        session_context.extend(
+            [
+                {"role": "user", "content": str(session_state.get("_current_user_text") or "").strip()},
+                {"role": "nova_result", "content": success_message},
+            ]
+        )
+        del session_context[:-20]
         session_state["turn_count"] += 1
 
     async def _complete_silent_widget_refresh() -> None:
@@ -1507,6 +1521,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             raw_text = (msg.get("text") or "").strip()
+            session_state["_current_user_text"] = raw_text
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue

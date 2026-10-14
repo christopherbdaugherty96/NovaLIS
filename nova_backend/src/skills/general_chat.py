@@ -115,10 +115,9 @@ class GeneralChatSkill(BaseSkill):
         "- Give complete, useful answers. Don't cut yourself short.\n"
         "- Use natural, conversational language with good flow.\n"
         "- Match the user's energy — casual when they're casual, focused when they need depth.\n"
-        "- If you know things about the user from the memory context below, "
-        "weave them in naturally — do not announce that you are recalling memory.\n"
+        "- Use a remembered fact only when it directly bears on the question; never bring one up otherwise.\n"
         "- Do not introduce yourself unless explicitly asked.\n"
-        "- Do not claim capabilities you do not have.\n"
+        "- Chat cannot take actions. Never describe anything as saved, sent, scheduled, changed, deleted, or completed by chat.\n"
         "- Do not mention being an AI, virtual assistant, or similar.\n"
         "- If the request is unclear, ask a quick clarification.\n"
         "\n"
@@ -357,7 +356,7 @@ class GeneralChatSkill(BaseSkill):
             return "balanced"
         return profile
 
-    def _build_memory_context(self) -> str:
+    def _build_memory_context(self, query: str = "") -> str:
         """Build a compact memory context block for prompt injection."""
         parts: list[str] = []
 
@@ -372,7 +371,10 @@ class GeneralChatSkill(BaseSkill):
 
         try:
             user_ctx = self._user_memory.render_context_block(max_chars=300)
-            if user_ctx:
+            query_terms = set(re.findall(r"[a-z0-9']+", str(query).lower()))
+            memory_terms = set(re.findall(r"[a-z0-9']+", str(user_ctx).lower()))
+            relevant = bool(query_terms & memory_terms - {"the", "is", "my", "a", "an", "to"})
+            if user_ctx and relevant:
                 parts.append(
                     "Persisted user memory (respect each epistemic label; "
                     f"candidate memory is not fact):\n{user_ctx}"
@@ -506,11 +508,27 @@ class GeneralChatSkill(BaseSkill):
                 return self._enforce_concise_response(text, max_sentences=6, max_chars=900)
             return self._enforce_concise_response(text, max_sentences=5, max_chars=760)
 
-        if mode == "casual":
-            return self._enforce_concise_response(text, max_sentences=2, max_chars=260)
-        if mode in {"analytical", "implementation"}:
-            return self._enforce_concise_response(text, max_sentences=4, max_chars=520)
         return text
+
+    @staticmethod
+    def _build_model_messages(query: str, context: Optional[list] = None) -> list[dict[str, str]]:
+        """Keep complete recent turns within a conservative ~6K-token budget."""
+        budget_chars = 24000
+        current = {"role": "user", "content": str(query or "").strip()}
+        selected: list[dict[str, str]] = []
+        used = len(current["content"])
+        for item in reversed(list(context or [])[-12:]):
+            role = str(item.get("role") or "").strip()
+            content = str(item.get("content") or "").strip()
+            if role not in {"user", "assistant", "nova_result"} or not content:
+                continue
+            if used + len(content) > budget_chars:
+                continue
+            selected.append({"role": role, "content": content})
+            used += len(content)
+        selected.reverse()
+        selected.append(current)
+        return selected
 
     @classmethod
     def _query_presentation_preference(cls, query: str) -> str:
@@ -716,31 +734,12 @@ class GeneralChatSkill(BaseSkill):
                 "Intelligence is the reasoning layer that interprets a request, connects ideas, and decides what answer or plan makes sense. "
                 "In Nova, memory can inform an answer, but it does not authorize actions; governed actions still need visible boundaries, receipts, and review."
             )
-        if canonical in {"explain what shopify is", "what is shopify"}:
-            return (
-                "Shopify is a commerce platform for running an online store: products, orders, payments, inventory, storefront pages, and related reporting. "
-                "For Nova, the safe version is read-only intelligence first: summarize store status, explain trends, and produce receipts without changing products, orders, customers, or payments."
-            )
-        if "electric bikes" in canonical or "electric bicycles" in canonical or "e-bikes" in canonical:
-            return (
-                "Electric bikes are bicycles with a battery-powered motor that assists your pedaling. "
-                "They are useful for commuting, hills, cargo, and longer rides because they reduce effort without turning the bike into a full motorcycle."
-            )
         if canonical == "how would nova use it safely":
             return (
                 "Safely means read-only first. Nova should inspect or summarize data, show exactly which capability is being used, keep boundaries visible, and record receipts for governed actions. "
                 "It should ask before any external-effect step and treat conversation or memory as context, not permission."
             )
         if canonical == "what should it avoid doing":
-            prior = " ".join(
-                str(value or "")
-                for value in dict((session_state or {}).get("conversation_context") or {}).values()
-            ).lower()
-            if "electric bike" in prior or "electric bikes" in prior:
-                return (
-                    "The main downsides are cost, battery charging, battery replacement over time, heavier weight, theft risk, and more maintenance than a simple bike. "
-                    "Rules also vary by place, especially around speed classes and where e-bikes are allowed."
-                )
             return (
                 "Nova should avoid broad autonomy: no silent writes, no sending messages or changing external systems without confirmation, no treating memory as permission, and no hiding uncertainty. "
                 "For connectors like Shopify, that means no product, order, customer, payment, or fulfillment changes unless a future capability is explicitly governed and proven."
@@ -1618,7 +1617,7 @@ class GeneralChatSkill(BaseSkill):
             explicit_depth=explicit_depth,
         )
         shaped_style = self._presentation_style(style, presentation_preference=presentation_preference)
-        memory_context = self._build_memory_context()
+        memory_context = self._build_memory_context(normalized_query)
         request_understanding_block = str(
             (session_state or {}).get("request_understanding_prompt_block") or ""
         ).strip()
@@ -1642,6 +1641,7 @@ class GeneralChatSkill(BaseSkill):
             context=context,
             session_state=session_state,
         )
+        messages = self._build_model_messages(normalized_query, context)
         session_id = str((session_state or {}).get("session_id") or "").strip() or None
 
         try:
@@ -1656,6 +1656,7 @@ class GeneralChatSkill(BaseSkill):
                 max_tokens=max_tokens,
                 temperature=0.7 if mode == "casual" else 0.5,
                 on_chunk=on_chunk,
+                messages=messages,
             )
             text = self._sanitize_response(text or "")
             fallback = self._local_conceptual_fallback(normalized_query, session_state)

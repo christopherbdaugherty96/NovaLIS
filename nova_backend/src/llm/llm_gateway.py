@@ -37,6 +37,7 @@ def generate_chat(
     temperature: float = 0.3,
     timeout: float | None = None,
     on_chunk: Callable[[str], None] | None = None,
+    messages: list[dict[str, str]] | None = None,
 ) -> str | None:
     """Centralized non-authorizing local model gateway (text in, text out).
 
@@ -55,6 +56,7 @@ def generate_chat(
             request_id=request_id,
             session_id=session_id,
             on_chunk=on_chunk,
+            messages=messages,
         )
     except Exception as error:
         logger.error("LLM gateway call failed: %s", error)

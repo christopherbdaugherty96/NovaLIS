@@ -300,6 +300,7 @@ class LLMManager:
         request_id: Optional[str] = None,
         session_id: Optional[str] = None,
         on_chunk: Optional[Callable[[str], None]] = None,
+        messages: Optional[list[dict[str, str]]] = None,
     ) -> Optional[str]:
         """
         Send prompt to LLM and return plain text.
@@ -331,10 +332,20 @@ class LLMManager:
             options["num_predict"] = int(max_tokens)
         request_timeout = float(timeout) if timeout is not None else float(self.timeout)
 
-        messages: list[dict[str, str]] = []
+        request_messages: list[dict[str, str]] = []
         if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": prompt})
+            request_messages.append({"role": "system", "content": system})
+        for item in list(messages or []):
+            role = str(item.get("role") or "").strip()
+            content = str(item.get("content") or "").strip()
+            if not content:
+                continue
+            if role == "nova_result":
+                request_messages.append({"role": "system", "content": f"Nova result (not assistant prose): {content}"})
+            elif role in {"user", "assistant"}:
+                request_messages.append({"role": role, "content": content})
+        if not messages:
+            request_messages.append({"role": "user", "content": prompt})
 
         # Streaming path: use request_stream and call on_chunk for
         # each token. Assembles and returns the full text identically
@@ -346,7 +357,7 @@ class LLMManager:
                     url=f"{self.base_url.rstrip('/')}/api/chat",
                     json_payload={
                         "model": self.active_model,
-                        "messages": messages,
+                        "messages": request_messages,
                         "stream": True,
                         "options": options,
                     },
@@ -374,7 +385,7 @@ class LLMManager:
                 url=f"{self.base_url.rstrip('/')}/api/chat",
                 json_payload={
                     "model": self.active_model,
-                    "messages": messages,
+                    "messages": request_messages,
                     "stream": False,
                     "options": options,
                 },
@@ -408,7 +419,7 @@ class LLMManager:
                         url=f"{self.base_url.rstrip('/')}/api/chat",
                         json_payload={
                             "model": self.active_model,
-                            "messages": messages,
+                            "messages": request_messages,
                             "stream": False,
                             "options": fallback_options,
                         },
