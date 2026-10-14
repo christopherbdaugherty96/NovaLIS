@@ -4,7 +4,6 @@ from types import SimpleNamespace
 
 import pytest
 import requests
-
 from src.governor.exceptions import NetworkMediatorError
 from src.governor.network_mediator import NetworkMediator
 
