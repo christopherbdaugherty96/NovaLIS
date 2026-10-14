@@ -1,3 +1,6 @@
+import asyncio
+
+import src.skills.general_chat as general_chat_module
 from src.skills.general_chat import GeneralChatSkill
 
 
@@ -64,3 +67,51 @@ def test_message_budget_reserves_system_and_reply_space_without_partial_turns():
         "current", context, system_prompt="s" * 12000, reply_tokens=2000
     )
     assert messages == [{"role": "user", "content": "current"}]
+
+
+def _messages_sent_to_model(monkeypatch, query, context):
+    captured = {}
+
+    def fake_generate_chat(*args, **kwargs):
+        captured.update(kwargs)
+        return "A complete answer."
+
+    monkeypatch.setattr(general_chat_module, "generate_chat", fake_generate_chat)
+    result = asyncio.run(GeneralChatSkill()._run_local_model(query, context=context))
+    assert result is not None and result.success
+    return captured["messages"]
+
+
+def test_rent_followup_is_sent_as_real_complete_turns(monkeypatch):
+    context = [
+        {"role": "user", "content": "My landlord proposed a 12% rent increase."},
+        {
+            "role": "assistant",
+            "content": "Ask for the basis, compare nearby rents, and propose a smaller increase.",
+        },
+    ]
+    assert _messages_sent_to_model(monkeypatch, "ok and what if he says no", context) == context + [
+        {"role": "user", "content": "Okay and what if he says no."}
+    ]
+
+
+def test_reminder_result_is_sent_as_a_nova_result_not_assistant_prose(monkeypatch):
+    context = [
+        {"role": "user", "content": "remind me to call mom at 3pm"},
+        {"role": "nova_result", "content": "Reminder saved: call mom at 3 PM."},
+    ]
+    assert _messages_sent_to_model(monkeypatch, "what time did I say?", context) == context + [
+        {"role": "user", "content": "What time did I say?"}
+    ]
+
+
+def test_topic_switch_and_return_keeps_typed_turn_order(monkeypatch):
+    context = [
+        {"role": "user", "content": "Help me prepare for a rent discussion."},
+        {"role": "assistant", "content": "Start with comparable rents and your payment history."},
+        {"role": "user", "content": "What is TCP?"},
+        {"role": "assistant", "content": "TCP is a reliable transport protocol."},
+    ]
+    assert _messages_sent_to_model(monkeypatch, "Back to rent: what if he says no?", context) == context + [
+        {"role": "user", "content": "Back to rent: what if he says no?"}
+    ]
