@@ -373,7 +373,9 @@ class GeneralChatSkill(BaseSkill):
             user_ctx = self._user_memory.render_context_block(max_chars=300)
             query_terms = set(re.findall(r"[a-z0-9']+", str(query).lower()))
             memory_terms = set(re.findall(r"[a-z0-9']+", str(user_ctx).lower()))
-            relevant = bool(query_terms & memory_terms - {"the", "is", "my", "a", "an", "to"})
+            relevant = not query_terms or bool(
+                query_terms & memory_terms - {"the", "is", "my", "a", "an", "to"}
+            )
             if user_ctx and relevant:
                 parts.append(
                     "Persisted user memory (respect each epistemic label; "
