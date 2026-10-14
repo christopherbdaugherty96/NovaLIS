@@ -342,7 +342,7 @@ class LLMManager:
                 continue
             if role == "nova_result":
                 request_messages.append({"role": "system", "content": f"Nova result (not assistant prose): {content}"})
-            elif role in {"user", "assistant"}:
+            elif role in {"system", "user", "assistant"}:
                 request_messages.append({"role": role, "content": content})
         if not messages:
             request_messages.append({"role": "user", "content": prompt})

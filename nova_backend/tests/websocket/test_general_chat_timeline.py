@@ -31,6 +31,7 @@ def test_timeline_drops_a_long_turn_whole_instead_of_truncating_it():
     )
     assert all(row["content"] != too_large for row in messages)
     assert all(not row["content"].startswith("x") for row in messages)
+    assert all(row["content"] != old for row in messages)
     assert messages[-1] == {"role": "user", "content": "current"}
 
 
@@ -90,9 +91,10 @@ def test_rent_followup_is_sent_as_real_complete_turns(monkeypatch):
             "content": "Ask for the basis, compare nearby rents, and propose a smaller increase.",
         },
     ]
-    assert _messages_sent_to_model(monkeypatch, "ok and what if he says no", context) == context + [
-        {"role": "user", "content": "Okay and what if he says no."}
-    ]
+    messages = _messages_sent_to_model(monkeypatch, "ok and what if he says no", context)
+    assert messages[:2] == context
+    assert messages[-2]["role"] == "system"
+    assert messages[-1] == {"role": "user", "content": "Okay and what if he says no."}
 
 
 def test_reminder_result_is_sent_as_a_nova_result_not_assistant_prose(monkeypatch):
@@ -100,9 +102,10 @@ def test_reminder_result_is_sent_as_a_nova_result_not_assistant_prose(monkeypatc
         {"role": "user", "content": "remind me to call mom at 3pm"},
         {"role": "nova_result", "content": "Reminder saved: call mom at 3 PM."},
     ]
-    assert _messages_sent_to_model(monkeypatch, "what time did I say?", context) == context + [
-        {"role": "user", "content": "What time did I say?"}
-    ]
+    messages = _messages_sent_to_model(monkeypatch, "what time did I say?", context)
+    assert messages[:2] == context
+    assert messages[-2]["role"] == "system"
+    assert messages[-1] == {"role": "user", "content": "What time did I say?"}
 
 
 def test_topic_switch_and_return_keeps_typed_turn_order(monkeypatch):
@@ -112,6 +115,7 @@ def test_topic_switch_and_return_keeps_typed_turn_order(monkeypatch):
         {"role": "user", "content": "What is TCP?"},
         {"role": "assistant", "content": "TCP is a reliable transport protocol."},
     ]
-    assert _messages_sent_to_model(monkeypatch, "Back to rent: what if he says no?", context) == context + [
-        {"role": "user", "content": "Back to rent: what if he says no?"}
-    ]
+    messages = _messages_sent_to_model(monkeypatch, "Back to rent: what if he says no?", context)
+    assert messages[:4] == context
+    assert messages[-2]["role"] == "system"
+    assert messages[-1] == {"role": "user", "content": "Back to rent: what if he says no?"}
