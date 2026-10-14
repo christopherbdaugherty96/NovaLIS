@@ -370,13 +370,18 @@ class GeneralChatSkill(BaseSkill):
             pass
 
         try:
-            user_ctx = self._user_memory.render_context_block(max_chars=300)
-            query_terms = set(re.findall(r"[a-z0-9']+", str(query).lower()))
-            memory_terms = set(re.findall(r"[a-z0-9']+", str(user_ctx).lower()))
-            relevant = not query_terms or bool(
-                query_terms & memory_terms - {"the", "is", "my", "a", "an", "to"}
-            )
-            if user_ctx and relevant:
+            if str(query or "").strip() and hasattr(self._user_memory, "search"):
+                rows = list(self._user_memory.search(query, limit=3) or [])
+                user_ctx = "\n".join(
+                    f"- [{str(row.get('source') or 'observed')}; "
+                    f"{'confirmed' if str(row.get('source')) == 'explicit' else 'candidate'}] "
+                    f"{str(row.get('key') or '').strip()}: {str(row.get('value') or '').strip()}"
+                    for row in rows
+                    if str(row.get("value") or "").strip()
+                )
+            else:
+                user_ctx = self._user_memory.render_context_block(max_chars=300)
+            if user_ctx:
                 parts.append(
                     "Persisted user memory (respect each epistemic label; "
                     f"candidate memory is not fact):\n{user_ctx}"
@@ -513,9 +518,15 @@ class GeneralChatSkill(BaseSkill):
         return text
 
     @staticmethod
-    def _build_model_messages(query: str, context: Optional[list] = None) -> list[dict[str, str]]:
+    def _build_model_messages(
+        query: str,
+        context: Optional[list] = None,
+        *,
+        system_prompt: str = "",
+        reply_tokens: int = 400,
+    ) -> list[dict[str, str]]:
         """Keep complete recent turns within a conservative ~6K-token budget."""
-        budget_chars = 24000
+        budget_chars = max(1000, 24000 - len(str(system_prompt or "")) - max(0, int(reply_tokens)) * 4)
         current = {"role": "user", "content": str(query or "").strip()}
         selected: list[dict[str, str]] = []
         used = len(current["content"])
@@ -1643,7 +1654,12 @@ class GeneralChatSkill(BaseSkill):
             context=context,
             session_state=session_state,
         )
-        messages = self._build_model_messages(normalized_query, context)
+        messages = self._build_model_messages(
+            normalized_query,
+            context,
+            system_prompt=system_prompt,
+            reply_tokens=max_tokens,
+        )
         session_id = str((session_state or {}).get("session_id") or "").strip() or None
 
         try:
