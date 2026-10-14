@@ -8,7 +8,7 @@ import threading
 from collections import defaultdict
 from time import time
 from typing import Any, Dict, Optional
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 
 import requests
 from src.governor.exceptions import (
@@ -37,6 +37,37 @@ CONNECTION_OPERATION_ENDPOINTS: dict[str, dict[str, tuple[str, str]]] = {
     }
 }
 SAFE_CONNECTION_ERROR_RE = re.compile(r"^[a-z0-9_-]{1,64}$")
+
+
+def _effective_origin(url: str) -> tuple[str, str, int | None]:
+    """Return the normalized origin used for redirect authorization."""
+    parsed = urlparse(url)
+    scheme = parsed.scheme.lower()
+    default_port = 80 if scheme == "http" else 443 if scheme == "https" else None
+    try:
+        port = parsed.port
+    except ValueError as error:
+        raise NetworkMediatorError("Network invalid redirect target.") from error
+    return (scheme, (parsed.hostname or "").lower(), port or default_port)
+
+
+def _url_without_credentials_or_query(url: str) -> str:
+    """Return URL evidence that cannot contain userinfo or query credentials."""
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname or ""
+    except ValueError:
+        return "invalid-url"
+    if ":" in hostname and not hostname.startswith("["):
+        hostname = f"[{hostname}]"
+    netloc = hostname
+    try:
+        port = parsed.port
+    except ValueError:
+        port = None
+    if port is not None:
+        netloc = f"{netloc}:{port}"
+    return urlunparse((parsed.scheme, netloc, parsed.path, "", "", ""))
 
 
 def _http_exception_hosts() -> set[str]:
@@ -181,6 +212,18 @@ class NetworkMediator:
             correlation["request_id"] = request_id
         if session_id:
             correlation["session_id"] = session_id
+
+        def log_failure(error_code: str) -> None:
+            self.ledger.log_event(
+                "NETWORK_CALL_FAILED",
+                {
+                    "capability_id": capability_id,
+                    "url": _url_without_credentials_or_query(url),
+                    "error": error_code,
+                    **correlation,
+                },
+            )
+
         try:
             response = None
             for _ in range(MAX_REDIRECT_HOPS + 1):
@@ -199,7 +242,17 @@ class NetworkMediator:
                     location = response.headers.get("Location")
                     if not location:
                         raise NetworkMediatorError("Redirect response missing Location header.")
-                    current_url = urljoin(current_url, location)
+                    next_url = urljoin(current_url, location)
+                    try:
+                        next_origin = _effective_origin(next_url)
+                        current_origin = _effective_origin(current_url)
+                    except NetworkMediatorError:
+                        log_failure("invalid_redirect_target")
+                        raise
+                    if next_origin != current_origin:
+                        log_failure("cross_origin_redirect_rejected")
+                        raise NetworkMediatorError("Network cross-origin redirect rejected.")
+                    current_url = next_url
                     continue
 
                 response.raise_for_status()
@@ -207,16 +260,10 @@ class NetworkMediator:
             else:
                 raise NetworkMediatorError("Too many redirects.")
         except requests.RequestException as e:
-            self.ledger.log_event(
-                "NETWORK_CALL_FAILED",
-                {
-                    "capability_id": capability_id,
-                    "url": url,
-                    "error": str(e),
-                    **correlation,
-                },
-            )
-            raise NetworkMediatorError(f"Network call failed: {e}") from e
+            log_failure(type(e).__name__)
+            raise NetworkMediatorError(
+                f"Network call failed ({type(e).__name__})."
+            ) from e
 
         # 4) Return shape based on as_json
         result: Dict[str, Any] = {"status_code": response.status_code}
@@ -226,15 +273,7 @@ class NetworkMediator:
                 try:
                     data = response.json()
                 except ValueError as e:
-                    self.ledger.log_event(
-                        "NETWORK_CALL_FAILED",
-                        {
-                            "capability_id": capability_id,
-                            "url": url,
-                            "error": f"JSON parse failed: {e}",
-                            **correlation,
-                        },
-                    )
+                    log_failure("invalid_json")
                     raise NetworkMediatorError("Response was not valid JSON.") from e
             result["data"] = data
         else:
