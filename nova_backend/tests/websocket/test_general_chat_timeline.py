@@ -35,6 +35,11 @@ class _Memory:
     def render_context_block(self, max_chars=300):
         return "my sister's birthday is June 3"
 
+    def search(self, query, limit=3):
+        if "sister" in query.lower():
+            return [{"key": "sister birthday", "value": "June 3", "source": "explicit"}]
+        return []
+
 
 class _NovaMemory:
     def get_relationship_context(self, max_chars=150):
@@ -51,3 +56,11 @@ def test_unrelated_question_does_not_receive_user_memory():
 def test_directly_relevant_question_can_receive_user_memory():
     skill = GeneralChatSkill(user_memory=_Memory(), nova_memory=_NovaMemory())
     assert "sister" in skill._build_memory_context("when is my sister's birthday?").lower()
+
+
+def test_message_budget_reserves_system_and_reply_space_without_partial_turns():
+    context = [{"role": "user", "content": "a" * 5000}, {"role": "assistant", "content": "b" * 5000}]
+    messages = GeneralChatSkill._build_model_messages(
+        "current", context, system_prompt="s" * 12000, reply_tokens=2000
+    )
+    assert messages == [{"role": "user", "content": "current"}]
