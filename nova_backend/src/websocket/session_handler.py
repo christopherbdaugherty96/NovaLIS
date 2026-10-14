@@ -459,26 +459,33 @@ def _body_first_reminder_parts(raw: str) -> tuple[str, str] | None:
     return (body, time_text) if body and time_text else None
 
 
+_GENERAL_CHAT_ACTION_NOTE = (
+    "Chat can't take actions. Nothing was saved, sent, scheduled or changed."
+)
+
 _ACTION_CLAIM_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(
-        r"\bi(?:'ve|'ll|'d|\s+have|\s+will)?\s+"
-        r"(?:saved|remember|remembered|forgot|forgotten|deleted|removed|set|cancelled|canceled|"
-        r"completed|emailed|sent|scheduled|added)\b",
+        r"\bi(?:'ve|\s+have)?\s+(?:just\s+)?"
+        r"(?:saved|remembered|forgot|forgotten|deleted|cancelled|canceled|completed|emailed|"
+        r"sent|scheduled|booked|texted|updated|called|created|ordered|noted)\b",
         re.I,
     ),
-    re.compile(r"\bi(?:'ll|\s+will)\s+remind\s+you\b", re.I),
+    re.compile(r"\bi(?:'ll|\s+will)\s+(?:remember|remind\s+you)\b", re.I),
+    re.compile(r"\bi(?:'ve|\s+have)?\s+set\s+(?:a|the|your)\s+reminder\b", re.I),
+    re.compile(r"\bi(?:'ve|\s+have)?\s+added\b[^.!?]*\b(?:calendar|reminder|schedule|memory)\b", re.I),
+    re.compile(r"\bi(?:'ve|\s+have)?\s+removed\b[^.!?]*\b(?:calendar|reminder|memory|memories)\b", re.I),
     re.compile(
         r"\b(?:(?:the|your|a)\s+)?"
-        r"(?:reminder|email|message|task|event|appointment|memory|item)\s+"
+        r"(?:reminder|email|message|task|event|appointment|memory|item)\b[^.!?]{0,80}?\b"
         r"(?:(?:has|have)\s+been|was|is)\s+"
         r"(?:set|saved|remembered|forgotten|deleted|removed|cancelled|canceled|completed|"
         r"emailed|sent|scheduled|added|created)\b",
         re.I,
     ),
     re.compile(
-        r"(?:^|[.!?]\s+)(?:done|all\s+set)\b[^.!?]*\b"
-        r"(?:reminder|email|message|task|event|appointment|memory|item)\s+"
-        r"(?:set|saved|deleted|removed|cancelled|canceled|completed|emailed|sent|scheduled|created)\b",
+        r"(?:^|[.!?]\s+)(?:done|all\s+set|got\s+it)\b[^.!?]*\b"
+        r"(?:set|saved|remembered|forgotten|deleted|removed|cancelled|canceled|completed|"
+        r"emailed|sent|scheduled|booked|texted|updated|called|created|ordered|noted)\b",
         re.I,
     ),
     re.compile(
@@ -494,15 +501,13 @@ def _action_claim_is_quoted_or_hypothetical(message: str, start: int) -> bool:
     after = message[start:]
     if before.count('"') % 2 == 1 and after.count('"') % 2 == 1:
         return True
-    if before.count("'") % 2 == 1 and after.count("'") % 2 == 1:
-        return True
     sentence_start = max(before.rfind("."), before.rfind("!"), before.rfind("?"), before.rfind("\n"))
     prefix = before[sentence_start + 1 :].strip().lower()
     return bool(
         re.match(
             r"^(?:if|whether|suppose|assuming)\b|"
             r"^(?:in|for)\s+(?:this|the)\s+(?:example|sentence|quote)\b|"
-            r"^(?:rewrite|rephrase|edit|quote|translate|summari[sz]e|analy[sz]e)\b",
+            r"^(?:you\s+could\s+say|rewrite|rephrase|edit|quote|translate|summari[sz]e|analy[sz]e)\b",
             prefix,
         )
     )
@@ -516,10 +521,12 @@ def guard_general_chat_action_claim(
     """Block action claims from GeneralChat, which has no execution authority."""
     del turn_receipts
     clean = str(message or "")
+    if clean.strip().endswith("?"):
+        return clean
     for pattern in _ACTION_CLAIM_PATTERNS:
         for match in pattern.finditer(clean):
             if not _action_claim_is_quoted_or_hypothetical(clean, match.start()):
-                return "I didn't do that."
+                return f"{clean}\n\n{_GENERAL_CHAT_ACTION_NOTE}"
     return clean
 
 
@@ -1767,6 +1774,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         reminder_time = reminder_reply
                     else:
                         session_state["pending_reminder"] = None
+                        session_state["last_reminder_save_result"] = {
+                            "status": "not_saved",
+                            "reason": "unsupported_time_reply",
+                        }
                         await send_chat_message(
                             ws,
                             "That reminder was not saved because your reply was not a supported reminder time.",

@@ -141,4 +141,4 @@ def test_unreceipted_model_claim_is_never_streamed(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
-    assert ACTION_CLAIM_NOTE in _chat_messages(ws)
+    assert any(ACTION_CLAIM_NOTE in message for message in _chat_messages(ws))
