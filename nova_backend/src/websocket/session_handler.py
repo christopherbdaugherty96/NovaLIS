@@ -5649,22 +5649,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 widget_data = getattr(skill_result, "widget_data", None)
                 result_data = getattr(skill_result, "data", {}) or {}
 
-                original_message = str(message)
                 if skill_name == "general_chat":
                     message = guard_general_chat_action_claim(message)
-                    if message == original_message:
-                        for chunk in advisory_chunks:
-                            if chunk:
-                                await ws_send(
-                                    ws,
-                                    {
-                                        "type": "chat_stream",
-                                        "text": chunk,
-                                        "turn_id": incoming_turn_id,
-                                    },
-                                )
-                    else:
-                        result_data["speakable_text"] = message
+                    result_data["speakable_text"] = message
 
                 if skill_name == "general_chat" and result_data.get("speakable_text"):
                     message = str(message or "").strip()
