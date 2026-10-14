@@ -467,9 +467,45 @@ _ACTION_CLAIM_PATTERNS: tuple[re.Pattern[str], ...] = (
         re.I,
     ),
     re.compile(r"\bi(?:'ll|\s+will)\s+remind\s+you\b", re.I),
-    re.compile(r"\byour\s+reminder\s+(?:is|was)\s+set\b", re.I),
-    re.compile(r"\b(?:done|all\s+set)\b[^.!?]*\breminder\s+(?:is\s+|was\s+)?created\b", re.I),
+    re.compile(
+        r"\b(?:(?:the|your|a)\s+)?"
+        r"(?:reminder|email|message|task|event|appointment|memory|item)\s+"
+        r"(?:(?:has|have)\s+been|was|is)\s+"
+        r"(?:set|saved|remembered|forgotten|deleted|removed|cancelled|canceled|completed|"
+        r"emailed|sent|scheduled|added|created)\b",
+        re.I,
+    ),
+    re.compile(
+        r"(?:^|[.!?]\s+)(?:done|all\s+set)\b[^.!?]*\b"
+        r"(?:reminder|email|message|task|event|appointment|memory|item)\s+"
+        r"(?:set|saved|deleted|removed|cancelled|canceled|completed|emailed|sent|scheduled|created)\b",
+        re.I,
+    ),
+    re.compile(
+        r"(?:^|[.!?]\s+)(?:reminder|email|message|task|event|appointment|memory|item)\s+"
+        r"(?:set|saved|deleted|removed|cancelled|canceled|completed|emailed|sent|scheduled|created)\b",
+        re.I,
+    ),
 )
+
+
+def _action_claim_is_quoted_or_hypothetical(message: str, start: int) -> bool:
+    before = message[:start]
+    after = message[start:]
+    if before.count('"') % 2 == 1 and after.count('"') % 2 == 1:
+        return True
+    if before.count("'") % 2 == 1 and after.count("'") % 2 == 1:
+        return True
+    sentence_start = max(before.rfind("."), before.rfind("!"), before.rfind("?"), before.rfind("\n"))
+    prefix = before[sentence_start + 1 :].strip().lower()
+    return bool(
+        re.match(
+            r"^(?:if|whether|suppose|assuming)\b|"
+            r"^(?:in|for)\s+(?:this|the)\s+(?:example|sentence|quote)\b|"
+            r"^(?:rewrite|rephrase|edit|quote|translate|summari[sz]e|analy[sz]e)\b",
+            prefix,
+        )
+    )
 
 
 def guard_general_chat_action_claim(
@@ -480,9 +516,11 @@ def guard_general_chat_action_claim(
     """Block action claims from GeneralChat, which has no execution authority."""
     del turn_receipts
     clean = str(message or "")
-    if not any(pattern.search(clean) for pattern in _ACTION_CLAIM_PATTERNS):
-        return clean
-    return "I didn't do that."
+    for pattern in _ACTION_CLAIM_PATTERNS:
+        for match in pattern.finditer(clean):
+            if not _action_claim_is_quoted_or_hypothetical(clean, match.start()):
+                return "I didn't do that."
+    return clean
 
 
 # ---------------------------------------------------------------------------
