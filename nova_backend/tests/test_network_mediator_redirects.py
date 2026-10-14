@@ -91,10 +91,24 @@ def test_network_mediator_rejects_cross_origin_redirect_before_second_request(
             headers=headers,
             json_payload=json_payload,
             as_json=False,
+            request_id="request-123",
+            session_id="session-456",
         )
 
     assert len(attempts) == 1
     assert attempts[0]["url"] == "https://allowed.example/start"
+    assert mediator.ledger.events == [
+        (
+            "NETWORK_CALL_FAILED",
+            {
+                "capability_id": 16,
+                "url": "https://allowed.example/start",
+                "error": "cross_origin_redirect_rejected",
+                "request_id": "request-123",
+                "session_id": "session-456",
+            },
+        )
+    ]
 
 
 @pytest.mark.parametrize(
@@ -170,3 +184,77 @@ def test_network_mediator_failure_never_persists_or_propagates_query_secret(
     assert secret not in str(exc_info.value)
     assert mediator.ledger.events
     assert all(secret not in repr(event) for event in mediator.ledger.events)
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        "https://example.com:notaport/next",
+        "https://example.com:99999/next",
+    ],
+)
+def test_network_mediator_malformed_redirect_port_fails_cleanly_with_evidence(
+    monkeypatch, location
+):
+    mediator = _mediator()
+    attempts = 0
+
+    def _redirect(**_kwargs):
+        nonlocal attempts
+        attempts += 1
+        return _Response(302, location=location)
+
+    monkeypatch.setattr("src.governor.network_mediator.requests.request", _redirect)
+
+    with pytest.raises(NetworkMediatorError, match="invalid redirect target"):
+        mediator.request(
+            16,
+            "GET",
+            "https://example.com/start?key=fake-secret",
+            as_json=False,
+            request_id="request-123",
+            session_id="session-456",
+        )
+
+    assert attempts == 1
+    assert mediator.ledger.events == [
+        (
+            "NETWORK_CALL_FAILED",
+            {
+                "capability_id": 16,
+                "url": "https://example.com/start",
+                "error": "invalid_redirect_target",
+                "request_id": "request-123",
+                "session_id": "session-456",
+            },
+        )
+    ]
+    assert "fake-secret" not in repr(mediator.ledger.events)
+
+
+def test_network_mediator_failure_with_malformed_original_port_keeps_clean_evidence(
+    monkeypatch,
+):
+    mediator = _mediator()
+    secret = "fake-query-key-do-not-persist"
+    url = f"https://weather.example:99999/forecast?key={secret}"
+
+    def _fail(**_kwargs):
+        raise requests.RequestException(f"request failed for {url}")
+
+    monkeypatch.setattr("src.governor.network_mediator.requests.request", _fail)
+
+    with pytest.raises(NetworkMediatorError) as exc_info:
+        mediator.request(16, "GET", url, as_json=False)
+
+    assert secret not in str(exc_info.value)
+    assert mediator.ledger.events == [
+        (
+            "NETWORK_CALL_FAILED",
+            {
+                "capability_id": 16,
+                "url": "https://weather.example/forecast",
+                "error": "RequestException",
+            },
+        )
+    ]
