@@ -44,18 +44,29 @@ def _effective_origin(url: str) -> tuple[str, str, int | None]:
     parsed = urlparse(url)
     scheme = parsed.scheme.lower()
     default_port = 80 if scheme == "http" else 443 if scheme == "https" else None
-    return (scheme, (parsed.hostname or "").lower(), parsed.port or default_port)
+    try:
+        port = parsed.port
+    except ValueError as error:
+        raise NetworkMediatorError("Network invalid redirect target.") from error
+    return (scheme, (parsed.hostname or "").lower(), port or default_port)
 
 
 def _url_without_credentials_or_query(url: str) -> str:
     """Return URL evidence that cannot contain userinfo or query credentials."""
-    parsed = urlparse(url)
-    hostname = parsed.hostname or ""
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname or ""
+    except ValueError:
+        return "invalid-url"
     if ":" in hostname and not hostname.startswith("["):
         hostname = f"[{hostname}]"
     netloc = hostname
-    if parsed.port is not None:
-        netloc = f"{netloc}:{parsed.port}"
+    try:
+        port = parsed.port
+    except ValueError:
+        port = None
+    if port is not None:
+        netloc = f"{netloc}:{port}"
     return urlunparse((parsed.scheme, netloc, parsed.path, "", "", ""))
 
 
@@ -201,6 +212,18 @@ class NetworkMediator:
             correlation["request_id"] = request_id
         if session_id:
             correlation["session_id"] = session_id
+
+        def log_failure(error_code: str) -> None:
+            self.ledger.log_event(
+                "NETWORK_CALL_FAILED",
+                {
+                    "capability_id": capability_id,
+                    "url": _url_without_credentials_or_query(url),
+                    "error": error_code,
+                    **correlation,
+                },
+            )
+
         try:
             response = None
             for _ in range(MAX_REDIRECT_HOPS + 1):
@@ -220,7 +243,14 @@ class NetworkMediator:
                     if not location:
                         raise NetworkMediatorError("Redirect response missing Location header.")
                     next_url = urljoin(current_url, location)
-                    if _effective_origin(next_url) != _effective_origin(current_url):
+                    try:
+                        next_origin = _effective_origin(next_url)
+                        current_origin = _effective_origin(current_url)
+                    except NetworkMediatorError:
+                        log_failure("invalid_redirect_target")
+                        raise
+                    if next_origin != current_origin:
+                        log_failure("cross_origin_redirect_rejected")
                         raise NetworkMediatorError("Network cross-origin redirect rejected.")
                     current_url = next_url
                     continue
@@ -230,15 +260,7 @@ class NetworkMediator:
             else:
                 raise NetworkMediatorError("Too many redirects.")
         except requests.RequestException as e:
-            self.ledger.log_event(
-                "NETWORK_CALL_FAILED",
-                {
-                    "capability_id": capability_id,
-                    "url": _url_without_credentials_or_query(url),
-                    "error": type(e).__name__,
-                    **correlation,
-                },
-            )
+            log_failure(type(e).__name__)
             raise NetworkMediatorError(
                 f"Network call failed ({type(e).__name__})."
             ) from e
@@ -251,15 +273,7 @@ class NetworkMediator:
                 try:
                     data = response.json()
                 except ValueError as e:
-                    self.ledger.log_event(
-                        "NETWORK_CALL_FAILED",
-                        {
-                            "capability_id": capability_id,
-                            "url": _url_without_credentials_or_query(url),
-                            "error": "invalid_json",
-                            **correlation,
-                        },
-                    )
+                    log_failure("invalid_json")
                     raise NetworkMediatorError("Response was not valid JSON.") from e
             result["data"] = data
         else:
