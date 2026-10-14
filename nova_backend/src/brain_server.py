@@ -2345,6 +2345,25 @@ def _parse_clock_time(raw: str) -> tuple[int, int]:
 
 def _parse_schedule_datetime(raw: str, *, recurrence: str) -> datetime:
     value = str(raw or "").strip().lower()
+    weekday_match = re.match(
+        r"^(?:on\s+)?(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+        r"\s+at\s+(?P<time>.+)$",
+        value,
+        re.IGNORECASE,
+    )
+    target_weekday: int | None = None
+    if weekday_match:
+        weekdays = {
+            "monday": 0,
+            "tuesday": 1,
+            "wednesday": 2,
+            "thursday": 3,
+            "friday": 4,
+            "saturday": 5,
+            "sunday": 6,
+        }
+        target_weekday = weekdays[str(weekday_match.group("weekday")).lower()]
+        value = str(weekday_match.group("time") or "").strip()
     explicit_today = value.startswith("today ")
     explicit_tomorrow = value.startswith("tomorrow ")
     if explicit_today:
@@ -2355,6 +2374,12 @@ def _parse_schedule_datetime(raw: str, *, recurrence: str) -> datetime:
     hour, minute = _parse_clock_time(value)
     now = _local_now()
     target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+    if target_weekday is not None:
+        days_ahead = (target_weekday - now.weekday()) % 7
+        if days_ahead == 0 and target <= now:
+            days_ahead = 7
+        return target + timedelta(days=days_ahead)
 
     if recurrence == "daily":
         if target <= now:

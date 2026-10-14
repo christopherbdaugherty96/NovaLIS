@@ -78,7 +78,13 @@ class _ReadFailingScheduleStore(_RecordingScheduleStore):
         raise OSError("simulated reminder verification failure")
 
 
-def _run_session(monkeypatch, prompts: list[str], store: _RecordingScheduleStore) -> _ScriptedWebSocket:
+def _run_session(
+    monkeypatch,
+    prompts: list[str],
+    store: _RecordingScheduleStore,
+    *,
+    general_chat_response: str | None = None,
+) -> _ScriptedWebSocket:
     monkeypatch.setattr(brain_server, "NotificationScheduleStore", lambda: store)
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -90,10 +96,12 @@ def _run_session(monkeypatch, prompts: list[str], store: _RecordingScheduleStore
         lambda self, **kwargs: [],
     )
     ws = _ScriptedWebSocket(prompts)
-    with patch(
-        "src.skills.general_chat.generate_chat",
-        side_effect=AssertionError("GeneralChat must not run for reminder handoff"),
-    ):
+    model_behavior = (
+        {"return_value": general_chat_response}
+        if general_chat_response is not None
+        else {"side_effect": AssertionError("GeneralChat must not run for reminder handoff")}
+    )
+    with patch("src.skills.general_chat.generate_chat", **model_behavior):
         asyncio.run(brain_server.websocket_endpoint(ws))
     return ws
 
@@ -152,7 +160,7 @@ def test_reminder_time_text_with_negation_is_not_treated_as_cancel(monkeypatch):
 
     assert store.created == []
     messages = _chat_messages(ws)
-    assert any("I still need a reminder time" in message for message in messages)
+    assert not any("I still need a reminder time" in message for message in messages)
     assert not any("No Nova reminder was created" in message for message in messages)
 
 
@@ -502,3 +510,108 @@ def test_summary_failure_does_not_retract_successful_persistence(monkeypatch):
     assert any("Text: call mom" in message for message in messages)
     assert any("Schedule overview is temporarily unavailable" in message for message in messages)
     assert not any("No reminder was created" in message for message in messages)
+
+
+def test_body_first_reminder_with_time_suffix_saves_without_prompt(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me to call insurance tomorrow at 3pm"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call insurance"
+    assert store.created[0]["next_run_at"].hour == 15
+    assert not any("What time should Nova" in message for message in _chat_messages(ws))
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected_body", "expected_hour", "expected_minute"),
+    [
+        ("remind me to call mom at 3pm", "call mom", 15, 0),
+        ("remind me to stretch at 9:30 am", "stretch", 9, 30),
+    ],
+)
+def test_body_first_plain_at_time_does_not_keep_at_in_body(
+    monkeypatch,
+    phrase,
+    expected_body,
+    expected_hour,
+    expected_minute,
+):
+    store = _RecordingScheduleStore()
+    _run_session(monkeypatch, [phrase], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == expected_body
+    assert store.created[0]["next_run_at"].hour == expected_hour
+    assert store.created[0]["next_run_at"].minute == expected_minute
+
+
+def test_weekday_time_in_initial_reminder_request_saves(monkeypatch):
+    store = _RecordingScheduleStore()
+    _run_session(monkeypatch, ["remind me to call insurance on Friday at 10am"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call insurance"
+    assert store.created[0]["next_run_at"].weekday() == 4
+    assert store.created[0]["next_run_at"].hour == 10
+
+
+def test_weekday_time_in_pending_time_reply_saves(monkeypatch):
+    store = _RecordingScheduleStore()
+    _run_session(monkeypatch, ["remind me to call insurance", "on Friday at 10am"], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "call insurance"
+    assert store.created[0]["next_run_at"].weekday() == 4
+
+
+def test_unrelated_question_during_pending_time_is_not_consumed_and_prompt_expires(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me to call insurance", "what is TCP?", "3 PM"],
+        store,
+        general_chat_response="TCP is a connection-oriented transport protocol.",
+    )
+
+    assert store.created == []
+    messages = _chat_messages(ws)
+    assert any("TCP" in message for message in messages)
+    assert any("reminder was not saved" in message.lower() for message in messages)
+    assert not any("I still need a reminder time" in message for message in messages)
+
+
+def test_abandoned_new_reminder_replaces_stale_saved_evidence(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to test Nova",
+            "remind me to call insurance",
+            "explain TCP vs UDP",
+            "did you save that reminder?",
+        ],
+        store,
+    )
+
+    messages = _chat_messages(ws)
+    assert len(store.created) == 1
+    assert any("reminder was not saved" in message.lower() for message in messages)
+    assert any("did not save the most recent reminder request" in message for message in messages)
+    assert sum("Yes. Nova saved reminder" in message for message in messages) == 0
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "what do I still need to follow up on?",
+        "what's still open?",
+        "show my reminders",
+        "what reminders do I have?",
+    ],
+)
+def test_natural_reminder_list_phrases_route_to_authoritative_store(monkeypatch, phrase):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, [phrase], store)
+
+    assert any("Scheduled Updates" in message for message in _chat_messages(ws))
+    assert any(message.get("type") == "notification_schedule" for message in ws.sent_messages)

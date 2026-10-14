@@ -439,6 +439,98 @@ def _reminder_body_from_request(raw: str, body_pattern: Any) -> str:
     return ""
 
 
+_BODY_FIRST_REMINDER_WITH_TIME_RE = re.compile(
+    r"^\s*remind\s+me\s+to\s+(?P<body>.+?)\s+"
+    r"(?P<time>(?:(?:today|tomorrow)\s+(?:at\s+)?"
+    r"|(?:on\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+at\s+"
+    r"|at\s+)(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)))\s*$",
+    re.IGNORECASE,
+)
+
+
+def _body_first_reminder_parts(raw: str) -> tuple[str, str] | None:
+    match = _BODY_FIRST_REMINDER_WITH_TIME_RE.match(str(raw or "").strip().rstrip(".?!"))
+    if not match:
+        return None
+    body = str(match.group("body") or "").strip()[:400]
+    time_text = str(match.group("time") or "").strip()
+    if time_text.lower().startswith("at "):
+        time_text = time_text[3:].strip()
+    return (body, time_text) if body and time_text else None
+
+
+_GENERAL_CHAT_ACTION_NOTE = (
+    "Chat can't take actions. Nothing was saved, sent, scheduled or changed."
+)
+
+_ACTION_CLAIM_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"\bi(?:'ve|\s+have)?\s+(?:just\s+)?"
+        r"(?:saved|remembered|forgot|forgotten|deleted|cancelled|canceled|completed|emailed|"
+        r"sent|scheduled|booked|texted|updated|called|created|ordered|noted)\b",
+        re.I,
+    ),
+    re.compile(r"\bi(?:'ll|\s+will)\s+(?:remember|remind\s+you)\b", re.I),
+    re.compile(r"\bi(?:'ve|\s+have)?\s+set\s+(?:a|the|your)\s+reminder\b", re.I),
+    re.compile(r"\bi(?:'ve|\s+have)?\s+added\b[^.!?]*\b(?:calendar|reminder|schedule|memory)\b", re.I),
+    re.compile(r"\bi(?:'ve|\s+have)?\s+removed\b[^.!?]*\b(?:calendar|reminder|memory|memories)\b", re.I),
+    re.compile(
+        r"\b(?:(?:the|your|a)\s+)?"
+        r"(?:reminder|email|message|task|event|appointment|memory|item)\b[^.!?]{0,80}?\b"
+        r"(?:(?:has|have)\s+been|was|is)\s+"
+        r"(?:set|saved|remembered|forgotten|deleted|removed|cancelled|canceled|completed|"
+        r"emailed|sent|scheduled|added|created)\b",
+        re.I,
+    ),
+    re.compile(
+        r"(?:^|[.!?]\s+)(?:done|all\s+set|got\s+it)\b[^.!?]*\b"
+        r"(?:set|saved|remembered|forgotten|deleted|removed|cancelled|canceled|completed|"
+        r"emailed|sent|scheduled|booked|texted|updated|called|created|ordered|noted)\b",
+        re.I,
+    ),
+    re.compile(
+        r"(?:^|[.!?]\s+)(?:reminder|email|message|task|event|appointment|memory|item)\s+"
+        r"(?:set|saved|deleted|removed|cancelled|canceled|completed|emailed|sent|scheduled|created)\b",
+        re.I,
+    ),
+)
+
+
+def _action_claim_is_quoted_or_hypothetical(message: str, start: int) -> bool:
+    before = message[:start]
+    after = message[start:]
+    if before.count('"') % 2 == 1 and after.count('"') % 2 == 1:
+        return True
+    sentence_end = re.search(r"[.!?](?:\s|$)", after)
+    if sentence_end and sentence_end.group(0).lstrip().startswith("?"):
+        return True
+    sentence_start = max(before.rfind("."), before.rfind("!"), before.rfind("?"), before.rfind("\n"))
+    prefix = before[sentence_start + 1 :].strip().lower()
+    return bool(
+        re.match(
+            r"^(?:if|whether|suppose|assuming)\b|"
+            r"^(?:in|for)\s+(?:this|the)\s+(?:example|sentence|quote)\b|"
+            r"^(?:you\s+could\s+say|rewrite|rephrase|edit|quote|translate|summari[sz]e|analy[sz]e)\b",
+            prefix,
+        )
+    )
+
+
+def guard_general_chat_action_claim(
+    message: str,
+    *,
+    turn_receipts: list[dict[str, Any]] | tuple[dict[str, Any], ...] = (),
+) -> str:
+    """Block action claims from GeneralChat, which has no execution authority."""
+    del turn_receipts
+    clean = str(message or "")
+    for pattern in _ACTION_CLAIM_PATTERNS:
+        for match in pattern.finditer(clean):
+            if not _action_claim_is_quoted_or_hypothetical(clean, match.start()):
+                return f"{clean}\n\n{_GENERAL_CHAT_ACTION_NOTE}"
+    return clean
+
+
 # ---------------------------------------------------------------------------
 # Deterministic arithmetic — avoids Ollama for simple math
 # ---------------------------------------------------------------------------
@@ -1666,6 +1758,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_state["pending_reminder"] = None
 
                 elif pending_stage == "time":
+                    reminder_time = ""
                     time_match = REMINDER_TIME_ONLY_RE.match(reminder_reply)
                     if time_match:
                         reminder_time = str(time_match.group("time") or "").strip()
@@ -1673,34 +1766,44 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             pending_reminder["recurrence"] = "daily"
                     elif REMINDER_PLAIN_TIME_RE.match(reminder_reply):
                         reminder_time = reminder_reply
+                    elif re.match(
+                        r"^\s*(?:on\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+                        r"\s+at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\s*$",
+                        reminder_reply,
+                        re.IGNORECASE,
+                    ):
+                        reminder_time = reminder_reply
                     else:
-                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 1
+                        session_state["pending_reminder"] = None
+                        session_state["last_reminder_save_result"] = {
+                            "status": "not_saved",
+                            "reason": "unsupported_time_reply",
+                        }
+                        await send_chat_message(
+                            ws,
+                            "That reminder was not saved because your reply was not a supported reminder time.",
+                            tone_domain="system",
+                        )
+
+                    if reminder_time:
+                        pending_reminder["reminder_time"] = reminder_time
+                        reminder_body = str(pending_reminder.get("body") or "").strip()
+                        if reminder_body:
+                            await _save_local_reminder(
+                                reminder_body=reminder_body,
+                                time_text=reminder_time,
+                                recurrence=str(pending_reminder.get("recurrence") or "once"),
+                            )
+                            continue
+                        pending_reminder["stage"] = "body"
+                        pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
                         session_state["pending_reminder"] = pending_reminder
                         await _complete_immediate_turn(
-                            "I still need a reminder time, such as 2 PM or tomorrow at 9 AM.",
+                            "What should the Nova reminder say?",
                             remember_response=False,
                             tone_domain="system",
                         )
                         continue
-
-                    pending_reminder["reminder_time"] = reminder_time
-                    reminder_body = str(pending_reminder.get("body") or "").strip()
-                    if reminder_body:
-                        await _save_local_reminder(
-                            reminder_body=reminder_body,
-                            time_text=reminder_time,
-                            recurrence=str(pending_reminder.get("recurrence") or "once"),
-                        )
-                        continue
-                    pending_reminder["stage"] = "body"
-                    pending_reminder["expires_after_turn"] = session_state["turn_count"] + 2
-                    session_state["pending_reminder"] = pending_reminder
-                    await _complete_immediate_turn(
-                        "What should the Nova reminder say?",
-                        remember_response=False,
-                        tone_domain="system",
-                    )
-                    continue
 
                 elif pending_stage == "body":
                     reminder_body = _reminder_body_from_request(reminder_reply, REMINDER_BODY_FIRST_RE)
@@ -2382,6 +2485,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # Reminder creation remains deterministic through persistence. No
             # action-shaped reminder request may reach streamed GeneralChat.
+            body_first_parts = _body_first_reminder_parts(command_text)
+            if body_first_parts is not None:
+                reminder_body, reminder_time = body_first_parts
+                await _save_local_reminder(
+                    reminder_body=reminder_body,
+                    time_text=reminder_time,
+                    recurrence="once",
+                )
+                continue
+
             time_first_reminder = REMINDER_TIME_ONLY_RE.match(command_text)
             if time_first_reminder:
                 reminder_time = str(time_first_reminder.group("time") or "").strip()
@@ -5498,24 +5611,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     },
                 )
 
-            # Streaming UX callback: sends early chat_stream frames
-            # so the client sees tokens arriving before the full
-            # response is assembled and post-processed. This is purely
-            # additive UX -- it does not change governance behavior.
-            _stream_loop = asyncio.get_running_loop()
+            # Buffer model chunks until the completed text passes the action-
+            # claim guard. GeneralChat has no execution authority, so it cannot
+            # truthfully claim that it changed state.
+            advisory_chunks: list[str] = []
 
             def _on_advisory_chunk(text: str) -> None:
-                asyncio.run_coroutine_threadsafe(
-                    ws_send(
-                        ws,
-                        {
-                            "type": "chat_stream",
-                            "text": text,
-                            "turn_id": incoming_turn_id,
-                        },
-                    ),
-                    _stream_loop,
-                )
+                advisory_chunks.append(str(text or ""))
 
             session_state["foreground_model_busy"] = True
             try:
@@ -5546,6 +5648,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 message = getattr(skill_result, "message", "") or ""
                 widget_data = getattr(skill_result, "widget_data", None)
                 result_data = getattr(skill_result, "data", {}) or {}
+
+                if skill_name == "general_chat":
+                    message = guard_general_chat_action_claim(message)
+                    result_data["speakable_text"] = message
 
                 if skill_name == "general_chat" and result_data.get("speakable_text"):
                     message = str(message or "").strip()
