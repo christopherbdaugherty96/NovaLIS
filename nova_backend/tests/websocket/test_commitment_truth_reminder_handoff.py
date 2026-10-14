@@ -522,6 +522,29 @@ def test_body_first_reminder_with_time_suffix_saves_without_prompt(monkeypatch):
     assert not any("What time should Nova" in message for message in _chat_messages(ws))
 
 
+@pytest.mark.parametrize(
+    ("phrase", "expected_body", "expected_hour", "expected_minute"),
+    [
+        ("remind me to call mom at 3pm", "call mom", 15, 0),
+        ("remind me to stretch at 9:30 am", "stretch", 9, 30),
+    ],
+)
+def test_body_first_plain_at_time_does_not_keep_at_in_body(
+    monkeypatch,
+    phrase,
+    expected_body,
+    expected_hour,
+    expected_minute,
+):
+    store = _RecordingScheduleStore()
+    _run_session(monkeypatch, [phrase], store)
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == expected_body
+    assert store.created[0]["next_run_at"].hour == expected_hour
+    assert store.created[0]["next_run_at"].minute == expected_minute
+
+
 def test_weekday_time_in_initial_reminder_request_saves(monkeypatch):
     store = _RecordingScheduleStore()
     _run_session(monkeypatch, ["remind me to call insurance on Friday at 10am"], store)
@@ -553,6 +576,7 @@ def test_unrelated_question_during_pending_time_is_not_consumed_and_prompt_expir
     assert store.created == []
     messages = _chat_messages(ws)
     assert any("TCP" in message for message in messages)
+    assert any("reminder was not saved" in message.lower() for message in messages)
     assert not any("I still need a reminder time" in message for message in messages)
 
 

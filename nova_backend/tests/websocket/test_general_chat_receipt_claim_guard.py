@@ -13,33 +13,50 @@ pytestmark = pytest.mark.slow
 
 
 @pytest.mark.parametrize(
-    ("claim", "action"),
+    "claim",
     [
-        ("I saved that for you.", "saved"),
-        ("I'll remember that.", "remembered"),
-        ("I forgot that memory.", "forgot"),
-        ("I deleted it.", "deleted"),
-        ("I set a reminder.", "reminder_set"),
-        ("I cancelled the reminder.", "cancelled"),
-        ("I completed the task.", "completed"),
-        ("I emailed the update.", "sent"),
-        ("I sent the update.", "sent"),
-        ("I scheduled it.", "scheduled"),
+        "I saved that for you.",
+        "I'll remember that.",
+        "I forgot that memory.",
+        "I deleted it.",
+        "I set a reminder.",
+        "I cancelled the reminder.",
+        "I completed the task.",
+        "I emailed the update.",
+        "I sent the update.",
+        "I scheduled it.",
+        "Yes, I emailed your team this morning.",
+        "I've deleted your sister's birthday from memory.",
+        "Done! Your reminder is set for 3pm.",
+        "Got it, I'll remind you tomorrow at 9.",
+        "I've added it to your calendar.",
+        "I've forgotten that.",
+        "I removed that from your memories.",
+        "Sure, I sent your email to John.",
+        "All set - reminder created.",
+        "Done. I've saved that, set the reminder, and emailed your team.",
     ],
 )
-def test_action_claim_requires_matching_same_turn_receipt(claim, action):
+def test_general_chat_action_claim_is_always_blocked(claim):
     guarded = guard_general_chat_action_claim(claim, turn_receipts=[])
     assert guarded == "I didn't do that."
 
-    matching = [{"event_type": "ACTION_COMPLETED", "action_kind": action, "success": True}]
-    assert guard_general_chat_action_claim(claim, turn_receipts=matching) == claim
-
-    wrong = [{"event_type": "ACTION_COMPLETED", "action_kind": "different", "success": True}]
-    assert guard_general_chat_action_claim(claim, turn_receipts=wrong) == "I didn't do that."
+    fake_matching_receipt = [
+        {"event_type": "ACTION_COMPLETED", "action_kind": "sent", "success": True}
+    ]
+    assert (
+        guard_general_chat_action_claim(claim, turn_receipts=fake_matching_receipt)
+        == "I didn't do that."
+    )
 
 
 def test_plain_general_chat_answer_passes_unchanged():
     answer = "TCP is connection-oriented, while UDP is datagram-oriented."
+    assert guard_general_chat_action_claim(answer, turn_receipts=[]) == answer
+
+
+def test_instructional_remember_phrase_is_not_an_action_claim():
+    answer = "Remember that TCP retransmits lost packets."
     assert guard_general_chat_action_claim(answer, turn_receipts=[]) == answer
 
 
