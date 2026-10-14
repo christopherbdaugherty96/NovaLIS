@@ -60,6 +60,34 @@ def test_instructional_remember_phrase_is_not_an_action_claim():
     assert guard_general_chat_action_claim(answer, turn_receipts=[]) == answer
 
 
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Rewrite this politely: I sent the report yesterday.",
+        "In this example, I set x to 3.",
+        'The sentence "I emailed your team" is in the first person.',
+        "If I scheduled it tomorrow, the event would conflict.",
+    ],
+)
+def test_quoted_hypothetical_and_explanatory_action_language_passes(answer):
+    assert guard_general_chat_action_claim(answer, turn_receipts=[]) == answer
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "The reminder has been set for 3 PM.",
+        "Done - the email was sent.",
+        "Reminder created for tomorrow.",
+        "Your task has been completed.",
+        "The memory was deleted.",
+        "All set - your appointment was scheduled.",
+    ],
+)
+def test_passive_or_subjectless_action_claim_is_blocked(claim):
+    assert guard_general_chat_action_claim(claim, turn_receipts=[]) == "I didn't do that."
+
+
 def test_unreceipted_model_claim_is_never_streamed(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
