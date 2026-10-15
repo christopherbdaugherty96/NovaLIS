@@ -82,6 +82,15 @@ _QUOTED_CONTENT_REQUEST_RE = re.compile(
 _ACTIVE_WS_SESSIONS: list[dict[str, Any]] = []
 
 
+def _trim_session_context(
+    session_context: list[dict[str, Any]],
+    session_state: dict[str, Any],
+) -> None:
+    """Apply the one session-timeline retention rule in place."""
+    context_limit = 40 if session_state.get("presence_mode") else 20
+    del session_context[:-context_limit]
+
+
 def local_chat_usage_meta(user_text: str, response_text: str) -> dict[str, Any]:
     """Build display-only local usage metadata for a completed advisory turn."""
     try:
@@ -1093,8 +1102,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 {"role": "nova_result", "content": clean_message.strip()},
             ]
         )
-        context_limit = 40 if session_state.get("presence_mode") else 20
-        del session_context[:-context_limit]
+        _trim_session_context(session_context, session_state)
         session_state["turn_count"] += 1
 
     async def _save_local_reminder(
@@ -1197,7 +1205,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 {"role": "nova_result", "content": success_message},
             ]
         )
-        del session_context[:-20]
+        _trim_session_context(session_context, session_state)
         session_state["turn_count"] += 1
 
     async def _complete_silent_widget_refresh() -> None:
@@ -3364,8 +3372,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_message(ws, forced_result.message, message_id=message_id)
                     await send_chat_done(ws)
                     session_context.extend(escalation_outcome.context_entries)
-                    context_limit = 40 if session_state.get("presence_mode") else 20
-                    session_context = session_context[-context_limit:]
+                    _trim_session_context(session_context, session_state)
                     if getattr(forced_result, "success", False):
                         session_state["trust_status"] = failure_ladder.record_local_success(
                             session_state.get("trust_status", {})
@@ -3551,8 +3558,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"role": "assistant", "content": phase42_message},
                     ]
                 )
-                context_limit = 40 if session_state.get("presence_mode") else 20
-                session_context = session_context[-context_limit:]
+                _trim_session_context(session_context, session_state)
                 session_state["turn_count"] += 1
                 continue
 
@@ -5573,8 +5579,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"role": "assistant", "content": grounded_answer},
                     ]
                     session_context.extend(new_turn)
-                    context_limit = 40 if session_state.get("presence_mode") else 20
-                    session_context = session_context[-context_limit:]
+                    _trim_session_context(session_context, session_state)
                     session_state["turn_count"] += 1
                     continue
 
@@ -5594,8 +5599,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     {"role": "assistant", "content": _schedule_guard_answer},
                 ]
                 session_context.extend(new_turn)
-                context_limit = 40 if session_state.get("presence_mode") else 20
-                session_context = session_context[-context_limit:]
+                _trim_session_context(session_context, session_state)
                 session_state["turn_count"] += 1
                 continue
 
@@ -5793,8 +5797,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                 new_turn.append({"role": "assistant", "content": message})
                 session_context.extend(new_turn)
-                context_limit = 40 if session_state.get("presence_mode") else 20
-                session_context = session_context[-context_limit:]
+                _trim_session_context(session_context, session_state)
                 if skill_name == "general_chat":
                     chat_context = list(session_state.get("general_chat_context") or [])
                     chat_context.extend(new_turn)

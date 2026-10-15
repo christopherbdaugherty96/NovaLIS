@@ -416,6 +416,18 @@ class LLMManager:
                     self.fallback_model,
                 )
                 try:
+                    fallback_messages = list(request_messages)
+                    fallback_messages.append(
+                        {
+                            "role": "system",
+                            "content": (
+                                "Runtime facts update (observed for this request): "
+                                f"responding model={self.active_model}; "
+                                f"primary model={primary_model}; availability=unverified; "
+                                "fallback selected after the primary request failed."
+                            ),
+                        }
+                    )
                     fallback_options = dict(options)
                     fallback_options["num_ctx"] = min(int(fallback_options.get("num_ctx", 4096)), 4096)
                     fallback_options["num_predict"] = min(int(fallback_options.get("num_predict", 384)), 384)
@@ -424,7 +436,7 @@ class LLMManager:
                         url=f"{self.base_url.rstrip('/')}/api/chat",
                         json_payload={
                             "model": self.active_model,
-                            "messages": request_messages,
+                            "messages": fallback_messages,
                             "stream": False,
                             "options": fallback_options,
                         },

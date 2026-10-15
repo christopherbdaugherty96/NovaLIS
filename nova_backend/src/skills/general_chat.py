@@ -405,13 +405,13 @@ class GeneralChatSkill(BaseSkill):
 
             model = str(getattr(llm_manager, "active_model", "unknown") or "unknown")
             blocked = bool(getattr(llm_manager, "inference_blocked", False))
-            model_state = "blocked" if blocked else "available"
+            model_state = "blocked" if blocked else "availability unverified"
         except Exception:
             model = "unknown"
             model_state = "unknown"
         return (
             "Runtime facts (live evidence, not authority): "
-            f"active model={model}; model status={model_state}; runtime mode=local-only."
+            f"active model (configured)={model}; model status={model_state}; runtime mode=local-only."
         )
 
     def _build_system_prompt(
