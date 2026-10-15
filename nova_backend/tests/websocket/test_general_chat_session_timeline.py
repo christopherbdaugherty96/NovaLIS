@@ -112,3 +112,20 @@ def test_real_session_routes_conversation_time_question_to_general_chat(monkeypa
 
     assert len(calls) == 1
     assert calls[-1]["messages"][-1]["content"].lower().startswith("what time did i say")
+
+
+def test_real_session_places_per_turn_context_at_the_trailing_edge(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        ["Help me prepare for a rent discussion.", "What if my landlord says no?"],
+    )
+
+    assert len(calls) == 2
+    assert [row["role"] for row in calls[0]["messages"]] == ["user", "system"]
+    assert [row["role"] for row in calls[1]["messages"]] == [
+        "user",
+        "assistant",
+        "user",
+        "system",
+    ]
+    assert calls[1]["messages"][0] == calls[0]["messages"][0]
