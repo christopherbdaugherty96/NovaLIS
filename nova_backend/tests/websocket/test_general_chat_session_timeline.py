@@ -61,7 +61,11 @@ def _run_session(monkeypatch, prompts, *, relevant_memory=None):
     )
     monkeypatch.setattr(
         "src.memory.governed_memory_store.GovernedMemoryStore.find_relevant_items",
-        lambda self, *args, **kwargs: list(relevant_memory or []),
+        lambda self, *args, **kwargs: list(
+            relevant_memory(*args, **kwargs)
+            if callable(relevant_memory)
+            else (relevant_memory or [])
+        ),
     )
     ws = _ScriptedWebSocket(list(prompts))
     with patch("src.skills.general_chat.generate_chat", side_effect=fake_generate_chat):
@@ -261,7 +265,45 @@ def test_real_session_keeps_stable_prompt_and_extends_prior_request_prefix(monke
     assert calls[0]["system_prompt"] == calls[1]["system_prompt"] == calls[2]["system_prompt"]
     for previous, current in zip(calls, calls[1:]):
         previous_messages = previous["messages"]
-        assert current["messages"][: len(previous_messages)] == previous_messages
+        assert previous_messages[-1]["role"] == "system"
+        reusable_prefix = previous_messages[:-1]
+        assert current["messages"][: len(reusable_prefix)] == reusable_prefix
+    for call in calls:
+        context_rows = [
+            row
+            for row in call["messages"]
+            if row.get("role") == "system"
+            and row.get("content", "").startswith("Per-turn Nova context")
+        ]
+        assert len(context_rows) == 1
+
+
+def test_real_session_does_not_carry_relevant_memory_into_unrelated_later_turn(monkeypatch):
+    birthday = {
+        "id": "MEM-TEST-0001",
+        "title": "Sister birthday",
+        "content_raw": "my sister's birthday is June 3",
+        "source": "explicit_user_save",
+    }
+
+    def _relevant_memory(query, **kwargs):
+        del kwargs
+        return [birthday] if "sister" in str(query).lower() else []
+
+    calls = _run_session(
+        monkeypatch,
+        [
+            "remember that my sister's birthday is June 3",
+            "when is my sister's birthday?",
+            "tell me a joke",
+        ],
+        relevant_memory=_relevant_memory,
+    )
+
+    assert len(calls) == 2
+    assert "June 3" in repr(calls[0]["messages"])
+    assert "June 3" not in repr(calls[1]["messages"])
+    assert "June 3" not in calls[1]["system_prompt"]
 
 
 def test_history_budget_keeps_complete_question_answer_pairs():
