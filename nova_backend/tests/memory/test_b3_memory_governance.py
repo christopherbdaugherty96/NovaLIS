@@ -378,6 +378,21 @@ def test_memory_prompt_rendering_retains_epistemic_status(tmp_path):
     assert "Legacy relationship observations" in context
 
 
+def test_filtered_memory_uses_shared_conflicted_observation_metadata(tmp_path):
+    user_store = UserMemoryStore(tmp_path / "user_memory.json")
+    nova_store = NovaSelfMemoryStore(tmp_path / "nova_self_memory.json")
+    user_store.save("preferences", "theme", "dark", source="observed", confidence=0.6)
+    user_store.save("preferences", "theme", "light", source="observed", confidence=0.7)
+    skill = GeneralChatSkill(user_memory=user_store, nova_memory=nova_store)
+
+    context = skill._build_memory_context("theme")
+
+    assert "observed candidate; non-authoritative" in context
+    assert "confidence=0.60" in context
+    assert "provenance=observed" in context
+    assert "conflict=observed_conflict" in context
+
+
 def test_task_preview_memory_keeps_authority_labels():
     rendered = _task_preview_memory_context(
         [

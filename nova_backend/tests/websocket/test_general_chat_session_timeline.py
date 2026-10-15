@@ -129,3 +129,63 @@ def test_real_session_places_per_turn_context_at_the_trailing_edge(monkeypatch):
         "system",
     ]
     assert calls[1]["messages"][0] == calls[0]["messages"][0]
+
+
+def test_real_session_keeps_stable_prompt_and_extends_prior_request_prefix(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "Help me prepare for a rent discussion.",
+            "What if my landlord says no?",
+            "Give me a shorter version.",
+        ],
+    )
+
+    assert len(calls) == 3
+    assert calls[0]["system_prompt"] == calls[1]["system_prompt"] == calls[2]["system_prompt"]
+    for previous, current in zip(calls, calls[1:]):
+        previous_messages = previous["messages"]
+        assert current["messages"][: len(previous_messages)] == previous_messages
+
+
+def test_history_budget_keeps_complete_question_answer_pairs():
+    from src.skills.general_chat import GeneralChatSkill
+
+    context = [
+        {"role": "user", "content": "old question"},
+        {"role": "assistant", "content": "old answer"},
+        {"role": "user", "content": "new question"},
+        {"role": "assistant", "content": "X" * 5000},
+    ]
+    messages = GeneralChatSkill._build_model_messages(
+        "current question",
+        context,
+        system_prompt="S" * 500,
+        reply_tokens=400,
+        dynamic_context="D" * 500,
+        configured_num_ctx=4096,
+        model_max_num_ctx=8192,
+    )
+
+    assert not any(row["content"] == "new question" for row in messages)
+    assert not any(row["content"] == "old question" for row in messages)
+    assert messages[-2]["content"] == "current question"
+    assert messages[-1]["role"] == "system"
+
+
+@pytest.mark.parametrize("configured", [4096, 8192])
+def test_history_budget_uses_effective_context_limit(configured):
+    from src.skills.general_chat import GeneralChatSkill
+
+    messages = GeneralChatSkill._build_model_messages(
+        "current",
+        [{"role": "user", "content": "Q" * 2000}, {"role": "assistant", "content": "A" * 2000}],
+        system_prompt="S" * 3000,
+        reply_tokens=600,
+        dynamic_context="D" * 3000,
+        configured_num_ctx=configured,
+        model_max_num_ctx=16384,
+    )
+
+    total_chars = 3000 + 3000 + len("current") + 600 * 3 + sum(len(row["content"]) for row in messages[:-2])
+    assert total_chars <= min(configured, 4096, 16384) * 3
