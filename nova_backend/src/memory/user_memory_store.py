@@ -409,7 +409,7 @@ def _search_tokens(query: str) -> list[str]:
 
 
 def _text_tokens(value: str) -> list[str]:
-    return re.findall(r"[a-z0-9_-]+", str(value or "").lower())
+    return re.findall(r"[a-z0-9]+", str(value or "").lower())
 
 
 # Module-level singleton
