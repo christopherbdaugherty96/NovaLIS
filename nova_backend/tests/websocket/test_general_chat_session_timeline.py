@@ -116,6 +116,46 @@ def test_real_session_includes_compact_runtime_facts_for_model_question(monkeypa
     assert "local-only" in serialized.lower()
 
 
+def test_real_session_fallback_facts_name_answering_model_without_false_availability(monkeypatch):
+    from src.llm.llm_manager import llm_manager
+    from src.llm.model_network_mediator import ModelNetworkMediatorError, ModelResponse
+
+    payloads = []
+
+    class _PrimaryFailsNetwork:
+        def request_json(self, **kwargs):
+            payloads.append(kwargs["json_payload"])
+            if len(payloads) == 1:
+                raise ModelNetworkMediatorError("primary unavailable")
+            return ModelResponse(
+                status_code=200,
+                data={"message": {"content": "Fallback answered truthfully."}},
+            )
+
+    monkeypatch.setattr(llm_manager, "_network", _PrimaryFailsNetwork())
+    monkeypatch.setattr(llm_manager, "model", "primary:test")
+    monkeypatch.setattr(llm_manager, "fallback_model", "fallback:test")
+    monkeypatch.setattr(llm_manager, "_using_fallback", False)
+    monkeypatch.setattr(llm_manager, "inference_blocked", False)
+    monkeypatch.setattr(llm_manager, "failure_count", 0)
+    monkeypatch.setattr(llm_manager, "circuit_open_until", 0)
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["which model are you running right now?"])
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert [payload["model"] for payload in payloads] == ["primary:test", "fallback:test"]
+    fallback_messages = payloads[-1]["messages"]
+    serialized = repr(fallback_messages).lower()
+    assert "responding model=fallback:test" in serialized
+    assert "primary model=primary:test; availability=unverified" in serialized
+    assert "primary model=primary:test; availability=available" not in serialized
+
+
 def test_presence_mode_deterministic_turn_keeps_extended_timeline(monkeypatch):
     lengths = []
 
@@ -135,6 +175,37 @@ def test_presence_mode_deterministic_turn_keeps_extended_timeline(monkeypatch):
     )
     prompts = ["enable conversation mode"] + [f"chat turn {index}" for index in range(11)]
     prompts += ["2 + 2", {"type": "chat", "text": "second opinion", "invocation_source": "deepseek_button"}]
+    ws = _ScriptedWebSocket(prompts)
+    with patch("src.skills.general_chat.generate_chat", return_value="A grounded answer."):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert lengths
+    assert lengths[-1] > 20
+
+
+def test_presence_mode_reminder_save_keeps_extended_timeline(monkeypatch):
+    lengths = []
+
+    def _capture_review(context, state):
+        lengths.append(len(context))
+        return "review input"
+
+    async def _invoke(*args, **kwargs):
+        return ActionResult.failure("unavailable", capability_id=62)
+
+    monkeypatch.setattr(brain_server, "NotificationScheduleStore", _ReminderStore)
+    monkeypatch.setattr(brain_server, "_build_second_opinion_review_text", _capture_review)
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    prompts = ["enable conversation mode"] + [f"chat turn {index}" for index in range(11)]
+    prompts += [
+        "remind me to call mom at 3pm",
+        {"type": "chat", "text": "second opinion", "invocation_source": "deepseek_button"},
+    ]
     ws = _ScriptedWebSocket(prompts)
     with patch("src.skills.general_chat.generate_chat", return_value="A grounded answer."):
         asyncio.run(brain_server.websocket_endpoint(ws))
