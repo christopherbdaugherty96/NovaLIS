@@ -6,6 +6,7 @@ silently replace explicit entries.
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -307,7 +308,8 @@ class UserMemoryStore:
         scored: list[tuple[float, dict]] = []
         for entry in list(state.get("entries") or []):
             blob = f"{entry.get('key', '')} {entry.get('value', '')} {entry.get('context', '')}".lower()
-            hits = sum(1 for t in tokens if t in blob)
+            blob_tokens = set(_text_tokens(blob))
+            hits = sum(1 for t in tokens if t in blob_tokens)
             if hits > 0:
                 scored.append((hits / len(tokens), _normalized_entry(dict(entry))))
         scored.sort(key=lambda pair: pair[0], reverse=True)
@@ -395,13 +397,19 @@ class UserMemoryStore:
 
 def _search_tokens(query: str) -> list[str]:
     raw = str(query or "").strip().lower()
-    stopwords = {"a", "an", "and", "for", "from", "i", "in", "is", "it", "my", "of", "the", "to", "what", "with"}
+    stopwords = {
+        "a", "an", "and", "for", "from", "i", "in", "is", "it", "me", "my",
+        "of", "tell", "the", "to", "what", "when", "with",
+    }
     tokens: list[str] = []
-    for word in raw.split():
-        cleaned = "".join(ch for ch in word if ch.isalnum() or ch in {"-", "_"})
+    for cleaned in _text_tokens(raw):
         if len(cleaned) >= 2 and cleaned not in stopwords and cleaned not in tokens:
             tokens.append(cleaned)
     return tokens
+
+
+def _text_tokens(value: str) -> list[str]:
+    return re.findall(r"[a-z0-9_-]+", str(value or "").lower())
 
 
 # Module-level singleton

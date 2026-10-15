@@ -1093,7 +1093,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 {"role": "nova_result", "content": clean_message.strip()},
             ]
         )
-        del session_context[:-20]
+        context_limit = 40 if session_state.get("presence_mode") else 20
+        del session_context[:-context_limit]
         session_state["turn_count"] += 1
 
     async def _save_local_reminder(

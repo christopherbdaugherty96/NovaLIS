@@ -124,7 +124,7 @@ def test_presence_mode_deterministic_turn_keeps_extended_timeline(monkeypatch):
         return "review input"
 
     async def _invoke(*args, **kwargs):
-        return ActionResult.fail("unavailable", capability_id=62)
+        return ActionResult.failure("unavailable", capability_id=62)
 
     monkeypatch.setattr(brain_server, "_build_second_opinion_review_text", _capture_review)
     monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
