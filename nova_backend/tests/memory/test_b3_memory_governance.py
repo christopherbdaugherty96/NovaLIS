@@ -393,6 +393,17 @@ def test_filtered_memory_uses_shared_conflicted_observation_metadata(tmp_path):
     assert "conflict=observed_conflict" in context
 
 
+def test_memory_search_matches_whole_meaningful_words_only(tmp_path):
+    store = UserMemoryStore(tmp_path / "user_memory.json")
+    store.save("preferences", "theme", "dark", source="explicit", confidence=1.0)
+    store.save("important_dates", "sister birthday", "June 3", source="explicit", confidence=1.0)
+
+    assert store.search("tell me a joke") == []
+    matches = store.search("when is my sister's birthday?")
+    assert matches
+    assert matches[0]["value"] == "June 3"
+
+
 def test_task_preview_memory_keeps_authority_labels():
     rendered = _task_preview_memory_context(
         [
