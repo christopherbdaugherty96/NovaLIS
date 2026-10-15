@@ -106,8 +106,11 @@ def test_governed_memory_relevance_requires_a_whole_word_content_match(tmp_path)
     assert favorite_color["id"] in {
         item["id"] for item in store.find_relevant_items("what is my favorite color?")
     }
-    assert favorite_color["id"] in {
-        item["id"] for item in store.find_relevant_items("what color do I like?")
+    assert favorite_color["id"] not in {
+        item["id"] for item in store.find_relevant_items("what is my favorite food?")
+    }
+    assert favorite_color["id"] not in {
+        item["id"] for item in store.find_relevant_items("what color is the sky?")
     }
 
 
@@ -431,7 +434,8 @@ def test_memory_search_matches_whole_meaningful_words_only(tmp_path):
     assert matches
     assert matches[0]["value"] == "June 3"
     assert any(item["value"] == "blue" for item in store.search("what is my favorite color?"))
-    assert any(item["value"] == "blue" for item in store.search("what color do I like?"))
+    assert not any(item["value"] == "blue" for item in store.search("what is my favorite food?"))
+    assert not any(item["value"] == "blue" for item in store.search("what color is the sky?"))
 
 
 def test_task_preview_memory_keeps_authority_labels():
