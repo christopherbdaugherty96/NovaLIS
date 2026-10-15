@@ -94,11 +94,21 @@ def test_governed_memory_relevance_requires_a_whole_word_content_match(tmp_path)
         title="Party plans",
         body="The party venue is booked.",
     )
+    favorite_color = store.save_item(
+        title="favorite_color",
+        body="blue",
+    )
 
     assert store.find_relevant_items("tell me a joke") == []
     assert store.find_relevant_items("art") == []
     matches = store.find_relevant_items("when is my sister's birthday?")
     assert [item["id"] for item in matches] == [birthday["id"]]
+    assert favorite_color["id"] in {
+        item["id"] for item in store.find_relevant_items("what is my favorite color?")
+    }
+    assert favorite_color["id"] in {
+        item["id"] for item in store.find_relevant_items("what color do I like?")
+    }
 
 
 def test_explicit_user_memory_is_not_overwritten_by_observation(tmp_path):
@@ -414,11 +424,14 @@ def test_memory_search_matches_whole_meaningful_words_only(tmp_path):
     store = UserMemoryStore(tmp_path / "user_memory.json")
     store.save("preferences", "theme", "dark", source="explicit", confidence=1.0)
     store.save("important_dates", "sister birthday", "June 3", source="explicit", confidence=1.0)
+    store.save("preferences", "favorite_color", "blue", source="explicit", confidence=1.0)
 
     assert store.search("tell me a joke") == []
     matches = store.search("when is my sister's birthday?")
     assert matches
     assert matches[0]["value"] == "June 3"
+    assert any(item["value"] == "blue" for item in store.search("what is my favorite color?"))
+    assert any(item["value"] == "blue" for item in store.search("what color do I like?"))
 
 
 def test_task_preview_memory_keeps_authority_labels():
