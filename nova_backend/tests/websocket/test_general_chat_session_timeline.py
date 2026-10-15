@@ -28,7 +28,7 @@ class _ReminderStore:
         }
 
 
-def _run_session(monkeypatch, prompts, *, relevant_memory=None):
+def _run_session(monkeypatch, prompts, *, relevant_memory=None, use_real_governed_memory=False):
     captured = []
 
     def fake_generate_chat(*args, **kwargs):
@@ -36,6 +36,26 @@ def _run_session(monkeypatch, prompts, *, relevant_memory=None):
         return "A grounded answer."
 
     async def fake_invoke(*args, **kwargs):
+        if use_real_governed_memory and len(args) >= 3 and args[1] == 61:
+            from src.memory.governed_memory_store import GovernedMemoryStore
+
+            params = dict(args[2] or {})
+            item = GovernedMemoryStore().save_item(
+                title=params.get("title", ""),
+                body=params.get("body", ""),
+                scope=params.get("scope", "project"),
+                tags=params.get("tags"),
+                thread_name=params.get("thread_name", ""),
+                thread_key=params.get("thread_key", ""),
+                source=params.get("source", "explicit_user_save"),
+                session_id=params.get("session_id", ""),
+                user_visible=True,
+            )
+            return ActionResult.ok(
+                "Memory saved.",
+                data={"memory_item": item},
+                capability_id=61,
+            )
         return ActionResult.ok(
             "Memory saved.",
             data={
@@ -59,14 +79,15 @@ def _run_session(monkeypatch, prompts, *, relevant_memory=None):
         "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
         lambda self, **kwargs: [],
     )
-    monkeypatch.setattr(
-        "src.memory.governed_memory_store.GovernedMemoryStore.find_relevant_items",
-        lambda self, *args, **kwargs: list(
-            relevant_memory(*args, **kwargs)
-            if callable(relevant_memory)
-            else (relevant_memory or [])
-        ),
-    )
+    if not use_real_governed_memory:
+        monkeypatch.setattr(
+            "src.memory.governed_memory_store.GovernedMemoryStore.find_relevant_items",
+            lambda self, *args, **kwargs: list(
+                relevant_memory(*args, **kwargs)
+                if callable(relevant_memory)
+                else (relevant_memory or [])
+            ),
+        )
     ws = _ScriptedWebSocket(list(prompts))
     with patch("src.skills.general_chat.generate_chat", side_effect=fake_generate_chat):
         asyncio.run(brain_server.websocket_endpoint(ws))
@@ -303,6 +324,28 @@ def test_real_session_does_not_carry_relevant_memory_into_unrelated_later_turn(m
     assert "June 3" in repr(calls[0]["messages"])
     assert "June 3" not in repr(calls[1]["messages"])
     assert "June 3" not in calls[1]["system_prompt"]
+
+
+def test_real_remember_flow_only_injects_governed_memory_for_relevant_queries(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+    calls = _run_session(
+        monkeypatch,
+        [
+            "remember that my sister's birthday is June 3",
+            "when is my sister's birthday?",
+            "tell me a joke",
+            "how do I handle a difficult conversation with my boss?",
+        ],
+        use_real_governed_memory=True,
+    )
+
+    assert len(calls) == 3
+    assert "June 3" in repr(calls[0]["messages"])
+    assert "June 3" not in repr(calls[1]["messages"])
+    assert "June 3" not in repr(calls[2]["messages"])
 
 
 def test_history_budget_keeps_complete_question_answer_pairs():
