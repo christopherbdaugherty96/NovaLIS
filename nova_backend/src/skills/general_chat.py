@@ -27,7 +27,12 @@ from src.conversation.safety_filter import SafetyFilter
 from src.governor.network_mediator import NetworkMediator
 from src.llm.llm_gateway import generate_chat
 from src.memory.nova_self_memory_store import NovaSelfMemoryStore, nova_self_memory_store
-from src.memory.user_memory_store import UserMemoryStore, user_memory_store
+from src.memory.user_memory_store import (
+    UserMemoryStore,
+    render_memory_context_line,
+    user_memory_store,
+)
+from src.nova_config import OLLAMA_NUM_CTX
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 
@@ -364,22 +369,11 @@ class GeneralChatSkill(BaseSkill):
         """Build a compact memory context block for prompt injection."""
         parts: list[str] = []
 
-        # Self-awareness: what Nova is, what it can do, what's active
-        try:
-            from src.identity.nova_self_awareness import build_self_awareness_block
-            awareness = build_self_awareness_block()
-            if awareness:
-                parts.append(awareness)
-        except Exception:
-            pass
-
         try:
             if str(query or "").strip() and hasattr(self._user_memory, "search"):
                 rows = list(self._user_memory.search(query, limit=3) or [])
                 user_ctx = "\n".join(
-                    f"- [{str(row.get('source') or 'observed')}; "
-                    f"{'confirmed' if str(row.get('source')) == 'explicit' else 'candidate'}] "
-                    f"{str(row.get('key') or '').strip()}: {str(row.get('value') or '').strip()}"
+                    render_memory_context_line(row)
                     for row in rows
                     if str(row.get("value") or "").strip()
                 )
@@ -413,24 +407,8 @@ class GeneralChatSkill(BaseSkill):
         memory_context: str = "",
         request_understanding_block: str = "",
     ) -> str:
-        mode_block = NovaStyleContract.chat_mode_guidance(mode)
         tone_block = self.TONE_BLOCKS.get(tone_profile, self.TONE_BLOCKS["balanced"])
-
-        style_blocks = {
-            ResponseStyle.DIRECT: "Style: Direct mode. Lead with the answer and keep the wording clean.",
-            ResponseStyle.BRAINSTORM: "Style: Brainstorm mode. Present distinct grounded directions that are easy to compare.",
-            ResponseStyle.DEEP: "Style: Deep mode. Use short sections and grounded transitions instead of flourish.",
-            ResponseStyle.CASUAL: "Style: Conversational mode. Keep the reply calm, direct, and lightly warm.",
-        }
-
-        style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
-        presentation_block = self._presentation_instruction_block(
-            presentation_preference,
-            last_answer_kind=last_answer_kind,
-        )
-        blocks = [self.BASE_CONTRACT, tone_block, mode_block, style_block]
-        if presentation_block:
-            blocks.append(presentation_block)
+        blocks = [self.BASE_CONTRACT, tone_block]
         if memory_context:
             blocks.append(memory_context)
         if request_understanding_block:
@@ -529,23 +507,44 @@ class GeneralChatSkill(BaseSkill):
         system_prompt: str = "",
         reply_tokens: int = 400,
         dynamic_context: str = "",
+        configured_num_ctx: int | None = None,
+        model_max_num_ctx: int = 4096,
     ) -> list[dict[str, str]]:
-        """Keep complete recent turns within a conservative ~6K-token budget."""
-        budget_chars = max(1000, 24000 - len(str(system_prompt or "")) - max(0, int(reply_tokens)) * 4)
+        """Keep newest complete Q/A units within the effective model window."""
+        configured = max(1, int(configured_num_ctx or OLLAMA_NUM_CTX))
+        effective_tokens = min(configured, 4096, max(1, int(model_max_num_ctx)))
+        total_chars = int(effective_tokens * 3 * 0.9)
         current = {"role": "user", "content": str(query or "").strip()}
         selected: list[dict[str, str]] = []
         dynamic = str(dynamic_context or "").strip()
-        used = len(current["content"]) + len(dynamic)
-        for item in reversed(list(context or [])[-12:]):
+        reserved = (
+            len(str(system_prompt or ""))
+            + len(current["content"])
+            + len(dynamic)
+            + max(0, int(reply_tokens)) * 3
+        )
+        budget_chars = max(0, total_chars - reserved)
+        units: list[list[dict[str, str]]] = []
+        for item in list(context or [])[-24:]:
             role = str(item.get("role") or "").strip()
             content = str(item.get("content") or "").strip()
-            if role not in {"user", "assistant", "nova_result"} or not content:
+            if role not in {"user", "assistant", "nova_result", "system"} or not content:
                 continue
-            if used + len(content) > budget_chars:
+            row = {"role": role, "content": content}
+            if role == "user":
+                units.append([row])
+            elif units:
+                units[-1].append(row)
+        used = 0
+        chosen_units: list[list[dict[str, str]]] = []
+        for unit in reversed(units[-12:]):
+            unit_chars = sum(len(row["content"]) for row in unit)
+            if used + unit_chars > budget_chars:
                 break
-            selected.append({"role": role, "content": content})
-            used += len(content)
-        selected.reverse()
+            chosen_units.append(unit)
+            used += unit_chars
+        for unit in reversed(chosen_units):
+            selected.extend(unit)
         selected.append(current)
         if dynamic:
             selected.append({"role": "system", "content": dynamic})
@@ -558,9 +557,31 @@ class GeneralChatSkill(BaseSkill):
         normalized_query: str,
         memory_context: str,
         request_understanding_block: str,
+        mode: str = "casual",
+        style: ResponseStyle = ResponseStyle.DIRECT,
+        presentation_preference: str = "",
+        last_answer_kind: str = "",
     ) -> str:
         """Keep per-turn evidence after the stable system prompt."""
         blocks: list[str] = []
+        style_blocks = {
+            ResponseStyle.DIRECT: "Style: Direct mode. Lead with the answer and keep the wording clean.",
+            ResponseStyle.BRAINSTORM: "Style: Brainstorm mode. Present distinct grounded directions that are easy to compare.",
+            ResponseStyle.DEEP: "Style: Deep mode. Use short sections and grounded transitions instead of flourish.",
+            ResponseStyle.CASUAL: "Style: Conversational mode. Keep the reply calm, direct, and lightly warm.",
+        }
+        blocks.extend(
+            [
+                NovaStyleContract.chat_mode_guidance(mode).strip(),
+                style_blocks.get(style, style_blocks[ResponseStyle.DIRECT]),
+            ]
+        )
+        presentation_block = GeneralChatSkill._presentation_instruction_block(
+            presentation_preference,
+            last_answer_kind=last_answer_kind,
+        )
+        if presentation_block:
+            blocks.append(presentation_block.strip())
         if request_understanding_block:
             blocks.append(request_understanding_block.strip())
         if memory_context:
@@ -1693,6 +1714,10 @@ class GeneralChatSkill(BaseSkill):
             normalized_query=normalized_query,
             memory_context=memory_context,
             request_understanding_block=request_understanding_block,
+            mode=mode,
+            style=shaped_style,
+            presentation_preference=presentation_preference,
+            last_answer_kind=prior_conversation.last_answer_kind,
         )
         messages = self._build_model_messages(
             normalized_query,
@@ -1757,6 +1782,11 @@ class GeneralChatSkill(BaseSkill):
                     "speakable_text": payload["speakable_text"],
                     "structured_data": payload["structured_data"],
                     "conversation_context": conversation_context.to_dict(),
+                    "model_context_entry": (
+                        {"role": "system", "content": dynamic_context}
+                        if dynamic_context
+                        else None
+                    ),
                 },
                 widget_data=None,
                 skill=self.name,
@@ -1934,6 +1964,7 @@ class GeneralChatSkill(BaseSkill):
             "speakable_text": payload["speakable_text"],
             "structured_data": payload["structured_data"],
             "conversation_context": current_conversation,
+            "model_context_entry": dict((local.data or {}).get("model_context_entry") or {}),
             "escalation": {
                 "escalated": False,
                 "reason_codes": list(heuristic_result.get("reason_codes") or []),

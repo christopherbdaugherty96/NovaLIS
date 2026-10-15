@@ -89,6 +89,31 @@ def _normalized_entry(entry: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
+def render_memory_context_line(entry: dict[str, Any]) -> str:
+    """Render one memory item without weakening its epistemic metadata."""
+    item = _normalized_entry(dict(entry or {}))
+    source = str(item.get("source") or "observed")
+    if source == "explicit":
+        status = "explicit; confirmed"
+    else:
+        confidence = float(item.get("confidence") or 0.0)
+        provenance = dict(item.get("provenance") or {})
+        provenance_source = str(provenance.get("source") or "unknown")
+        status = (
+            "observed candidate; non-authoritative; "
+            f"confidence={confidence:.2f}; provenance={provenance_source}"
+        )
+    conflict_state = str(item.get("conflict_state") or "none")
+    if conflict_state != "none":
+        status += f"; conflict={conflict_state}"
+    category = str(item.get("category") or "").strip()
+    label = _CATEGORY_LABELS.get(category, category.title()) if category else "Memory"
+    key = str(item.get("key") or "").strip()
+    value = str(item.get("value") or "").strip()
+    value_text = f"{key}: {value}" if key else value
+    return f"- [{status}] {label} — {value_text}"
+
+
 class UserMemoryStore:
     """Persistent store for user preferences, personal details, and patterns."""
 
@@ -325,28 +350,11 @@ class UserMemoryStore:
             items = by_category.get(cat, [])
             if not items:
                 continue
-            label = _CATEGORY_LABELS.get(cat, cat.title())
             for item in items:
-                k = str(item.get("key") or "").strip()
                 v = str(item.get("value") or "").strip()
                 if not v:
                     continue
-                source = str(item.get("source") or "observed")
-                if source == "explicit":
-                    status = "explicit; confirmed"
-                else:
-                    confidence = float(item.get("confidence") or 0.0)
-                    provenance = dict(item.get("provenance") or {})
-                    provenance_source = str(provenance.get("source") or "unknown")
-                    status = (
-                        "observed candidate; non-authoritative; "
-                        f"confidence={confidence:.2f}; provenance={provenance_source}"
-                    )
-                conflict_state = str(item.get("conflict_state") or "none")
-                if conflict_state != "none":
-                    status += f"; conflict={conflict_state}"
-                value_text = f"{k}: {v}" if k else v
-                line = f"- [{status}] {label} — {value_text}"
+                line = render_memory_context_line(item)
                 if total + len(line) > max_chars:
                     return "\n".join(lines)
                 lines.append(line)

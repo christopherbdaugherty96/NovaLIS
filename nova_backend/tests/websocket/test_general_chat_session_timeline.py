@@ -124,6 +124,7 @@ def test_real_session_places_per_turn_context_at_the_trailing_edge(monkeypatch):
     assert [row["role"] for row in calls[0]["messages"]] == ["user", "system"]
     assert [row["role"] for row in calls[1]["messages"]] == [
         "user",
+        "system",
         "assistant",
         "user",
         "system",
@@ -155,7 +156,7 @@ def test_history_budget_keeps_complete_question_answer_pairs():
         {"role": "user", "content": "old question"},
         {"role": "assistant", "content": "old answer"},
         {"role": "user", "content": "new question"},
-        {"role": "assistant", "content": "X" * 5000},
+        {"role": "assistant", "content": "X" * 10000},
     ]
     messages = GeneralChatSkill._build_model_messages(
         "current question",

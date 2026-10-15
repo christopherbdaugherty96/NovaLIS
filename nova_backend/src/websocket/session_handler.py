@@ -1241,17 +1241,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 return content
         return ""
 
-    def _remember_review_exchange(user_text: str, assistant_text: str) -> None:
-        nonlocal session_context
-        session_context.extend(
-            [
-                {"role": "user", "content": str(user_text or "").strip()},
-                {"role": "assistant", "content": str(assistant_text or "").strip()},
-            ]
-        )
-        context_limit = 40 if session_state.get("presence_mode") else 20
-        session_context = session_context[-context_limit:]
-
     async def _maybe_handle_review_auto_final(command_lowered: str) -> bool:
         normalized = str(command_lowered or "").strip().lower()
         if normalized not in REVIEW_AUTO_FINAL_COMMANDS:
@@ -1348,7 +1337,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             remembered_response=final_message,
             speakable_message=final_message,
         )
-        _remember_review_exchange(normalized, final_message)
         return True
 
     async def _maybe_handle_review_followthrough(command_lowered: str) -> bool:
@@ -1405,7 +1393,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     {"label": "Original answer", "command": "return to Nova's original answer"},
                 ],
             )
-            _remember_review_exchange(normalized, revised_message)
             return True
 
         if normalized in REVIEW_GAPS_COMMANDS:
@@ -1426,7 +1413,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     {"label": "Original answer", "command": "return to Nova's original answer"},
                 ],
             )
-            _remember_review_exchange(normalized, gap_summary)
             return True
 
         original_message = render_original_answer(snapshot)
@@ -1454,7 +1440,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 {"label": "Summarize gaps", "command": "summarize the gaps only"},
             ],
         )
-        _remember_review_exchange(normalized, original_message)
         return True
 
     try:
@@ -5795,7 +5780,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         str(result_data.get("speakable_text") or message or "").strip(),
                     )
 
-                new_turn = [{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}]
+                new_turn = [{"role": "user", "content": mediated_text}]
+                model_context_entry = result_data.get("model_context_entry")
+                if skill_name == "general_chat" and isinstance(model_context_entry, dict):
+                    if str(model_context_entry.get("content") or "").strip():
+                        new_turn.append(
+                            {
+                                "role": "system",
+                                "content": str(model_context_entry.get("content") or "").strip(),
+                            }
+                        )
+                new_turn.append({"role": "assistant", "content": message})
                 session_context.extend(new_turn)
                 context_limit = 40 if session_state.get("presence_mode") else 20
                 session_context = session_context[-context_limit:]
