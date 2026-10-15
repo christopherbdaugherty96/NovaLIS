@@ -697,7 +697,8 @@ class GovernedMemoryStore:
             if tier not in {"active", "locked"}:
                 continue
 
-            title = _normalized_search_text(item.get("title"))
+            raw_title = str(item.get("title") or "").lower()
+            title = _normalized_search_text(raw_title)
             body = _normalized_search_text(item.get("body"))
             tags = _normalized_search_text(" ".join(str(tag) for tag in list(item.get("tags") or [])))
             title_words = set(title.split())
@@ -717,6 +718,12 @@ class GovernedMemoryStore:
                 relevance_match = True
 
             normalized_query = _normalized_search_text(query)
+            query_words = set(normalized_query.split())
+            structured_title_words = (
+                title_words
+                if len(title_words) > 1 and re.search(r"[_-]", raw_title)
+                else set()
+            )
             if normalized_query:
                 if _contains_search_phrase(title, normalized_query):
                     score += 8
@@ -732,7 +739,7 @@ class GovernedMemoryStore:
                     relevance_match = True
 
             for token in tokens:
-                if token in title_words:
+                if token in title_words and not structured_title_words:
                     score += 5
                     relevance_match = True
                 if token in tag_words:
@@ -744,6 +751,10 @@ class GovernedMemoryStore:
                 if token in body_words:
                     score += 2
                     relevance_match = True
+
+            if structured_title_words and structured_title_words.issubset(query_words):
+                score += 5 * len(structured_title_words)
+                relevance_match = True
 
             if not relevance_match:
                 continue

@@ -306,10 +306,17 @@ class UserMemoryStore:
         with self._lock:
             state = self._read_state()
         scored: list[tuple[float, dict]] = []
+        query_tokens = set(tokens)
         for entry in list(state.get("entries") or []):
-            blob = f"{entry.get('key', '')} {entry.get('value', '')} {entry.get('context', '')}".lower()
-            blob_tokens = set(_text_tokens(blob))
-            hits = sum(1 for t in tokens if t in blob_tokens)
+            key_tokens = set(_text_tokens(str(entry.get("key") or "")))
+            value_context_tokens = set(
+                _text_tokens(f"{entry.get('value', '')} {entry.get('context', '')}")
+            )
+            if len(key_tokens) > 1:
+                key_hits = len(key_tokens) if key_tokens.issubset(query_tokens) else 0
+            else:
+                key_hits = sum(1 for token in key_tokens if token in query_tokens)
+            hits = key_hits + sum(1 for token in query_tokens if token in value_context_tokens)
             if hits > 0:
                 scored.append((hits / len(tokens), _normalized_entry(dict(entry))))
         scored.sort(key=lambda pair: pair[0], reverse=True)
