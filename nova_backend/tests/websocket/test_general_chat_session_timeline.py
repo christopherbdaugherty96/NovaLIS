@@ -117,9 +117,14 @@ def test_real_session_includes_compact_runtime_facts_for_model_question(monkeypa
 
 
 def test_real_session_fallback_facts_name_answering_model_without_false_availability(monkeypatch):
-    from src.llm.llm_manager import llm_manager
+    import importlib
+
+    from src.llm import llm_gateway
     from src.llm.model_network_mediator import ModelNetworkMediatorError, ModelResponse
 
+    llm_manager_module = importlib.import_module("src.llm.llm_manager")
+    llm_manager = llm_gateway.llm_manager
+    monkeypatch.setattr(llm_manager_module, "llm_manager", llm_manager)
     payloads = []
 
     class _PrimaryFailsNetwork:
