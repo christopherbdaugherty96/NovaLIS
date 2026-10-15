@@ -546,9 +546,9 @@ class GeneralChatSkill(BaseSkill):
             selected.append({"role": role, "content": content})
             used += len(content)
         selected.reverse()
+        selected.append(current)
         if dynamic:
             selected.append({"role": "system", "content": dynamic})
-        selected.append(current)
         return selected
 
     @staticmethod
