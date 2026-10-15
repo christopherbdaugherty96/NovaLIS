@@ -5785,17 +5785,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         str(result_data.get("speakable_text") or message or "").strip(),
                     )
 
-                new_turn = [{"role": "user", "content": mediated_text}]
-                model_context_entry = result_data.get("model_context_entry")
-                if skill_name == "general_chat" and isinstance(model_context_entry, dict):
-                    if str(model_context_entry.get("content") or "").strip():
-                        new_turn.append(
-                            {
-                                "role": "system",
-                                "content": str(model_context_entry.get("content") or "").strip(),
-                            }
-                        )
-                new_turn.append({"role": "assistant", "content": message})
+                new_turn = [
+                    {"role": "user", "content": mediated_text},
+                    {"role": "assistant", "content": message},
+                ]
                 session_context.extend(new_turn)
                 _trim_session_context(session_context, session_state)
                 if skill_name == "general_chat":

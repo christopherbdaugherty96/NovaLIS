@@ -243,7 +243,6 @@ def test_real_session_places_per_turn_context_at_the_trailing_edge(monkeypatch):
     assert [row["role"] for row in calls[0]["messages"]] == ["user", "system"]
     assert [row["role"] for row in calls[1]["messages"]] == [
         "user",
-        "system",
         "assistant",
         "user",
         "system",
