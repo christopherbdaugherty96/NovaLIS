@@ -84,6 +84,23 @@ def test_explicit_memory_action_still_persists(tmp_path):
     assert persisted["session_id"] == "b3-test"
 
 
+def test_governed_memory_relevance_requires_a_whole_word_content_match(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    birthday = store.save_item(
+        title="Sister birthday",
+        body="my sister's birthday is June 3",
+    )
+    store.save_item(
+        title="Party plans",
+        body="The party venue is booked.",
+    )
+
+    assert store.find_relevant_items("tell me a joke") == []
+    assert store.find_relevant_items("art") == []
+    matches = store.find_relevant_items("when is my sister's birthday?")
+    assert [item["id"] for item in matches] == [birthday["id"]]
+
+
 def test_explicit_user_memory_is_not_overwritten_by_observation(tmp_path):
     store = UserMemoryStore(tmp_path / "user_memory.json")
     explicit = store.save("personal", "name", "Chris", source="explicit", confidence=1.0)
