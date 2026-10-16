@@ -114,6 +114,41 @@ def test_governed_memory_relevance_requires_a_whole_word_content_match(tmp_path)
     }
 
 
+def test_governed_memory_thread_relevance_uses_words_with_one_active_thread_exception(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    cartography = store.save_item(
+        title="Map archive",
+        body="The atlas review is due next month.",
+        thread_name="Cartography",
+        thread_key="cartography_notes",
+    )
+    other = store.save_item(
+        title="Launch record",
+        body="The private milestone is next quarter.",
+        thread_name="Launch Planning",
+        thread_key="launch_planning",
+    )
+
+    assert store.find_relevant_items("art") == []
+    assert cartography["id"] in {
+        item["id"] for item in store.find_relevant_items("cartography notes")
+    }
+
+    active_matches = store.find_relevant_items(
+        "unrelated prompt",
+        thread_name="Launch Planning",
+        thread_key="launch_planning",
+    )
+    assert [item["id"] for item in active_matches] == [other["id"]]
+
+    inactive_matches = store.find_relevant_items(
+        "unrelated prompt",
+        thread_name="Another Thread",
+        thread_key="another_thread",
+    )
+    assert inactive_matches == []
+
+
 def test_explicit_user_memory_is_not_overwritten_by_observation(tmp_path):
     store = UserMemoryStore(tmp_path / "user_memory.json")
     explicit = store.save("personal", "name", "Chris", source="explicit", confidence=1.0)
