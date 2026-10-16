@@ -33,7 +33,7 @@ graph TD
   Caps --> C32[32:os_diagnostics]
   C32 --> C32A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C48[48:multi_source_reporting]
-  C48 --> C48A[authority=read_only_network, risk=low, cost=free, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C48 --> C48A[authority=read_only_network, risk=confirm, cost=free, confirm=True, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C49[49:headline_summary]
   C49 --> C49A[authority=read_only_network, risk=low, cost=free, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C50[50:intelligence_brief]
@@ -122,7 +122,7 @@ Runtime
 |  |- 22 open_file_folder (authority=reversible_local, risk=confirm, cost=free, network=False, exfil=False, confirm=True, surface=Governor -> Executor)
 |  |- 31 response_verification (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 32 os_diagnostics (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 48 multi_source_reporting (authority=read_only_network, risk=low, cost=free, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 48 multi_source_reporting (authority=read_only_network, risk=confirm, cost=free, network=True, exfil=True, confirm=True, surface=Governor -> NetworkMediator)
 |  |- 49 headline_summary (authority=read_only_network, risk=low, cost=free, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 50 intelligence_brief (authority=read_only_network, risk=low, cost=free, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 51 topic_memory_map (authority=read_only_local, risk=low, cost=free, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)

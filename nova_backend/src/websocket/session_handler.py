@@ -5030,6 +5030,39 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         await send_chat_done(ws)
                         continue
 
+                if capability_id == 48:
+                    from src.executors.multi_source_reporting_executor import (
+                        build_cap48_network_plan,
+                    )
+
+                    query = str(params.get("query") or "").strip()
+                    network_plan = build_cap48_network_plan(query)
+                    params["network_plan"] = network_plan
+                    destinations = ", ".join(
+                        (
+                            f"{str(item.get('destination') or '').strip()} (fallback)"
+                            if item.get("role") == "fallback"
+                            else str(item.get("destination") or "").strip()
+                        )
+                        for item in network_plan
+                        if str(item.get("destination") or "").strip()
+                    )
+                    session_state["pending_governed_confirm"] = {
+                        "capability_id": capability_id,
+                        "params": dict(params),
+                    }
+                    await send_chat_message(
+                        ws,
+                        (
+                            "This report requires sending your search text to external services.\n"
+                            f"Exact outbound query: {query}\n"
+                            f"Destinations: {destinations}\n"
+                            "Reply 'yes' to approve this exact request or 'no' to cancel."
+                        ),
+                    )
+                    await send_chat_done(ws)
+                    continue
+
                 if capability_id == 22:
                     preflight_message = cap22_path_preflight_message(params)
                     if preflight_message:

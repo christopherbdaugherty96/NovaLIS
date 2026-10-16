@@ -13,7 +13,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 22 | open_file_folder | True | active | 4 | confirm | free | False | reversible_local | True | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 31 | response_verification | True | active | 4 | low | free | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 32 | os_diagnostics | True | active | 4 | low | free | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
-| 48 | multi_source_reporting | True | active | 4 | low | free | True | read_only_network | False | True | False | True | Governor -> NetworkMediator | True | True | True | True | True |
+| 48 | multi_source_reporting | True | active | 4 | confirm | free | True | read_only_network | True | True | False | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 49 | headline_summary | True | active | 4 | low | free | True | read_only_network | False | True | False | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 50 | intelligence_brief | True | active | 4 | low | free | True | read_only_network | False | True | False | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 51 | topic_memory_map | True | active | 4 | low | free | False | read_only_local | False | True | False | True | Governor -> NetworkMediator | True | True | True | True | True |

@@ -4,6 +4,12 @@ from types import SimpleNamespace
 
 
 def _request(params: dict):
+    from src.executors.multi_source_reporting_executor import build_cap48_network_plan
+
+    params = dict(params)
+    query = str(params.get("query") or "").strip()
+    if query:
+        params.setdefault("network_plan", build_cap48_network_plan(query))
     return SimpleNamespace(capability_id=48, params=params, request_id="req-msr")
 
 

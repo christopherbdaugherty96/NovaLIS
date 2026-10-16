@@ -4,14 +4,12 @@ import asyncio
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
 from src.governor.governor import Governor
-from src.governor.governor_mediator import GovernorMediator, Invocation
+from src.governor.governor_mediator import GovernorMediator
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
-
 
 PASTED_CONTENT_REQUESTS = (
     "summarize this: TEST-QA-F1 private text",
@@ -240,3 +238,44 @@ def test_cap48_executor_refuses_stale_network_plan_before_network(monkeypatch):
     assert result.success is False
     assert result.structured_data["failure_kind"] == "approval_scope_changed"
     assert calls == []
+
+
+def test_cap48_executor_requests_match_the_approved_plan(monkeypatch):
+    from src.executors import multi_source_reporting_executor as mod
+
+    monkeypatch.setenv("BRAVE_API_KEY", "test-key")
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "Bounded analyst note.")
+    calls: list[dict] = []
+
+    class _Network:
+        def request(self, **kwargs):
+            calls.append(dict(kwargs))
+            if kwargs["url"] == mod.BRAVE_SEARCH_URL:
+                return {"status_code": 200, "data": {"web": {"results": []}}}
+            return {
+                "status_code": 200,
+                "data": {
+                    "Abstract": "Approved query result",
+                    "AbstractURL": "https://example.test/result",
+                },
+            }
+
+    query = "AI regulation trends"
+    plan = mod.build_cap48_network_plan(query)
+    request = type(
+        "Request",
+        (),
+        {
+            "params": {"query": query, "network_plan": plan},
+            "request_id": "cap48-approved-plan",
+        },
+    )()
+
+    result = mod.MultiSourceReportingExecutor(_Network()).execute(request)
+
+    assert result.success is True
+    assert len(calls) == len(plan)
+    for call, approved in zip(calls, plan, strict=True):
+        assert call["method"] == approved["method"]
+        assert call["url"] == approved["url"]
+        assert call["params"] == approved["params"]

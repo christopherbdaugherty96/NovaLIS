@@ -385,6 +385,11 @@ EXPLAIN_FOLLOWUP_RE = re.compile(
     re.IGNORECASE,
 )
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+INLINE_PASTED_SUMMARY_RE = re.compile(
+    r"^\s*(?:can\s+you\s+)?summari[sz]e\s+this"
+    r"(?:\s+(?:note|email|message|text))?(?:\s+for\s+me)?\s*:\s*\S",
+    re.IGNORECASE,
+)
 HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
     re.IGNORECASE,
@@ -1016,6 +1021,11 @@ class GovernorMediator:
         t = _normalize_spoken_request(t)
         if not t:
                return None
+
+        # Inline content supplied after a colon is local conversation context,
+        # not a web-research query. Keep it out of capability 48 entirely.
+        if INLINE_PASTED_SUMMARY_RE.match(t):
+            return None
 
         _evict_expired_pending_clarifications()
 

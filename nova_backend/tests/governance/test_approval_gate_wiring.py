@@ -44,7 +44,7 @@ def test_only_expected_capabilities_require_confirmation():
         for c in registry["capabilities"]
         if c.get("risk_level") == "confirm"
     }
-    assert confirm_caps == {22, 64}, (
+    assert confirm_caps == {22, 48, 64}, (
         f"Unexpected confirmation-required capabilities: {confirm_caps}. "
         "Adding a new confirm-risk capability requires a reviewed approval "
         "gate wiring update."

@@ -13,7 +13,6 @@ from src.governor.governor import Governor
 from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 from src.skill_registry import SkillRegistry
 
-
 SHORTEN_ALIASES = {
     "shorter",
     "shorter version",
@@ -402,7 +401,29 @@ class ConversationSimulator:
                         "params": dict(params),
                     },
                 )
-            action_result = self.governor.handle_governed_invocation(capability_id, params)
+            if capability_id == 48:
+                # This non-interactive quality harness models the user's approval
+                # while still exercising the real, action-bound Governor grant.
+                from src.executors.multi_source_reporting_executor import (
+                    build_cap48_network_plan,
+                )
+
+                params["network_plan"] = build_cap48_network_plan(
+                    str(params.get("query") or "")
+                )
+                grant = self.governor.issue_approval_grant(
+                    session_id=self._session_id,
+                    capability_id=capability_id,
+                    params=params,
+                )
+                action_result = self.governor.handle_governed_invocation(
+                    capability_id,
+                    params,
+                    session_id=self._session_id,
+                    approval_id=grant.approval_id,
+                )
+            else:
+                action_result = self.governor.handle_governed_invocation(capability_id, params)
             response = str(action_result.message or "").strip()
             self._last_response = response
             if isinstance(action_result.data, dict):
