@@ -82,6 +82,15 @@ _QUOTED_CONTENT_REQUEST_RE = re.compile(
 _ACTIVE_WS_SESSIONS: list[dict[str, Any]] = []
 
 
+def _trim_session_context(
+    session_context: list[dict[str, Any]],
+    session_state: dict[str, Any],
+) -> None:
+    """Apply the one session-timeline retention rule in place."""
+    context_limit = 40 if session_state.get("presence_mode") else 20
+    del session_context[:-context_limit]
+
+
 def local_chat_usage_meta(user_text: str, response_text: str) -> dict[str, Any]:
     """Build display-only local usage metadata for a completed advisory turn."""
     try:
@@ -1087,6 +1096,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             session_state,
             str(speakable_message if speakable_message is not None else presented_message or "").strip(),
         )
+        session_context.extend(
+            [
+                {"role": "user", "content": str(session_state.get("_current_user_text") or "").strip()},
+                {"role": "nova_result", "content": clean_message.strip()},
+            ]
+        )
+        _trim_session_context(session_context, session_state)
         session_state["turn_count"] += 1
 
     async def _save_local_reminder(
@@ -1183,6 +1199,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 log.exception("Local Nova reminder widget failed after persistence")
         await send_chat_done(ws)
         _maybe_auto_speak_for_voice_turn(session_state, str(presented_message or "").strip())
+        session_context.extend(
+            [
+                {"role": "user", "content": str(session_state.get("_current_user_text") or "").strip()},
+                {"role": "nova_result", "content": success_message},
+            ]
+        )
+        _trim_session_context(session_context, session_state)
         session_state["turn_count"] += 1
 
     async def _complete_silent_widget_refresh() -> None:
@@ -1226,17 +1249,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if content:
                 return content
         return ""
-
-    def _remember_review_exchange(user_text: str, assistant_text: str) -> None:
-        nonlocal session_context
-        session_context.extend(
-            [
-                {"role": "user", "content": str(user_text or "").strip()},
-                {"role": "assistant", "content": str(assistant_text or "").strip()},
-            ]
-        )
-        context_limit = 40 if session_state.get("presence_mode") else 20
-        session_context = session_context[-context_limit:]
 
     async def _maybe_handle_review_auto_final(command_lowered: str) -> bool:
         normalized = str(command_lowered or "").strip().lower()
@@ -1334,7 +1346,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             remembered_response=final_message,
             speakable_message=final_message,
         )
-        _remember_review_exchange(normalized, final_message)
         return True
 
     async def _maybe_handle_review_followthrough(command_lowered: str) -> bool:
@@ -1391,7 +1402,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     {"label": "Original answer", "command": "return to Nova's original answer"},
                 ],
             )
-            _remember_review_exchange(normalized, revised_message)
             return True
 
         if normalized in REVIEW_GAPS_COMMANDS:
@@ -1412,7 +1422,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     {"label": "Original answer", "command": "return to Nova's original answer"},
                 ],
             )
-            _remember_review_exchange(normalized, gap_summary)
             return True
 
         original_message = render_original_answer(snapshot)
@@ -1440,7 +1449,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 {"label": "Summarize gaps", "command": "summarize the gaps only"},
             ],
         )
-        _remember_review_exchange(normalized, original_message)
         return True
 
     try:
@@ -1507,6 +1515,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             raw_text = (msg.get("text") or "").strip()
+            session_state["_current_user_text"] = raw_text
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
@@ -3363,8 +3372,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_message(ws, forced_result.message, message_id=message_id)
                     await send_chat_done(ws)
                     session_context.extend(escalation_outcome.context_entries)
-                    context_limit = 40 if session_state.get("presence_mode") else 20
-                    session_context = session_context[-context_limit:]
+                    _trim_session_context(session_context, session_state)
                     if getattr(forced_result, "success", False):
                         session_state["trust_status"] = failure_ladder.record_local_success(
                             session_state.get("trust_status", {})
@@ -3550,8 +3558,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"role": "assistant", "content": phase42_message},
                     ]
                 )
-                context_limit = 40 if session_state.get("presence_mode") else 20
-                session_context = session_context[-context_limit:]
+                _trim_session_context(session_context, session_state)
                 session_state["turn_count"] += 1
                 continue
 
@@ -5572,8 +5579,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"role": "assistant", "content": grounded_answer},
                     ]
                     session_context.extend(new_turn)
-                    context_limit = 40 if session_state.get("presence_mode") else 20
-                    session_context = session_context[-context_limit:]
+                    _trim_session_context(session_context, session_state)
                     session_state["turn_count"] += 1
                     continue
 
@@ -5593,8 +5599,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     {"role": "assistant", "content": _schedule_guard_answer},
                 ]
                 session_context.extend(new_turn)
-                context_limit = 40 if session_state.get("presence_mode") else 20
-                session_context = session_context[-context_limit:]
+                _trim_session_context(session_context, session_state)
                 session_state["turn_count"] += 1
                 continue
 
@@ -5780,10 +5785,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         str(result_data.get("speakable_text") or message or "").strip(),
                     )
 
-                new_turn = [{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}]
+                new_turn = [
+                    {"role": "user", "content": mediated_text},
+                    {"role": "assistant", "content": message},
+                ]
                 session_context.extend(new_turn)
-                context_limit = 40 if session_state.get("presence_mode") else 20
-                session_context = session_context[-context_limit:]
+                _trim_session_context(session_context, session_state)
                 if skill_name == "general_chat":
                     chat_context = list(session_state.get("general_chat_context") or [])
                     chat_context.extend(new_turn)

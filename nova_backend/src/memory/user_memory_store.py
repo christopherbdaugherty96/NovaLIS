@@ -6,6 +6,7 @@ silently replace explicit entries.
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -87,6 +88,31 @@ def _normalized_entry(entry: dict[str, Any]) -> dict[str, Any]:
     normalized["supersession_history"] = list(entry.get("supersession_history") or [])
     normalized["observed_conflicts"] = list(entry.get("observed_conflicts") or [])
     return normalized
+
+
+def render_memory_context_line(entry: dict[str, Any]) -> str:
+    """Render one memory item without weakening its epistemic metadata."""
+    item = _normalized_entry(dict(entry or {}))
+    source = str(item.get("source") or "observed")
+    if source == "explicit":
+        status = "explicit; confirmed"
+    else:
+        confidence = float(item.get("confidence") or 0.0)
+        provenance = dict(item.get("provenance") or {})
+        provenance_source = str(provenance.get("source") or "unknown")
+        status = (
+            "observed candidate; non-authoritative; "
+            f"confidence={confidence:.2f}; provenance={provenance_source}"
+        )
+    conflict_state = str(item.get("conflict_state") or "none")
+    if conflict_state != "none":
+        status += f"; conflict={conflict_state}"
+    category = str(item.get("category") or "").strip()
+    label = _CATEGORY_LABELS.get(category, category.title()) if category else "Memory"
+    key = str(item.get("key") or "").strip()
+    value = str(item.get("value") or "").strip()
+    value_text = f"{key}: {value}" if key else value
+    return f"- [{status}] {label} — {value_text}"
 
 
 class UserMemoryStore:
@@ -280,9 +306,17 @@ class UserMemoryStore:
         with self._lock:
             state = self._read_state()
         scored: list[tuple[float, dict]] = []
+        query_tokens = set(tokens)
         for entry in list(state.get("entries") or []):
-            blob = f"{entry.get('key', '')} {entry.get('value', '')} {entry.get('context', '')}".lower()
-            hits = sum(1 for t in tokens if t in blob)
+            key_tokens = set(_text_tokens(str(entry.get("key") or "")))
+            value_context_tokens = set(
+                _text_tokens(f"{entry.get('value', '')} {entry.get('context', '')}")
+            )
+            if len(key_tokens) > 1:
+                key_hits = len(key_tokens) if key_tokens.issubset(query_tokens) else 0
+            else:
+                key_hits = sum(1 for token in key_tokens if token in query_tokens)
+            hits = key_hits + sum(1 for token in query_tokens if token in value_context_tokens)
             if hits > 0:
                 scored.append((hits / len(tokens), _normalized_entry(dict(entry))))
         scored.sort(key=lambda pair: pair[0], reverse=True)
@@ -325,28 +359,11 @@ class UserMemoryStore:
             items = by_category.get(cat, [])
             if not items:
                 continue
-            label = _CATEGORY_LABELS.get(cat, cat.title())
             for item in items:
-                k = str(item.get("key") or "").strip()
                 v = str(item.get("value") or "").strip()
                 if not v:
                     continue
-                source = str(item.get("source") or "observed")
-                if source == "explicit":
-                    status = "explicit; confirmed"
-                else:
-                    confidence = float(item.get("confidence") or 0.0)
-                    provenance = dict(item.get("provenance") or {})
-                    provenance_source = str(provenance.get("source") or "unknown")
-                    status = (
-                        "observed candidate; non-authoritative; "
-                        f"confidence={confidence:.2f}; provenance={provenance_source}"
-                    )
-                conflict_state = str(item.get("conflict_state") or "none")
-                if conflict_state != "none":
-                    status += f"; conflict={conflict_state}"
-                value_text = f"{k}: {v}" if k else v
-                line = f"- [{status}] {label} — {value_text}"
+                line = render_memory_context_line(item)
                 if total + len(line) > max_chars:
                     return "\n".join(lines)
                 lines.append(line)
@@ -387,13 +404,19 @@ class UserMemoryStore:
 
 def _search_tokens(query: str) -> list[str]:
     raw = str(query or "").strip().lower()
-    stopwords = {"a", "an", "and", "for", "from", "i", "in", "is", "it", "my", "of", "the", "to", "what", "with"}
+    stopwords = {
+        "a", "an", "and", "for", "from", "i", "in", "is", "it", "me", "my",
+        "of", "tell", "the", "to", "what", "when", "with",
+    }
     tokens: list[str] = []
-    for word in raw.split():
-        cleaned = "".join(ch for ch in word if ch.isalnum() or ch in {"-", "_"})
+    for cleaned in _text_tokens(raw):
         if len(cleaned) >= 2 and cleaned not in stopwords and cleaned not in tokens:
             tokens.append(cleaned)
     return tokens
+
+
+def _text_tokens(value: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", str(value or "").lower())
 
 
 # Module-level singleton

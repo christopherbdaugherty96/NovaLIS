@@ -84,6 +84,71 @@ def test_explicit_memory_action_still_persists(tmp_path):
     assert persisted["session_id"] == "b3-test"
 
 
+def test_governed_memory_relevance_requires_a_whole_word_content_match(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    birthday = store.save_item(
+        title="Sister birthday",
+        body="my sister's birthday is June 3",
+    )
+    store.save_item(
+        title="Party plans",
+        body="The party venue is booked.",
+    )
+    favorite_color = store.save_item(
+        title="favorite_color",
+        body="blue",
+    )
+
+    assert store.find_relevant_items("tell me a joke") == []
+    assert store.find_relevant_items("art") == []
+    matches = store.find_relevant_items("when is my sister's birthday?")
+    assert [item["id"] for item in matches] == [birthday["id"]]
+    assert favorite_color["id"] in {
+        item["id"] for item in store.find_relevant_items("what is my favorite color?")
+    }
+    assert favorite_color["id"] not in {
+        item["id"] for item in store.find_relevant_items("what is my favorite food?")
+    }
+    assert favorite_color["id"] not in {
+        item["id"] for item in store.find_relevant_items("what color is the sky?")
+    }
+
+
+def test_governed_memory_thread_relevance_uses_words_with_one_active_thread_exception(tmp_path):
+    store = GovernedMemoryStore(tmp_path / "items.json")
+    cartography = store.save_item(
+        title="Map archive",
+        body="The atlas review is due next month.",
+        thread_name="Cartography",
+        thread_key="cartography_notes",
+    )
+    other = store.save_item(
+        title="Launch record",
+        body="The private milestone is next quarter.",
+        thread_name="Launch Planning",
+        thread_key="launch_planning",
+    )
+
+    assert store.find_relevant_items("art") == []
+    assert cartography["id"] in {
+        item["id"] for item in store.find_relevant_items("cartography notes")
+    }
+
+    active_matches = store.find_relevant_items(
+        "unrelated prompt",
+        thread_name="Launch Planning",
+        thread_key="launch_planning",
+    )
+    assert [item["id"] for item in active_matches] == [other["id"]]
+
+    inactive_matches = store.find_relevant_items(
+        "unrelated prompt",
+        thread_name="Another Thread",
+        thread_key="another_thread",
+    )
+    assert inactive_matches == []
+
+
 def test_explicit_user_memory_is_not_overwritten_by_observation(tmp_path):
     store = UserMemoryStore(tmp_path / "user_memory.json")
     explicit = store.save("personal", "name", "Chris", source="explicit", confidence=1.0)
@@ -376,6 +441,36 @@ def test_memory_prompt_rendering_retains_epistemic_status(tmp_path):
     assert "observed candidate; non-authoritative" in context
     assert "candidate memory is not fact" in context
     assert "Legacy relationship observations" in context
+
+
+def test_filtered_memory_uses_shared_conflicted_observation_metadata(tmp_path):
+    user_store = UserMemoryStore(tmp_path / "user_memory.json")
+    nova_store = NovaSelfMemoryStore(tmp_path / "nova_self_memory.json")
+    user_store.save("preferences", "theme", "dark", source="observed", confidence=0.6)
+    user_store.save("preferences", "theme", "light", source="observed", confidence=0.7)
+    skill = GeneralChatSkill(user_memory=user_store, nova_memory=nova_store)
+
+    context = skill._build_memory_context("theme")
+
+    assert "observed candidate; non-authoritative" in context
+    assert "confidence=0.60" in context
+    assert "provenance=observed" in context
+    assert "conflict=observed_conflict" in context
+
+
+def test_memory_search_matches_whole_meaningful_words_only(tmp_path):
+    store = UserMemoryStore(tmp_path / "user_memory.json")
+    store.save("preferences", "theme", "dark", source="explicit", confidence=1.0)
+    store.save("important_dates", "sister birthday", "June 3", source="explicit", confidence=1.0)
+    store.save("preferences", "favorite_color", "blue", source="explicit", confidence=1.0)
+
+    assert store.search("tell me a joke") == []
+    matches = store.search("when is my sister's birthday?")
+    assert matches
+    assert matches[0]["value"] == "June 3"
+    assert any(item["value"] == "blue" for item in store.search("what is my favorite color?"))
+    assert not any(item["value"] == "blue" for item in store.search("what is my favorite food?"))
+    assert not any(item["value"] == "blue" for item in store.search("what color is the sky?"))
 
 
 def test_task_preview_memory_keeps_authority_labels():

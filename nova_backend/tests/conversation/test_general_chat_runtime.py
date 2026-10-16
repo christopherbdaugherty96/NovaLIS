@@ -44,7 +44,7 @@ def _run_fallback(query: str = "What should I focus on?", memory_items=None):
     skill = _FakeGeneralChatSkill(result)
     session_state = {
         "session_id": "sess-1",
-        "general_chat_context": [{"role": "assistant", "content": "Earlier reply."}],
+        "general_chat_context": [{"role": "assistant", "content": "Stale shadow reply."}],
     }
     items = memory_items if memory_items is not None else [dict(_MEM_ITEM)]
 
@@ -56,7 +56,7 @@ def _run_fallback(query: str = "What should I focus on?", memory_items=None):
             query,
             general_chat_skill=skill,
             session_state=session_state,
-            session_context=[],
+            session_context=[{"role": "assistant", "content": "Earlier reply."}],
             project_threads=object(),
             select_relevant_memory_context=_select,
         )

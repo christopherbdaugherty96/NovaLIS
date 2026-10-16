@@ -217,7 +217,10 @@ async def run_general_chat_fallback(
         warnings=[w.reason for w in pack.warnings[:3]],
     )
 
-    chat_context = list(session_state.get("general_chat_context") or session_context)
+    # One typed session timeline is the source of conversational truth.  A
+    # chat-only shadow loses deterministic Nova results (for example a saved
+    # reminder) as soon as the first model turn has populated it.
+    chat_context = list(session_context)
     skill_state = dict(session_state)
     skill_state.pop("_planning_run_manager", None)
     for transient_key in (

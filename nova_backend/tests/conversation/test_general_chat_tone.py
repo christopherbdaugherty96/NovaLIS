@@ -355,7 +355,10 @@ def test_general_chat_uses_detailed_presentation_preference_for_followup_depth_r
 
     assert result is not None
     assert result.success is True
-    assert "Presentation preference: Detailed." in captured["system_prompt"]
+    system_text = "\n".join(
+        row["content"] for row in captured["messages"] if row.get("role") == "system"
+    )
+    assert "Presentation preference: Detailed." in system_text
     assert captured["max_tokens"] > 200
     conversation_context = (result.data or {}).get("conversation_context") or {}
     assert conversation_context["presentation_preference"] == "detailed"
@@ -398,7 +401,10 @@ def test_general_chat_uses_technical_presentation_preference_for_rewrite_followu
 
     assert result is not None
     assert result.success is True
-    assert "Presentation preference: Technical." in captured["system_prompt"]
+    system_text = "\n".join(
+        row["content"] for row in captured["messages"] if row.get("role") == "system"
+    )
+    assert "Presentation preference: Technical." in system_text
     assert "Current thread goal: Understand why GPUs matter for local AI." in captured["prompt"]
     conversation_context = (result.data or {}).get("conversation_context") or {}
     assert conversation_context["presentation_preference"] == "technical"
@@ -444,8 +450,8 @@ def test_general_chat_uses_nova_mode_guidance_for_brainstorming_prompt():
 
     assert result is not None
     assert result.success is True
-    assert "Communication style: Exploratory and grounded." in captured["system_prompt"]
-    assert "Keep the options easy to compare." in captured["system_prompt"]
+    assert "Communication style: Exploratory and grounded." in captured["messages"][-1]["content"]
+    assert "Keep the options easy to compare." in captured["messages"][-1]["content"]
     assert result.message.startswith("Here are a few grounded directions.")
 
 

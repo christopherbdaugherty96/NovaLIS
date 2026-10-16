@@ -10,12 +10,15 @@ def test_general_chat_has_local_memory_intelligence_fallback():
     assert "does not authorize actions" in text
 
 
-def test_general_chat_has_local_governance_followup_fallbacks():
+def test_general_chat_does_not_ship_topic_specific_shopify_fallback():
     shopify = GeneralChatSkill._local_conceptual_fallback("Explain what Shopify is.")
+    assert shopify == ""
+
+
+def test_general_chat_has_local_governance_followup_fallbacks():
     safe_use = GeneralChatSkill._local_conceptual_fallback("How would Nova use it safely?")
     avoid = GeneralChatSkill._local_conceptual_fallback("What should it avoid doing?")
 
-    assert "commerce platform" in shopify
     assert "read-only" in safe_use
     assert "no silent writes" in avoid
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -92,8 +93,7 @@ def _memory_search_tokens(value: Any) -> list[str]:
         return []
     tokens: list[str] = []
     seen: set[str] = set()
-    for token in raw.replace("_", " ").split():
-        cleaned = "".join(ch for ch in token if ch.isalnum() or ch in {"-", "_"})
+    for cleaned in re.findall(r"[a-z0-9]+", raw):
         if len(cleaned) < 3 or cleaned in _MEMORY_SEARCH_STOPWORDS:
             continue
         if cleaned in seen:
@@ -101,6 +101,14 @@ def _memory_search_tokens(value: Any) -> list[str]:
         seen.add(cleaned)
         tokens.append(cleaned)
     return tokens
+
+
+def _normalized_search_text(value: Any) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", str(value or "").lower()))
+
+
+def _contains_search_phrase(haystack: str, needle: str) -> bool:
+    return bool(needle) and f" {needle} " in f" {haystack} "
 
 
 def _extract_decision_snippet(value: Any) -> str:
@@ -689,43 +697,90 @@ class GovernedMemoryStore:
             if tier not in {"active", "locked"}:
                 continue
 
-            title = str(item.get("title") or "").lower()
-            body = str(item.get("body") or "").lower()
-            tags = " ".join(str(tag).lower() for tag in list(item.get("tags") or []))
+            raw_title = str(item.get("title") or "").lower()
+            title = _normalized_search_text(raw_title)
+            body = _normalized_search_text(item.get("body"))
+            tags = _normalized_search_text(" ".join(str(tag) for tag in list(item.get("tags") or [])))
+            title_words = set(title.split())
+            body_words = set(body.split())
+            tag_words = set(tags.split())
             links = dict(item.get("links") or {})
-            item_thread_name = _normalize_thread_name(links.get("project_thread_name"))
-            item_thread_key = _normalize_thread_key(links.get("project_thread_key"))
+            raw_thread_name = _normalize_thread_name(links.get("project_thread_name"))
+            raw_thread_key = _normalize_thread_key(links.get("project_thread_key"))
+            item_thread_name = _normalized_search_text(raw_thread_name)
+            item_thread_key = _normalized_search_text(raw_thread_key)
+            thread_name_words = set(item_thread_name.split())
+            thread_key_words = set(item_thread_key.split())
 
             score = 0
-            if thread_key_filter and item_thread_key == thread_key_filter:
+            relevance_match = False
+            # Owner-selected active-thread scope is the only sanctioned
+            # non-word inclusion path. Exact normalized identity is required;
+            # query text alone must never activate this exception.
+            if thread_key_filter and raw_thread_key == thread_key_filter:
                 score += 8
-            elif thread_name_filter and item_thread_name == thread_name_filter:
+                relevance_match = True
+            elif thread_name_filter and raw_thread_name == thread_name_filter:
                 score += 6
+                relevance_match = True
 
-            lowered_query = str(query or "").strip().lower()
-            if lowered_query:
-                if lowered_query in title:
+            normalized_query = _normalized_search_text(query)
+            query_words = set(normalized_query.split())
+            structured_title_words = (
+                title_words
+                if len(title_words) > 1 and re.search(r"[_-]", raw_title)
+                else set()
+            )
+            structured_thread_key_words = (
+                thread_key_words
+                if len(thread_key_words) > 1 and re.search(r"[_-]", raw_thread_key)
+                else set()
+            )
+            if normalized_query:
+                if _contains_search_phrase(title, normalized_query):
                     score += 8
-                if lowered_query in item_thread_name or lowered_query in item_thread_key:
+                    relevance_match = True
+                if _contains_search_phrase(item_thread_name, normalized_query) or _contains_search_phrase(
+                    item_thread_key,
+                    normalized_query,
+                ):
                     score += 7
-                if lowered_query in body:
+                    relevance_match = True
+                if _contains_search_phrase(body, normalized_query):
                     score += 4
+                    relevance_match = True
+                if _contains_search_phrase(tags, normalized_query):
+                    score += 4
+                    relevance_match = True
 
             for token in tokens:
-                if token in title:
+                if token in title_words and not structured_title_words:
                     score += 5
-                if token in tags:
+                    relevance_match = True
+                if token in tag_words:
                     score += 4
-                if token in item_thread_name or token in item_thread_key:
+                    relevance_match = True
+                if token in thread_name_words or (
+                    token in thread_key_words and not structured_thread_key_words
+                ):
                     score += 4
-                if token in body:
+                    relevance_match = True
+                if token in body_words:
                     score += 2
+                    relevance_match = True
+
+            if structured_title_words and structured_title_words.issubset(query_words):
+                score += 5 * len(structured_title_words)
+                relevance_match = True
+            if structured_thread_key_words and structured_thread_key_words.issubset(query_words):
+                score += 4 * len(structured_thread_key_words)
+                relevance_match = True
+
+            if not relevance_match:
+                continue
 
             if tier == "active":
                 score += 2
-
-            if score <= 0:
-                continue
 
             ranked.append((score, str(item.get("updated_at") or ""), {**item, "match_score": score}))
 

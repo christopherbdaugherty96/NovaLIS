@@ -5,14 +5,14 @@ from datetime import datetime
 from unittest.mock import patch
 
 import pytest
-
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
 
 pytestmark = pytest.mark.slow
 
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
+
 
 def test_followup_chat_uses_recent_conversation_context(monkeypatch):
     monkeypatch.setattr(
@@ -577,6 +577,51 @@ def test_second_opinion_and_final_answer_runs_in_one_explicit_command(monkeypatc
         for msg in chat_messages
     )
     assert review_prompts
+
+
+def test_review_followthrough_is_recorded_once_in_general_chat_timeline(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    async def _fake_invoke(_governor, capability_id, params):
+        assert capability_id == 62
+        return ActionResult.ok(
+            "Review complete.",
+            data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": "Accuracy: high\nConfidence: high",
+                "reasoning_summary_line": "Bottom line: sound.",
+                "reasoning_accuracy_label": "High",
+                "reasoning_confidence_label": "High",
+                "top_issue": "none",
+                "top_correction": "none",
+                "reasoning_recommended": False,
+            },
+            request_id="reason-once",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke)
+    captured: list[list[dict]] = []
+
+    def _fake_chat(*args, **kwargs):
+        captured.append(list(kwargs.get("messages") or []))
+        return "Grounded response."
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_chat), patch(
+        "src.conversation.review_followthrough.generate_chat",
+        return_value="Final reviewed answer.",
+    ):
+        ws = _ScriptedWebSocket(
+            ["What is a GPU?", "second opinion and final answer", "What did the review conclude?"]
+        )
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert captured
+    rows = captured[-1]
+    assert sum(row.get("role") == "user" and row.get("content") == "second opinion and final answer" for row in rows) == 1
 
 
 def test_trust_center_command_returns_summary_and_status_widget(monkeypatch):
