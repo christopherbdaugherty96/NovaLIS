@@ -497,7 +497,10 @@ class MultiSourceReportingExecutor:
         counter_analysis = self._build_counter_analysis(
             query=query,
             findings=list(reporting_result.key_points),
-            allow_model_enrichment=bool((analysis_text or "").strip()),
+            # Capability 48 approval binds only the declared search-provider
+            # operations. Do not send the approved query or derived findings
+            # to an undeclared external reasoning provider.
+            allow_model_enrichment=False,
         )
         summary_text = reporting_result.summary
         if analysis_focus == "source_reliability":
