@@ -153,6 +153,41 @@ def test_cap48_approval_uses_exact_disclosed_operation(monkeypatch):
     assert any("Report ready." in message for message in _chat_messages(ws))
 
 
+def test_cap48_approved_result_preserves_search_widget_and_source_followup(monkeypatch):
+    _disable_session_gate(monkeypatch)
+    monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+
+    async def _invoke(_governor, capability_id, params, **_authority):
+        assert capability_id == 48
+        return ActionResult.ok(
+            "Report ready.",
+            data={
+                "widget": {
+                    "type": "search",
+                    "data": {
+                        "query": params["query"],
+                        "results": [
+                            {
+                                "title": "Approved source",
+                                "url": "https://approved.example/report",
+                                "snippet": "Bound to the approved report.",
+                            }
+                        ],
+                    },
+                }
+            },
+            request_id="cap48-result-pipeline",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
+    ws = _ScriptedWebSocket(["research AI regulation trends", "yes", "show sources"])
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert any(message.get("type") == "search" for message in ws.sent_messages)
+    assert any("approved.example" in message for message in _chat_messages(ws))
+
+
 def test_cap48_registry_requires_confirmation():
     capability = Governor().registry.get(48)
     assert capability.requires_confirmation is True

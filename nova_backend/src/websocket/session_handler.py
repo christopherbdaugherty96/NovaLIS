@@ -1624,7 +1624,32 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         approval_id=grant.approval_id,
                     )
                     session_state["pending_governed_confirm"] = None
-                    outgoing_message = _structure_long_message(_action_result_message(action_result))
+                    action_message = _action_result_message(action_result)
+                    action_payload = _action_result_payload(action_result)
+                    if capability_id == 48 and isinstance(action_payload, dict):
+                        widget = action_payload.get("widget")
+                        if isinstance(widget, dict) and widget.get("type") == "search":
+                            search_data = widget.get("data") if isinstance(widget.get("data"), dict) else {}
+                            results = search_data.get("results") if isinstance(search_data, dict) else []
+                            if isinstance(results, list):
+                                session_state["last_sources"] = _extract_sources_from_results(results)
+                                session_state["last_source_links"] = _extract_source_links(results)
+                            session_state["search_widget"] = widget
+                            await send_widget_message(ws, "search", action_message, widget)
+                        if action_result.success:
+                            session_state["trust_status"] = failure_ladder.record_external_success(
+                                session_state.get("trust_status", {}),
+                                "Governed web search",
+                            )
+                        else:
+                            session_state["trust_status"] = failure_ladder.record_failure(
+                                session_state.get("trust_status", {}),
+                                reason="Temporary issue",
+                                external=True,
+                                last_external_call="Governed web search",
+                            )
+                        await send_trust_status(ws, session_state["trust_status"])
+                    outgoing_message = _structure_long_message(action_message)
                     if outgoing_message:
                         session_state["last_response"] = outgoing_message
                     await send_chat_message(ws, outgoing_message)
