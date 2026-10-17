@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
 from src import brain_server
+from src.base_skill import SkillResult
 from src.conversation.session_router import GateResult
 from src.memory.governed_memory_store import GovernedMemoryStore
 from src.websocket.session_handler import guard_general_chat_action_claim
@@ -39,6 +41,15 @@ def test_model_receipt_shapes_are_neutralized(model_reply):
 
     assert "SCH-FAKE-0001" not in guarded
     assert "MEM-FAKE-0001" not in guarded
+    assert ACTION_CLAIM_NOTE in guarded
+
+
+def test_model_receipt_shape_split_across_lines_is_neutralized():
+    guarded = guard_general_chat_action_claim(
+        "Your receipt follows:\nSCH-FAKE-0001\nText: call mom"
+    )
+
+    assert "SCH-FAKE-0001" not in guarded
     assert ACTION_CLAIM_NOTE in guarded
 
 
@@ -84,6 +95,55 @@ def test_plain_model_reply_has_no_execution_provenance(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert "receipt" not in _chat_frames(ws)[-1]
+
+
+def test_confirmed_escalation_model_receipt_is_neutralized(monkeypatch):
+    async def _ask_for_escalation(*args, **kwargs):
+        del args, kwargs
+        return SkillResult(
+            success=True,
+            message="Would you like me to go deeper?",
+            skill="general_chat",
+            data={
+                "escalation": {
+                    "ask_user": True,
+                    "original_query": "please think about this",
+                    "context_snapshot": [],
+                    "heuristic_result": {},
+                }
+            },
+        )
+
+    async def _confirm_escalation(*args, **kwargs):
+        del args
+        kwargs["session_state"]["pending_escalation"] = None
+        return SimpleNamespace(
+            handled=True,
+            message="",
+            context_entries=[],
+            skill_result=SkillResult(
+                success=True,
+                message="Reminder saved: SCH-FAKE-ESCALATION",
+                skill="general_chat",
+            ),
+        )
+
+    monkeypatch.setattr(brain_server, "run_general_chat_fallback", _ask_for_escalation)
+    monkeypatch.setattr(brain_server, "resolve_pending_escalation_reply", _confirm_escalation)
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(GovernedMemoryStore, "list_items", lambda self, **kwargs: [])
+    ws = _ScriptedWebSocket(["please think about this", "yes"])
+
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    final = _chat_frames(ws)[-1]
+    assert "receipt" not in final
+    assert "SCH-FAKE-ESCALATION" not in final["message"]
+    assert ACTION_CLAIM_NOTE in final["message"]
 
 
 def test_real_reminder_save_carries_execution_provenance(monkeypatch):
