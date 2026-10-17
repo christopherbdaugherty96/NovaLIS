@@ -57,6 +57,21 @@ def test_inline_pasted_content_stays_local(monkeypatch, text):
     assert not any("Reply 'yes'" in message for message in _chat_messages(ws))
 
 
+def test_inline_pasted_summary_cancels_stale_search_clarification():
+    session_id = "cap48-local-summary-cancels-search"
+
+    clarification = GovernorMediator.parse_governed_invocation("search", session_id=session_id)
+    assert clarification is not None
+    assert GovernorMediator.parse_governed_invocation(
+        "summarize this: TEST-QA-F1 private note",
+        session_id=session_id,
+    ) is None
+    assert GovernorMediator.parse_governed_invocation(
+        "TEST-QA-F1 my blood test shows high cholesterol",
+        session_id=session_id,
+    ) is None
+
+
 @pytest.mark.parametrize(
     ("text", "expected_query"),
     (
@@ -162,6 +177,10 @@ def test_cap48_approved_result_preserves_search_widget_and_source_followup(monke
         return ActionResult.ok(
             "Report ready.",
             data={
+                "budget_state": "warning",
+                "budget_remaining_tokens": 100,
+                "budget_state_label": "Warning",
+                "budget_warning": True,
                 "widget": {
                     "type": "search",
                     "data": {
@@ -185,6 +204,7 @@ def test_cap48_approved_result_preserves_search_widget_and_source_followup(monke
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert any(message.get("type") == "search" for message in ws.sent_messages)
+    assert any(message.get("type") == "token_budget_update" for message in ws.sent_messages)
     assert any("approved.example" in message for message in _chat_messages(ws))
 
 

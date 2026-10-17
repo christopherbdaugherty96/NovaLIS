@@ -1022,12 +1022,15 @@ class GovernorMediator:
         if not t:
                return None
 
-        # Inline content supplied after a colon is local conversation context,
-        # not a web-research query. Keep it out of capability 48 entirely.
-        if INLINE_PASTED_SUMMARY_RE.match(t):
-            return None
-
         _evict_expired_pending_clarifications()
+
+        # Inline content supplied after a colon is local conversation context,
+        # not a web-research query. Keep it out of capability 48 entirely and
+        # cancel any stale search clarification so later private text cannot be
+        # consumed as that earlier search's query.
+        if INLINE_PASTED_SUMMARY_RE.match(t):
+            _pop_pending_clarification(session_id)
+            return None
 
         pending = _pop_pending_clarification(session_id)
         if pending is not None:

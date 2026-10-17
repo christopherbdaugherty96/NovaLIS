@@ -1626,6 +1626,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_state["pending_governed_confirm"] = None
                     action_message = _action_result_message(action_result)
                     action_payload = _action_result_payload(action_result)
+                    if isinstance(action_payload, dict) and "budget_state" in action_payload:
+                        await send_token_budget_update(ws, action_result)
                     if capability_id == 48 and isinstance(action_payload, dict):
                         widget = action_payload.get("widget")
                         if isinstance(widget, dict) and widget.get("type") == "search":
