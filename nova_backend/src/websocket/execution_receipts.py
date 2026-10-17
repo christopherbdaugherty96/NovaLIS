@@ -38,9 +38,8 @@ def neutralize_model_receipt_text(message: str) -> tuple[str, bool]:
     lines = clean.splitlines()
     receipt_shaped = any(_RECEIPT_HEADER_RE.search(line.strip()) for line in lines)
     if not receipt_shaped:
-        receipt_shaped = any(
-            _RECEIPT_ID_RE.search(line) and _RECEIPT_CONFIRMATION_RE.search(line)
-            for line in lines
+        receipt_shaped = bool(
+            _RECEIPT_ID_RE.search(clean) and _RECEIPT_CONFIRMATION_RE.search(clean)
         )
     if not receipt_shaped:
         return clean, False
@@ -51,6 +50,8 @@ def neutralize_model_receipt_text(message: str) -> tuple[str, bool]:
         if _RECEIPT_HEADER_RE.search(stripped):
             continue
         if _RECEIPT_ID_RE.search(stripped):
+            continue
+        if re.search(r"\breceipt\b", stripped, re.IGNORECASE):
             continue
         if _RECEIPT_DETAIL_RE.search(stripped):
             continue

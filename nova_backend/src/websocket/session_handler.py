@@ -3440,12 +3440,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 if escalation_outcome.skill_result is not None:
                     forced_result = escalation_outcome.skill_result
+                    forced_message = guard_general_chat_action_claim(forced_result.message)
+                    forced_result.message = forced_message
+                    session_state["last_response"] = forced_message
+                    for context_entry in escalation_outcome.context_entries:
+                        if str(context_entry.get("role") or "").strip().lower() == "assistant":
+                            context_entry["content"] = forced_message
                     message_id = None
                     esc = (forced_result.data or {}).get("escalation", {})
                     if esc.get("escalated") and esc.get("thought_data"):
                         message_id = str(uuid.uuid4())
                         thought_store.put(session_id, message_id, esc["thought_data"])
-                    await send_chat_message(ws, forced_result.message, message_id=message_id)
+                    await send_chat_message(
+                        ws,
+                        forced_message,
+                        message_id=message_id,
+                        model_origin=True,
+                    )
                     await send_chat_done(ws)
                     session_context.extend(escalation_outcome.context_entries)
                     _trim_session_context(session_context, session_state)
@@ -3460,7 +3471,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             external=False,
                         )
                     await send_trust_status(ws, session_state["trust_status"])
-                    _maybe_auto_speak_for_voice_turn(session_state, forced_result.message)
+                    _maybe_auto_speak_for_voice_turn(session_state, forced_message)
                     session_state["turn_count"] += 1
                     continue
                 if escalation_outcome.handled:
