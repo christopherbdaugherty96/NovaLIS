@@ -123,6 +123,31 @@ def test_eviction_with_duplicate_id_removes_only_selected_observed_entry(tmp_pat
     assert len(persisted) == 200
 
 
+def test_new_id_collision_keeps_existing_observation_eligible_for_eviction(
+    monkeypatch,
+    tmp_path,
+):
+    path = tmp_path / "user_memory.json"
+    store = UserMemoryStore(path)
+    explicit = _fill_explicit(store, 199)
+    observed = store.save("preferences", "candidate", "observed", confidence=0.1)
+    collision_hex = observed["id"].removeprefix("UM-") + ("0" * 24)
+    monkeypatch.setattr(
+        "src.memory.user_memory_store.uuid4",
+        lambda: type("CollisionUUID", (), {"hex": collision_hex})(),
+    )
+
+    saved = store.save("preferences", "new-explicit", "keep me", source="explicit")
+    persisted = UserMemoryStore(path)._read_state()["entries"]
+
+    assert saved["id"] == observed["id"]
+    assert saved["evicted_ids"] == [observed["id"]]
+    assert any(entry["key"] == "new-explicit" for entry in persisted)
+    assert not any(entry["key"] == "candidate" for entry in persisted)
+    assert {entry["id"] for entry in explicit}.issubset({entry["id"] for entry in persisted})
+    assert len(persisted) == 200
+
+
 def test_update_at_capacity_does_not_evict(tmp_path):
     path = tmp_path / "user_memory.json"
     store = UserMemoryStore(path)
