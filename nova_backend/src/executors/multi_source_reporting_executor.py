@@ -22,6 +22,38 @@ ANALYST_NOTE_TIMEOUT_SECONDS = 3.5
 COUNTER_ANALYSIS_TIMEOUT_SECONDS = 2.5
 
 
+def build_cap48_network_plan(query: str) -> list[dict[str, Any]]:
+    """Return the complete, non-secret outbound operation for approval binding."""
+    clean_query = str(query or "").strip()
+    plan: list[dict[str, Any]] = []
+    if os.getenv("BRAVE_API_KEY"):
+        plan.append(
+            {
+                "destination": "Brave Search",
+                "role": "primary",
+                "url": BRAVE_SEARCH_URL,
+                "method": "GET",
+                "params": {"q": clean_query, "count": 5},
+            }
+        )
+    plan.append(
+        {
+            "destination": "DuckDuckGo",
+            "role": "fallback" if plan else "primary",
+            "url": DUCK_SEARCH_URL,
+            "method": "GET",
+            "params": {
+                "q": clean_query,
+                "format": "json",
+                "no_html": "1",
+                "no_redirect": "1",
+                "skip_disambig": "1",
+            },
+        }
+    )
+    return plan
+
+
 class MultiSourceReportingExecutor:
     """Single-invocation multi-source reporting built on governed search endpoint."""
 
@@ -297,54 +329,56 @@ class MultiSourceReportingExecutor:
         self,
         *,
         capability_id: int,
-        query: str,
         request_id: str,
         session_id: str | None,
+        network_plan: list[dict[str, Any]],
     ) -> tuple[list[dict[str, Any]], str]:
         brave_key = os.getenv("BRAVE_API_KEY")
-        if brave_key:
+        for operation in network_plan:
+            destination = str(operation.get("destination") or "").strip()
+            url = str(operation.get("url") or "").strip()
+            method = str(operation.get("method") or "GET").strip().upper()
+            request_params = dict(operation.get("params") or {})
+            if destination == "Brave Search" and brave_key:
+                try:
+                    response = self.network.request(
+                        capability_id=capability_id,
+                        method=method,
+                        url=url,
+                        params=request_params,
+                        headers={"Accept": "application/json", "X-Subscription-Token": brave_key},
+                        as_json=True,
+                        timeout=5,
+                        request_id=request_id,
+                        session_id=session_id,
+                    )
+                    if int(response.get("status_code") or 0) == 200:
+                        results = ((response.get("data") or {}).get("web") or {}).get("results") or []
+                        if isinstance(results, list) and results:
+                            return list(results), "brave"
+                except Exception:
+                    pass
+                continue
+            if destination != "DuckDuckGo":
+                continue
             try:
                 response = self.network.request(
                     capability_id=capability_id,
-                    method="GET",
-                    url=BRAVE_SEARCH_URL,
-                    params={"q": query, "count": 5},
-                    headers={"Accept": "application/json", "X-Subscription-Token": brave_key},
+                    method=method,
+                    url=url,
+                    params=request_params,
+                    headers={"Accept": "application/json"},
                     as_json=True,
-                    timeout=5,
+                    timeout=4,
                     request_id=request_id,
                     session_id=session_id,
                 )
-                if int(response.get("status_code") or 0) == 200:
-                    results = ((response.get("data") or {}).get("web") or {}).get("results") or []
-                    if isinstance(results, list) and results:
-                        return list(results), "brave"
+                if int(response.get("status_code") or 0) != 200:
+                    return [], "none"
+                return self._parse_duck_results(response.get("data") or {}), "duckduckgo"
             except Exception:
-                pass
-
-        try:
-            response = self.network.request(
-                capability_id=capability_id,
-                method="GET",
-                url=DUCK_SEARCH_URL,
-                params={
-                    "q": query,
-                    "format": "json",
-                    "no_html": "1",
-                    "no_redirect": "1",
-                    "skip_disambig": "1",
-                },
-                headers={"Accept": "application/json"},
-                as_json=True,
-                timeout=4,
-                request_id=request_id,
-                session_id=session_id,
-            )
-            if int(response.get("status_code") or 0) != 200:
                 return [], "none"
-            return self._parse_duck_results(response.get("data") or {}), "duckduckgo"
-        except Exception:
-            return [], "none"
+        return [], "none"
 
     def execute(self, request) -> ActionResult:
         params = request.params or {}
@@ -356,6 +390,15 @@ class MultiSourceReportingExecutor:
                 "No report query provided.",
                 request_id=request.request_id,
                 failure_kind="missing_query",
+            )
+
+        approved_plan = params.get("network_plan")
+        current_plan = build_cap48_network_plan(query)
+        if approved_plan != current_plan:
+            return self._failure_result(
+                "The outbound report request changed after approval. Please review and approve it again.",
+                request_id=request.request_id,
+                failure_kind="approval_scope_changed",
             )
 
         display_topic = query
@@ -374,9 +417,9 @@ class MultiSourceReportingExecutor:
 
         results, provider = self._fetch_governed_results(
             capability_id=48,
-            query=query,
             request_id=request.request_id,
             session_id=session_id,
+            network_plan=current_plan,
         )
         if not results:
             return self._failure_result(
@@ -454,7 +497,10 @@ class MultiSourceReportingExecutor:
         counter_analysis = self._build_counter_analysis(
             query=query,
             findings=list(reporting_result.key_points),
-            allow_model_enrichment=bool((analysis_text or "").strip()),
+            # Capability 48 approval binds only the declared search-provider
+            # operations. Do not send the approved query or derived findings
+            # to an undeclared external reasoning provider.
+            allow_model_enrichment=False,
         )
         summary_text = reporting_result.summary
         if analysis_focus == "source_reliability":

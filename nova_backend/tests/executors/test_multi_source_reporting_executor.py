@@ -4,6 +4,12 @@ from types import SimpleNamespace
 
 
 def _request(params: dict):
+    from src.executors.multi_source_reporting_executor import build_cap48_network_plan
+
+    params = dict(params)
+    query = str(params.get("query") or "").strip()
+    if query:
+        params.setdefault("network_plan", build_cap48_network_plan(query))
     return SimpleNamespace(capability_id=48, params=params, request_id="req-msr")
 
 
@@ -230,7 +236,7 @@ def test_multi_source_report_skips_counter_model_when_analyst_note_unavailable(m
     assert str(brief.get("counter_analysis") or "").startswith("Counter-view:")
 
 
-def test_multi_source_report_counter_analysis_uses_bounded_timeout(monkeypatch):
+def test_multi_source_report_does_not_send_approved_query_to_deepseek(monkeypatch):
     from src.executors import multi_source_reporting_executor as mod
 
     class FakeNetwork:
@@ -248,20 +254,23 @@ def test_multi_source_report_counter_analysis_uses_bounded_timeout(monkeypatch):
                 },
             }
 
-    captured: dict[str, float] = {}
+    captured: dict[str, bool] = {}
 
     monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "Analyst note available.")
     monkeypatch.setenv("BRAVE_API_KEY", "test-key")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
     executor = mod.MultiSourceReportingExecutor(FakeNetwork())
 
     def _fake_counter_analysis(*args, **kwargs):
-        del args
-        captured["counter_timeout"] = float(kwargs.get("timeout_seconds") or 0.0)
-        return "Counter-view: there is still uncertainty in the available coverage."
+        del args, kwargs
+        captured["counter_called"] = True
+        raise AssertionError("capability 48 must not use an undisclosed DeepSeek recipient")
 
     executor.deepseek_bridge.analyze = _fake_counter_analysis
 
     result = executor.execute(_request({"query": "semiconductor policy updates"}))
 
     assert result.success is True
-    assert captured["counter_timeout"] == mod.COUNTER_ANALYSIS_TIMEOUT_SECONDS
+    assert captured.get("counter_called") is not True
+    brief = result.data.get("structured_brief", {})
+    assert str(brief.get("counter_analysis") or "").startswith("Counter-view:")

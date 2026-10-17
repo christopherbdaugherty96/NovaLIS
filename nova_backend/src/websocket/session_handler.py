@@ -1624,11 +1624,47 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         approval_id=grant.approval_id,
                     )
                     session_state["pending_governed_confirm"] = None
-                    outgoing_message = _structure_long_message(_action_result_message(action_result))
+                    action_message = _action_result_message(action_result)
+                    action_payload = _action_result_payload(action_result)
+                    if isinstance(action_payload, dict) and "budget_state" in action_payload:
+                        await send_token_budget_update(ws, action_result)
+                    if capability_id == 48 and isinstance(action_payload, dict):
+                        widget = action_payload.get("widget")
+                        if isinstance(widget, dict) and widget.get("type") == "search":
+                            search_data = widget.get("data") if isinstance(widget.get("data"), dict) else {}
+                            results = search_data.get("results") if isinstance(search_data, dict) else []
+                            if isinstance(results, list):
+                                session_state["last_sources"] = _extract_sources_from_results(results)
+                                session_state["last_source_links"] = _extract_source_links(results)
+                            session_state["search_widget"] = widget
+                            await send_widget_message(ws, "search", action_message, widget)
+                        if action_result.success:
+                            session_state["trust_status"] = failure_ladder.record_external_success(
+                                session_state.get("trust_status", {}),
+                                "Governed web search",
+                            )
+                        else:
+                            session_state["trust_status"] = failure_ladder.record_failure(
+                                session_state.get("trust_status", {}),
+                                reason="Temporary issue",
+                                external=True,
+                                last_external_call="Governed web search",
+                            )
+                        await send_trust_status(ws, session_state["trust_status"])
+                    outgoing_message = _structure_long_message(action_message)
                     if outgoing_message:
                         session_state["last_response"] = outgoing_message
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
+                    if (
+                        session_state.get("last_input_channel") == "voice"
+                        and action_result.success
+                        and capability_id != 18
+                    ):
+                        speak_text = resolve_speakable_text(action_result) or outgoing_message
+                        _maybe_auto_speak_for_voice_turn(session_state, speak_text)
+                    elif session_state.get("last_input_channel") == "voice" and capability_id == 18:
+                        session_state["last_input_channel"] = None
                     continue
                 if confirm_action == "cancel":
                     session_state["pending_governed_confirm"] = None
@@ -5029,6 +5065,39 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         )
                         await send_chat_done(ws)
                         continue
+
+                if capability_id == 48:
+                    from src.executors.multi_source_reporting_executor import (
+                        build_cap48_network_plan,
+                    )
+
+                    query = str(params.get("query") or "").strip()
+                    network_plan = build_cap48_network_plan(query)
+                    params["network_plan"] = network_plan
+                    destinations = ", ".join(
+                        (
+                            f"{str(item.get('destination') or '').strip()} (fallback)"
+                            if item.get("role") == "fallback"
+                            else str(item.get("destination") or "").strip()
+                        )
+                        for item in network_plan
+                        if str(item.get("destination") or "").strip()
+                    )
+                    session_state["pending_governed_confirm"] = {
+                        "capability_id": capability_id,
+                        "params": dict(params),
+                    }
+                    await send_chat_message(
+                        ws,
+                        (
+                            "This report requires sending your search text to external services.\n"
+                            f"Exact outbound query: {query}\n"
+                            f"Destinations: {destinations}\n"
+                            "Reply 'yes' to approve this exact request or 'no' to cancel."
+                        ),
+                    )
+                    await send_chat_done(ws)
+                    continue
 
                 if capability_id == 22:
                     preflight_message = cap22_path_preflight_message(params)
