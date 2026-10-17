@@ -6,8 +6,10 @@ from unittest.mock import patch
 
 import pytest
 from src import brain_server
+from src.actions.action_request import ActionRequest
 from src.base_skill import SkillResult
 from src.conversation.session_router import GateResult
+from src.executors.memory_governance_executor import MemoryGovernanceExecutor
 from src.memory.governed_memory_store import GovernedMemoryStore
 from src.websocket.session_handler import guard_general_chat_action_claim
 from tests.phase45._websocket_test_helpers import _ScriptedWebSocket
@@ -261,6 +263,24 @@ def test_unverifiable_memory_write_has_no_receipt_or_success_wording(
     frames = _chat_frames(ws)
     assert all("receipt" not in frame for frame in frames)
     assert all("Saved. Memory" not in frame.get("message", "") for frame in frames)
+
+
+def test_unverifiable_memory_write_preserves_accepted_unknown_outcome(monkeypatch, tmp_path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    monkeypatch.setattr(store, "get_item", lambda item_id: None)
+    result = MemoryGovernanceExecutor(store=store).execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "save", "title": "Private note", "body": "Keep this."},
+        )
+    )
+
+    assert result.success is True
+    assert result.status == "completed"
+    assert result.outcome_reason == "memory_read_back_failed"
+    assert (result.data or {}).get("outcome_state") == "accepted_unverified"
+    assert "memory_item" not in (result.data or {})
+    assert "saved" not in result.message.lower()
 
 
 def test_failed_memory_write_has_no_receipt_or_success_wording(monkeypatch, tmp_path):
