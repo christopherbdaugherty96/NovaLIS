@@ -8,10 +8,6 @@ _RECEIPT_HEADER_RE = re.compile(
     re.IGNORECASE,
 )
 _RECEIPT_ID_RE = re.compile(r"\b(?:SCH|MEM)-[A-Z0-9][A-Z0-9_-]*\b", re.IGNORECASE)
-_RECEIPT_CONFIRMATION_RE = re.compile(
-    r"\b(?:receipt|reminder|memory|saved|created|requested\s+for)\b",
-    re.IGNORECASE,
-)
 _RECEIPT_DETAIL_RE = re.compile(
     r"^(?:text|requested\s+for|tier|scope|source|receipt)\s*:",
     re.IGNORECASE,
@@ -38,9 +34,7 @@ def neutralize_model_receipt_text(message: str) -> tuple[str, bool]:
     lines = clean.splitlines()
     receipt_shaped = any(_RECEIPT_HEADER_RE.search(line.strip()) for line in lines)
     if not receipt_shaped:
-        receipt_shaped = bool(
-            _RECEIPT_ID_RE.search(clean) and _RECEIPT_CONFIRMATION_RE.search(clean)
-        )
+        receipt_shaped = bool(_RECEIPT_ID_RE.search(clean))
     if not receipt_shaped:
         return clean, False
 
