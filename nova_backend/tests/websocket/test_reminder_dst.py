@@ -11,7 +11,6 @@ from tests.websocket.test_commitment_truth_reminder_handoff import (
     _run_session,
 )
 
-
 ZERO = timedelta(0)
 HOUR = timedelta(hours=1)
 
@@ -56,9 +55,7 @@ class _EasternTime(tzinfo):
         standard = value.replace(tzinfo=None) + self._standard
         daylight = standard + HOUR
         start, end = _us_dst_range(standard.year)
-        if end <= daylight:
-            return standard.replace(tzinfo=self)
-        if end - HOUR <= daylight < end:
+        if end <= daylight < end + HOUR:
             return standard.replace(tzinfo=self, fold=1)
         if standard < start or daylight >= end:
             return standard.replace(tzinfo=self)

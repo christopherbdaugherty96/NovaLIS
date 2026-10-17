@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone, tzinfo
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 from src.durability.corruption import StateCorruptError, read_json_state, require_state
 from src.durability.maintenance import authoritative_mutation, mutation_scope
+from src.tasks.local_time import as_local, resolve_local_wall_time
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -46,7 +47,7 @@ class NotificationScheduleStore:
 
     SCHEMA_VERSION = "1.1"
     ALLOWED_KINDS = {"reminder", "daily_brief"}
-    ALLOWED_RECURRENCES = {"once", "daily"}
+    ALLOWED_RECURRENCES = {"once", "daily", "weekly"}
     DEFAULT_POLICY = {
         "quiet_hours_enabled": False,
         "quiet_hours_start": "22:00",
@@ -54,11 +55,17 @@ class NotificationScheduleStore:
         "max_deliveries_per_hour": 2,
     }
 
-    def __init__(self, path: str | Path | None = None) -> None:
+    def __init__(
+        self,
+        path: str | Path | None = None,
+        *,
+        local_zone: tzinfo | None = None,
+    ) -> None:
         default_path = (
             runtime_path(__file__, "data", "nova_state", "notifications", "schedules.json")
         )
         self._path = Path(path) if path else default_path
+        self._local_zone = local_zone
         self._lock = shared_path_lock(self._path)
         if not self._path.exists():
             with mutation_scope(), self._lock:
@@ -278,10 +285,18 @@ class NotificationScheduleStore:
             if item is None:
                 raise KeyError(schedule_id)
             recurrence = self._normalize_recurrence(item.get("recurrence"))
-            if recurrence == "daily":
+            if recurrence in {"daily", "weekly"}:
                 next_run = _from_iso(item.get("next_run_at")) or current
+                local_next_run = as_local(next_run, self._local_zone)
+                interval_days = 1 if recurrence == "daily" else 7
                 while next_run <= current:
-                    next_run = next_run + timedelta(days=1)
+                    local_date = local_next_run.date() + timedelta(days=interval_days)
+                    next_run = resolve_local_wall_time(
+                        local_date,
+                        time(local_next_run.hour, local_next_run.minute),
+                        local_zone=self._local_zone,
+                    )
+                    local_next_run = next_run
                 item["next_run_at"] = _as_iso(next_run)
                 item["last_dismissed_at"] = _as_iso(current)
                 item["updated_at"] = _as_iso(current)
