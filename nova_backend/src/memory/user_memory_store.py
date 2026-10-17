@@ -281,8 +281,8 @@ class UserMemoryStore:
                 observed = [
                     (index, candidate)
                     for index, candidate in enumerate(entries)
-                    if _normalized_source(candidate.get("source")) != "explicit"
-                    and str(candidate.get("id") or "") != str(entry.get("id") or "")
+                    if index != 0
+                    and _normalized_source(candidate.get("source")) != "explicit"
                 ]
                 if not observed:
                     raise UserMemoryCapacityError(
