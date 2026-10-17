@@ -38,6 +38,14 @@ _CATEGORY_LABELS = {
 }
 
 
+class UserMemoryCapacityError(RuntimeError):
+    """Raised when capacity cannot be freed without removing explicit memory."""
+
+
+class UserMemoryVerificationError(RuntimeError):
+    """Raised when a completed write cannot be verified from persisted state."""
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -194,6 +202,7 @@ class UserMemoryStore:
         with self._lock:
             state = self._read_state()
             entries = list(state.get("entries") or [])
+            evicted_ids: list[str] = []
 
             # Upsert with authority-aware precedence for the same category + key.
             found = False
@@ -266,21 +275,61 @@ class UserMemoryStore:
             if not found:
                 entries.insert(0, entry)
 
-            # Enforce size limit — drop oldest low-confidence observed entries
-            if len(entries) > _MAX_ENTRIES:
-                entries.sort(
-                    key=lambda e: (
-                        0 if e.get("source") == "explicit" else 1,
-                        -float(e.get("confidence") or 0),
-                        e.get("updated_at") or "",
+            # Updates do not consume capacity. New entries may displace only the
+            # least reliable observed memory, never confirmed explicit memory.
+            if not found and len(entries) > _MAX_ENTRIES:
+                observed = [
+                    (index, candidate)
+                    for index, candidate in enumerate(entries)
+                    if _normalized_source(candidate.get("source")) != "explicit"
+                    and str(candidate.get("id") or "") != str(entry.get("id") or "")
+                ]
+                if not observed:
+                    raise UserMemoryCapacityError(
+                        "Memory is full; remove an entry first"
+                    )
+                evicted_index, evicted = min(
+                    observed,
+                    key=lambda indexed: (
+                        float(indexed[1].get("confidence") or 0.0),
+                        str(indexed[1].get("updated_at") or ""),
                     ),
                 )
-                entries = entries[:_MAX_ENTRIES]
+                evicted_id = str(evicted.get("id") or "").strip()
+                entries.pop(evicted_index)
+                evicted_ids.append(evicted_id)
 
             state["entries"] = entries
             state["updated_at"] = now
             self._write_state(state)
-        return _normalized_entry(dict(entry))
+
+            try:
+                persisted = self._read_state()
+            except Exception as exc:
+                raise UserMemoryVerificationError(
+                    "The memory write could not be verified from persisted storage."
+                ) from exc
+            persisted_entry = next(
+                (
+                    dict(candidate)
+                    for candidate in list(persisted.get("entries") or [])
+                    if str(candidate.get("id") or "").strip() == str(entry.get("id") or "").strip()
+                ),
+                None,
+            )
+            expected_fields = ("category", "key", "value", "source", "revision")
+            if not isinstance(persisted_entry, dict) or any(
+                persisted_entry.get(field) != entry.get(field) for field in expected_fields
+            ):
+                raise UserMemoryVerificationError(
+                    "The memory write could not be verified from persisted storage."
+                )
+
+        result = _normalized_entry(persisted_entry)
+        if entry.get("write_disposition"):
+            result["write_disposition"] = entry["write_disposition"]
+        result["evicted_ids"] = evicted_ids
+        return result
 
     def get_by_category(self, category: str, limit: int = 20) -> list[dict[str, Any]]:
         cat = _clean(category, 40).lower()

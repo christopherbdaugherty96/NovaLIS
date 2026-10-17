@@ -6,7 +6,11 @@ from fastapi import APIRouter, HTTPException
 
 from src.memory.governed_memory_store import GovernedMemoryStore
 from src.memory.nova_self_memory_store import nova_self_memory_store
-from src.memory.user_memory_store import user_memory_store
+from src.memory.user_memory_store import (
+    UserMemoryCapacityError,
+    UserMemoryVerificationError,
+    user_memory_store,
+)
 
 
 def build_memory_router(deps) -> APIRouter:
@@ -61,14 +65,30 @@ def build_memory_router(deps) -> APIRouter:
         value = str(payload.get("value") or "").strip()
         if not category or not key or not value:
             raise HTTPException(status_code=400, detail="category, key, and value are required.")
-        entry = user_memory_store.save(
-            category,
-            key,
-            value,
-            context=str(payload.get("context") or "").strip(),
-            source="explicit",
-            confidence=1.0,
-        )
+        try:
+            entry = user_memory_store.save(
+                category,
+                key,
+                value,
+                context=str(payload.get("context") or "").strip(),
+                source="explicit",
+                confidence=1.0,
+            )
+        except UserMemoryCapacityError as exc:
+            raise HTTPException(status_code=507, detail=str(exc)) from exc
+        except UserMemoryVerificationError as exc:
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+        evicted_ids = [str(item) for item in entry.get("evicted_ids") or [] if str(item)]
+        if evicted_ids:
+            deps._log_ledger_event(
+                deps.RUNTIME_GOVERNOR,
+                "USER_MEMORY_EVICTED",
+                {
+                    "entry_ids": evicted_ids,
+                    "count": len(evicted_ids),
+                    "source": "memory_api",
+                },
+            )
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "USER_MEMORY_SAVED",
