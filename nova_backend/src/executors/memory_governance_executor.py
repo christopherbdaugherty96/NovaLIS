@@ -264,6 +264,18 @@ class MemoryGovernanceExecutor:
             session_id=session_id,
             user_visible=user_visible,
         )
+        item_id = str(item.get("id") or "").strip()
+        verified_item = store.get_item(item_id)
+        if not isinstance(verified_item, dict) or str(verified_item.get("id") or "").strip() != item_id:
+            return ActionResult.failure(
+                "I couldn't verify the memory record, so I won't claim it was saved.",
+                request_id=request.request_id,
+                authority_class="persistent_change",
+                external_effect=False,
+                reversible=True,
+                outcome_reason="memory_read_back_failed",
+            )
+        item = verified_item
         links = dict(item.get("links") or {})
         self._log(
             "MEMORY_ITEM_SAVED",

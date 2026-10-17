@@ -106,6 +106,7 @@ from src.working_context.assistive_noticing import (
 )
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.tasks.local_time import as_local, resolve_local_wall_time
+from src.websocket.execution_receipts import ExecutionReceipt, neutralize_model_receipt_text
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.openclaw.agent_scheduler import openclaw_agent_scheduler
@@ -3590,12 +3591,20 @@ async def send_chat_message(
     usage_meta: Optional[dict[str, Any]] = None,
     apply_personality: bool = True,
     tone_domain: str = "general",
+    execution_receipt: Optional[ExecutionReceipt] = None,
+    model_origin: bool = False,
 ) -> str:
     presented = str(text or "").strip()
     if apply_personality:
         presented = conversation_personality_agent.present(presented, domain=tone_domain)
     if not presented and text:
         presented = str(text).strip()
+    if model_origin:
+        presented, receipt_shaped = neutralize_model_receipt_text(presented)
+        if receipt_shaped:
+            action_note = "Chat can't take actions. Nothing was saved, sent, scheduled or changed."
+            if action_note not in presented:
+                presented = f"{presented}\n\n{action_note}"
     payload = {"type": "chat", "message": presented}
     resolved_turn_id = str(turn_id or _current_ws_turn_id.get() or "").strip()
     if resolved_turn_id:
@@ -3610,6 +3619,8 @@ async def send_chat_message(
         payload["trust_review_card"] = trust_review_card
     if isinstance(usage_meta, dict) and usage_meta:
         payload["usage_meta"] = usage_meta
+    if isinstance(execution_receipt, ExecutionReceipt):
+        payload["receipt"] = execution_receipt.as_payload()
     await ws_send(ws, payload)
     return presented
 
