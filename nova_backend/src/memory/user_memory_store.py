@@ -279,8 +279,8 @@ class UserMemoryStore:
             # least reliable observed memory, never confirmed explicit memory.
             if not found and len(entries) > _MAX_ENTRIES:
                 observed = [
-                    candidate
-                    for candidate in entries
+                    (index, candidate)
+                    for index, candidate in enumerate(entries)
                     if _normalized_source(candidate.get("source")) != "explicit"
                     and str(candidate.get("id") or "") != str(entry.get("id") or "")
                 ]
@@ -288,19 +288,15 @@ class UserMemoryStore:
                     raise UserMemoryCapacityError(
                         "Memory is full; remove an entry first"
                     )
-                evicted = min(
+                evicted_index, evicted = min(
                     observed,
-                    key=lambda candidate: (
-                        float(candidate.get("confidence") or 0.0),
-                        str(candidate.get("updated_at") or ""),
+                    key=lambda indexed: (
+                        float(indexed[1].get("confidence") or 0.0),
+                        str(indexed[1].get("updated_at") or ""),
                     ),
                 )
                 evicted_id = str(evicted.get("id") or "").strip()
-                entries = [
-                    candidate
-                    for candidate in entries
-                    if str(candidate.get("id") or "").strip() != evicted_id
-                ]
+                entries.pop(evicted_index)
                 evicted_ids.append(evicted_id)
 
             state["entries"] = entries
