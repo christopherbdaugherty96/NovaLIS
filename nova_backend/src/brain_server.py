@@ -21,7 +21,7 @@ import asyncio
 import time
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, time as dt_time, timedelta, tzinfo
 from typing import Any, Optional
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -105,6 +105,7 @@ from src.working_context.assistive_noticing import (
     render_assistive_notices_message,
 )
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+from src.tasks.local_time import as_local, resolve_local_wall_time
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.openclaw.agent_scheduler import openclaw_agent_scheduler
@@ -1659,10 +1660,15 @@ def _local_now() -> datetime:
     return datetime.now().astimezone()
 
 
+def _schedule_local_zone() -> tzinfo | None:
+    """Return an injectable local zone; None delegates to operating-system rules."""
+    return None
+
+
 def _format_local_schedule_time(value: datetime | None) -> str:
     if value is None:
         return ""
-    local = value.astimezone()
+    local = as_local(value, _schedule_local_zone())
     rendered = local.strftime("%b %d, %I:%M %p")
     return re.sub(r"(?<=\s)0(\d:)", r"\1", rendered)
 
@@ -2343,7 +2349,12 @@ def _parse_clock_time(raw: str) -> tuple[int, int]:
     raise ValueError("I couldn't parse that time yet. Try forms like 8:00 am, 14:30, or 9 pm.")
 
 
-def _parse_schedule_datetime(raw: str, *, recurrence: str) -> datetime:
+def _parse_schedule_datetime(
+    raw: str,
+    *,
+    recurrence: str,
+    local_zone: tzinfo | None = None,
+) -> datetime:
     value = str(raw or "").strip().lower()
     weekday_match = re.match(
         r"^(?:on\s+)?(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
@@ -2372,28 +2383,56 @@ def _parse_schedule_datetime(raw: str, *, recurrence: str) -> datetime:
         value = value[len("tomorrow "):].strip()
 
     hour, minute = _parse_clock_time(value)
+    zone = local_zone if local_zone is not None else _schedule_local_zone()
     now = _local_now()
-    target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if zone is not None:
+        now = now.astimezone(zone)
+    target_date = now.date()
 
     if target_weekday is not None:
         days_ahead = (target_weekday - now.weekday()) % 7
+        target = resolve_local_wall_time(
+            target_date + timedelta(days=days_ahead),
+            dt_time(hour, minute),
+            local_zone=zone,
+        )
         if days_ahead == 0 and target <= now:
             days_ahead = 7
-        return target + timedelta(days=days_ahead)
-
-    if recurrence == "daily":
-        if target <= now:
-            target = target + timedelta(days=1)
+            target = resolve_local_wall_time(
+                target_date + timedelta(days=days_ahead),
+                dt_time(hour, minute),
+                local_zone=zone,
+            )
         return target
 
     if explicit_tomorrow:
-        return target + timedelta(days=1)
+        target_date += timedelta(days=1)
+
+    target = resolve_local_wall_time(
+        target_date,
+        dt_time(hour, minute),
+        local_zone=zone,
+    )
+
+    if recurrence == "daily":
+        if target <= now:
+            target = resolve_local_wall_time(
+                target_date + timedelta(days=1),
+                dt_time(hour, minute),
+                local_zone=zone,
+            )
+        return target
+
     if explicit_today:
         if target <= now:
             raise ValueError("That time has already passed for today. Try 'tomorrow <time>' or a later time.")
         return target
     if target <= now:
-        target = target + timedelta(days=1)
+        target = resolve_local_wall_time(
+            target_date + timedelta(days=1),
+            dt_time(hour, minute),
+            local_zone=zone,
+        )
     return target
 
 
