@@ -98,6 +98,31 @@ def test_capacity_evicts_lowest_confidence_oldest_observed_and_reports_id(
     assert all(entry["source"] != "explicit" or entry["id"] in persisted for entry in persisted.values())
 
 
+def test_eviction_with_duplicate_id_removes_only_selected_observed_entry(tmp_path):
+    path = tmp_path / "user_memory.json"
+    store = UserMemoryStore(path)
+    explicit = _fill_explicit(store, 199)
+    observed = store.save("preferences", "candidate", "observed", confidence=0.1)
+    state = store._read_state()
+    observed_state = next(entry for entry in state["entries"] if entry["id"] == observed["id"])
+    observed_state["id"] = explicit[0]["id"]
+    store._write_state(state)
+
+    saved = store.save("preferences", "new-explicit", "keep me", source="explicit")
+    persisted = UserMemoryStore(path)._read_state()["entries"]
+
+    assert saved["evicted_ids"] == [explicit[0]["id"]]
+    assert any(
+        entry["id"] == explicit[0]["id"] and entry["source"] == "explicit"
+        for entry in persisted
+    )
+    assert not any(
+        entry["id"] == explicit[0]["id"] and entry["source"] == "observed"
+        for entry in persisted
+    )
+    assert len(persisted) == 200
+
+
 def test_update_at_capacity_does_not_evict(tmp_path):
     path = tmp_path / "user_memory.json"
     store = UserMemoryStore(path)
