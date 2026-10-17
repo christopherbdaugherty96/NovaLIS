@@ -36,6 +36,7 @@ from src.trust.session_activity import (
 )
 from src.usage.provider_usage_store import _estimate_tokens
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
+from src.websocket.execution_receipts import ExecutionReceipt, neutralize_model_receipt_text
 from src.websocket.turn_abandon import mark_turn_abandoned
 
 _HEADLINE_SUMMARY_RE = re.compile(
@@ -533,6 +534,9 @@ def guard_general_chat_action_claim(
     """Block action claims from GeneralChat, which has no execution authority."""
     del turn_receipts
     clean = str(message or "")
+    clean, receipt_shaped = neutralize_model_receipt_text(clean)
+    if receipt_shaped:
+        return f"{clean}\n\n{_GENERAL_CHAT_ACTION_NOTE}"
     for pattern in _ACTION_CLAIM_PATTERNS:
         for match in pattern.finditer(clean):
             if not _action_claim_is_quoted_or_hypothetical(clean, match.start()):
@@ -1158,9 +1162,29 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
             return
 
+        schedule_id = str(item.get("id") or "").strip()
+        try:
+            verified_item = notification_schedules.get_schedule(schedule_id)
+        except Exception:
+            verified_item = None
+            log.exception("Local Nova reminder read-back verification failed")
+        if not isinstance(verified_item, dict) or str(verified_item.get("id") or "").strip() != schedule_id:
+            session_state["pending_reminder"] = None
+            session_state["last_reminder_save_result"] = {
+                "status": "not_verified",
+                "reason": "read_back_failure",
+            }
+            await _complete_immediate_turn(
+                "I couldn't verify the reminder store, so I won't claim it was created. "
+                "Check \"show schedules\" before retrying.",
+                remember_response=False,
+                tone_domain="system",
+            )
+            return
+
         session_state["last_reminder_save_result"] = {
             "status": "saved",
-            "schedule_id": str(item["id"]),
+            "schedule_id": schedule_id,
             "body": reminder_body,
             "scheduled_for": scheduled_for,
         }
@@ -1191,7 +1215,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             f"{str(snapshot.get('summary') or '').strip() if snapshot is not None else 'Schedule overview is temporarily unavailable.'}"
         )
         session_state["last_response"] = success_message
-        presented_message = await send_chat_message(ws, success_message, tone_domain="system")
+        presented_message = await send_chat_message(
+            ws,
+            success_message,
+            tone_domain="system",
+            execution_receipt=ExecutionReceipt(kind="reminder", id=schedule_id),
+        )
         if snapshot is not None:
             try:
                 await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
@@ -2667,6 +2696,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"label": "Memory overview", "command": "memory overview"},
                     ],
                     tone_domain="continuity",
+                    execution_receipt=(
+                        ExecutionReceipt(
+                            kind="memory",
+                            id=str(action_payload["memory_item"]["id"]),
+                        )
+                        if action_result.success
+                        and isinstance(action_payload, dict)
+                        and isinstance(action_payload.get("memory_item"), dict)
+                        and str(action_payload["memory_item"].get("id") or "").startswith("MEM-")
+                        else None
+                    ),
                 )
                 await send_chat_done(ws)
                 session_state["turn_count"] += 1
@@ -3400,12 +3440,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 if escalation_outcome.skill_result is not None:
                     forced_result = escalation_outcome.skill_result
+                    forced_message = guard_general_chat_action_claim(forced_result.message)
+                    forced_result.message = forced_message
+                    session_state["last_response"] = forced_message
+                    for context_entry in escalation_outcome.context_entries:
+                        if str(context_entry.get("role") or "").strip().lower() == "assistant":
+                            context_entry["content"] = forced_message
                     message_id = None
                     esc = (forced_result.data or {}).get("escalation", {})
                     if esc.get("escalated") and esc.get("thought_data"):
                         message_id = str(uuid.uuid4())
                         thought_store.put(session_id, message_id, esc["thought_data"])
-                    await send_chat_message(ws, forced_result.message, message_id=message_id)
+                    await send_chat_message(
+                        ws,
+                        forced_message,
+                        message_id=message_id,
+                        model_origin=True,
+                    )
                     await send_chat_done(ws)
                     session_context.extend(escalation_outcome.context_entries)
                     _trim_session_context(session_context, session_state)
@@ -3420,7 +3471,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             external=False,
                         )
                     await send_trust_status(ws, session_state["trust_status"])
-                    _maybe_auto_speak_for_voice_turn(session_state, forced_result.message)
+                    _maybe_auto_speak_for_voice_turn(session_state, forced_message)
                     session_state["turn_count"] += 1
                     continue
                 if escalation_outcome.handled:
@@ -5568,12 +5619,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         f"- {recommendation_reason}"
                     )
                 if not suppress_silent_chat:
+                    execution_receipt = None
+                    if (
+                        capability_id == 61
+                        and action_result.success
+                        and str(params.get("action") or "").strip().lower() == "save"
+                        and isinstance(action_payload, dict)
+                        and isinstance(action_payload.get("memory_item"), dict)
+                    ):
+                        memory_id = str(action_payload["memory_item"].get("id") or "").strip()
+                        if memory_id.startswith("MEM-"):
+                            execution_receipt = ExecutionReceipt(kind="memory", id=memory_id)
                     await send_chat_message(
                         ws,
                         outgoing_message,
                         confidence=message_confidence,
                         suggested_actions=message_suggestions,
                         tone_domain=_tone_domain_for_capability(capability_id),
+                        execution_receipt=execution_receipt,
                     )
 
                 if (
@@ -5768,6 +5831,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             else None
                         ),
                         usage_meta=advisory_usage_meta,
+                        model_origin=skill_name == "general_chat",
                     )
                     await send_chat_done(ws, usage_meta=advisory_usage_meta)
                     _maybe_auto_speak_for_voice_turn(
@@ -5816,6 +5880,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             else None
                         ),
                         usage_meta=advisory_usage_meta,
+                        model_origin=skill_name == "general_chat",
                     )
 
                 if skill_name in {"weather", "news"}:

@@ -13,8 +13,17 @@ pytestmark = pytest.mark.slow
 
 
 class _ReminderStore:
+    def __init__(self):
+        self.created = None
+
     def create_schedule(self, **kwargs):
-        return {"id": "SCH-TEST-0001", "kind": kwargs["kind"], "recurrence": kwargs["recurrence"]}
+        self.created = {"id": "SCH-TEST-0001", "kind": kwargs["kind"], "recurrence": kwargs["recurrence"]}
+        return dict(self.created)
+
+    def get_schedule(self, schedule_id):
+        if self.created is None or schedule_id != self.created["id"]:
+            return None
+        return dict(self.created)
 
     def summarize(self):
         return {
