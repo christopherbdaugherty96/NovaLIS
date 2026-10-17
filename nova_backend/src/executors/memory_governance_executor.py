@@ -265,10 +265,15 @@ class MemoryGovernanceExecutor:
             user_visible=user_visible,
         )
         item_id = str(item.get("id") or "").strip()
-        verified_item = store.get_item(item_id)
+        try:
+            verified_item = store.get_item(item_id)
+        except Exception:
+            verified_item = None
         if not isinstance(verified_item, dict) or str(verified_item.get("id") or "").strip() != item_id:
-            return ActionResult.failure(
-                "I couldn't verify the memory record, so I won't claim it was saved.",
+            return ActionResult.ok(
+                "The memory write was accepted, but I couldn't verify the record. "
+                "Check recent memories before retrying.",
+                data={"outcome_state": "accepted_unverified"},
                 request_id=request.request_id,
                 authority_class="persistent_change",
                 external_effect=False,
