@@ -175,6 +175,47 @@ def test_repeating_schedule_keeps_wall_clock_across_dst(
     assert actual.hour == 9
 
 
+@pytest.mark.parametrize(
+    ("recurrence", "first_run", "dismissed_at", "expected"),
+    (
+        (
+            "daily",
+            datetime(2027, 3, 13, 2, 30, tzinfo=EASTERN),
+            datetime(2027, 3, 13, 3, 0, tzinfo=EASTERN),
+            datetime(2027, 3, 15, 2, 30, tzinfo=EASTERN),
+        ),
+        (
+            "weekly",
+            datetime(2027, 3, 7, 2, 30, tzinfo=EASTERN),
+            datetime(2027, 3, 7, 3, 0, tzinfo=EASTERN),
+            datetime(2027, 3, 21, 2, 30, tzinfo=EASTERN),
+        ),
+    ),
+)
+def test_repeating_schedule_skips_nonexistent_spring_forward_occurrence(
+    tmp_path,
+    recurrence,
+    first_run,
+    dismissed_at,
+    expected,
+):
+    store = NotificationScheduleStore(tmp_path / "schedules.json", local_zone=EASTERN)
+    item = store.create_schedule(
+        kind="reminder",
+        title="DST gap repeat",
+        body="Skip the nonexistent occurrence",
+        recurrence=recurrence,
+        next_run_at=first_run,
+    )
+
+    dismissed = store.dismiss_schedule(item["id"], now=dismissed_at)
+    actual = datetime.fromisoformat(dismissed["next_run_at"]).astimezone(EASTERN)
+
+    assert actual == expected
+    assert actual.hour == 2
+    assert actual.minute == 30
+
+
 def test_reminder_confirmation_matches_stored_time_across_dst(monkeypatch):
     now = datetime(2026, 10, 31, 20, 0, tzinfo=timezone(timedelta(hours=-4)))
     expected = datetime(2026, 11, 1, 9, 0, tzinfo=EASTERN)

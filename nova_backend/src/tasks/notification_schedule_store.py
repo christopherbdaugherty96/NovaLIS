@@ -289,13 +289,20 @@ class NotificationScheduleStore:
                 next_run = _from_iso(item.get("next_run_at")) or current
                 local_next_run = as_local(next_run, self._local_zone)
                 interval_days = 1 if recurrence == "daily" else 7
+                local_date = local_next_run.date()
                 while next_run <= current:
-                    local_date = local_next_run.date() + timedelta(days=interval_days)
-                    next_run = resolve_local_wall_time(
-                        local_date,
-                        time(local_next_run.hour, local_next_run.minute),
-                        local_zone=self._local_zone,
-                    )
+                    local_date += timedelta(days=interval_days)
+                    try:
+                        next_run = resolve_local_wall_time(
+                            local_date,
+                            time(local_next_run.hour, local_next_run.minute),
+                            local_zone=self._local_zone,
+                        )
+                    except ValueError:
+                        # A recurrence cannot run inside a spring-forward gap.
+                        # Skip that occurrence and preserve its wall time on the
+                        # next valid recurrence date.
+                        continue
                     local_next_run = next_run
                 item["next_run_at"] = _as_iso(next_run)
                 item["last_dismissed_at"] = _as_iso(current)
