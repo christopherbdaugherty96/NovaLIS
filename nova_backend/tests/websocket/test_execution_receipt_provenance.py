@@ -5,12 +5,14 @@ from unittest.mock import patch
 
 import pytest
 from src import brain_server
-from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
+from src.memory.governed_memory_store import GovernedMemoryStore
 from src.websocket.session_handler import guard_general_chat_action_claim
 from tests.phase45._websocket_test_helpers import _ScriptedWebSocket
 from tests.websocket.test_commitment_truth_reminder_handoff import (
     _RecordingScheduleStore,
+)
+from tests.websocket.test_commitment_truth_reminder_handoff import (
     _run_session as _run_reminder_session,
 )
 
@@ -84,10 +86,11 @@ def test_plain_model_reply_has_no_execution_provenance(monkeypatch):
 
 
 def test_real_reminder_save_carries_execution_provenance(monkeypatch):
+    store = _RecordingScheduleStore()
     ws = _run_reminder_session(
         monkeypatch,
         ["remind me to call mom tomorrow at 9am"],
-        _RecordingScheduleStore(),
+        store,
     )
 
     frame = next(
@@ -96,24 +99,11 @@ def test_real_reminder_save_carries_execution_provenance(monkeypatch):
         if "Reminder saved: SCH-TEST-0001" in message.get("message", "")
     )
     assert frame["receipt"] == {"kind": "reminder", "id": "SCH-TEST-0001"}
+    assert store.get_schedule(frame["receipt"]["id"])["id"] == frame["receipt"]["id"]
 
 
-def test_real_memory_save_carries_execution_provenance(monkeypatch):
-    async def _save_memory(*args, **kwargs):
-        del args, kwargs
-        return ActionResult.ok(
-            'Saved. Memory MEM-TEST-0001: "favorite color blue".',
-            data={
-                "memory_item": {
-                    "id": "MEM-TEST-0001",
-                    "title": "Favorite color",
-                    "content_raw": "favorite color blue",
-                }
-            },
-            capability_id=61,
-        )
-
-    monkeypatch.setattr(brain_server, "invoke_governed_capability", _save_memory)
+def test_real_memory_save_carries_execution_provenance(monkeypatch, tmp_path):
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
     monkeypatch.setattr(
         brain_server.SessionRouter,
         "evaluate_gate",
@@ -134,6 +124,53 @@ def test_real_memory_save_carries_execution_provenance(monkeypatch):
     frame = next(
         message
         for message in _chat_frames(ws)
-        if "Saved. Memory MEM-TEST-0001" in message.get("message", "")
+        if "Saved. Memory MEM-" in message.get("message", "")
     )
-    assert frame["receipt"] == {"kind": "memory", "id": "MEM-TEST-0001"}
+    receipt = frame["receipt"]
+    assert receipt["kind"] == "memory"
+    assert GovernedMemoryStore().get_item(receipt["id"])["id"] == receipt["id"]
+
+
+class _UnverifiableReminderStore(_RecordingScheduleStore):
+    def get_schedule(self, schedule_id: str) -> None:
+        del schedule_id
+        return None
+
+
+def test_unverifiable_reminder_write_has_no_receipt_or_success_wording(monkeypatch):
+    store = _UnverifiableReminderStore()
+    ws = _run_reminder_session(
+        monkeypatch,
+        ["remind me to call mom tomorrow at 9am"],
+        store,
+    )
+
+    assert len(store.created) == 1
+    frames = _chat_frames(ws)
+    assert all("receipt" not in frame for frame in frames)
+    assert all("Reminder saved:" not in frame.get("message", "") for frame in frames)
+
+
+def test_unverifiable_memory_write_has_no_receipt_or_success_wording(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+    monkeypatch.setattr(GovernedMemoryStore, "get_item", lambda self, item_id: None)
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(GovernedMemoryStore, "list_items", lambda self, **kwargs: [])
+    ws = _ScriptedWebSocket(["remember this: favorite color blue"])
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        side_effect=AssertionError("model must not handle an explicit memory save"),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    frames = _chat_frames(ws)
+    assert all("receipt" not in frame for frame in frames)
+    assert all("Saved. Memory" not in frame.get("message", "") for frame in frames)
