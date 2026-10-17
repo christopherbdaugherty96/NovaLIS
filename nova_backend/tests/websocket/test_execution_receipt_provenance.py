@@ -283,6 +283,29 @@ def test_unverifiable_memory_write_preserves_accepted_unknown_outcome(monkeypatc
     assert "saved" not in result.message.lower()
 
 
+def test_memory_read_back_error_preserves_accepted_unknown_outcome(monkeypatch, tmp_path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+
+    def _fail_read_back(item_id):
+        del item_id
+        raise OSError("simulated read-back failure")
+
+    monkeypatch.setattr(store, "get_item", _fail_read_back)
+    result = MemoryGovernanceExecutor(store=store).execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "save", "title": "Private note", "body": "Keep this."},
+        )
+    )
+
+    assert result.success is True
+    assert result.status == "completed"
+    assert result.outcome_reason == "memory_read_back_failed"
+    assert (result.data or {}).get("outcome_state") == "accepted_unverified"
+    assert "memory_item" not in (result.data or {})
+    assert "saved" not in result.message.lower()
+
+
 def test_failed_memory_write_has_no_receipt_or_success_wording(monkeypatch, tmp_path):
     monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
 
