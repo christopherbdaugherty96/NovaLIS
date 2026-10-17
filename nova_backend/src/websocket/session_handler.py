@@ -1656,6 +1656,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state["last_response"] = outgoing_message
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
+                    if (
+                        session_state.get("last_input_channel") == "voice"
+                        and action_result.success
+                        and capability_id != 18
+                    ):
+                        speak_text = resolve_speakable_text(action_result) or outgoing_message
+                        _maybe_auto_speak_for_voice_turn(session_state, speak_text)
+                    elif session_state.get("last_input_channel") == "voice" and capability_id == 18:
+                        session_state["last_input_channel"] = None
                     continue
                 if confirm_action == "cancel":
                     session_state["pending_governed_confirm"] = None

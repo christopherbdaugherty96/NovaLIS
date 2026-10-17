@@ -208,6 +208,37 @@ def test_cap48_approved_result_preserves_search_widget_and_source_followup(monke
     assert any("approved.example" in message for message in _chat_messages(ws))
 
 
+def test_cap48_voice_approval_speaks_the_approved_report(monkeypatch):
+    _disable_session_gate(monkeypatch)
+    monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+    spoken: list[str] = []
+
+    async def _invoke(_governor, capability_id, params, **_authority):
+        assert capability_id == 48
+        return ActionResult.ok(
+            "Report ready.",
+            speakable_text="Approved report spoken summary.",
+            request_id="cap48-voice-result",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
+    monkeypatch.setattr(
+        brain_server,
+        "_maybe_auto_speak_for_voice_turn",
+        lambda _session_state, text: spoken.append(str(text)),
+    )
+    ws = _ScriptedWebSocket(
+        [
+            {"type": "chat", "channel": "voice", "text": "research AI regulation trends"},
+            {"type": "chat", "channel": "voice", "text": "yes"},
+        ]
+    )
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert spoken == ["Approved report spoken summary."]
+
+
 def test_cap48_registry_requires_confirmation():
     capability = Governor().registry.get(48)
     assert capability.requires_confirmation is True
