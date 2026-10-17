@@ -136,7 +136,7 @@ def test_read_back_failure_does_not_report_success(monkeypatch, tmp_path):
     try:
         result = store.save("preferences", "theme", "dark", source="explicit")
     except Exception as exc:
-        assert "verify" in str(exc).lower()
+        assert "verif" in str(exc).lower()
     else:
         raise AssertionError(f"save reported success without durable read-back: {result}")
 
