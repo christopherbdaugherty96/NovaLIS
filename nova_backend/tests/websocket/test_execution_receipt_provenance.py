@@ -53,6 +53,20 @@ def test_model_receipt_shape_split_across_lines_is_neutralized():
     assert ACTION_CLAIM_NOTE in guarded
 
 
+@pytest.mark.parametrize(
+    "model_reply,receipt_id",
+    (
+        ("Done: SCH-FAKE-0001", "SCH-FAKE-0001"),
+        ("All set — MEM-FAKE-0001", "MEM-FAKE-0001"),
+    ),
+)
+def test_model_standalone_receipt_marker_is_neutralized(model_reply, receipt_id):
+    guarded = guard_general_chat_action_claim(model_reply)
+
+    assert receipt_id not in guarded
+    assert ACTION_CLAIM_NOTE in guarded
+
+
 def test_model_fake_receipt_has_no_execution_provenance(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
