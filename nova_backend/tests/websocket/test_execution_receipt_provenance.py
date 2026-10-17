@@ -10,6 +10,7 @@ from src.memory.governed_memory_store import GovernedMemoryStore
 from src.websocket.session_handler import guard_general_chat_action_claim
 from tests.phase45._websocket_test_helpers import _ScriptedWebSocket
 from tests.websocket.test_commitment_truth_reminder_handoff import (
+    _FailingScheduleStore,
     _RecordingScheduleStore,
 )
 from tests.websocket.test_commitment_truth_reminder_handoff import (
@@ -151,12 +152,51 @@ def test_unverifiable_reminder_write_has_no_receipt_or_success_wording(monkeypat
     assert all("Reminder saved:" not in frame.get("message", "") for frame in frames)
 
 
+def test_failed_reminder_write_has_no_receipt_or_success_wording(monkeypatch):
+    ws = _run_reminder_session(
+        monkeypatch,
+        ["remind me to call mom tomorrow at 9am"],
+        _FailingScheduleStore(),
+    )
+
+    frames = _chat_frames(ws)
+    assert all("receipt" not in frame for frame in frames)
+    assert all("Reminder saved:" not in frame.get("message", "") for frame in frames)
+
+
 def test_unverifiable_memory_write_has_no_receipt_or_success_wording(
     monkeypatch,
     tmp_path,
 ):
     monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
     monkeypatch.setattr(GovernedMemoryStore, "get_item", lambda self, item_id: None)
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(GovernedMemoryStore, "list_items", lambda self, **kwargs: [])
+    ws = _ScriptedWebSocket(["remember this: favorite color blue"])
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        side_effect=AssertionError("model must not handle an explicit memory save"),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    frames = _chat_frames(ws)
+    assert all("receipt" not in frame for frame in frames)
+    assert all("Saved. Memory" not in frame.get("message", "") for frame in frames)
+
+
+def test_failed_memory_write_has_no_receipt_or_success_wording(monkeypatch, tmp_path):
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", str(tmp_path))
+
+    def _fail_save(self, **kwargs):
+        del self, kwargs
+        raise OSError("simulated memory write failure")
+
+    monkeypatch.setattr(GovernedMemoryStore, "save_item", _fail_save)
     monkeypatch.setattr(
         brain_server.SessionRouter,
         "evaluate_gate",
