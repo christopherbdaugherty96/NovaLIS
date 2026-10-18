@@ -167,6 +167,25 @@ def test_update_at_capacity_does_not_evict(tmp_path):
     assert next(entry for entry in persisted if entry["id"] == updated["id"])["value"] == "updated-value"
 
 
+def test_update_read_back_uses_logical_identity_when_ids_collide(tmp_path):
+    path = tmp_path / "user_memory.json"
+    store = UserMemoryStore(path)
+    target = store.save("preferences", "theme", "light", source="explicit")
+    store.save("preferences", "language", "English", source="explicit")
+    state = store._read_state()
+    unrelated = next(entry for entry in state["entries"] if entry["key"] == "language")
+    unrelated["id"] = target["id"]
+    store._write_state(state)
+
+    updated = store.save("preferences", "theme", "dark", source="explicit")
+    persisted = UserMemoryStore(path)._read_state()["entries"]
+
+    assert updated["value"] == "dark"
+    assert updated["revision"] == 2
+    assert next(entry for entry in persisted if entry["key"] == "theme")["value"] == "dark"
+    assert next(entry for entry in persisted if entry["key"] == "language")["value"] == "English"
+
+
 def test_read_back_failure_does_not_report_success(monkeypatch, tmp_path):
     path = tmp_path / "user_memory.json"
     store = UserMemoryStore(path)
