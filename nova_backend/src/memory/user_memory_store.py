@@ -313,11 +313,14 @@ class UserMemoryStore:
                 (
                     dict(candidate)
                     for candidate in list(persisted.get("entries") or [])
-                    if str(candidate.get("id") or "").strip() == str(entry.get("id") or "").strip()
+                    if str(candidate.get("category") or "").strip()
+                    == str(entry.get("category") or "").strip()
+                    and str(candidate.get("key") or "").strip()
+                    == str(entry.get("key") or "").strip()
                 ),
                 None,
             )
-            expected_fields = ("category", "key", "value", "source", "revision")
+            expected_fields = ("id", "category", "key", "value", "source", "revision")
             if not isinstance(persisted_entry, dict) or any(
                 persisted_entry.get(field) != entry.get(field) for field in expected_fields
             ):
