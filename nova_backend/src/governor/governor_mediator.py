@@ -1216,6 +1216,8 @@ class GovernorMediator:
             return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
         if VAGUE_CURRENT_HISTORY_RE.match(t):
+            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+                return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
             return Clarification(
                 capability_id=16,
                 message=(
