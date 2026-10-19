@@ -56,6 +56,16 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
             if closing_fence < 0:
                 continue
             boundary_end = closing_fence + 3
+        inline_ticks_before = len(
+            re.findall(r"(?<!`)`(?!`)", clean[: match.start()])
+        )
+        if inline_ticks_before % 2 and "`" not in match.group()[1:]:
+            closing_inline = re.search(
+                r"(?<!`)`(?!`)", clean[match.end() :]
+            )
+            if closing_inline is None:
+                continue
+            boundary_end = match.end() + closing_inline.end()
         if match.group().startswith("."):
             word_start = max(
                 clean.rfind(" ", 0, match.start()),
