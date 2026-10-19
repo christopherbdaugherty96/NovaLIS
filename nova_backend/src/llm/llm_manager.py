@@ -44,7 +44,7 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
         return None
     if str(done_reason or "").strip().lower() != "length":
         return clean
-    boundaries = []
+    boundary_ends: list[int] = []
     for match in re.finditer(r"[.!?](?:[*_~`>\"')\]]+)?(?=\s|$)", clean):
         line_start = clean.rfind("\n", 0, match.start()) + 1
         prefix = clean[line_start : match.start()].strip()
@@ -72,10 +72,15 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
             }
             if token in abbreviations or (len(token) == 1 and token.isalpha()):
                 continue
-        boundaries.append(match)
-    if not boundaries:
+        boundary_end = match.end()
+        if clean.count("```", 0, match.start()) % 2:
+            closing_fence = clean.find("```", match.end())
+            if closing_fence >= 0:
+                boundary_end = closing_fence + 3
+        boundary_ends.append(boundary_end)
+    if not boundary_ends:
         return clean
-    return clean[: boundaries[-1].end()].rstrip()
+    return clean[: boundary_ends[-1]].rstrip()
 
 
 def compute_model_hash(
