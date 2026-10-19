@@ -79,6 +79,8 @@ def test_trial_recency_small_talk_stays_in_local_chat(monkeypatch, text):
         "Find current information about quantum computing",
         "Latest quantum computing news",
         "Did quantum computing stocks rise today?",
+        "What happened today?",
+        "What changed since yesterday?",
     ),
 )
 def test_trial_explicit_network_request_is_honestly_unavailable(monkeypatch, text):
