@@ -50,6 +50,28 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
         prefix = clean[line_start : match.start()].strip()
         if match.group().startswith(".") and prefix.isdigit():
             continue  # Markdown ordered-list marker, not a sentence boundary.
+        if match.group().startswith("."):
+            word_start = max(
+                clean.rfind(" ", 0, match.start()),
+                clean.rfind("\n", 0, match.start()),
+            ) + 1
+            token = clean[word_start : match.start()].strip("*_~`>\"'([{<").lower()
+            abbreviations = {
+                "dr",
+                "e.g",
+                "etc",
+                "i.e",
+                "jr",
+                "mr",
+                "mrs",
+                "ms",
+                "prof",
+                "sr",
+                "st",
+                "vs",
+            }
+            if token in abbreviations or (len(token) == 1 and token.isalpha()):
+                continue
         boundaries.append(match)
     if not boundaries:
         return clean
