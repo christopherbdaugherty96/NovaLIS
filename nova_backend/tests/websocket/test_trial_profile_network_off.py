@@ -68,9 +68,17 @@ def test_trial_recency_small_talk_stays_in_local_chat(monkeypatch, text):
 @pytest.mark.parametrize(
     "text",
     (
+        "weather",
+        "weather update",
+        "current weather",
+        "weather in Boston",
         "What's the weather tomorrow?",
         "Search the web for the best pizza near me",
         "Google the best pizza near me",
+        "Give me the latest on quantum computing",
+        "Find current information about quantum computing",
+        "Latest quantum computing news",
+        "Did quantum computing stocks rise today?",
     ),
 )
 def test_trial_explicit_network_request_is_honestly_unavailable(monkeypatch, text):
