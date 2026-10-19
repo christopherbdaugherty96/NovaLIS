@@ -44,7 +44,9 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
         return None
     if str(done_reason or "").strip().lower() != "length":
         return clean
-    boundaries = list(re.finditer(r"[.!?](?:[\"')\]]+)?(?=\s|$)", clean))
+    boundaries = list(
+        re.finditer(r"[.!?](?:[*_~`>\"')\]]+)?(?=\s|$)", clean)
+    )
     if not boundaries:
         return clean
     return clean[: boundaries[-1].end()].rstrip()
@@ -326,11 +328,10 @@ class LLMManager:
         Send prompt to LLM and return plain text.
         Honors circuit breaker and model version lock.
 
-        If *on_chunk* is provided, uses streaming mode and calls
-        on_chunk(text_fragment) for each token as it arrives from
-        Ollama. The complete assembled text is still returned.
-        This is purely a UX callback -- it does not change the
-        return value or any governance behavior.
+        If *on_chunk* is provided, uses Ollama's streaming transport but
+        buffers the response until its terminal reason is known. This keeps
+        a length-stopped incomplete suffix from reaching the user. The
+        finalized text is passed to the callback and returned.
         """
         if self.inference_blocked:
             logger.error("Generate called while model is blocked.")
@@ -375,9 +376,9 @@ class LLMManager:
         if not messages:
             request_messages.append({"role": "user", "content": prompt})
 
-        # Streaming path: use request_stream and call on_chunk for
-        # each token. Assembles and returns the full text identically
-        # to the non-streaming path.
+        # Streaming transport is buffered until the terminal reason is known;
+        # otherwise a length-stopped incomplete suffix may already have been
+        # shown before it can be removed from the assembled result.
         if on_chunk is not None:
             try:
                 parts: list[str] = []
@@ -394,16 +395,17 @@ class LLMManager:
                     session_id=session_id,
                 ):
                     parts.append(chunk)
-                    try:
-                        on_chunk(chunk)
-                    except Exception:
-                        pass  # UX callback must not break inference
                 result = _finalize_model_text(
                     "".join(parts),
                     done_reason=str(
                         getattr(self._network, "last_stream_done_reason", "") or ""
                     ),
                 )
+                if result:
+                    try:
+                        on_chunk(result)
+                    except Exception:
+                        pass  # UX callback must not break inference
                 self.failure_count = 0
                 return result
             except ModelNetworkMediatorError as error:
@@ -508,8 +510,8 @@ class LLMManager:
         """Stream text chunks from Ollama for advisory LLM fallback.
 
         Same circuit-breaker, fallback-model, and failure-recording logic
-        as generate(). Yields text fragments as they arrive. The caller
-        is responsible for assembling the final response.
+        as generate(). The streaming transport is buffered and finalized
+        before yielding so an incomplete length-stopped suffix is never shown.
         """
         if self.inference_blocked:
             logger.error("generate_stream called while model is blocked.")
@@ -537,6 +539,7 @@ class LLMManager:
         messages.append({"role": "user", "content": prompt})
 
         try:
+            parts: list[str] = []
             for chunk in self._network.request_stream(
                 url=f"{self.base_url.rstrip('/')}/api/chat",
                 json_payload={
@@ -549,7 +552,15 @@ class LLMManager:
                 request_id=request_id,
                 session_id=session_id,
             ):
-                yield chunk
+                parts.append(chunk)
+            result = _finalize_model_text(
+                "".join(parts),
+                done_reason=str(
+                    getattr(self._network, "last_stream_done_reason", "") or ""
+                ),
+            )
+            if result:
+                yield result
             self.failure_count = 0
         except ModelNetworkMediatorError as error:
             logger.error("Streaming model call failed: %s", error)
