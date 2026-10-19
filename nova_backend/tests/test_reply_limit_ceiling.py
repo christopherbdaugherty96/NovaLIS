@@ -227,6 +227,20 @@ def test_length_stopped_reply_does_not_keep_dangling_ordered_list_marker(monkeyp
     assert _manager(Network()).generate("hello") == "1. First complete sentence."
 
 
+def test_length_stopped_reply_does_not_treat_abbreviation_as_sentence(monkeypatch):
+    text = "Ask Dr. Smith to review the propos"
+
+    class Network:
+        def request_json(self, **kwargs):
+            return ModelResponse(
+                status_code=200,
+                data={"message": {"content": text}, "done_reason": "length"},
+            )
+
+    monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
+    assert _manager(Network()).generate("hello") == text
+
+
 def test_normal_stop_reply_is_unchanged(monkeypatch):
     text = "First complete sentence. This ending is intentional"
 
