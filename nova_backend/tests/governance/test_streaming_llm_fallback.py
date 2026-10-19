@@ -15,7 +15,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # ModelNetworkMediator.request_stream tests
 # ---------------------------------------------------------------------------

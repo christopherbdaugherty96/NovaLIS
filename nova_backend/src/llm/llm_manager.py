@@ -44,9 +44,13 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
         return None
     if str(done_reason or "").strip().lower() != "length":
         return clean
-    boundaries = list(
-        re.finditer(r"[.!?](?:[*_~`>\"')\]]+)?(?=\s|$)", clean)
-    )
+    boundaries = []
+    for match in re.finditer(r"[.!?](?:[*_~`>\"')\]]+)?(?=\s|$)", clean):
+        line_start = clean.rfind("\n", 0, match.start()) + 1
+        prefix = clean[line_start : match.start()].strip()
+        if match.group().startswith(".") and prefix.isdigit():
+            continue  # Markdown ordered-list marker, not a sentence boundary.
+        boundaries.append(match)
     if not boundaries:
         return clean
     return clean[: boundaries[-1].end()].rstrip()

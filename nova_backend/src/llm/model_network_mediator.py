@@ -210,6 +210,14 @@ class ModelNetworkMediator:
         finally:
             response.close()
 
+        if self.last_stream_done_reason is None:
+            error = "stream ended without a valid terminal frame"
+            self._ledger.log_event(
+                "MODEL_NETWORK_CALL_FAILED",
+                {"url": url, "method": "POST", "error": error, **correlation},
+            )
+            raise ModelNetworkMediatorError(error)
+
         self._ledger.log_event(
             "MODEL_NETWORK_CALL",
             {"url": url, "method": "POST",
