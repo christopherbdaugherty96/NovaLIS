@@ -255,6 +255,34 @@ def test_length_stopped_reply_keeps_completed_code_fence(monkeypatch):
     assert _manager(Network()).generate("hello") == '```python\nprint("Done.")\n```'
 
 
+def test_length_stopped_reply_ignores_boundary_in_unclosed_code_fence(monkeypatch):
+    text = 'Here is code.\n```python\nprint("Done.")\nvalue = incom'
+
+    class Network:
+        def request_json(self, **kwargs):
+            return ModelResponse(
+                status_code=200,
+                data={"message": {"content": text}, "done_reason": "length"},
+            )
+
+    monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
+    assert _manager(Network()).generate("hello") == "Here is code."
+
+
+def test_length_stopped_reply_does_not_treat_initialism_as_sentence(monkeypatch):
+    text = "The U.S. government should review the propos"
+
+    class Network:
+        def request_json(self, **kwargs):
+            return ModelResponse(
+                status_code=200,
+                data={"message": {"content": text}, "done_reason": "length"},
+            )
+
+    monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
+    assert _manager(Network()).generate("hello") == text
+
+
 def test_normal_stop_reply_is_unchanged(monkeypatch):
     text = "First complete sentence. This ending is intentional"
 
