@@ -72,7 +72,10 @@ class TestMediatorRequestStream:
         assert chunks == ["Hello", " world", "!"]
 
     def test_skips_empty_and_malformed_lines(self):
-        from src.llm.model_network_mediator import ModelNetworkMediator
+        from src.llm.model_network_mediator import (
+            ModelNetworkMediator,
+            ModelNetworkMediatorError,
+        )
 
         mediator = ModelNetworkMediator()
         lines = [
@@ -91,15 +94,17 @@ class TestMediatorRequestStream:
             mock_session.post.return_value = fake_response
             mock_session_fn.return_value = mock_session
 
-            chunks = list(
-                mediator.request_stream(
-                    url="http://localhost:11434/api/chat",
-                    json_payload={"model": "test", "stream": True},
-                    timeout=30.0,
+            with pytest.raises(
+                ModelNetworkMediatorError,
+                match="terminal frame",
+            ):
+                list(
+                    mediator.request_stream(
+                        url="http://localhost:11434/api/chat",
+                        json_payload={"model": "test", "stream": True},
+                        timeout=30.0,
+                    )
                 )
-            )
-
-        assert chunks == ["good", " stuff"]
 
     def test_validates_url(self):
         from src.llm.model_network_mediator import (
