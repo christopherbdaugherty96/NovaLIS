@@ -121,11 +121,13 @@ def test_callback_streaming_length_stop_trims_returned_reply(monkeypatch):
             yield "First complete sentence. This ends midwo"
 
     monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
+    shown: list[str] = []
     assert _manager(Network()).generate(
         "hello",
         max_tokens=900,
-        on_chunk=lambda _chunk: None,
+        on_chunk=shown.append,
     ) == "First complete sentence."
+    assert shown == ["First complete sentence."]
 
 
 def test_generator_streaming_request_honors_configured_ceiling(monkeypatch):
@@ -139,6 +141,20 @@ def test_generator_streaming_request_honors_configured_ceiling(monkeypatch):
     monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
     assert list(_manager(Network()).generate_stream("hello", max_tokens=900)) == ["Done."]
     assert captured[0]["options"]["num_predict"] == 128
+
+
+def test_generator_streaming_length_stop_never_yields_incomplete_suffix(monkeypatch):
+    class Network:
+        last_stream_done_reason = "length"
+
+        def request_stream(self, **kwargs):
+            yield "First complete sentence. "
+            yield "This ends midwo"
+
+    monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
+    assert list(_manager(Network()).generate_stream("hello", max_tokens=900)) == [
+        "First complete sentence."
+    ]
 
 
 def test_fallback_request_honors_configured_ceiling(monkeypatch):
@@ -172,6 +188,23 @@ def test_length_stopped_reply_trims_to_last_complete_sentence(monkeypatch):
 
     monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
     assert _manager(Network()).generate("hello") == "First complete sentence."
+
+
+def test_length_stopped_markdown_reply_keeps_complete_formatted_sentence(monkeypatch):
+    class Network:
+        def request_json(self, **kwargs):
+            return ModelResponse(
+                status_code=200,
+                data={
+                    "message": {
+                        "content": "**First complete sentence.** This ends midwo"
+                    },
+                    "done_reason": "length",
+                },
+            )
+
+    monkeypatch.setattr(llm_module, "OLLAMA_NUM_PREDICT", 128)
+    assert _manager(Network()).generate("hello") == "**First complete sentence.**"
 
 
 def test_normal_stop_reply_is_unchanged(monkeypatch):
