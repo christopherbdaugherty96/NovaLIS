@@ -32,7 +32,7 @@ from src.memory.user_memory_store import (
     render_memory_context_line,
     user_memory_store,
 )
-from src.nova_config import OLLAMA_NUM_CTX
+from src.nova_config import OLLAMA_NUM_CTX, OLLAMA_NUM_PREDICT
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 
@@ -456,14 +456,15 @@ class GeneralChatSkill(BaseSkill):
 
         if tone_profile == "concise":
             if not explicit_depth and mode == "casual":
-                return min(max_tokens, 200)
-            return max(200, int(max_tokens * 0.80))
+                max_tokens = min(max_tokens, 200)
+            else:
+                max_tokens = max(200, int(max_tokens * 0.80))
 
-        if tone_profile == "detailed":
+        elif tone_profile == "detailed":
             expanded = max_tokens + (120 if mode == "casual" else 180)
-            return min(expanded, 900)
+            max_tokens = min(expanded, 900)
 
-        return max_tokens
+        return min(max(1, int(max_tokens)), max(1, int(OLLAMA_NUM_PREDICT)))
 
     def _shape_response_for_tone(
         self,

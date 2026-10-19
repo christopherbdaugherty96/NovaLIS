@@ -160,6 +160,7 @@ class ModelNetworkMediator:
         """
         self._check_rate_limit()
         self._validate_url(url)
+        self._thread_local.last_stream_done_reason = None
         correlation: dict[str, str] = {}
         if request_id:
             correlation["request_id"] = request_id
@@ -193,6 +194,10 @@ class ModelNetworkMediator:
                 text = (chunk.get("message") or {}).get("content") or ""
                 if text:
                     yield text
+                if chunk.get("done"):
+                    self._thread_local.last_stream_done_reason = str(
+                        chunk.get("done_reason") or ""
+                    ).strip()
         except Exception as error:
             self._ledger.log_event(
                 "MODEL_NETWORK_CALL_FAILED",
@@ -211,3 +216,8 @@ class ModelNetworkMediator:
              "status_code": response.status_code, "streamed": True,
              **correlation},
         )
+
+    @property
+    def last_stream_done_reason(self) -> str | None:
+        """Return the terminal reason for the latest stream on this thread."""
+        return getattr(self._thread_local, "last_stream_done_reason", None)

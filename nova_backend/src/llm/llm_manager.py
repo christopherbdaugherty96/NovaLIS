@@ -3,6 +3,7 @@
 import hashlib
 import json
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Optional
@@ -28,6 +29,25 @@ logger = logging.getLogger(__name__)
 # Paths for version lock
 MODEL_HASH_FILE = runtime_path(__file__, "models", "current_model_hash.txt")
 WRAPPER_PATH = Path(__file__).parent / "inference_wrapper.py"
+
+
+def _effective_num_predict(requested: int) -> int:
+    """Clamp a requested local generation length to the configured ceiling."""
+    configured = max(1, int(OLLAMA_NUM_PREDICT))
+    return min(max(1, int(requested)), configured)
+
+
+def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
+    """Return clean model text, removing only an incomplete length-stopped tail."""
+    clean = str(text or "").strip()
+    if not clean:
+        return None
+    if str(done_reason or "").strip().lower() != "length":
+        return clean
+    boundaries = list(re.finditer(r"[.!?](?:[\"')\]]+)?(?=\s|$)", clean))
+    if not boundaries:
+        return clean
+    return clean[: boundaries[-1].end()].rstrip()
 
 
 def compute_model_hash(
@@ -330,6 +350,9 @@ class LLMManager:
             options["temperature"] = float(temperature)
         if max_tokens is not None:
             options["num_predict"] = int(max_tokens)
+        options["num_predict"] = _effective_num_predict(
+            int(options.get("num_predict", OLLAMA_NUM_PREDICT))
+        )
         request_timeout = float(timeout) if timeout is not None else float(self.timeout)
 
         request_messages: list[dict[str, str]] = []
@@ -375,7 +398,12 @@ class LLMManager:
                         on_chunk(chunk)
                     except Exception:
                         pass  # UX callback must not break inference
-                result = "".join(parts).strip() or None
+                result = _finalize_model_text(
+                    "".join(parts),
+                    done_reason=str(
+                        getattr(self._network, "last_stream_done_reason", "") or ""
+                    ),
+                )
                 self.failure_count = 0
                 return result
             except ModelNetworkMediatorError as error:
@@ -398,7 +426,10 @@ class LLMManager:
                 request_id=request_id,
                 session_id=session_id,
             )
-            result = ((response.data.get("message") or {}).get("content") or "").strip() or None
+            result = _finalize_model_text(
+                (response.data.get("message") or {}).get("content") or "",
+                done_reason=str(response.data.get("done_reason") or ""),
+            )
             # Success – reset failure count
             self.failure_count = 0
             return result
@@ -430,7 +461,9 @@ class LLMManager:
                     )
                     fallback_options = dict(options)
                     fallback_options["num_ctx"] = min(int(fallback_options.get("num_ctx", 4096)), 4096)
-                    fallback_options["num_predict"] = min(int(fallback_options.get("num_predict", 384)), 384)
+                    fallback_options["num_predict"] = _effective_num_predict(
+                        min(int(fallback_options.get("num_predict", 384)), 384)
+                    )
                     response = self._network.request_json(
                         method="POST",
                         url=f"{self.base_url.rstrip('/')}/api/chat",
@@ -444,7 +477,10 @@ class LLMManager:
                         request_id=request_id,
                         session_id=session_id,
                     )
-                    result = ((response.data.get("message") or {}).get("content") or "").strip() or None
+                    result = _finalize_model_text(
+                        (response.data.get("message") or {}).get("content") or "",
+                        done_reason=str(response.data.get("done_reason") or ""),
+                    )
                     self.failure_count = 0
                     return result
                 except ModelNetworkMediatorError as fallback_error:
@@ -490,6 +526,9 @@ class LLMManager:
             options["temperature"] = float(temperature)
         if max_tokens is not None:
             options["num_predict"] = int(max_tokens)
+        options["num_predict"] = _effective_num_predict(
+            int(options.get("num_predict", OLLAMA_NUM_PREDICT))
+        )
         request_timeout = float(timeout) if timeout is not None else float(self.timeout)
 
         messages: list[dict[str, str]] = []
