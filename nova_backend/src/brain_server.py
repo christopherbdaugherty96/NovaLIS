@@ -55,11 +55,13 @@ from src.conversation.general_chat_runtime import (
 from src.governor.governor_mediator import (
     PRIVATE_GOOGLE_CALENDAR_SEARCH_RESPONSE,
     PRIVATE_GOOGLE_DRIVE_SEARCH_RESPONSE,
+    TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
     Clarification,
     GovernorMediator,
     Invocation,
     is_private_google_calendar_search,
     is_private_google_drive_search,
+    is_trial_recency_chat,
 )
 from src.utils.web_target_planner import plan_web_open
 from src.speech_state import speech_state

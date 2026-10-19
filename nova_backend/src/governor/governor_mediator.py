@@ -145,6 +145,21 @@ TRIAL_EXPLICIT_WEB_SEARCH_RE = re.compile(
 TRIAL_NETWORK_UNAVAILABLE_RESPONSE = (
     "Web search and weather are not available in this trial version."
 )
+TRIAL_RECENCY_CHAT_RE = re.compile(
+    r"^\s*(?:hey\s+how\s+are\s+you\s+doing\s+today|"
+    r"what(?:'s|\s+is)\s+up\s+today|"
+    r"how\s+should\s+i\s+plan\s+my\s+day\s+today)\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+
+
+def is_trial_recency_chat(text: str) -> bool:
+    return (
+        str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+        and bool(TRIAL_RECENCY_CHAT_RE.fullmatch(str(text or "")))
+    )
+
+
 PRIVATE_GOOGLE_DRIVE_SOURCE_RE = re.compile(
     r"\b(?:"
     r"(?:my|our)\s+(?:google\s+)?drive"
@@ -1004,6 +1019,15 @@ class Clarification:
     message: str
 
 
+def _cap16_invocation_or_trial_unavailable(params: Dict[str, Any]) -> Invocation | Clarification | None:
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+        return Clarification(
+            capability_id=16,
+            message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+        )
+    return _invocation_if_enabled(16, params)
+
+
 class GovernorMediator:
     @staticmethod
     def mediate(text: str) -> str:
@@ -1055,7 +1079,7 @@ class GovernorMediator:
                             "Please provide a short search query (2-500 characters) on a single line."
                         ),
                     )
-                return _invocation_if_enabled(16, {"query": t})
+                return _cap16_invocation_or_trial_unavailable({"query": t})
             return None
 
         if WEATHER_RE.match(t):
@@ -1180,13 +1204,16 @@ class GovernorMediator:
         if MORNING_BRIEF_RE.match(t):
             return _invocation_if_enabled(63, {"template_id": "morning_brief", "triggered_by": "user_command"})
 
+        if is_trial_recency_chat(t):
+            return None
+
         m = LATEST_ON_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
         m = FIND_CURRENT_INFO_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
         if VAGUE_CURRENT_HISTORY_RE.match(t):
             return Clarification(
@@ -1199,20 +1226,22 @@ class GovernorMediator:
 
         m = TOPICAL_LATEST_NEWS_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": f"latest {m.group('q').strip()} news"})
+            return _cap16_invocation_or_trial_unavailable(
+                {"query": f"latest {m.group('q').strip()} news"}
+            )
 
         m = CLAIM_CHECK_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
         if (
             CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)
         ) and not CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
-            return _invocation_if_enabled(16, {"query": t.strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
         if _looks_like_time_sensitive_finance_or_policy_query(t):
-            return _invocation_if_enabled(16, {"query": t.strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
         if _looks_like_evidence_sensitive_health_query(t):
-            return _invocation_if_enabled(16, {"query": t.strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
 
         # Memory search must be checked before SEARCH_RE — "look up my notes on X" matches
         # both SEARCH_RE ("look up ...") and MEMORY_SEARCH_RE.  Memory intent is specific.
@@ -1240,12 +1269,7 @@ class GovernorMediator:
                 memory_query = re.sub(r"^memory\s+", "", memory_query, flags=re.IGNORECASE).strip()
                 if memory_query:
                     return _invocation_if_enabled(61, {"action": "search", "query": memory_query})
-            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial":
-                return Clarification(
-                    capability_id=16,
-                    message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
-                )
-            return _invocation_if_enabled(16, {"query": search_query})
+            return _cap16_invocation_or_trial_unavailable({"query": search_query})
 
         if (
             str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial"
