@@ -50,6 +50,12 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
         prefix = clean[line_start : match.start()].strip()
         if match.group().startswith(".") and prefix.isdigit():
             continue  # Markdown ordered-list marker, not a sentence boundary.
+        boundary_end = match.end()
+        if clean.count("```", 0, match.start()) % 2:
+            closing_fence = clean.find("```", match.end())
+            if closing_fence < 0:
+                continue
+            boundary_end = closing_fence + 3
         if match.group().startswith("."):
             word_start = max(
                 clean.rfind(" ", 0, match.start()),
@@ -70,13 +76,16 @@ def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
                 "st",
                 "vs",
             }
-            if token in abbreviations or (len(token) == 1 and token.isalpha()):
+            initialism_parts = token.split(".")
+            is_initialism = len(initialism_parts) > 1 and all(
+                len(part) == 1 and part.isalpha() for part in initialism_parts
+            )
+            if (
+                token in abbreviations
+                or (len(token) == 1 and token.isalpha())
+                or is_initialism
+            ):
                 continue
-        boundary_end = match.end()
-        if clean.count("```", 0, match.start()) % 2:
-            closing_fence = clean.find("```", match.end())
-            if closing_fence >= 0:
-                boundary_end = closing_fence + 3
         boundary_ends.append(boundary_end)
     if not boundary_ends:
         return clean
