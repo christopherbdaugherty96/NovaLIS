@@ -3,6 +3,7 @@
 import hashlib
 import json
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Optional
@@ -28,6 +29,77 @@ logger = logging.getLogger(__name__)
 # Paths for version lock
 MODEL_HASH_FILE = runtime_path(__file__, "models", "current_model_hash.txt")
 WRAPPER_PATH = Path(__file__).parent / "inference_wrapper.py"
+
+
+def _effective_num_predict(requested: int) -> int:
+    """Clamp a requested local generation length to the configured ceiling."""
+    configured = max(1, int(OLLAMA_NUM_PREDICT))
+    return min(max(1, int(requested)), configured)
+
+
+def _finalize_model_text(text: str, *, done_reason: str = "") -> Optional[str]:
+    """Return clean model text, removing only an incomplete length-stopped tail."""
+    clean = str(text or "").strip()
+    if not clean:
+        return None
+    if str(done_reason or "").strip().lower() != "length":
+        return clean
+    boundary_ends: list[int] = []
+    for match in re.finditer(r"[.!?](?:[*_~`>\"')\]]+)?(?=\s|$)", clean):
+        line_start = clean.rfind("\n", 0, match.start()) + 1
+        prefix = clean[line_start : match.start()].strip()
+        if match.group().startswith(".") and prefix.isdigit():
+            continue  # Markdown ordered-list marker, not a sentence boundary.
+        boundary_end = match.end()
+        if clean.count("```", 0, match.start()) % 2:
+            closing_fence = clean.find("```", match.end())
+            if closing_fence < 0:
+                continue
+            boundary_end = closing_fence + 3
+        inline_ticks_before = len(
+            re.findall(r"(?<!`)`(?!`)", clean[: match.start()])
+        )
+        if inline_ticks_before % 2 and "`" not in match.group()[1:]:
+            closing_inline = re.search(
+                r"(?<!`)`(?!`)", clean[match.end() :]
+            )
+            if closing_inline is None:
+                continue
+            boundary_end = match.end() + closing_inline.end()
+        if match.group().startswith("."):
+            word_start = max(
+                clean.rfind(" ", 0, match.start()),
+                clean.rfind("\n", 0, match.start()),
+            ) + 1
+            token = clean[word_start : match.start()].strip("*_~`>\"'([{<").lower()
+            abbreviations = {
+                "dr",
+                "e.g",
+                "etc",
+                "i.e",
+                "jr",
+                "mr",
+                "mrs",
+                "ms",
+                "prof",
+                "sr",
+                "st",
+                "vs",
+            }
+            initialism_parts = token.split(".")
+            is_initialism = len(initialism_parts) > 1 and all(
+                len(part) == 1 and part.isalpha() for part in initialism_parts
+            )
+            if (
+                token in abbreviations
+                or (len(token) == 1 and token.isalpha())
+                or is_initialism
+            ):
+                continue
+        boundary_ends.append(boundary_end)
+    if not boundary_ends:
+        return clean
+    return clean[: boundary_ends[-1]].rstrip()
 
 
 def compute_model_hash(
@@ -306,11 +378,10 @@ class LLMManager:
         Send prompt to LLM and return plain text.
         Honors circuit breaker and model version lock.
 
-        If *on_chunk* is provided, uses streaming mode and calls
-        on_chunk(text_fragment) for each token as it arrives from
-        Ollama. The complete assembled text is still returned.
-        This is purely a UX callback -- it does not change the
-        return value or any governance behavior.
+        If *on_chunk* is provided, uses Ollama's streaming transport but
+        buffers the response until its terminal reason is known. This keeps
+        a length-stopped incomplete suffix from reaching the user. The
+        finalized text is passed to the callback and returned.
         """
         if self.inference_blocked:
             logger.error("Generate called while model is blocked.")
@@ -330,6 +401,9 @@ class LLMManager:
             options["temperature"] = float(temperature)
         if max_tokens is not None:
             options["num_predict"] = int(max_tokens)
+        options["num_predict"] = _effective_num_predict(
+            int(options.get("num_predict", OLLAMA_NUM_PREDICT))
+        )
         request_timeout = float(timeout) if timeout is not None else float(self.timeout)
 
         request_messages: list[dict[str, str]] = []
@@ -352,9 +426,9 @@ class LLMManager:
         if not messages:
             request_messages.append({"role": "user", "content": prompt})
 
-        # Streaming path: use request_stream and call on_chunk for
-        # each token. Assembles and returns the full text identically
-        # to the non-streaming path.
+        # Streaming transport is buffered until the terminal reason is known;
+        # otherwise a length-stopped incomplete suffix may already have been
+        # shown before it can be removed from the assembled result.
         if on_chunk is not None:
             try:
                 parts: list[str] = []
@@ -371,11 +445,17 @@ class LLMManager:
                     session_id=session_id,
                 ):
                     parts.append(chunk)
+                result = _finalize_model_text(
+                    "".join(parts),
+                    done_reason=str(
+                        getattr(self._network, "last_stream_done_reason", "") or ""
+                    ),
+                )
+                if result:
                     try:
-                        on_chunk(chunk)
+                        on_chunk(result)
                     except Exception:
                         pass  # UX callback must not break inference
-                result = "".join(parts).strip() or None
                 self.failure_count = 0
                 return result
             except ModelNetworkMediatorError as error:
@@ -398,7 +478,10 @@ class LLMManager:
                 request_id=request_id,
                 session_id=session_id,
             )
-            result = ((response.data.get("message") or {}).get("content") or "").strip() or None
+            result = _finalize_model_text(
+                (response.data.get("message") or {}).get("content") or "",
+                done_reason=str(response.data.get("done_reason") or ""),
+            )
             # Success – reset failure count
             self.failure_count = 0
             return result
@@ -430,7 +513,9 @@ class LLMManager:
                     )
                     fallback_options = dict(options)
                     fallback_options["num_ctx"] = min(int(fallback_options.get("num_ctx", 4096)), 4096)
-                    fallback_options["num_predict"] = min(int(fallback_options.get("num_predict", 384)), 384)
+                    fallback_options["num_predict"] = _effective_num_predict(
+                        min(int(fallback_options.get("num_predict", 384)), 384)
+                    )
                     response = self._network.request_json(
                         method="POST",
                         url=f"{self.base_url.rstrip('/')}/api/chat",
@@ -444,7 +529,10 @@ class LLMManager:
                         request_id=request_id,
                         session_id=session_id,
                     )
-                    result = ((response.data.get("message") or {}).get("content") or "").strip() or None
+                    result = _finalize_model_text(
+                        (response.data.get("message") or {}).get("content") or "",
+                        done_reason=str(response.data.get("done_reason") or ""),
+                    )
                     self.failure_count = 0
                     return result
                 except ModelNetworkMediatorError as fallback_error:
@@ -472,8 +560,8 @@ class LLMManager:
         """Stream text chunks from Ollama for advisory LLM fallback.
 
         Same circuit-breaker, fallback-model, and failure-recording logic
-        as generate(). Yields text fragments as they arrive. The caller
-        is responsible for assembling the final response.
+        as generate(). The streaming transport is buffered and finalized
+        before yielding so an incomplete length-stopped suffix is never shown.
         """
         if self.inference_blocked:
             logger.error("generate_stream called while model is blocked.")
@@ -490,6 +578,9 @@ class LLMManager:
             options["temperature"] = float(temperature)
         if max_tokens is not None:
             options["num_predict"] = int(max_tokens)
+        options["num_predict"] = _effective_num_predict(
+            int(options.get("num_predict", OLLAMA_NUM_PREDICT))
+        )
         request_timeout = float(timeout) if timeout is not None else float(self.timeout)
 
         messages: list[dict[str, str]] = []
@@ -498,6 +589,7 @@ class LLMManager:
         messages.append({"role": "user", "content": prompt})
 
         try:
+            parts: list[str] = []
             for chunk in self._network.request_stream(
                 url=f"{self.base_url.rstrip('/')}/api/chat",
                 json_payload={
@@ -510,7 +602,15 @@ class LLMManager:
                 request_id=request_id,
                 session_id=session_id,
             ):
-                yield chunk
+                parts.append(chunk)
+            result = _finalize_model_text(
+                "".join(parts),
+                done_reason=str(
+                    getattr(self._network, "last_stream_done_reason", "") or ""
+                ),
+            )
+            if result:
+                yield result
             self.failure_count = 0
         except ModelNetworkMediatorError as error:
             logger.error("Streaming model call failed: %s", error)

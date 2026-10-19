@@ -165,7 +165,7 @@ def test_fallback_retry_uses_smaller_context_window():
     assert manager.generate("explain local AI") == "fallback ok"
     assert captured_options[0]["num_ctx"] == 32768
     assert captured_options[1]["num_ctx"] == 4096
-    assert captured_options[1]["num_predict"] == 384
+    assert captured_options[1]["num_predict"] == min(384, mod.OLLAMA_NUM_PREDICT)
 
 
 def test_try_recover_primary_requires_chat_probe_success():
