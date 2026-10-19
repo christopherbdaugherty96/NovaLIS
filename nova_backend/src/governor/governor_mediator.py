@@ -138,6 +138,13 @@ SEARCH_RE = re.compile(
     r"^\s*(?:search(?:\s+for)?|look\s+up|find\s+me|find\s+(?:me\s+)?(?:information|info|details|facts)\s+(?:about|on))\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
 )
+TRIAL_EXPLICIT_WEB_SEARCH_RE = re.compile(
+    r"^\s*(?:search(?:\s+the\s+web)?(?:\s+for)?|look\s+up|google)\b",
+    re.IGNORECASE,
+)
+TRIAL_NETWORK_UNAVAILABLE_RESPONSE = (
+    "Web search and weather are not available in this trial version."
+)
 PRIVATE_GOOGLE_DRIVE_SOURCE_RE = re.compile(
     r"\b(?:"
     r"(?:my|our)\s+(?:google\s+)?drive"
@@ -1052,6 +1059,11 @@ class GovernorMediator:
             return None
 
         if WEATHER_RE.match(t):
+            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial":
+                return Clarification(
+                    capability_id=55,
+                    message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+                )
             weather_location = EXPLICIT_WEATHER_LOCATION_RE.match(t)
             location = (
                 re.sub(r"\s+", " ", weather_location.group("location")).strip(" ,.")
@@ -1228,7 +1240,21 @@ class GovernorMediator:
                 memory_query = re.sub(r"^memory\s+", "", memory_query, flags=re.IGNORECASE).strip()
                 if memory_query:
                     return _invocation_if_enabled(61, {"action": "search", "query": memory_query})
+            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial":
+                return Clarification(
+                    capability_id=16,
+                    message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+                )
             return _invocation_if_enabled(16, {"query": search_query})
+
+        if (
+            str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial"
+            and TRIAL_EXPLICIT_WEB_SEARCH_RE.match(t)
+        ):
+            return Clarification(
+                capability_id=16,
+                message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+            )
 
         if DOC_LIST_RE.match(t):
             return _invocation_if_enabled(54, {"action": "list"})

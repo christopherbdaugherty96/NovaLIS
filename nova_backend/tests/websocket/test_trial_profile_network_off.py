@@ -9,7 +9,6 @@ from src.conversation.session_router import GateResult
 from src.governor.capability_registry import CapabilityRegistry
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
-
 TRIAL_UNAVAILABLE_MESSAGE = (
     "Web search and weather are not available in this trial version."
 )
@@ -61,7 +60,7 @@ def test_trial_recency_small_talk_stays_in_local_chat(monkeypatch, text):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert network_calls == []
-    assert model_prompts
+    assert model_prompts, _chat_messages(ws)
     assert any("Local trial chat reply." in message for message in _chat_messages(ws))
     assert not any(TRIAL_UNAVAILABLE_MESSAGE in message for message in _chat_messages(ws))
 

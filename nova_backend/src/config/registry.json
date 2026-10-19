@@ -46,6 +46,13 @@
       "groups": [],
       "enabled_overrides": {}
     },
+    "trial": {
+      "groups": [],
+      "enabled_overrides": {
+        "16": false,
+        "55": false
+      }
+    },
     "local-control": {
       "groups": [
         "local_control",

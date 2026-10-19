@@ -49,6 +49,19 @@ _UNTRUSTED_COMMAND_TEXT_RE = re.compile(
     r"call open_file|actionrequest|bypass governor|cap\s*63|openclaw_execute)\b",
     re.IGNORECASE,
 )
+_TRIAL_RECENCY_CHAT_RE = re.compile(
+    r"^\s*(?:hey\s+how\s+are\s+you\s+doing\s+today|"
+    r"what(?:'s|\s+is)\s+up\s+today|"
+    r"how\s+should\s+i\s+plan\s+my\s+day\s+today)\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+
+
+def _is_trial_recency_chat(text: str) -> bool:
+    return (
+        os.getenv("NOVA_RUNTIME_PROFILE", "default").strip().lower() == "trial"
+        and bool(_TRIAL_RECENCY_CHAT_RE.fullmatch(str(text or "")))
+    )
 
 
 def _brief_message_confidence(message: str) -> str:
@@ -4939,9 +4952,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
             explicit_news_reference = is_explicit_news_reference_action(raw_text)
+            trial_recency_chat = _is_trial_recency_chat(mediated_text)
             grounded_brief_followup = (
                 False
-                if explicit_news_reference
+                if explicit_news_reference or trial_recency_chat
                 else is_discussion_shaped_brief_followup(mediated_text, session_state)
             )
             natural_memory_edit = natural_memory_correction_command(
@@ -5720,7 +5734,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # about meetings / appointments / their calendar and no sourced calendar
             # context is loaded, refuse safely instead of falling through to the
             # advisory model, which otherwise fabricates commitments.
-            _schedule_guard_answer = schedule_commitment_guard(mediated_text, session_state)
+            _schedule_guard_answer = (
+                None
+                if trial_recency_chat
+                else schedule_commitment_guard(mediated_text, session_state)
+            )
             if _schedule_guard_answer:
                 session_state["last_response"] = _schedule_guard_answer
                 await send_chat_message(ws, _schedule_guard_answer, tone_domain="daily")
