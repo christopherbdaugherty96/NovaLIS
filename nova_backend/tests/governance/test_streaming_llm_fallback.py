@@ -154,7 +154,9 @@ class TestManagerGenerateWithOnChunk:
         )
 
         assert result == "Hello world"
-        assert chunks_received == ["Hello", " ", "world"]
+        # The response is held until Ollama reports its terminal reason so a
+        # length-stopped incomplete suffix cannot reach the user.
+        assert chunks_received == ["Hello world"]
 
     def test_on_chunk_failure_does_not_break_inference(self):
         from src.llm.llm_manager import LLMManager
