@@ -658,7 +658,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     send_chat_done = deps.send_chat_done
     set_current_ws_turn_id = getattr(deps, "set_current_ws_turn_id", None)
     GovernorMediator = deps.GovernorMediator
-    is_trial_recency_chat = deps.is_trial_recency_chat
+    is_trial_local_current_info_chat = deps.is_trial_local_current_info_chat
     trial_network_unavailable_response = deps.TRIAL_NETWORK_UNAVAILABLE_RESPONSE
     WS_INPUT_MAX_BYTES = deps.WS_INPUT_MAX_BYTES
     ws_send = deps.ws_send
@@ -1954,7 +1954,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             text = route_context.text
             lowered = route_context.lowered
             decision = route_context.decision
-            if is_trial_recency_chat(raw_text):
+            if is_trial_local_current_info_chat(raw_text):
                 text = raw_text
                 lowered = raw_text.lower()
             _prune_topic_stack(session_state, session_state["turn_count"])
@@ -2364,7 +2364,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if not is_trial_recency_chat(raw_text) and (
+            if (
                 lowered in {"weather", "weather update", "current weather"}
                 or re.match(r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered)
             ):
@@ -4951,10 +4951,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
             explicit_news_reference = is_explicit_news_reference_action(raw_text)
-            trial_recency_chat = is_trial_recency_chat(mediated_text)
+            trial_local_current_info_chat = is_trial_local_current_info_chat(mediated_text)
             grounded_brief_followup = (
                 False
-                if explicit_news_reference or trial_recency_chat
+                if explicit_news_reference or trial_local_current_info_chat
                 else is_discussion_shaped_brief_followup(mediated_text, session_state)
             )
             natural_memory_edit = natural_memory_correction_command(
@@ -5735,7 +5735,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # advisory model, which otherwise fabricates commitments.
             _schedule_guard_answer = (
                 None
-                if trial_recency_chat
+                if trial_local_current_info_chat
                 else schedule_commitment_guard(mediated_text, session_state)
             )
             if _schedule_guard_answer:

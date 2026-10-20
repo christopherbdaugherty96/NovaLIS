@@ -61,7 +61,7 @@ from src.governor.governor_mediator import (
     Invocation,
     is_private_google_calendar_search,
     is_private_google_drive_search,
-    is_trial_recency_chat,
+    is_trial_local_current_info_chat,
 )
 from src.utils.web_target_planner import plan_web_open
 from src.speech_state import speech_state

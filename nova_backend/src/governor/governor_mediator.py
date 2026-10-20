@@ -145,21 +145,6 @@ TRIAL_EXPLICIT_WEB_SEARCH_RE = re.compile(
 TRIAL_NETWORK_UNAVAILABLE_RESPONSE = (
     "Web search and weather are not available in this trial version."
 )
-TRIAL_RECENCY_CHAT_RE = re.compile(
-    r"^\s*(?:hey\s+how\s+are\s+you\s+doing\s+today|"
-    r"what(?:'s|\s+is)\s+up\s+today|"
-    r"how\s+should\s+i\s+plan\s+my\s+day\s+today)\s*[?!.]*\s*$",
-    re.IGNORECASE,
-)
-
-
-def is_trial_recency_chat(text: str) -> bool:
-    return (
-        str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
-        and bool(TRIAL_RECENCY_CHAT_RE.fullmatch(str(text or "")))
-    )
-
-
 PRIVATE_GOOGLE_DRIVE_SOURCE_RE = re.compile(
     r"\b(?:"
     r"(?:my|our)\s+(?:google\s+)?drive"
@@ -982,6 +967,30 @@ def _looks_like_local_path(target: str) -> bool:
     )
 
 
+def is_trial_local_current_info_chat(text: str) -> bool:
+    """Return whether a broad current-info question belongs in trial local chat."""
+    t = str(text or "").strip()
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() != "trial":
+        return False
+    if CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
+        return False
+    if not (CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)):
+        return False
+    if (
+        WEATHER_RE.match(t)
+        or SEARCH_RE.match(t)
+        or LATEST_ON_RE.match(t)
+        or FIND_CURRENT_INFO_RE.match(t)
+        or TOPICAL_LATEST_NEWS_RE.match(t)
+        or CLAIM_CHECK_RE.match(t)
+        or VAGUE_CURRENT_HISTORY_RE.match(t)
+        or _looks_like_time_sensitive_finance_or_policy_query(t)
+        or _looks_like_evidence_sensitive_health_query(t)
+    ):
+        return False
+    return True
+
+
 def _looks_like_web_target(raw_target: str, normalized_target: str) -> bool:
     source = (raw_target or "").strip()
     target = (normalized_target or "").strip().lower()
@@ -1204,9 +1213,6 @@ class GovernorMediator:
         if MORNING_BRIEF_RE.match(t):
             return _invocation_if_enabled(63, {"template_id": "morning_brief", "triggered_by": "user_command"})
 
-        if is_trial_recency_chat(t):
-            return None
-
         m = LATEST_ON_RE.match(t)
         if m:
             return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
@@ -1236,9 +1242,17 @@ class GovernorMediator:
         if m:
             return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
+        if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial" and (
+            _looks_like_time_sensitive_finance_or_policy_query(t)
+            or _looks_like_evidence_sensitive_health_query(t)
+        ):
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
+
         if (
             CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)
         ) and not CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
+            if is_trial_local_current_info_chat(t):
+                return None
             return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
         if _looks_like_time_sensitive_finance_or_policy_query(t):
             return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
