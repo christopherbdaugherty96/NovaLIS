@@ -115,6 +115,7 @@ def test_trial_explicit_network_request_is_honestly_unavailable(monkeypatch, tex
     (
         "what's new in AI today?",
         "What's going on with AI today?",
+        "What's happening today?",
     ),
 )
 def test_trial_current_info_chat_gets_no_live_data_instruction(monkeypatch, text):
