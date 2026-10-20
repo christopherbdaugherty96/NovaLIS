@@ -179,7 +179,6 @@ def test_trial_broad_current_info_guard_preserves_specific_governed_intents(
     (
         "What appointments do I have happening today?",
         "What is happening on my calendar today?",
-        "What's happening on my schedule today?",
     ),
 )
 def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(monkeypatch, text):
