@@ -94,7 +94,7 @@ _SCHEDULE_Q_RE = re.compile(
     r"\bdo i have\b[^?]*\b(?:meetings?|appointments?|events?|plans?)\b"
     r"|\bwhat\s+(?:meetings?|appointments?)\b"
     r"|\bwhat(?:'s| is)\s+(?:on\s+)?(?:my|the)\s+(?:calendar|schedule|agenda|plate)\b"
-    r"|\bwhat(?:'s| is| do i have| have i got| am i doing)\b[^?]*"
+    r"|\bwhat(?: do i have| have i got| am i doing)\b[^?]*"
     r"\b(?:today|tomorrow|tonight|this\s+week|this\s+morning|this\s+afternoon|this\s+evening|weekend)\b"
     r"|\bam i (?:free|busy|available|booked)\b",
     re.I,

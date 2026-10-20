@@ -5733,11 +5733,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # about meetings / appointments / their calendar and no sourced calendar
             # context is loaded, refuse safely instead of falling through to the
             # advisory model, which otherwise fabricates commitments.
-            _schedule_guard_answer = (
-                None
-                if trial_local_current_info_chat
-                else schedule_commitment_guard(mediated_text, session_state)
-            )
+            _schedule_guard_answer = schedule_commitment_guard(mediated_text, session_state)
             if _schedule_guard_answer:
                 session_state["last_response"] = _schedule_guard_answer
                 await send_chat_message(ws, _schedule_guard_answer, tone_domain="daily")
