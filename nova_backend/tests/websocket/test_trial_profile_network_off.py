@@ -110,7 +110,14 @@ def test_trial_explicit_network_request_is_honestly_unavailable(monkeypatch, tex
     assert not any("receipt" in message.lower() for message in messages)
 
 
-def test_trial_current_info_chat_gets_no_live_data_instruction(monkeypatch):
+@pytest.mark.parametrize(
+    "text",
+    (
+        "what's new in AI today?",
+        "What's going on with AI today?",
+    ),
+)
+def test_trial_current_info_chat_gets_no_live_data_instruction(monkeypatch, text):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
     _disable_session_gate(monkeypatch)
     network_calls = _forbid_network(monkeypatch)
@@ -120,7 +127,7 @@ def test_trial_current_info_chat_gets_no_live_data_instruction(monkeypatch):
         model_messages.extend(kwargs.get("messages") or [])
         return "Local current-info chat reply."
 
-    ws = _ScriptedWebSocket(["what's new in AI today?"])
+    ws = _ScriptedWebSocket([text])
     with patch("src.skills.general_chat.generate_chat", side_effect=_local_chat):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
