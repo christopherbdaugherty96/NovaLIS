@@ -978,6 +978,7 @@ def is_trial_local_current_info_chat(text: str) -> bool:
         return False
     if (
         WEATHER_RE.match(t)
+        or (NEWS_RE.match(t) and re.search(r"\b(?:news|headlines?|stories)\b", t, re.IGNORECASE))
         or SEARCH_RE.match(t)
         or LATEST_ON_RE.match(t)
         or FIND_CURRENT_INFO_RE.match(t)
@@ -986,6 +987,7 @@ def is_trial_local_current_info_chat(text: str) -> bool:
         or VAGUE_CURRENT_HISTORY_RE.match(t)
         or SOURCE_RELIABILITY_RE.match(t)
         or INTEL_RESEARCH_RE.match(t)
+        or WHY_RESEARCH_RE.match(t)
         or _looks_like_time_sensitive_finance_or_policy_query(t)
         or _looks_like_evidence_sensitive_health_query(t)
     ):
@@ -1111,6 +1113,9 @@ class GovernorMediator:
                 weather_params["location"] = location
             return _invocation_if_enabled(55, weather_params)
 
+        if CALENDAR_RE.match(t):
+            return _invocation_if_enabled(57, {"scope": _calendar_scope_from_text(t)})
+
         if is_trial_local_current_info_chat(t):
             return None
 
@@ -1129,9 +1134,6 @@ class GovernorMediator:
                     49,
                     {"selection": "category", "category_key": category_key},
                 )
-
-        if CALENDAR_RE.match(t):
-            return _invocation_if_enabled(57, {"scope": _calendar_scope_from_text(t)})
 
         if SYSTEM_RE.match(t):
             return _invocation_if_enabled(32, {})
