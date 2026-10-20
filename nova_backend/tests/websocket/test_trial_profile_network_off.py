@@ -174,6 +174,24 @@ def test_trial_broad_current_info_guard_preserves_specific_governed_intents(
     assert result.capability_id == capability_id
 
 
+def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    _disable_session_gate(monkeypatch)
+    network_calls = _forbid_network(monkeypatch)
+    ws = _ScriptedWebSocket(["What appointments do I have happening today?"])
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        side_effect=AssertionError("schedule questions must not reach the model"),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert network_calls == []
+    messages = _chat_messages(ws)
+    assert any("don't have your calendar loaded" in message.lower() for message in messages)
+    assert any("won't guess" in message.lower() for message in messages)
+
+
 def test_trial_profile_disables_search_and_weather_only(monkeypatch):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
     trial = CapabilityRegistry()
