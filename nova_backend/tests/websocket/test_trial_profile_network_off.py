@@ -174,11 +174,19 @@ def test_trial_broad_current_info_guard_preserves_specific_governed_intents(
     assert result.capability_id == capability_id
 
 
-def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(monkeypatch):
+@pytest.mark.parametrize(
+    "text",
+    (
+        "What appointments do I have happening today?",
+        "What is happening on my calendar today?",
+        "What's happening on my schedule today?",
+    ),
+)
+def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(monkeypatch, text):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
     _disable_session_gate(monkeypatch)
     network_calls = _forbid_network(monkeypatch)
-    ws = _ScriptedWebSocket(["What appointments do I have happening today?"])
+    ws = _ScriptedWebSocket([text])
 
     with patch(
         "src.skills.general_chat.generate_chat",
