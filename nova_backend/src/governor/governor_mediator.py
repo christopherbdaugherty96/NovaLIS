@@ -1182,6 +1182,9 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(48, {"query": m.group("q").strip()})
 
+        if is_trial_local_current_info_chat(t):
+            return None
+
         m = NATURAL_RESEARCH_RE.match(t)
         if m:
             lower_t = t.lower()
