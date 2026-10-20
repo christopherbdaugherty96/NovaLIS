@@ -12,6 +12,10 @@ from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSo
 TRIAL_UNAVAILABLE_MESSAGE = (
     "Web search and weather are not available in this trial version."
 )
+TRIAL_NO_LIVE_DATA_INSTRUCTION = (
+    "You have no internet or live data in this version. If asked about current events, "
+    "prices, scores, news or weather, say you can't check them here."
+)
 
 
 def _disable_session_gate(monkeypatch) -> None:
@@ -43,6 +47,10 @@ def _forbid_network(monkeypatch) -> list[dict]:
         "hey how are you doing today?",
         "what's up today",
         "how should I plan my day today",
+        "how are you doing today?",
+        "how's your day going today?",
+        "how do I tell my boss I'm sick today",
+        "what should I cook for dinner today?",
     ),
 )
 def test_trial_recency_small_talk_stays_in_local_chat(monkeypatch, text):
@@ -79,6 +87,7 @@ def test_trial_recency_small_talk_stays_in_local_chat(monkeypatch, text):
         "Find current information about quantum computing",
         "Latest quantum computing news",
         "Did quantum computing stocks rise today?",
+        "What's the price of Bitcoin today?",
         "What happened today?",
         "What changed since yesterday?",
     ),
@@ -99,6 +108,42 @@ def test_trial_explicit_network_request_is_honestly_unavailable(monkeypatch, tex
     messages = _chat_messages(ws)
     assert any(TRIAL_UNAVAILABLE_MESSAGE in message for message in messages)
     assert not any("receipt" in message.lower() for message in messages)
+
+
+def test_trial_current_info_chat_gets_no_live_data_instruction(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    _disable_session_gate(monkeypatch)
+    network_calls = _forbid_network(monkeypatch)
+    model_messages: list[dict] = []
+
+    def _local_chat(_prompt: str, **kwargs):
+        model_messages.extend(kwargs.get("messages") or [])
+        return "Local current-info chat reply."
+
+    ws = _ScriptedWebSocket(["what's new in AI today?"])
+    with patch("src.skills.general_chat.generate_chat", side_effect=_local_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert network_calls == []
+    assert any(TRIAL_NO_LIVE_DATA_INSTRUCTION in row.get("content", "") for row in model_messages)
+    assert any("Local current-info chat reply." in message for message in _chat_messages(ws))
+
+
+def test_default_general_chat_omits_trial_no_live_data_instruction(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
+    _disable_session_gate(monkeypatch)
+    model_messages: list[dict] = []
+
+    def _local_chat(_prompt: str, **kwargs):
+        model_messages.extend(kwargs.get("messages") or [])
+        return "Default local chat reply."
+
+    ws = _ScriptedWebSocket(["Explain photosynthesis simply"])
+    with patch("src.skills.general_chat.generate_chat", side_effect=_local_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert model_messages
+    assert not any(TRIAL_NO_LIVE_DATA_INSTRUCTION in row.get("content", "") for row in model_messages)
 
 
 def test_trial_profile_disables_search_and_weather_only(monkeypatch):
