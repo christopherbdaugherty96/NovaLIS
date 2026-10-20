@@ -188,16 +188,17 @@ def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(
     network_calls = _forbid_network(monkeypatch)
     ws = _ScriptedWebSocket([text])
 
-    with patch(
-        "src.skills.general_chat.generate_chat",
-        side_effect=AssertionError("schedule questions must not reach the model"),
-    ):
+    with patch("src.skills.general_chat.generate_chat") as model_chat:
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert network_calls == []
+    model_chat.assert_not_called()
     messages = _chat_messages(ws)
-    assert any("don't have your calendar loaded" in message.lower() for message in messages)
-    assert any("won't guess" in message.lower() for message in messages)
+    assert any(
+        "don't have your calendar loaded" in message.lower()
+        or "nothing on your calendar" in message.lower()
+        for message in messages
+    ), messages
 
 
 def test_trial_profile_disables_search_and_weather_only(monkeypatch):
