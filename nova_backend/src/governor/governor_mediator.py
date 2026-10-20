@@ -984,6 +984,8 @@ def is_trial_local_current_info_chat(text: str) -> bool:
         or TOPICAL_LATEST_NEWS_RE.match(t)
         or CLAIM_CHECK_RE.match(t)
         or VAGUE_CURRENT_HISTORY_RE.match(t)
+        or SOURCE_RELIABILITY_RE.match(t)
+        or INTEL_RESEARCH_RE.match(t)
         or _looks_like_time_sensitive_finance_or_policy_query(t)
         or _looks_like_evidence_sensitive_health_query(t)
     ):
@@ -1109,6 +1111,9 @@ class GovernorMediator:
                 weather_params["location"] = location
             return _invocation_if_enabled(55, weather_params)
 
+        if is_trial_local_current_info_chat(t):
+            return None
+
         # TODAY_NEWS_RE must fire before NEWS_RE — "today's news" is specific to Cap 50
         if TODAY_NEWS_RE.match(t):
             return _invocation_if_enabled(50, {"read_sources": True})
@@ -1181,9 +1186,6 @@ class GovernorMediator:
         m = INTEL_RESEARCH_RE.match(t)
         if m:
             return _invocation_if_enabled(48, {"query": m.group("q").strip()})
-
-        if is_trial_local_current_info_chat(t):
-            return None
 
         m = NATURAL_RESEARCH_RE.match(t)
         if m:
