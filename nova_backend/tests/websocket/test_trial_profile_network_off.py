@@ -7,6 +7,7 @@ import pytest
 from src import brain_server
 from src.conversation.session_router import GateResult
 from src.governor.capability_registry import CapabilityRegistry
+from src.governor.governor_mediator import GovernorMediator, Invocation
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 TRIAL_UNAVAILABLE_MESSAGE = (
@@ -152,6 +153,25 @@ def test_default_general_chat_omits_trial_no_live_data_instruction(monkeypatch):
 
     assert model_messages
     assert not any(TRIAL_NO_LIVE_DATA_INSTRUCTION in row.get("content", "") for row in model_messages)
+
+
+@pytest.mark.parametrize(
+    ("text", "capability_id"),
+    (
+        ("What's on today?", 57),
+        ("What's the news today?", 56),
+        ("Why is service status down?", 48),
+    ),
+)
+def test_trial_broad_current_info_guard_preserves_specific_governed_intents(
+    monkeypatch, text, capability_id
+):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+
+    result = GovernorMediator.parse_governed_invocation(text)
+
+    assert isinstance(result, Invocation)
+    assert result.capability_id == capability_id
 
 
 def test_trial_profile_disables_search_and_weather_only(monkeypatch):
