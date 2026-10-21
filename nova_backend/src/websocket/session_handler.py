@@ -49,6 +49,8 @@ _UNTRUSTED_COMMAND_TEXT_RE = re.compile(
     r"call open_file|actionrequest|bypass governor|cap\s*63|openclaw_execute)\b",
     re.IGNORECASE,
 )
+def _is_trial_profile() -> bool:
+    return os.getenv("NOVA_RUNTIME_PROFILE", "default").strip().lower() == "trial"
 
 
 def _brief_message_confidence(message: str) -> str:
@@ -656,6 +658,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     send_chat_done = deps.send_chat_done
     set_current_ws_turn_id = getattr(deps, "set_current_ws_turn_id", None)
     GovernorMediator = deps.GovernorMediator
+    is_trial_local_current_info_chat = deps.is_trial_local_current_info_chat
+    trial_network_unavailable_response = deps.TRIAL_NETWORK_UNAVAILABLE_RESPONSE
     WS_INPUT_MAX_BYTES = deps.WS_INPUT_MAX_BYTES
     ws_send = deps.ws_send
     thought_store = deps.thought_store
@@ -1950,6 +1954,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             text = route_context.text
             lowered = route_context.lowered
             decision = route_context.decision
+            if is_trial_local_current_info_chat(raw_text):
+                text = raw_text
+                lowered = raw_text.lower()
             _prune_topic_stack(session_state, session_state["turn_count"])
 
             if SESSION_ACTIVITY_RECAP_RE.match(text):
@@ -2357,9 +2364,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {"weather", "weather update", "current weather"} or re.match(
-                r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered
+            if (
+                lowered in {"weather", "weather update", "current weather"}
+                or re.match(r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered)
             ):
+                if _is_trial_profile():
+                    await send_chat_message(ws, trial_network_unavailable_response)
+                    await send_chat_done(ws)
+                    continue
                 _, weather_result = await invoke_governed_text_command(
                     governor,
                     command_text,
@@ -4939,9 +4951,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
             explicit_news_reference = is_explicit_news_reference_action(raw_text)
+            trial_local_current_info_chat = is_trial_local_current_info_chat(mediated_text)
             grounded_brief_followup = (
                 False
-                if explicit_news_reference
+                if explicit_news_reference or trial_local_current_info_chat
                 else is_discussion_shaped_brief_followup(mediated_text, session_state)
             )
             natural_memory_edit = natural_memory_correction_command(
@@ -5720,7 +5733,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # about meetings / appointments / their calendar and no sourced calendar
             # context is loaded, refuse safely instead of falling through to the
             # advisory model, which otherwise fabricates commitments.
-            _schedule_guard_answer = schedule_commitment_guard(mediated_text, session_state)
+            _schedule_guard_answer = (
+                None
+                if trial_local_current_info_chat
+                else schedule_commitment_guard(mediated_text, session_state)
+            )
             if _schedule_guard_answer:
                 session_state["last_response"] = _schedule_guard_answer
                 await send_chat_message(ws, _schedule_guard_answer, tone_domain="daily")

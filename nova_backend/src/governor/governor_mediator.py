@@ -138,6 +138,13 @@ SEARCH_RE = re.compile(
     r"^\s*(?:search(?:\s+for)?|look\s+up|find\s+me|find\s+(?:me\s+)?(?:information|info|details|facts)\s+(?:about|on))\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
 )
+TRIAL_EXPLICIT_WEB_SEARCH_RE = re.compile(
+    r"^\s*(?:search(?:\s+the\s+web)?(?:\s+for)?|look\s+up|google)\b",
+    re.IGNORECASE,
+)
+TRIAL_NETWORK_UNAVAILABLE_RESPONSE = (
+    "Web search and weather are not available in this trial version."
+)
 PRIVATE_GOOGLE_DRIVE_SOURCE_RE = re.compile(
     r"\b(?:"
     r"(?:my|our)\s+(?:google\s+)?drive"
@@ -215,6 +222,13 @@ CURRENT_INFO_EXISTENCE_RE = re.compile(
 )
 CURRENT_INFO_LOCAL_SOURCE_RE = re.compile(
     r"\b(?:reminders?|(?:(?:my|our|this|that|these|those)\s+|(?:the\s+)?local\s+)(?:calendar|schedule|agenda|appointments?|files?|folders?|computer|device|system|notes?|memory|email|inbox|drive|documents?|projects?|tasks?|threads?|pages?|desks?|servers?))\b",
+    re.IGNORECASE,
+)
+TRIAL_EXPLICIT_SCHEDULE_RE = re.compile(
+    r"\b(?:calendar|schedule|agenda|meetings?|appointments?|events?|plans)\b"
+    r"|\b(?:booked|planned|scheduled)\s+for\s+(?:me|us)\b"
+    r"|^\s*what\s+(?:do\s+i\s+have|have\s+i\s+got|am\s+i\s+doing)\b"
+    r"|^\s*am\s+i\s+(?:free|busy|available|booked)\b",
     re.IGNORECASE,
 )
 FIND_CURRENT_INFO_RE = re.compile(
@@ -960,6 +974,36 @@ def _looks_like_local_path(target: str) -> bool:
     )
 
 
+def is_trial_local_current_info_chat(text: str) -> bool:
+    """Return whether a broad current-info question belongs in trial local chat."""
+    t = str(text or "").strip()
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() != "trial":
+        return False
+    if CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
+        return False
+    if TRIAL_EXPLICIT_SCHEDULE_RE.search(t):
+        return False
+    if not (CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)):
+        return False
+    if (
+        WEATHER_RE.match(t)
+        or (NEWS_RE.match(t) and re.search(r"\b(?:news|headlines?|stories)\b", t, re.IGNORECASE))
+        or SEARCH_RE.match(t)
+        or LATEST_ON_RE.match(t)
+        or FIND_CURRENT_INFO_RE.match(t)
+        or TOPICAL_LATEST_NEWS_RE.match(t)
+        or CLAIM_CHECK_RE.match(t)
+        or VAGUE_CURRENT_HISTORY_RE.match(t)
+        or SOURCE_RELIABILITY_RE.match(t)
+        or INTEL_RESEARCH_RE.match(t)
+        or WHY_RESEARCH_RE.match(t)
+        or _looks_like_time_sensitive_finance_or_policy_query(t)
+        or _looks_like_evidence_sensitive_health_query(t)
+    ):
+        return False
+    return True
+
+
 def _looks_like_web_target(raw_target: str, normalized_target: str) -> bool:
     source = (raw_target or "").strip()
     target = (normalized_target or "").strip().lower()
@@ -995,6 +1039,15 @@ class Invocation:
 class Clarification:
     capability_id: int
     message: str
+
+
+def _cap16_invocation_or_trial_unavailable(params: Dict[str, Any]) -> Invocation | Clarification | None:
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+        return Clarification(
+            capability_id=16,
+            message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+        )
+    return _invocation_if_enabled(16, params)
 
 
 class GovernorMediator:
@@ -1048,10 +1101,15 @@ class GovernorMediator:
                             "Please provide a short search query (2-500 characters) on a single line."
                         ),
                     )
-                return _invocation_if_enabled(16, {"query": t})
+                return _cap16_invocation_or_trial_unavailable({"query": t})
             return None
 
         if WEATHER_RE.match(t):
+            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial":
+                return Clarification(
+                    capability_id=55,
+                    message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+                )
             weather_location = EXPLICIT_WEATHER_LOCATION_RE.match(t)
             location = (
                 re.sub(r"\s+", " ", weather_location.group("location")).strip(" ,.")
@@ -1063,6 +1121,18 @@ class GovernorMediator:
             if location:
                 weather_params["location"] = location
             return _invocation_if_enabled(55, weather_params)
+
+        if CALENDAR_RE.match(t):
+            return _invocation_if_enabled(57, {"scope": _calendar_scope_from_text(t)})
+
+        if (
+            str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+            and TRIAL_EXPLICIT_SCHEDULE_RE.search(t)
+        ):
+            return None
+
+        if is_trial_local_current_info_chat(t):
+            return None
 
         # TODAY_NEWS_RE must fire before NEWS_RE — "today's news" is specific to Cap 50
         if TODAY_NEWS_RE.match(t):
@@ -1079,9 +1149,6 @@ class GovernorMediator:
                     49,
                     {"selection": "category", "category_key": category_key},
                 )
-
-        if CALENDAR_RE.match(t):
-            return _invocation_if_enabled(57, {"scope": _calendar_scope_from_text(t)})
 
         if SYSTEM_RE.match(t):
             return _invocation_if_enabled(32, {})
@@ -1170,13 +1237,15 @@ class GovernorMediator:
 
         m = LATEST_ON_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
         m = FIND_CURRENT_INFO_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
 
         if VAGUE_CURRENT_HISTORY_RE.match(t):
+            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+                return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
             return Clarification(
                 capability_id=16,
                 message=(
@@ -1187,20 +1256,30 @@ class GovernorMediator:
 
         m = TOPICAL_LATEST_NEWS_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": f"latest {m.group('q').strip()} news"})
+            return _cap16_invocation_or_trial_unavailable(
+                {"query": f"latest {m.group('q').strip()} news"}
+            )
 
         m = CLAIM_CHECK_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": m.group("q").strip()})
+
+        if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial" and (
+            _looks_like_time_sensitive_finance_or_policy_query(t)
+            or _looks_like_evidence_sensitive_health_query(t)
+        ):
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
 
         if (
             CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)
         ) and not CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
-            return _invocation_if_enabled(16, {"query": t.strip()})
+            if is_trial_local_current_info_chat(t):
+                return None
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
         if _looks_like_time_sensitive_finance_or_policy_query(t):
-            return _invocation_if_enabled(16, {"query": t.strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
         if _looks_like_evidence_sensitive_health_query(t):
-            return _invocation_if_enabled(16, {"query": t.strip()})
+            return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
 
         # Memory search must be checked before SEARCH_RE — "look up my notes on X" matches
         # both SEARCH_RE ("look up ...") and MEMORY_SEARCH_RE.  Memory intent is specific.
@@ -1228,7 +1307,16 @@ class GovernorMediator:
                 memory_query = re.sub(r"^memory\s+", "", memory_query, flags=re.IGNORECASE).strip()
                 if memory_query:
                     return _invocation_if_enabled(61, {"action": "search", "query": memory_query})
-            return _invocation_if_enabled(16, {"query": search_query})
+            return _cap16_invocation_or_trial_unavailable({"query": search_query})
+
+        if (
+            str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial"
+            and TRIAL_EXPLICIT_WEB_SEARCH_RE.match(t)
+        ):
+            return Clarification(
+                capability_id=16,
+                message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+            )
 
         if DOC_LIST_RE.match(t):
             return _invocation_if_enabled(54, {"action": "list"})

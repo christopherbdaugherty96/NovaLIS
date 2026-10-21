@@ -113,6 +113,8 @@ class TestSlice2CoverageAndGuard:
             "what's on my calendar today?",
             "what's my schedule?",
             "am I free tomorrow?",
+            "What is scheduled for me today?",
+            "What's planned for me tomorrow?",
         ):
             assert is_schedule_commitment_question(prompt) is True, prompt
 
