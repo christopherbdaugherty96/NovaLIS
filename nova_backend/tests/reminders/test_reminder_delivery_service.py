@@ -10,6 +10,7 @@ from src.tasks.notification_delivery import (
     NotificationResult,
     ReminderDeliveryService,
 )
+from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
 def test_dashboard_refresh_does_not_initiate_reminder_delivery() -> None:
@@ -29,7 +30,6 @@ def test_uncertain_delivery_event_is_registered() -> None:
     ).read_text(encoding="utf-8")
 
     assert '"NOTIFICATION_DELIVERY_UNCERTAIN"' in event_source
-from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
 class _Notifier:
@@ -126,6 +126,23 @@ def test_restart_delivers_overdue_once_with_original_due_time(tmp_path):
     assert request.overdue is True
     assert request.original_due_at == datetime.fromisoformat(item["next_run_at"])
     assert "Missed while Nova wasn't running" in request.body
+
+
+def test_restart_marks_interrupted_claim_uncertain_without_retrying(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    path = tmp_path / "schedules.json"
+    store = NotificationScheduleStore(path)
+    item = _make_due(store, now)
+    assert store.claim_due_occurrence(item["id"], now=now)["claimed"] is True
+    notifier = _Notifier()
+
+    restarted = _service(NotificationScheduleStore(path), notifier)
+    restarted.run_tick(now=now + timedelta(seconds=10), startup=True)
+
+    saved = store.get_schedule(item["id"])
+    assert notifier.requests == []
+    assert saved["last_delivery_outcome"] == "delivery_uncertain"
+    assert saved["active"] is False
 
 
 def test_edit_or_cancel_before_due_never_delivers_old_occurrence(tmp_path):
