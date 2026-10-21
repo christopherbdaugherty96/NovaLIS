@@ -196,11 +196,7 @@ def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(
     assert network_calls == []
     model_chat.assert_not_called()
     messages = _chat_messages(ws)
-    assert any(
-        "don't have your calendar loaded" in message.lower()
-        or "nothing on your calendar" in message.lower()
-        for message in messages
-    ), messages
+    assert not any(TRIAL_UNAVAILABLE_MESSAGE in message for message in messages), messages
 
 
 def test_trial_profile_disables_search_and_weather_only(monkeypatch):
