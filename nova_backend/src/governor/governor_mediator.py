@@ -224,6 +224,13 @@ CURRENT_INFO_LOCAL_SOURCE_RE = re.compile(
     r"\b(?:reminders?|(?:(?:my|our|this|that|these|those)\s+|(?:the\s+)?local\s+)(?:calendar|schedule|agenda|appointments?|files?|folders?|computer|device|system|notes?|memory|email|inbox|drive|documents?|projects?|tasks?|threads?|pages?|desks?|servers?))\b",
     re.IGNORECASE,
 )
+TRIAL_EXPLICIT_SCHEDULE_RE = re.compile(
+    r"\b(?:calendar|schedule|agenda|meetings?|appointments?|events?|plans)\b"
+    r"|\b(?:booked|planned|scheduled)\s+for\s+(?:me|us)\b"
+    r"|^\s*what\s+(?:do\s+i\s+have|have\s+i\s+got|am\s+i\s+doing)\b"
+    r"|^\s*am\s+i\s+(?:free|busy|available|booked)\b",
+    re.IGNORECASE,
+)
 FIND_CURRENT_INFO_RE = re.compile(
     r"^\s*find\s+(?:current|recent|latest)\s+information\s+(?:about|on|for)\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
@@ -974,6 +981,8 @@ def is_trial_local_current_info_chat(text: str) -> bool:
         return False
     if CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
         return False
+    if TRIAL_EXPLICIT_SCHEDULE_RE.search(t):
+        return False
     if not (CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)):
         return False
     if (
@@ -1115,6 +1124,12 @@ class GovernorMediator:
 
         if CALENDAR_RE.match(t):
             return _invocation_if_enabled(57, {"scope": _calendar_scope_from_text(t)})
+
+        if (
+            str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+            and TRIAL_EXPLICIT_SCHEDULE_RE.search(t)
+        ):
+            return None
 
         if is_trial_local_current_info_chat(t):
             return None
