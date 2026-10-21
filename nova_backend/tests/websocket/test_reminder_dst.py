@@ -124,6 +124,45 @@ def test_schedule_parser_uses_first_fall_back_occurrence(monkeypatch):
 
 
 @pytest.mark.parametrize(
+    ("time_text", "expected"),
+    (
+        ("in 10 minutes", datetime(2026, 10, 21, 12, 10, tzinfo=EASTERN)),
+        ("in two minutes", datetime(2026, 10, 21, 12, 2, tzinfo=EASTERN)),
+        ("in half an hour", datetime(2026, 10, 21, 12, 30, tzinfo=EASTERN)),
+        ("in an hour", datetime(2026, 10, 21, 13, 0, tzinfo=EASTERN)),
+        ("in 25 hours", datetime(2026, 10, 22, 13, 0, tzinfo=EASTERN)),
+    ),
+)
+def test_schedule_parser_supports_relative_times(monkeypatch, time_text, expected):
+    monkeypatch.setattr(
+        brain_server,
+        "_local_now",
+        lambda: datetime(2026, 10, 21, 12, 0, tzinfo=EASTERN),
+    )
+
+    actual = brain_server._parse_schedule_datetime(
+        time_text,
+        recurrence="once",
+        local_zone=EASTERN,
+    )
+
+    assert actual == expected
+
+
+def test_schedule_parser_accepts_zero_minute_boundary(monkeypatch):
+    now = datetime(2026, 10, 21, 12, 0, 37, tzinfo=EASTERN)
+    monkeypatch.setattr(brain_server, "_local_now", lambda: now)
+
+    actual = brain_server._parse_schedule_datetime(
+        "in 0 minutes",
+        recurrence="once",
+        local_zone=EASTERN,
+    )
+
+    assert actual == now
+
+
+@pytest.mark.parametrize(
     ("recurrence", "first_run", "dismissed_at", "expected"),
     (
         (
