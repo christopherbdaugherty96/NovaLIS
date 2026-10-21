@@ -174,10 +174,10 @@ def test_sleep_holds_due_reminder_until_user_returns_then_marks_it_overdue(tmp_p
     )
 
     held = service.run_tick(now=now)
+    assert store.get_schedule(item["id"])["active"] is True
     delivered = service.run_tick(now=now + timedelta(seconds=10))
 
     assert held.delivered == 0
-    assert store.get_schedule(item["id"])["active"] is True
     assert delivered.delivered == 1
     assert len(notifier.requests) == 1
     assert notifier.requests[0].overdue is True

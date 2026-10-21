@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Protocol
 
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+from src.tasks.windows_resume import WindowsResumeProbe
 
 log = logging.getLogger("nova.reminder_delivery")
 
@@ -73,15 +74,18 @@ class ReminderDeliveryService:
         governor: Any,
         ledger_logger: Callable[[str, dict[str, Any]], None],
         tick_seconds: int = 30,
+        resume_probe: Any | None = None,
     ) -> None:
         self._store = store
         self._notifier = notifier
         self._governor = governor
         self._ledger_logger = ledger_logger
         self._tick_seconds = max(1, min(int(tick_seconds), 30))
+        self._resume_probe = resume_probe or WindowsResumeProbe()
         self._task: asyncio.Task | None = None
         self._stopping = asyncio.Event()
         self._last_wall_clock: datetime | None = None
+        self._awaiting_resume_interaction = False
 
     @property
     def running(self) -> bool:
@@ -129,6 +133,21 @@ class ReminderDeliveryService:
         uncertain = 0
         suppressed = 0
 
+        try:
+            resume_state = dict(self._resume_probe.observe(current) or {})
+        except Exception:
+            log.exception("Windows resume observation failed")
+            resume_state = {"resume_detected": False, "user_present": True}
+        if bool(resume_state.get("resume_detected")):
+            self._awaiting_resume_interaction = True
+        resumed_for_user = self._awaiting_resume_interaction and bool(
+            resume_state.get("user_present")
+        )
+        if self._awaiting_resume_interaction and not resumed_for_user:
+            return DeliveryTickResult(delivered=0, uncertain=uncertain, suppressed=0)
+        if resumed_for_user:
+            self._awaiting_resume_interaction = False
+
         if startup:
             for recovered in self._store.recover_interrupted_claims(now=current):
                 uncertain += 1
@@ -174,7 +193,7 @@ class ReminderDeliveryService:
                 continue
             occurrence_id = str(claim["occurrence_id"])
             due_at = datetime.fromisoformat(str(claim["next_run_at"])).astimezone(timezone.utc)
-            overdue = startup or wake or current - due_at > timedelta(minutes=2)
+            overdue = startup or wake or resumed_for_user or current - due_at > timedelta(minutes=2)
             original_body = str(claim.get("body") or "Reminder")
             if overdue:
                 local_due = due_at.astimezone().strftime("%I:%M %p").lstrip("0")
