@@ -19,7 +19,6 @@ import sys
 import uuid
 import asyncio
 import time
-import os
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
 from datetime import datetime, time as dt_time, timedelta, tzinfo
