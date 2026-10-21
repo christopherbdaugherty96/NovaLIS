@@ -34,6 +34,19 @@ async def _sync_openclaw_scheduler_state(deps, settings_snapshot: dict[str, Any]
 
 def _runtime_settings_payload(deps, settings_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     snapshot = dict(settings_snapshot or deps.runtime_settings_store.snapshot())
+    startup = deps.windows_startup_registration.status()
+    snapshot["startup"] = startup
+    for card in list(snapshot.get("permission_cards") or []):
+        if str(card.get("id") or "") != "start_at_sign_in_enabled":
+            continue
+        card["status_label"] = (
+            "Enabled · startup entry present"
+            if startup.get("entry_exists") and startup.get("enabled")
+            else "Off · no startup entry"
+            if not startup.get("entry_exists")
+            else "Needs repair · startup entry differs"
+        )
+        card["summary"] = card["status_label"]
     _sync_usage_budget(snapshot)
     return {
         "settings": snapshot,
@@ -81,6 +94,8 @@ def build_settings_router(deps) -> APIRouter:
         if "enabled" not in payload:
             raise HTTPException(status_code=400, detail="enabled is required.")
         try:
+            if permission_name == "start_at_sign_in_enabled":
+                deps.windows_startup_registration.set_enabled(bool(payload.get("enabled")))
             snapshot = deps.runtime_settings_store.set_permission(
                 permission_name,
                 bool(payload.get("enabled")),
@@ -181,6 +196,7 @@ def build_settings_router(deps) -> APIRouter:
 
     @router.post("/api/settings/runtime/reset")
     async def reset_runtime_settings():
+        deps.windows_startup_registration.cleanup()
         snapshot = deps.runtime_settings_store.reset_recommended_defaults(source="settings_page")
         _sync_usage_budget(snapshot)
         await _sync_openclaw_scheduler_state(deps, snapshot)

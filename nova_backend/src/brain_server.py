@@ -19,6 +19,7 @@ import sys
 import uuid
 import asyncio
 import time
+import os
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
 from datetime import datetime, time as dt_time, timedelta, tzinfo
@@ -107,6 +108,8 @@ from src.working_context.assistive_noticing import (
     render_assistive_notices_message,
 )
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+from src.tasks.notification_delivery import ReminderDeliveryService, WindowsToastNotifier
+from src.tasks.windows_startup import WindowsStartupRegistration
 from src.tasks.local_time import as_local, resolve_local_wall_time
 from src.websocket.execution_receipts import ExecutionReceipt, neutralize_model_receipt_text
 from src.openclaw.agent_runner import openclaw_agent_runner
@@ -200,9 +203,11 @@ async def _lifespan(_app: FastAPI):
     ) and runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
     if scheduler_allowed:
         await openclaw_agent_scheduler.start()
+    await reminder_delivery_service.start()
     try:
         yield
     finally:
+        await reminder_delivery_service.stop()
         await openclaw_agent_scheduler.stop()
 
 
@@ -261,6 +266,21 @@ interface_personality_agent = PersonalityInterfaceAgent()
 conversation_personality_agent = ConversationPersonalityAgent(interface_agent=interface_personality_agent)
 voice_experience_agent = VoiceExperienceAgent()
 RUNTIME_GOVERNOR = Governor()
+_project_root = Path(__file__).resolve().parents[2]
+_pythonw = Path(sys.executable).with_name("pythonw.exe")
+windows_startup_registration = WindowsStartupRegistration(
+    _pythonw if _pythonw.exists() else Path(sys.executable),
+    arguments=(str(_project_root / "scripts" / "start_daemon.py"), "--no-browser"),
+)
+reminder_delivery_service = ReminderDeliveryService(
+    store=NotificationScheduleStore(),
+    notifier=WindowsToastNotifier("Nova"),
+    governor=RUNTIME_GOVERNOR,
+    ledger_logger=lambda event_type, metadata: _log_ledger_event(
+        RUNTIME_GOVERNOR, event_type, metadata
+    ),
+    tick_seconds=30,
+)
 
 # -------------------------------------------------
 # Security Constants
@@ -2359,6 +2379,40 @@ def _parse_schedule_datetime(
     local_zone: tzinfo | None = None,
 ) -> datetime:
     value = str(raw or "").strip().lower()
+    relative_match = re.fullmatch(
+        r"in\s+(?:(?P<half>half\s+an?)|(?P<article>an?)|(?P<count>\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve))\s+(?P<unit>minutes?|hours?)",
+        value,
+        re.IGNORECASE,
+    )
+    if relative_match:
+        zone = local_zone if local_zone is not None else _schedule_local_zone()
+        now = _local_now()
+        if zone is not None:
+            now = now.astimezone(zone)
+        if relative_match.group("half"):
+            return now + timedelta(minutes=30)
+        if relative_match.group("article"):
+            count = 1
+        else:
+            raw_count = str(relative_match.group("count") or "0").lower()
+            word_counts = {
+                "zero": 0,
+                "one": 1,
+                "two": 2,
+                "three": 3,
+                "four": 4,
+                "five": 5,
+                "six": 6,
+                "seven": 7,
+                "eight": 8,
+                "nine": 9,
+                "ten": 10,
+                "eleven": 11,
+                "twelve": 12,
+            }
+            count = int(raw_count) if raw_count.isdigit() else word_counts[raw_count]
+        unit = str(relative_match.group("unit") or "minutes").lower()
+        return now + (timedelta(hours=count) if unit.startswith("hour") else timedelta(minutes=count))
     weekday_match = re.match(
         r"^(?:on\s+)?(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
         r"\s+at\s+(?P<time>.+)$",

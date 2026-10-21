@@ -1,0 +1,234 @@
+from __future__ import annotations
+
+import asyncio
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Any, Callable, Protocol
+
+from src.tasks.notification_schedule_store import NotificationScheduleStore
+
+log = logging.getLogger("nova.reminder_delivery")
+
+
+@dataclass(frozen=True)
+class NotificationRequest:
+    schedule_id: str
+    occurrence_id: str
+    title: str
+    body: str
+    original_due_at: datetime
+    overdue: bool
+
+
+@dataclass(frozen=True)
+class NotificationResult:
+    accepted: bool
+    adapter: str
+    error_code: str = ""
+    visible_observed: bool | None = None
+
+
+@dataclass(frozen=True)
+class DeliveryTickResult:
+    delivered: int = 0
+    uncertain: int = 0
+    suppressed: int = 0
+
+
+class Notifier(Protocol):
+    def notify(self, request: NotificationRequest) -> NotificationResult: ...
+
+
+class WindowsToastNotifier:
+    """Display already-authorized text through the pinned Windows toast package."""
+
+    def __init__(self, app_name: str = "Nova") -> None:
+        self._app_name = str(app_name or "Nova").strip() or "Nova"
+
+    def notify(self, request: NotificationRequest) -> NotificationResult:
+        try:
+            from windows_toasts import Toast, WindowsToaster
+
+            failures: list[str] = []
+            toast = Toast([request.title, request.body])
+            toast.on_failed = lambda event: failures.append(str(event.error_code))
+            WindowsToaster(self._app_name).show_toast(toast)
+            if failures:
+                return NotificationResult(False, "windows_toasts", failures[0])
+            return NotificationResult(True, "windows_toasts")
+        except Exception as exc:
+            log.exception("Windows toast delivery failed")
+            return NotificationResult(False, "windows_toasts", type(exc).__name__)
+
+
+class ReminderDeliveryService:
+    """Wall-clock reminder worker owned by the backend daemon, not the dashboard."""
+
+    def __init__(
+        self,
+        *,
+        store: NotificationScheduleStore,
+        notifier: Notifier,
+        governor: Any,
+        ledger_logger: Callable[[str, dict[str, Any]], None],
+        tick_seconds: int = 30,
+    ) -> None:
+        self._store = store
+        self._notifier = notifier
+        self._governor = governor
+        self._ledger_logger = ledger_logger
+        self._tick_seconds = max(1, min(int(tick_seconds), 30))
+        self._task: asyncio.Task | None = None
+        self._stopping = asyncio.Event()
+        self._last_wall_clock: datetime | None = None
+
+    @property
+    def running(self) -> bool:
+        return bool(self._task and not self._task.done())
+
+    async def start(self) -> None:
+        if self.running:
+            return
+        self._stopping = asyncio.Event()
+        await asyncio.to_thread(self.run_tick, startup=True)
+        self._task = asyncio.create_task(self._run_loop(), name="nova-reminder-delivery")
+
+    async def stop(self) -> None:
+        self._stopping.set()
+        task = self._task
+        self._task = None
+        if task is None:
+            return
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+
+    async def _run_loop(self) -> None:
+        while not self._stopping.is_set():
+            await asyncio.sleep(self._tick_seconds)
+            now = datetime.now(timezone.utc)
+            wake_jump = bool(
+                self._last_wall_clock
+                and now - self._last_wall_clock > timedelta(seconds=self._tick_seconds * 2)
+            )
+            await asyncio.to_thread(self.run_tick, now=now, wake=wake_jump)
+
+    def run_tick(
+        self,
+        *,
+        now: datetime | None = None,
+        startup: bool = False,
+        wake: bool = False,
+    ) -> DeliveryTickResult:
+        current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+        self._last_wall_clock = current
+        delivered = 0
+        uncertain = 0
+        suppressed = 0
+
+        if startup:
+            for recovered in self._store.recover_interrupted_claims(now=current):
+                uncertain += 1
+                self._ledger_logger(
+                    "NOTIFICATION_DELIVERY_UNCERTAIN",
+                    {
+                        "schedule_id": str(recovered.get("id") or ""),
+                        "occurrence_id": str(recovered.get("delivery_occurrence_id") or ""),
+                        "adapter": "startup_recovery",
+                        "error_code": "INTERRUPTED_AFTER_CLAIM",
+                    },
+                )
+
+        for item in self._store.summarize(now=current).get("due_items", []):
+            schedule_id = str(item.get("id") or "").strip()
+            if not schedule_id:
+                continue
+            try:
+                policy = self._store.evaluate_delivery_policy(schedule_id, now=current)
+            except KeyError:
+                continue
+            if not bool(policy.get("allowed")):
+                suppressed += 1
+                continue
+
+            allowed, governor_reason = self._governor.allow_notification_delivery(
+                {
+                    "schedule_id": schedule_id,
+                    "kind": str(item.get("kind") or ""),
+                    "title": str(item.get("title") or ""),
+                }
+            )
+            if not allowed:
+                suppressed += 1
+                self._ledger_logger(
+                    "NOTIFICATION_DELIVERY_SUPPRESSED",
+                    {"schedule_id": schedule_id, "reason": "governor_policy", "detail": governor_reason},
+                )
+                continue
+
+            claim = self._store.claim_due_occurrence(schedule_id, now=current)
+            if not claim.get("claimed"):
+                continue
+            occurrence_id = str(claim["occurrence_id"])
+            due_at = datetime.fromisoformat(str(claim["next_run_at"])).astimezone(timezone.utc)
+            overdue = startup or wake or current - due_at > timedelta(minutes=2)
+            original_body = str(claim.get("body") or "Reminder")
+            if overdue:
+                local_due = due_at.astimezone().strftime("%I:%M %p").lstrip("0")
+                body = f"Missed while Nova wasn't running: {original_body} (due {local_due})"
+            else:
+                body = original_body
+            request = NotificationRequest(
+                schedule_id=schedule_id,
+                occurrence_id=occurrence_id,
+                title=str(claim.get("title") or "Nova reminder"),
+                body=body,
+                original_due_at=due_at,
+                overdue=overdue,
+            )
+            self._ledger_logger(
+                "NOTIFICATION_DELIVERY_ATTEMPTED",
+                {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},
+            )
+            try:
+                result = self._notifier.notify(request)
+            except Exception as exc:
+                result = NotificationResult(False, type(self._notifier).__name__, type(exc).__name__)
+
+            if result.accepted:
+                self._store.finish_claimed_occurrence(
+                    schedule_id,
+                    occurrence_id=occurrence_id,
+                    outcome="delivered",
+                    note=f"Accepted by {result.adapter}; visibility not inferred.",
+                    now=current,
+                )
+                delivered += 1
+                self._ledger_logger(
+                    "NOTIFICATION_DELIVERY_COMPLETED",
+                    {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "adapter": result.adapter},
+                )
+            else:
+                self._store.finish_claimed_occurrence(
+                    schedule_id,
+                    occurrence_id=occurrence_id,
+                    outcome="delivery_uncertain",
+                    note=f"{result.adapter}: {result.error_code or 'not accepted'}",
+                    now=current,
+                )
+                uncertain += 1
+                self._ledger_logger(
+                    "NOTIFICATION_DELIVERY_UNCERTAIN",
+                    {
+                        "schedule_id": schedule_id,
+                        "occurrence_id": occurrence_id,
+                        "adapter": result.adapter,
+                        "error_code": result.error_code,
+                    },
+                )
+
+        return DeliveryTickResult(delivered=delivered, uncertain=uncertain, suppressed=suppressed)
+

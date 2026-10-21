@@ -45,7 +45,7 @@ class ScheduleReadResult:
 class NotificationScheduleStore:
     """Persistent explicit schedule store for reminders and brief cues."""
 
-    SCHEMA_VERSION = "1.1"
+    SCHEMA_VERSION = "1.2"
     ALLOWED_KINDS = {"reminder", "daily_brief"}
     ALLOWED_RECURRENCES = {"once", "daily", "weekly"}
     DEFAULT_POLICY = {
@@ -115,6 +115,9 @@ class NotificationScheduleStore:
             "last_delivery_outcome": "",
             "last_delivery_note": "",
             "last_delivered_at": "",
+            "delivery_occurrence_id": "",
+            "delivery_claimed_at": "",
+            "delivery_state": "pending",
         }
         with self._lock:
             state = self._read_state()
@@ -384,6 +387,98 @@ class NotificationScheduleStore:
             self._write_state(state)
             return dict(item)
 
+    @authoritative_mutation
+    def claim_due_occurrence(
+        self,
+        schedule_id: str,
+        *,
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Atomically claim the current due instant before any display attempt."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            due_at = _from_iso(item.get("next_run_at"))
+            occurrence_id = f"{schedule_id}@{str(item.get('next_run_at') or '')}"
+            existing_occurrence = str(item.get("delivery_occurrence_id") or "")
+            existing_state = str(item.get("delivery_state") or "pending")
+            if (
+                not bool(item.get("active"))
+                or due_at is None
+                or due_at > current
+                or (existing_occurrence == occurrence_id and existing_state != "pending")
+            ):
+                return {"claimed": False, "occurrence_id": occurrence_id, **dict(item)}
+            item["delivery_occurrence_id"] = occurrence_id
+            item["delivery_claimed_at"] = _as_iso(current)
+            item["delivery_state"] = "attempted"
+            item["last_delivery_attempt_at"] = _as_iso(current)
+            item["last_delivery_outcome"] = "delivery_attempted"
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return {"claimed": True, "occurrence_id": occurrence_id, **dict(item)}
+
+    @authoritative_mutation
+    def finish_claimed_occurrence(
+        self,
+        schedule_id: str,
+        *,
+        occurrence_id: str,
+        outcome: str,
+        note: str = "",
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        normalized_outcome = str(outcome or "").strip()
+        if normalized_outcome not in {"delivered", "delivery_uncertain"}:
+            raise ValueError("Unsupported terminal delivery outcome.")
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            if str(item.get("delivery_occurrence_id") or "") != str(occurrence_id or ""):
+                raise ValueError("Delivery occurrence no longer matches the claimed reminder.")
+            if str(item.get("delivery_state") or "") != "attempted":
+                return dict(item)
+            item["delivery_state"] = normalized_outcome
+            item["last_delivery_outcome"] = normalized_outcome
+            item["last_delivery_note"] = str(note or "").strip()[:240]
+            if normalized_outcome == "delivered":
+                item["last_surface_at"] = _as_iso(current)
+                item["last_delivered_at"] = _as_iso(current)
+            self._advance_after_terminal_delivery(item, current=current)
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
+    def recover_interrupted_claims(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
+        """Close claims left ambiguous by a prior backend interruption."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        recovered: list[dict[str, Any]] = []
+        with self._lock:
+            state = self._read_state()
+            for item in list(state.get("schedules") or []):
+                if str(item.get("delivery_state") or "") != "attempted":
+                    continue
+                item["delivery_state"] = "delivery_uncertain"
+                item["last_delivery_outcome"] = "delivery_uncertain"
+                item["last_delivery_note"] = (
+                    "The backend stopped after claiming this occurrence; delivery was not retried."
+                )
+                self._advance_after_terminal_delivery(item, current=current)
+                item["updated_at"] = _as_iso(current)
+                recovered.append(dict(item))
+            if recovered:
+                self._write_state(state)
+        return recovered
+
     def evaluate_delivery_policy(
         self,
         schedule_id: str,
@@ -569,9 +664,34 @@ class NotificationScheduleStore:
             "last_delivery_outcome",
             "last_delivery_note",
             "last_delivered_at",
+            "delivery_occurrence_id",
+            "delivery_claimed_at",
         ):
             normalized[field_name] = str(normalized.get(field_name) or "").strip()
+        normalized["delivery_state"] = str(normalized.get("delivery_state") or "pending").strip()
         return normalized
+
+    def _advance_after_terminal_delivery(self, item: dict[str, Any], *, current: datetime) -> None:
+        recurrence = self._normalize_recurrence(item.get("recurrence"))
+        if recurrence == "once":
+            item["active"] = False
+            return
+        next_run = _from_iso(item.get("next_run_at")) or current
+        local_next_run = as_local(next_run, self._local_zone)
+        interval_days = 1 if recurrence == "daily" else 7
+        local_date = local_next_run.date()
+        while next_run <= current:
+            local_date += timedelta(days=interval_days)
+            try:
+                next_run = resolve_local_wall_time(
+                    local_date,
+                    time(local_next_run.hour, local_next_run.minute),
+                    local_zone=self._local_zone,
+                )
+            except ValueError:
+                continue
+        item["next_run_at"] = _as_iso(next_run)
+
 
     def _normalize_policy(self, payload: Any) -> dict[str, Any]:
         raw = dict(payload or {})

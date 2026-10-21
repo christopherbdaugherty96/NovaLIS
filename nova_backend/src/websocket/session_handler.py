@@ -1213,9 +1213,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             f"Reminder saved: {item['id']}\n"
             f"Text: {reminder_body}\n"
             f"Requested for: {_format_local_schedule_time(scheduled_for)}\n\n"
-            "Honesty note: Nova does not have background reminder delivery. "
-            "This reminder is saved but will not fire automatically. You can "
-            "view saved reminders with \"show schedules\".\n\n"
+            "Delivery note: Nova can notify you while its local backend is running, including "
+            "when the dashboard is minimized or closed. If Nova was quit, this reminder will "
+            "be shown as missed the next time Nova starts. Delivery while signed out is not "
+            "supported. Turn on \"Start Nova when I sign in\" in Settings for restart recovery.\n\n"
             f"{str(snapshot.get('summary') or '').strip() if snapshot is not None else 'Schedule overview is temporarily unavailable.'}"
         )
         session_state["last_response"] = success_message
@@ -3929,8 +3930,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             if command_lowered in SHOW_SCHEDULES_COMMANDS:
                 snapshot = notification_schedules.summarize()
-                if silent_widget_refresh:
-                    snapshot = _process_due_notification_delivery(governor, notification_schedules, snapshot)
                 _log_ledger_event(
                     governor,
                     "NOTIFICATION_SCHEDULE_VIEWED",
