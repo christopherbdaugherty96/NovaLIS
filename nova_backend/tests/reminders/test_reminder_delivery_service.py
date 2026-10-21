@@ -51,6 +51,14 @@ class _Governor:
         return True, "allowed"
 
 
+class _ResumeProbe:
+    def __init__(self, observations):
+        self._observations = iter(observations)
+
+    def observe(self, _now):
+        return next(self._observations)
+
+
 def _make_due(store: NotificationScheduleStore, now: datetime, *, minutes_late: int = 1):
     return store.create_schedule(
         kind="reminder",
@@ -143,6 +151,37 @@ def test_restart_marks_interrupted_claim_uncertain_without_retrying(tmp_path):
     assert notifier.requests == []
     assert saved["last_delivery_outcome"] == "delivery_uncertain"
     assert saved["active"] is False
+
+
+def test_sleep_holds_due_reminder_until_user_returns_then_marks_it_overdue(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _make_due(store, now)
+    notifier = _Notifier()
+    probe = _ResumeProbe(
+        [
+            {"resume_detected": True, "user_present": False},
+            {"resume_detected": False, "user_present": True},
+        ]
+    )
+    service = ReminderDeliveryService(
+        store=store,
+        notifier=notifier,
+        governor=_Governor(),
+        ledger_logger=lambda *_: None,
+        tick_seconds=30,
+        resume_probe=probe,
+    )
+
+    held = service.run_tick(now=now)
+    delivered = service.run_tick(now=now + timedelta(seconds=10))
+
+    assert held.delivered == 0
+    assert store.get_schedule(item["id"])["active"] is True
+    assert delivered.delivered == 1
+    assert len(notifier.requests) == 1
+    assert notifier.requests[0].overdue is True
+    assert notifier.requests[0].body.startswith("Missed while Nova wasn't running")
 
 
 def test_edit_or_cancel_before_due_never_delivers_old_occurrence(tmp_path):
