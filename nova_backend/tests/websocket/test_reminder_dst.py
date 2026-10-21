@@ -162,6 +162,25 @@ def test_schedule_parser_accepts_zero_minute_boundary(monkeypatch):
     assert actual == now
 
 
+def test_natural_relative_reminder_is_saved_with_absolute_receipt(monkeypatch):
+    now = datetime(2026, 10, 21, 12, 0, tzinfo=EASTERN)
+    store = _RecordingScheduleStore()
+    monkeypatch.setattr(brain_server, "_local_now", lambda: now)
+    monkeypatch.setattr(brain_server, "_schedule_local_zone", lambda: EASTERN, raising=False)
+
+    ws = _run_session(
+        monkeypatch,
+        ["remind me in 10 minutes to check the oven"],
+        store,
+    )
+
+    assert len(store.created) == 1
+    assert store.created[0]["next_run_at"] == now + timedelta(minutes=10)
+    confirmation = next(message for message in _chat_messages(ws) if "Reminder saved:" in message)
+    assert "Requested for: Oct 21, 12:10 PM" in confirmation
+
+
+
 @pytest.mark.parametrize(
     ("recurrence", "first_run", "dismissed_at", "expected"),
     (

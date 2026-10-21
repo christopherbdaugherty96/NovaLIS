@@ -39,6 +39,39 @@ class _FakeScheduler:
         self.stop_calls += 1
 
 
+class _FakeStartupRegistration:
+    def __init__(self) -> None:
+        self.enabled = False
+
+    def status(self):
+        return {
+            "supported": True,
+            "enabled": self.enabled,
+            "entry_exists": self.enabled,
+            "entry_name": "Nova",
+        }
+
+    def set_enabled(self, enabled):
+        self.enabled = bool(enabled)
+        return self.status()
+
+    def cleanup(self):
+        self.enabled = False
+        return self.status()
+
+
+class _FakeReminderDelivery:
+    def __init__(self) -> None:
+        self.start_calls = 0
+        self.stop_calls = 0
+
+    async def start(self) -> None:
+        self.start_calls += 1
+
+    async def stop(self) -> None:
+        self.stop_calls += 1
+
+
 def _install_fake_scheduler(monkeypatch) -> _FakeScheduler:
     scheduler = _FakeScheduler()
     monkeypatch.setattr(brain_server, "openclaw_agent_scheduler", scheduler)
@@ -59,12 +92,52 @@ def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
     assert payload["settings"]["permissions"]["home_agent_scheduler_enabled"] is False
     assert payload["settings"]["permissions"]["metered_openai_enabled"] is False
+    assert payload["settings"]["permissions"]["start_at_sign_in_enabled"] is False
+    assert payload["settings"]["startup"]["entry_exists"] is False
     assert payload["settings"]["provider_policy"]["routing_mode"] == "local_first"
     assert payload["settings"]["usage_budget"]["daily_metered_token_budget"] == 4000
     assert payload["settings"]["assistive_policy"]["assistive_notice_mode"] == "suggestive"
     assert payload["canonical_runtime_health"]["state"] in {"Healthy", "Degraded"}
     assert payload["canonical_runtime_health"]["process_state"] == "running"
     assert payload["canonical_runtime_health"]["core_state"] == "available"
+
+
+def test_start_at_sign_in_setting_creates_and_removes_one_entry(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    startup = _FakeStartupRegistration()
+    monkeypatch.setattr(brain_server, "windows_startup_registration", startup)
+
+    client = TestClient(brain_server.app)
+    enabled = client.post(
+        "/api/settings/runtime/permissions",
+        json={"permission": "start_at_sign_in_enabled", "enabled": True},
+    )
+    disabled = client.post(
+        "/api/settings/runtime/permissions",
+        json={"permission": "start_at_sign_in_enabled", "enabled": False},
+    )
+
+    assert enabled.status_code == 200
+    assert enabled.json()["settings"]["startup"]["entry_exists"] is True
+    assert disabled.status_code == 200
+    assert disabled.json()["settings"]["startup"]["entry_exists"] is False
+
+
+def test_backend_lifespan_owns_reminder_delivery_service(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    reminder_delivery = _FakeReminderDelivery()
+    monkeypatch.setattr(brain_server, "reminder_delivery_service", reminder_delivery)
+    monkeypatch.setattr(
+        brain_server,
+        "write_current_runtime_state_snapshot",
+        lambda: tmp_path / "CURRENT_RUNTIME_STATE.md",
+    )
+
+    with TestClient(brain_server.app):
+        assert reminder_delivery.start_calls == 1
+        assert reminder_delivery.stop_calls == 0
+
+    assert reminder_delivery.stop_calls == 1
 
 
 def test_runtime_settings_api_rejects_non_local_host(monkeypatch, tmp_path):
