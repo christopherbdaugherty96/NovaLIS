@@ -3,12 +3,32 @@ from __future__ import annotations
 import socket
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from src.tasks.notification_delivery import (
     NotificationRequest,
     NotificationResult,
     ReminderDeliveryService,
 )
+
+
+def test_dashboard_refresh_does_not_initiate_reminder_delivery() -> None:
+    session_source = (
+        Path(__file__).resolve().parents[2]
+        / "src"
+        / "websocket"
+        / "session_handler.py"
+    ).read_text(encoding="utf-8")
+
+    assert "snapshot = _process_due_notification_delivery(" not in session_source
+
+
+def test_uncertain_delivery_event_is_registered() -> None:
+    event_source = (
+        Path(__file__).resolve().parents[2] / "src" / "ledger" / "event_types.py"
+    ).read_text(encoding="utf-8")
+
+    assert '"NOTIFICATION_DELIVERY_UNCERTAIN"' in event_source
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
