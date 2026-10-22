@@ -125,6 +125,7 @@ def test_start_at_sign_in_setting_creates_and_removes_one_entry(monkeypatch, tmp
 
 def test_backend_lifespan_owns_reminder_delivery_service(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
+    monkeypatch.setattr(brain_server.sys, "platform", "win32")
     reminder_delivery = _FakeReminderDelivery()
     monkeypatch.setattr(brain_server, "reminder_delivery_service", reminder_delivery)
     monkeypatch.setattr(
@@ -138,6 +139,23 @@ def test_backend_lifespan_owns_reminder_delivery_service(monkeypatch, tmp_path):
         assert reminder_delivery.stop_calls == 0
 
     assert reminder_delivery.stop_calls == 1
+
+
+def test_backend_lifespan_does_not_start_windows_notifier_elsewhere(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    reminder_delivery = _FakeReminderDelivery()
+    monkeypatch.setattr(brain_server, "reminder_delivery_service", reminder_delivery)
+    monkeypatch.setattr(brain_server.sys, "platform", "linux")
+    monkeypatch.setattr(
+        brain_server,
+        "write_current_runtime_state_snapshot",
+        lambda: tmp_path / "CURRENT_RUNTIME_STATE.md",
+    )
+
+    with TestClient(brain_server.app):
+        assert reminder_delivery.start_calls == 0
+
+    assert reminder_delivery.stop_calls == 0
 
 
 def test_runtime_settings_api_rejects_non_local_host(monkeypatch, tmp_path):

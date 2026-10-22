@@ -5,6 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 from src.tasks.notification_delivery import (
     NotificationRequest,
     NotificationResult,
@@ -256,6 +258,57 @@ def test_delivery_worker_scans_every_due_reminder_not_widget_slice(tmp_path):
     assert {request.schedule_id for request in notifier.requests} == {
         item["id"] for item in items
     }
+
+
+def test_policy_changed_after_claim_is_rechecked_before_notify(tmp_path):
+    now = datetime(2026, 10, 21, 23, 30, tzinfo=timezone.utc)
+
+    class _QuietAfterClaimStore(NotificationScheduleStore):
+        def claim_due_occurrence(self, schedule_id, *, now=None):
+            claim = super().claim_due_occurrence(schedule_id, now=now)
+            if claim.get("claimed"):
+                self.update_policy(
+                    quiet_hours_enabled=True,
+                    quiet_hours_start="23:00",
+                    quiet_hours_end="06:00",
+                )
+            return claim
+
+    store = _QuietAfterClaimStore(tmp_path / "schedules.json", local_zone=timezone.utc)
+    item = _make_due(store, now)
+    notifier = _Notifier()
+
+    outcome = _service(store, notifier).run_tick(now=now)
+
+    assert outcome.delivered == 0
+    assert notifier.requests == []
+    saved = store.get_schedule(item["id"])
+    assert saved["delivery_state"] == "pending"
+    assert saved["delivery_hold_reason"] == "quiet_hours"
+
+
+@pytest.mark.asyncio
+async def test_store_failure_is_contained_at_startup_and_later_ticks(tmp_path, monkeypatch):
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    service = _service(store, _Notifier())
+    calls = 0
+
+    def flaky_tick(**_kwargs):
+        nonlocal calls
+        calls += 1
+        if calls < 3:
+            raise OSError("temporary reminder state failure")
+        return None
+
+    monkeypatch.setattr(service, "run_tick", flaky_tick)
+
+    await service.start()
+    assert service.running is True
+    service._safe_run_tick()
+    service._safe_run_tick()
+    await service.stop()
+
+    assert calls == 3
 
 
 def test_clock_jump_forward_then_back_does_not_repeat_delivery(tmp_path):
