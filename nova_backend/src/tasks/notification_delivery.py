@@ -165,7 +165,7 @@ class ReminderDeliveryService:
                     },
                 )
 
-        for item in self._store.summarize(now=current).get("due_items", []):
+        for item in self._store.list_due_schedules(now=current):
             schedule_id = str(item.get("id") or "").strip()
             if not schedule_id:
                 continue
@@ -254,14 +254,22 @@ class ReminderDeliveryService:
                 original_due_at=due_at,
                 overdue=overdue,
             )
-            self._ledger_logger(
-                "NOTIFICATION_DELIVERY_ATTEMPTED",
-                {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},
-            )
-            try:
-                result = self._notifier.notify(request)
-            except Exception as exc:
-                result = NotificationResult(False, type(self._notifier).__name__, type(exc).__name__)
+            with self._store.authorized_claimed_delivery(
+                schedule_id,
+                occurrence_id=occurrence_id,
+                channel="windows_toast",
+            ) as authorized_item:
+                if authorized_item is None:
+                    suppressed += 1
+                    continue
+                self._ledger_logger(
+                    "NOTIFICATION_DELIVERY_ATTEMPTED",
+                    {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},
+                )
+                try:
+                    result = self._notifier.notify(request)
+                except Exception as exc:
+                    result = NotificationResult(False, type(self._notifier).__name__, type(exc).__name__)
 
             if result.accepted:
                 self._store.finish_claimed_occurrence(

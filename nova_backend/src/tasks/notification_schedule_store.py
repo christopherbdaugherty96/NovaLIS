@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from pathlib import Path
@@ -152,6 +153,21 @@ class NotificationScheduleStore:
         safe_limit = max(1, min(int(limit or 25), 100))
         return [dict(item) for item in schedules[:safe_limit]]
 
+    def list_due_schedules(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
+        """Return the complete due work queue, without presentation limits."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            due = [
+                self._serialize_schedule(item, now=current)
+                for item in list(state.get("schedules") or [])
+                if bool(item.get("active"))
+                and (_from_iso(item.get("next_run_at")) or datetime.max.replace(tzinfo=timezone.utc))
+                <= current
+            ]
+        return sorted(due, key=lambda row: str(row.get("next_run_at") or ""))
+
     def read_schedules(
         self,
         *,
@@ -229,11 +245,13 @@ class NotificationScheduleStore:
                 "grant_id": f"RDG-{uuid4().hex.upper()}",
                 "scope_hash": scope_hash,
                 "schedule_id": str(item.get("id") or ""),
+                "title": str(item.get("title") or ""),
                 "text": str(item.get("body") or ""),
                 "due_at": str(item.get("next_run_at") or ""),
                 "recurrence": str(item.get("recurrence") or "once"),
                 "channel": normalized_channel,
                 "delivery_policy": {"mode": "evaluate_current_policy_at_delivery"},
+                "rendering_contract": "nova_reminder_v1",
                 "state": "active",
                 "issued_at": _as_iso(_utc_now()),
             }
@@ -279,6 +297,38 @@ class NotificationScheduleStore:
                 "grant_id": str(grant.get("grant_id") or ""),
                 "scope_hash": str(grant.get("scope_hash") or ""),
             }
+
+    @contextmanager
+    def authorized_claimed_delivery(
+        self,
+        schedule_id: str,
+        *,
+        occurrence_id: str,
+        channel: str,
+    ):
+        """Hold mutation exclusion while a claimed, authorized toast is displayed."""
+
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            allowed = bool(
+                item
+                and item.get("active")
+                and str(item.get("delivery_occurrence_id") or "") == str(occurrence_id or "")
+                and str(item.get("delivery_state") or "") == "attempted"
+            )
+            if allowed:
+                grant = dict(item.get("delivery_grant") or {})
+                scope = self._delivery_grant_scope(
+                    item,
+                    state,
+                    channel=str(channel or "").strip().lower(),
+                )
+                allowed = bool(
+                    str(grant.get("state") or "") == "active"
+                    and str(grant.get("scope_hash") or "") == self._scope_hash(scope)
+                )
+            yield dict(item) if allowed and item is not None else None
 
     @authoritative_mutation
     def record_delivery_hold(
@@ -865,10 +915,12 @@ class NotificationScheduleStore:
         )
         return {
             "schedule_id": str(item.get("id") or ""),
+            "title": str(item.get("title") or ""),
             "text": str(item.get("body") or ""),
             "due_at": approved_due,
             "recurrence": str(item.get("recurrence") or "once"),
             "channel": str(channel or ""),
+            "rendering_contract": "nova_reminder_v1",
         }
 
     @staticmethod
