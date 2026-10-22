@@ -1004,6 +1004,23 @@ def is_trial_local_current_info_chat(text: str) -> bool:
     return True
 
 
+def _is_explicit_memory_save_request(text: str) -> bool:
+    """Identify existing local memory-save grammar without inspecting its content."""
+    return any(
+        pattern.match(text)
+        for pattern in (
+            MEMORY_SAVE_THREAD_DECISION_RE,
+            MEMORY_SAVE_THREAD_SNAPSHOT_RE,
+            MEMORY_SAVE_FRIENDLY_RE,
+            MEMORY_SAVE_NATURAL_RE,
+            MEMORY_NOTE_RE,
+            MEMORY_I_NEED_REMEMBER_RE,
+            MEMORY_SAVE_LATER_RE,
+            MEMORY_SAVE_RE,
+        )
+    )
+
+
 def _looks_like_web_target(raw_target: str, normalized_target: str) -> bool:
     source = (raw_target or "").strip()
     target = (normalized_target or "").strip().lower()
@@ -1128,6 +1145,7 @@ class GovernorMediator:
         if (
             str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
             and TRIAL_EXPLICIT_SCHEDULE_RE.search(t)
+            and not _is_explicit_memory_save_request(t)
         ):
             return None
 

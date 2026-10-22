@@ -3,12 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from src.actions.action_request import ActionRequest
 from src.executors.memory_governance_executor import MemoryGovernanceExecutor
 from src.governor.governor_mediator import GovernorMediator, Invocation
 from src.memory.governed_memory_store import GovernedMemoryStore
-
 
 MEMORY_CASES = (
     "remember that the events team lead is Sam",
