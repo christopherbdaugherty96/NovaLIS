@@ -113,6 +113,18 @@ def test_cancel_revokes_grant_and_edit_requires_replacement_grant(tmp_path):
     assert store.delivery_authority_decision(edited["id"], channel="windows_toast")["allowed"] is True
 
 
+def test_grant_binds_visible_title_and_deterministic_rendering_contract(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _due(store, now)
+
+    grant = _grant(store, item["id"])
+
+    assert grant["title"] == "Reminder: call the dentist"
+    assert grant["text"] == "Call the dentist"
+    assert grant["rendering_contract"] == "nova_reminder_v1"
+
+
 @pytest.mark.parametrize(
     ("observation", "quiet_hours", "expected_reason"),
     [

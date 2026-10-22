@@ -223,6 +223,41 @@ def test_edit_or_cancel_before_due_never_delivers_old_occurrence(tmp_path):
     assert notifier.requests == []
 
 
+def test_cancel_after_claim_but_before_notify_is_revalidated(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+
+    class _CancelAfterClaimStore(NotificationScheduleStore):
+        def claim_due_occurrence(self, schedule_id, *, now=None):
+            claim = super().claim_due_occurrence(schedule_id, now=now)
+            if claim.get("claimed"):
+                self.cancel_schedule(schedule_id)
+            return claim
+
+    store = _CancelAfterClaimStore(tmp_path / "schedules.json")
+    _make_due(store, now)
+    notifier = _Notifier()
+
+    outcome = _service(store, notifier).run_tick(now=now)
+
+    assert outcome.delivered == 0
+    assert notifier.requests == []
+
+
+def test_delivery_worker_scans_every_due_reminder_not_widget_slice(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    store.update_policy(max_deliveries_per_hour=12)
+    items = [_make_due(store, now) for _ in range(7)]
+    notifier = _Notifier()
+
+    outcome = _service(store, notifier).run_tick(now=now)
+
+    assert outcome.delivered == 7
+    assert {request.schedule_id for request in notifier.requests} == {
+        item["id"] for item in items
+    }
+
+
 def test_clock_jump_forward_then_back_does_not_repeat_delivery(tmp_path):
     start = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
     store = NotificationScheduleStore(tmp_path / "schedules.json")
