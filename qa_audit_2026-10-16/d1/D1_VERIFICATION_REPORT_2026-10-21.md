@@ -6,6 +6,8 @@ Branch: `codex/d1-reminder-delivery`
 Base: `4d6291d15c34fb2e4595ca370f782169667fcdb8`  
 Result: **implementation and required owner-watched demo PASS**
 
+Final local validation: **5,545 passed, 6 skipped** on Python 3.10 in 8m26s.
+
 ## Delivery design
 
 - The backend daemon owns a wall-clock worker with a maximum 30-second tick.
