@@ -16,6 +16,25 @@ MEMORY_CASES = (
     "remember that the team lead is Sam",
 )
 
+SCHEDULE_WORDS = (
+    "calendar",
+    "schedule",
+    "agenda",
+    "meeting",
+    "meetings",
+    "appointment",
+    "appointments",
+    "event",
+    "events",
+    "plans",
+)
+
+LOCAL_COMMAND_TEMPLATES = (
+    "remember that the {word} owner is Sam",
+    "search memories for {word}",
+    "open file {word}.txt",
+)
+
 
 @pytest.mark.parametrize("profile", ("trial", "default"))
 @pytest.mark.parametrize("text", MEMORY_CASES)
@@ -60,5 +79,23 @@ def test_trial_preserves_every_representative_default_local_command(
     trial = GovernorMediator.parse_governed_invocation(text)
 
     assert isinstance(trial, Invocation)
+    assert trial.capability_id == default.capability_id
+    assert trial.params == default.params
+
+
+@pytest.mark.parametrize("word", SCHEDULE_WORDS)
+@pytest.mark.parametrize("template", LOCAL_COMMAND_TEMPLATES)
+def test_trial_structurally_preserves_default_local_commands_across_schedule_words(
+    monkeypatch, template: str, word: str
+):
+    text = template.format(word=word)
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
+    default = GovernorMediator.parse_governed_invocation(text)
+    assert isinstance(default, Invocation), text
+
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    trial = GovernorMediator.parse_governed_invocation(text)
+
+    assert isinstance(trial, Invocation), text
     assert trial.capability_id == default.capability_id
     assert trial.params == default.params
