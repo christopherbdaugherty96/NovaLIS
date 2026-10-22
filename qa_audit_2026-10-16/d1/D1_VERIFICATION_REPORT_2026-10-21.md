@@ -31,12 +31,15 @@ Final local validation: **5,545 passed, 6 skipped** on Python 3.10 in 8m26s.
 | Dashboard closed | Yes, 12:56:13 PM | Yes | Sender `Nova` | Supported while backend runs |
 | Backend restarted after due time | Yes, 1:16:39 PM | Yes | Began `Missed while Nova wasn't running` | Supported; overdue on next start |
 | Laptop asleep, then woken | Yes, 1:14:42 PM after user returned | Yes | Began `Missed while Nova wasn't running` | Supported as overdue; D1 does not wake the laptop |
+| Screen off without sleep | Yes, 1:38:15 PM while display was dark | No banner while dark; banner appeared when display returned; notification retained | Original reminder text | **Not supported for visible-at-due-time delivery.** Save wording warns it may appear only in Win + N and its banner may wait for the screen to return. |
 | Nova deliberately quit | No while quit | Covered by restart case | Missed reminder appears on next start | No delivery while quit; catch-up supported |
 | Windows restarted | Startup entry creation/removal passed; no full OS reboot in this demo | Not owner-observed in this lane | Requires opt-in start-at-sign-in | Supported design path; final install/reboot observation remains part of clean-machine rehearsal |
 | Windows locked | Not claimed as visible | Not tested as a supported state | Windows lock-screen notification policy varies | Not promised by D1 |
 | User signed out | No | No | Save text states this explicitly | Unsupported |
 
 The first sleep attempt exposed a real bug: Windows accepted a toast during sleep and stored it in Win + N without showing a banner after wake. A red regression was added. The fix defers the claimed operation until recent user input after resume. The second owner-watched run displayed exactly once and carried the overdue wording.
+
+The owner-watched screen-off-only test used a one-minute display timeout while plugged-in sleep remained five hours. The laptop stayed awake. Nova submitted at 1:38:15 PM while the display was dark; Windows retained the reminder, but there was no visible-at-due-time banner. The banner appeared only after the display returned. Both plugged-in timeouts were restored and verified at five hours. D1 therefore declares this state rather than claiming support.
 
 ## Relative-time and persistence checks
 
@@ -55,7 +58,7 @@ The production registration object was exercised against the current-user Window
 - before: entry absent;
 - enabled: exactly one `Nova` entry with the expected hidden-backend command;
 - cleanup: entry absent;
-- final read-back: `HKCU_RUN_NOVA=absent`;
+- final read-back: the earlier generic `Nova` test value is absent; production now uses the distinctive `NovaLIS Reminder Backend` value and removes it only when its command exactly matches Nova's own command;
 - S1 Task Scheduler residue: `NOVA_S1_TASK_COUNT=0`.
 
 No Task Scheduler task, startup entry, or other persistent OS change remains from this verification.

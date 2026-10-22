@@ -518,6 +518,8 @@ def test_background_delivery_questions_distinguish_dashboard_from_quit_state(mon
     assert any("dashboard is minimized or closed" in message for message in messages)
     assert any("If Nova was quit" in message for message in messages)
     assert any("shown as missed the next time Nova starts" in message for message in messages)
+    assert any("only in Win + N" in message for message in messages)
+    assert any("delay its banner until the screen returns" in message for message in messages)
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
 
 

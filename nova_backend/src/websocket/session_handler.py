@@ -1237,7 +1237,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             "Delivery note: Nova can notify you while its local backend is running, including "
             "when the dashboard is minimized or closed. If Nova was quit, this reminder will "
             "be shown as missed the next time Nova starts. Delivery while signed out is not "
-            "supported. Turn on \"Start Nova when I sign in\" in Settings for restart recovery.\n\n"
+            "supported. If the screen turns off without the laptop sleeping, Windows may put "
+            "the reminder only in Win + N and delay its banner until the screen returns. Turn "
+            "on \"Start Nova when I sign in\" in Settings for restart recovery.\n\n"
             f"{str(snapshot.get('summary') or '').strip() if snapshot is not None else 'Schedule overview is temporarily unavailable.'}"
         )
         session_state["last_response"] = success_message
