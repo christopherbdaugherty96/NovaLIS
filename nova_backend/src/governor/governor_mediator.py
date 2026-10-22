@@ -1041,6 +1041,27 @@ class Clarification:
     message: str
 
 
+def _is_trial_enabled_local_route(
+    result: Invocation | Clarification | None,
+) -> bool:
+    """Use registry governance metadata, not phrases, to preserve local routes."""
+
+    if not isinstance(result, (Invocation, Clarification)):
+        return False
+    try:
+        from src.governor.capability_registry import CapabilityRegistry
+
+        registry = CapabilityRegistry()
+        capability = registry.get(result.capability_id)
+        return bool(
+            registry.is_enabled(result.capability_id)
+            and capability.authority_class != "read_only_network"
+            and not capability.data_exfiltration
+        )
+    except Exception:
+        return False
+
+
 def _cap16_invocation_or_trial_unavailable(params: Dict[str, Any]) -> Invocation | Clarification | None:
     if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
         return Clarification(
@@ -1058,7 +1079,12 @@ class GovernorMediator:
         return text.strip()
 
     @staticmethod
-    def parse_governed_invocation(text: str, session_id: Optional[str] = None) -> Union[Invocation, Clarification, None]:
+    def parse_governed_invocation(
+        text: str,
+        session_id: Optional[str] = None,
+        *,
+        _skip_trial_schedule_guard: bool = False,
+    ) -> Union[Invocation, Clarification, None]:
         t = (text or "").strip()
         preserve_terminal_punctuation = bool(
             re.match(r"^\s*(?:remember|save)\s+(?:this|that)\s*[:\-]", t, re.IGNORECASE)
@@ -1128,7 +1154,15 @@ class GovernorMediator:
         if (
             str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
             and TRIAL_EXPLICIT_SCHEDULE_RE.search(t)
+            and not _skip_trial_schedule_guard
         ):
+            local_candidate = GovernorMediator.parse_governed_invocation(
+                t,
+                session_id=None,
+                _skip_trial_schedule_guard=True,
+            )
+            if _is_trial_enabled_local_route(local_candidate):
+                return local_candidate
             return None
 
         if is_trial_local_current_info_chat(t):
