@@ -41,7 +41,7 @@ class _WindowsRunRegistry:
 
 
 class WindowsStartupRegistration:
-    ENTRY_NAME = "Nova"
+    ENTRY_NAME = "NovaLIS Reminder Backend"
 
     def __init__(
         self,
@@ -78,6 +78,7 @@ class WindowsStartupRegistration:
             "enabled": existing == self.command,
             "entry_exists": existing is not None,
             "entry_name": self.ENTRY_NAME,
+            "entry_conflict": existing is not None and existing != self.command,
         }
 
     def set_enabled(self, enabled: bool) -> dict[str, object]:
@@ -88,12 +89,14 @@ class WindowsStartupRegistration:
         if enabled:
             self._registry.set(self.ENTRY_NAME, self.command)
         else:
-            self._registry.delete(self.ENTRY_NAME)
+            if self._registry.get(self.ENTRY_NAME) == self.command:
+                self._registry.delete(self.ENTRY_NAME)
         return self.status()
 
     def cleanup(self) -> dict[str, object]:
         if not self._supported:
             return self.status()
-        self._registry.delete(self.ENTRY_NAME)
+        if self._registry.get(self.ENTRY_NAME) == self.command:
+            self._registry.delete(self.ENTRY_NAME)
         return self.status()
 

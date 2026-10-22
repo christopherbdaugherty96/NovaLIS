@@ -85,7 +85,9 @@ def test_grant_receipt_failure_is_fail_closed_and_nothing_fires(tmp_path):
     ).run_tick(now=now)
     assert outcome.delivered == 0
     assert notifier.requests == []
-    assert store.get_schedule(item["id"])["delivery_hold_reason"] == "state_unknown"
+    saved = store.get_schedule(item["id"])
+    assert saved["delivery_hold_reason"] == ""
+    assert saved["delivery_authorization_status"] == "needs_confirmation"
 
 
 def test_cancel_revokes_grant_and_edit_requires_replacement_grant(tmp_path):

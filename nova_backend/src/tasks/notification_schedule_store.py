@@ -233,7 +233,7 @@ class NotificationScheduleStore:
                 "due_at": str(item.get("next_run_at") or ""),
                 "recurrence": str(item.get("recurrence") or "once"),
                 "channel": normalized_channel,
-                "delivery_policy": scope["delivery_policy"],
+                "delivery_policy": {"mode": "evaluate_current_policy_at_delivery"},
                 "state": "active",
                 "issued_at": _as_iso(_utc_now()),
             }
@@ -252,6 +252,7 @@ class NotificationScheduleStore:
             item["delivery_hold_reason"] = ""
             item["delivery_retry_state"] = ""
             item["delivery_held_at"] = ""
+            item["delivery_authorization_status"] = "authorized"
             item["updated_at"] = _as_iso(_utc_now())
             self._write_state(state)
             return dict(grant)
@@ -297,12 +298,38 @@ class NotificationScheduleStore:
             item = self._find_item(state, schedule_id)
             if item is None:
                 raise KeyError(schedule_id)
+            if (
+                str(item.get("delivery_hold_reason") or "") == normalized_reason
+                and str(item.get("delivery_retry_state") or "")
+                == str(retry_state or "").strip()[:80]
+            ):
+                return {"hold_changed": False, **dict(item)}
             item["delivery_hold_reason"] = normalized_reason
             item["delivery_retry_state"] = str(retry_state or "").strip()[:80]
             item["delivery_held_at"] = _as_iso(current)
             item["last_delivery_outcome"] = "held"
             item["last_delivery_note"] = f"Held: {normalized_reason}."
             item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return {"hold_changed": True, **dict(item)}
+
+    @authoritative_mutation
+    def mark_delivery_needs_confirmation(
+        self, schedule_id: str, *, reason: str
+    ) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["delivery_authorization_status"] = "needs_confirmation"
+            item["delivery_hold_reason"] = ""
+            item["delivery_retry_state"] = ""
+            item["delivery_held_at"] = ""
+            item["last_delivery_outcome"] = "needs_confirmation"
+            item["last_delivery_note"] = (
+                f"Delivery needs confirmation: {str(reason or 'authorization unavailable')[:120]}."
+            )
             self._write_state(state)
             return dict(item)
 
@@ -726,6 +753,15 @@ class NotificationScheduleStore:
                 dict(item.get("delivery_grant") or {}).get("state") or ""
             )
             == "active",
+            "delivery_authorization_status": str(
+                item.get("delivery_authorization_status")
+                or (
+                    "authorized"
+                    if str(dict(item.get("delivery_grant") or {}).get("state") or "")
+                    == "active"
+                    else "needs_confirmation"
+                )
+            ),
             "due": due,
         }
 
@@ -805,6 +841,7 @@ class NotificationScheduleStore:
             "delivery_hold_reason",
             "delivery_retry_state",
             "delivery_held_at",
+            "delivery_authorization_status",
         ):
             normalized[field_name] = str(normalized.get(field_name) or "").strip()
         normalized["delivery_state"] = str(normalized.get("delivery_state") or "pending").strip()
@@ -818,7 +855,6 @@ class NotificationScheduleStore:
         *,
         channel: str,
     ) -> dict[str, Any]:
-        policy = self._normalize_policy(state.get("policy"))
         grant = dict(item.get("delivery_grant") or {})
         # A recurrence authorizes the series rooted at the approved due time;
         # advancing a delivered occurrence does not silently widen its scope.
@@ -833,12 +869,6 @@ class NotificationScheduleStore:
             "due_at": approved_due,
             "recurrence": str(item.get("recurrence") or "once"),
             "channel": str(channel or ""),
-            "delivery_policy": {
-                "quiet_hours_enabled": bool(policy["quiet_hours_enabled"]),
-                "quiet_hours_start": str(policy["quiet_hours_start"]),
-                "quiet_hours_end": str(policy["quiet_hours_end"]),
-                "max_deliveries_per_hour": int(policy["max_deliveries_per_hour"]),
-            },
         }
 
     @staticmethod

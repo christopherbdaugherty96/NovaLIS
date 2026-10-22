@@ -173,11 +173,9 @@ class ReminderDeliveryService:
                 schedule_id, channel="windows_toast"
             )
             if not bool(authority.get("allowed")):
-                self._hold(
+                self._store.mark_delivery_needs_confirmation(
                     schedule_id,
-                    reason="state_unknown",
-                    now=current,
-                    detail=str(authority.get("reason") or "delivery authority unavailable"),
+                    reason=str(authority.get("reason") or "delivery authority unavailable"),
                 )
                 suppressed += 1
                 continue
@@ -210,6 +208,7 @@ class ReminderDeliveryService:
                 suppressed += 1
                 continue
 
+            prior_hold_reason = str(item.get("delivery_hold_reason") or "")
             self._store.clear_delivery_hold(schedule_id)
 
             allowed, governor_reason = self._governor.allow_notification_delivery(
@@ -236,7 +235,15 @@ class ReminderDeliveryService:
             original_body = str(claim.get("body") or "Reminder")
             if overdue:
                 local_due = due_at.astimezone().strftime("%I:%M %p").lstrip("0")
-                body = f"Missed while Nova wasn't running: {original_body} (due {local_due})"
+                if startup:
+                    prefix = "Missed while Nova wasn't running"
+                elif prior_hold_reason == "session_locked":
+                    prefix = "Delivered late — the reminder was held while the screen was locked"
+                elif prior_hold_reason == "display_off" or resumed_for_user or wake:
+                    prefix = "Delivered late — your laptop was asleep or the screen was off"
+                else:
+                    prefix = "Delivered late"
+                body = f"{prefix}: {original_body} (due {local_due})"
             else:
                 body = original_body
             request = NotificationRequest(
@@ -298,12 +305,14 @@ class ReminderDeliveryService:
         now: datetime,
         detail: str = "",
     ) -> None:
-        self._store.record_delivery_hold(
+        saved = self._store.record_delivery_hold(
             schedule_id,
             reason=reason,
             retry_state="waiting_for_safe_state",
             now=now,
         )
+        if not bool(saved.get("hold_changed")):
+            return
         self._ledger_logger(
             "NOTIFICATION_DELIVERY_HELD",
             {
