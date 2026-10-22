@@ -6,21 +6,22 @@ Branch: `codex/d1-reminder-delivery`
 Base: `4d6291d15c34fb2e4595ca370f782169667fcdb8`  
 Result: **implementation and required owner-watched demo PASS**
 
-Final local validation: **5,545 passed, 6 skipped** on Python 3.10 in 8m26s.
+Final local validation: **5,553 passed, 6 skipped** on Python 3.10 in 9m20s after exact-head review fixes.
 
 ## Delivery design
 
 - The backend daemon owns a wall-clock worker with a maximum 30-second tick.
 - The dashboard only reads reminder state; it cannot initiate or complete delivery.
 - Every due occurrence is claimed atomically before display. Parallel ticks cannot claim the same occurrence twice.
-- Saving records a durable delivery grant bound by SHA-256 to the exact reminder text, approved due time and recurrence, `windows_toast` channel, and delivery-policy settings. The ledger authorization receipt must succeed before the grant is stored; otherwise the reminder cannot fire and Nova says so.
-- The worker revalidates that exact grant before every notification. Cancellation revokes it. Editing revokes it before changing the time and records a replacement grant before the edited reminder may fire. The worker has no execution surface other than the governed notifier call.
+- Saving records a durable delivery grant bound by SHA-256 to the exact reminder title and text, approved due time and recurrence, `windows_toast` channel, and named deterministic rendering contract. Mutable quiet-hour/rate policy is evaluated at delivery instead of silently invalidating existing grants. The ledger authorization receipt must succeed before the grant is stored; otherwise the reminder cannot fire and Nova says so.
+- The worker revalidates that exact grant and claimed occurrence under the store's mutation lock immediately around every notification. Cancellation revokes it. Editing revokes it before changing the time and records a replacement grant before the edited reminder may fire. The worker has no execution surface other than the governed notifier call.
+- The delivery queue reads every due schedule; the five-item dashboard summary is never used as a work-queue limit.
 - A backend interruption after claim becomes `delivery_uncertain` on restart and is never silently retried.
 - Windows display uses the pinned `Windows-Toasts==1.3.1` adapter directly. There is no PowerShell, subprocess, or network path.
-- Startup and resume catch-up retain the original due instant and prefix the visible body with `Missed while Nova wasn't running`.
+- Startup and resume catch-up retain the original due instant. `Missed while Nova wasn't running` is used only for startup recovery; lock and sleep/display holds use reason-specific late wording.
 - Sleep is detected by comparing Windows wall time with `QueryUnbiasedInterruptTime`, which excludes sleep. When that comparison shows a suspend interval and Windows has not yet reported recent physical-console input, the worker records `display_off` and waits. It does not infer screen state from ordinary idle time. Session lock is checked independently with `OpenInputDesktop`/`SwitchDesktop`; a secure/inaccessible input desktop records `session_locked`.
 - Holds are deterministic and durable. The only hold values are `quiet_hours`, `display_off`, `session_locked`, and `state_unknown`; each stores its reason, retry state and held time without changing the original due time. No model chooses when to hold or retry.
-- “Start Nova when I sign in” is opt-in and off by default. It creates one current-user `HKCU\\...\\Run` value named `Nova`, and disabling/resetting removes it.
+- “Start Nova when I sign in” is opt-in and off by default. It creates one current-user `HKCU\\...\\Run` value named `NovaLIS Reminder Backend`; disabling/resetting removes it only when its command exactly matches Nova's own command.
 
 ## Owner-watched state table
 
