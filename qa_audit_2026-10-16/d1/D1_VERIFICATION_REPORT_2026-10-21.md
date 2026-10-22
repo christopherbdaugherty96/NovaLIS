@@ -6,7 +6,7 @@ Branch: `codex/d1-reminder-delivery`
 Base: `4d6291d15c34fb2e4595ca370f782169667fcdb8`  
 Result: **implementation and required owner-watched demo PASS**
 
-Final local validation: **5,553 passed, 6 skipped** on Python 3.10 in 9m20s after exact-head review fixes.
+Final local validation: **5,556 passed, 6 skipped** on Python 3.10 in 7m39s after exact-head review fixes.
 
 ## Delivery design
 
@@ -16,6 +16,8 @@ Final local validation: **5,553 passed, 6 skipped** on Python 3.10 in 9m20s afte
 - Saving records a durable delivery grant bound by SHA-256 to the exact reminder title and text, approved due time and recurrence, `windows_toast` channel, and named deterministic rendering contract. Mutable quiet-hour/rate policy is evaluated at delivery instead of silently invalidating existing grants. The ledger authorization receipt must succeed before the grant is stored; otherwise the reminder cannot fire and Nova says so.
 - The worker revalidates that exact grant and claimed occurrence under the store's mutation lock immediately around every notification. Cancellation revokes it. Editing revokes it before changing the time and records a replacement grant before the edited reminder may fire. The worker has no execution surface other than the governed notifier call.
 - The delivery queue reads every due schedule; the five-item dashboard summary is never used as a work-queue limit.
+- The Windows notifier worker starts only on Windows. Reminder-state read failures are contained fail-closed, cannot abort Nova startup, and are retried on later ticks.
+- Mutable quiet-hour and rate policy is rechecked under the same final mutation exclusion as schedule, claim, and grant validation.
 - A backend interruption after claim becomes `delivery_uncertain` on restart and is never silently retried.
 - Windows display uses the pinned `Windows-Toasts==1.3.1` adapter directly. There is no PowerShell, subprocess, or network path.
 - Startup and resume catch-up retain the original due instant. `Missed while Nova wasn't running` is used only for startup recovery; lock and sleep/display holds use reason-specific late wording.
