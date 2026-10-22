@@ -31,10 +31,10 @@ def _is_archive_or_quarantine(path: Path) -> bool:
     return any("archive" in part or "quarantine" in part for part in low)
 
 
-def test_no_background_execution_outside_governor_or_allowed_audio_worker():
+def _find_background_execution_offenders(root: Path, *, allowed: set[Path]) -> list[str]:
     offenders: list[str] = []
 
-    for py in SRC_ROOT.rglob("*.py"):
+    for py in root.rglob("*.py"):
         if _is_archive_or_quarantine(py):
             continue
 
@@ -43,20 +43,42 @@ def test_no_background_execution_outside_governor_or_allowed_audio_worker():
         for node in ast.walk(tree):
             # asyncio.create_task(...) or loop.create_task(...)
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "create_task":
-                if py not in ALLOWED_CREATE_TASK_FILES and GOVERNOR_ROOT not in py.parents:
+                if py not in allowed and GOVERNOR_ROOT not in py.parents:
                     offenders.append(f"{py}:{node.lineno} create_task outside Governor")
 
             # threading.Thread(...)
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
                 base = node.func.value
                 if isinstance(base, ast.Name) and base.id == "threading" and node.func.attr == "Thread":
-                    if py not in ALLOWED_CREATE_TASK_FILES and GOVERNOR_ROOT not in py.parents:
+                    if py not in allowed and GOVERNOR_ROOT not in py.parents:
                         offenders.append(f"{py}:{node.lineno} threading.Thread outside Governor")
 
         # coarse background worker string detection
         text = py.read_text(encoding="utf-8", errors="replace")
-        if "background" in text.lower() and py not in ALLOWED_CREATE_TASK_FILES and GOVERNOR_ROOT not in py.parents:
+        if "background" in text.lower() and py not in allowed and GOVERNOR_ROOT not in py.parents:
             if "background" in text.lower() and "worker" in text.lower():
                 offenders.append(f"{py}: background worker marker found")
 
+    return offenders
+
+
+def test_no_background_execution_outside_governor_or_allowed_audio_worker():
+    offenders = _find_background_execution_offenders(
+        SRC_ROOT, allowed=ALLOWED_CREATE_TASK_FILES
+    )
     assert not offenders, "\n".join(offenders)
+
+
+def test_d1_allowlist_does_not_authorize_a_second_background_worker(tmp_path):
+    unlisted = tmp_path / "second_reminder_worker.py"
+    unlisted.write_text(
+        "import asyncio\nasyncio.create_task(run_forever())\n",
+        encoding="utf-8",
+    )
+
+    offenders = _find_background_execution_offenders(
+        tmp_path, allowed=ALLOWED_CREATE_TASK_FILES
+    )
+
+    assert len(offenders) == 1
+    assert "second_reminder_worker.py" in offenders[0]
