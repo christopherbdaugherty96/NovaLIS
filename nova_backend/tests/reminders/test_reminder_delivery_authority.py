@@ -176,3 +176,88 @@ def test_held_reminder_recovers_after_restart_and_delivers_exactly_once(tmp_path
     assert second.delivered == 0
     assert len(notifier.requests) == 1
     assert restarted_store.get_schedule(item["id"])["delivery_hold_reason"] == ""
+
+
+def test_policy_change_does_not_invalidate_grant_and_quiet_hours_still_hold(tmp_path):
+    outside = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json", local_zone=timezone.utc)
+    outside_item = _due(store, outside)
+    quiet_item = _due(store, outside)
+    _grant(store, outside_item["id"])
+    _grant(store, quiet_item["id"])
+
+    store.update_policy(
+        quiet_hours_enabled=True,
+        quiet_hours_start="23:00",
+        quiet_hours_end="06:00",
+    )
+
+    assert store.delivery_authority_decision(
+        outside_item["id"], channel="windows_toast"
+    )["allowed"] is True
+    notifier = _Notifier()
+    result = _service(
+        store,
+        notifier,
+        _PresenceProbe({"display": "on", "session": "unlocked"}),
+    ).run_tick(now=outside)
+    assert result.delivered == 2
+
+    quiet = datetime(2026, 10, 21, 23, 30, tzinfo=timezone.utc)
+    later = _due(store, quiet)
+    _grant(store, later["id"])
+    held = _service(
+        store,
+        notifier,
+        _PresenceProbe({"display": "on", "session": "unlocked"}),
+    ).run_tick(now=quiet)
+    assert held.delivered == 0
+    assert store.get_schedule(later["id"])["delivery_hold_reason"] == "quiet_hours"
+
+
+def test_repeated_same_hold_records_one_transition(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _due(store, now)
+    _grant(store, item["id"])
+    events = []
+    service = ReminderDeliveryService(
+        store=store,
+        notifier=_Notifier(),
+        governor=_Governor(),
+        ledger_logger=lambda name, metadata: events.append((name, metadata)),
+        presence_probe=_PresenceProbe(
+            *[{"display": "off", "session": "unlocked"} for _ in range(20)]
+        ),
+    )
+
+    for offset in range(20):
+        service.run_tick(now=now + timedelta(seconds=30 * offset))
+
+    held_events = [name for name, _ in events if name == "NOTIFICATION_DELIVERY_HELD"]
+    assert held_events == ["NOTIFICATION_DELIVERY_HELD"]
+
+
+def test_legacy_and_revoked_grants_show_needs_confirmation_not_a_hold(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    legacy = _due(store, now)
+    revoked = _due(store, now)
+    _grant(store, revoked["id"])
+    store.reschedule_schedule(revoked["id"], next_run_at=now - timedelta(minutes=1))
+
+    service = _service(
+        store,
+        _Notifier(),
+        _PresenceProbe(
+            {"display": "on", "session": "unlocked"},
+            {"display": "on", "session": "unlocked"},
+        ),
+    )
+    service.run_tick(now=now)
+
+    summary = store.summarize(now=now)
+    rows = {row["id"]: row for row in summary["due_items"]}
+    for schedule_id in (legacy["id"], revoked["id"]):
+        assert rows[schedule_id]["delivery_authorization_status"] == "needs_confirmation"
+        assert rows[schedule_id]["delivery_hold_reason"] == ""

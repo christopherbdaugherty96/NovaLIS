@@ -185,7 +185,27 @@ def test_sleep_holds_due_reminder_until_user_returns_then_marks_it_overdue(tmp_p
     assert delivered.delivered == 1
     assert len(notifier.requests) == 1
     assert notifier.requests[0].overdue is True
-    assert notifier.requests[0].body.startswith("Missed while Nova wasn't running")
+    assert notifier.requests[0].body.startswith(
+        "Delivered late — your laptop was asleep or the screen was off"
+    )
+
+
+def test_late_wording_matches_startup_lock_display_and_generic_reasons(tmp_path):
+    base = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    cases = (
+        ("startup", True, "", "Missed while Nova wasn't running"),
+        ("display", False, "display_off", "asleep or the screen was off"),
+        ("locked", False, "session_locked", "while the screen was locked"),
+        ("generic", False, "", "Delivered late:"),
+    )
+    for name, startup, hold_reason, expected in cases:
+        store = NotificationScheduleStore(tmp_path / f"{name}.json")
+        item = _make_due(store, base, minutes_late=5)
+        if hold_reason:
+            store.record_delivery_hold(item["id"], reason=hold_reason, now=base)
+        notifier = _Notifier()
+        _service(store, notifier).run_tick(now=base, startup=startup)
+        assert expected in notifier.requests[0].body
 
 
 def test_edit_or_cancel_before_due_never_delivers_old_occurrence(tmp_path):
