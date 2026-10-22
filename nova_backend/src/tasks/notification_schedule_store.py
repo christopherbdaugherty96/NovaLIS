@@ -305,6 +305,7 @@ class NotificationScheduleStore:
         *,
         occurrence_id: str,
         channel: str,
+        now: datetime | None = None,
     ):
         """Hold mutation exclusion while a claimed, authorized toast is displayed."""
 
@@ -328,6 +329,21 @@ class NotificationScheduleStore:
                     str(grant.get("state") or "") == "active"
                     and str(grant.get("scope_hash") or "") == self._scope_hash(scope)
                 )
+            if allowed and item is not None:
+                current = (now or _utc_now()).astimezone(timezone.utc)
+                policy = self.evaluate_delivery_policy(schedule_id, now=current)
+                if not bool(policy.get("allowed")):
+                    item["delivery_occurrence_id"] = ""
+                    item["delivery_claimed_at"] = ""
+                    item["delivery_state"] = "pending"
+                    item["last_delivery_outcome"] = ""
+                    if str(policy.get("reason") or "") == "quiet_hours":
+                        item["delivery_hold_reason"] = "quiet_hours"
+                        item["delivery_retry_state"] = "waiting_for_safe_state"
+                        item["delivery_held_at"] = _as_iso(current)
+                    item["updated_at"] = _as_iso(current)
+                    self._write_state(state)
+                    allowed = False
             yield dict(item) if allowed and item is not None else None
 
     @authoritative_mutation

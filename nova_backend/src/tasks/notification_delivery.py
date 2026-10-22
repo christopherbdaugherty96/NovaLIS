@@ -96,7 +96,7 @@ class ReminderDeliveryService:
         if self.running:
             return
         self._stopping = asyncio.Event()
-        await asyncio.to_thread(self.run_tick, startup=True)
+        await asyncio.to_thread(self._safe_run_tick, startup=True)
         self._task = asyncio.create_task(self._run_loop(), name="nova-reminder-delivery")
 
     async def stop(self) -> None:
@@ -119,7 +119,16 @@ class ReminderDeliveryService:
                 self._last_wall_clock
                 and now - self._last_wall_clock > timedelta(seconds=self._tick_seconds * 2)
             )
-            await asyncio.to_thread(self.run_tick, now=now, wake=wake_jump)
+            await asyncio.to_thread(self._safe_run_tick, now=now, wake=wake_jump)
+
+    def _safe_run_tick(self, **kwargs: Any) -> DeliveryTickResult:
+        """Contain reminder-state failures so Nova and later retries stay available."""
+
+        try:
+            return self.run_tick(**kwargs)
+        except Exception:
+            log.exception("Reminder delivery tick failed closed; a later tick will retry")
+            return DeliveryTickResult()
 
     def run_tick(
         self,
@@ -258,6 +267,7 @@ class ReminderDeliveryService:
                 schedule_id,
                 occurrence_id=occurrence_id,
                 channel="windows_toast",
+                now=current,
             ) as authorized_item:
                 if authorized_item is None:
                     suppressed += 1

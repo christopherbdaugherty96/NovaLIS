@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
-
 from src.tasks.notification_delivery import (
     NotificationRequest,
     NotificationResult,

@@ -185,6 +185,7 @@ log = logging.getLogger("nova")
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
+    reminder_delivery_started = False
     try:
         output_path = write_current_runtime_state_snapshot()
         log.info("Runtime snapshot refreshed at startup: %s", output_path)
@@ -202,11 +203,14 @@ async def _lifespan(_app: FastAPI):
     ) and runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
     if scheduler_allowed:
         await openclaw_agent_scheduler.start()
-    await reminder_delivery_service.start()
+    if sys.platform == "win32":
+        await reminder_delivery_service.start()
+        reminder_delivery_started = True
     try:
         yield
     finally:
-        await reminder_delivery_service.stop()
+        if reminder_delivery_started:
+            await reminder_delivery_service.stop()
         await openclaw_agent_scheduler.stop()
 
 
