@@ -1186,6 +1186,27 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
             return
 
+        try:
+            notification_schedules.grant_delivery_authority(
+                schedule_id,
+                channel="windows_toast",
+                receipt_logger=governor.ledger.log_event,
+            )
+        except Exception:
+            session_state["pending_reminder"] = None
+            session_state["last_reminder_save_result"] = {
+                "status": "not_authorized",
+                "reason": "delivery_grant_failure",
+            }
+            log.exception("Local Nova reminder delivery grant could not be persisted")
+            await _complete_immediate_turn(
+                "The reminder record was saved, but its delivery permission could not be "
+                "recorded, so it will not fire. Cancel it or retry after the ledger is available.",
+                remember_response=False,
+                tone_domain="system",
+            )
+            return
+
         session_state["last_reminder_save_result"] = {
             "status": "saved",
             "schedule_id": schedule_id,
@@ -4071,6 +4092,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     next_run_at=scheduled_for,
                     command="daily brief",
                 )
+                try:
+                    notification_schedules.grant_delivery_authority(
+                        item["id"],
+                        channel="windows_toast",
+                        receipt_logger=governor.ledger.log_event,
+                    )
+                except Exception:
+                    log.exception("Daily brief delivery grant could not be persisted")
+                    await send_chat_message(
+                        ws,
+                        "The schedule record was saved, but its delivery permission could not "
+                        "be recorded, so it will not fire.",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
                 snapshot = notification_schedules.summarize()
                 _log_ledger_event(
                     governor,
@@ -4113,6 +4150,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_done(ws)
                     continue
                 item = notification_schedules.reschedule_schedule(schedule_id, next_run_at=scheduled_for)
+                try:
+                    notification_schedules.grant_delivery_authority(
+                        schedule_id,
+                        channel="windows_toast",
+                        receipt_logger=governor.ledger.log_event,
+                    )
+                    item = notification_schedules.get_schedule(schedule_id) or item
+                except Exception:
+                    log.exception("Updated schedule delivery grant could not be persisted")
+                    await send_chat_message(
+                        ws,
+                        "The schedule time changed, but replacement delivery permission could "
+                        "not be recorded, so it will not fire.",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
                 snapshot = notification_schedules.summarize()
                 _log_ledger_event(
                     governor,

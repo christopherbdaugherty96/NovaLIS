@@ -75,13 +75,14 @@ class ReminderDeliveryService:
         ledger_logger: Callable[[str, dict[str, Any]], None],
         tick_seconds: int = 30,
         resume_probe: Any | None = None,
+        presence_probe: Any | None = None,
     ) -> None:
         self._store = store
         self._notifier = notifier
         self._governor = governor
         self._ledger_logger = ledger_logger
         self._tick_seconds = max(1, min(int(tick_seconds), 30))
-        self._resume_probe = resume_probe or WindowsResumeProbe()
+        self._presence_probe = presence_probe or resume_probe or WindowsResumeProbe()
         self._task: asyncio.Task | None = None
         self._stopping = asyncio.Event()
         self._last_wall_clock: datetime | None = None
@@ -134,17 +135,20 @@ class ReminderDeliveryService:
         suppressed = 0
 
         try:
-            resume_state = dict(self._resume_probe.observe(current) or {})
+            resume_state = dict(self._presence_probe.observe(current) or {})
         except Exception:
             log.exception("Windows resume observation failed")
-            resume_state = {"resume_detected": False, "user_present": True}
+            resume_state = {
+                "resume_detected": False,
+                "user_present": False,
+                "display": "unknown",
+                "session": "unknown",
+            }
         if bool(resume_state.get("resume_detected")):
             self._awaiting_resume_interaction = True
         resumed_for_user = self._awaiting_resume_interaction and bool(
             resume_state.get("user_present")
         )
-        if self._awaiting_resume_interaction and not resumed_for_user:
-            return DeliveryTickResult(delivered=0, uncertain=uncertain, suppressed=0)
         if resumed_for_user:
             self._awaiting_resume_interaction = False
 
@@ -165,13 +169,48 @@ class ReminderDeliveryService:
             schedule_id = str(item.get("id") or "").strip()
             if not schedule_id:
                 continue
+            authority = self._store.delivery_authority_decision(
+                schedule_id, channel="windows_toast"
+            )
+            if not bool(authority.get("allowed")):
+                self._hold(
+                    schedule_id,
+                    reason="state_unknown",
+                    now=current,
+                    detail=str(authority.get("reason") or "delivery authority unavailable"),
+                )
+                suppressed += 1
+                continue
+
+            display_state = str(
+                resume_state.get("display")
+                or ("on" if bool(resume_state.get("user_present")) else "unknown")
+            ).lower()
+            session_state = str(resume_state.get("session") or "unlocked").lower()
+            if self._awaiting_resume_interaction and not resumed_for_user:
+                display_state = "off"
+            hold_reason = ""
+            if display_state == "off":
+                hold_reason = "display_off"
+            elif session_state == "locked":
+                hold_reason = "session_locked"
+            elif display_state != "on" or session_state != "unlocked":
+                hold_reason = "state_unknown"
+            if hold_reason:
+                self._hold(schedule_id, reason=hold_reason, now=current)
+                suppressed += 1
+                continue
             try:
                 policy = self._store.evaluate_delivery_policy(schedule_id, now=current)
             except KeyError:
                 continue
             if not bool(policy.get("allowed")):
+                if str(policy.get("reason") or "") == "quiet_hours":
+                    self._hold(schedule_id, reason="quiet_hours", now=current)
                 suppressed += 1
                 continue
+
+            self._store.clear_delivery_hold(schedule_id)
 
             allowed, governor_reason = self._governor.allow_notification_delivery(
                 {
@@ -250,4 +289,28 @@ class ReminderDeliveryService:
                 )
 
         return DeliveryTickResult(delivered=delivered, uncertain=uncertain, suppressed=suppressed)
+
+    def _hold(
+        self,
+        schedule_id: str,
+        *,
+        reason: str,
+        now: datetime,
+        detail: str = "",
+    ) -> None:
+        self._store.record_delivery_hold(
+            schedule_id,
+            reason=reason,
+            retry_state="waiting_for_safe_state",
+            now=now,
+        )
+        self._ledger_logger(
+            "NOTIFICATION_DELIVERY_HELD",
+            {
+                "schedule_id": schedule_id,
+                "reason": reason,
+                "retry_state": "waiting_for_safe_state",
+                "detail": str(detail or "")[:120],
+            },
+        )
 

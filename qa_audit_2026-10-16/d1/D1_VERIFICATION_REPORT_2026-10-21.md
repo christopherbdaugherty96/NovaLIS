@@ -11,10 +11,13 @@ Result: **implementation and required owner-watched demo PASS**
 - The backend daemon owns a wall-clock worker with a maximum 30-second tick.
 - The dashboard only reads reminder state; it cannot initiate or complete delivery.
 - Every due occurrence is claimed atomically before display. Parallel ticks cannot claim the same occurrence twice.
+- Saving records a durable delivery grant bound by SHA-256 to the exact reminder text, approved due time and recurrence, `windows_toast` channel, and delivery-policy settings. The ledger authorization receipt must succeed before the grant is stored; otherwise the reminder cannot fire and Nova says so.
+- The worker revalidates that exact grant before every notification. Cancellation revokes it. Editing revokes it before changing the time and records a replacement grant before the edited reminder may fire. The worker has no execution surface other than the governed notifier call.
 - A backend interruption after claim becomes `delivery_uncertain` on restart and is never silently retried.
 - Windows display uses the pinned `Windows-Toasts==1.3.1` adapter directly. There is no PowerShell, subprocess, or network path.
 - Startup and resume catch-up retain the original due instant and prefix the visible body with `Missed while Nova wasn't running`.
-- Sleep is detected by comparing Windows wall time with `QueryUnbiasedInterruptTime`, which excludes sleep. A due reminder is held until recent physical-console input is observed, preventing Windows from silently storing it during Modern Standby.
+- Sleep is detected by comparing Windows wall time with `QueryUnbiasedInterruptTime`, which excludes sleep. When that comparison shows a suspend interval and Windows has not yet reported recent physical-console input, the worker records `display_off` and waits. It does not infer screen state from ordinary idle time. Session lock is checked independently with `OpenInputDesktop`/`SwitchDesktop`; a secure/inaccessible input desktop records `session_locked`.
+- Holds are deterministic and durable. The only hold values are `quiet_hours`, `display_off`, `session_locked`, and `state_unknown`; each stores its reason, retry state and held time without changing the original due time. No model chooses when to hold or retry.
 - “Start Nova when I sign in” is opt-in and off by default. It creates one current-user `HKCU\\...\\Run` value named `Nova`, and disabling/resetting removes it.
 
 ## Owner-watched state table
@@ -41,6 +44,7 @@ The first sleep attempt exposed a real bug: Windows accepted a toast during slee
 - Edit/cancel before due prevents delivery of the old occurrence.
 - Notifier refusal is `delivery_uncertain`, never `delivered`.
 - Delivery tests replace the socket constructor and prove the delivery path opens no network socket.
+- Red-first authority tests cover failed grant persistence, cancellation, edit/replacement, all four hold reasons, restart recovery, and duplicate suppression. The background-task governance test also injects a second unlisted worker and proves that only D1's single reminder worker is allowlisted.
 
 ## Startup entry and cleanup proof
 

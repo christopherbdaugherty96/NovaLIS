@@ -60,13 +60,17 @@ class _ResumeProbe:
 
 
 def _make_due(store: NotificationScheduleStore, now: datetime, *, minutes_late: int = 1):
-    return store.create_schedule(
+    item = store.create_schedule(
         kind="reminder",
         title="Reminder: call the dentist",
         body="Call the dentist",
         recurrence="once",
         next_run_at=now - timedelta(minutes=minutes_late),
     )
+    store.grant_delivery_authority(
+        item["id"], channel="windows_toast", receipt_logger=lambda *_: None
+    )
+    return item
 
 
 def _service(store, notifier, ledger=None):

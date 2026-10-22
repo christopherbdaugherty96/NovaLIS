@@ -57,6 +57,9 @@ class _RecordingScheduleStore:
             "active": True,
         }
 
+    def grant_delivery_authority(self, schedule_id: str, **_kwargs) -> dict:
+        return {"grant_id": "RDG-TEST", "schedule_id": schedule_id, "state": "active"}
+
 
 class _FailingScheduleStore(_RecordingScheduleStore):
     def create_schedule(self, **kwargs) -> dict:
@@ -76,6 +79,11 @@ class _TimeoutScheduleStore(_RecordingScheduleStore):
 class _ReadFailingScheduleStore(_RecordingScheduleStore):
     def get_schedule(self, schedule_id: str) -> dict | None:
         raise OSError("simulated reminder verification failure")
+
+
+class _GrantFailingScheduleStore(_RecordingScheduleStore):
+    def grant_delivery_authority(self, schedule_id: str, **_kwargs) -> dict:
+        raise OSError("simulated delivery grant failure")
 
 
 def _run_session(
@@ -482,6 +490,17 @@ def test_persistence_timeout_reports_unknown_without_streaming_success(monkeypat
     assert not any("I'll remind" in message for message in messages)
     assert not any("done" in message.lower() for message in messages)
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
+
+
+def test_delivery_grant_failure_reports_saved_record_but_no_delivery(monkeypatch):
+    store = _GrantFailingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me at 2 PM to call mom"], store)
+
+    messages = _chat_messages(ws)
+    assert len(store.created) == 1
+    assert any("record was saved" in message for message in messages)
+    assert any("will not fire" in message for message in messages)
+    assert not any("Reminder saved:" in message for message in messages)
 
 
 @pytest.mark.parametrize(

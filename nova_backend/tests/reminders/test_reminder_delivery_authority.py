@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from src.tasks.notification_delivery import (
     NotificationResult,
     ReminderDeliveryService,
@@ -127,13 +126,13 @@ def test_named_hold_reasons_are_recorded_and_keep_original_due_time(
     now = datetime(2026, 10, 21, 23, 0, tzinfo=timezone.utc)
     store = NotificationScheduleStore(tmp_path / "schedules.json", local_zone=timezone.utc)
     item = _due(store, now)
-    _grant(store, item["id"])
     if quiet_hours:
         store.update_policy(
             quiet_hours_enabled=True,
             quiet_hours_start="22:00",
             quiet_hours_end="07:00",
         )
+    _grant(store, item["id"])
     notifier = _Notifier()
 
     outcome = _service(store, notifier, _PresenceProbe(observation)).run_tick(now=now)

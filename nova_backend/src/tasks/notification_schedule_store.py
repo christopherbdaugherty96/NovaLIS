@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from uuid import uuid4
 
 from src.durability.corruption import StateCorruptError, read_json_state, require_state
@@ -45,9 +47,15 @@ class ScheduleReadResult:
 class NotificationScheduleStore:
     """Persistent explicit schedule store for reminders and brief cues."""
 
-    SCHEMA_VERSION = "1.2"
+    SCHEMA_VERSION = "1.3"
     ALLOWED_KINDS = {"reminder", "daily_brief"}
     ALLOWED_RECURRENCES = {"once", "daily", "weekly"}
+    ALLOWED_HOLD_REASONS = {
+        "quiet_hours",
+        "display_off",
+        "session_locked",
+        "state_unknown",
+    }
     DEFAULT_POLICY = {
         "quiet_hours_enabled": False,
         "quiet_hours_start": "22:00",
@@ -118,6 +126,10 @@ class NotificationScheduleStore:
             "delivery_occurrence_id": "",
             "delivery_claimed_at": "",
             "delivery_state": "pending",
+            "delivery_grant": {},
+            "delivery_hold_reason": "",
+            "delivery_retry_state": "",
+            "delivery_held_at": "",
         }
         with self._lock:
             state = self._read_state()
@@ -190,6 +202,121 @@ class NotificationScheduleStore:
             item = self._find_item(state, schedule_id)
             if item is None:
                 return None
+            return dict(item)
+
+    @authoritative_mutation
+    def grant_delivery_authority(
+        self,
+        schedule_id: str,
+        *,
+        channel: str,
+        receipt_logger: Callable[[str, dict[str, Any]], None],
+    ) -> dict[str, Any]:
+        """Persist an exact delivery grant only after its ledger receipt succeeds."""
+
+        normalized_channel = str(channel or "").strip().lower()
+        if normalized_channel != "windows_toast":
+            raise ValueError("Unsupported reminder delivery channel.")
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            scope = self._delivery_grant_scope(item, state, channel=normalized_channel)
+            scope_hash = self._scope_hash(scope)
+            grant = {
+                "schema_version": "1.0",
+                "grant_id": f"RDG-{uuid4().hex.upper()}",
+                "scope_hash": scope_hash,
+                "schedule_id": str(item.get("id") or ""),
+                "text": str(item.get("body") or ""),
+                "due_at": str(item.get("next_run_at") or ""),
+                "recurrence": str(item.get("recurrence") or "once"),
+                "channel": normalized_channel,
+                "delivery_policy": scope["delivery_policy"],
+                "state": "active",
+                "issued_at": _as_iso(_utc_now()),
+            }
+            # Deliberately not best-effort: authority must not exist without a
+            # durable receipt. The caller sees and reports any ledger failure.
+            receipt_logger(
+                "NOTIFICATION_DELIVERY_AUTHORIZED",
+                {
+                    "grant_id": grant["grant_id"],
+                    "schedule_id": grant["schedule_id"],
+                    "scope_hash": scope_hash,
+                    "channel": normalized_channel,
+                },
+            )
+            item["delivery_grant"] = grant
+            item["delivery_hold_reason"] = ""
+            item["delivery_retry_state"] = ""
+            item["delivery_held_at"] = ""
+            item["updated_at"] = _as_iso(_utc_now())
+            self._write_state(state)
+            return dict(grant)
+
+    def delivery_authority_decision(
+        self, schedule_id: str, *, channel: str
+    ) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            grant = dict(item.get("delivery_grant") or {})
+            if str(grant.get("state") or "") != "active":
+                return {"allowed": False, "reason": "missing_or_revoked_grant"}
+            scope = self._delivery_grant_scope(
+                item, state, channel=str(channel or "").strip().lower()
+            )
+            if str(grant.get("scope_hash") or "") != self._scope_hash(scope):
+                return {"allowed": False, "reason": "grant_scope_mismatch"}
+            return {
+                "allowed": True,
+                "reason": "authorized",
+                "grant_id": str(grant.get("grant_id") or ""),
+                "scope_hash": str(grant.get("scope_hash") or ""),
+            }
+
+    @authoritative_mutation
+    def record_delivery_hold(
+        self,
+        schedule_id: str,
+        *,
+        reason: str,
+        retry_state: str = "waiting_for_safe_state",
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        normalized_reason = str(reason or "").strip().lower()
+        if normalized_reason not in self.ALLOWED_HOLD_REASONS:
+            raise ValueError("Unsupported reminder hold reason.")
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["delivery_hold_reason"] = normalized_reason
+            item["delivery_retry_state"] = str(retry_state or "").strip()[:80]
+            item["delivery_held_at"] = _as_iso(current)
+            item["last_delivery_outcome"] = "held"
+            item["last_delivery_note"] = f"Held: {normalized_reason}."
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
+    def clear_delivery_hold(self, schedule_id: str) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["delivery_hold_reason"] = ""
+            item["delivery_retry_state"] = ""
+            item["delivery_held_at"] = ""
+            self._write_state(state)
             return dict(item)
 
     @authoritative_mutation
@@ -275,6 +402,7 @@ class NotificationScheduleStore:
             if item is None:
                 raise KeyError(schedule_id)
             item["active"] = False
+            self._revoke_delivery_grant(item, reason="cancelled")
             item["updated_at"] = _as_iso(_utc_now())
             self._write_state(state)
             return dict(item)
@@ -331,6 +459,7 @@ class NotificationScheduleStore:
             if item is None:
                 raise KeyError(schedule_id)
             item["next_run_at"] = _as_iso(next_run_at)
+            self._revoke_delivery_grant(item, reason="edited")
             item["last_surface_at"] = ""
             item["updated_at"] = _as_iso(current)
             self._write_state(state)
@@ -590,6 +719,13 @@ class NotificationScheduleStore:
             "last_delivery_outcome": str(item.get("last_delivery_outcome") or ""),
             "last_delivery_note": str(item.get("last_delivery_note") or ""),
             "last_delivered_at": str(item.get("last_delivered_at") or ""),
+            "delivery_hold_reason": str(item.get("delivery_hold_reason") or ""),
+            "delivery_retry_state": str(item.get("delivery_retry_state") or ""),
+            "delivery_held_at": str(item.get("delivery_held_at") or ""),
+            "delivery_authorized": str(
+                dict(item.get("delivery_grant") or {}).get("state") or ""
+            )
+            == "active",
             "due": due,
         }
 
@@ -666,10 +802,58 @@ class NotificationScheduleStore:
             "last_delivered_at",
             "delivery_occurrence_id",
             "delivery_claimed_at",
+            "delivery_hold_reason",
+            "delivery_retry_state",
+            "delivery_held_at",
         ):
             normalized[field_name] = str(normalized.get(field_name) or "").strip()
         normalized["delivery_state"] = str(normalized.get("delivery_state") or "pending").strip()
+        normalized["delivery_grant"] = dict(normalized.get("delivery_grant") or {})
         return normalized
+
+    def _delivery_grant_scope(
+        self,
+        item: dict[str, Any],
+        state: dict[str, Any],
+        *,
+        channel: str,
+    ) -> dict[str, Any]:
+        policy = self._normalize_policy(state.get("policy"))
+        grant = dict(item.get("delivery_grant") or {})
+        # A recurrence authorizes the series rooted at the approved due time;
+        # advancing a delivered occurrence does not silently widen its scope.
+        approved_due = str(
+            grant.get("due_at")
+            if str(grant.get("state") or "") == "active"
+            else item.get("next_run_at") or ""
+        )
+        return {
+            "schedule_id": str(item.get("id") or ""),
+            "text": str(item.get("body") or ""),
+            "due_at": approved_due,
+            "recurrence": str(item.get("recurrence") or "once"),
+            "channel": str(channel or ""),
+            "delivery_policy": {
+                "quiet_hours_enabled": bool(policy["quiet_hours_enabled"]),
+                "quiet_hours_start": str(policy["quiet_hours_start"]),
+                "quiet_hours_end": str(policy["quiet_hours_end"]),
+                "max_deliveries_per_hour": int(policy["max_deliveries_per_hour"]),
+            },
+        }
+
+    @staticmethod
+    def _scope_hash(scope: dict[str, Any]) -> str:
+        encoded = json.dumps(scope, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
+    @staticmethod
+    def _revoke_delivery_grant(item: dict[str, Any], *, reason: str) -> None:
+        grant = dict(item.get("delivery_grant") or {})
+        if grant:
+            grant["state"] = "revoked"
+            grant["revoked_reason"] = str(reason or "")
+            grant["revoked_at"] = _as_iso(_utc_now())
+            item["delivery_grant"] = grant
 
     def _advance_after_terminal_delivery(self, item: dict[str, Any], *, current: datetime) -> None:
         recurrence = self._normalize_recurrence(item.get("recurrence"))
@@ -774,7 +958,8 @@ class NotificationScheduleStore:
             end_value = datetime.strptime(str(policy.get("quiet_hours_end") or ""), "%H:%M")
         except ValueError:
             return False
-        current_minutes = now.astimezone().hour * 60 + now.astimezone().minute
+        local_now = as_local(now, self._local_zone)
+        current_minutes = local_now.hour * 60 + local_now.minute
         start_minutes = start_value.hour * 60 + start_value.minute
         end_minutes = end_value.hour * 60 + end_value.minute
         if start_minutes == end_minutes:
