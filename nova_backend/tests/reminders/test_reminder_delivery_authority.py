@@ -192,9 +192,10 @@ def test_held_reminder_recovers_after_restart_and_delivers_exactly_once(tmp_path
     assert restarted_store.get_schedule(item["id"])["delivery_hold_reason"] == ""
 
 
-def test_policy_change_does_not_invalidate_grant_and_quiet_hours_still_hold(tmp_path):
+def test_policy_change_does_not_invalidate_grant_and_quiet_hours_still_hold(tmp_path, monkeypatch):
     outside = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
     store = NotificationScheduleStore(tmp_path / "schedules.json", local_zone=timezone.utc)
+    monkeypatch.setattr("src.tasks.notification_schedule_store._utc_now", lambda: outside)
     outside_item = _due(store, outside)
     quiet_item = _due(store, outside)
     _grant(store, outside_item["id"])
@@ -218,6 +219,7 @@ def test_policy_change_does_not_invalidate_grant_and_quiet_hours_still_hold(tmp_
     assert result.delivered == 2
 
     quiet = datetime(2026, 10, 21, 23, 30, tzinfo=timezone.utc)
+    monkeypatch.setattr("src.tasks.notification_schedule_store._utc_now", lambda: quiet)
     later = _due(store, quiet)
     _grant(store, later["id"])
     held = _service(

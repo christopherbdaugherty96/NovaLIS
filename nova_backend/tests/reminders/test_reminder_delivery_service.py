@@ -259,7 +259,7 @@ def test_delivery_worker_scans_every_due_reminder_not_widget_slice(tmp_path):
     }
 
 
-def test_policy_changed_after_claim_is_rechecked_before_notify(tmp_path):
+def test_policy_changed_after_claim_is_rechecked_before_notify(tmp_path, monkeypatch):
     now = datetime(2026, 10, 21, 23, 30, tzinfo=timezone.utc)
 
     class _QuietAfterClaimStore(NotificationScheduleStore):
@@ -274,6 +274,7 @@ def test_policy_changed_after_claim_is_rechecked_before_notify(tmp_path):
             return claim
 
     store = _QuietAfterClaimStore(tmp_path / "schedules.json", local_zone=timezone.utc)
+    monkeypatch.setattr("src.tasks.notification_schedule_store._utc_now", lambda: now)
     item = _make_due(store, now)
     notifier = _Notifier()
 
@@ -284,6 +285,79 @@ def test_policy_changed_after_claim_is_rechecked_before_notify(tmp_path):
     saved = store.get_schedule(item["id"])
     assert saved["delivery_state"] == "pending"
     assert saved["delivery_hold_reason"] == "quiet_hours"
+
+
+def test_final_policy_check_uses_fresh_dispatch_time(tmp_path, monkeypatch):
+    tick_time = datetime(2026, 10, 21, 22, 59, tzinfo=timezone.utc)
+    dispatch_time = datetime(2026, 10, 21, 23, 1, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json", local_zone=timezone.utc)
+    store.update_policy(
+        quiet_hours_enabled=True,
+        quiet_hours_start="23:00",
+        quiet_hours_end="06:00",
+    )
+    item = _make_due(store, tick_time)
+    notifier = _Notifier()
+    monkeypatch.setattr(
+        "src.tasks.notification_schedule_store._utc_now", lambda: dispatch_time
+    )
+
+    outcome = _service(store, notifier).run_tick(now=tick_time)
+
+    assert outcome.delivered == 0
+    assert notifier.requests == []
+    assert store.get_schedule(item["id"])["delivery_hold_reason"] == "quiet_hours"
+
+
+def test_governor_is_revalidated_at_dispatch_boundary(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _make_due(store, now)
+    notifier = _Notifier()
+
+    class _ChangingGovernor:
+        def __init__(self):
+            self.calls = 0
+
+        def allow_notification_delivery(self, _metadata):
+            self.calls += 1
+            return (self.calls == 1, "allowed" if self.calls == 1 else "action_pending")
+
+    service = ReminderDeliveryService(
+        store=store,
+        notifier=notifier,
+        governor=_ChangingGovernor(),
+        ledger_logger=lambda *_: None,
+    )
+    outcome = service.run_tick(now=now)
+
+    assert outcome.delivered == 0
+    assert notifier.requests == []
+    assert store.get_schedule(item["id"])["delivery_state"] == "pending"
+
+
+def test_reschedule_during_delivery_finalization_preserves_new_occurrence(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _make_due(store, now)
+    replacement_due = now + timedelta(hours=2)
+
+    class _ReschedulingNotifier(_Notifier):
+        def notify(self, request):
+            result = super().notify(request)
+            store.reschedule_schedule(item["id"], next_run_at=replacement_due)
+            store.grant_delivery_authority(
+                item["id"], channel="windows_toast", receipt_logger=lambda *_: None
+            )
+            return result
+
+    outcome = _service(store, _ReschedulingNotifier()).run_tick(now=now)
+    saved = store.get_schedule(item["id"])
+
+    assert outcome.delivered == 1
+    assert saved["active"] is True
+    assert saved["next_run_at"] == replacement_due.isoformat()
+    assert saved["delivery_state"] == "pending"
 
 
 @pytest.mark.asyncio
