@@ -316,7 +316,7 @@ class NotificationScheduleStore:
                 item
                 and item.get("active")
                 and str(item.get("delivery_occurrence_id") or "") == str(occurrence_id or "")
-                and str(item.get("delivery_state") or "") == "attempted"
+                and str(item.get("delivery_state") or "") == "claimed"
             )
             if allowed:
                 grant = dict(item.get("delivery_grant") or {})
@@ -357,7 +357,7 @@ class NotificationScheduleStore:
                 return
             if (
                 str(item.get("delivery_occurrence_id") or "") != str(occurrence_id or "")
-                or str(item.get("delivery_state") or "") != "attempted"
+                or str(item.get("delivery_state") or "") not in {"claimed", "attempted"}
             ):
                 return
             item["delivery_occurrence_id"] = ""
@@ -677,12 +677,40 @@ class NotificationScheduleStore:
                 return {"claimed": False, "occurrence_id": occurrence_id, **dict(item)}
             item["delivery_occurrence_id"] = occurrence_id
             item["delivery_claimed_at"] = _as_iso(current)
+            item["delivery_state"] = "claimed"
+            item["last_delivery_outcome"] = "delivery_claimed"
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return {"claimed": True, "occurrence_id": occurrence_id, **dict(item)}
+
+    @authoritative_mutation
+    def mark_claimed_occurrence_attempted(
+        self,
+        schedule_id: str,
+        *,
+        occurrence_id: str,
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Mark a durably receipted claim immediately before notifier dispatch."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            if (
+                str(item.get("delivery_occurrence_id") or "")
+                != str(occurrence_id or "")
+                or str(item.get("delivery_state") or "") != "claimed"
+            ):
+                raise RuntimeError("Reminder claim changed before dispatch.")
             item["delivery_state"] = "attempted"
             item["last_delivery_attempt_at"] = _as_iso(current)
             item["last_delivery_outcome"] = "delivery_attempted"
             item["updated_at"] = _as_iso(current)
             self._write_state(state)
-            return {"claimed": True, "occurrence_id": occurrence_id, **dict(item)}
+            return dict(item)
 
     @authoritative_mutation
     def finish_claimed_occurrence(
@@ -723,14 +751,24 @@ class NotificationScheduleStore:
 
     @authoritative_mutation
     def recover_interrupted_claims(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
-        """Close claims left ambiguous by a prior backend interruption."""
+        """Retry undispatched claims; close only receipted attempts as ambiguous."""
 
         current = (now or _utc_now()).astimezone(timezone.utc)
         recovered: list[dict[str, Any]] = []
+        released_claim = False
         with self._lock:
             state = self._read_state()
             for item in list(state.get("schedules") or []):
-                if str(item.get("delivery_state") or "") != "attempted":
+                delivery_state = str(item.get("delivery_state") or "")
+                if delivery_state == "claimed":
+                    item["delivery_occurrence_id"] = ""
+                    item["delivery_claimed_at"] = ""
+                    item["delivery_state"] = "pending"
+                    item["last_delivery_outcome"] = ""
+                    item["updated_at"] = _as_iso(current)
+                    released_claim = True
+                    continue
+                if delivery_state != "attempted":
                     continue
                 item["delivery_state"] = "delivery_uncertain"
                 item["last_delivery_outcome"] = "delivery_uncertain"
@@ -740,7 +778,7 @@ class NotificationScheduleStore:
                 self._advance_after_terminal_delivery(item, current=current)
                 item["updated_at"] = _as_iso(current)
                 recovered.append(dict(item))
-            if recovered:
+            if recovered or released_claim:
                 self._write_state(state)
         return recovered
 

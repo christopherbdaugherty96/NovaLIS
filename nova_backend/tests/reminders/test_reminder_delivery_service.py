@@ -154,7 +154,11 @@ def test_restart_marks_interrupted_claim_uncertain_without_retrying(tmp_path):
     path = tmp_path / "schedules.json"
     store = NotificationScheduleStore(path)
     item = _make_due(store, now)
-    assert store.claim_due_occurrence(item["id"], now=now)["claimed"] is True
+    claim = store.claim_due_occurrence(item["id"], now=now)
+    assert claim["claimed"] is True
+    store.mark_claimed_occurrence_attempted(
+        item["id"], occurrence_id=claim["occurrence_id"], now=now
+    )
     notifier = _Notifier()
 
     restarted = _service(NotificationScheduleStore(path), notifier)

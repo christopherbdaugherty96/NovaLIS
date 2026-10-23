@@ -185,18 +185,17 @@ class ReminderDeliveryService:
         if resumed_for_user:
             self._awaiting_resume_interaction = False
 
-        if startup:
-            for recovered in self._store.recover_interrupted_claims(now=current):
-                uncertain += 1
-                self._ledger_logger(
-                    "NOTIFICATION_DELIVERY_UNCERTAIN",
-                    {
-                        "schedule_id": str(recovered.get("id") or ""),
-                        "occurrence_id": str(recovered.get("delivery_occurrence_id") or ""),
-                        "adapter": "startup_recovery",
-                        "error_code": "INTERRUPTED_AFTER_CLAIM",
-                    },
-                )
+        for recovered in self._store.recover_interrupted_claims(now=current):
+            uncertain += 1
+            self._ledger_logger(
+                "NOTIFICATION_DELIVERY_UNCERTAIN",
+                {
+                    "schedule_id": str(recovered.get("id") or ""),
+                    "occurrence_id": str(recovered.get("delivery_occurrence_id") or ""),
+                    "adapter": "startup_recovery" if startup else "tick_recovery",
+                    "error_code": "INTERRUPTED_AFTER_ATTEMPT",
+                },
+            )
 
         for item in self._store.list_due_schedules(now=current):
             schedule_id = str(item.get("id") or "").strip()
@@ -336,6 +335,10 @@ class ReminderDeliveryService:
                     self._attempted_ledger_logger(
                         "NOTIFICATION_DELIVERY_ATTEMPTED",
                         {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},
+                    )
+                    self._store.mark_claimed_occurrence_attempted(
+                        schedule_id,
+                        occurrence_id=occurrence_id,
                     )
                 except Exception:
                     log.exception("Reminder display blocked because its attempted receipt could not be recorded")
