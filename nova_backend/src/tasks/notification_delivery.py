@@ -272,6 +272,27 @@ class ReminderDeliveryService:
                 if authorized_item is None:
                     suppressed += 1
                     continue
+                dispatch_allowed, dispatch_reason = self._governor.allow_notification_delivery(
+                    {
+                        "schedule_id": schedule_id,
+                        "kind": str(authorized_item.get("kind") or ""),
+                        "title": str(authorized_item.get("title") or ""),
+                    }
+                )
+                if not dispatch_allowed:
+                    self._store.release_claimed_occurrence(
+                        schedule_id, occurrence_id=occurrence_id
+                    )
+                    suppressed += 1
+                    self._ledger_logger(
+                        "NOTIFICATION_DELIVERY_SUPPRESSED",
+                        {
+                            "schedule_id": schedule_id,
+                            "reason": "governor_policy",
+                            "detail": dispatch_reason,
+                        },
+                    )
+                    continue
                 self._ledger_logger(
                     "NOTIFICATION_DELIVERY_ATTEMPTED",
                     {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},

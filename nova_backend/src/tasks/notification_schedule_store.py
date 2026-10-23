@@ -330,7 +330,7 @@ class NotificationScheduleStore:
                     and str(grant.get("scope_hash") or "") == self._scope_hash(scope)
                 )
             if allowed and item is not None:
-                current = (now or _utc_now()).astimezone(timezone.utc)
+                current = _utc_now().astimezone(timezone.utc)
                 policy = self.evaluate_delivery_policy(schedule_id, now=current)
                 if not bool(policy.get("allowed")):
                     item["delivery_occurrence_id"] = ""
@@ -345,6 +345,27 @@ class NotificationScheduleStore:
                     self._write_state(state)
                     allowed = False
             yield dict(item) if allowed and item is not None else None
+
+    @authoritative_mutation
+    def release_claimed_occurrence(self, schedule_id: str, *, occurrence_id: str) -> None:
+        """Return an undispatched claim to pending without consuming it."""
+
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                return
+            if (
+                str(item.get("delivery_occurrence_id") or "") != str(occurrence_id or "")
+                or str(item.get("delivery_state") or "") != "attempted"
+            ):
+                return
+            item["delivery_occurrence_id"] = ""
+            item["delivery_claimed_at"] = ""
+            item["delivery_state"] = "pending"
+            item["last_delivery_outcome"] = ""
+            item["updated_at"] = _as_iso(_utc_now())
+            self._write_state(state)
 
     @authoritative_mutation
     def record_delivery_hold(
@@ -554,6 +575,9 @@ class NotificationScheduleStore:
             item["next_run_at"] = _as_iso(next_run_at)
             self._revoke_delivery_grant(item, reason="edited")
             item["last_surface_at"] = ""
+            item["delivery_occurrence_id"] = ""
+            item["delivery_claimed_at"] = ""
+            item["delivery_state"] = "pending"
             item["updated_at"] = _as_iso(current)
             self._write_state(state)
             return dict(item)
@@ -664,8 +688,11 @@ class NotificationScheduleStore:
             if item is None:
                 raise KeyError(schedule_id)
             if str(item.get("delivery_occurrence_id") or "") != str(occurrence_id or ""):
-                raise ValueError("Delivery occurrence no longer matches the claimed reminder.")
+                return dict(item)
             if str(item.get("delivery_state") or "") != "attempted":
+                return dict(item)
+            expected_occurrence = f"{schedule_id}@{str(item.get('next_run_at') or '')}"
+            if str(occurrence_id or "") != expected_occurrence:
                 return dict(item)
             item["delivery_state"] = normalized_outcome
             item["last_delivery_outcome"] = normalized_outcome
