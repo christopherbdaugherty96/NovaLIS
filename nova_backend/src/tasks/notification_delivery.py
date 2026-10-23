@@ -38,6 +38,8 @@ class DeliveryTickResult:
 
 
 class Notifier(Protocol):
+    def readiness(self) -> NotificationResult: ...
+
     def notify(self, request: NotificationRequest) -> NotificationResult: ...
 
 
@@ -47,6 +49,20 @@ class WindowsToastNotifier:
     def __init__(self, app_name: str = "Nova") -> None:
         self._app_name = str(app_name or "Nova").strip() or "Nova"
 
+    def readiness(self) -> NotificationResult:
+        try:
+            from windows_toasts import WindowsToaster
+
+            setting = WindowsToaster(self._app_name).toastNotifier.setting
+            if str(getattr(setting, "name", setting)).upper() != "ENABLED":
+                return NotificationResult(
+                    False, "windows_toasts", "NOTIFICATIONS_BLOCKED"
+                )
+            return NotificationResult(True, "windows_toasts")
+        except Exception as exc:
+            log.exception("Windows notification setting check failed")
+            return NotificationResult(False, "windows_toasts", type(exc).__name__)
+
     def notify(self, request: NotificationRequest) -> NotificationResult:
         try:
             from windows_toasts import Toast, WindowsToaster
@@ -54,7 +70,13 @@ class WindowsToastNotifier:
             failures: list[str] = []
             toast = Toast([request.title, request.body])
             toast.on_failed = lambda event: failures.append(str(event.error_code))
-            WindowsToaster(self._app_name).show_toast(toast)
+            toaster = WindowsToaster(self._app_name)
+            setting = toaster.toastNotifier.setting
+            if str(getattr(setting, "name", setting)).upper() != "ENABLED":
+                return NotificationResult(
+                    False, "windows_toasts", "NOTIFICATIONS_BLOCKED"
+                )
+            toaster.show_toast(toast)
             if failures:
                 return NotificationResult(False, "windows_toasts", failures[0])
             return NotificationResult(True, "windows_toasts")
@@ -73,6 +95,7 @@ class ReminderDeliveryService:
         notifier: Notifier,
         governor: Any,
         ledger_logger: Callable[[str, dict[str, Any]], None],
+        attempted_ledger_logger: Callable[[str, dict[str, Any]], None] | None = None,
         tick_seconds: int = 30,
         resume_probe: Any | None = None,
         presence_probe: Any | None = None,
@@ -81,6 +104,7 @@ class ReminderDeliveryService:
         self._notifier = notifier
         self._governor = governor
         self._ledger_logger = ledger_logger
+        self._attempted_ledger_logger = attempted_ledger_logger or ledger_logger
         self._tick_seconds = max(1, min(int(tick_seconds), 30))
         self._presence_probe = presence_probe or resume_probe or WindowsResumeProbe()
         self._task: asyncio.Task | None = None
@@ -293,10 +317,33 @@ class ReminderDeliveryService:
                         },
                     )
                     continue
-                self._ledger_logger(
-                    "NOTIFICATION_DELIVERY_ATTEMPTED",
-                    {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},
-                )
+                readiness = getattr(self._notifier, "readiness", lambda: NotificationResult(True, type(self._notifier).__name__))()
+                if not readiness.accepted:
+                    self._store.release_claimed_occurrence(
+                        schedule_id, occurrence_id=occurrence_id
+                    )
+                    if readiness.error_code == "NOTIFICATIONS_BLOCKED":
+                        self._store.mark_notifications_blocked(schedule_id)
+                    else:
+                        self._store.record_delivery_outcome(
+                            schedule_id,
+                            outcome="delivery_waiting",
+                            note=f"Notification readiness check failed: {readiness.error_code or 'unknown'}.",
+                        )
+                    suppressed += 1
+                    continue
+                try:
+                    self._attempted_ledger_logger(
+                        "NOTIFICATION_DELIVERY_ATTEMPTED",
+                        {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "overdue": overdue},
+                    )
+                except Exception:
+                    log.exception("Reminder display blocked because its attempted receipt could not be recorded")
+                    self._store.release_claimed_occurrence(
+                        schedule_id, occurrence_id=occurrence_id
+                    )
+                    suppressed += 1
+                    continue
                 try:
                     result = self._notifier.notify(request)
                 except Exception as exc:
@@ -311,10 +358,19 @@ class ReminderDeliveryService:
                     now=current,
                 )
                 delivered += 1
-                self._ledger_logger(
-                    "NOTIFICATION_DELIVERY_COMPLETED",
-                    {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "adapter": result.adapter},
+                try:
+                    self._ledger_logger(
+                        "NOTIFICATION_DELIVERY_COMPLETED",
+                        {"schedule_id": schedule_id, "occurrence_id": occurrence_id, "adapter": result.adapter},
+                    )
+                except Exception:
+                    log.exception("Reminder completion receipt could not be recorded")
+            elif result.error_code == "NOTIFICATIONS_BLOCKED":
+                self._store.release_claimed_occurrence(
+                    schedule_id, occurrence_id=occurrence_id
                 )
+                self._store.mark_notifications_blocked(schedule_id)
+                suppressed += 1
             else:
                 self._store.finish_claimed_occurrence(
                     schedule_id,
@@ -324,15 +380,18 @@ class ReminderDeliveryService:
                     now=current,
                 )
                 uncertain += 1
-                self._ledger_logger(
-                    "NOTIFICATION_DELIVERY_UNCERTAIN",
-                    {
-                        "schedule_id": schedule_id,
-                        "occurrence_id": occurrence_id,
-                        "adapter": result.adapter,
-                        "error_code": result.error_code,
-                    },
-                )
+                try:
+                    self._ledger_logger(
+                        "NOTIFICATION_DELIVERY_UNCERTAIN",
+                        {
+                            "schedule_id": schedule_id,
+                            "occurrence_id": occurrence_id,
+                            "adapter": result.adapter,
+                            "error_code": result.error_code,
+                        },
+                    )
+                except Exception:
+                    log.exception("Reminder uncertain receipt could not be recorded")
 
         return DeliveryTickResult(delivered=delivered, uncertain=uncertain, suppressed=suppressed)
 

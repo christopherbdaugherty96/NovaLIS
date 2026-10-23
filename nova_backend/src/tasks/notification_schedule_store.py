@@ -421,6 +421,22 @@ class NotificationScheduleStore:
             return dict(item)
 
     @authoritative_mutation
+    def mark_notifications_blocked(self, schedule_id: str) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["last_delivery_outcome"] = "notifications_blocked"
+            item["last_delivery_note"] = (
+                "Windows notifications are blocked. Turn on notifications for Nova "
+                "in Windows Settings; this reminder remains pending."
+            )
+            item["updated_at"] = _as_iso(_utc_now())
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
     def clear_delivery_hold(self, schedule_id: str) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()

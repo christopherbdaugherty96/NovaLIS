@@ -21,7 +21,7 @@ import asyncio
 import time
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
-from datetime import datetime, time as dt_time, timedelta, tzinfo
+from datetime import datetime, time as dt_time, timedelta, timezone, tzinfo
 from typing import Any, Optional
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -281,6 +281,9 @@ reminder_delivery_service = ReminderDeliveryService(
     governor=RUNTIME_GOVERNOR,
     ledger_logger=lambda event_type, metadata: _log_ledger_event(
         RUNTIME_GOVERNOR, event_type, metadata
+    ),
+    attempted_ledger_logger=lambda event_type, metadata: RUNTIME_GOVERNOR.ledger.log_event(
+        event_type, metadata
     ),
     tick_seconds=30,
 )
@@ -2393,7 +2396,7 @@ def _parse_schedule_datetime(
         if zone is not None:
             now = now.astimezone(zone)
         if relative_match.group("half"):
-            return now + timedelta(minutes=30)
+            return (now.astimezone(timezone.utc) + timedelta(minutes=30)).astimezone(zone)
         if relative_match.group("article"):
             count = 1
         else:
@@ -2415,7 +2418,8 @@ def _parse_schedule_datetime(
             }
             count = int(raw_count) if raw_count.isdigit() else word_counts[raw_count]
         unit = str(relative_match.group("unit") or "minutes").lower()
-        return now + (timedelta(hours=count) if unit.startswith("hour") else timedelta(minutes=count))
+        duration = timedelta(hours=count) if unit.startswith("hour") else timedelta(minutes=count)
+        return (now.astimezone(timezone.utc) + duration).astimezone(zone)
     weekday_match = re.match(
         r"^(?:on\s+)?(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
         r"\s+at\s+(?P<time>.+)$",
