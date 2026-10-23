@@ -34,9 +34,17 @@ def test_uncertain_delivery_event_is_registered() -> None:
 
 
 class _Notifier:
-    def __init__(self, *, accepted: bool = True):
+    def __init__(self, *, accepted: bool = True, enabled: bool = True):
         self.accepted = accepted
+        self.enabled = enabled
         self.requests: list[NotificationRequest] = []
+
+    def readiness(self) -> NotificationResult:
+        return NotificationResult(
+            accepted=self.enabled,
+            adapter="test",
+            error_code="" if self.enabled else "NOTIFICATIONS_BLOCKED",
+        )
 
     def notify(self, request: NotificationRequest) -> NotificationResult:
         self.requests.append(request)
@@ -439,4 +447,40 @@ def test_attempt_and_completion_ledger_events_bracket_display(tmp_path):
         "NOTIFICATION_DELIVERY_ATTEMPTED",
         "NOTIFICATION_DELIVERY_COMPLETED",
     ]
+
+
+def test_windows_notifications_disabled_does_not_consume_due_reminder(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _make_due(store, now)
+    notifier = _Notifier(enabled=False)
+
+    outcome = _service(store, notifier).run_tick(now=now)
+
+    saved = store.get_schedule(item["id"])
+    assert outcome.delivered == 0
+    assert notifier.requests == []
+    assert saved["active"] is True
+    assert saved["delivery_state"] == "pending"
+    assert saved["last_delivery_outcome"] == "notifications_blocked"
+    assert "Windows Settings" in saved["last_delivery_note"]
+
+
+def test_attempted_receipt_failure_blocks_display_and_releases_claim(tmp_path):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+    item = _make_due(store, now)
+    notifier = _Notifier()
+
+    def raising_ledger(name, _metadata):
+        if name == "NOTIFICATION_DELIVERY_ATTEMPTED":
+            raise OSError("disk full")
+
+    outcome = _service(store, notifier, ledger=raising_ledger).run_tick(now=now)
+
+    saved = store.get_schedule(item["id"])
+    assert outcome.delivered == 0
+    assert notifier.requests == []
+    assert saved["active"] is True
+    assert saved["delivery_state"] == "pending"
 

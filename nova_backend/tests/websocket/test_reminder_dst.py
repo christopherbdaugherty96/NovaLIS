@@ -149,6 +149,43 @@ def test_schedule_parser_supports_relative_times(monkeypatch, time_text, expecte
     assert actual == expected
 
 
+@pytest.mark.parametrize(
+    ("now", "time_text", "expected"),
+    (
+        (
+            datetime(2026, 3, 8, 1, 30, tzinfo=EASTERN),
+            "in two hours",
+            datetime(2026, 3, 8, 4, 30, tzinfo=EASTERN),
+        ),
+        (
+            datetime(2026, 11, 1, 0, 30, tzinfo=EASTERN),
+            "in two hours",
+            datetime(2026, 11, 1, 1, 30, tzinfo=EASTERN, fold=1),
+        ),
+        (
+            datetime(2026, 11, 1, 1, 45, tzinfo=EASTERN, fold=0),
+            "in 30 minutes",
+            datetime(2026, 11, 1, 1, 15, tzinfo=EASTERN, fold=1),
+        ),
+    ),
+)
+def test_relative_duration_uses_elapsed_utc_time_across_dst(
+    monkeypatch, now, time_text, expected
+):
+    monkeypatch.setattr(brain_server, "_local_now", lambda: now)
+
+    actual = brain_server._parse_schedule_datetime(
+        time_text,
+        recurrence="once",
+        local_zone=EASTERN,
+    )
+
+    assert actual == expected
+    assert actual.astimezone(timezone.utc) - now.astimezone(timezone.utc) == (
+        timedelta(hours=2) if "two hours" in time_text else timedelta(minutes=30)
+    )
+
+
 def test_schedule_parser_accepts_zero_minute_boundary(monkeypatch):
     now = datetime(2026, 10, 21, 12, 0, 37, tzinfo=EASTERN)
     monkeypatch.setattr(brain_server, "_local_now", lambda: now)
