@@ -484,3 +484,43 @@ def test_attempted_receipt_failure_blocks_display_and_releases_claim(tmp_path):
     assert saved["active"] is True
     assert saved["delivery_state"] == "pending"
 
+
+def test_failed_receipt_and_release_recovers_claim_as_pending_then_delivers_once(
+    tmp_path, monkeypatch
+):
+    now = datetime(2026, 10, 21, 15, 0, tzinfo=timezone.utc)
+    path = tmp_path / "schedules.json"
+    store = NotificationScheduleStore(path)
+    item = _make_due(store, now)
+    first_notifier = _Notifier()
+
+    def raising_ledger(name, _metadata):
+        if name == "NOTIFICATION_DELIVERY_ATTEMPTED":
+            raise OSError("disk full")
+
+    def raising_release(*_args, **_kwargs):
+        raise OSError("store still locked")
+
+    monkeypatch.setattr(store, "release_claimed_occurrence", raising_release)
+    first = _service(store, first_notifier, ledger=raising_ledger)
+
+    assert first._safe_run_tick(now=now).delivered == 0
+    assert first_notifier.requests == []
+    assert NotificationScheduleStore(path).get_schedule(item["id"])["delivery_state"] == "claimed"
+
+    restarted_store = NotificationScheduleStore(path)
+    assert restarted_store.recover_interrupted_claims(now=now + timedelta(seconds=1)) == []
+    assert restarted_store.get_schedule(item["id"])["delivery_state"] == "pending"
+
+    recovered_notifier = _Notifier()
+    recovered = _service(restarted_store, recovered_notifier).run_tick(
+        now=now + timedelta(seconds=2)
+    )
+    repeated = _service(restarted_store, recovered_notifier).run_tick(
+        now=now + timedelta(seconds=32)
+    )
+
+    assert recovered.delivered == 1
+    assert repeated.delivered == 0
+    assert len(recovered_notifier.requests) == 1
+
