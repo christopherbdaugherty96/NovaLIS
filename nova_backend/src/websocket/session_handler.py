@@ -2394,7 +2394,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 or re.match(r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered)
             ):
                 if _is_trial_profile():
-                    await send_chat_message(ws, trial_network_unavailable_response)
+                    await send_chat_message(ws, "Weather isn't available in this trial version.")
                     await send_chat_done(ws)
                     continue
                 _, weather_result = await invoke_governed_text_command(

@@ -36,8 +36,8 @@ def test_default_profile_remains_unchanged(monkeypatch):
     ("text", "capability_id", "label"),
     (
         ("any news today?", 56, "News"),
-        ("what are the top headlines?", 49, "Headlines"),
-        ("daily brief", 50, "Daily briefs"),
+        ("summarize headlines all", 49, "Headlines"),
+        ("intelligence brief", 50, "Intelligence briefs"),
         ("send an email to Sam", 64, "Email drafting"),
         ("open youtube.com", 17, "Opening websites"),
         ("turn the volume up", 19, "Volume control"),

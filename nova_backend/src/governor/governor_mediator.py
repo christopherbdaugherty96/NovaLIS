@@ -23,6 +23,35 @@ _enabled_capability_ids_cache_at = 0.0
 _enabled_capability_ids_cache_profile = ""
 _state_lock = threading.RLock()
 
+TRIAL_DISABLED_CAPABILITY_LABELS: dict[int, str] = {
+    16: "Web search",
+    17: "Opening websites",
+    18: "Speech output",
+    19: "Volume control",
+    20: "Media control",
+    21: "Brightness control",
+    22: "Opening files and folders",
+    31: "Response verification",
+    32: "System diagnostics",
+    48: "Research reports",
+    49: "Headlines",
+    50: "Intelligence briefs",
+    51: "Topic memory maps",
+    52: "Story tracking",
+    53: "Story views",
+    54: "Analysis documents",
+    55: "Weather",
+    56: "News",
+    57: "Calendar",
+    58: "Screen capture",
+    59: "Screen analysis",
+    60: "Explain-anything",
+    62: "External reasoning",
+    63: "OpenClaw",
+    64: "Email drafting",
+    65: "Shopify reports",
+}
+
 
 def _evict_expired_pending_clarifications(now: float | None = None) -> None:
     t = monotonic() if now is None else now
@@ -95,9 +124,15 @@ def _load_enabled_capability_ids() -> frozenset[int]:
         return enabled_ids
 
 
-def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invocation | None:
+def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invocation | Clarification | None:
     if capability_id in _load_enabled_capability_ids():
         return Invocation(capability_id=capability_id, params=params)
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+        label = TRIAL_DISABLED_CAPABILITY_LABELS.get(capability_id, "That feature")
+        return Clarification(
+            capability_id=capability_id,
+            message=f"{label} isn't available in this trial version.",
+        )
     return None
 
 
@@ -1063,11 +1098,6 @@ def _is_trial_enabled_local_route(
 
 
 def _cap16_invocation_or_trial_unavailable(params: Dict[str, Any]) -> Invocation | Clarification | None:
-    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
-        return Clarification(
-            capability_id=16,
-            message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
-        )
     return _invocation_if_enabled(16, params)
 
 
@@ -1131,11 +1161,6 @@ class GovernorMediator:
             return None
 
         if WEATHER_RE.match(t):
-            if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() == "trial":
-                return Clarification(
-                    capability_id=55,
-                    message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
-                )
             weather_location = EXPLICIT_WEATHER_LOCATION_RE.match(t)
             location = (
                 re.sub(r"\s+", " ", weather_location.group("location")).strip(" ,.")
@@ -1349,7 +1374,7 @@ class GovernorMediator:
         ):
             return Clarification(
                 capability_id=16,
-                message=TRIAL_NETWORK_UNAVAILABLE_RESPONSE,
+                message="Web search isn't available in this trial version.",
             )
 
         if DOC_LIST_RE.match(t):
