@@ -246,7 +246,12 @@ def test_stale_current_ordering_language_is_rejected_outside_history(
 
 
 @pytest.mark.parametrize(
-    "revived", ("BETA_READINESS_SEQUENCE_V1: ACTIVE", "ALPHA_0_SEQUENCE: ACTIVE")
+    "revived",
+    (
+        "OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE",
+        "BETA_READINESS_SEQUENCE_V1: ACTIVE",
+        "ALPHA_0_SEQUENCE: ACTIVE",
+    ),
 )
 @pytest.mark.parametrize("relative", ("docs/todo/ACTIVE_TODO.md", MASTER_ROADMAP))
 def test_revived_superseded_lifecycle_marker_is_rejected_even_in_history(
@@ -264,6 +269,22 @@ def test_revived_superseded_lifecycle_marker_is_rejected_even_in_history(
     _assert_rejected(
         _owner_errors(checker, tmp_path), target, "superseded lifecycle marker declared ACTIVE"
     )
+
+
+@pytest.mark.parametrize(
+    "relative",
+    (
+        "README.md",
+        "docs/decisions/2026-09-03-beta-freeze-criteria.md",
+        "docs/decisions/2026-09-29-technical-alpha-protocol.md",
+    ),
+)
+def test_current_order_references_name_october_23_sequence(relative):
+    repo_root = Path(__file__).resolve().parents[2]
+    text = (repo_root / relative).read_text(encoding="utf-8")
+
+    assert "OWNER_OPERATING_SEQUENCE_2026_10_23" in text
+    assert "The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08`" not in text
 
 
 def test_stale_language_is_allowed_as_historical_provenance(tmp_path):

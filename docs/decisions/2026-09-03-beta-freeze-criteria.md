@@ -37,10 +37,29 @@ These block candidate freeze or outside-user distribution regardless of P-level 
 
 A hard blocker is never averaged away by otherwise successful tests or positive feedback.
 
-## Current sequence alignment — 2026-10-08 (Issue #457)
+## Current sequence alignment — 2026-10-23
 
-The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08` (Issue #457), recorded at the
-top of `.agent_context/current_priority.md` and the canonical status surfaces:
+The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_23`, recorded at the top of
+`.agent_context/current_priority.md` and the canonical status surfaces. Its acceptance requirements
+remain in force; ordering is now:
+
+```text
+COMPLETE: D1
+COMPLETE: F9b
+CURRENT: SEQ1
+NEXT: T1
+THEN: SF
+THEN: NL1
+THEN: model/laptop testing
+THEN: REL1
+THEN: installer
+THEN: rehearsal
+THEN: 2026-11-13 review
+```
+
+### Historical sequence — 2026-10-08 (superseded 2026-10-23)
+
+The former `OWNER_OPERATING_SEQUENCE_2026_10_08` order is retained for provenance only:
 
 ```text
 NEXT: egress inventory

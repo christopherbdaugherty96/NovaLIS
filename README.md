@@ -332,7 +332,7 @@ implementation scope. Issue #343 is historical stabilization provenance.
 ## Future Directions
 
 Current work order: the owner operating sequence at the top of this README
-(`OWNER_OPERATING_SEQUENCE_2026_10_08`). Long-term architecture history:
+(`OWNER_OPERATING_SEQUENCE_2026_10_23`). Long-term architecture history:
 [Nova Master Roadmap 2026-07-05](docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md).
 The documents below remain design references; none of them decides sequence.
 

@@ -118,7 +118,8 @@ MASTER_ROADMAP_SUPERSESSION_NOTE = (
 )
 # Superseded lifecycles may survive only as historical provenance, never as ACTIVE.
 SUPERSEDED_ACTIVE_LIFECYCLE = re.compile(
-    r"\b(?:BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)[*_`\s]*:[*_`\s]*ACTIVE\b"
+    r"\b(?:OWNER_OPERATING_SEQUENCE_2026_10_08|BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)"
+    r"[*_`\s]*:[*_`\s]*ACTIVE\b"
 )
 # Superseded current-ordering language allowed only under explicitly historical headings.
 SUPERSEDED_ORDERING_LANGUAGE = (
@@ -1512,7 +1513,7 @@ def _superseded_ordering_errors(text: str) -> tuple[str, ...]:
     if SUPERSEDED_ACTIVE_LIFECYCLE.search(text.upper()):
         errors.append(
             "superseded lifecycle marker declared ACTIVE "
-            "(BETA_READINESS_SEQUENCE_V1 / ALPHA_0_SEQUENCE must be historical)"
+            "(October 8 / BETA_READINESS_SEQUENCE_V1 / ALPHA_0_SEQUENCE must be historical)"
         )
     current = _non_historical_text(text)
     for pattern in SUPERSEDED_ORDERING_LANGUAGE:
