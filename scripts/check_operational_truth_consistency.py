@@ -87,20 +87,22 @@ CURRENT_LIFECYCLE_GENERATION = OWNER_SEQUENCE_KEY
 HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
 # Owner-ratified trial-readiness sequence. Lines are compared after bounded
 # Markdown normalization and upper-casing, exactly like the historical lines.
-OWNER_SEQUENCE_DIRECTIVES = (
-    "CURRENT: SEQ1",
-    "NEXT: T1",
-    "THEN: SF",
-    "THEN: NL1",
-    "THEN: MODEL/LAPTOP TESTING",
-    "THEN: REL1",
-    "THEN: INSTALLER",
-    "THEN: REHEARSAL",
-    "THEN: 2026-11-13 REVIEW",
+OWNER_SEQUENCE_LANES = (
+    "D1",
+    "F9B",
+    "SEQ1",
+    "T1",
+    "SF",
+    "NL1",
+    "MODEL/LAPTOP TESTING",
+    "REL1",
+    "INSTALLER",
+    "REHEARSAL",
+    "2026-11-13 REVIEW",
 )
-OWNER_SEQUENCE_REQUIRED_LINES = (
-    "COMPLETE: D1",
-    "COMPLETE: F9B",
+OWNER_SEQUENCE_DATA_OUT_REQUIREMENT = (
+    "REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT + "
+    "ZERO-ATTEMPT DENIAL PROOF (T1 COVERS TRIAL ISOLATION ONLY)."
 )
 OWNER_SEQUENCE_PAUSED_CATEGORIES = (
     "GOOGLE/PROVIDER EXPANSION",
@@ -1478,11 +1480,31 @@ def _preserves_owner_sequence(text: str) -> bool:
     directives = tuple(
         line
         for line in structured_lines
-        if re.match(r"^(?:CURRENT|NEXT(?: [A-Z ]+)?|THEN):", line)
+        if re.match(r"^(?:COMPLETE|CURRENT|NEXT|THEN):", line)
     )
-    if directives != OWNER_SEQUENCE_DIRECTIVES:
+    parsed = tuple(
+        match.groups()
+        for line in directives
+        if (match := re.fullmatch(r"(COMPLETE|CURRENT|NEXT|THEN):\s+(.+)", line))
+    )
+    if len(parsed) != len(directives):
         return False
-    if any(structured_lines.count(required) != 1 for required in OWNER_SEQUENCE_REQUIRED_LINES):
+    statuses = tuple(status for status, _ in parsed)
+    lanes = tuple(lane for _, lane in parsed)
+    if lanes != OWNER_SEQUENCE_LANES:
+        return False
+    complete_count = 0
+    while complete_count < len(statuses) and statuses[complete_count] == "COMPLETE":
+        complete_count += 1
+    remaining = statuses[complete_count:]
+    if remaining:
+        if remaining[0] == "CURRENT":
+            remaining = remaining[1:]
+        if not remaining or remaining[0] != "NEXT" or any(
+            status != "THEN" for status in remaining[1:]
+        ):
+            return False
+    if statuses.count("CURRENT") > 1:
         return False
     lifecycle_states = tuple(
         state
@@ -1492,6 +1514,8 @@ def _preserves_owner_sequence(text: str) -> bool:
     if lifecycle_states != ("ACTIVE",):
         return False
     normalized = " ".join(active.split())
+    if normalized.count(OWNER_SEQUENCE_DATA_OUT_REQUIREMENT) != 1:
+        return False
     if normalized.count(OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY) != 1:
         return False
     if not all(

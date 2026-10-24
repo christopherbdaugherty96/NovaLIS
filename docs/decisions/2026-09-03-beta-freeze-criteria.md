@@ -46,7 +46,7 @@ remain in force; ordering is now:
 ```text
 COMPLETE: D1
 COMPLETE: F9b
-CURRENT: SEQ1
+COMPLETE: SEQ1
 NEXT: T1
 THEN: SF
 THEN: NL1
@@ -56,6 +56,8 @@ THEN: installer
 THEN: rehearsal
 THEN: 2026-11-13 review
 ```
+
+REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + zero-attempt denial proof (T1 covers trial isolation only).
 
 ### Historical sequence — 2026-10-08 (superseded 2026-10-23)
 

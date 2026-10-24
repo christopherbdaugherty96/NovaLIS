@@ -35,7 +35,7 @@ These are disclosure notes, not mitigations or proof that other data paths are s
 OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE
 COMPLETE: D1
 COMPLETE: F9b
-CURRENT: SEQ1
+COMPLETE: SEQ1
 NEXT: T1
 THEN: SF
 THEN: NL1
@@ -45,6 +45,8 @@ THEN: installer
 THEN: rehearsal
 THEN: 2026-11-13 review
 ```
+
+REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + zero-attempt denial proof (T1 covers trial isolation only).
 
 Google/provider expansion remains paused. Operational Continuity implementation remains paused.
 New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
