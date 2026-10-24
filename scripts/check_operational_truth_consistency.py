@@ -80,31 +80,29 @@ POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 POST_405_LIFECYCLE_MARKER = "BETA_READINESS_SEQUENCE_V1: ACTIVE"
 POST_405_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
-OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_08"
+OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_23"
 OWNER_SEQUENCE_MARKER = f"{OWNER_SEQUENCE_KEY}: ACTIVE"
+HISTORICAL_OWNER_SEQUENCE_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL"
 CURRENT_LIFECYCLE_GENERATION = OWNER_SEQUENCE_KEY
 HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
-# Issue #457 owner operating sequence. Lines are compared after bounded Markdown
-# normalization and upper-casing, exactly like the historical post-#405 lines.
-OWNER_SEQUENCE_DIRECTIVES = (
-    "NEXT: EGRESS INVENTORY",
-    "THEN: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT AT THE COMMON OUTBOUND BOUNDARY",
-    "THEN: ZERO-ATTEMPT DENIAL PROOF (DENY -> ZERO TRANSMISSION, ZERO ATTEMPTED EXTERNAL "
-    "CONNECTION, EXPLICIT LOCAL RESULT, DURABLE DECISION/DISCLOSURE EVIDENCE)",
-    "THEN: CLEAN ATTRIBUTABLE ALPHA-0 WINDOWS ARTIFACT (EXACT-SHA CLEAN EXPORT + "
-    "FORBIDDEN-CONTENT SCAN)",
-    "THEN: ONE DEFINED EXTERNAL TECHNICAL-OPERATOR WORKFLOW AGAINST THAT EXACT ARTIFACT",
-    "THEN: EVIDENCE-DRIVEN BLOCKER-ONLY FIXES",
-    "THEN: FROZEN PRIVATE-BETA CANDIDATE",
-    "THEN: THREE REAL USERS",
-    "THEN: MINIMAL CONTINUITY ONLY IF PRODUCT EVIDENCE EARNS IT",
+# Owner-ratified trial-readiness sequence. Lines are compared after bounded
+# Markdown normalization and upper-casing, exactly like the historical lines.
+OWNER_SEQUENCE_LANES = (
+    "D1",
+    "F9B",
+    "SEQ1",
+    "T1",
+    "SF",
+    "NL1",
+    "MODEL/LAPTOP TESTING",
+    "REL1",
+    "INSTALLER",
+    "REHEARSAL",
+    "2026-11-13 REVIEW",
 )
-OWNER_SEQUENCE_REQUIRED_LINES = (
-    "GUARD: NOVA SUBSYSTEM; GUARD ADOPTION AND 30-DAY METRICS DO NOT GATE NOVA",
-    "COMPLETE: ACTUAL-PEER LOCALITY P1 (PR #447)",
-    "RECOVERY: FOUNDATIONS PRESERVED (LANE 5A); FURTHER RECOVERY IMPLEMENTATION NEEDS A "
-    "LATER EXPLICIT OWNER DECISION OR EVIDENCE-BACKED NEED; NOT A PREREQUISITE FOR THE "
-    "PRIVATE-BETA CANDIDATE",
+OWNER_SEQUENCE_DATA_OUT_REQUIREMENT = (
+    "REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT + "
+    "ZERO-ATTEMPT DENIAL PROOF (T1 COVERS TRIAL ISOLATION ONLY)."
 )
 OWNER_SEQUENCE_PAUSED_CATEGORIES = (
     "GOOGLE/PROVIDER EXPANSION",
@@ -122,7 +120,8 @@ MASTER_ROADMAP_SUPERSESSION_NOTE = (
 )
 # Superseded lifecycles may survive only as historical provenance, never as ACTIVE.
 SUPERSEDED_ACTIVE_LIFECYCLE = re.compile(
-    r"\b(?:BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)[*_`\s]*:[*_`\s]*ACTIVE\b"
+    r"\b(?:OWNER_OPERATING_SEQUENCE_2026_10_08|BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)"
+    r"[*_`\s]*:[*_`\s]*ACTIVE\b"
 )
 # Superseded current-ordering language allowed only under explicitly historical headings.
 SUPERSEDED_ORDERING_LANGUAGE = (
@@ -1467,22 +1466,57 @@ _PAUSED_CONTRADICTORY_STATES = (
 )
 
 
-def _preserves_owner_sequence(text: str) -> bool:
-    """Require one active owner operating sequence with the exact #457 order."""
-
+def _owner_sequence_progress(text: str) -> tuple[tuple[str, str], ...] | None:
+    """Return validated progress over the fixed owner-ratified lane order."""
     active = _extract_owner_sequence_block(text)
     if active is None:
-        return False
+        return None
     structured_lines = tuple(
         _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
     )
     directives = tuple(
-        line for line in structured_lines if re.match(r"^(?:NEXT(?: [A-Z ]+)?|THEN):", line)
+        line
+        for line in structured_lines
+        if re.match(r"^(?:COMPLETE|CURRENT|NEXT|THEN):", line)
     )
-    if directives != OWNER_SEQUENCE_DIRECTIVES:
+    parsed = tuple(
+        match.groups()
+        for line in directives
+        if (match := re.fullmatch(r"(COMPLETE|CURRENT|NEXT|THEN):\s+(.+)", line))
+    )
+    if len(parsed) != len(directives):
+        return None
+    statuses = tuple(status for status, _ in parsed)
+    lanes = tuple(lane for _, lane in parsed)
+    if lanes != OWNER_SEQUENCE_LANES:
+        return None
+    complete_count = 0
+    while complete_count < len(statuses) and statuses[complete_count] == "COMPLETE":
+        complete_count += 1
+    remaining = statuses[complete_count:]
+    if remaining:
+        if remaining[0] == "CURRENT":
+            remaining = remaining[1:]
+        if not remaining or remaining[0] != "NEXT" or any(
+            status != "THEN" for status in remaining[1:]
+        ):
+            return None
+    if statuses.count("CURRENT") > 1:
+        return None
+    return parsed
+
+
+def _preserves_owner_sequence(text: str) -> bool:
+    """Require one active owner operating sequence with the exact ratified order."""
+
+    active = _extract_owner_sequence_block(text)
+    if active is None or _owner_sequence_progress(text) is None:
         return False
-    if any(structured_lines.count(required) != 1 for required in OWNER_SEQUENCE_REQUIRED_LINES):
+    if text.count(HISTORICAL_OWNER_SEQUENCE_MARKER) != 1:
         return False
+    structured_lines = tuple(
+        _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
+    )
     lifecycle_states = tuple(
         state
         for line in active.splitlines()
@@ -1491,6 +1525,8 @@ def _preserves_owner_sequence(text: str) -> bool:
     if lifecycle_states != ("ACTIVE",):
         return False
     normalized = " ".join(active.split())
+    if normalized.count(OWNER_SEQUENCE_DATA_OUT_REQUIREMENT) != 1:
+        return False
     if normalized.count(OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY) != 1:
         return False
     if not all(
@@ -1512,7 +1548,7 @@ def _superseded_ordering_errors(text: str) -> tuple[str, ...]:
     if SUPERSEDED_ACTIVE_LIFECYCLE.search(text.upper()):
         errors.append(
             "superseded lifecycle marker declared ACTIVE "
-            "(BETA_READINESS_SEQUENCE_V1 / ALPHA_0_SEQUENCE must be historical)"
+            "(October 8 / BETA_READINESS_SEQUENCE_V1 / ALPHA_0_SEQUENCE must be historical)"
         )
     current = _non_historical_text(text)
     for pattern in SUPERSEDED_ORDERING_LANGUAGE:
@@ -1704,6 +1740,21 @@ def check_operational_truth(
                     f"{paths[name]}: current ordering does not preserve the owner operating "
                     f"sequence ({OWNER_SEQUENCE_MARKER})"
                 )
+        progress_by_surface = {
+            name: progress
+            for name in CURRENT_ORDERING_SURFACES
+            if (text := texts.get(name)) is not None
+            and (progress := _owner_sequence_progress(text)) is not None
+        }
+        if progress_by_surface:
+            baseline_name = next(iter(progress_by_surface))
+            baseline = progress_by_surface[baseline_name]
+            for name, progress in progress_by_surface.items():
+                if progress != baseline:
+                    errors.append(
+                        f"{paths[name]}: owner operating sequence progress mismatch "
+                        f"({baseline_name} differs)"
+                    )
         for name in (*CURRENT_ORDERING_SURFACES, "master_roadmap"):
             text = texts.get(name)
             if text is None:

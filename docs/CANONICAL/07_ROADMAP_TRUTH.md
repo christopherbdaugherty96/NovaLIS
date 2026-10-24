@@ -5,10 +5,36 @@
 This file does not redesign Nova's roadmap. It records the current owner operating sequence and
 keeps earlier checkpoints as historical provenance.
 
-## Current owner operating sequence — 2026-10-08
+## Current owner operating sequence — 2026-10-23
 
 ```text
-OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE
+OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE
+COMPLETE: D1
+COMPLETE: F9b
+COMPLETE: SEQ1
+NEXT: T1
+THEN: SF
+THEN: NL1
+THEN: model/laptop testing
+THEN: REL1
+THEN: installer
+THEN: rehearsal
+THEN: 2026-11-13 review
+```
+
+REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + zero-attempt denial proof (T1 covers trial isolation only).
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
+This sequence grants no new capability or authority.
+
+The October 8 sequence remains below as historical provenance and no longer orders work.
+
+## Historical owner operating sequence — 2026-10-08 (superseded 2026-10-23)
+
+```text
+OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL
 owner decision: NovaLIS #457 (2026-10-08); product direction: christopherbdaugherty96/Nova#3
 GOAL: Nova is the product.
 GUARD: Nova subsystem; Guard adoption and 30-day metrics do not gate Nova
@@ -42,7 +68,7 @@ current work order. Permanent truth boundaries remain in force.
 
 ## Ordering authority
 
-- The owner operating sequence above (`OWNER_OPERATING_SEQUENCE_2026_10_08`, Issue #457) is the current work order.
+- The owner operating sequence above (`OWNER_OPERATING_SEQUENCE_2026_10_23`) is the current work order.
 - [`../future/NOVA_MASTER_ROADMAP_2026-07-05.md`](../future/NOVA_MASTER_ROADMAP_2026-07-05.md) is retained as long-term architecture history; it does not order current work.
 - Issue #343 is the historical detailed stabilization checkpoint/order.
 - Lane-specific lock/spec documents remain scope authority for their lane.
