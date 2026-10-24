@@ -28,6 +28,14 @@ class OpenAIResponsesLane:
         self._network = network or NetworkMediator()
 
     def plan_for_openclaw_fallback(self) -> dict[str, Any]:
+        if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+            return {
+                "allowed": False,
+                "reason": "OpenAI isn't available in this trial version.",
+                "routing_mode": "disabled_by_profile",
+                "preferred_model": "",
+                "budget_state": "not_applicable",
+            }
         settings_snapshot = runtime_settings_store.snapshot()
         provider_policy = dict(settings_snapshot.get("provider_policy") or {})
         usage_budget = dict(settings_snapshot.get("usage_budget") or {})
@@ -93,6 +101,8 @@ class OpenAIResponsesLane:
         max_output_tokens: int = 220,
         task_label: str = "OpenClaw task report",
     ) -> dict[str, Any]:
+        if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+            raise OpenAIResponsesLaneError("OpenAI isn't available in this trial version.")
         api_key = str(os.getenv("OPENAI_API_KEY") or "").strip()
         if not api_key:
             raise OpenAIResponsesLaneError("OPENAI_API_KEY is not configured.")
