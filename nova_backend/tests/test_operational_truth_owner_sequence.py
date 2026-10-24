@@ -16,8 +16,23 @@ import pytest
 OWNER_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE"
 HISTORICAL_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL"
 MASTER_ROADMAP = "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
+EXPECTED_LANES = (
+    "D1",
+    "F9B",
+    "SEQ1",
+    "T1",
+    "SF",
+    "NL1",
+    "MODEL/LAPTOP TESTING",
+    "REL1",
+    "INSTALLER",
+    "REHEARSAL",
+    "2026-11-13 REVIEW",
+)
 EXPECTED_DIRECTIVES = (
-    "CURRENT: SEQ1",
+    "COMPLETE: D1",
+    "COMPLETE: F9B",
+    "COMPLETE: SEQ1",
     "NEXT: T1",
     "THEN: SF",
     "THEN: NL1",
@@ -80,7 +95,7 @@ def test_current_lifecycle_generation_is_the_owner_sequence():
 
     assert checker.CURRENT_LIFECYCLE_GENERATION == "OWNER_OPERATING_SEQUENCE_2026_10_23"
     assert checker.POST_405_LIFECYCLE_GENERATION == "POST_405_BETA_READINESS_V1"
-    assert checker.OWNER_SEQUENCE_DIRECTIVES == EXPECTED_DIRECTIVES
+    assert checker.OWNER_SEQUENCE_LANES == EXPECTED_LANES
 
 
 def test_live_repository_passes_owner_sequence_lifecycle():
@@ -102,7 +117,7 @@ def test_each_ordering_surface_has_one_owner_block_with_exact_sequence(relative)
         line
         for raw in block.splitlines()
         if (line := checker._normalize_post_405_structured_line(raw).rstrip()).startswith(
-            ("CURRENT:", "NEXT:", "THEN:")
+            ("COMPLETE:", "CURRENT:", "NEXT:", "THEN:")
         )
     )
     assert directives == EXPECTED_DIRECTIVES
@@ -140,11 +155,11 @@ def test_reordered_trial_lockdown_and_sequence_sync_are_rejected(tmp_path):
     _copy_live_surfaces(checker, tmp_path)
     target = tmp_path / "AGENTS.md"
     text = target.read_text(encoding="utf-8")
-    swapped = text.replace("CURRENT: SEQ1", "@@", 1).replace(
+    swapped = text.replace("COMPLETE: SEQ1", "@@", 1).replace(
         "NEXT: T1",
         "NEXT: SEQ1",
         1,
-    ).replace("@@", "CURRENT: T1", 1)
+    ).replace("@@", "COMPLETE: T1", 1)
     assert swapped != text
     target.write_text(swapped, encoding="utf-8")
 
@@ -161,6 +176,65 @@ def test_installer_before_rel1_is_rejected(tmp_path):
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
         "THEN: REL1\nTHEN: installer",
         "THEN: installer\nTHEN: REL1",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
+    )
+
+
+def test_two_current_lanes_are_rejected(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = _mutate(
+        tmp_path,
+        "README.md",
+        "NEXT: T1\nTHEN: SF",
+        "CURRENT: T1\nCURRENT: SF",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
+    )
+
+
+def test_missing_lane_is_rejected(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = _mutate(tmp_path, "README.md", "THEN: NL1\n", "")
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
+    )
+
+
+def test_advancing_one_lane_needs_no_checker_change():
+    checker = _load_checker()
+    text = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    advanced = text.replace("NEXT: T1\nTHEN: SF", "COMPLETE: T1\nNEXT: SF", 1)
+
+    assert advanced != text
+    assert checker._preserves_owner_sequence(advanced)
+
+
+@pytest.mark.parametrize("relative", ORDERING_SURFACES)
+def test_distribution_data_out_requirement_is_current_and_enforced(relative):
+    checker = _load_checker()
+    text = (checker.ROOT / relative).read_text(encoding="utf-8")
+    requirement = checker.OWNER_SEQUENCE_DATA_OUT_REQUIREMENT
+
+    assert requirement in " ".join(text.upper().split())
+
+
+def test_missing_distribution_data_out_requirement_is_rejected(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = _mutate(
+        tmp_path,
+        "README.md",
+        "REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + "
+        "zero-attempt denial proof (T1 covers trial isolation only).",
+        "T1 covers trial isolation.",
     )
 
     _assert_rejected(
