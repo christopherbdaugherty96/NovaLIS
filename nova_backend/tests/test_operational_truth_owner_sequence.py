@@ -1,9 +1,8 @@
-"""Issue #457: the owner operating sequence is the single current lifecycle.
+"""The owner-ratified 2026-10-23 sequence is the single current lifecycle.
 
-These tests bind the operational-truth checker to OWNER_OPERATING_SEQUENCE_2026_10_08
-and prove that the superseded post-#405 / Alpha-0 / day-30 Guard ordering cannot
-silently return as current truth. Historical provenance stays allowed under
-explicitly historical headings.
+These tests bind the operational-truth checker to OWNER_OPERATING_SEQUENCE_2026_10_23
+and prove that the superseded 2026-10-08 sequence remains historical rather than
+silently returning as current truth.
 """
 
 from __future__ import annotations
@@ -14,20 +13,19 @@ from pathlib import Path
 
 import pytest
 
-OWNER_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE"
+OWNER_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE"
+HISTORICAL_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL"
 MASTER_ROADMAP = "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
 EXPECTED_DIRECTIVES = (
-    "NEXT: EGRESS INVENTORY",
-    "THEN: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT AT THE COMMON OUTBOUND BOUNDARY",
-    "THEN: ZERO-ATTEMPT DENIAL PROOF (DENY -> ZERO TRANSMISSION, ZERO ATTEMPTED EXTERNAL "
-    "CONNECTION, EXPLICIT LOCAL RESULT, DURABLE DECISION/DISCLOSURE EVIDENCE)",
-    "THEN: CLEAN ATTRIBUTABLE ALPHA-0 WINDOWS ARTIFACT (EXACT-SHA CLEAN EXPORT + "
-    "FORBIDDEN-CONTENT SCAN)",
-    "THEN: ONE DEFINED EXTERNAL TECHNICAL-OPERATOR WORKFLOW AGAINST THAT EXACT ARTIFACT",
-    "THEN: EVIDENCE-DRIVEN BLOCKER-ONLY FIXES",
-    "THEN: FROZEN PRIVATE-BETA CANDIDATE",
-    "THEN: THREE REAL USERS",
-    "THEN: MINIMAL CONTINUITY ONLY IF PRODUCT EVIDENCE EARNS IT",
+    "CURRENT: SEQ1",
+    "NEXT: T1",
+    "THEN: SF",
+    "THEN: NL1",
+    "THEN: MODEL/LAPTOP TESTING",
+    "THEN: REL1",
+    "THEN: INSTALLER",
+    "THEN: REHEARSAL",
+    "THEN: 2026-11-13 REVIEW",
 )
 ORDERING_SURFACES = (
     "README.md",
@@ -80,7 +78,7 @@ def _assert_rejected(errors: list[str], target: Path, fragment: str) -> None:
 def test_current_lifecycle_generation_is_the_owner_sequence():
     checker = _load_checker()
 
-    assert checker.CURRENT_LIFECYCLE_GENERATION == "OWNER_OPERATING_SEQUENCE_2026_10_08"
+    assert checker.CURRENT_LIFECYCLE_GENERATION == "OWNER_OPERATING_SEQUENCE_2026_10_23"
     assert checker.POST_405_LIFECYCLE_GENERATION == "POST_405_BETA_READINESS_V1"
     assert checker.OWNER_SEQUENCE_DIRECTIVES == EXPECTED_DIRECTIVES
 
@@ -104,7 +102,7 @@ def test_each_ordering_surface_has_one_owner_block_with_exact_sequence(relative)
         line
         for raw in block.splitlines()
         if (line := checker._normalize_post_405_structured_line(raw).rstrip()).startswith(
-            ("NEXT", "THEN:")
+            ("CURRENT:", "NEXT:", "THEN:")
         )
     )
     assert directives == EXPECTED_DIRECTIVES
@@ -115,7 +113,7 @@ def test_missing_owner_marker_is_rejected(tmp_path, relative):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
-        tmp_path, relative, OWNER_MARKER, "OWNER_OPERATING_SEQUENCE_2026_10_08: PROPOSED"
+        tmp_path, relative, OWNER_MARKER, "OWNER_OPERATING_SEQUENCE_2026_10_23: PROPOSED"
     )
 
     _assert_rejected(
@@ -137,16 +135,16 @@ def test_second_active_owner_marker_is_rejected(tmp_path):
     )
 
 
-def test_reordered_data_out_and_inventory_are_rejected(tmp_path):
+def test_reordered_trial_lockdown_and_sequence_sync_are_rejected(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = tmp_path / "AGENTS.md"
     text = target.read_text(encoding="utf-8")
-    swapped = text.replace("NEXT: egress inventory", "@@", 1).replace(
-        "THEN: provider-neutral Data-Out enforcement at the common outbound boundary",
-        "THEN: egress inventory",
+    swapped = text.replace("CURRENT: SEQ1", "@@", 1).replace(
+        "NEXT: T1",
+        "NEXT: SEQ1",
         1,
-    ).replace("@@", "NEXT: provider-neutral Data-Out enforcement at the common outbound boundary", 1)
+    ).replace("@@", "CURRENT: T1", 1)
     assert swapped != text
     target.write_text(swapped, encoding="utf-8")
 
@@ -155,15 +153,14 @@ def test_reordered_data_out_and_inventory_are_rejected(tmp_path):
     )
 
 
-def test_recovery_before_private_beta_is_rejected(tmp_path):
+def test_installer_before_rel1_is_rejected(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
         tmp_path,
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
-        "THEN: frozen private-beta candidate",
-        "THEN: recovery adoption with restrictive restore semantics\n"
-        "THEN: frozen private-beta candidate",
+        "THEN: REL1\nTHEN: installer",
+        "THEN: installer\nTHEN: REL1",
     )
 
     _assert_rejected(
@@ -289,13 +286,22 @@ def test_stale_language_is_allowed_as_historical_provenance(tmp_path):
     assert _owner_errors(checker, tmp_path) == []
 
 
+@pytest.mark.parametrize("relative", ORDERING_SURFACES)
+def test_each_ordering_surface_preserves_october_8_sequence_as_historical(relative):
+    checker = _load_checker()
+    text = (checker.ROOT / relative).read_text(encoding="utf-8")
+
+    assert text.count(HISTORICAL_MARKER) == 1
+    assert "NEXT: egress inventory" in text
+
+
 def test_master_roadmap_must_record_supersession_as_ordering_authority(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
         tmp_path,
         MASTER_ROADMAP,
-        "superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_08",
+        "superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_23",
         "retained",
     )
 
