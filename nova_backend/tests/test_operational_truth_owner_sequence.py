@@ -208,13 +208,30 @@ def test_missing_lane_is_rejected(tmp_path):
     )
 
 
-def test_advancing_one_lane_needs_no_checker_change():
+def test_advancing_one_lane_needs_no_checker_change(tmp_path):
     checker = _load_checker()
-    text = (checker.ROOT / "README.md").read_text(encoding="utf-8")
-    advanced = text.replace("NEXT: T1\nTHEN: SF", "COMPLETE: T1\nNEXT: SF", 1)
+    _copy_live_surfaces(checker, tmp_path)
+    for relative in ORDERING_SURFACES:
+        target = tmp_path / relative
+        text = target.read_text(encoding="utf-8")
+        advanced = text.replace("NEXT: T1\nTHEN: SF", "COMPLETE: T1\nNEXT: SF", 1)
+        assert advanced != text
+        target.write_text(advanced, encoding="utf-8")
 
-    assert advanced != text
-    assert checker._preserves_owner_sequence(advanced)
+    assert _owner_errors(checker, tmp_path) == []
+
+
+def test_partial_lane_advance_is_rejected(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = _mutate(
+        tmp_path,
+        ".agent_context/current_priority.md",
+        "NEXT: T1\nTHEN: SF",
+        "COMPLETE: T1\nNEXT: SF",
+    )
+
+    _assert_rejected(_owner_errors(checker, tmp_path), target, "progress mismatch")
 
 
 @pytest.mark.parametrize("relative", ORDERING_SURFACES)
