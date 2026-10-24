@@ -13,15 +13,39 @@ Use the source appropriate to the claim:
 1. **Implementation:** running code in `nova_backend/` determines what behavior is implemented.
 2. **Automated/recorded evidence:** tests, proof packets, and live-verification artifacts are evidence for the revision, environment, and scope they actually exercised.
 3. **Mechanically generated runtime claims:** `docs/current_runtime/` — authoritative only for the properties each generator actually measures.
-4. **Current ordering / operational interpretation:** the owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_08`, Issue #457) mirrored on the current canonical/status/priority documents.
+4. **Current ordering / operational interpretation:** the owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_23`) mirrored on the current canonical/status/priority documents.
 5. **Design / strategy / future / archive:** intent, constraints, and history; never proof of current implementation or authority.
 
 Generated documents can become incomplete or misleading when their generators have incomplete coverage. A generated PASS must not be expanded into a claim the generator did not test.
 
-## Current development interpretation — owner operating sequence (2026-10-08)
+## Current development interpretation — owner operating sequence (2026-10-23)
 
 ```text
-OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE
+OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE
+COMPLETE: D1
+COMPLETE: F9b
+CURRENT: SEQ1
+NEXT: T1
+THEN: SF
+THEN: NL1
+THEN: model/laptop testing
+THEN: REL1
+THEN: installer
+THEN: rehearsal
+THEN: 2026-11-13 review
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
+This sequence grants no new capability or authority.
+
+The October 8 sequence remains below as historical provenance and no longer orders work.
+
+## Historical development interpretation — owner operating sequence (2026-10-08; superseded 2026-10-23)
+
+```text
+OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL
 owner decision: NovaLIS #457 (2026-10-08); product direction: christopherbdaugherty96/Nova#3
 GOAL: Nova is the product.
 GUARD: Nova subsystem; Guard adoption and 30-day metrics do not gate Nova

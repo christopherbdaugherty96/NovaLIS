@@ -184,7 +184,7 @@ def test_missing_no_authority_boundary_is_rejected(tmp_path, relative):
     )
 
 
-def test_missing_recovery_reconciliation_is_rejected(tmp_path):
+def test_historical_recovery_wording_does_not_control_current_sequence(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
@@ -194,12 +194,10 @@ def test_missing_recovery_reconciliation_is_rejected(tmp_path):
         "required before the private-beta candidate",
     )
 
-    _assert_rejected(
-        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
-    )
+    assert _owner_errors(checker, tmp_path) == []
 
 
-def test_guard_gating_return_is_rejected(tmp_path):
+def test_historical_guard_wording_does_not_control_current_sequence(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
@@ -209,9 +207,7 @@ def test_guard_gating_return_is_rejected(tmp_path):
         "Guard adoption and 30-day metrics gate Nova",
     )
 
-    _assert_rejected(
-        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
-    )
+    assert _owner_errors(checker, tmp_path) == []
 
 
 @pytest.mark.parametrize(

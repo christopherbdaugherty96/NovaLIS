@@ -20,10 +20,34 @@ Operational Continuity is strategic direction, not current runtime authority.
 
 The consolidated August Product/Platform strategy is merged as strategy-only guidance through PR #355. Strategy does not override current runtime truth, operational ordering, lane scope, or authority.
 
-## Current owner operating sequence — 2026-10-08
+## Current owner operating sequence — 2026-10-23
 
 ```text
-OWNER_OPERATING_SEQUENCE_2026_10_08: ACTIVE
+OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE
+COMPLETE: D1
+COMPLETE: F9b
+CURRENT: SEQ1
+NEXT: T1
+THEN: SF
+THEN: NL1
+THEN: model/laptop testing
+THEN: REL1
+THEN: installer
+THEN: rehearsal
+THEN: 2026-11-13 review
+```
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
+This sequence grants no new capability or authority.
+
+The October 8 sequence remains below as historical provenance and no longer orders work.
+
+## Historical owner operating sequence — 2026-10-08 (superseded 2026-10-23)
+
+```text
+OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL
 owner decision: NovaLIS #457 (2026-10-08); product direction: christopherbdaugherty96/Nova#3
 GOAL: Nova is the product.
 GUARD: Nova subsystem; Guard adoption and 30-day metrics do not gate Nova

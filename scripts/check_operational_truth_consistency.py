@@ -80,31 +80,27 @@ POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 POST_405_LIFECYCLE_MARKER = "BETA_READINESS_SEQUENCE_V1: ACTIVE"
 POST_405_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
-OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_08"
+OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_23"
 OWNER_SEQUENCE_MARKER = f"{OWNER_SEQUENCE_KEY}: ACTIVE"
+HISTORICAL_OWNER_SEQUENCE_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL"
 CURRENT_LIFECYCLE_GENERATION = OWNER_SEQUENCE_KEY
 HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
-# Issue #457 owner operating sequence. Lines are compared after bounded Markdown
-# normalization and upper-casing, exactly like the historical post-#405 lines.
+# Owner-ratified trial-readiness sequence. Lines are compared after bounded
+# Markdown normalization and upper-casing, exactly like the historical lines.
 OWNER_SEQUENCE_DIRECTIVES = (
-    "NEXT: EGRESS INVENTORY",
-    "THEN: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT AT THE COMMON OUTBOUND BOUNDARY",
-    "THEN: ZERO-ATTEMPT DENIAL PROOF (DENY -> ZERO TRANSMISSION, ZERO ATTEMPTED EXTERNAL "
-    "CONNECTION, EXPLICIT LOCAL RESULT, DURABLE DECISION/DISCLOSURE EVIDENCE)",
-    "THEN: CLEAN ATTRIBUTABLE ALPHA-0 WINDOWS ARTIFACT (EXACT-SHA CLEAN EXPORT + "
-    "FORBIDDEN-CONTENT SCAN)",
-    "THEN: ONE DEFINED EXTERNAL TECHNICAL-OPERATOR WORKFLOW AGAINST THAT EXACT ARTIFACT",
-    "THEN: EVIDENCE-DRIVEN BLOCKER-ONLY FIXES",
-    "THEN: FROZEN PRIVATE-BETA CANDIDATE",
-    "THEN: THREE REAL USERS",
-    "THEN: MINIMAL CONTINUITY ONLY IF PRODUCT EVIDENCE EARNS IT",
+    "CURRENT: SEQ1",
+    "NEXT: T1",
+    "THEN: SF",
+    "THEN: NL1",
+    "THEN: MODEL/LAPTOP TESTING",
+    "THEN: REL1",
+    "THEN: INSTALLER",
+    "THEN: REHEARSAL",
+    "THEN: 2026-11-13 REVIEW",
 )
 OWNER_SEQUENCE_REQUIRED_LINES = (
-    "GUARD: NOVA SUBSYSTEM; GUARD ADOPTION AND 30-DAY METRICS DO NOT GATE NOVA",
-    "COMPLETE: ACTUAL-PEER LOCALITY P1 (PR #447)",
-    "RECOVERY: FOUNDATIONS PRESERVED (LANE 5A); FURTHER RECOVERY IMPLEMENTATION NEEDS A "
-    "LATER EXPLICIT OWNER DECISION OR EVIDENCE-BACKED NEED; NOT A PREREQUISITE FOR THE "
-    "PRIVATE-BETA CANDIDATE",
+    "COMPLETE: D1",
+    "COMPLETE: F9B",
 )
 OWNER_SEQUENCE_PAUSED_CATEGORIES = (
     "GOOGLE/PROVIDER EXPANSION",
@@ -1468,16 +1464,20 @@ _PAUSED_CONTRADICTORY_STATES = (
 
 
 def _preserves_owner_sequence(text: str) -> bool:
-    """Require one active owner operating sequence with the exact #457 order."""
+    """Require one active owner operating sequence with the exact ratified order."""
 
     active = _extract_owner_sequence_block(text)
     if active is None:
+        return False
+    if text.count(HISTORICAL_OWNER_SEQUENCE_MARKER) != 1:
         return False
     structured_lines = tuple(
         _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
     )
     directives = tuple(
-        line for line in structured_lines if re.match(r"^(?:NEXT(?: [A-Z ]+)?|THEN):", line)
+        line
+        for line in structured_lines
+        if re.match(r"^(?:CURRENT|NEXT(?: [A-Z ]+)?|THEN):", line)
     )
     if directives != OWNER_SEQUENCE_DIRECTIVES:
         return False

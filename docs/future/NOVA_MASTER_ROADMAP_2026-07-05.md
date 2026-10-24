@@ -1,6 +1,6 @@
 # Nova Master Roadmap - 2026-07-05 (Final)
 
-Status: long-term architecture history, superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_08
+Status: long-term architecture history, superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_23
 (NovaLIS #457, 2026-10-08). The current work order lives in `.agent_context/current_priority.md`
 and the canonical status surfaces. This document was the 2026-07-05 ordering document. Assembled 2026-07-05 from the live session, the pre-PR-4 code
 audit, and a full mining pass over all three archive trees (docs/future/, future/,
@@ -83,7 +83,7 @@ chain.
 
 That document is a strategic compass, not an ordering or scope authority. It synthesizes
 existing roadmap concepts (including H13, H20, H23, H25, H28, and H31) and adds no active lane.
-The owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_08`) determines ordering; lane locks still determine scope; owner decisions still
+The owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_23`) determines ordering; lane locks still determine scope; owner decisions still
 activate work. Issue #326 and the strategic compass cannot activate Slice 2A, an economic-value
 proof, OpenClaw work, or delegation. Current status and ordering are recorded immediately below.
 
