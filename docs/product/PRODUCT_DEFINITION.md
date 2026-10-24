@@ -2,22 +2,34 @@
 
 Canonical product definition — the "why" and "what" behind the architecture. Stable; changes
 rarely. For what Nova *can do today* see `docs/capability_verification/CAPABILITY_INVENTORY.md`;
-for ordering see `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`.
+for current ordering see the owner operating sequence in `AGENTS.md` and
+`.agent_context/current_priority.md`. This document defines direction, not runtime existence or
+authority.
 
 ## Mission
 
-> **Nova should answer the first important question you have each day before you have to ask it.**
+> **Nova keeps important things from slipping through the cracks.**
 
-Measurable and human. It grows from weather / news / calendar / email / business / reminders
-without being defined by any one of them.
+Nova remembers what matters, shows you what needs attention, helps you deal with it, and keeps
+track of what actually happened.
+
+The earlier mission — answering the first important question of the day before the user has to
+ask it — remains a useful expression of the morning experience. The broader consumer promise
+covers remembering, attention, waiting, decisions, follow-up, authorized action, and outcome
+truth without being defined by any one connector or capability.
 
 ## Purpose
 
 **Reduce uncertainty.** Not "answer questions," not "summarize," not "automate everything."
 If something does not reduce uncertainty, it probably isn't a priority.
 
-The single success metric (Phase 3): *Did Nova eliminate ONE uncertainty before you reached
-for another app?* — not "replace Gmail," not "answer everything." One.
+The north-star product metric is:
+
+> **Did the user voluntarily return because Nova remembered something useful they otherwise
+> would have had to remember themselves?**
+
+The Phase 3 metric — *Did Nova eliminate ONE uncertainty before the user reached for another
+app?* — remains a useful supporting measure. Neither metric authorizes implementation by itself.
 
 ## Identity
 
@@ -45,16 +57,19 @@ not a sixth system and is never an authority artifact. It may preserve state, re
 against new evidence, and project the smallest useful next action into Awareness and Decision.
 It may not authorize, execute, modify permission, or silently create a commitment.
 
-**User-facing shape (three visible layers):**
+**Target consumer shape (not current runtime truth):**
 
 ```text
-Awareness      (what changed / what matters?)
-    ↓
-Conversation   (what do you want to know?)
-    ↓
-Capabilities   (how do we accomplish it?)   ← with a hidden Decision Engine deciding
-                                              which tools matter, or that none do
+Today      What needs me now?
+Waiting    What am I waiting for?
+Done       What actually happened?
+Ask Nova   Tell, ask, decide, or act naturally
 ```
+
+These surfaces are a future consumer projection over the existing architecture, not a claim that
+they exist today. The internal layers remain Awareness, Decision, Authority, Execution, Outcome,
+and Reconciliation. Capabilities, providers, models, memory internals, ledgers, Guard, and policy
+machinery should normally stay outside the user's job.
 
 **Governance is infrastructure, not product.** Governance, permissions, memory, ledger,
 capability registry, policies, execution queue, and audit sit *below the line* — they support
@@ -138,6 +153,35 @@ A closed decision remains closed unless material evidence changes, a recorded as
 invalid, a review trigger fires, or the owner explicitly reopens it. Nova may propose reopening;
 it may not silently rewrite the decision. `do_not_work_on_yet` is valid continuity state: a useful
 idea can be recorded without becoming current work.
+
+### Low-friction capture without low-integrity state
+
+Ordinary conversation may produce a candidate continuity item, but may not silently turn an
+inference into consequential owner state:
+
+```text
+owner language
+-> candidate commitment or waiting item
+-> provenance + date/window + confidence
+-> lightweight owner confirmation or an applicable owner-approved standing capture rule
+-> active continuity state
+```
+
+The provenance must distinguish at least:
+
+```text
+owner-confirmed directly
+captured under an owner-approved standing preference
+Nova inference awaiting confirmation
+```
+
+A standing preference such as "Automatically keep track of things I clearly say I need to do or
+am waiting for" may reduce repeated prompts. It must be inspectable, revocable, narrowly scoped,
+and unable to grant execution authority. Ambiguous or materially consequential interpretations
+still require confirmation.
+
+The acceptance contract for the first consumer-facing Continuity slice is
+`docs/product/MINIMAL_CONTINUITY_CONSUMER_ACCEPTANCE.md`.
 
 ## The five layers
 
