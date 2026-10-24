@@ -1466,14 +1466,11 @@ _PAUSED_CONTRADICTORY_STATES = (
 )
 
 
-def _preserves_owner_sequence(text: str) -> bool:
-    """Require one active owner operating sequence with the exact ratified order."""
-
+def _owner_sequence_progress(text: str) -> tuple[tuple[str, str], ...] | None:
+    """Return validated progress over the fixed owner-ratified lane order."""
     active = _extract_owner_sequence_block(text)
     if active is None:
-        return False
-    if text.count(HISTORICAL_OWNER_SEQUENCE_MARKER) != 1:
-        return False
+        return None
     structured_lines = tuple(
         _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
     )
@@ -1488,11 +1485,11 @@ def _preserves_owner_sequence(text: str) -> bool:
         if (match := re.fullmatch(r"(COMPLETE|CURRENT|NEXT|THEN):\s+(.+)", line))
     )
     if len(parsed) != len(directives):
-        return False
+        return None
     statuses = tuple(status for status, _ in parsed)
     lanes = tuple(lane for _, lane in parsed)
     if lanes != OWNER_SEQUENCE_LANES:
-        return False
+        return None
     complete_count = 0
     while complete_count < len(statuses) and statuses[complete_count] == "COMPLETE":
         complete_count += 1
@@ -1503,9 +1500,23 @@ def _preserves_owner_sequence(text: str) -> bool:
         if not remaining or remaining[0] != "NEXT" or any(
             status != "THEN" for status in remaining[1:]
         ):
-            return False
+            return None
     if statuses.count("CURRENT") > 1:
+        return None
+    return parsed
+
+
+def _preserves_owner_sequence(text: str) -> bool:
+    """Require one active owner operating sequence with the exact ratified order."""
+
+    active = _extract_owner_sequence_block(text)
+    if active is None or _owner_sequence_progress(text) is None:
         return False
+    if text.count(HISTORICAL_OWNER_SEQUENCE_MARKER) != 1:
+        return False
+    structured_lines = tuple(
+        _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
+    )
     lifecycle_states = tuple(
         state
         for line in active.splitlines()
@@ -1729,6 +1740,21 @@ def check_operational_truth(
                     f"{paths[name]}: current ordering does not preserve the owner operating "
                     f"sequence ({OWNER_SEQUENCE_MARKER})"
                 )
+        progress_by_surface = {
+            name: progress
+            for name in CURRENT_ORDERING_SURFACES
+            if (text := texts.get(name)) is not None
+            and (progress := _owner_sequence_progress(text)) is not None
+        }
+        if progress_by_surface:
+            baseline_name = next(iter(progress_by_surface))
+            baseline = progress_by_surface[baseline_name]
+            for name, progress in progress_by_surface.items():
+                if progress != baseline:
+                    errors.append(
+                        f"{paths[name]}: owner operating sequence progress mismatch "
+                        f"({baseline_name} differs)"
+                    )
         for name in (*CURRENT_ORDERING_SURFACES, "master_roadmap"):
             text = texts.get(name)
             if text is None:
