@@ -57,6 +57,9 @@ class _RecordingScheduleStore:
             "active": True,
         }
 
+    def grant_delivery_authority(self, schedule_id: str, **_kwargs) -> dict:
+        return {"grant_id": "RDG-TEST", "schedule_id": schedule_id, "state": "active"}
+
 
 class _FailingScheduleStore(_RecordingScheduleStore):
     def create_schedule(self, **kwargs) -> dict:
@@ -76,6 +79,11 @@ class _TimeoutScheduleStore(_RecordingScheduleStore):
 class _ReadFailingScheduleStore(_RecordingScheduleStore):
     def get_schedule(self, schedule_id: str) -> dict | None:
         raise OSError("simulated reminder verification failure")
+
+
+class _GrantFailingScheduleStore(_RecordingScheduleStore):
+    def grant_delivery_authority(self, schedule_id: str, **_kwargs) -> dict:
+        raise OSError("simulated delivery grant failure")
 
 
 def _run_session(
@@ -131,8 +139,8 @@ def test_calendar_offer_preserves_subject_then_persists_real_reminder(monkeypatc
     assert any("What time should Nova save this reminder for?" in message for message in messages)
     assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
     assert any("Text: complete onboarding for work" in message for message in messages)
-    assert any("does not have background reminder delivery" in message for message in messages)
-    assert any("will not fire automatically" in message for message in messages)
+    assert any("local backend is running" in message for message in messages)
+    assert any("shown as missed the next time Nova starts" in message for message in messages)
 
 
 def test_reminder_body_with_negation_is_saved_as_content(monkeypatch):
@@ -376,7 +384,8 @@ def test_natural_tomorrow_reminder_never_streams_a_prepersistence_promise(monkey
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
     messages = _chat_messages(ws)
     assert any("Reminder saved: SCH-TEST-0001" in message for message in messages)
-    assert any("will not fire automatically" in message for message in messages)
+    assert any("local backend is running" in message for message in messages)
+    assert any("Delivery while signed out is not supported" in message for message in messages)
 
 
 def test_saved_reminder_followup_uses_persisted_session_evidence(monkeypatch):
@@ -483,6 +492,17 @@ def test_persistence_timeout_reports_unknown_without_streaming_success(monkeypat
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
 
 
+def test_delivery_grant_failure_reports_saved_record_but_no_delivery(monkeypatch):
+    store = _GrantFailingScheduleStore()
+    ws = _run_session(monkeypatch, ["remind me at 2 PM to call mom"], store)
+
+    messages = _chat_messages(ws)
+    assert len(store.created) == 1
+    assert any("record was saved" in message for message in messages)
+    assert any("will not fire" in message for message in messages)
+    assert not any("Reminder saved:" in message for message in messages)
+
+
 @pytest.mark.parametrize(
     "question",
     [
@@ -490,13 +510,16 @@ def test_persistence_timeout_reports_unknown_without_streaming_success(monkeypat
         "will you notify me tomorrow if Nova is closed?",
     ],
 )
-def test_background_delivery_questions_never_claim_closed_app_alerts(monkeypatch, question):
+def test_background_delivery_questions_distinguish_dashboard_from_quit_state(monkeypatch, question):
     store = _RecordingScheduleStore()
     ws = _run_session(monkeypatch, [question], store)
 
     messages = _chat_messages(ws)
-    assert any("cannot alert you while Nova is closed" in message for message in messages)
-    assert any("do not run in the background" in message for message in messages)
+    assert any("dashboard is minimized or closed" in message for message in messages)
+    assert any("If Nova was quit" in message for message in messages)
+    assert any("shown as missed the next time Nova starts" in message for message in messages)
+    assert any("only in Win + N" in message for message in messages)
+    assert any("delay its banner until the screen returns" in message for message in messages)
     assert not any(message.get("type") == "chat_stream" for message in ws.sent_messages)
 
 

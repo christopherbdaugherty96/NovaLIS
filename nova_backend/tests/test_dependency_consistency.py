@@ -54,7 +54,7 @@ def test_repository_dependency_surfaces_are_consistent():
     assert checker.check_dependency_consistency() == []
 
     audit = checker.audit_dependency_sources()
-    assert len(audit.exact_duplicates) == 13
+    assert len(audit.exact_duplicates) == 19
     assert audit.conflicts == {}
     assert audit.canonical_only == {}
     assert audit.requirements_only == {}

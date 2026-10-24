@@ -1186,6 +1186,27 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
             return
 
+        try:
+            notification_schedules.grant_delivery_authority(
+                schedule_id,
+                channel="windows_toast",
+                receipt_logger=governor.ledger.log_event,
+            )
+        except Exception:
+            session_state["pending_reminder"] = None
+            session_state["last_reminder_save_result"] = {
+                "status": "not_authorized",
+                "reason": "delivery_grant_failure",
+            }
+            log.exception("Local Nova reminder delivery grant could not be persisted")
+            await _complete_immediate_turn(
+                "The reminder record was saved, but its delivery permission could not be "
+                "recorded, so it will not fire. Cancel it or retry after the ledger is available.",
+                remember_response=False,
+                tone_domain="system",
+            )
+            return
+
         session_state["last_reminder_save_result"] = {
             "status": "saved",
             "schedule_id": schedule_id,
@@ -1213,9 +1234,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             f"Reminder saved: {item['id']}\n"
             f"Text: {reminder_body}\n"
             f"Requested for: {_format_local_schedule_time(scheduled_for)}\n\n"
-            "Honesty note: Nova does not have background reminder delivery. "
-            "This reminder is saved but will not fire automatically. You can "
-            "view saved reminders with \"show schedules\".\n\n"
+            "Delivery note: Nova can notify you while its local backend is running, including "
+            "when the dashboard is minimized or closed. If Nova was quit, this reminder will "
+            "be shown as missed the next time Nova starts. Delivery while signed out is not "
+            "supported. If the screen turns off without the laptop sleeping, or if the laptop "
+            "sleeps, Windows may put the reminder only in Win + N and delay its banner until "
+            "the screen returns. Sleep/wake visible delivery is not promised. Turn "
+            "on \"Start Nova when I sign in\" in Settings for restart recovery.\n\n"
             f"{str(snapshot.get('summary') or '').strip() if snapshot is not None else 'Schedule overview is temporarily unavailable.'}"
         )
         session_state["last_response"] = success_message
@@ -3929,8 +3954,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             if command_lowered in SHOW_SCHEDULES_COMMANDS:
                 snapshot = notification_schedules.summarize()
-                if silent_widget_refresh:
-                    snapshot = _process_due_notification_delivery(governor, notification_schedules, snapshot)
                 _log_ledger_event(
                     governor,
                     "NOTIFICATION_SCHEDULE_VIEWED",
@@ -4072,6 +4095,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     next_run_at=scheduled_for,
                     command="daily brief",
                 )
+                try:
+                    notification_schedules.grant_delivery_authority(
+                        item["id"],
+                        channel="windows_toast",
+                        receipt_logger=governor.ledger.log_event,
+                    )
+                except Exception:
+                    log.exception("Daily brief delivery grant could not be persisted")
+                    await send_chat_message(
+                        ws,
+                        "The schedule record was saved, but its delivery permission could not "
+                        "be recorded, so it will not fire.",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
                 snapshot = notification_schedules.summarize()
                 _log_ledger_event(
                     governor,
@@ -4114,6 +4153,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_done(ws)
                     continue
                 item = notification_schedules.reschedule_schedule(schedule_id, next_run_at=scheduled_for)
+                try:
+                    notification_schedules.grant_delivery_authority(
+                        schedule_id,
+                        channel="windows_toast",
+                        receipt_logger=governor.ledger.log_event,
+                    )
+                    item = notification_schedules.get_schedule(schedule_id) or item
+                except Exception:
+                    log.exception("Updated schedule delivery grant could not be persisted")
+                    await send_chat_message(
+                        ws,
+                        "The schedule time changed, but replacement delivery permission could "
+                        "not be recorded, so it will not fire.",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
                 snapshot = notification_schedules.summarize()
                 _log_ledger_event(
                     governor,

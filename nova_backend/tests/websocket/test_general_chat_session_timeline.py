@@ -25,6 +25,9 @@ class _ReminderStore:
             return None
         return dict(self.created)
 
+    def grant_delivery_authority(self, schedule_id, **_kwargs):
+        return {"grant_id": "RDG-TEST", "schedule_id": schedule_id, "state": "active"}
+
     def summarize(self):
         return {
             "summary": "0 due | 1 upcoming",

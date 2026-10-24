@@ -16,7 +16,7 @@ def _utc_now() -> str:
 class RuntimeSettingsStore:
     """Persistent runtime settings for governed product surfaces."""
 
-    SCHEMA_VERSION = "1.3"
+    SCHEMA_VERSION = "1.4"
     DEFAULT_SETUP_MODE = "local"
     DEFAULT_PROVIDER_ROUTING_MODE = "local_first"
     DEFAULT_OPENAI_MODEL = "gpt-5.4-mini"
@@ -119,6 +119,11 @@ class RuntimeSettingsStore:
         "metered_openai_enabled": {
             "label": "Metered OpenAI lane",
             "description": "Allows Nova to use an explicitly budgeted OpenAI lane for hard coding and reasoning tasks when local-first routing selects it or you invoke it directly.",
+            "default": False,
+        },
+        "start_at_sign_in_enabled": {
+            "label": "Start Nova when I sign in",
+            "description": "Starts Nova's local backend without a console window after you sign in, so saved reminders can be checked.",
             "default": False,
         },
     }

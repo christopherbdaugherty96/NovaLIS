@@ -231,8 +231,11 @@ REMINDER_BACKGROUND_DELIVERY_RE = re.compile(
     re.IGNORECASE,
 )
 REMINDER_BACKGROUND_DELIVERY_RESPONSE = (
-    "No. Nova's saved reminders do not run in the background and cannot alert you "
-    "while Nova is closed. They are local records you can review with \"show schedules\"."
+    "Nova can notify you while its local backend is running, including when the dashboard "
+    "is minimized or closed. If Nova was quit, the reminder is shown as missed the next time "
+    "Nova starts. Delivery while signed out is not supported. If the screen turns off without "
+    "the laptop sleeping, or if the laptop sleeps, Windows may put the reminder only in Win + N "
+    "and delay its banner until the screen returns. Sleep/wake visible delivery is not promised."
 )
 REMINDER_SAVE_STATUS_RE = re.compile(
     r"^\s*(?:did\s+you\s+save\s+(?:that|the|my)\s+reminder"
@@ -527,7 +530,7 @@ SCHEDULE_BRIEF_RE = re.compile(
 REMIND_ME_RE = re.compile(
     r"^\s*(?:remind\s+me|(?:set|add)\s+(?:a\s+)?reminder)"
     r"(?:\s+(?P<daily>daily))?\s+"
-    r"(?:at\s+|(?=(?:today|tomorrow)\b))"
+    r"(?:at\s+|(?=(?:today|tomorrow|in)\b))"
     r"(?P<time>.+?)\s+to\s+(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )

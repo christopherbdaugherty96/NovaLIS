@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import hashlib
+import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from uuid import uuid4
 
 from src.durability.corruption import StateCorruptError, read_json_state, require_state
@@ -45,9 +48,15 @@ class ScheduleReadResult:
 class NotificationScheduleStore:
     """Persistent explicit schedule store for reminders and brief cues."""
 
-    SCHEMA_VERSION = "1.1"
+    SCHEMA_VERSION = "1.3"
     ALLOWED_KINDS = {"reminder", "daily_brief"}
     ALLOWED_RECURRENCES = {"once", "daily", "weekly"}
+    ALLOWED_HOLD_REASONS = {
+        "quiet_hours",
+        "display_off",
+        "session_locked",
+        "state_unknown",
+    }
     DEFAULT_POLICY = {
         "quiet_hours_enabled": False,
         "quiet_hours_start": "22:00",
@@ -115,6 +124,13 @@ class NotificationScheduleStore:
             "last_delivery_outcome": "",
             "last_delivery_note": "",
             "last_delivered_at": "",
+            "delivery_occurrence_id": "",
+            "delivery_claimed_at": "",
+            "delivery_state": "pending",
+            "delivery_grant": {},
+            "delivery_hold_reason": "",
+            "delivery_retry_state": "",
+            "delivery_held_at": "",
         }
         with self._lock:
             state = self._read_state()
@@ -136,6 +152,21 @@ class NotificationScheduleStore:
         )
         safe_limit = max(1, min(int(limit or 25), 100))
         return [dict(item) for item in schedules[:safe_limit]]
+
+    def list_due_schedules(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
+        """Return the complete due work queue, without presentation limits."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            due = [
+                self._serialize_schedule(item, now=current)
+                for item in list(state.get("schedules") or [])
+                if bool(item.get("active"))
+                and (_from_iso(item.get("next_run_at")) or datetime.max.replace(tzinfo=timezone.utc))
+                <= current
+            ]
+        return sorted(due, key=lambda row: str(row.get("next_run_at") or ""))
 
     def read_schedules(
         self,
@@ -187,6 +218,235 @@ class NotificationScheduleStore:
             item = self._find_item(state, schedule_id)
             if item is None:
                 return None
+            return dict(item)
+
+    @authoritative_mutation
+    def grant_delivery_authority(
+        self,
+        schedule_id: str,
+        *,
+        channel: str,
+        receipt_logger: Callable[[str, dict[str, Any]], None],
+    ) -> dict[str, Any]:
+        """Persist an exact delivery grant only after its ledger receipt succeeds."""
+
+        normalized_channel = str(channel or "").strip().lower()
+        if normalized_channel != "windows_toast":
+            raise ValueError("Unsupported reminder delivery channel.")
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            scope = self._delivery_grant_scope(item, state, channel=normalized_channel)
+            scope_hash = self._scope_hash(scope)
+            grant = {
+                "schema_version": "1.0",
+                "grant_id": f"RDG-{uuid4().hex.upper()}",
+                "scope_hash": scope_hash,
+                "schedule_id": str(item.get("id") or ""),
+                "title": str(item.get("title") or ""),
+                "text": str(item.get("body") or ""),
+                "due_at": str(item.get("next_run_at") or ""),
+                "recurrence": str(item.get("recurrence") or "once"),
+                "channel": normalized_channel,
+                "delivery_policy": {"mode": "evaluate_current_policy_at_delivery"},
+                "rendering_contract": "nova_reminder_v1",
+                "state": "active",
+                "issued_at": _as_iso(_utc_now()),
+            }
+            # Deliberately not best-effort: authority must not exist without a
+            # durable receipt. The caller sees and reports any ledger failure.
+            receipt_logger(
+                "NOTIFICATION_DELIVERY_AUTHORIZED",
+                {
+                    "grant_id": grant["grant_id"],
+                    "schedule_id": grant["schedule_id"],
+                    "scope_hash": scope_hash,
+                    "channel": normalized_channel,
+                },
+            )
+            item["delivery_grant"] = grant
+            item["delivery_hold_reason"] = ""
+            item["delivery_retry_state"] = ""
+            item["delivery_held_at"] = ""
+            item["delivery_authorization_status"] = "authorized"
+            item["updated_at"] = _as_iso(_utc_now())
+            self._write_state(state)
+            return dict(grant)
+
+    def delivery_authority_decision(
+        self, schedule_id: str, *, channel: str
+    ) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            grant = dict(item.get("delivery_grant") or {})
+            if str(grant.get("state") or "") != "active":
+                return {"allowed": False, "reason": "missing_or_revoked_grant"}
+            scope = self._delivery_grant_scope(
+                item, state, channel=str(channel or "").strip().lower()
+            )
+            if str(grant.get("scope_hash") or "") != self._scope_hash(scope):
+                return {"allowed": False, "reason": "grant_scope_mismatch"}
+            return {
+                "allowed": True,
+                "reason": "authorized",
+                "grant_id": str(grant.get("grant_id") or ""),
+                "scope_hash": str(grant.get("scope_hash") or ""),
+            }
+
+    @contextmanager
+    def authorized_claimed_delivery(
+        self,
+        schedule_id: str,
+        *,
+        occurrence_id: str,
+        channel: str,
+        now: datetime | None = None,
+    ):
+        """Hold mutation exclusion while a claimed, authorized toast is displayed."""
+
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            allowed = bool(
+                item
+                and item.get("active")
+                and str(item.get("delivery_occurrence_id") or "") == str(occurrence_id or "")
+                and str(item.get("delivery_state") or "") == "claimed"
+            )
+            if allowed:
+                grant = dict(item.get("delivery_grant") or {})
+                scope = self._delivery_grant_scope(
+                    item,
+                    state,
+                    channel=str(channel or "").strip().lower(),
+                )
+                allowed = bool(
+                    str(grant.get("state") or "") == "active"
+                    and str(grant.get("scope_hash") or "") == self._scope_hash(scope)
+                )
+            if allowed and item is not None:
+                current = _utc_now().astimezone(timezone.utc)
+                policy = self.evaluate_delivery_policy(schedule_id, now=current)
+                if not bool(policy.get("allowed")):
+                    item["delivery_occurrence_id"] = ""
+                    item["delivery_claimed_at"] = ""
+                    item["delivery_state"] = "pending"
+                    item["last_delivery_outcome"] = ""
+                    if str(policy.get("reason") or "") == "quiet_hours":
+                        item["delivery_hold_reason"] = "quiet_hours"
+                        item["delivery_retry_state"] = "waiting_for_safe_state"
+                        item["delivery_held_at"] = _as_iso(current)
+                    item["updated_at"] = _as_iso(current)
+                    self._write_state(state)
+                    allowed = False
+            yield dict(item) if allowed and item is not None else None
+
+    @authoritative_mutation
+    def release_claimed_occurrence(self, schedule_id: str, *, occurrence_id: str) -> None:
+        """Return an undispatched claim to pending without consuming it."""
+
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                return
+            if (
+                str(item.get("delivery_occurrence_id") or "") != str(occurrence_id or "")
+                or str(item.get("delivery_state") or "") not in {"claimed", "attempted"}
+            ):
+                return
+            item["delivery_occurrence_id"] = ""
+            item["delivery_claimed_at"] = ""
+            item["delivery_state"] = "pending"
+            item["last_delivery_outcome"] = ""
+            item["updated_at"] = _as_iso(_utc_now())
+            self._write_state(state)
+
+    @authoritative_mutation
+    def record_delivery_hold(
+        self,
+        schedule_id: str,
+        *,
+        reason: str,
+        retry_state: str = "waiting_for_safe_state",
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        normalized_reason = str(reason or "").strip().lower()
+        if normalized_reason not in self.ALLOWED_HOLD_REASONS:
+            raise ValueError("Unsupported reminder hold reason.")
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            if (
+                str(item.get("delivery_hold_reason") or "") == normalized_reason
+                and str(item.get("delivery_retry_state") or "")
+                == str(retry_state or "").strip()[:80]
+            ):
+                return {"hold_changed": False, **dict(item)}
+            item["delivery_hold_reason"] = normalized_reason
+            item["delivery_retry_state"] = str(retry_state or "").strip()[:80]
+            item["delivery_held_at"] = _as_iso(current)
+            item["last_delivery_outcome"] = "held"
+            item["last_delivery_note"] = f"Held: {normalized_reason}."
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return {"hold_changed": True, **dict(item)}
+
+    @authoritative_mutation
+    def mark_delivery_needs_confirmation(
+        self, schedule_id: str, *, reason: str
+    ) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["delivery_authorization_status"] = "needs_confirmation"
+            item["delivery_hold_reason"] = ""
+            item["delivery_retry_state"] = ""
+            item["delivery_held_at"] = ""
+            item["last_delivery_outcome"] = "needs_confirmation"
+            item["last_delivery_note"] = (
+                f"Delivery needs confirmation: {str(reason or 'authorization unavailable')[:120]}."
+            )
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
+    def mark_notifications_blocked(self, schedule_id: str) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["last_delivery_outcome"] = "notifications_blocked"
+            item["last_delivery_note"] = (
+                "Windows notifications are blocked. Turn on notifications for Nova "
+                "in Windows Settings; this reminder remains pending."
+            )
+            item["updated_at"] = _as_iso(_utc_now())
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
+    def clear_delivery_hold(self, schedule_id: str) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            item["delivery_hold_reason"] = ""
+            item["delivery_retry_state"] = ""
+            item["delivery_held_at"] = ""
+            self._write_state(state)
             return dict(item)
 
     @authoritative_mutation
@@ -272,6 +532,7 @@ class NotificationScheduleStore:
             if item is None:
                 raise KeyError(schedule_id)
             item["active"] = False
+            self._revoke_delivery_grant(item, reason="cancelled")
             item["updated_at"] = _as_iso(_utc_now())
             self._write_state(state)
             return dict(item)
@@ -328,7 +589,11 @@ class NotificationScheduleStore:
             if item is None:
                 raise KeyError(schedule_id)
             item["next_run_at"] = _as_iso(next_run_at)
+            self._revoke_delivery_grant(item, reason="edited")
             item["last_surface_at"] = ""
+            item["delivery_occurrence_id"] = ""
+            item["delivery_claimed_at"] = ""
+            item["delivery_state"] = "pending"
             item["updated_at"] = _as_iso(current)
             self._write_state(state)
             return dict(item)
@@ -383,6 +648,139 @@ class NotificationScheduleStore:
             item["updated_at"] = _as_iso(current)
             self._write_state(state)
             return dict(item)
+
+    @authoritative_mutation
+    def claim_due_occurrence(
+        self,
+        schedule_id: str,
+        *,
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Atomically claim the current due instant before any display attempt."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            due_at = _from_iso(item.get("next_run_at"))
+            occurrence_id = f"{schedule_id}@{str(item.get('next_run_at') or '')}"
+            existing_occurrence = str(item.get("delivery_occurrence_id") or "")
+            existing_state = str(item.get("delivery_state") or "pending")
+            if (
+                not bool(item.get("active"))
+                or due_at is None
+                or due_at > current
+                or (existing_occurrence == occurrence_id and existing_state != "pending")
+            ):
+                return {"claimed": False, "occurrence_id": occurrence_id, **dict(item)}
+            item["delivery_occurrence_id"] = occurrence_id
+            item["delivery_claimed_at"] = _as_iso(current)
+            item["delivery_state"] = "claimed"
+            item["last_delivery_outcome"] = "delivery_claimed"
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return {"claimed": True, "occurrence_id": occurrence_id, **dict(item)}
+
+    @authoritative_mutation
+    def mark_claimed_occurrence_attempted(
+        self,
+        schedule_id: str,
+        *,
+        occurrence_id: str,
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Mark a durably receipted claim immediately before notifier dispatch."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            if (
+                str(item.get("delivery_occurrence_id") or "")
+                != str(occurrence_id or "")
+                or str(item.get("delivery_state") or "") != "claimed"
+            ):
+                raise RuntimeError("Reminder claim changed before dispatch.")
+            item["delivery_state"] = "attempted"
+            item["last_delivery_attempt_at"] = _as_iso(current)
+            item["last_delivery_outcome"] = "delivery_attempted"
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
+    def finish_claimed_occurrence(
+        self,
+        schedule_id: str,
+        *,
+        occurrence_id: str,
+        outcome: str,
+        note: str = "",
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        normalized_outcome = str(outcome or "").strip()
+        if normalized_outcome not in {"delivered", "delivery_uncertain"}:
+            raise ValueError("Unsupported terminal delivery outcome.")
+        with self._lock:
+            state = self._read_state()
+            item = self._find_item(state, schedule_id)
+            if item is None:
+                raise KeyError(schedule_id)
+            if str(item.get("delivery_occurrence_id") or "") != str(occurrence_id or ""):
+                return dict(item)
+            if str(item.get("delivery_state") or "") != "attempted":
+                return dict(item)
+            expected_occurrence = f"{schedule_id}@{str(item.get('next_run_at') or '')}"
+            if str(occurrence_id or "") != expected_occurrence:
+                return dict(item)
+            item["delivery_state"] = normalized_outcome
+            item["last_delivery_outcome"] = normalized_outcome
+            item["last_delivery_note"] = str(note or "").strip()[:240]
+            if normalized_outcome == "delivered":
+                item["last_surface_at"] = _as_iso(current)
+                item["last_delivered_at"] = _as_iso(current)
+            self._advance_after_terminal_delivery(item, current=current)
+            item["updated_at"] = _as_iso(current)
+            self._write_state(state)
+            return dict(item)
+
+    @authoritative_mutation
+    def recover_interrupted_claims(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
+        """Retry undispatched claims; close only receipted attempts as ambiguous."""
+
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        recovered: list[dict[str, Any]] = []
+        released_claim = False
+        with self._lock:
+            state = self._read_state()
+            for item in list(state.get("schedules") or []):
+                delivery_state = str(item.get("delivery_state") or "")
+                if delivery_state == "claimed":
+                    item["delivery_occurrence_id"] = ""
+                    item["delivery_claimed_at"] = ""
+                    item["delivery_state"] = "pending"
+                    item["last_delivery_outcome"] = ""
+                    item["updated_at"] = _as_iso(current)
+                    released_claim = True
+                    continue
+                if delivery_state != "attempted":
+                    continue
+                item["delivery_state"] = "delivery_uncertain"
+                item["last_delivery_outcome"] = "delivery_uncertain"
+                item["last_delivery_note"] = (
+                    "The backend stopped after claiming this occurrence; delivery was not retried."
+                )
+                self._advance_after_terminal_delivery(item, current=current)
+                item["updated_at"] = _as_iso(current)
+                recovered.append(dict(item))
+            if recovered or released_claim:
+                self._write_state(state)
+        return recovered
 
     def evaluate_delivery_policy(
         self,
@@ -495,6 +893,22 @@ class NotificationScheduleStore:
             "last_delivery_outcome": str(item.get("last_delivery_outcome") or ""),
             "last_delivery_note": str(item.get("last_delivery_note") or ""),
             "last_delivered_at": str(item.get("last_delivered_at") or ""),
+            "delivery_hold_reason": str(item.get("delivery_hold_reason") or ""),
+            "delivery_retry_state": str(item.get("delivery_retry_state") or ""),
+            "delivery_held_at": str(item.get("delivery_held_at") or ""),
+            "delivery_authorized": str(
+                dict(item.get("delivery_grant") or {}).get("state") or ""
+            )
+            == "active",
+            "delivery_authorization_status": str(
+                item.get("delivery_authorization_status")
+                or (
+                    "authorized"
+                    if str(dict(item.get("delivery_grant") or {}).get("state") or "")
+                    == "active"
+                    else "needs_confirmation"
+                )
+            ),
             "due": due,
         }
 
@@ -569,9 +983,78 @@ class NotificationScheduleStore:
             "last_delivery_outcome",
             "last_delivery_note",
             "last_delivered_at",
+            "delivery_occurrence_id",
+            "delivery_claimed_at",
+            "delivery_hold_reason",
+            "delivery_retry_state",
+            "delivery_held_at",
+            "delivery_authorization_status",
         ):
             normalized[field_name] = str(normalized.get(field_name) or "").strip()
+        normalized["delivery_state"] = str(normalized.get("delivery_state") or "pending").strip()
+        normalized["delivery_grant"] = dict(normalized.get("delivery_grant") or {})
         return normalized
+
+    def _delivery_grant_scope(
+        self,
+        item: dict[str, Any],
+        state: dict[str, Any],
+        *,
+        channel: str,
+    ) -> dict[str, Any]:
+        grant = dict(item.get("delivery_grant") or {})
+        # A recurrence authorizes the series rooted at the approved due time;
+        # advancing a delivered occurrence does not silently widen its scope.
+        approved_due = str(
+            grant.get("due_at")
+            if str(grant.get("state") or "") == "active"
+            else item.get("next_run_at") or ""
+        )
+        return {
+            "schedule_id": str(item.get("id") or ""),
+            "title": str(item.get("title") or ""),
+            "text": str(item.get("body") or ""),
+            "due_at": approved_due,
+            "recurrence": str(item.get("recurrence") or "once"),
+            "channel": str(channel or ""),
+            "rendering_contract": "nova_reminder_v1",
+        }
+
+    @staticmethod
+    def _scope_hash(scope: dict[str, Any]) -> str:
+        encoded = json.dumps(scope, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
+    @staticmethod
+    def _revoke_delivery_grant(item: dict[str, Any], *, reason: str) -> None:
+        grant = dict(item.get("delivery_grant") or {})
+        if grant:
+            grant["state"] = "revoked"
+            grant["revoked_reason"] = str(reason or "")
+            grant["revoked_at"] = _as_iso(_utc_now())
+            item["delivery_grant"] = grant
+
+    def _advance_after_terminal_delivery(self, item: dict[str, Any], *, current: datetime) -> None:
+        recurrence = self._normalize_recurrence(item.get("recurrence"))
+        if recurrence == "once":
+            item["active"] = False
+            return
+        next_run = _from_iso(item.get("next_run_at")) or current
+        local_next_run = as_local(next_run, self._local_zone)
+        interval_days = 1 if recurrence == "daily" else 7
+        local_date = local_next_run.date()
+        while next_run <= current:
+            local_date += timedelta(days=interval_days)
+            try:
+                next_run = resolve_local_wall_time(
+                    local_date,
+                    time(local_next_run.hour, local_next_run.minute),
+                    local_zone=self._local_zone,
+                )
+            except ValueError:
+                continue
+        item["next_run_at"] = _as_iso(next_run)
+
 
     def _normalize_policy(self, payload: Any) -> dict[str, Any]:
         raw = dict(payload or {})
@@ -654,7 +1137,8 @@ class NotificationScheduleStore:
             end_value = datetime.strptime(str(policy.get("quiet_hours_end") or ""), "%H:%M")
         except ValueError:
             return False
-        current_minutes = now.astimezone().hour * 60 + now.astimezone().minute
+        local_now = as_local(now, self._local_zone)
+        current_minutes = local_now.hour * 60 + local_now.minute
         start_minutes = start_value.hour * 60 + start_value.minute
         end_minutes = end_value.hour * 60 + end_value.minute
         if start_minutes == end_minutes:
