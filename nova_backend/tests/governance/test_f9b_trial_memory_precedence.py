@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from src.actions.action_request import ActionRequest
 from src.executors.memory_governance_executor import MemoryGovernanceExecutor
-from src.governor.governor_mediator import GovernorMediator, Invocation
+from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 from src.memory.governed_memory_store import GovernedMemoryStore
 
 MEMORY_CASES = (
@@ -32,7 +32,6 @@ SCHEDULE_WORDS = (
 LOCAL_COMMAND_TEMPLATES = (
     "remember that the {word} owner is Sam",
     "search memories for {word}",
-    "open file {word}.txt",
 )
 
 
@@ -64,8 +63,6 @@ def test_explicit_memory_save_reaches_the_real_store_in_both_profiles(
     (
         "remember that the meeting room is B2",
         "list memories",
-        "open my downloads folder",
-        "set volume to 20",
     ),
 )
 def test_trial_preserves_every_representative_default_local_command(
@@ -81,6 +78,20 @@ def test_trial_preserves_every_representative_default_local_command(
     assert isinstance(trial, Invocation)
     assert trial.capability_id == default.capability_id
     assert trial.params == default.params
+
+
+@pytest.mark.parametrize(
+    ("text", "capability_id"),
+    (("open my downloads folder", 22), ("set volume to 20", 19)),
+)
+def test_t1_trial_disables_non_core_local_commands(monkeypatch, text: str, capability_id: int):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+
+    trial = GovernorMediator.parse_governed_invocation(text)
+
+    assert isinstance(trial, Clarification)
+    assert trial.capability_id == capability_id
+    assert "isn't available in this trial version" in trial.message
 
 
 @pytest.mark.parametrize("word", SCHEDULE_WORDS)
