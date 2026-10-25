@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import pytest
-
 from src.governor.capability_registry import CapabilityRegistry
 from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
-
 
 TRIAL_ENABLED_CAPABILITIES = {61}
 

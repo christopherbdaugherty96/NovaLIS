@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import pytest
-
+from src.connectors import shopify_connector
 from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.providers.deepseek_reasoning_provider import (
     DeepSeekReasoningProvider,
     DeepSeekReasoningProviderError,
 )
 from src.providers.openai_responses_lane import OpenAIResponsesLane, OpenAIResponsesLaneError
-from src.connectors import shopify_connector
 
 
 class _NoNetwork:

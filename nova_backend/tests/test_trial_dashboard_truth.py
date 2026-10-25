@@ -4,7 +4,6 @@ from pathlib import Path
 
 from src.api.settings_api import _runtime_settings_payload
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
