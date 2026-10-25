@@ -17,5 +17,4 @@ def test_trial_zero_egress_harness_is_two_pass_and_socket_level():
     assert "ipaddress.ip_address(host).is_loopback" in source
     assert "test_natural_relative_reminder_is_saved_with_absolute_receipt" in source
     assert "tests/governance/test_f9b_trial_memory_precedence.py" in source
-    assert "test_trial_recency_small_talk_stays_in_local_chat" in source
-    assert "test_trial_explicit_network_request_is_honestly_unavailable" in source
+    assert "tests/websocket/test_trial_profile_network_off.py" in source
