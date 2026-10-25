@@ -30,6 +30,42 @@ function getSetupMode() {
   return ["local", "bring_your_own_key", "managed_cloud"].includes(stored) ? stored : "local";
 }
 
+function applyTrialProfileTruth(data) {
+  const trialMode = !!(data && data.trial_mode === true && data.runtime_profile === "trial");
+  document.body.classList.toggle("trial-profile", trialMode);
+
+  const disabledMessage = "Not in this trial version";
+  const truthMessage = "Trial mode: outside connections are disabled by profile; provider cost is $0.";
+  const weather = $("weather-widget");
+  const newsPage = $("page-news");
+  const secondOpinion = $("deepseek-btn");
+  const newsNav = document.querySelector('#primary-nav-strip [data-page="news"]');
+
+  [weather, newsPage, secondOpinion, newsNav].forEach((element) => {
+    if (!element) return;
+    element.hidden = trialMode;
+    element.setAttribute("aria-label", trialMode ? disabledMessage : "");
+  });
+
+  ["morning-weather", "morning-news", "morning-calendar"].forEach((id) => {
+    const element = $(id);
+    if (element && trialMode) element.textContent = disabledMessage;
+  });
+
+  let notice = $("trial-profile-notice");
+  if (trialMode && !notice) {
+    notice = document.createElement("div");
+    notice.id = "trial-profile-notice";
+    notice.className = "first-run-note";
+    const header = document.querySelector(".header-right") || document.body;
+    header.prepend(notice);
+  }
+  if (notice) {
+    notice.textContent = truthMessage;
+    notice.hidden = !trialMode;
+  }
+}
+
 function applyRuntimeSettingsPayload(data) {
   const payload = (data && typeof data === "object" && data.settings && typeof data.settings === "object")
     ? data.settings
@@ -77,6 +113,7 @@ function applyRuntimeSettingsPayload(data) {
   settingsRuntimeState.updatedAt = String(payload.updated_at || "").trim();
   settingsRuntimeState.lastHydratedAt = Date.now();
   localStorage.setItem(STORAGE_KEYS.setupMode, setupMode);
+  applyTrialProfileTruth(data);
 
   if (data && typeof data === "object") {
     if (data.bridge && typeof data.bridge === "object") {
