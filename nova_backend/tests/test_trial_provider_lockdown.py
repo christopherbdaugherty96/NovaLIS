@@ -8,6 +8,7 @@ from src.providers.deepseek_reasoning_provider import (
     DeepSeekReasoningProviderError,
 )
 from src.providers.openai_responses_lane import OpenAIResponsesLane, OpenAIResponsesLaneError
+from src.connectors import shopify_connector
 
 
 class _NoNetwork:
@@ -53,3 +54,15 @@ def test_trial_profile_blocks_deepseek_bridge_by_profile_not_key(monkeypatch):
     response = DeepSeekBridge().analyze("private prompt", [])
 
     assert response == "External reasoning isn't available in this trial version."
+
+
+def test_trial_profile_does_not_bootstrap_shopify_even_when_configured(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    monkeypatch.setenv("NOVA_SHOPIFY_SHOP_DOMAIN", "example.myshopify.com")
+    monkeypatch.setenv("NOVA_SHOPIFY_ACCESS_TOKEN", "configured-test-token")
+    installed = []
+    monkeypatch.setattr(shopify_connector, "set_shopify_connector", installed.append)
+
+    shopify_connector.bootstrap_shopify_connector()
+
+    assert installed == []
