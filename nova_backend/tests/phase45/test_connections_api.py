@@ -68,6 +68,26 @@ class TestGetConnections:
 # ---------------------------------------------------------------------------
 
 class TestSaveKey:
+    def test_trial_rejects_save_before_persistence_or_health_check(
+        self, client, store, monkeypatch
+    ):
+        monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+        calls = []
+        monkeypatch.setattr(
+            "src.api.connections_api._health_check",
+            lambda provider, key: calls.append((provider, key)) or (True, "unexpected"),
+        )
+
+        res = client.post(
+            "/api/settings/connections/openai/key",
+            json={"key": "synthetic-proof-key"},
+        )
+
+        assert res.status_code == 403
+        assert "isn't available in this trial version" in res.json()["detail"]
+        assert store.get_key("openai") == ""
+        assert calls == []
+
     def test_unknown_provider_returns_404(self, client):
         res = client.post("/api/settings/connections/unknown/key", json={"key": "abc"})
         assert res.status_code == 404
@@ -110,6 +130,21 @@ class TestSaveKey:
 # ---------------------------------------------------------------------------
 
 class TestTestKey:
+    def test_trial_rejects_test_before_health_check(self, client, store, monkeypatch):
+        store.save_key("openai", "synthetic-proof-key")
+        monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+        calls = []
+        monkeypatch.setattr(
+            "src.api.connections_api._health_check",
+            lambda provider, key: calls.append((provider, key)) or (True, "unexpected"),
+        )
+
+        res = client.post("/api/settings/connections/openai/test")
+
+        assert res.status_code == 403
+        assert "isn't available in this trial version" in res.json()["detail"]
+        assert calls == []
+
     def test_no_key_returns_400(self, client):
         res = client.post("/api/settings/connections/openai/test")
         assert res.status_code == 400
