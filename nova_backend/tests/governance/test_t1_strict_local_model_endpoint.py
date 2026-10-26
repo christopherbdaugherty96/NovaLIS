@@ -40,6 +40,18 @@ def test_trial_preserves_loopback_model_endpoints(monkeypatch, url):
     mediator._validate_url(url)
 
 
+def test_trial_rejects_localhost_when_dns_resolves_off_loopback(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    monkeypatch.setattr(
+        "src.llm.model_network_mediator.socket.getaddrinfo",
+        lambda *_args, **_kwargs: [(2, 1, 6, "", ("192.168.1.20", 0))],
+    )
+    mediator = ModelNetworkMediator()
+
+    with pytest.raises(ModelNetworkMediatorError, match="loopback"):
+        mediator._validate_url("http://localhost:11434/api/chat")
+
+
 def test_default_profile_still_allows_private_lan_model_endpoint(monkeypatch):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
     mediator = ModelNetworkMediator()

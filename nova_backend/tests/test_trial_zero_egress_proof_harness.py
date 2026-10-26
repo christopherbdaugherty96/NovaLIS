@@ -14,6 +14,8 @@ def test_trial_zero_egress_harness_is_two_pass_and_socket_level():
     assert "socket.socket.connect" in source
     assert "socket.create_connection" in source
     assert "socket.socket.sendto" in source
+    assert "def _guarded_sendto(self, data, *args, **kwargs):" in source
+    assert "address = kwargs.get(\"address\") or args[-1]" in source
     assert "socket.getaddrinfo" in source
     assert "ipaddress.ip_address(host).is_loopback" in source
     assert "NOVA_T1_ATTEMPT_LOG" in source
