@@ -56,3 +56,58 @@ def test_default_profile_still_allows_private_lan_model_endpoint(monkeypatch):
     mediator = ModelNetworkMediator()
 
     mediator._validate_url("http://192.168.1.20:11434/api/chat")
+
+
+def test_trial_model_sessions_ignore_environment_proxies(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    monkeypatch.setenv("HTTP_PROXY", "http://192.168.1.25:8888")
+    monkeypatch.setenv("NO_PROXY", "")
+    mediator = ModelNetworkMediator()
+
+    assert mediator._request_session().trust_env is False
+
+
+@pytest.mark.parametrize("streaming", (False, True))
+def test_trial_model_requests_disable_redirects(monkeypatch, streaming):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    mediator = ModelNetworkMediator()
+    captured = {}
+
+    class _Response:
+        status_code = 200
+        content = b"{}"
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {}
+
+        def iter_lines(self, decode_unicode=False):
+            del decode_unicode
+            return iter((b'{"done": true, "done_reason": "stop"}',))
+
+        def close(self):
+            return None
+
+    class _Session:
+        def request(self, **kwargs):
+            captured.update(kwargs)
+            return _Response()
+
+        def post(self, _url, **kwargs):
+            captured.update(kwargs)
+            return _Response()
+
+    monkeypatch.setattr(mediator, "_request_session", lambda: _Session())
+
+    if streaming:
+        list(mediator.request_stream(url="http://localhost:11434/api/chat", json_payload={"secret": 1}))
+    else:
+        mediator.request_json(
+            method="POST",
+            url="http://localhost:11434/api/chat",
+            json_payload={"secret": 1},
+        )
+
+    assert captured["allow_redirects"] is False
