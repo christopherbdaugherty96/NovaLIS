@@ -83,7 +83,7 @@ def test_ollama_status_disables_environment_proxy_and_redirects(monkeypatch):
 
     class _Opener:
         def open(self, request, timeout):
-            assert request.full_url == "http://localhost:11434/api/tags"
+            assert request.full_url == "http://127.0.0.1:11434/api/tags"
             assert timeout == 2
             return _Response()
 
