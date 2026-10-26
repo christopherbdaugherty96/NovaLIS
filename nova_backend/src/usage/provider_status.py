@@ -56,7 +56,7 @@ def _ollama_status() -> dict[str, Any]:
             urllib.request.ProxyHandler({}),
             _NoRedirectHandler(),
         )
-        request = urllib.request.Request("http://localhost:11434/api/tags", method="GET")
+        request = urllib.request.Request("http://127.0.0.1:11434/api/tags", method="GET")
         with opener.open(request, timeout=2) as resp:
             if resp.status == 200:
                 return {"connected": True, "error": ""}
