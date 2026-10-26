@@ -39,11 +39,17 @@ class ModelNetworkMediator:
     def __init__(self) -> None:
         self._ledger = LedgerWriter()
         self._request_times: list[float] = []
-        self._session = requests.Session()
+        self._session = self._new_session()
         self._default_session = self._session
         self._thread_local = threading.local()
         self._rate_lock = threading.Lock()
         self._session_lock = threading.Lock()
+
+    @staticmethod
+    def _new_session() -> requests.Session:
+        session = requests.Session()
+        session.trust_env = False
+        return session
 
     def _request_session(self):
         if self._session is not self._default_session:
@@ -54,7 +60,7 @@ class ModelNetworkMediator:
         with self._session_lock:
             session = getattr(self._thread_local, "session", None)
             if session is None:
-                session = requests.Session()
+                session = self._new_session()
                 self._thread_local.session = session
             return session
 
@@ -126,6 +132,7 @@ class ModelNetworkMediator:
                 url=url,
                 json=json_payload,
                 timeout=timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
             payload = response.json() if response.content else {}
@@ -183,6 +190,7 @@ class ModelNetworkMediator:
                 json=json_payload,
                 timeout=timeout,
                 stream=True,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except Exception as error:

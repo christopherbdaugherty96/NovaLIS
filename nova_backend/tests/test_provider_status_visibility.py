@@ -11,20 +11,16 @@ Proves:
 """
 from __future__ import annotations
 
-import re
 import urllib.request
 from unittest.mock import patch
 
 import pytest
-
 from src.usage.provider_budget_policy import (
     DEFAULT_POLICIES,
-    ProviderBudgetPolicy,
 )
 from src.usage.provider_status import (
     _calendar_status,
     _email_status,
-    _env_key_present,
     _ollama_status,
     provider_status,
 )
@@ -257,8 +253,9 @@ class TestNoProviderCallsForStatus:
         assert "weather_service" not in source
 
     def test_render_does_not_import_providers(self):
-        from src.brain_server import _render_provider_status_message
         import inspect
+
+        from src.brain_server import _render_provider_status_message
         source = inspect.getsource(_render_provider_status_message)
         assert "deepseek" not in source.lower()
         assert "openai" not in source.lower()
