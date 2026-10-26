@@ -65,10 +65,8 @@ class ModelNetworkMediator:
         host = (parsed.hostname or "").strip().lower()
         if not host:
             raise ModelNetworkMediatorError("Model URL missing hostname.")
-        if (
-            str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
-            and host not in ALLOWED_HOSTS
-        ):
+        trial_profile = str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+        if trial_profile and host not in ALLOWED_HOSTS:
             raise ModelNetworkMediatorError(
                 "Trial profile requires a loopback-only local model endpoint."
             )
@@ -84,6 +82,10 @@ class ModelNetworkMediator:
             for info in socket.getaddrinfo(host, None):
                 addr = info[4][0]
                 resolved = ipaddress.ip_address(addr)
+                if trial_profile and not resolved.is_loopback:
+                    raise ModelNetworkMediatorError(
+                        "Trial profile requires model endpoint resolution to remain loopback-only."
+                    )
                 if not (resolved.is_private or resolved.is_loopback or resolved.is_link_local):
                     raise ModelNetworkMediatorError("Resolved model endpoint is not local/private.")
         except ModelNetworkMediatorError:

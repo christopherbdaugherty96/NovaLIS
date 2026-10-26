@@ -15,6 +15,7 @@ PROOF_TESTS = (
     "tests/phase45/test_connections_api.py::TestTestKey::test_trial_rejects_test_before_health_check",
     "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_rejects_non_loopback_model_endpoint_before_transport",
     "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_preserves_loopback_model_endpoints",
+    "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_rejects_localhost_when_dns_resolves_off_loopback",
     "tests/test_openclaw_agent_api.py::test_trial_profile_blocks_openclaw_run_before_runner",
     "tests/test_openclaw_agent_api.py::test_trial_profile_blocks_openclaw_schedule_before_store_mutation",
     "tests/test_runtime_settings_api.py::test_trial_profile_keeps_scheduler_stopped_when_permissions_are_enabled",
@@ -76,11 +77,12 @@ def _guarded_create_connection(address, *args, **kwargs):
         raise AssertionError(f"T1 socket guard blocked non-loopback create_connection to {address!r}")
     return _original_create_connection(address, *args, **kwargs)
 
-def _guarded_sendto(self, data, address, *args, **kwargs):
+def _guarded_sendto(self, data, *args, **kwargs):
+    address = kwargs.get("address") or args[-1]
     if not _is_loopback(address):
         _record_attempt("sendto", address)
         raise AssertionError(f"T1 socket guard blocked non-loopback sendto to {address!r}")
-    return _original_sendto(self, data, address, *args, **kwargs)
+    return _original_sendto(self, data, *args, **kwargs)
 
 def _guarded_getaddrinfo(host, *args, **kwargs):
     if host is not None and not _is_loopback((host, 0)):
