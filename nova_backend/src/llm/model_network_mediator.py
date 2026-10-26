@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import os
 import socket
 import threading
 from dataclasses import dataclass
@@ -64,6 +65,13 @@ class ModelNetworkMediator:
         host = (parsed.hostname or "").strip().lower()
         if not host:
             raise ModelNetworkMediatorError("Model URL missing hostname.")
+        if (
+            str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+            and host not in ALLOWED_HOSTS
+        ):
+            raise ModelNetworkMediatorError(
+                "Trial profile requires a loopback-only local model endpoint."
+            )
         if host not in ALLOWED_HOSTS:
             # Permit only literal private/loopback IPs for local model runtimes.
             try:

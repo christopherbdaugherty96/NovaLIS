@@ -32,6 +32,8 @@ function getSetupMode() {
 
 function applyTrialProfileTruth(data) {
   const trialMode = !!(data && data.trial_mode === true && data.runtime_profile === "trial");
+  settingsRuntimeState.runtimeProfile = String((data && data.runtime_profile) || "default");
+  settingsRuntimeState.trialMode = trialMode;
   document.body.classList.toggle("trial-profile", trialMode);
 
   const disabledMessage = "Not in this trial version";
@@ -43,8 +45,10 @@ function applyTrialProfileTruth(data) {
 
   [weather, newsPage, secondOpinion, newsNav].forEach((element) => {
     if (!element) return;
-    element.hidden = trialMode;
-    element.setAttribute("aria-label", trialMode ? disabledMessage : "");
+    if (trialMode) {
+      element.hidden = true;
+      element.setAttribute("aria-label", disabledMessage);
+    }
   });
 
   ["morning-weather", "morning-news", "morning-calendar"].forEach((id) => {
@@ -885,11 +889,17 @@ function renderMorningPanel() {
   const system = $("morning-system");
   const calendar = $("morning-calendar");
   const calendarConnectBtn = $("btn-morning-calendar-connect");
-  if (weather) weather.textContent = morningState.weather;
-  if (news) news.textContent = morningState.news;
+  const trialMode = document.body.classList.contains("trial-profile");
+  const disabledMessage = "Not in this trial version";
+  if (weather) weather.textContent = trialMode ? disabledMessage : morningState.weather;
+  if (news) news.textContent = trialMode ? disabledMessage : morningState.news;
   if (system) system.textContent = morningState.system;
-  if (calendar) calendar.textContent = morningState.calendar;
+  if (calendar) calendar.textContent = trialMode ? disabledMessage : morningState.calendar;
   if (calendarConnectBtn) {
+    if (trialMode) {
+      calendarConnectBtn.hidden = true;
+      return;
+    }
     const calendarText = String(morningState.calendar || "").trim().toLowerCase();
     calendarConnectBtn.hidden = !(calendarText.includes("not connected") || calendarText.includes("connect"));
   }

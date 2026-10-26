@@ -23,8 +23,11 @@ async def _sync_openclaw_scheduler_state(deps, settings_snapshot: dict[str, Any]
         return
 
     permissions = dict(settings_snapshot.get("permissions") or {})
-    should_run = bool(permissions.get("home_agent_enabled")) and bool(
-        permissions.get("home_agent_scheduler_enabled")
+    trial_profile = str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+    should_run = (
+        not trial_profile
+        and bool(permissions.get("home_agent_enabled"))
+        and bool(permissions.get("home_agent_scheduler_enabled"))
     )
 
     if should_run:

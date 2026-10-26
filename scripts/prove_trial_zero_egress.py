@@ -11,6 +11,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPO_ROOT / "nova_backend"
 PROOF_TESTS = (
+    "tests/phase45/test_connections_api.py::TestSaveKey::test_trial_rejects_save_before_persistence_or_health_check",
+    "tests/phase45/test_connections_api.py::TestTestKey::test_trial_rejects_test_before_health_check",
+    "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_rejects_non_loopback_model_endpoint_before_transport",
+    "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_preserves_loopback_model_endpoints",
+    "tests/test_openclaw_agent_api.py::test_trial_profile_blocks_openclaw_run_before_runner",
+    "tests/test_openclaw_agent_api.py::test_trial_profile_blocks_openclaw_schedule_before_store_mutation",
+    "tests/test_runtime_settings_api.py::test_trial_profile_keeps_scheduler_stopped_when_permissions_are_enabled",
     "tests/test_trial_profile_allowlist.py",
     "tests/test_trial_provider_lockdown.py",
     "tests/test_trial_dashboard_truth.py",
@@ -24,11 +31,21 @@ PROOF_TESTS = (
 
 SITE_CUSTOMIZE = r'''
 import ipaddress
+import os
 import socket
 
 _original_connect = socket.socket.connect
 _original_connect_ex = socket.socket.connect_ex
 _original_create_connection = socket.create_connection
+_original_sendto = socket.socket.sendto
+_original_getaddrinfo = socket.getaddrinfo
+
+def _record_attempt(kind, address):
+    target = os.environ.get("NOVA_T1_ATTEMPT_LOG", "").strip()
+    if not target:
+        return
+    with open(target, "a", encoding="utf-8") as handle:
+        handle.write(f"{kind}: {address!r}\n")
 
 def _is_loopback(address):
     if not isinstance(address, tuple) or not address:
@@ -43,22 +60,39 @@ def _is_loopback(address):
 
 def _guarded_connect(self, address):
     if not _is_loopback(address):
+        _record_attempt("connect", address)
         raise AssertionError(f"T1 socket guard blocked non-loopback connect to {address!r}")
     return _original_connect(self, address)
 
 def _guarded_connect_ex(self, address):
     if not _is_loopback(address):
+        _record_attempt("connect_ex", address)
         raise AssertionError(f"T1 socket guard blocked non-loopback connect_ex to {address!r}")
     return _original_connect_ex(self, address)
 
 def _guarded_create_connection(address, *args, **kwargs):
     if not _is_loopback(address):
+        _record_attempt("create_connection", address)
         raise AssertionError(f"T1 socket guard blocked non-loopback create_connection to {address!r}")
     return _original_create_connection(address, *args, **kwargs)
+
+def _guarded_sendto(self, data, address, *args, **kwargs):
+    if not _is_loopback(address):
+        _record_attempt("sendto", address)
+        raise AssertionError(f"T1 socket guard blocked non-loopback sendto to {address!r}")
+    return _original_sendto(self, data, address, *args, **kwargs)
+
+def _guarded_getaddrinfo(host, *args, **kwargs):
+    if host is not None and not _is_loopback((host, 0)):
+        _record_attempt("getaddrinfo", host)
+        raise AssertionError(f"T1 socket guard blocked non-loopback DNS resolution for {host!r}")
+    return _original_getaddrinfo(host, *args, **kwargs)
 
 socket.socket.connect = _guarded_connect
 socket.socket.connect_ex = _guarded_connect_ex
 socket.create_connection = _guarded_create_connection
+socket.socket.sendto = _guarded_sendto
+socket.getaddrinfo = _guarded_getaddrinfo
 '''
 
 
@@ -91,17 +125,26 @@ def main() -> int:
         site_dir = Path(temp)
         (site_dir / "sitecustomize.py").write_text(SITE_CUSTOMIZE, encoding="utf-8")
         for label, with_keys in passes:
-            print(f"OBSERVED {label}: running T1 startup/workflow proof under socket guard")
+            attempt_log = site_dir / f"{label}.attempts.log"
+            attempt_log.write_text("", encoding="utf-8")
+            environment = _proof_environment(site_dir, with_provider_keys=with_keys)
+            environment["NOVA_T1_ATTEMPT_LOG"] = str(attempt_log)
+            print(f"INSTRUMENTED {label}: running T1 workflow proof under socket guard")
             result = subprocess.run(
                 [sys.executable, "-m", "pytest", "-q", *PROOF_TESTS],
                 cwd=BACKEND_ROOT,
-                env=_proof_environment(site_dir, with_provider_keys=with_keys),
+                env=environment,
                 check=False,
             )
+            attempts = attempt_log.read_text(encoding="utf-8").strip()
+            if attempts:
+                print(f"INSTRUMENTED {label}: FAIL (non-loopback attempt recorded)")
+                print(attempts)
+                return 1
             if result.returncode:
-                print(f"OBSERVED {label}: FAIL")
+                print(f"INSTRUMENTED {label}: FAIL (workflow suite failed)")
                 return result.returncode
-            print(f"OBSERVED {label}: PASS (zero non-loopback socket attempts)")
+            print(f"INSTRUMENTED {label}: PASS (attempt log empty)")
     return 0
 
 

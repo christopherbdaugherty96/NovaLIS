@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
-
 from src.api.settings_api import _runtime_settings_payload
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -123,6 +122,7 @@ const document = {{
   createElement() {{ return {{hidden: false, className: '', textContent: ''}}; }},
 }};
 function $(id) {{ return elements[id] || null; }}
+const settingsRuntimeState = {{}};
 const morningState = {{weather: 'Live weather', news: 'Live news', system: 'Ready', calendar: 'Not connected'}};
 {functions}
 applyTrialProfileTruth({{trial_mode: false, runtime_profile: 'default'}});

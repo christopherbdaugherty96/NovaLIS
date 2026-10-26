@@ -3296,6 +3296,14 @@ function renderConnectionCards() {
   if (!grid) return;
   clear(grid);
 
+  if (settingsRuntimeState.trialMode) {
+    const disabled = document.createElement("p");
+    disabled.className = "workspace-board-section-copy";
+    disabled.textContent = "Connections are disabled by the trial profile.";
+    grid.appendChild(disabled);
+    return;
+  }
+
   if (!Array.isArray(_connectionsData) || _connectionsData.length === 0) {
     const empty = document.createElement("p");
     empty.className = "workspace-board-section-copy";
