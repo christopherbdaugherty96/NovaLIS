@@ -50,6 +50,9 @@ function applyTrialProfileTruth(data) {
       element.setAttribute("aria-label", disabledMessage);
     }
   });
+  if (trialMode && activePageState === "news" && typeof setActivePage === "function") {
+    setActivePage("chat");
+  }
 
   ["morning-weather", "morning-news", "morning-calendar"].forEach((id) => {
     const element = $(id);

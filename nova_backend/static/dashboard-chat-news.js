@@ -3115,7 +3115,8 @@ function setActivePage(page) {
     trust: $("page-trust"),
     settings: $("page-settings"),
   };
-  const target = normalizePageKey(page);
+  const requestedPage = normalizePageKey(page);
+  const target = settingsRuntimeState.trialMode && requestedPage === "news" ? "chat" : requestedPage;
 
   Object.entries(pages).forEach(([name, el]) => {
     if (!el) return;
