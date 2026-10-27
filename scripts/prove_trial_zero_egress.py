@@ -19,6 +19,8 @@ PROOF_TESTS = (
     "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_model_sessions_ignore_environment_proxies",
     "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_model_requests_disable_redirects",
     "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_model_transport_uses_validated_loopback_ip",
+    "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_localhost_prefers_ipv4_loopback_when_resolver_returns_ipv6_first",
+    "tests/governance/test_t1_strict_local_model_endpoint.py::test_trial_explicit_ipv6_endpoint_remains_ipv6",
     "tests/test_provider_status_visibility.py::test_ollama_status_disables_environment_proxy_and_redirects",
     "tests/test_openclaw_agent_api.py::test_trial_profile_blocks_openclaw_run_before_runner",
     "tests/test_openclaw_agent_api.py::test_trial_profile_blocks_openclaw_schedule_before_store_mutation",
