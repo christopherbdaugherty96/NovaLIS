@@ -84,7 +84,7 @@ class ModelNetworkMediator:
                     raise ModelNetworkMediatorError("Non-local model host is not allowed.")
             except ValueError:
                 raise ModelNetworkMediatorError("Non-local model host is not allowed.")
-        pinned_loopback: str | None = None
+        resolved_loopbacks: list[str] = []
         try:
             for info in socket.getaddrinfo(host, None):
                 addr = info[4][0]
@@ -93,8 +93,8 @@ class ModelNetworkMediator:
                     raise ModelNetworkMediatorError(
                         "Trial profile requires model endpoint resolution to remain loopback-only."
                     )
-                if trial_profile and pinned_loopback is None:
-                    pinned_loopback = str(resolved)
+                if trial_profile and str(resolved) not in resolved_loopbacks:
+                    resolved_loopbacks.append(str(resolved))
                 if not (resolved.is_private or resolved.is_loopback or resolved.is_link_local):
                     raise ModelNetworkMediatorError("Resolved model endpoint is not local/private.")
         except ModelNetworkMediatorError:
@@ -107,10 +107,21 @@ class ModelNetworkMediator:
             # If DNS lookup fails, allow requests layer to emit deterministic error.
             pass
         if trial_profile:
-            if pinned_loopback is None:
+            if not resolved_loopbacks:
                 raise ModelNetworkMediatorError(
                     "Trial profile requires a resolved loopback model endpoint."
                 )
+            if host == "localhost":
+                pinned_loopback = next(
+                    (
+                        address
+                        for address in resolved_loopbacks
+                        if ipaddress.ip_address(address).version == 4
+                    ),
+                    resolved_loopbacks[0],
+                )
+            else:
+                pinned_loopback = str(ipaddress.ip_address(host))
             transport_host = f"[{pinned_loopback}]" if ":" in pinned_loopback else pinned_loopback
             if parsed.port is not None:
                 transport_host = f"{transport_host}:{parsed.port}"
