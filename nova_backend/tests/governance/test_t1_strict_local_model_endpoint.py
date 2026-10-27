@@ -158,3 +158,31 @@ def test_trial_model_transport_uses_validated_loopback_ip(monkeypatch, streaming
         mediator.request_json(method="POST", url="http://localhost:11434/api/chat", json_payload={})
 
     assert captured["url"] == "http://127.0.0.1:11434/api/chat"
+
+
+def test_trial_localhost_prefers_ipv4_loopback_when_resolver_returns_ipv6_first(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    monkeypatch.setattr(
+        "src.llm.model_network_mediator.socket.getaddrinfo",
+        lambda *_args, **_kwargs: [
+            (23, 1, 6, "", ("::1", 0, 0, 0)),
+            (2, 1, 6, "", ("127.0.0.1", 0)),
+        ],
+    )
+    mediator = ModelNetworkMediator()
+
+    assert (
+        mediator._validate_url("http://localhost:11434/api/chat")
+        == "http://127.0.0.1:11434/api/chat"
+    )
+
+
+def test_trial_explicit_ipv6_endpoint_remains_ipv6(monkeypatch):
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    monkeypatch.setattr(
+        "src.llm.model_network_mediator.socket.getaddrinfo",
+        lambda *_args, **_kwargs: [(23, 1, 6, "", ("::1", 0, 0, 0))],
+    )
+    mediator = ModelNetworkMediator()
+
+    assert mediator._validate_url("http://[::1]:11434/api/chat") == "http://[::1]:11434/api/chat"
