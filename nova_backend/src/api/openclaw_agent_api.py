@@ -12,6 +12,14 @@ from src.skills.calendar import CalendarSkill
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
+def _reject_trial_openclaw_execution() -> None:
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+        raise HTTPException(
+            status_code=403,
+            detail="OpenClaw isn't available in this trial version.",
+        )
+
+
 def _issue_envelope_if_enabled(
     deps,
     *,
@@ -290,6 +298,7 @@ def build_openclaw_agent_router(deps) -> APIRouter:
 
     @router.post("/api/openclaw/agent/templates/{template_id}/schedule")
     async def set_openclaw_agent_template_schedule(template_id: str, payload: dict[str, Any]):
+        _reject_trial_openclaw_execution()
         if "enabled" not in payload:
             raise HTTPException(status_code=400, detail="enabled is required.")
         try:
@@ -317,6 +326,7 @@ def build_openclaw_agent_router(deps) -> APIRouter:
 
     @router.post("/api/openclaw/agent/templates/{template_id}/run")
     async def run_openclaw_agent_template(template_id: str):
+        _reject_trial_openclaw_execution()
         if not deps.runtime_settings_store.is_permission_enabled("home_agent_enabled"):
             raise HTTPException(
                 status_code=403,
@@ -379,6 +389,7 @@ def build_openclaw_agent_router(deps) -> APIRouter:
 
     @router.post("/api/openclaw/agent/goal")
     async def run_openclaw_agent_goal(payload: dict[str, Any]):
+        _reject_trial_openclaw_execution()
         """Run a freeform goal through the LLM-guided thinking loop."""
         goal = str(payload.get("goal") or "").strip()
         if not goal:

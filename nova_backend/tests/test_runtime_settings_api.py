@@ -278,6 +278,24 @@ def test_runtime_settings_lifespan_starts_scheduler_after_explicit_enable(monkey
     assert scheduler.stop_calls == 1
 
 
+def test_trial_profile_keeps_scheduler_stopped_when_permissions_are_enabled(monkeypatch, tmp_path):
+    store = _install_runtime_settings_store(monkeypatch, tmp_path)
+    store.set_permission("home_agent_scheduler_enabled", True, source="test")
+    scheduler = _install_fake_scheduler(monkeypatch)
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+    monkeypatch.setattr(
+        brain_server,
+        "write_current_runtime_state_snapshot",
+        lambda: tmp_path / "CURRENT_RUNTIME_STATE.md",
+    )
+
+    with TestClient(brain_server.app):
+        assert scheduler.start_calls == 0
+
+    assert scheduler.start_calls == 0
+    assert scheduler.stop_calls == 1
+
+
 def test_runtime_settings_provider_policy_update_changes_snapshot(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
 

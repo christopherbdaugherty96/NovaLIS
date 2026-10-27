@@ -11,12 +11,21 @@ DELETE /api/settings/connections/{provider}        — clear single provider key
 DELETE /api/settings/connections/all               — clear all provider keys (with confirmed=true guard)
 """
 
+import os
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
 from src.connections.connections_store import PROVIDER_REGISTRY, connections_store
+
+
+def _reject_trial_provider_operation() -> None:
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+        raise HTTPException(
+            status_code=403,
+            detail="Provider connection isn't available in this trial version.",
+        )
 
 
 def build_connections_router() -> APIRouter:
@@ -38,6 +47,7 @@ def build_connections_router() -> APIRouter:
     @router.post("/api/settings/connections/{provider}/key")
     async def save_and_test_key(provider: str, payload: dict[str, Any]):
         """Save a provider key and run a health check. Returns pass/fail."""
+        _reject_trial_provider_operation()
         if provider not in PROVIDER_REGISTRY:
             raise HTTPException(status_code=404, detail=f"Unknown provider: {provider}")
 
@@ -61,6 +71,7 @@ def build_connections_router() -> APIRouter:
     @router.post("/api/settings/connections/{provider}/test")
     async def test_existing_key(provider: str):
         """Re-run health check against the already-stored key."""
+        _reject_trial_provider_operation()
         if provider not in PROVIDER_REGISTRY:
             raise HTTPException(status_code=404, detail=f"Unknown provider: {provider}")
 

@@ -494,6 +494,8 @@ class HttpShopifyConnector(ShopifyConnector):
 
 def bootstrap_shopify_connector() -> None:
     """Register HttpShopifyConnector from env vars if both are set."""
+    if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+        return
     domain = os.getenv("NOVA_SHOPIFY_SHOP_DOMAIN", "").strip()
     token = os.getenv("NOVA_SHOPIFY_ACCESS_TOKEN", "").strip()
     api_version = os.getenv("NOVA_SHOPIFY_API_VERSION", "").strip()

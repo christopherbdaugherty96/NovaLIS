@@ -14,6 +14,7 @@ from src.routers.stt import router as stt_router
 
 import json
 import logging
+import os
 import re
 import sys
 import uuid
@@ -198,9 +199,11 @@ async def _lifespan(_app: FastAPI):
     openclaw_agent_scheduler._ledger_logger = (
         lambda event_type, metadata: _log_ledger_event(RUNTIME_GOVERNOR, event_type, metadata)
     )
-    scheduler_allowed = runtime_settings_store.is_permission_enabled(
-        "home_agent_enabled"
-    ) and runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    scheduler_allowed = (
+        str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() != "trial"
+        and runtime_settings_store.is_permission_enabled("home_agent_enabled")
+        and runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    )
     if scheduler_allowed:
         await openclaw_agent_scheduler.start()
     if sys.platform == "win32":

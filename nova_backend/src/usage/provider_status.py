@@ -45,10 +45,19 @@ def _env_key_present(key: str) -> bool:
 def _ollama_status() -> dict[str, Any]:
     """Check Ollama availability without importing heavy modules."""
     try:
+        import urllib.error
         import urllib.request
-        with urllib.request.urlopen(
-            "http://localhost:11434/api/tags", timeout=2
-        ) as resp:
+
+        class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                raise urllib.error.HTTPError(newurl, code, msg, headers, fp)
+
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({}),
+            _NoRedirectHandler(),
+        )
+        request = urllib.request.Request("http://127.0.0.1:11434/api/tags", method="GET")
+        with opener.open(request, timeout=2) as resp:
             if resp.status == 200:
                 return {"connected": True, "error": ""}
     except Exception as exc:

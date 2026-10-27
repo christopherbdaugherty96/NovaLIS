@@ -47,6 +47,8 @@ class DeepSeekBridge:
         analysis_profile: str = "deep_reason",
         timeout_seconds: float = ANALYSIS_TIMEOUT_SECONDS,
     ) -> str:
+        if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+            return "External reasoning isn't available in this trial version."
         try:
             if not self._registry.is_enabled(_CAP_62_ID):
                 return "I can provide structured analysis, but the governed DeepSeek provider is not enabled."

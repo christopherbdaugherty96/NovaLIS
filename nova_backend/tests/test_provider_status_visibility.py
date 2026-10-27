@@ -11,19 +11,17 @@ Proves:
 """
 from __future__ import annotations
 
-import re
+import urllib.request
 from unittest.mock import patch
 
 import pytest
-
 from src.usage.provider_budget_policy import (
     DEFAULT_POLICIES,
-    ProviderBudgetPolicy,
 )
 from src.usage.provider_status import (
     _calendar_status,
     _email_status,
-    _env_key_present,
+    _ollama_status,
     provider_status,
 )
 from src.websocket.intent_patterns import (
@@ -69,6 +67,44 @@ class TestProviderStatusRE:
         assert CONNECTION_STATUS_RE.match("connection status")
         assert CONNECTION_STATUS_RE.match("connections status")
         assert CONNECTION_STATUS_RE.match("show connections")
+
+
+def test_ollama_status_disables_environment_proxy_and_redirects(monkeypatch):
+    handlers = []
+
+    class _Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    class _Opener:
+        def open(self, request, timeout):
+            assert request.full_url == "http://127.0.0.1:11434/api/tags"
+            assert timeout == 2
+            return _Response()
+
+    def _build_opener(*items):
+        handlers.extend(items)
+        return _Opener()
+
+    monkeypatch.setattr(urllib.request, "build_opener", _build_opener)
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: pytest.fail("global proxy-aware urlopen must not be used"),
+    )
+
+    assert _ollama_status() == {"connected": True, "error": ""}
+    proxy_handlers = [item for item in handlers if isinstance(item, urllib.request.ProxyHandler)]
+    redirect_handlers = [item for item in handlers if isinstance(item, urllib.request.HTTPRedirectHandler)]
+    assert len(proxy_handlers) == 1
+    assert proxy_handlers[0].proxies == {}
+    assert len(redirect_handlers) == 1
+    assert type(redirect_handlers[0]).redirect_request is not urllib.request.HTTPRedirectHandler.redirect_request
 
 
 class TestCalendarStatus:
@@ -217,8 +253,9 @@ class TestNoProviderCallsForStatus:
         assert "weather_service" not in source
 
     def test_render_does_not_import_providers(self):
-        from src.brain_server import _render_provider_status_message
         import inspect
+
+        from src.brain_server import _render_provider_status_message
         source = inspect.getsource(_render_provider_status_message)
         assert "deepseek" not in source.lower()
         assert "openai" not in source.lower()

@@ -50,7 +50,32 @@
       "groups": [],
       "enabled_overrides": {
         "16": false,
-        "55": false
+        "17": false,
+        "18": false,
+        "19": false,
+        "20": false,
+        "21": false,
+        "22": false,
+        "31": false,
+        "32": false,
+        "48": false,
+        "49": false,
+        "50": false,
+        "51": false,
+        "52": false,
+        "53": false,
+        "54": false,
+        "55": false,
+        "56": false,
+        "57": false,
+        "58": false,
+        "59": false,
+        "60": false,
+        "61": true,
+        "62": false,
+        "63": false,
+        "64": false,
+        "65": false
       }
     },
     "local-control": {

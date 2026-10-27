@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -22,8 +23,11 @@ async def _sync_openclaw_scheduler_state(deps, settings_snapshot: dict[str, Any]
         return
 
     permissions = dict(settings_snapshot.get("permissions") or {})
-    should_run = bool(permissions.get("home_agent_enabled")) and bool(
-        permissions.get("home_agent_scheduler_enabled")
+    trial_profile = str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+    should_run = (
+        not trial_profile
+        and bool(permissions.get("home_agent_enabled"))
+        and bool(permissions.get("home_agent_scheduler_enabled"))
     )
 
     if should_run:
@@ -48,7 +52,17 @@ def _runtime_settings_payload(deps, settings_snapshot: dict[str, Any] | None = N
         )
         card["summary"] = card["status_label"]
     _sync_usage_budget(snapshot)
+    runtime_profile = str(os.getenv("NOVA_RUNTIME_PROFILE") or "default").strip().lower() or "default"
+    trial_mode = runtime_profile == "trial"
     return {
+        "runtime_profile": runtime_profile,
+        "trial_mode": trial_mode,
+        "trial_truth": {
+            "outside_connections": "disabled_by_profile",
+            "cost": "no_provider_usage",
+        }
+        if trial_mode
+        else None,
         "settings": snapshot,
         "canonical_runtime_health": deps.OSDiagnosticsExecutor._runtime_health_projection(),
         "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),

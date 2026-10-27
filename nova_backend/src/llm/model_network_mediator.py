@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import os
 import socket
 import threading
 from dataclasses import dataclass
@@ -38,11 +39,17 @@ class ModelNetworkMediator:
     def __init__(self) -> None:
         self._ledger = LedgerWriter()
         self._request_times: list[float] = []
-        self._session = requests.Session()
+        self._session = self._new_session()
         self._default_session = self._session
         self._thread_local = threading.local()
         self._rate_lock = threading.Lock()
         self._session_lock = threading.Lock()
+
+    @staticmethod
+    def _new_session() -> requests.Session:
+        session = requests.Session()
+        session.trust_env = False
+        return session
 
     def _request_session(self):
         if self._session is not self._default_session:
@@ -53,17 +60,22 @@ class ModelNetworkMediator:
         with self._session_lock:
             session = getattr(self._thread_local, "session", None)
             if session is None:
-                session = requests.Session()
+                session = self._new_session()
                 self._thread_local.session = session
             return session
 
-    def _validate_url(self, url: str) -> None:
+    def _validate_url(self, url: str) -> str:
         parsed = urlparse(url)
         if parsed.scheme not in ALLOWED_SCHEMES:
             raise ModelNetworkMediatorError(f"Scheme '{parsed.scheme}' not allowed for model IO.")
         host = (parsed.hostname or "").strip().lower()
         if not host:
             raise ModelNetworkMediatorError("Model URL missing hostname.")
+        trial_profile = str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial"
+        if trial_profile and host not in ALLOWED_HOSTS:
+            raise ModelNetworkMediatorError(
+                "Trial profile requires a loopback-only local model endpoint."
+            )
         if host not in ALLOWED_HOSTS:
             # Permit only literal private/loopback IPs for local model runtimes.
             try:
@@ -72,17 +84,49 @@ class ModelNetworkMediator:
                     raise ModelNetworkMediatorError("Non-local model host is not allowed.")
             except ValueError:
                 raise ModelNetworkMediatorError("Non-local model host is not allowed.")
+        resolved_loopbacks: list[str] = []
         try:
             for info in socket.getaddrinfo(host, None):
                 addr = info[4][0]
                 resolved = ipaddress.ip_address(addr)
+                if trial_profile and not resolved.is_loopback:
+                    raise ModelNetworkMediatorError(
+                        "Trial profile requires model endpoint resolution to remain loopback-only."
+                    )
+                if trial_profile and str(resolved) not in resolved_loopbacks:
+                    resolved_loopbacks.append(str(resolved))
                 if not (resolved.is_private or resolved.is_loopback or resolved.is_link_local):
                     raise ModelNetworkMediatorError("Resolved model endpoint is not local/private.")
         except ModelNetworkMediatorError:
             raise
-        except Exception:
+        except Exception as error:
+            if trial_profile:
+                raise ModelNetworkMediatorError(
+                    "Trial profile could not resolve the local model endpoint safely."
+                ) from error
             # If DNS lookup fails, allow requests layer to emit deterministic error.
             pass
+        if trial_profile:
+            if not resolved_loopbacks:
+                raise ModelNetworkMediatorError(
+                    "Trial profile requires a resolved loopback model endpoint."
+                )
+            if host == "localhost":
+                pinned_loopback = next(
+                    (
+                        address
+                        for address in resolved_loopbacks
+                        if ipaddress.ip_address(address).version == 4
+                    ),
+                    resolved_loopbacks[0],
+                )
+            else:
+                pinned_loopback = str(ipaddress.ip_address(host))
+            transport_host = f"[{pinned_loopback}]" if ":" in pinned_loopback else pinned_loopback
+            if parsed.port is not None:
+                transport_host = f"{transport_host}:{parsed.port}"
+            return parsed._replace(netloc=transport_host).geturl()
+        return url
 
     def _check_rate_limit(self) -> None:
         now = time()
@@ -103,7 +147,7 @@ class ModelNetworkMediator:
         session_id: str | None = None,
     ) -> ModelResponse:
         self._check_rate_limit()
-        self._validate_url(url)
+        url = self._validate_url(url)
         correlation: dict[str, str] = {}
         if request_id:
             correlation["request_id"] = request_id
@@ -116,6 +160,7 @@ class ModelNetworkMediator:
                 url=url,
                 json=json_payload,
                 timeout=timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
             payload = response.json() if response.content else {}
@@ -159,7 +204,7 @@ class ModelNetworkMediator:
         on completion (not per-chunk).
         """
         self._check_rate_limit()
-        self._validate_url(url)
+        url = self._validate_url(url)
         self._thread_local.last_stream_done_reason = None
         correlation: dict[str, str] = {}
         if request_id:
@@ -173,6 +218,7 @@ class ModelNetworkMediator:
                 json=json_payload,
                 timeout=timeout,
                 stream=True,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except Exception as error:

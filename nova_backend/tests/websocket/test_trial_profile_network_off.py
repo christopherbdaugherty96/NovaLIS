@@ -7,7 +7,7 @@ import pytest
 from src import brain_server
 from src.conversation.session_router import GateResult
 from src.governor.capability_registry import CapabilityRegistry
-from src.governor.governor_mediator import GovernorMediator, Invocation
+from src.governor.governor_mediator import Clarification, GovernorMediator
 from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 TRIAL_UNAVAILABLE_MESSAGE = (
@@ -107,7 +107,7 @@ def test_trial_explicit_network_request_is_honestly_unavailable(monkeypatch, tex
 
     assert network_calls == []
     messages = _chat_messages(ws)
-    assert any(TRIAL_UNAVAILABLE_MESSAGE in message for message in messages)
+    assert any("isn't available in this trial version." in message for message in messages)
     assert not any("receipt" in message.lower() for message in messages)
 
 
@@ -163,14 +163,14 @@ def test_default_general_chat_omits_trial_no_live_data_instruction(monkeypatch):
         ("Why is service status down?", 48),
     ),
 )
-def test_trial_broad_current_info_guard_preserves_specific_governed_intents(
+def test_trial_broad_current_info_guard_preserves_specific_disabled_intents(
     monkeypatch, text, capability_id
 ):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
 
     result = GovernorMediator.parse_governed_invocation(text)
 
-    assert isinstance(result, Invocation)
+    assert isinstance(result, Clarification)
     assert result.capability_id == capability_id
 
 
@@ -199,11 +199,14 @@ def test_trial_personal_appointments_question_stays_behind_schedule_truth_guard(
     assert not any(TRIAL_UNAVAILABLE_MESSAGE in message for message in messages), messages
 
 
-def test_trial_profile_disables_search_and_weather_only(monkeypatch):
+def test_trial_profile_uses_memory_only_capability_allowlist(monkeypatch):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
     trial = CapabilityRegistry()
-    assert not trial.is_enabled(16)
-    assert not trial.is_enabled(55)
+    assert {
+        capability.id
+        for capability in trial.all_capabilities()
+        if trial.is_enabled(capability.id)
+    } == {61}
 
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
     default = CapabilityRegistry()

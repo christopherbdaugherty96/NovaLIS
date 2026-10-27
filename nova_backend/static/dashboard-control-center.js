@@ -30,6 +30,49 @@ function getSetupMode() {
   return ["local", "bring_your_own_key", "managed_cloud"].includes(stored) ? stored : "local";
 }
 
+function applyTrialProfileTruth(data) {
+  const trialMode = !!(data && data.trial_mode === true && data.runtime_profile === "trial");
+  settingsRuntimeState.runtimeProfile = String((data && data.runtime_profile) || "default");
+  settingsRuntimeState.trialMode = trialMode;
+  document.body.classList.toggle("trial-profile", trialMode);
+
+  const disabledMessage = "Not in this trial version";
+  const truthMessage = "Trial mode: outside connections are disabled by profile; provider cost is $0.";
+  const weather = $("weather-widget");
+  const newsPage = $("page-news");
+  const secondOpinion = $("deepseek-btn");
+  const newsNav = document.querySelector('#primary-nav-strip [data-page="news"]');
+
+  [weather, newsPage, secondOpinion, newsNav].forEach((element) => {
+    if (!element) return;
+    if (trialMode) {
+      element.hidden = true;
+      element.setAttribute("aria-label", disabledMessage);
+    }
+  });
+  if (trialMode && activePageState === "news" && typeof setActivePage === "function") {
+    setActivePage("chat");
+  }
+
+  ["morning-weather", "morning-news", "morning-calendar"].forEach((id) => {
+    const element = $(id);
+    if (element && trialMode) element.textContent = disabledMessage;
+  });
+
+  let notice = $("trial-profile-notice");
+  if (trialMode && !notice) {
+    notice = document.createElement("div");
+    notice.id = "trial-profile-notice";
+    notice.className = "first-run-note";
+    const header = document.querySelector(".header-right") || document.body;
+    header.prepend(notice);
+  }
+  if (notice) {
+    notice.textContent = truthMessage;
+    notice.hidden = !trialMode;
+  }
+}
+
 function applyRuntimeSettingsPayload(data) {
   const payload = (data && typeof data === "object" && data.settings && typeof data.settings === "object")
     ? data.settings
@@ -77,6 +120,7 @@ function applyRuntimeSettingsPayload(data) {
   settingsRuntimeState.updatedAt = String(payload.updated_at || "").trim();
   settingsRuntimeState.lastHydratedAt = Date.now();
   localStorage.setItem(STORAGE_KEYS.setupMode, setupMode);
+  applyTrialProfileTruth(data);
 
   if (data && typeof data === "object") {
     if (data.bridge && typeof data.bridge === "object") {
@@ -848,11 +892,17 @@ function renderMorningPanel() {
   const system = $("morning-system");
   const calendar = $("morning-calendar");
   const calendarConnectBtn = $("btn-morning-calendar-connect");
-  if (weather) weather.textContent = morningState.weather;
-  if (news) news.textContent = morningState.news;
+  const trialMode = document.body.classList.contains("trial-profile");
+  const disabledMessage = "Not in this trial version";
+  if (weather) weather.textContent = trialMode ? disabledMessage : morningState.weather;
+  if (news) news.textContent = trialMode ? disabledMessage : morningState.news;
   if (system) system.textContent = morningState.system;
-  if (calendar) calendar.textContent = morningState.calendar;
+  if (calendar) calendar.textContent = trialMode ? disabledMessage : morningState.calendar;
   if (calendarConnectBtn) {
+    if (trialMode) {
+      calendarConnectBtn.hidden = true;
+      return;
+    }
     const calendarText = String(morningState.calendar || "").trim().toLowerCase();
     calendarConnectBtn.hidden = !(calendarText.includes("not connected") || calendarText.includes("connect"));
   }

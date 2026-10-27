@@ -296,6 +296,10 @@ class DeepSeekReasoningProvider:
         temperature: float = 0.2,
         timeout: float = 90.0,
     ) -> DeepSeekReasoningResult:
+        if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
+            raise DeepSeekReasoningProviderError(
+                "External reasoning isn't available in this trial version."
+            )
         api_key = str(os.getenv("DEEPSEEK_API_KEY") or "").strip()
         if not api_key:
             raise DeepSeekReasoningProviderError("DEEPSEEK_API_KEY is not configured.")

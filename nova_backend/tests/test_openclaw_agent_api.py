@@ -138,6 +138,41 @@ def test_openclaw_agent_run_respects_settings_permission(monkeypatch, tmp_path):
     assert "paused in settings" in response.json()["detail"].lower()
 
 
+def test_trial_profile_blocks_openclaw_run_before_runner(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+
+    class _FailRunner:
+        async def run_template(self, *_args, **_kwargs):
+            raise AssertionError("trial must block before runner")
+
+    monkeypatch.setattr(brain_server, "openclaw_agent_runner", _FailRunner())
+    response = TestClient(brain_server.app).post(
+        "/api/openclaw/agent/templates/project_snapshot/run"
+    )
+
+    assert response.status_code == 403
+    assert "isn't available in this trial version" in response.json()["detail"]
+
+
+def test_trial_profile_blocks_openclaw_schedule_before_store_mutation(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    agent_store = _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
+
+    response = TestClient(brain_server.app).post(
+        "/api/openclaw/agent/templates/morning_brief/schedule",
+        json={"enabled": True},
+    )
+
+    assert response.status_code == 403
+    assert "isn't available in this trial version" in response.json()["detail"]
+    assert agent_store.get_template("morning_brief")["schedule_enabled"] is False
+
+
 def test_openclaw_agent_goal_rejects_when_run_is_active(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     agent_store = _install_agent_store(monkeypatch, tmp_path)

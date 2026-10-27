@@ -659,7 +659,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     set_current_ws_turn_id = getattr(deps, "set_current_ws_turn_id", None)
     GovernorMediator = deps.GovernorMediator
     is_trial_local_current_info_chat = deps.is_trial_local_current_info_chat
-    trial_network_unavailable_response = deps.TRIAL_NETWORK_UNAVAILABLE_RESPONSE
     WS_INPUT_MAX_BYTES = deps.WS_INPUT_MAX_BYTES
     ws_send = deps.ws_send
     thought_store = deps.thought_store
@@ -2394,7 +2393,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 or re.match(r"^weather\s+in\s+[a-z0-9 ,.\-]+$", lowered)
             ):
                 if _is_trial_profile():
-                    await send_chat_message(ws, trial_network_unavailable_response)
+                    await send_chat_message(ws, "Weather isn't available in this trial version.")
                     await send_chat_done(ws)
                     continue
                 _, weather_result = await invoke_governed_text_command(
