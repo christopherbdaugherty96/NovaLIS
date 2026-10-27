@@ -123,6 +123,9 @@ const document = {{
 }};
 function $(id) {{ return elements[id] || null; }}
 const settingsRuntimeState = {{}};
+let activePageState = 'news';
+let redirectedPage = '';
+function setActivePage(page) {{ redirectedPage = page; activePageState = page; }}
 const morningState = {{weather: 'Live weather', news: 'Live news', system: 'Ready', calendar: 'Not connected'}};
 {functions}
 applyTrialProfileTruth({{trial_mode: false, runtime_profile: 'default'}});
@@ -134,6 +137,7 @@ console.log(JSON.stringify({{
   weather: elements['morning-weather'].textContent,
   news: elements['morning-news'].textContent,
   calendar: elements['morning-calendar'].textContent,
+  redirectedPage,
 }}));
 """
     result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
@@ -144,6 +148,56 @@ console.log(JSON.stringify({{
         "weather": "Not in this trial version",
         "news": "Not in this trial version",
         "calendar": "Not in this trial version",
+        "redirectedPage": "chat",
+    }
+
+
+def test_trial_navigation_cannot_select_hidden_news_page():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node.js is required for dashboard behavior verification")
+    source = (REPO_ROOT / "nova_backend" / "static" / "dashboard-chat-news.js").read_text(
+        encoding="utf-8"
+    )
+    function = _function_source(source, "setActivePage", "getConnectionCardProviders")
+    script = f"""
+const elements = {{}};
+for (const id of ['page-chat', 'page-news', 'page-intro', 'page-home', 'page-goals', 'page-agent', 'page-workspace', 'page-memory', 'page-policy', 'page-trust', 'page-settings']) {{
+  elements[id] = {{hidden: true, scrollTop: 0}};
+}}
+const settingsRuntimeState = {{trialMode: true}};
+let activePageState = 'chat';
+const PAGE_LABELS = {{chat: 'Chat', news: 'News'}};
+const STORAGE_KEYS = {{activePage: 'active-page'}};
+const localStorage = {{setItem() {{}}}};
+const document = {{
+  body: {{dataset: {{}}}},
+  querySelector() {{ return {{scrollTop: 0}}; }},
+  querySelectorAll() {{ return []; }},
+}};
+const window = {{scrollTo() {{}}}};
+function $(id) {{ return elements[id] || null; }}
+function normalizePageKey(page) {{ return Object.prototype.hasOwnProperty.call(PAGE_LABELS, page) ? page : 'chat'; }}
+function renderHeaderStatus() {{}}
+function renderQuickActions() {{}}
+const latestNewsItems = [];
+const latestNewsCategories = {{}};
+function setNewsExpandButton() {{}}
+{function}
+setActivePage('news');
+console.log(JSON.stringify({{
+  activePageState,
+  chatHidden: elements['page-chat'].hidden,
+  newsHidden: elements['page-news'].hidden,
+}}));
+"""
+    result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
+    payload = json.loads(result.stdout)
+
+    assert payload == {
+        "activePageState": "chat",
+        "chatHidden": False,
+        "newsHidden": True,
     }
 
 
