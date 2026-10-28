@@ -38,11 +38,13 @@ class _TransportSpy:
 
 @pytest.mark.xfail(
     strict=True,
+    raises=AssertionError,
     reason="Slice 3 must make provider-off a final-boundary zero-attempt invariant.",
 )
 def test_red_baseline_provider_off_does_not_reach_deepseek_transport(monkeypatch, tmp_path):
     monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "slice0-fake-key")
+    monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
     monkeypatch.setattr(runtime_settings_store, "is_permission_enabled", lambda _name: False)
     monkeypatch.setattr(
         provider_mod,
@@ -63,10 +65,12 @@ def test_red_baseline_provider_off_does_not_reach_deepseek_transport(monkeypatch
 
 @pytest.mark.xfail(
     strict=True,
+    raises=AssertionError,
     reason="Slice 3 must apply provider-off below every DeepSeekBridge caller.",
 )
 def test_red_baseline_provider_off_stops_bridge_before_provider(monkeypatch):
     monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
+    monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
     monkeypatch.setattr(runtime_settings_store, "is_permission_enabled", lambda _name: False)
     monkeypatch.setattr(
         bridge_mod.CapabilityRegistry,
