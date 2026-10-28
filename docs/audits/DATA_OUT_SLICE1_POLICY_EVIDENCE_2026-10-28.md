@@ -15,6 +15,8 @@ Slice 1 adds `src/governor/disclosure_policy.py` with:
 - exact grant matching for provider identity/class, normalized destination, effective route,
   destination class, transport, disclosed categories, purpose, caller, capability, and
   initiation state, with no empty-set wildcard scopes;
+- URL normalization only for URL-bearing transports, while non-URL process/filesystem
+  destination identities retain case for exact matching;
 - fail-closed `UNKNOWN` results for missing policy/evidence, version mismatch, unclassified or
   malformed vocabulary, and evidence-write failure;
 - identity-mismatch denial for caller-declared versus boundary-derived provider/destination data;
@@ -59,6 +61,10 @@ purpose, and provider labels are readable only for an exact allowed policy match
 unknown untrusted labels are fingerprinted. Malformed capability identifiers are omitted so
 arbitrary input cannot become a secret-bearing evidence field.
 
+Evidence enum fields require their exact expected enum class. Foreign objects or unrelated enums
+with a string-valued `value` attribute produce fixed `unclassified_*` markers rather than
+persisting caller-controlled text.
+
 It has no field for prompt text, document contents, tokens, keys, authorization values, child
 environment values, or arbitrary exception strings.
 
@@ -74,11 +80,13 @@ not a transport-success or execution receipt and cannot prove that a later opera
 - provider and destination mismatch denial;
 - missing/unmatched grants and rejection of empty wildcard scopes;
 - exact initiation matching and transport-appropriate destination syntax;
+- case-sensitive non-URL process/filesystem destination matching;
 - policy/evidence unavailability and evidence-write failure;
 - malformed request/policy vocabulary fail-closed behavior;
 - explicit rejection of an unverified evidence target;
 - durable JSONL persistence with secret and URL sanitization;
 - bounded evidence for malformed input; and
+- fixed evidence fallbacks for malformed or foreign enum values; and
 - absence of transport/DNS/delegation imports from the policy module; and
 - narrow scanner treatment of `urllib.parse` while retaining detection of network-capable
   `urllib.request` imports.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import json
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 
 import pytest
 from src.governor.disclosure_policy import (
@@ -327,6 +328,72 @@ def test_http_destination_must_be_an_http_url(destination):
 
     assert decision.value is DisclosureDecisionValue.UNKNOWN
     assert decision.reason == "request_vocabulary_unclassified"
+
+
+@pytest.mark.parametrize(
+    ("transport", "destination"),
+    [
+        (TransportClass.PROCESS_HANDOFF, "/opt/Approved/upload"),
+        (TransportClass.NETWORK_FILESYSTEM, "/mnt/Approved/upload"),
+    ],
+)
+def test_non_url_destination_preserves_case_for_exact_match(transport, destination):
+    request = _request(
+        transport=transport,
+        derived_destination=destination,
+        declared_destination=destination,
+    )
+    policy = dataclasses.replace(
+        _policy(),
+        grants=(
+            dataclasses.replace(
+                _policy().grants[0],
+                transports=frozenset({transport}),
+                destinations=frozenset({destination}),
+            ),
+        ),
+    )
+
+    exact = DisclosurePolicyEvaluator().evaluate(request, policy)
+    different_case = DisclosurePolicyEvaluator().evaluate(
+        dataclasses.replace(
+            request,
+            derived_destination=destination.lower(),
+            declared_destination=destination.lower(),
+        ),
+        policy,
+    )
+
+    assert exact.value is DisclosureDecisionValue.ALLOW
+    assert different_case.value is DisclosureDecisionValue.DENY
+    assert different_case.reason == "no_matching_policy_grant"
+
+
+class _ForeignSecretEnum(str, Enum):
+    VALUE = "SYNTHETIC_ENUM_SECRET_947"
+
+
+@pytest.mark.parametrize(
+    ("field", "fallback"),
+    [
+        ("transport", "unclassified_transport"),
+        ("provider_class", "unclassified_provider"),
+        ("destination_class", "unclassified_destination"),
+        ("initiation", "unclassified_initiation"),
+    ],
+)
+def test_foreign_enum_value_cannot_enter_unknown_evidence(tmp_path, field, fallback):
+    path = tmp_path / f"{field}.jsonl"
+    sink = JsonlDisclosureEvidenceSink(VerifiedLocalEvidenceTarget(path, locality_verified=True))
+    request = _request(**{field: _ForeignSecretEnum.VALUE})
+
+    decision = DisclosurePolicyEvaluator().evaluate_and_record(request, None, sink)
+    raw = path.read_text(encoding="utf-8")
+    record = json.loads(raw)
+
+    assert decision.value is DisclosureDecisionValue.UNKNOWN
+    assert _ForeignSecretEnum.VALUE.value not in raw
+    assert record[field] == fallback
 
 
 def test_denied_untrusted_taxonomy_is_fingerprinted(tmp_path):

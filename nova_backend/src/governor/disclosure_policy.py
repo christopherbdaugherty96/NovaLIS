@@ -201,7 +201,11 @@ class DisclosureEvidenceRecord:
                 fallback="unclassified_purpose",
                 trusted=trusted_taxonomy,
             ),
-            transport=_enum_value(request.transport, fallback="unclassified_transport"),
+            transport=_enum_value(
+                request.transport,
+                TransportClass,
+                fallback="unclassified_transport",
+            ),
             provider=_evidence_taxonomy(
                 request.derived_provider,
                 fallback="unclassified_provider",
@@ -209,11 +213,13 @@ class DisclosureEvidenceRecord:
             ),
             provider_class=_enum_value(
                 request.provider_class,
+                ProviderClass,
                 fallback="unclassified_provider",
             ),
             destination=_safe_destination(request),
             destination_class=_enum_value(
                 request.destination_class,
+                DestinationClass,
                 fallback="unclassified_destination",
             ),
             data_categories=_safe_enum_values(
@@ -230,6 +236,7 @@ class DisclosureEvidenceRecord:
             ),
             initiation=_enum_value(
                 request.initiation,
+                InitiationClass,
                 fallback="unclassified_initiation",
             ),
             initiating_capability_id=_safe_capability_id(request.initiating_capability_id),
@@ -597,7 +604,10 @@ def _normalized_destination(value: str, transport: TransportClass) -> str:
             )
     except ValueError:
         return ""
-    return raw.lower() if raw and "://" not in raw else ""
+    # Non-URL identities may be case-sensitive (for example POSIX paths and
+    # process arguments). Preserve their exact case unless a transport-specific
+    # canonicalizer has established a safe normalization rule.
+    return raw if raw and "://" not in raw else ""
 
 
 def _safe_destination(request: DisclosureRequest) -> str:
@@ -614,6 +624,7 @@ def _safe_destination(request: DisclosureRequest) -> str:
             pass
     return _enum_value(
         request.destination_class,
+        DestinationClass,
         fallback="unclassified_destination",
     )
 
@@ -631,8 +642,10 @@ def _safe_capability_id(value: object) -> int | None:
     return None
 
 
-def _enum_value(value: object, *, fallback: str) -> str:
-    raw = getattr(value, "value", None)
+def _enum_value(value: object, expected_type: type[Enum], *, fallback: str) -> str:
+    if not isinstance(value, expected_type):
+        return fallback
+    raw = value.value
     return str(raw) if isinstance(raw, str) and raw else fallback
 
 
