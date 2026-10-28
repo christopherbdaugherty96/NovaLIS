@@ -587,10 +587,10 @@ _URL_TRANSPORTS = {
 
 
 def _normalized_destination(value: str, transport: TransportClass) -> str:
-    raw = str(value or "").strip()
+    raw = str(value or "")
     try:
-        parsed = urlsplit(raw)
         if transport in _URL_TRANSPORTS:
+            parsed = urlsplit(raw.strip())
             if (
                 parsed.scheme.lower() not in {"http", "https"}
                 or not parsed.hostname
@@ -604,10 +604,10 @@ def _normalized_destination(value: str, transport: TransportClass) -> str:
             )
     except ValueError:
         return ""
-    # Non-URL identities may be case-sensitive (for example POSIX paths and
-    # process arguments). Preserve their exact case unless a transport-specific
-    # canonicalizer has established a safe normalization rule.
-    return raw if raw and "://" not in raw else ""
+    # Non-URL identities may be case- and whitespace-sensitive (for example
+    # POSIX paths and process arguments). Preserve every character unless a
+    # transport-specific canonicalizer has established a safe normalization.
+    return raw if raw and not raw.isspace() and "://" not in raw else ""
 
 
 def _safe_destination(request: DisclosureRequest) -> str:

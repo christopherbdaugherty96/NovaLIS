@@ -16,7 +16,7 @@ Slice 1 adds `src/governor/disclosure_policy.py` with:
   destination class, transport, disclosed categories, purpose, caller, capability, and
   initiation state, with no empty-set wildcard scopes;
 - URL normalization only for URL-bearing transports, while non-URL process/filesystem
-  destination identities retain case for exact matching;
+  destination identities retain case and significant whitespace for exact matching;
 - fail-closed `UNKNOWN` results for missing policy/evidence, version mismatch, unclassified or
   malformed vocabulary, and evidence-write failure;
 - identity-mismatch denial for caller-declared versus boundary-derived provider/destination data;
@@ -80,7 +80,7 @@ not a transport-success or execution receipt and cannot prove that a later opera
 - provider and destination mismatch denial;
 - missing/unmatched grants and rejection of empty wildcard scopes;
 - exact initiation matching and transport-appropriate destination syntax;
-- case-sensitive non-URL process/filesystem destination matching;
+- case- and whitespace-sensitive non-URL process/filesystem destination matching;
 - policy/evidence unavailability and evidence-write failure;
 - malformed request/policy vocabulary fail-closed behavior;
 - explicit rejection of an unverified evidence target;

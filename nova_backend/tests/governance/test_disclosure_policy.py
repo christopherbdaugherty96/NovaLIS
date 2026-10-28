@@ -369,6 +369,52 @@ def test_non_url_destination_preserves_case_for_exact_match(transport, destinati
     assert different_case.reason == "no_matching_policy_grant"
 
 
+def test_filesystem_destination_preserves_significant_whitespace():
+    destination = "/mnt/approved/report"
+    transport = TransportClass.NETWORK_FILESYSTEM
+    policy = dataclasses.replace(
+        _policy(),
+        grants=(
+            dataclasses.replace(
+                _policy().grants[0],
+                transports=frozenset({transport}),
+                destinations=frozenset({destination}),
+            ),
+        ),
+    )
+    exact_request = _request(
+        transport=transport,
+        derived_destination=destination,
+        declared_destination=destination,
+    )
+    trailing_space_request = dataclasses.replace(
+        exact_request,
+        derived_destination=f"{destination} ",
+        declared_destination=f"{destination} ",
+    )
+    trailing_space_policy = dataclasses.replace(
+        policy,
+        grants=(
+            dataclasses.replace(
+                policy.grants[0],
+                destinations=frozenset({f"{destination} "}),
+            ),
+        ),
+    )
+
+    exact = DisclosurePolicyEvaluator().evaluate(exact_request, policy)
+    mismatch = DisclosurePolicyEvaluator().evaluate(trailing_space_request, policy)
+    exact_with_space = DisclosurePolicyEvaluator().evaluate(
+        trailing_space_request,
+        trailing_space_policy,
+    )
+
+    assert exact.value is DisclosureDecisionValue.ALLOW
+    assert mismatch.value is DisclosureDecisionValue.DENY
+    assert mismatch.reason == "no_matching_policy_grant"
+    assert exact_with_space.value is DisclosureDecisionValue.ALLOW
+
+
 class _ForeignSecretEnum(str, Enum):
     VALUE = "SYNTHETIC_ENUM_SECRET_947"
 
