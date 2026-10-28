@@ -1,7 +1,7 @@
-"""The owner-ratified 2026-10-23 sequence is the single current lifecycle.
+"""The owner-ratified 2026-10-27 sequence is the single current lifecycle.
 
-These tests bind the operational-truth checker to OWNER_OPERATING_SEQUENCE_2026_10_23
-and prove that the superseded 2026-10-08 sequence remains historical rather than
+These tests bind the operational-truth checker to OWNER_OPERATING_SEQUENCE_2026_10_27
+and prove that older sequences remain historical rather than
 silently returning as current truth.
 """
 
@@ -13,34 +13,34 @@ from pathlib import Path
 
 import pytest
 
-OWNER_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE"
-HISTORICAL_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL"
+OWNER_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_27: ACTIVE"
+HISTORICAL_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_23: HISTORICAL"
 MASTER_ROADMAP = "docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md"
 EXPECTED_LANES = (
     "D1",
     "F9B",
     "SEQ1",
     "T1",
-    "SF",
-    "NL1",
-    "MODEL/LAPTOP TESTING",
-    "REL1",
-    "INSTALLER",
-    "REHEARSAL",
-    "2026-11-13 REVIEW",
+    "SEQ2",
+    "PROVIDER-NEUTRAL DATA-OUT",
+    "APPROVED STRONGER-MODEL ACCESS",
+    "MORNING BRIEF + TOPIC/STORY WATCH",
+    "SF + NL1",
+    "OWNER-USE ACCEPTANCE",
+    "REL1 + INSTALLER + CLEAN WINDOWS PROOF + OUTSIDE USERS",
 )
 EXPECTED_DIRECTIVES = (
     "COMPLETE: D1",
     "COMPLETE: F9B",
     "COMPLETE: SEQ1",
-    "NEXT: T1",
-    "THEN: SF",
-    "THEN: NL1",
-    "THEN: MODEL/LAPTOP TESTING",
-    "THEN: REL1",
-    "THEN: INSTALLER",
-    "THEN: REHEARSAL",
-    "THEN: 2026-11-13 REVIEW",
+    "COMPLETE: T1",
+    "COMPLETE: SEQ2",
+    "NEXT: PROVIDER-NEUTRAL DATA-OUT",
+    "THEN: APPROVED STRONGER-MODEL ACCESS",
+    "THEN: MORNING BRIEF + TOPIC/STORY WATCH",
+    "THEN: SF + NL1",
+    "THEN: OWNER-USE ACCEPTANCE",
+    "THEN: REL1 + INSTALLER + CLEAN WINDOWS PROOF + OUTSIDE USERS",
 )
 ORDERING_SURFACES = (
     "README.md",
@@ -93,7 +93,7 @@ def _assert_rejected(errors: list[str], target: Path, fragment: str) -> None:
 def test_current_lifecycle_generation_is_the_owner_sequence():
     checker = _load_checker()
 
-    assert checker.CURRENT_LIFECYCLE_GENERATION == "OWNER_OPERATING_SEQUENCE_2026_10_23"
+    assert checker.CURRENT_LIFECYCLE_GENERATION == "OWNER_OPERATING_SEQUENCE_2026_10_27"
     assert checker.POST_405_LIFECYCLE_GENERATION == "POST_405_BETA_READINESS_V1"
     assert checker.OWNER_SEQUENCE_LANES == EXPECTED_LANES
 
@@ -128,7 +128,7 @@ def test_missing_owner_marker_is_rejected(tmp_path, relative):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
-        tmp_path, relative, OWNER_MARKER, "OWNER_OPERATING_SEQUENCE_2026_10_23: PROPOSED"
+        tmp_path, relative, OWNER_MARKER, "OWNER_OPERATING_SEQUENCE_2026_10_27: PROPOSED"
     )
 
     _assert_rejected(
@@ -150,16 +150,14 @@ def test_second_active_owner_marker_is_rejected(tmp_path):
     )
 
 
-def test_reordered_trial_lockdown_and_sequence_sync_are_rejected(tmp_path):
+def test_reordered_data_out_and_stronger_model_access_are_rejected(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = tmp_path / "AGENTS.md"
     text = target.read_text(encoding="utf-8")
-    swapped = text.replace("COMPLETE: SEQ1", "@@", 1).replace(
-        "NEXT: T1",
-        "NEXT: SEQ1",
-        1,
-    ).replace("@@", "COMPLETE: T1", 1)
+    swapped = text.replace("NEXT: provider-neutral Data-Out", "@@", 1).replace(
+        "THEN: approved stronger-model access", "NEXT: approved stronger-model access", 1
+    ).replace("@@", "THEN: provider-neutral Data-Out", 1)
     assert swapped != text
     target.write_text(swapped, encoding="utf-8")
 
@@ -168,14 +166,14 @@ def test_reordered_trial_lockdown_and_sequence_sync_are_rejected(tmp_path):
     )
 
 
-def test_installer_before_rel1_is_rejected(tmp_path):
+def test_morning_brief_before_stronger_model_access_is_rejected(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     target = _mutate(
         tmp_path,
         "docs/CANONICAL/07_ROADMAP_TRUTH.md",
-        "THEN: REL1\nTHEN: installer",
-        "THEN: installer\nTHEN: REL1",
+        "THEN: approved stronger-model access\nTHEN: Morning Brief + Topic/Story Watch",
+        "THEN: Morning Brief + Topic/Story Watch\nTHEN: approved stronger-model access",
     )
 
     _assert_rejected(
@@ -189,8 +187,8 @@ def test_two_current_lanes_are_rejected(tmp_path):
     target = _mutate(
         tmp_path,
         "README.md",
-        "NEXT: T1\nTHEN: SF",
-        "CURRENT: T1\nCURRENT: SF",
+        "NEXT: provider-neutral Data-Out\nTHEN: approved stronger-model access",
+        "CURRENT: provider-neutral Data-Out\nCURRENT: approved stronger-model access",
     )
 
     _assert_rejected(
@@ -201,20 +199,24 @@ def test_two_current_lanes_are_rejected(tmp_path):
 def test_missing_lane_is_rejected(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
-    target = _mutate(tmp_path, "README.md", "THEN: NL1\n", "")
+    target = _mutate(tmp_path, "README.md", "THEN: SF + NL1\n", "")
 
     _assert_rejected(
         _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
     )
 
 
-def test_advancing_one_lane_needs_no_checker_change(tmp_path):
+def test_advancing_data_out_lane_needs_no_checker_change(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
     for relative in ORDERING_SURFACES:
         target = tmp_path / relative
         text = target.read_text(encoding="utf-8")
-        advanced = text.replace("NEXT: T1\nTHEN: SF", "COMPLETE: T1\nNEXT: SF", 1)
+        advanced = text.replace(
+            "NEXT: provider-neutral Data-Out\nTHEN: approved stronger-model access",
+            "COMPLETE: provider-neutral Data-Out\nNEXT: approved stronger-model access",
+            1,
+        )
         assert advanced != text
         target.write_text(advanced, encoding="utf-8")
 
@@ -227,8 +229,8 @@ def test_partial_lane_advance_is_rejected(tmp_path):
     target = _mutate(
         tmp_path,
         ".agent_context/current_priority.md",
-        "NEXT: T1\nTHEN: SF",
-        "COMPLETE: T1\nNEXT: SF",
+        "NEXT: provider-neutral Data-Out\nTHEN: approved stronger-model access",
+        "COMPLETE: provider-neutral Data-Out\nNEXT: approved stronger-model access",
     )
 
     _assert_rejected(_owner_errors(checker, tmp_path), target, "progress mismatch")
@@ -278,7 +280,7 @@ def test_missing_no_authority_boundary_is_rejected(tmp_path, relative):
 def test_historical_recovery_wording_does_not_control_current_sequence(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
-    target = _mutate(
+    _mutate(
         tmp_path,
         "docs/status/CURRENT_WORK_STATUS.md",
         "not a prerequisite for the private-beta candidate",
@@ -291,7 +293,7 @@ def test_historical_recovery_wording_does_not_control_current_sequence(tmp_path)
 def test_historical_guard_wording_does_not_control_current_sequence(tmp_path):
     checker = _load_checker()
     _copy_live_surfaces(checker, tmp_path)
-    target = _mutate(
+    _mutate(
         tmp_path,
         "START_HERE.md",
         "Guard adoption and 30-day metrics do not gate Nova",
@@ -370,11 +372,11 @@ def test_revived_superseded_lifecycle_marker_is_rejected_even_in_history(
         "docs/decisions/2026-09-29-technical-alpha-protocol.md",
     ),
 )
-def test_current_order_references_name_october_23_sequence(relative):
+def test_current_order_references_name_october_27_sequence(relative):
     repo_root = Path(__file__).resolve().parents[2]
     text = (repo_root / relative).read_text(encoding="utf-8")
 
-    assert "OWNER_OPERATING_SEQUENCE_2026_10_23" in text
+    assert "OWNER_OPERATING_SEQUENCE_2026_10_27" in text
     assert "The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_08`" not in text
 
 
@@ -395,12 +397,12 @@ def test_stale_language_is_allowed_as_historical_provenance(tmp_path):
 
 
 @pytest.mark.parametrize("relative", ORDERING_SURFACES)
-def test_each_ordering_surface_preserves_october_8_sequence_as_historical(relative):
+def test_each_ordering_surface_preserves_october_23_sequence_as_historical(relative):
     checker = _load_checker()
     text = (checker.ROOT / relative).read_text(encoding="utf-8")
 
     assert text.count(HISTORICAL_MARKER) == 1
-    assert "NEXT: egress inventory" in text
+    assert "NEXT: T1" in text
 
 
 def test_master_roadmap_must_record_supersession_as_ordering_authority(tmp_path):
@@ -409,7 +411,7 @@ def test_master_roadmap_must_record_supersession_as_ordering_authority(tmp_path)
     target = _mutate(
         tmp_path,
         MASTER_ROADMAP,
-        "superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_23",
+        "superseded as current ordering authority by OWNER_OPERATING_SEQUENCE_2026_10_27",
         "retained",
     )
 
@@ -417,6 +419,35 @@ def test_master_roadmap_must_record_supersession_as_ordering_authority(tmp_path)
         _owner_errors(checker, tmp_path),
         target,
         "master roadmap does not record supersession by the owner operating sequence",
+    )
+
+
+@pytest.mark.parametrize("relative", ORDERING_SURFACES)
+def test_seq2_boundaries_are_current_and_enforced(relative):
+    checker = _load_checker()
+    raw = (checker.ROOT / relative).read_text(encoding="utf-8")
+    text = " ".join(raw.upper().split())
+
+    assert checker.OWNER_SEQUENCE_T1_PROVENANCE in text
+    assert checker.OWNER_SEQUENCE_SEPARATE_AUTHORIZATION_BOUNDARY in text
+    assert checker.OWNER_SEQUENCE_DEFERRED_BUSINESS_BOUNDARY in text
+    active = checker._extract_owner_sequence_block(raw)
+    assert active is not None
+    assert "2026-11-13 REVIEW" not in active.upper()
+
+
+def test_missing_seq2_boundary_is_rejected(tmp_path):
+    checker = _load_checker()
+    _copy_live_surfaces(checker, tmp_path)
+    target = _mutate(
+        tmp_path,
+        "README.md",
+        "Each downstream implementation lane requires separate owner authorization.",
+        "The sequence authorizes downstream implementation.",
+    )
+
+    _assert_rejected(
+        _owner_errors(checker, tmp_path), target, "does not preserve the owner operating sequence"
     )
 
 

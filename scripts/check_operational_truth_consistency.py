@@ -18,9 +18,9 @@ Checked here:
 - current-HEAD vs validated-baseline and implementation-vs-evidence boundaries;
 - exact Wave C validated-baseline preservation for completed closeout state;
 - the post-#394 completion boundary on active operational surfaces;
-- the current owner operating sequence (OWNER_OPERATING_SEQUENCE_2026_10_08, issue
-  #457) as the single current lifecycle on every ordering surface, with the
-  superseded post-#405 / Alpha-0 / day-30 Guard ordering allowed only as
+- the current owner operating sequence (OWNER_OPERATING_SEQUENCE_2026_10_27) as
+  the single current lifecycle on every ordering surface, with the superseded
+  October 23 / October 8 / post-#405 / Alpha-0 ordering allowed only as
   explicitly historical provenance;
 - the historical post-#405 beta-readiness order (selectable lifecycle generation
   POST_405_BETA_READINESS_V1) through #406 and the durability/install gates;
@@ -80,25 +80,25 @@ POST_WAVE_C_COMPLETE_LANE = f"{POST_WAVE_C_LANE}_COMPLETE"
 VALIDATED_BASELINE_SHA = "ec20a7146f7d6d55b8983cb7d6d3918d5fad9915"
 POST_405_LIFECYCLE_MARKER = "BETA_READINESS_SEQUENCE_V1: ACTIVE"
 POST_405_LIFECYCLE_GENERATION = "POST_405_BETA_READINESS_V1"
-OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_23"
+OWNER_SEQUENCE_KEY = "OWNER_OPERATING_SEQUENCE_2026_10_27"
 OWNER_SEQUENCE_MARKER = f"{OWNER_SEQUENCE_KEY}: ACTIVE"
-HISTORICAL_OWNER_SEQUENCE_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_08: HISTORICAL"
+HISTORICAL_OWNER_SEQUENCE_MARKER = "OWNER_OPERATING_SEQUENCE_2026_10_23: HISTORICAL"
 CURRENT_LIFECYCLE_GENERATION = OWNER_SEQUENCE_KEY
 HISTORICAL_LIFECYCLE_GENERATION = "HISTORICAL_AUTO"
-# Owner-ratified trial-readiness sequence. Lines are compared after bounded
+# Owner-ratified post-T1 product-value sequence. Lines are compared after bounded
 # Markdown normalization and upper-casing, exactly like the historical lines.
 OWNER_SEQUENCE_LANES = (
     "D1",
     "F9B",
     "SEQ1",
     "T1",
-    "SF",
-    "NL1",
-    "MODEL/LAPTOP TESTING",
-    "REL1",
-    "INSTALLER",
-    "REHEARSAL",
-    "2026-11-13 REVIEW",
+    "SEQ2",
+    "PROVIDER-NEUTRAL DATA-OUT",
+    "APPROVED STRONGER-MODEL ACCESS",
+    "MORNING BRIEF + TOPIC/STORY WATCH",
+    "SF + NL1",
+    "OWNER-USE ACCEPTANCE",
+    "REL1 + INSTALLER + CLEAN WINDOWS PROOF + OUTSIDE USERS",
 )
 OWNER_SEQUENCE_DATA_OUT_REQUIREMENT = (
     "REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: PROVIDER-NEUTRAL DATA-OUT ENFORCEMENT + "
@@ -115,12 +115,22 @@ OWNER_SEQUENCE_PAUSED_CATEGORIES = (
     "RECOVERY WIRING",
 )
 OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY = "THIS SEQUENCE GRANTS NO NEW CAPABILITY OR AUTHORITY."
+OWNER_SEQUENCE_T1_PROVENANCE = (
+    "T1 MERGED: PR #475; MAIN `9B04979944E82BCABAA1C4BAF242B6275B138BA1`."
+)
+OWNER_SEQUENCE_SEPARATE_AUTHORIZATION_BOUNDARY = (
+    "EACH DOWNSTREAM IMPLEMENTATION LANE REQUIRES SEPARATE OWNER AUTHORIZATION."
+)
+OWNER_SEQUENCE_DEFERRED_BUSINESS_BOUNDARY = (
+    "SHOPIFY, AURALIS DIGITAL, AND PERSISTENT BUSINESS ASSISTANCE REMAIN DEFERRED GOALS."
+)
 MASTER_ROADMAP_SUPERSESSION_NOTE = (
     f"SUPERSEDED AS CURRENT ORDERING AUTHORITY BY {OWNER_SEQUENCE_KEY}"
 )
 # Superseded lifecycles may survive only as historical provenance, never as ACTIVE.
 SUPERSEDED_ACTIVE_LIFECYCLE = re.compile(
-    r"\b(?:OWNER_OPERATING_SEQUENCE_2026_10_08|BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)"
+    r"\b(?:OWNER_OPERATING_SEQUENCE_2026_10_23|OWNER_OPERATING_SEQUENCE_2026_10_08|"
+    r"BETA_READINESS_SEQUENCE_V1|ALPHA_0_SEQUENCE)"
     r"[*_`\s]*:[*_`\s]*ACTIVE\b"
 )
 # Superseded current-ordering language allowed only under explicitly historical headings.
@@ -1514,9 +1524,6 @@ def _preserves_owner_sequence(text: str) -> bool:
         return False
     if text.count(HISTORICAL_OWNER_SEQUENCE_MARKER) != 1:
         return False
-    structured_lines = tuple(
-        _normalize_post_405_structured_line(line).rstrip() for line in active.splitlines()
-    )
     lifecycle_states = tuple(
         state
         for line in active.splitlines()
@@ -1528,6 +1535,14 @@ def _preserves_owner_sequence(text: str) -> bool:
     if normalized.count(OWNER_SEQUENCE_DATA_OUT_REQUIREMENT) != 1:
         return False
     if normalized.count(OWNER_SEQUENCE_NO_AUTHORITY_BOUNDARY) != 1:
+        return False
+    if normalized.count(OWNER_SEQUENCE_T1_PROVENANCE) != 1:
+        return False
+    if normalized.count(OWNER_SEQUENCE_SEPARATE_AUTHORIZATION_BOUNDARY) != 1:
+        return False
+    if normalized.count(OWNER_SEQUENCE_DEFERRED_BUSINESS_BOUNDARY) != 1:
+        return False
+    if "2026-11-13 REVIEW" in normalized:
         return False
     if not all(
         re.search(rf"{re.escape(category)}\s+REMAINS? PAUSED", normalized)
