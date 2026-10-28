@@ -12,6 +12,7 @@ Goal:
 """
 
 NETWORK_LIBS = {"requests", "httpx", "urllib", "urllib3", "socket", "aiohttp"}
+PURE_LOCAL_PARSING_IMPORTS = {"urllib.parse"}
 
 NETWORK_MEDIATOR_PATH = SRC_ROOT / "governor" / "network_mediator.py"
 ALLOWED_NETWORK_IMPORT_FILES = {
@@ -52,19 +53,34 @@ def _is_exempt(path: Path) -> bool:
     return any("archive" in part or "quarantine" in part for part in parts)
 
 
+def _network_imports(imports: set[str]) -> set[str]:
+    return {
+        imp.split(".", 1)[0]
+        for imp in imports
+        if imp not in PURE_LOCAL_PARSING_IMPORTS and imp.split(".", 1)[0] in NETWORK_LIBS
+    }
+
+
 def test_only_network_mediator_imports_network_libs():
     assert NETWORK_MEDIATOR_PATH.exists(), f"Missing {NETWORK_MEDIATOR_PATH}"
 
-    all_py = [p for p in SRC_ROOT.rglob("*.py") if "__pycache__" not in p.parts and not _is_exempt(p)]
+    all_py = [
+        p for p in SRC_ROOT.rglob("*.py") if "__pycache__" not in p.parts and not _is_exempt(p)
+    ]
     offenders: list[tuple[Path, set[str]]] = []
 
     for py in all_py:
         imports = ast_imports(py)
-        imported_top = {imp.split(".", 1)[0] for imp in imports}
-        used = imported_top.intersection(NETWORK_LIBS)
+        used = _network_imports(imports)
         if used and py not in ALLOWED_NETWORK_IMPORT_FILES:
             offenders.append((py, used))
 
     assert not offenders, "Network imports found outside NetworkMediator:\n" + "\n".join(
         f"- {p}: {sorted(list(used))}" for p, used in offenders
     )
+
+
+def test_urllib_exception_is_limited_to_pure_local_parser():
+    assert _network_imports({"urllib.parse"}) == set()
+    assert _network_imports({"urllib.request"}) == {"urllib"}
+    assert _network_imports({"urllib"}) == {"urllib"}
