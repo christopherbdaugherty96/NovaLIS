@@ -59,8 +59,11 @@ changed filesystem backing require a new decision.
   archived, developer-only, or inactive paths.
 - Confirm every supported runtime/setup egress mechanism has a disposition and no unresolved P0/P1
   omission or material misclassification remains.
-- Record red tests for the known provider/model bypasses and failure-evidence leakage before
-  changing the implementation.
+- Record red tests for provider/model bypasses that remain reproducible before changing their
+  implementation. PR #462 already repaired the raw network-failure evidence leak and cross-origin
+  redirect defect tracked by closed issue #461; preserve those cases as green regressions on
+  current `main`, and require a new red baseline only if revalidation independently reproduces a
+  new leak.
 
 Exit gate: reviewed closure matrix and reproducible red evidence. No runtime behavior changes.
 
@@ -188,8 +191,12 @@ Data-Out is complete only when all supported mechanisms in the frozen closure sc
 their slice gates and the final exact-head review returns PASS. Partial slice completion must be
 reported as partial and must not be generalized to unsupported transports or machine-wide traffic.
 
-Governed stronger-model work remains separately authorized and later in sequence. Its entry gate
-requires, at minimum, completed Slice 3 on the same accepted Data-Out foundation, including
-zero-attempt denial evidence—not merely a disclosure dialog or a distribution-time promise.
+Governed stronger-model work remains separately authorized and later in sequence. Slice 3 is only
+the earliest model-path technical prerequisite; completing it does not authorize or enable
+stronger-model access. Before that access can be enabled, every Data-Out slice applicable to the
+model path and its setup, credentials, effective routing, delegated boundaries, storage, startup,
+and proof surfaces must be complete, the full applicable closure must have exact-head
+zero-attempt denial evidence, and the owner must separately authorize stronger-model work. A
+disclosure dialog or distribution-time promise is not sufficient.
 
 No downstream lane starts automatically when Data-Out completes.
