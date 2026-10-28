@@ -3,9 +3,9 @@
 Status: proposed protocol amendment; effective only after review and owner merge decision.
 Distribution requires the separate artifact-specific decision below.
 
-## Current sequence alignment — 2026-10-23
+## Current sequence alignment — 2026-10-27
 
-The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_23`, recorded at the top of
+The current work order is `OWNER_OPERATING_SEQUENCE_2026_10_27`, recorded at the top of
 `.agent_context/current_priority.md` and the canonical status surfaces. This protocol remains an
 acceptance reference; ordering is now:
 
@@ -13,17 +13,20 @@ acceptance reference; ordering is now:
 COMPLETE: D1
 COMPLETE: F9b
 COMPLETE: SEQ1
-NEXT: T1
-THEN: SF
-THEN: NL1
-THEN: model/laptop testing
-THEN: REL1
-THEN: installer
-THEN: rehearsal
-THEN: 2026-11-13 review
+COMPLETE: T1
+COMPLETE: SEQ2
+NEXT: provider-neutral Data-Out
+THEN: approved stronger-model access
+THEN: Morning Brief + Topic/Story Watch
+THEN: SF + NL1
+THEN: owner-use acceptance
+THEN: REL1 + installer + clean Windows proof + outside users
 ```
 
 REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + zero-attempt denial proof (T1 covers trial isolation only).
+
+Each downstream implementation lane requires separate owner authorization. The fixed November 13
+date is historical and no longer sets a deadline.
 
 ### Historical sequence — 2026-10-08 (superseded 2026-10-23)
 

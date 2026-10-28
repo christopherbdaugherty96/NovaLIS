@@ -4,10 +4,40 @@ Last reviewed: 2026-10-08.
 
 This file is the current actionable task inventory. Historical lane detail belongs in Git history and dated proof/strategy artifacts, not in the active queue.
 
-## Active Now — owner operating sequence (2026-10-23)
+## Active Now — owner operating sequence (2026-10-27)
 
 ```text
-OWNER_OPERATING_SEQUENCE_2026_10_23: ACTIVE
+OWNER_OPERATING_SEQUENCE_2026_10_27: ACTIVE
+COMPLETE: D1
+COMPLETE: F9b
+COMPLETE: SEQ1
+COMPLETE: T1
+COMPLETE: SEQ2
+NEXT: provider-neutral Data-Out
+THEN: approved stronger-model access
+THEN: Morning Brief + Topic/Story Watch
+THEN: SF + NL1
+THEN: owner-use acceptance
+THEN: REL1 + installer + clean Windows proof + outside users
+```
+
+REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + zero-attempt denial proof (T1 covers trial isolation only).
+
+T1 MERGED: PR #475; main `9b04979944e82bcabaa1c4baf242b6275b138ba1`.
+Each downstream implementation lane requires separate owner authorization.
+Shopify, Auralis Digital, and persistent business assistance remain deferred goals.
+
+Google/provider expansion remains paused. Operational Continuity implementation remains paused.
+New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
+Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
+This sequence grants no new capability or authority.
+
+The October 23 sequence remains below as historical provenance and no longer orders work.
+
+## Historical owner operating sequence — 2026-10-23 (superseded 2026-10-27)
+
+```text
+OWNER_OPERATING_SEQUENCE_2026_10_23: HISTORICAL
 COMPLETE: D1
 COMPLETE: F9b
 COMPLETE: SEQ1
@@ -21,14 +51,9 @@ THEN: rehearsal
 THEN: 2026-11-13 review
 ```
 
-REQUIRED BEFORE DISTRIBUTION BEYOND THE TRIAL: provider-neutral Data-Out enforcement + zero-attempt denial proof (T1 covers trial isolation only).
+The fixed November 13 review date and this ordering are historical only. They do not set a current deadline or authorize work.
 
-Google/provider expansion remains paused. Operational Continuity implementation remains paused.
-New capabilities remain paused. Voice expansion remains paused. Broader UI work remains paused.
-Guard expansion remains paused. Recovery wiring remains paused. Other feature expansion remains paused.
-This sequence grants no new capability or authority.
-
-The October 8 sequence remains below as historical provenance and no longer orders work.
+The October 8 sequence remains below as older historical provenance and no longer orders work.
 
 ## Historical active queue — owner operating sequence (2026-10-08; superseded 2026-10-23)
 
