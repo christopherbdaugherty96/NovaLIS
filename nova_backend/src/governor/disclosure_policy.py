@@ -1,0 +1,593 @@
+"""Pure provider-neutral Data-Out policy and secret-free decision evidence.
+
+Slice 1 defines vocabulary only. It is intentionally not wired into network,
+filesystem, process, browser, or model transports; those are later slices.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
+from enum import Enum
+from pathlib import Path
+from typing import Protocol
+from urllib.parse import urlsplit
+
+from src.utils.persistent_state import shared_path_lock
+
+
+class DisclosureDecisionValue(str, Enum):
+    ALLOW = "allow"
+    DENY = "deny"
+    UNKNOWN = "unknown"
+
+
+class TransportClass(str, Enum):
+    HTTP = "http"
+    OAUTH_SETUP = "oauth_setup"
+    BROWSER_HANDOFF = "browser_handoff"
+    MAIL_CLIENT_HANDOFF = "mail_client_handoff"
+    PROCESS_HANDOFF = "process_handoff"
+    APPLICATION_HANDOFF = "application_handoff"
+    NETWORK_FILESYSTEM = "network_filesystem"
+    LOCAL_PRIVATE_MODEL = "local_private_model"
+    LOCAL_OS_HANDOFF = "local_os_handoff"
+
+
+class DestinationClass(str, Enum):
+    EXTERNAL_PROVIDER = "external_provider"
+    EXTERNAL_WEB = "external_web"
+    EXTERNAL_STORAGE = "external_storage"
+    LOCAL_LOOPBACK = "local_loopback"
+    LOCAL_PRIVATE = "local_private"
+    LOCAL_OS = "local_os"
+    DELEGATED_APPLICATION = "delegated_application"
+    UNCLASSIFIED = "unclassified"
+
+
+class ProviderClass(str, Enum):
+    HOSTED_MODEL = "hosted_model"
+    SEARCH = "search"
+    NEWS_SOURCE = "news_source"
+    WEATHER = "weather"
+    COMMERCE = "commerce"
+    OAUTH = "oauth"
+    LOCAL_MODEL = "local_model"
+    LOCAL_OS = "local_os"
+    DELEGATED_APPLICATION = "delegated_application"
+    REMOTE_STORAGE = "remote_storage"
+    UNCLASSIFIED = "unclassified"
+
+
+class DataCategory(str, Enum):
+    PROMPT = "prompt"
+    CONVERSATION_CONTEXT = "conversation_context"
+    DOCUMENT_TEXT = "document_text"
+    SEARCH_QUERY = "search_query"
+    LOCATION = "location"
+    SOURCE_URL = "source_url"
+    TASK_REPORT = "task_report"
+    SHOP_DATA = "shop_data"
+    OAUTH_MATERIAL = "oauth_material"
+    FILE_CONTENT = "file_content"
+    RUNTIME_STATE = "runtime_state"
+    NOTIFICATION_CONTENT = "notification_content"
+    STRUCTURAL_METADATA = "structural_metadata"
+    TLS_SESSION_SECRET = "tls_session_secret"
+
+
+class CredentialCategory(str, Enum):
+    API_KEY = "api_key"
+    BEARER_TOKEN = "bearer_token"
+    OAUTH_TOKEN = "oauth_token"
+    ORIGIN_CREDENTIAL = "origin_credential"
+    PROXY_CREDENTIAL = "proxy_credential"
+    NETWORK_SHARE_CREDENTIAL = "network_share_credential"
+    AMBIENT_NETRC = "ambient_netrc"
+
+
+class InitiationClass(str, Enum):
+    USER_INITIATED = "user_initiated"
+    APPROVED = "approved"
+    AUTOMATIC = "automatic"
+
+
+@dataclass(frozen=True)
+class DisclosureRequest:
+    caller: str
+    purpose: str
+    transport: TransportClass
+    destination_class: DestinationClass
+    provider_class: ProviderClass
+    derived_destination: str
+    policy_version: str
+    data_categories: frozenset[DataCategory]
+    credential_categories: frozenset[CredentialCategory] = frozenset()
+    initiating_capability_id: int | None = None
+    request_id: str = ""
+    session_id: str = ""
+    action_id: str = ""
+    declared_provider: str = ""
+    derived_provider: str = ""
+    declared_destination: str = ""
+    effective_route: str = ""
+    initiation: InitiationClass = InitiationClass.AUTOMATIC
+
+
+@dataclass(frozen=True)
+class DisclosureGrant:
+    provider: str
+    provider_class: ProviderClass
+    destination_class: DestinationClass
+    destinations: frozenset[str]
+    effective_routes: frozenset[str]
+    transports: frozenset[TransportClass]
+    data_categories: frozenset[DataCategory]
+    credential_categories: frozenset[CredentialCategory] = frozenset()
+    purposes: frozenset[str] = frozenset()
+    callers: frozenset[str] = frozenset()
+    capability_ids: frozenset[int] = frozenset()
+
+
+@dataclass(frozen=True)
+class DisclosurePolicy:
+    version: str
+    grants: tuple[DisclosureGrant, ...] = tuple()
+
+
+@dataclass(frozen=True)
+class DisclosureDecision:
+    value: DisclosureDecisionValue
+    reason: str
+    policy_version: str
+    request_id: str = ""
+    session_id: str = ""
+    action_id: str = ""
+
+    @property
+    def may_proceed(self) -> bool:
+        return self.value is DisclosureDecisionValue.ALLOW
+
+
+@dataclass(frozen=True)
+class DisclosureEvidenceRecord:
+    record_kind: str
+    transport_observed: bool
+    decision: str
+    reason: str
+    policy_version: str
+    caller: str
+    purpose: str
+    transport: str
+    provider: str
+    provider_class: str
+    destination: str
+    destination_class: str
+    data_categories: tuple[str, ...]
+    credential_categories: tuple[str, ...]
+    initiation: str
+    initiating_capability_id: int | None
+    request_id: str
+    session_id: str
+    action_id: str
+    recorded_at_utc: str
+
+    @classmethod
+    def from_decision(
+        cls,
+        request: DisclosureRequest,
+        decision: DisclosureDecision,
+    ) -> "DisclosureEvidenceRecord":
+        trusted_taxonomy = decision.value is DisclosureDecisionValue.ALLOW
+        return cls(
+            record_kind="disclosure_policy_evaluation",
+            transport_observed=False,
+            decision=decision.value.value,
+            reason=_safe_label(decision.reason, fallback="unclassified_reason"),
+            policy_version=_safe_label(decision.policy_version, fallback="unavailable"),
+            caller=_evidence_taxonomy(
+                request.caller,
+                fallback="unclassified_caller",
+                trusted=trusted_taxonomy,
+            ),
+            purpose=_evidence_taxonomy(
+                request.purpose,
+                fallback="unclassified_purpose",
+                trusted=trusted_taxonomy,
+            ),
+            transport=_enum_value(request.transport, fallback="unclassified_transport"),
+            provider=_evidence_taxonomy(
+                request.derived_provider,
+                fallback="unclassified_provider",
+                trusted=trusted_taxonomy,
+            ),
+            provider_class=_enum_value(
+                request.provider_class,
+                fallback="unclassified_provider",
+            ),
+            destination=_safe_destination(request),
+            destination_class=_enum_value(
+                request.destination_class,
+                fallback="unclassified_destination",
+            ),
+            data_categories=_safe_enum_values(
+                request.data_categories,
+                DataCategory,
+                fallback="unclassified_data",
+            ),
+            credential_categories=tuple(
+                _safe_enum_values(
+                    request.credential_categories,
+                    CredentialCategory,
+                    fallback="unclassified_credential",
+                )
+            ),
+            initiation=_enum_value(
+                request.initiation,
+                fallback="unclassified_initiation",
+            ),
+            initiating_capability_id=request.initiating_capability_id,
+            request_id=_fingerprint(request.request_id),
+            session_id=_fingerprint(request.session_id),
+            action_id=_fingerprint(request.action_id),
+            recorded_at_utc=datetime.now(timezone.utc).isoformat(),
+        )
+
+    def as_dict(self) -> dict[str, object]:
+        return {
+            "record_kind": self.record_kind,
+            "transport_observed": self.transport_observed,
+            "decision": self.decision,
+            "reason": self.reason,
+            "policy_version": self.policy_version,
+            "caller": self.caller,
+            "purpose": self.purpose,
+            "transport": self.transport,
+            "provider": self.provider,
+            "provider_class": self.provider_class,
+            "destination": self.destination,
+            "destination_class": self.destination_class,
+            "data_categories": list(self.data_categories),
+            "credential_categories": list(self.credential_categories),
+            "initiation": self.initiation,
+            "initiating_capability_id": self.initiating_capability_id,
+            "request_id": self.request_id,
+            "session_id": self.session_id,
+            "action_id": self.action_id,
+            "recorded_at_utc": self.recorded_at_utc,
+        }
+
+
+class DisclosureEvidenceSink(Protocol):
+    def append(self, record: DisclosureEvidenceRecord) -> None: ...
+
+
+@dataclass(frozen=True)
+class VerifiedLocalEvidenceTarget:
+    """A bootstrap-supplied target already proven local outside this slice.
+
+    Slice 1 cannot establish filesystem locality without probing. Construction is
+    therefore explicit and rejects an unverified target; Slice 5 owns locality.
+    """
+
+    path: Path
+    locality_verified: bool = field(repr=False)
+
+    def __post_init__(self) -> None:
+        if not self.locality_verified:
+            raise ValueError("Disclosure evidence target must be pre-verified local.")
+
+
+class JsonlDisclosureEvidenceSink:
+    """Append secret-free decision evidence to an explicit verified-local target."""
+
+    def __init__(self, target: VerifiedLocalEvidenceTarget) -> None:
+        self._target = target
+        self._lock = shared_path_lock(target.path)
+
+    def append(self, record: DisclosureEvidenceRecord) -> None:
+        payload = json.dumps(record.as_dict(), sort_keys=True, separators=(",", ":"))
+        with self._lock:
+            self._target.path.parent.mkdir(parents=True, exist_ok=True)
+            with self._target.path.open("a", encoding="utf-8") as handle:
+                handle.write(payload + "\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+
+
+class DisclosurePolicyEvaluator:
+    """Deterministic evaluator with no transport, DNS, or path-classification I/O."""
+
+    def evaluate(
+        self,
+        request: DisclosureRequest,
+        policy: DisclosurePolicy | None,
+    ) -> DisclosureDecision:
+        base = {
+            "policy_version": request.policy_version or "unavailable",
+            "request_id": request.request_id,
+            "session_id": request.session_id,
+            "action_id": request.action_id,
+        }
+        if policy is None:
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "policy_unavailable",
+                **base,
+            )
+        if not _request_vocabulary_valid(request):
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "request_vocabulary_unclassified",
+                **base,
+            )
+        if not _policy_vocabulary_valid(policy):
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "policy_vocabulary_invalid",
+                policy_version=policy.version or "unavailable",
+                request_id=request.request_id,
+                session_id=request.session_id,
+                action_id=request.action_id,
+            )
+        if not request.policy_version or request.policy_version != policy.version:
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "policy_version_mismatch",
+                policy_version=policy.version or "unavailable",
+                request_id=request.request_id,
+                session_id=request.session_id,
+                action_id=request.action_id,
+            )
+        if not all(
+            (
+                request.caller,
+                request.purpose,
+                request.derived_destination,
+                request.derived_provider,
+                request.effective_route,
+            )
+        ):
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "request_unclassified",
+                **base,
+            )
+        if request.destination_class is DestinationClass.UNCLASSIFIED:
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "destination_unclassified",
+                **base,
+            )
+        if request.provider_class is ProviderClass.UNCLASSIFIED:
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "provider_unclassified",
+                **base,
+            )
+        if not request.data_categories:
+            return DisclosureDecision(
+                DisclosureDecisionValue.UNKNOWN,
+                "data_categories_unclassified",
+                **base,
+            )
+        if request.declared_provider and (
+            _normalized_identity(request.declared_provider)
+            != _normalized_identity(request.derived_provider)
+        ):
+            return DisclosureDecision(
+                DisclosureDecisionValue.DENY,
+                "provider_identity_mismatch",
+                **base,
+            )
+        if request.declared_destination and (
+            _normalized_destination(request.declared_destination)
+            != _normalized_destination(request.derived_destination)
+        ):
+            return DisclosureDecision(
+                DisclosureDecisionValue.DENY,
+                "destination_identity_mismatch",
+                **base,
+            )
+
+        for grant in policy.grants:
+            if _grant_matches(request, grant):
+                return DisclosureDecision(
+                    DisclosureDecisionValue.ALLOW,
+                    "explicit_policy_grant",
+                    **base,
+                )
+        return DisclosureDecision(
+            DisclosureDecisionValue.DENY,
+            "no_matching_policy_grant",
+            **base,
+        )
+
+    def evaluate_and_record(
+        self,
+        request: DisclosureRequest,
+        policy: DisclosurePolicy | None,
+        evidence_sink: DisclosureEvidenceSink | None,
+    ) -> DisclosureDecision:
+        decision = self.evaluate(request, policy)
+        if evidence_sink is None:
+            return replace(
+                decision,
+                value=DisclosureDecisionValue.UNKNOWN,
+                reason="evidence_unavailable",
+            )
+        try:
+            evidence_sink.append(DisclosureEvidenceRecord.from_decision(request, decision))
+        except Exception:
+            return replace(
+                decision,
+                value=DisclosureDecisionValue.UNKNOWN,
+                reason="evidence_write_failed",
+            )
+        return decision
+
+
+def _grant_matches(request: DisclosureRequest, grant: DisclosureGrant) -> bool:
+    if _normalized_identity(grant.provider) != _normalized_identity(request.derived_provider):
+        return False
+    if grant.provider_class is not request.provider_class:
+        return False
+    if grant.destination_class is not request.destination_class:
+        return False
+    if _normalized_destination(request.derived_destination) not in {
+        _normalized_destination(item) for item in grant.destinations
+    }:
+        return False
+    if request.effective_route not in grant.effective_routes:
+        return False
+    if request.transport not in grant.transports:
+        return False
+    if not request.data_categories.issubset(grant.data_categories):
+        return False
+    if not request.credential_categories.issubset(grant.credential_categories):
+        return False
+    if grant.purposes and request.purpose not in grant.purposes:
+        return False
+    if grant.callers and request.caller not in grant.callers:
+        return False
+    if grant.capability_ids and request.initiating_capability_id not in grant.capability_ids:
+        return False
+    return True
+
+
+def _request_vocabulary_valid(request: DisclosureRequest) -> bool:
+    return (
+        isinstance(request.transport, TransportClass)
+        and isinstance(request.destination_class, DestinationClass)
+        and isinstance(request.provider_class, ProviderClass)
+        and isinstance(request.initiation, InitiationClass)
+        and isinstance(request.data_categories, frozenset)
+        and all(isinstance(item, DataCategory) for item in request.data_categories)
+        and isinstance(request.credential_categories, frozenset)
+        and all(isinstance(item, CredentialCategory) for item in request.credential_categories)
+    )
+
+
+def _policy_vocabulary_valid(policy: DisclosurePolicy) -> bool:
+    if not policy.version or not isinstance(policy.grants, tuple):
+        return False
+    for grant in policy.grants:
+        if not isinstance(grant, DisclosureGrant):
+            return False
+        if not isinstance(grant.destination_class, DestinationClass):
+            return False
+        if not isinstance(grant.provider_class, ProviderClass):
+            return False
+        if not isinstance(grant.destinations, frozenset) or not all(
+            isinstance(item, str) and bool(_normalized_destination(item))
+            for item in grant.destinations
+        ):
+            return False
+        if not isinstance(grant.effective_routes, frozenset) or not all(
+            isinstance(item, str) and bool(item.strip()) for item in grant.effective_routes
+        ):
+            return False
+        if not isinstance(grant.transports, frozenset) or not all(
+            isinstance(item, TransportClass) for item in grant.transports
+        ):
+            return False
+        if not isinstance(grant.data_categories, frozenset) or not all(
+            isinstance(item, DataCategory) for item in grant.data_categories
+        ):
+            return False
+        if not isinstance(grant.credential_categories, frozenset) or not all(
+            isinstance(item, CredentialCategory) for item in grant.credential_categories
+        ):
+            return False
+    return True
+
+
+def _normalized_identity(value: str) -> str:
+    return str(value or "").strip().lower()
+
+
+def _normalized_destination(value: str) -> str:
+    raw = str(value or "").strip()
+    try:
+        parsed = urlsplit(raw)
+        if parsed.scheme and parsed.hostname:
+            return (
+                f"{parsed.scheme.lower()}://{_url_authority(parsed.hostname, parsed.port)}"
+                f"{parsed.path or '/'}"
+            )
+    except ValueError:
+        return ""
+    return raw.lower()
+
+
+def _safe_destination(request: DisclosureRequest) -> str:
+    if request.transport in {
+        TransportClass.HTTP,
+        TransportClass.OAUTH_SETUP,
+        TransportClass.LOCAL_PRIVATE_MODEL,
+    }:
+        try:
+            parsed = urlsplit(request.derived_destination)
+            if parsed.scheme and parsed.hostname:
+                return f"{parsed.scheme.lower()}://{_url_authority(parsed.hostname, parsed.port)}"
+        except ValueError:
+            pass
+    return _enum_value(
+        request.destination_class,
+        fallback="unclassified_destination",
+    )
+
+
+def _url_authority(hostname: str, port: int | None) -> str:
+    host = hostname.lower()
+    if ":" in host:
+        host = f"[{host}]"
+    return f"{host}:{port}" if port is not None else host
+
+
+def _enum_value(value: object, *, fallback: str) -> str:
+    raw = getattr(value, "value", None)
+    return str(raw) if isinstance(raw, str) and raw else fallback
+
+
+def _safe_enum_values(
+    values: object,
+    expected_type: type[Enum],
+    *,
+    fallback: str,
+) -> tuple[str, ...]:
+    if not isinstance(values, frozenset):
+        return (fallback,)
+    safe = sorted(
+        str(item.value)
+        for item in values
+        if isinstance(item, expected_type) and isinstance(item.value, str)
+    )
+    return tuple(safe) if len(safe) == len(values) else (fallback,)
+
+
+_SAFE_LABEL = re.compile(r"[^a-zA-Z0-9_.:/-]+")
+
+
+def _safe_label(value: str, *, fallback: str) -> str:
+    clean = _SAFE_LABEL.sub("_", str(value or "").strip())[:120].strip("_")
+    return clean or fallback
+
+
+def _evidence_taxonomy(value: str, *, fallback: str, trusted: bool) -> str:
+    if not str(value or "").strip():
+        return fallback
+    if not trusted:
+        return _fingerprint(value)
+    return _safe_label(value, fallback=fallback)
+
+
+def _fingerprint(value: str) -> str:
+    clean = str(value or "").strip()
+    if not clean:
+        return ""
+    return f"sha256:{hashlib.sha256(clean.encode('utf-8')).hexdigest()[:16]}"

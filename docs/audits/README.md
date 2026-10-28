@@ -18,7 +18,9 @@ Titles carry the date — trust the newest for a given subject. Rough currency:
   that provider-neutral Data-Out enforcement exists. The approved plan derived from it is
   [`../planning/DATA_OUT_IMPLEMENTATION_PLAN_2026-10-28.md`](../planning/DATA_OUT_IMPLEMENTATION_PLAN_2026-10-28.md);
   that plan does not authorize runtime implementation. The current documentation-and-test-only closure review is
-  [`DATA_OUT_SLICE0_CLOSURE_2026-10-28.md`](DATA_OUT_SLICE0_CLOSURE_2026-10-28.md).
+  [`DATA_OUT_SLICE0_CLOSURE_2026-10-28.md`](DATA_OUT_SLICE0_CLOSURE_2026-10-28.md). The Slice 1
+  candidate policy/evidence implementation record is
+  [`DATA_OUT_SLICE1_POLICY_EVIDENCE_2026-10-28.md`](DATA_OUT_SLICE1_POLICY_EVIDENCE_2026-10-28.md).
 - **More recent signals:** `USER_SIMULATION_RESULTS_2026-07-06.md`,
   `PERSONALITY_GATE_WRAPPING_LIVE_VALIDATION_2026-06-05.md`,
   `UI_SIMPLIFICATION_AUDIT_2026-05-26.md`, and the 2026-05-19 conversation-model / simulation
