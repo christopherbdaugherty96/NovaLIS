@@ -62,6 +62,7 @@ def _policy() -> DisclosurePolicy:
                 purposes=frozenset({"external_reasoning"}),
                 callers=frozenset({"deepseek_bridge"}),
                 capability_ids=frozenset({62}),
+                initiations=frozenset({InitiationClass.APPROVED}),
             ),
         ),
     )
@@ -82,6 +83,17 @@ def test_exact_explicit_grant_allows_and_only_allow_may_proceed():
 
     assert decision.value is DisclosureDecisionValue.ALLOW
     assert decision.reason == "explicit_policy_grant"
+    assert decision.may_proceed is False
+
+
+def test_only_recorded_allow_may_proceed(tmp_path):
+    path = tmp_path / "decisions.jsonl"
+    sink = JsonlDisclosureEvidenceSink(VerifiedLocalEvidenceTarget(path, locality_verified=True))
+
+    decision = DisclosurePolicyEvaluator().evaluate_and_record(_request(), _policy(), sink)
+
+    assert decision.value is DisclosureDecisionValue.ALLOW
+    assert decision.evidence_recorded is True
     assert decision.may_proceed is True
 
 
@@ -130,7 +142,11 @@ def test_mismatch_or_missing_grant_denies(disclosure_request, reason):
             "provider_unclassified",
         ),
         (_request(data_categories=frozenset()), _policy(), "data_categories_unclassified"),
-        (_request(derived_destination=""), _policy(), "request_unclassified"),
+        (
+            _request(derived_destination=""),
+            _policy(),
+            "request_vocabulary_unclassified",
+        ),
         (_request(derived_provider=""), _policy(), "request_unclassified"),
         (_request(effective_route=""), _policy(), "request_unclassified"),
         (
@@ -226,12 +242,8 @@ def test_durable_evidence_is_secret_free_and_destination_sanitized(tmp_path):
     sink = JsonlDisclosureEvidenceSink(VerifiedLocalEvidenceTarget(path, locality_verified=True))
     secret = "slice1-super-secret"
     request = _request(
-        derived_destination=(
-            f"https://user:{secret}@api.deepseek.com/chat/completions?key={secret}"
-        ),
-        declared_destination=(
-            f"https://user:{secret}@api.deepseek.com/chat/completions?key={secret}"
-        ),
+        derived_destination=f"https://api.deepseek.com/chat/completions?key={secret}",
+        declared_destination=f"https://api.deepseek.com/chat/completions?key={secret}",
         request_id="request secret/id",
     )
 
@@ -250,6 +262,71 @@ def test_durable_evidence_is_secret_free_and_destination_sanitized(tmp_path):
     assert record["data_categories"] == ["conversation_context", "prompt"]
     assert record["request_id"].startswith("sha256:")
     assert "request secret/id" not in raw
+
+
+def test_unknown_evidence_fingerprints_policy_version_and_bounds_capability_id(tmp_path):
+    path = tmp_path / "disclosure-decisions.jsonl"
+    sink = JsonlDisclosureEvidenceSink(VerifiedLocalEvidenceTarget(path, locality_verified=True))
+    secret = "PRIVATE_TOKEN_123"
+    request = _request(
+        policy_version=secret,
+        initiating_capability_id=secret,  # type: ignore[arg-type]
+    )
+
+    decision = DisclosurePolicyEvaluator().evaluate_and_record(request, None, sink)
+    raw = path.read_text(encoding="utf-8")
+    record = json.loads(raw)
+
+    assert decision.value is DisclosureDecisionValue.UNKNOWN
+    assert secret not in raw
+    assert record["policy_version"].startswith("sha256:")
+    assert record["initiating_capability_id"] is None
+
+
+@pytest.mark.parametrize(
+    "grant_update",
+    [
+        {"purposes": frozenset()},
+        {"callers": frozenset()},
+        {"capability_ids": frozenset()},
+        {"initiations": frozenset()},
+    ],
+)
+def test_empty_grant_scopes_are_invalid_not_wildcards(grant_update):
+    policy = dataclasses.replace(
+        _policy(),
+        grants=(dataclasses.replace(_policy().grants[0], **grant_update),),
+    )
+
+    decision = DisclosurePolicyEvaluator().evaluate(_request(), policy)
+
+    assert decision.value is DisclosureDecisionValue.UNKNOWN
+    assert decision.reason == "policy_vocabulary_invalid"
+
+
+def test_initiation_requires_an_exact_grant():
+    decision = DisclosurePolicyEvaluator().evaluate(
+        _request(initiation=InitiationClass.USER_INITIATED),
+        _policy(),
+    )
+
+    assert decision.value is DisclosureDecisionValue.DENY
+    assert decision.reason == "no_matching_policy_grant"
+
+
+@pytest.mark.parametrize(
+    "destination", ["not-a-url", "api.example.com/path", "ftp://api.example.com/x"]
+)
+def test_http_destination_must_be_an_http_url(destination):
+    request = _request(
+        derived_destination=destination,
+        declared_destination=destination,
+    )
+
+    decision = DisclosurePolicyEvaluator().evaluate(request, _policy())
+
+    assert decision.value is DisclosureDecisionValue.UNKNOWN
+    assert decision.reason == "request_vocabulary_unclassified"
 
 
 def test_denied_untrusted_taxonomy_is_fingerprinted(tmp_path):

@@ -13,7 +13,8 @@ Slice 1 adds `src/governor/disclosure_policy.py` with:
   vocabularies;
 - a deterministic evaluator returning only `ALLOW`, `DENY`, or `UNKNOWN`;
 - exact grant matching for provider identity/class, normalized destination, effective route,
-  destination class, transport, disclosed categories, purpose, caller, and capability;
+  destination class, transport, disclosed categories, purpose, caller, capability, and
+  initiation state, with no empty-set wildcard scopes;
 - fail-closed `UNKNOWN` results for missing policy/evidence, version mismatch, unclassified or
   malformed vocabulary, and evidence-write failure;
 - identity-mismatch denial for caller-declared versus boundary-derived provider/destination data;
@@ -21,7 +22,9 @@ Slice 1 adds `src/governor/disclosure_policy.py` with:
 - evidence projection that stores structural categories and sanitized identities, never payloads,
   credential values, URL userinfo, URL paths, query values, or fragments.
 
-Only `ALLOW` exposes `may_proceed=True`. `DENY` and `UNKNOWN` are non-proceeding decisions.
+Pure evaluation never exposes executable permission. Only an `ALLOW` returned after its durable
+evidence append succeeds exposes `may_proceed=True`; `DENY`, `UNKNOWN`, and unrecorded `ALLOW`
+results are non-proceeding decisions.
 
 ## Deliberately not implemented
 
@@ -37,9 +40,10 @@ No provider is enabled and no Data-Out gap is repaired by this slice.
 
 ## Evidence semantics
 
-An exact explicit policy grant can return `ALLOW` only after request vocabulary is complete and
-typed. An allowed decision is downgraded to `UNKNOWN` if the durable evidence sink is unavailable
-or fails to write.
+An exact explicit policy grant can evaluate to `ALLOW` only after request vocabulary is complete
+and typed, the destination is valid for its transport, every exact scope is populated, and the
+initiation state matches. An allowance becomes executable only after the durable evidence append
+succeeds; it is downgraded to `UNKNOWN` if the sink is unavailable or fails to write.
 
 The evidence record contains:
 
@@ -50,9 +54,10 @@ The evidence record contains:
 - verified data- and credential-category names; and
 - UTC record time.
 
-Correlation identifiers are stored as bounded SHA-256 fingerprints. Caller, purpose, and provider
-labels are readable only for an exact allowed policy match; denied or unknown untrusted labels are
-fingerprinted so arbitrary input cannot become a secret-bearing evidence field.
+Policy versions and correlation identifiers are stored as bounded SHA-256 fingerprints. Caller,
+purpose, and provider labels are readable only for an exact allowed policy match; denied or
+unknown untrusted labels are fingerprinted. Malformed capability identifiers are omitted so
+arbitrary input cannot become a secret-bearing evidence field.
 
 It has no field for prompt text, document contents, tokens, keys, authorization values, child
 environment values, or arbitrary exception strings.
@@ -65,15 +70,18 @@ not a transport-success or execution receipt and cannot prove that a later opera
 `tests/governance/test_disclosure_policy.py` verifies:
 
 - immutable contracts;
-- exact allow matching and non-proceeding deny/unknown states;
+- exact allow matching, recorded-allow permission, and non-proceeding pure/deny/unknown states;
 - provider and destination mismatch denial;
-- missing/unmatched grants;
+- missing/unmatched grants and rejection of empty wildcard scopes;
+- exact initiation matching and transport-appropriate destination syntax;
 - policy/evidence unavailability and evidence-write failure;
 - malformed request/policy vocabulary fail-closed behavior;
 - explicit rejection of an unverified evidence target;
 - durable JSONL persistence with secret and URL sanitization;
 - bounded evidence for malformed input; and
-- absence of transport/DNS/delegation imports from the policy module.
+- absence of transport/DNS/delegation imports from the policy module; and
+- narrow scanner treatment of `urllib.parse` while retaining detection of network-capable
+  `urllib.request` imports.
 
 ## Slice 1 acceptance boundary
 

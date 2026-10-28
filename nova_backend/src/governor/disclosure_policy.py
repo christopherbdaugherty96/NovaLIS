@@ -131,6 +131,7 @@ class DisclosureGrant:
     purposes: frozenset[str] = frozenset()
     callers: frozenset[str] = frozenset()
     capability_ids: frozenset[int] = frozenset()
+    initiations: frozenset[InitiationClass] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -147,10 +148,11 @@ class DisclosureDecision:
     request_id: str = ""
     session_id: str = ""
     action_id: str = ""
+    evidence_recorded: bool = False
 
     @property
     def may_proceed(self) -> bool:
-        return self.value is DisclosureDecisionValue.ALLOW
+        return self.value is DisclosureDecisionValue.ALLOW and self.evidence_recorded
 
 
 @dataclass(frozen=True)
@@ -188,7 +190,7 @@ class DisclosureEvidenceRecord:
             transport_observed=False,
             decision=decision.value.value,
             reason=_safe_label(decision.reason, fallback="unclassified_reason"),
-            policy_version=_safe_label(decision.policy_version, fallback="unavailable"),
+            policy_version=_fingerprint(decision.policy_version) or "unavailable",
             caller=_evidence_taxonomy(
                 request.caller,
                 fallback="unclassified_caller",
@@ -230,7 +232,7 @@ class DisclosureEvidenceRecord:
                 request.initiation,
                 fallback="unclassified_initiation",
             ),
-            initiating_capability_id=request.initiating_capability_id,
+            initiating_capability_id=_safe_capability_id(request.initiating_capability_id),
             request_id=_fingerprint(request.request_id),
             session_id=_fingerprint(request.session_id),
             action_id=_fingerprint(request.action_id),
@@ -385,8 +387,8 @@ class DisclosurePolicyEvaluator:
                 **base,
             )
         if request.declared_destination and (
-            _normalized_destination(request.declared_destination)
-            != _normalized_destination(request.derived_destination)
+            _normalized_destination(request.declared_destination, request.transport)
+            != _normalized_destination(request.derived_destination, request.transport)
         ):
             return DisclosureDecision(
                 DisclosureDecisionValue.DENY,
@@ -428,7 +430,7 @@ class DisclosurePolicyEvaluator:
                 value=DisclosureDecisionValue.UNKNOWN,
                 reason="evidence_write_failed",
             )
-        return decision
+        return replace(decision, evidence_recorded=True)
 
 
 def _grant_matches(request: DisclosureRequest, grant: DisclosureGrant) -> bool:
@@ -438,8 +440,8 @@ def _grant_matches(request: DisclosureRequest, grant: DisclosureGrant) -> bool:
         return False
     if grant.destination_class is not request.destination_class:
         return False
-    if _normalized_destination(request.derived_destination) not in {
-        _normalized_destination(item) for item in grant.destinations
+    if _normalized_destination(request.derived_destination, request.transport) not in {
+        _normalized_destination(item, request.transport) for item in grant.destinations
     }:
         return False
     if request.effective_route not in grant.effective_routes:
@@ -450,18 +452,28 @@ def _grant_matches(request: DisclosureRequest, grant: DisclosureGrant) -> bool:
         return False
     if not request.credential_categories.issubset(grant.credential_categories):
         return False
-    if grant.purposes and request.purpose not in grant.purposes:
+    if request.purpose not in grant.purposes:
         return False
-    if grant.callers and request.caller not in grant.callers:
+    if request.caller not in grant.callers:
         return False
-    if grant.capability_ids and request.initiating_capability_id not in grant.capability_ids:
+    if request.initiating_capability_id not in grant.capability_ids:
+        return False
+    if request.initiation not in grant.initiations:
         return False
     return True
 
 
 def _request_vocabulary_valid(request: DisclosureRequest) -> bool:
     return (
-        isinstance(request.transport, TransportClass)
+        isinstance(request.caller, str)
+        and isinstance(request.purpose, str)
+        and isinstance(request.derived_destination, str)
+        and isinstance(request.declared_destination, str)
+        and isinstance(request.derived_provider, str)
+        and isinstance(request.declared_provider, str)
+        and isinstance(request.effective_route, str)
+        and isinstance(request.policy_version, str)
+        and isinstance(request.transport, TransportClass)
         and isinstance(request.destination_class, DestinationClass)
         and isinstance(request.provider_class, ProviderClass)
         and isinstance(request.initiation, InitiationClass)
@@ -469,11 +481,20 @@ def _request_vocabulary_valid(request: DisclosureRequest) -> bool:
         and all(isinstance(item, DataCategory) for item in request.data_categories)
         and isinstance(request.credential_categories, frozenset)
         and all(isinstance(item, CredentialCategory) for item in request.credential_categories)
+        and _safe_capability_id(request.initiating_capability_id)
+        == request.initiating_capability_id
+        and bool(_normalized_destination(request.derived_destination, request.transport))
+        and (
+            not request.declared_destination
+            or bool(_normalized_destination(request.declared_destination, request.transport))
+        )
     )
 
 
 def _policy_vocabulary_valid(policy: DisclosurePolicy) -> bool:
-    if not policy.version or not isinstance(policy.grants, tuple):
+    if not isinstance(policy.version, str) or not policy.version.strip():
+        return False
+    if not isinstance(policy.grants, tuple):
         return False
     for grant in policy.grants:
         if not isinstance(grant, DisclosureGrant):
@@ -482,25 +503,65 @@ def _policy_vocabulary_valid(policy: DisclosurePolicy) -> bool:
             return False
         if not isinstance(grant.provider_class, ProviderClass):
             return False
-        if not isinstance(grant.destinations, frozenset) or not all(
-            isinstance(item, str) and bool(_normalized_destination(item))
-            for item in grant.destinations
+        if not isinstance(grant.provider, str) or not grant.provider.strip():
+            return False
+        if not grant.destinations or not isinstance(grant.destinations, frozenset):
+            return False
+        if (
+            not grant.transports
+            or not isinstance(grant.transports, frozenset)
+            or not all(isinstance(item, TransportClass) for item in grant.transports)
         ):
             return False
-        if not isinstance(grant.effective_routes, frozenset) or not all(
-            isinstance(item, str) and bool(item.strip()) for item in grant.effective_routes
+        if not all(
+            isinstance(destination, str)
+            and all(
+                bool(_normalized_destination(destination, transport))
+                for transport in grant.transports
+            )
+            for destination in grant.destinations
         ):
             return False
-        if not isinstance(grant.transports, frozenset) or not all(
-            isinstance(item, TransportClass) for item in grant.transports
+        if (
+            not grant.effective_routes
+            or not isinstance(grant.effective_routes, frozenset)
+            or not all(
+                isinstance(item, str) and bool(item.strip()) for item in grant.effective_routes
+            )
         ):
             return False
-        if not isinstance(grant.data_categories, frozenset) or not all(
-            isinstance(item, DataCategory) for item in grant.data_categories
+        if (
+            not grant.data_categories
+            or not isinstance(grant.data_categories, frozenset)
+            or not all(isinstance(item, DataCategory) for item in grant.data_categories)
         ):
             return False
         if not isinstance(grant.credential_categories, frozenset) or not all(
             isinstance(item, CredentialCategory) for item in grant.credential_categories
+        ):
+            return False
+        if (
+            not grant.purposes
+            or not isinstance(grant.purposes, frozenset)
+            or not all(isinstance(item, str) and bool(item.strip()) for item in grant.purposes)
+        ):
+            return False
+        if (
+            not grant.callers
+            or not isinstance(grant.callers, frozenset)
+            or not all(isinstance(item, str) and bool(item.strip()) for item in grant.callers)
+        ):
+            return False
+        if (
+            not grant.capability_ids
+            or not isinstance(grant.capability_ids, frozenset)
+            or not all(_safe_capability_id(item) == item for item in grant.capability_ids)
+        ):
+            return False
+        if (
+            not grant.initiations
+            or not isinstance(grant.initiations, frozenset)
+            or not all(isinstance(item, InitiationClass) for item in grant.initiations)
         ):
             return False
     return True
@@ -510,18 +571,33 @@ def _normalized_identity(value: str) -> str:
     return str(value or "").strip().lower()
 
 
-def _normalized_destination(value: str) -> str:
+_URL_TRANSPORTS = {
+    TransportClass.HTTP,
+    TransportClass.OAUTH_SETUP,
+    TransportClass.LOCAL_PRIVATE_MODEL,
+    TransportClass.BROWSER_HANDOFF,
+}
+
+
+def _normalized_destination(value: str, transport: TransportClass) -> str:
     raw = str(value or "").strip()
     try:
         parsed = urlsplit(raw)
-        if parsed.scheme and parsed.hostname:
+        if transport in _URL_TRANSPORTS:
+            if (
+                parsed.scheme.lower() not in {"http", "https"}
+                or not parsed.hostname
+                or parsed.username is not None
+                or parsed.password is not None
+            ):
+                return ""
             return (
                 f"{parsed.scheme.lower()}://{_url_authority(parsed.hostname, parsed.port)}"
                 f"{parsed.path or '/'}"
             )
     except ValueError:
         return ""
-    return raw.lower()
+    return raw.lower() if raw and "://" not in raw else ""
 
 
 def _safe_destination(request: DisclosureRequest) -> str:
@@ -547,6 +623,12 @@ def _url_authority(hostname: str, port: int | None) -> str:
     if ":" in host:
         host = f"[{host}]"
     return f"{host}:{port}" if port is not None else host
+
+
+def _safe_capability_id(value: object) -> int | None:
+    if type(value) is int and value >= 0:
+        return value
+    return None
 
 
 def _enum_value(value: object, *, fallback: str) -> str:
