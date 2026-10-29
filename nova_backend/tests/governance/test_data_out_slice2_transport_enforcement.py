@@ -3,6 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
+import requests
+from requests.adapters import BaseAdapter
+from requests.models import Response
+from requests.structures import CaseInsensitiveDict
 from src.governor.disclosure_policy import (
     CredentialCategory,
     DataCategory,
@@ -544,6 +548,129 @@ def test_redirect_added_query_shape_is_reauthorized_before_second_send():
 
     assert attempts == ["https://allowed.example/start"]
     assert [record.decision for record in sink.records] == ["allow", "deny"]
+
+
+def test_redirect_response_cookie_is_not_injected_into_next_governed_send():
+    sink = _Sink()
+    mediator = NetworkMediator(
+        disclosure_policy=_policy(
+            "https://allowed.example/start",
+            "https://allowed.example/next",
+        ),
+        disclosure_evidence_sink=sink,
+        disclosure_classifier=lambda _facts: _context(),
+    )
+    mediator._registry = _Registry()
+    mediator._validate_url = lambda _url: None
+    sent_cookie_headers = []
+
+    class _Adapter(BaseAdapter):
+        def send(self, request, **_kwargs):
+            sent_cookie_headers.append(request.headers.get("Cookie"))
+            response = Response()
+            response.request = request
+            response.url = request.url
+            response._content = b""
+            if request.url.endswith("/start"):
+                response.status_code = 302
+                response.headers = CaseInsensitiveDict(
+                    {
+                    "location": "/next",
+                    "set-cookie": "session=SECRET; Path=/",
+                    }
+                )
+                session.cookies.set("session", "SECRET", domain="allowed.example", path="/")
+            else:
+                response.status_code = 200
+                response._content = b""
+            return response
+
+        def close(self):
+            return None
+
+    session = requests.Session()
+    session.trust_env = False
+    session.mount("https://", _Adapter())
+    mediator._new_session = lambda: session
+
+    mediator.request(16, "GET", "https://allowed.example/start", as_json=False)
+
+    assert sent_cookie_headers == [None, None]
+    assert not session.cookies
+    assert [record.decision for record in sink.records] == ["allow", "allow"]
+
+
+def test_model_response_cookie_is_not_injected_into_subsequent_request():
+    sink = _Sink()
+    mediator = ModelNetworkMediator(
+        disclosure_policy=_policy(
+            "http://localhost:11434/api/chat",
+            transport=TransportClass.LOCAL_PRIVATE_MODEL,
+            provider="local_model",
+            provider_class=ProviderClass.LOCAL_MODEL,
+            capability_id=None,
+            method="POST",
+            request_shape=frozenset({"json:model"}),
+        ),
+        disclosure_evidence_sink=sink,
+        disclosure_classifier=lambda _facts: _context(
+            provider="local_model", category=ProviderClass.LOCAL_MODEL
+        ),
+    )
+    mediator._validate_url = lambda url: url
+    sent_cookie_headers = []
+
+    class _Adapter(BaseAdapter):
+        def send(self, request, **_kwargs):
+            sent_cookie_headers.append(request.headers.get("Cookie"))
+            response = Response()
+            response.request = request
+            response.url = request.url
+            response.status_code = 200
+            response._content = b"{}"
+            if len(sent_cookie_headers) == 1:
+                response.headers = {"Set-Cookie": "session=SECRET; Path=/"}
+                session.cookies.set("session", "SECRET", path="/")
+            return response
+
+        def close(self):
+            return None
+
+    session = requests.Session()
+    session.trust_env = False
+    session.mount("http://", _Adapter())
+    mediator._session = session
+
+    for _ in range(2):
+        mediator.request_json(
+            method="POST",
+            url="http://localhost:11434/api/chat",
+            json_payload={"model": "local"},
+        )
+
+    assert sent_cookie_headers == [None, None]
+    assert not session.cookies
+
+
+def test_json_literal_delimiters_cannot_collide_with_nested_shape():
+    nested = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="POST",
+        url="https://allowed.example/search",
+        json_payload={"a": {"b": "text"}},
+        capability_id=16,
+    )
+    ambiguous = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="POST",
+        url="https://allowed.example/search",
+        json_payload={"a": "SECRET", "a.b": "text"},
+        capability_id=16,
+    )
+
+    assert nested.shape_supported is True
+    assert nested.request_shape != ambiguous.request_shape
+    assert ambiguous.shape_supported is False
 
 
 def test_model_classifier_receives_nested_json_shape_without_values():

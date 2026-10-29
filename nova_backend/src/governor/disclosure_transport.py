@@ -318,7 +318,12 @@ def _structured_paths(value: object, *, source: str) -> tuple[tuple[str, ...], b
             return False
         if isinstance(item, MappingABC):
             for key, child in item.items():
-                if not isinstance(key, str) or not key or len(key) > 240:
+                if (
+                    not isinstance(key, str)
+                    or not key
+                    or len(key) > 240
+                    or any(delimiter in key for delimiter in (".", "[", "]"))
+                ):
                     return False
                 path = f"{prefix}.{key}" if prefix else key
                 paths.add(path)

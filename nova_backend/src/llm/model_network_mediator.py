@@ -88,6 +88,17 @@ class ModelNetworkMediator:
         session.trust_env = False
         return session
 
+    @staticmethod
+    def _clear_implicit_cookies(session: requests.Session) -> None:
+        """Prevent Requests' response cookie jar from changing the admitted send."""
+        cookie_jar = getattr(session, "cookies", None)
+        if cookie_jar is None:
+            return
+        try:
+            cookie_jar.clear()
+        except Exception as error:
+            raise ModelNetworkMediatorError("Model cookie isolation failed.") from error
+
     def _request_session(self):
         if self._session is not None and self._session is not self._default_session:
             return self._session
@@ -238,13 +249,18 @@ class ModelNetworkMediator:
             correlation["session_id"] = session_id
 
         try:
-            response = self._request_session().request(
-                method=method.upper(),
-                url=url,
-                json=json_payload,
-                timeout=timeout,
-                allow_redirects=False,
-            )
+            request_session = self._request_session()
+            self._clear_implicit_cookies(request_session)
+            try:
+                response = request_session.request(
+                    method=method.upper(),
+                    url=url,
+                    json=json_payload,
+                    timeout=timeout,
+                    allow_redirects=False,
+                )
+            finally:
+                self._clear_implicit_cookies(request_session)
             response.raise_for_status()
             payload = response.json() if response.content else {}
         except Exception as error:
@@ -306,13 +322,18 @@ class ModelNetworkMediator:
             correlation["session_id"] = session_id
 
         try:
-            response = self._request_session().post(
-                url,
-                json=json_payload,
-                timeout=timeout,
-                stream=True,
-                allow_redirects=False,
-            )
+            request_session = self._request_session()
+            self._clear_implicit_cookies(request_session)
+            try:
+                response = request_session.post(
+                    url,
+                    json=json_payload,
+                    timeout=timeout,
+                    stream=True,
+                    allow_redirects=False,
+                )
+            finally:
+                self._clear_implicit_cookies(request_session)
             response.raise_for_status()
         except Exception as error:
             self._ledger.log_event(

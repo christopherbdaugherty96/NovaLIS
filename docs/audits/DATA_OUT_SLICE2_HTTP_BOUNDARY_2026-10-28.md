@@ -52,7 +52,7 @@ grants; they must not weaken this default.
 Final focused boundary and mediator regression package after P1 closure:
 
 ```text
-101 passed
+104 passed
 ```
 
 Dedicated Slice 2 boundary tests additionally establish:
@@ -69,7 +69,7 @@ Dedicated Slice 2 boundary tests additionally establish:
 The final full-suite pass completed:
 
 ```text
-5,751 passed, 6 skipped, 2 expected xfails
+5,754 passed, 6 skipped, 2 expected xfails
 ```
 
 An earlier pass found five legacy tests whose intended subject was downstream
@@ -78,7 +78,7 @@ tests; no production bypass was added. The final full-suite rerun passed.
 
 Additional exact-candidate checks passed:
 
-- Slice 1 policy plus Slice 2 boundary tests: 71 passed;
+- Slice 1 policy plus Slice 2 boundary tests: 74 passed;
 - source and changed-test Ruff checks;
 - dependency consistency;
 - operational-truth consistency;
@@ -109,6 +109,23 @@ The corrected candidate now:
 Focused proof includes negative GET/DELETE, URL-query, cookie, custom-auth,
 nested-payload, unsupported-payload, and redirect-shape cases, plus positive
 exact-shape HTTP, OAuth, and local-model paths.
+
+The exact-head review of `f47f63ad4f0fd39b048ab5c98f90074f91c377b2`
+confirmed two further P1 defects. Red tests reproduced retained Requests-session
+cookies crossing both a same-origin redirect and a subsequent model request,
+and reproduced a collision between a dotted literal JSON key and a nested JSON
+path.
+
+The subsequent bounded correction now:
+
+- clears implicit Requests cookie jars immediately before and after each
+  governed network/model send, while leaving explicitly supplied and classified
+  `Cookie` headers subject to the normal exact-shape admission path; and
+- rejects JSON keys containing the structural path delimiters `.`, `[`, or `]`,
+  so ambiguous payload shapes fail closed before client construction.
+
+Focused proof covers both retained-session cookie reproductions and both
+colliding JSON payloads.
 
 ## Explicit non-claims
 

@@ -128,6 +128,17 @@ class NetworkMediator:
         session.trust_env = False
         return session
 
+    @staticmethod
+    def _clear_implicit_cookies(session: requests.Session) -> None:
+        """Prevent Requests' response cookie jar from changing the admitted send."""
+        cookie_jar = getattr(session, "cookies", None)
+        if cookie_jar is None:
+            return
+        try:
+            cookie_jar.clear()
+        except Exception as error:
+            raise NetworkMediatorError("Network cookie isolation failed.") from error
+
     def _authorize_disclosure(
         self,
         *,
@@ -331,15 +342,19 @@ class NetworkMediator:
                         session_id=session_id,
                     )
                 self._validate_url(current_url)
-                response = session.request(
-                    method=method.upper(),
-                    url=current_url,
-                    params=params,
-                    json=json_payload,
-                    headers=headers,
-                    timeout=req_timeout,
-                    allow_redirects=False,
-                )
+                self._clear_implicit_cookies(session)
+                try:
+                    response = session.request(
+                        method=method.upper(),
+                        url=current_url,
+                        params=params,
+                        json=json_payload,
+                        headers=headers,
+                        timeout=req_timeout,
+                        allow_redirects=False,
+                    )
+                finally:
+                    self._clear_implicit_cookies(session)
 
                 if response.is_redirect or response.is_permanent_redirect:
                     location = response.headers.get("Location")
