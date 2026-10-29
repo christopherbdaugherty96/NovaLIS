@@ -2,7 +2,48 @@
 
 Canonical product definition — the "why" and "what" behind the architecture. Stable; changes
 rarely. For what Nova *can do today* see `docs/capability_verification/CAPABILITY_INVENTORY.md`;
-for ordering see `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`.
+for **current work order and authorization**, see the October 27 owner operating sequence in
+[`README.md`](../../README.md) and [`docs/CANONICAL/00_INDEX.md`](../CANONICAL/00_INDEX.md).
+The [July master roadmap](../future/NOVA_MASTER_ROADMAP_2026-07-05.md) is historical
+long-term direction, **not** current ordering authority.
+
+## Product truth and decision lens (non-authorizing)
+
+> **Nova maintains a truthful, durable relationship between what matters, what the user
+> decides, what the user authorizes, what actually happened, and what remains unresolved —
+> privately, on the user's machine.**
+
+**Intelligence may reason and recommend; only the user may grant authority.** An attempted
+operation is not a verified outcome. A receipt records evidence within its actual scope;
+no receipt or test result may be inflated into proof of an effect it did not verify.
+
+The product hypothesis is that some users will value **trust, privacy, durable context,
+and verified outcomes** enough to choose Nova over assistants with broader features.
+This is **not yet demonstrated by external-user acceptance**. Architectural foundations
+are not proof of reliable everyday use. Provider-neutral Data-Out and clean distribution
+remain known blockers to the full privacy promise.
+
+The **six roads** below are a lens for judging relevance, **not a roadmap, work queue,
+or implementation authorization**:
+
+| Road | Why it serves the product truth | Present interpretation |
+|---|---|---|
+| **Boundary** | No unauthorized data transmission or private-data packaging | Data-Out and clean distribution require proof |
+| **Authority** | Capability never implies permission; actions require bounded grants | Governor and approval foundations exist; global claims require scoped evidence |
+| **Evidence** | Attempted, accepted, recorded, and verified outcomes remain distinct | Ledger and receipts exist; user-level proof remains necessary |
+| **Continuity** | Decisions, commitments, dependencies, and unresolved matters remain accurate over time | Governed memory exists; Operational Continuity remains paused |
+| **Interface** | Users can understand what happened, what failed, and what needs them | Existing dashboard/voice surfaces; expansion paused |
+| **Delivery** | An external user can install, use, and trust the exact tested artifact | Clean Windows proof and external acceptance outstanding |
+
+**Decision rule:** Work that does not serve the core product truth is out of scope.
+Work that does serve it **still waits** for the authoritative owner operating sequence,
+separate lane approval, and relevant proof. No capability is justified by breadth alone;
+trial evidence may favor reliability over any new capability.
+
+**Navigation:** [Current sequence and known blockers](../../README.md#current-owner-operating-sequence--2026-10-27) ·
+[Canonical truth and evidence precedence](../CANONICAL/00_INDEX.md) ·
+[Historical master roadmap](../future/NOVA_MASTER_ROADMAP_2026-07-05.md) ·
+[External prior-art register — research only, not a backlog](https://github.com/christopherbdaugherty96/NovaLIS/issues/481).
 
 ## Mission
 
