@@ -9,13 +9,19 @@ long-term direction, **not** current ordering authority.
 
 ## Product truth and decision lens (non-authorizing)
 
-> **Nova maintains a truthful, durable relationship between what matters, what the user
-> decides, what the user authorizes, what actually happened, and what remains unresolved —
-> privately, on the user's machine.**
+> **Nova's intended product outcome:** maintain a truthful, durable relationship between
+> what matters, what the user decides, what the user authorizes, what actually happened,
+> and what remains unresolved — privately, on the user's machine.
 
-**Intelligence may reason and recommend; only the user may grant authority.** An attempted
-operation is not a verified outcome. A receipt records evidence within its actual scope;
-no receipt or test result may be inflated into proof of an effect it did not verify.
+**This is a goal, not a current-state claim.** Provider-neutral Data-Out is not yet fully
+enforced, clean installer containment is not proven, and external-user acceptance is pending.
+
+**System invariants:** Intelligence may reason and recommend; only the user may grant
+authority. An attempted operation is not a verified outcome. A receipt records evidence
+within its actual scope; no receipt or test result may be inflated into proof of an
+effect it did not verify. Privacy boundaries must be **enforced and proven**, not merely
+promised. These invariants are expressed across the six roads below; the roads are not
+six additional authority systems.
 
 The product hypothesis is that some users will value **trust, privacy, durable context,
 and verified outcomes** enough to choose Nova over assistants with broader features.
@@ -35,10 +41,15 @@ or implementation authorization**:
 | **Interface** | Users can understand what happened, what failed, and what needs them | Existing dashboard/voice surfaces; expansion paused |
 | **Delivery** | An external user can install, use, and trust the exact tested artifact | Clean Windows proof and external acceptance outstanding |
 
-**Decision rule:** Work that does not serve the core product truth is out of scope.
+**Development process (not a runtime invariant):** Work that does not serve the core product truth is out of scope.
 Work that does serve it **still waits** for the authoritative owner operating sequence,
 separate lane approval, and relevant proof. No capability is justified by breadth alone;
 trial evidence may favor reliability over any new capability.
+
+**Checker scope:** The operational-truth consistency checker validates specified active
+ordering surfaces and invariants, not this product-thesis wording or the six-road table.
+This section must not be represented as checker-certified; it remains subject to human
+review and the normal documentation checks.
 
 **Navigation:** [Current sequence and known blockers](../../README.md#current-owner-operating-sequence--2026-10-27) ·
 [Canonical truth and evidence precedence](../CANONICAL/00_INDEX.md) ·
