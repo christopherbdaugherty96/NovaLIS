@@ -45,6 +45,12 @@ class _Response:
 
 def _mediator() -> NetworkMediator:
     mediator = NetworkMediator()
+    # These legacy tests isolate redirect/error behavior. Slice 2 admission is
+    # exercised separately in governance/test_data_out_slice2_transport_enforcement.py.
+    mediator._authorize_disclosure = lambda **_kwargs: None
+    mediator._new_session = lambda: SimpleNamespace(
+        request=lambda **kwargs: requests.request(**kwargs)
+    )
     mediator._registry = _FakeRegistry()
     mediator.ledger = _Ledger()
     mediator._validate_url = lambda _url: None

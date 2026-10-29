@@ -7,6 +7,7 @@ from src.llm.model_network_mediator import ModelNetworkMediator
 
 def test_model_network_mediator_has_explicit_locks_for_shared_state():
     mediator = ModelNetworkMediator()
+    mediator._authorize_disclosure = lambda **_kwargs: None
     assert hasattr(mediator, "_rate_lock")
     assert hasattr(mediator, "_session_lock")
     assert hasattr(mediator._rate_lock, "acquire")

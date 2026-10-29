@@ -25,6 +25,16 @@ def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(m
         "src.governor.governor.Governor._check_network_budget",
         lambda self, cap_id: None,
     )
+    # This live-backend integration isolates preview behavior; Data-Out
+    # admission has dedicated zero-attempt coverage in the governance suite.
+    monkeypatch.setattr(
+        "src.governor.network_mediator.NetworkMediator._authorize_disclosure",
+        lambda self, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "src.llm.model_network_mediator.ModelNetworkMediator._authorize_disclosure",
+        lambda self, **kwargs: None,
+    )
     from src import brain_server
 
     async def _run() -> list[dict]:

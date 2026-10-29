@@ -36,6 +36,7 @@ def test_model_network_mediator_allows_overlapping_request_waits():
             return _Response()
 
     mediator = ModelNetworkMediator()
+    mediator._authorize_disclosure = lambda **_kwargs: None
     mediator._ledger = SimpleNamespace(log_event=lambda *_args, **_kwargs: None)
     mediator._session = _OverlappingSession()
 
