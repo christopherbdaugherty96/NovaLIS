@@ -106,6 +106,7 @@ class ModelNetworkMediator:
         *,
         method: str,
         url: str,
+        json_payload: dict | None,
         has_body: bool,
         request_id: str | None,
         session_id: str | None,
@@ -114,7 +115,7 @@ class ModelNetworkMediator:
             transport=TransportClass.LOCAL_PRIVATE_MODEL,
             method=method,
             url=url,
-            field_names=tuple(),
+            json_payload=json_payload,
             capability_id=None,
         )
         context: HttpDisclosureContext | None = None
@@ -128,10 +129,7 @@ class ModelNetworkMediator:
             policy=self._disclosure_policy,
             evidence_sink=self._disclosure_evidence_sink,
             context=context,
-            transport=TransportClass.LOCAL_PRIVATE_MODEL,
-            url=url,
-            headers=None,
-            field_names=tuple(),
+            facts=facts,
             ambient_tls_keylog=bool(os.getenv("SSLKEYLOGFILE")),
             has_body=has_body,
             capability_id=None,
@@ -227,6 +225,7 @@ class ModelNetworkMediator:
         self._authorize_disclosure(
             method=method,
             url=url,
+            json_payload=json_payload,
             has_body=json_payload is not None,
             request_id=request_id,
             session_id=session_id,
@@ -293,6 +292,7 @@ class ModelNetworkMediator:
         self._authorize_disclosure(
             method="POST",
             url=url,
+            json_payload=json_payload,
             has_body=True,
             request_id=request_id,
             session_id=session_id,

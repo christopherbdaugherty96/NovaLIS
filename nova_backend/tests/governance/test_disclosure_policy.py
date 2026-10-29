@@ -33,6 +33,8 @@ def _request(**overrides) -> DisclosureRequest:
         "derived_destination": "https://api.deepseek.com/chat/completions",
         "policy_version": "policy-v1",
         "data_categories": frozenset({DataCategory.PROMPT, DataCategory.CONVERSATION_CONTEXT}),
+        "http_method": "POST",
+        "request_shape": frozenset({"json:model", "json:messages"}),
         "credential_categories": frozenset({CredentialCategory.BEARER_TOKEN}),
         "initiating_capability_id": 62,
         "request_id": "request-1",
@@ -59,6 +61,10 @@ def _policy() -> DisclosurePolicy:
                 effective_routes=frozenset({"direct"}),
                 transports=frozenset({TransportClass.HTTP}),
                 data_categories=frozenset({DataCategory.PROMPT, DataCategory.CONVERSATION_CONTEXT}),
+                http_methods=frozenset({"POST"}),
+                request_shapes=frozenset(
+                    {frozenset({"json:model", "json:messages"})}
+                ),
                 credential_categories=frozenset({CredentialCategory.BEARER_TOKEN}),
                 purposes=frozenset({"external_reasoning"}),
                 callers=frozenset({"deepseek_bridge"}),
@@ -107,6 +113,11 @@ def test_only_recorded_allow_may_proceed(tmp_path):
             "destination_identity_mismatch",
         ),
         (_request(purpose="different"), "no_matching_policy_grant"),
+        (_request(http_method="DELETE"), "no_matching_policy_grant"),
+        (
+            _request(request_shape=frozenset({"query:private_document"})),
+            "no_matching_policy_grant",
+        ),
         (
             _request(derived_destination="https://api.deepseek.com/other"),
             "destination_identity_mismatch",
@@ -190,11 +201,32 @@ def test_malformed_policy_vocabulary_is_unknown():
                 effective_routes=frozenset({"direct"}),
                 transports=frozenset({"http"}),  # type: ignore[arg-type]
                 data_categories=frozenset({DataCategory.PROMPT}),
+                http_methods=frozenset({"POST"}),
+                request_shapes=frozenset({frozenset({"json:model"})}),
             ),
         ),
     )
 
     decision = DisclosurePolicyEvaluator().evaluate(_request(), malformed)
+
+    assert decision.value is DisclosureDecisionValue.UNKNOWN
+    assert decision.reason == "policy_vocabulary_invalid"
+
+
+@pytest.mark.parametrize(
+    "grant_override",
+    [
+        {"http_methods": frozenset()},
+        {"request_shapes": frozenset()},
+    ],
+)
+def test_http_grant_without_operation_constraints_is_unknown(grant_override):
+    policy = dataclasses.replace(
+        _policy(),
+        grants=(dataclasses.replace(_policy().grants[0], **grant_override),),
+    )
+
+    decision = DisclosurePolicyEvaluator().evaluate(_request(), policy)
 
     assert decision.value is DisclosureDecisionValue.UNKNOWN
     assert decision.reason == "policy_vocabulary_invalid"
@@ -342,6 +374,8 @@ def test_non_url_destination_preserves_case_for_exact_match(transport, destinati
         transport=transport,
         derived_destination=destination,
         declared_destination=destination,
+        http_method="",
+        request_shape=frozenset(),
     )
     policy = dataclasses.replace(
         _policy(),
@@ -350,6 +384,8 @@ def test_non_url_destination_preserves_case_for_exact_match(transport, destinati
                 _policy().grants[0],
                 transports=frozenset({transport}),
                 destinations=frozenset({destination}),
+                http_methods=frozenset(),
+                request_shapes=frozenset(),
             ),
         ),
     )
@@ -379,6 +415,8 @@ def test_filesystem_destination_preserves_significant_whitespace():
                 _policy().grants[0],
                 transports=frozenset({transport}),
                 destinations=frozenset({destination}),
+                http_methods=frozenset(),
+                request_shapes=frozenset(),
             ),
         ),
     )
@@ -386,6 +424,8 @@ def test_filesystem_destination_preserves_significant_whitespace():
         transport=transport,
         derived_destination=destination,
         declared_destination=destination,
+        http_method="",
+        request_shape=frozenset(),
     )
     trailing_space_request = dataclasses.replace(
         exact_request,

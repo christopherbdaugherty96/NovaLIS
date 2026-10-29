@@ -49,10 +49,10 @@ grants; they must not weaken this default.
 
 ## Verification evidence
 
-Final focused boundary and mediator regression package:
+Final focused boundary and mediator regression package after P1 closure:
 
 ```text
-70 passed
+101 passed
 ```
 
 Dedicated Slice 2 boundary tests additionally establish:
@@ -69,7 +69,7 @@ Dedicated Slice 2 boundary tests additionally establish:
 The final full-suite pass completed:
 
 ```text
-5,735 passed, 6 skipped, 2 expected xfails
+5,751 passed, 6 skipped, 2 expected xfails
 ```
 
 An earlier pass found five legacy tests whose intended subject was downstream
@@ -78,12 +78,37 @@ tests; no production bypass was added. The final full-suite rerun passed.
 
 Additional exact-candidate checks passed:
 
-- Slice 1 policy plus Slice 2 boundary tests: 55 passed;
+- Slice 1 policy plus Slice 2 boundary tests: 71 passed;
 - source and changed-test Ruff checks;
 - dependency consistency;
 - operational-truth consistency;
 - generated runtime-document drift;
 - structural runtime smoke proof.
+
+## Independent-review P1 closure
+
+The review of `a4cd05cd47c63c37677212f9854cd05bae524970`
+confirmed two P1 defects. Red tests reproduced both before the correction.
+
+The corrected candidate now:
+
+- derives value-free, source-separated URL-query, parameter, header, cookie,
+  nested-JSON, and form field paths from the actual outgoing request;
+- marks unsupported names, values, nesting, and credential-like shapes
+  unclassified so admission fails before client construction;
+- exposes those value-free facts only to the construction-time trusted
+  classifier;
+- binds every HTTP disclosure request and grant independently to a normalized
+  HTTP method and an exact request-shape token set;
+- rejects grants that omit method or request-shape constraints;
+- re-evaluates the complete method and request shape at every permitted
+  redirect hop; and
+- fingerprints the authorized request shape in evidence instead of persisting
+  field names or values.
+
+Focused proof includes negative GET/DELETE, URL-query, cookie, custom-auth,
+nested-payload, unsupported-payload, and redirect-shape cases, plus positive
+exact-shape HTTP, OAuth, and local-model paths.
 
 ## Explicit non-claims
 
