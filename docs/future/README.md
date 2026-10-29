@@ -16,9 +16,7 @@ Use these sources in order of authority:
 
 ## Ordering authority and how to read this folder
 
-- The ordering authority for what comes next is
-  `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (lanes A–D + Horizon H1–H31). The older
-  `ROADMAP.md` is **superseded for ordering** and kept only as reference.
+- The current ordering authority is the owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_27`) in the repository `README.md` and `docs/CANONICAL/00_INDEX.md`. Both `NOVA_MASTER_ROADMAP_2026-07-05.md` and the older `ROADMAP.md` are historical direction, **not current work orders**.
 - **A doc in this folder is reference until a lane in the July roadmap pulls it in.** Being
   filed here is not a promise, a release plan, or an active priority.
 - To tell whether a given doc is active, parked, superseded, a fixture, or design history, use
