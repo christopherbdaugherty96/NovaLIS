@@ -26,6 +26,11 @@ from src.governor.disclosure_policy import (
     DisclosureRequest,
     InitiationClass,
     ProviderClass,
+    RequestShapeField,
+    RequestShapeSource,
+    RequestShapeStep,
+    RequestShapeStepKind,
+    RequestShapeValueKind,
     TransportClass,
 )
 
@@ -59,20 +64,7 @@ class HttpDisclosureFacts:
     credential_categories: frozenset[CredentialCategory]
     shape_supported: bool
     capability_id: int | None
-
-    @property
-    def request_shape(self) -> frozenset[str]:
-        groups = (
-            ("query", self.query_fields),
-            ("parameter", self.parameter_fields),
-            ("header", self.header_fields),
-            ("cookie", self.cookie_fields),
-            ("json", self.json_fields),
-            ("form", self.form_fields),
-        )
-        return frozenset(
-            f"{source}:{name}" for source, names in groups for name in names
-        )
+    request_shape: frozenset[RequestShapeField]
 
 
 class HttpDisclosureClassifier(Protocol):
@@ -166,7 +158,7 @@ def disclosure_facts(
         raw_query_fields = [
             name for name, _ in parse_qsl(parsed.query, keep_blank_values=True)
         ]
-        query_fields = _names_with_repetition(raw_query_fields)
+        query_fields = tuple(sorted(raw_query_fields))
         query_supported = all(_name_supported(name) for name in raw_query_fields)
     except (TypeError, ValueError):
         query_fields = tuple()
@@ -176,7 +168,7 @@ def disclosure_facts(
     parameter_fields, params_supported = _parameter_names(params)
     header_fields, headers_supported = _header_names(headers)
     cookie_fields, cookies_supported = _cookie_names(headers)
-    json_fields, json_supported = _structured_paths(json_payload, source="json")
+    json_fields, json_shape, json_supported = _structured_paths(json_payload)
     form_fields, form_supported = _form_names(form_payload)
     supported = supported and all(
         (
@@ -193,6 +185,26 @@ def disclosure_facts(
         headers,
         (*query_fields, *parameter_fields, *json_fields, *form_fields),
     )
+    request_shape = frozenset(
+        {
+            *_flat_shape(
+                RequestShapeSource.QUERY,
+                query_fields,
+                repeated_names={
+                    name for name, count in Counter(query_fields).items() if count > 1
+                },
+            ),
+            *_flat_shape(
+                RequestShapeSource.PARAMETER,
+                parameter_fields,
+                repeated_names=_repeated_parameter_names(params),
+            ),
+            *_flat_shape(RequestShapeSource.HEADER, header_fields),
+            *_flat_shape(RequestShapeSource.COOKIE, cookie_fields),
+            *json_shape,
+            *_flat_shape(RequestShapeSource.FORM, form_fields),
+        }
+    )
     return HttpDisclosureFacts(
         transport=transport,
         method=method.upper() if isinstance(method, str) else "",
@@ -206,6 +218,7 @@ def disclosure_facts(
         credential_categories=credentials,
         shape_supported=supported,
         capability_id=capability_id,
+        request_shape=request_shape,
     )
 
 
@@ -222,12 +235,32 @@ def _name_supported(name: object) -> bool:
     return isinstance(name, str) and bool(name) and len(name) <= 240
 
 
-def _names_with_repetition(names: Iterable[object]) -> tuple[str, ...]:
-    raw = list(names)
-    safe = set(_safe_names(raw))
-    counts = Counter(name for name in raw if _name_supported(name))
-    safe.update(f"{name}[]" for name, count in counts.items() if count > 1)
-    return tuple(sorted(safe))
+def _flat_shape(
+    source: RequestShapeSource,
+    names: Iterable[str],
+    *,
+    repeated_names: set[str] | None = None,
+) -> frozenset[RequestShapeField]:
+    repeated = repeated_names or set()
+    return frozenset(
+        RequestShapeField(
+            source=source,
+            path=(RequestShapeStep(RequestShapeStepKind.FIELD, name),),
+            value_kind=RequestShapeValueKind.SCALAR,
+            repeated=name in repeated,
+        )
+        for name in set(names)
+    )
+
+
+def _repeated_parameter_names(value: object) -> set[str]:
+    if not isinstance(value, MappingABC):
+        return set()
+    return {
+        name
+        for name, item in value.items()
+        if isinstance(name, str) and isinstance(item, (list, tuple))
+    }
 
 
 def _mapping_names(value: object) -> tuple[tuple[str, ...], bool]:
@@ -251,11 +284,7 @@ def _parameter_names(value: object) -> tuple[tuple[str, ...], bool]:
             return all(parameter_value_supported(child) for child in item)
         return False
 
-    expanded = set(names)
-    for name, item in value.items():
-        if isinstance(item, (list, tuple)):
-            expanded.add(f"{name}[]")
-    return tuple(sorted(expanded)), all(
+    return names, all(
         parameter_value_supported(item) for item in value.values()
     )
 
@@ -308,41 +337,81 @@ def _cookie_names(headers: Mapping[str, str] | None) -> tuple[tuple[str, ...], b
     return safe, len(safe) == len(names)
 
 
-def _structured_paths(value: object, *, source: str) -> tuple[tuple[str, ...], bool]:
+def _structured_paths(
+    value: object,
+) -> tuple[tuple[str, ...], frozenset[RequestShapeField], bool]:
     if value is None:
-        return tuple(), True
+        return tuple(), frozenset(), True
     paths: set[str] = set()
+    shape: set[RequestShapeField] = set()
 
-    def walk(item: object, prefix: str, depth: int) -> bool:
+    def value_kind(item: object) -> RequestShapeValueKind | None:
+        if isinstance(item, MappingABC):
+            return RequestShapeValueKind.OBJECT
+        if isinstance(item, (list, tuple)):
+            return RequestShapeValueKind.ARRAY
+        if isinstance(item, (str, int, float, bool)) or item is None:
+            return RequestShapeValueKind.SCALAR
+        return None
+
+    def walk(
+        item: object,
+        display_prefix: str,
+        typed_path: tuple[RequestShapeStep, ...],
+        depth: int,
+    ) -> bool:
         if depth > 16 or len(paths) > 256:
             return False
+        kind = value_kind(item)
+        if kind is None:
+            return False
+        shape.add(
+            RequestShapeField(
+                source=RequestShapeSource.JSON,
+                path=typed_path,
+                value_kind=kind,
+            )
+        )
         if isinstance(item, MappingABC):
             for key, child in item.items():
-                if (
-                    not isinstance(key, str)
-                    or not key
-                    or len(key) > 240
-                    or any(delimiter in key for delimiter in (".", "[", "]"))
-                ):
+                if not isinstance(key, str) or not key or len(key) > 240:
                     return False
-                path = f"{prefix}.{key}" if prefix else key
-                paths.add(path)
-                if not walk(child, path, depth + 1):
+                display_path = (
+                    f"{display_prefix}.{key}" if display_prefix else key
+                )
+                paths.add(display_path)
+                if not walk(
+                    child,
+                    display_path,
+                    (*typed_path, RequestShapeStep(RequestShapeStepKind.FIELD, key)),
+                    depth + 1,
+                ):
                     return False
             return True
         if isinstance(item, (list, tuple)):
-            array_path = f"{prefix}[]" if prefix else "$[]"
+            array_path = f"{display_prefix}[]" if display_prefix else "$[]"
             paths.add(array_path)
-            return all(walk(child, array_path, depth + 1) for child in item)
+            return all(
+                walk(
+                    child,
+                    array_path,
+                    (
+                        *typed_path,
+                        RequestShapeStep(RequestShapeStepKind.ARRAY_ELEMENT),
+                    ),
+                    depth + 1,
+                )
+                for child in item
+            )
         if isinstance(item, (str, int, float, bool)) or item is None:
-            if not prefix:
+            if not display_prefix:
                 paths.add("$")
             return True
         return False
 
-    supported = walk(value, "", 0)
+    supported = walk(value, "", tuple(), 0)
     safe = _safe_names(paths)
-    return safe, supported and len(safe) == len(paths) and source == "json"
+    return safe, frozenset(shape), supported and len(safe) == len(paths)
 
 
 def _classify_url_without_io(url: str) -> tuple[str, DestinationClass]:

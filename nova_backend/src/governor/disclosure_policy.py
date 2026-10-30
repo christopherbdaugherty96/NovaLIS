@@ -96,6 +96,40 @@ class InitiationClass(str, Enum):
     AUTOMATIC = "automatic"
 
 
+class RequestShapeSource(str, Enum):
+    QUERY = "query"
+    PARAMETER = "parameter"
+    HEADER = "header"
+    COOKIE = "cookie"
+    JSON = "json"
+    FORM = "form"
+
+
+class RequestShapeStepKind(str, Enum):
+    FIELD = "field"
+    ARRAY_ELEMENT = "array_element"
+
+
+class RequestShapeValueKind(str, Enum):
+    SCALAR = "scalar"
+    OBJECT = "object"
+    ARRAY = "array"
+
+
+@dataclass(frozen=True)
+class RequestShapeStep:
+    kind: RequestShapeStepKind
+    name: str = ""
+
+
+@dataclass(frozen=True)
+class RequestShapeField:
+    source: RequestShapeSource
+    path: tuple[RequestShapeStep, ...]
+    value_kind: RequestShapeValueKind
+    repeated: bool = False
+
+
 @dataclass(frozen=True)
 class DisclosureRequest:
     caller: str
@@ -107,7 +141,7 @@ class DisclosureRequest:
     policy_version: str
     data_categories: frozenset[DataCategory]
     http_method: str = ""
-    request_shape: frozenset[str] = frozenset()
+    request_shape: frozenset[RequestShapeField] = frozenset()
     credential_categories: frozenset[CredentialCategory] = frozenset()
     initiating_capability_id: int | None = None
     request_id: str = ""
@@ -130,7 +164,7 @@ class DisclosureGrant:
     transports: frozenset[TransportClass]
     data_categories: frozenset[DataCategory]
     http_methods: frozenset[str] = frozenset()
-    request_shapes: frozenset[frozenset[str]] = frozenset()
+    request_shapes: frozenset[frozenset[RequestShapeField]] = frozenset()
     credential_categories: frozenset[CredentialCategory] = frozenset()
     purposes: frozenset[str] = frozenset()
     callers: frozenset[str] = frozenset()
@@ -627,9 +661,6 @@ _HTTP_OPERATION_TRANSPORTS = {
 }
 
 _HTTP_METHOD_RE = re.compile(r"^[A-Z]{3,16}$")
-_REQUEST_SHAPE_TOKEN_RE = re.compile(r"^[a-z]+:[A-Za-z0-9_.$\[\]-]{1,240}$")
-
-
 def _safe_http_method(value: object) -> str:
     if not isinstance(value, str):
         return "unclassified_method"
@@ -638,19 +669,66 @@ def _safe_http_method(value: object) -> str:
 
 
 def _request_shape_valid(value: object) -> bool:
-    return (
-        isinstance(value, frozenset)
-        and all(
-            isinstance(item, str) and bool(_REQUEST_SHAPE_TOKEN_RE.fullmatch(item))
-            for item in value
-        )
-    )
+    if not isinstance(value, frozenset):
+        return False
+    for item in value:
+        if not isinstance(item, RequestShapeField):
+            return False
+        if not isinstance(item.source, RequestShapeSource):
+            return False
+        if not isinstance(item.value_kind, RequestShapeValueKind):
+            return False
+        if not isinstance(item.path, tuple) or not all(
+            isinstance(step, RequestShapeStep)
+            and isinstance(step.kind, RequestShapeStepKind)
+            and isinstance(step.name, str)
+            and (
+                (
+                    step.kind is RequestShapeStepKind.FIELD
+                    and bool(step.name)
+                    and len(step.name) <= 240
+                )
+                or (
+                    step.kind is RequestShapeStepKind.ARRAY_ELEMENT
+                    and step.name == ""
+                )
+            )
+            for step in item.path
+        ):
+            return False
+        if item.source is not RequestShapeSource.JSON and (
+            len(item.path) != 1
+            or item.path[0].kind is not RequestShapeStepKind.FIELD
+            or item.value_kind is not RequestShapeValueKind.SCALAR
+        ):
+            return False
+        if item.repeated and item.source not in {
+            RequestShapeSource.QUERY,
+            RequestShapeSource.PARAMETER,
+        }:
+            return False
+    return True
 
 
 def _request_shape_fingerprint(value: object) -> str:
     if not _request_shape_valid(value):
         return "unclassified_shape"
-    return _fingerprint("\n".join(sorted(value))) or "empty_shape"
+    canonical = [
+        {
+            "source": item.source.value,
+            "path": [
+                {"kind": step.kind.value, "name": step.name} for step in item.path
+            ],
+            "value_kind": item.value_kind.value,
+            "repeated": item.repeated,
+        }
+        for item in value
+    ]
+    canonical.sort(
+        key=lambda item: json.dumps(item, sort_keys=True, separators=(",", ":"))
+    )
+    serialized = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
+    return _fingerprint(serialized) or "empty_shape"
 
 
 def _normalized_destination(value: str, transport: TransportClass) -> str:

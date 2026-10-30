@@ -52,7 +52,7 @@ grants; they must not weaken this default.
 Final focused boundary and mediator regression package after P1 closure:
 
 ```text
-104 passed
+109 passed
 ```
 
 Dedicated Slice 2 boundary tests additionally establish:
@@ -69,7 +69,7 @@ Dedicated Slice 2 boundary tests additionally establish:
 The final full-suite pass completed:
 
 ```text
-5,754 passed, 6 skipped, 2 expected xfails
+5,759 passed, 6 skipped, 2 expected xfails
 ```
 
 An earlier pass found five legacy tests whose intended subject was downstream
@@ -78,7 +78,7 @@ tests; no production bypass was added. The final full-suite rerun passed.
 
 Additional exact-candidate checks passed:
 
-- Slice 1 policy plus Slice 2 boundary tests: 74 passed;
+- Slice 1 policy plus Slice 2 boundary tests: 79 passed;
 - source and changed-test Ruff checks;
 - dependency consistency;
 - operational-truth consistency;
@@ -126,6 +126,25 @@ The subsequent bounded correction now:
 
 Focused proof covers both retained-session cookie reproductions and both
 colliding JSON payloads.
+
+The exact-head review of `96c7fa4157ccb40540599b195d76ab10749bacac`
+confirmed that string markers still shared a namespace with literal request
+names. Red tests reproduced repeated-query/parameter marker collisions and a
+JSON root-marker collision.
+
+The final structural correction replaces string request-shape tokens with an
+immutable canonical vocabulary containing separate typed components for:
+
+- field source;
+- literal path segments versus array-element steps;
+- scalar, object, and array value kinds; and
+- repetition metadata.
+
+Literal names are retained only as data inside typed field steps, so they
+cannot impersonate repetition, nesting, array elements, root types, or source
+metadata. Evidence continues to persist only a fingerprint of canonical JSON,
+not the field names or values. Negative transport-level regressions confirm
+that all known collision pairs are denied before client construction.
 
 ## Explicit non-claims
 

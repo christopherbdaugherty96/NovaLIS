@@ -18,8 +18,29 @@ from src.governor.disclosure_policy import (
     InitiationClass,
     JsonlDisclosureEvidenceSink,
     ProviderClass,
+    RequestShapeField,
+    RequestShapeSource,
+    RequestShapeStep,
+    RequestShapeStepKind,
+    RequestShapeValueKind,
     TransportClass,
     VerifiedLocalEvidenceTarget,
+)
+
+
+def _field(source: RequestShapeSource, name: str) -> RequestShapeField:
+    return RequestShapeField(
+        source=source,
+        path=(RequestShapeStep(RequestShapeStepKind.FIELD, name),),
+        value_kind=RequestShapeValueKind.SCALAR,
+    )
+
+
+_BASE_SHAPE = frozenset(
+    {
+        _field(RequestShapeSource.JSON, "model"),
+        _field(RequestShapeSource.JSON, "messages"),
+    }
 )
 
 
@@ -34,7 +55,7 @@ def _request(**overrides) -> DisclosureRequest:
         "policy_version": "policy-v1",
         "data_categories": frozenset({DataCategory.PROMPT, DataCategory.CONVERSATION_CONTEXT}),
         "http_method": "POST",
-        "request_shape": frozenset({"json:model", "json:messages"}),
+        "request_shape": _BASE_SHAPE,
         "credential_categories": frozenset({CredentialCategory.BEARER_TOKEN}),
         "initiating_capability_id": 62,
         "request_id": "request-1",
@@ -62,9 +83,7 @@ def _policy() -> DisclosurePolicy:
                 transports=frozenset({TransportClass.HTTP}),
                 data_categories=frozenset({DataCategory.PROMPT, DataCategory.CONVERSATION_CONTEXT}),
                 http_methods=frozenset({"POST"}),
-                request_shapes=frozenset(
-                    {frozenset({"json:model", "json:messages"})}
-                ),
+                request_shapes=frozenset({_BASE_SHAPE}),
                 credential_categories=frozenset({CredentialCategory.BEARER_TOKEN}),
                 purposes=frozenset({"external_reasoning"}),
                 callers=frozenset({"deepseek_bridge"}),
@@ -115,7 +134,11 @@ def test_only_recorded_allow_may_proceed(tmp_path):
         (_request(purpose="different"), "no_matching_policy_grant"),
         (_request(http_method="DELETE"), "no_matching_policy_grant"),
         (
-            _request(request_shape=frozenset({"query:private_document"})),
+            _request(
+                request_shape=frozenset(
+                    {_field(RequestShapeSource.QUERY, "private_document")}
+                )
+            ),
             "no_matching_policy_grant",
         ),
         (
@@ -202,7 +225,9 @@ def test_malformed_policy_vocabulary_is_unknown():
                 transports=frozenset({"http"}),  # type: ignore[arg-type]
                 data_categories=frozenset({DataCategory.PROMPT}),
                 http_methods=frozenset({"POST"}),
-                request_shapes=frozenset({frozenset({"json:model"})}),
+                request_shapes=frozenset(
+                    {frozenset({_field(RequestShapeSource.JSON, "model")})}
+                ),
             ),
         ),
     )

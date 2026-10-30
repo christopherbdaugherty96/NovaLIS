@@ -66,6 +66,29 @@ def _context(*, provider: str = "search", category=ProviderClass.SEARCH):
     )
 
 
+def _shape(
+    *,
+    url: str = "https://allowed.example/search",
+    method: str = "GET",
+    transport: TransportClass = TransportClass.HTTP,
+    headers=None,
+    params=None,
+    json_payload=None,
+    form_payload=None,
+    capability_id: int | None = 16,
+):
+    return disclosure_facts(
+        transport=transport,
+        method=method,
+        url=url,
+        headers=headers,
+        params=params,
+        json_payload=json_payload,
+        form_payload=form_payload,
+        capability_id=capability_id,
+    ).request_shape
+
+
 def _policy(
     *destinations: str,
     transport: TransportClass = TransportClass.HTTP,
@@ -73,7 +96,7 @@ def _policy(
     provider_class: ProviderClass = ProviderClass.SEARCH,
     capability_id: int | None = 16,
     method: str = "GET",
-    request_shape: frozenset[str] = frozenset(),
+    request_shape=frozenset(),
 ):
     return DisclosurePolicy(
         version="slice2-test-v1",
@@ -161,7 +184,10 @@ def test_allow_requires_exact_destination_and_secret_free_evidence():
     mediator = NetworkMediator(
         disclosure_policy=_policy(
             "https://allowed.example/search",
-            request_shape=frozenset({"query:q", "parameter:q"}),
+            request_shape=_shape(
+                url="https://allowed.example/search?q=secret",
+                params={"q": "secret"},
+            ),
         ),
         disclosure_evidence_sink=sink,
         disclosure_classifier=lambda _facts: _context(),
@@ -210,11 +236,18 @@ def test_repeated_query_and_parameter_fields_have_distinct_value_free_shape():
         capability_id=16,
     )
 
-    assert facts.query_fields == ("q", "q[]")
-    assert facts.parameter_fields == ("page", "page[]")
-    assert facts.request_shape == frozenset(
-        {"query:q", "query:q[]", "parameter:page", "parameter:page[]"}
+    assert facts.query_fields == ("q", "q")
+    assert facts.parameter_fields == ("page",)
+    literal_markers = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="GET",
+        url="https://allowed.example/search?q=first&q[]=second",
+        params={"page": 1, "page[]": 2},
+        capability_id=16,
     )
+    assert facts.shape_supported is True
+    assert literal_markers.shape_supported is True
+    assert facts.request_shape != literal_markers.request_shape
     assert "first" not in repr(facts)
     assert "second" not in repr(facts)
 
@@ -242,13 +275,16 @@ def test_oauth_fields_are_derived_from_actual_payload_names():
                 transports=frozenset({TransportClass.OAUTH_SETUP}),
                 data_categories=frozenset({DataCategory.OAUTH_MATERIAL}),
                 http_methods=frozenset({"POST"}),
-                request_shapes=frozenset(
-                    {
-                        frozenset(
-                            {"form:authorization_code", "form:client_secret"}
-                        )
-                    }
-                ),
+                request_shapes=frozenset({_shape(
+                    url="https://oauth2.googleapis.com/token",
+                    method="POST",
+                    transport=TransportClass.OAUTH_SETUP,
+                    form_payload={
+                        "authorization_code": "secret",
+                        "client_secret": "secret",
+                    },
+                    capability_id=None,
+                )}),
                 credential_categories=frozenset({CredentialCategory.OAUTH_TOKEN}),
                 purposes=frozenset({"exchange_code"}),
                 callers=frozenset({"google_oauth"}),
@@ -321,7 +357,10 @@ def test_classifier_receives_value_free_boundary_facts():
     mediator = NetworkMediator(
         disclosure_policy=_policy(
             "https://allowed.example/search",
-            request_shape=frozenset({"query:opaque", "parameter:query"}),
+            request_shape=_shape(
+                url="https://allowed.example/search?opaque=value",
+                params={"query": "value"},
+            ),
         ),
         disclosure_evidence_sink=sink,
         disclosure_classifier=classify,
@@ -467,7 +506,7 @@ def test_unsupported_nested_payload_fails_closed_before_client_construction():
         disclosure_policy=_policy(
             "https://allowed.example/search",
             method="POST",
-            request_shape=frozenset({"json:outer"}),
+            request_shape=_shape(method="POST", json_payload={"outer": "value"}),
         ),
         disclosure_evidence_sink=sink,
         disclosure_classifier=lambda _facts: _context(),
@@ -496,8 +535,9 @@ def test_unsupported_parameter_or_header_value_fails_closed(request_kwargs):
     mediator = NetworkMediator(
         disclosure_policy=_policy(
             "https://allowed.example/search",
-            request_shape=frozenset(
-                {"parameter:query"} if "params" in request_kwargs else {"header:x-data"}
+            request_shape=_shape(
+                params={"query": "value"} if "params" in request_kwargs else None,
+                headers={"X-Data": "value"} if "headers" in request_kwargs else None,
             ),
         ),
         disclosure_evidence_sink=sink,
@@ -610,7 +650,13 @@ def test_model_response_cookie_is_not_injected_into_subsequent_request():
             provider_class=ProviderClass.LOCAL_MODEL,
             capability_id=None,
             method="POST",
-            request_shape=frozenset({"json:model"}),
+            request_shape=_shape(
+                url="http://localhost:11434/api/chat",
+                method="POST",
+                transport=TransportClass.LOCAL_PRIVATE_MODEL,
+                json_payload={"model": "local"},
+                capability_id=None,
+            ),
         ),
         disclosure_evidence_sink=sink,
         disclosure_classifier=lambda _facts: _context(
@@ -670,7 +716,91 @@ def test_json_literal_delimiters_cannot_collide_with_nested_shape():
 
     assert nested.shape_supported is True
     assert nested.request_shape != ambiguous.request_shape
-    assert ambiguous.shape_supported is False
+    assert ambiguous.shape_supported is True
+
+
+def test_json_literal_root_marker_cannot_collide_with_scalar_root():
+    scalar = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="POST",
+        url="https://allowed.example/search",
+        json_payload="text",
+        capability_id=16,
+    )
+    literal_root = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="POST",
+        url="https://allowed.example/search",
+        json_payload={"$": "SECRET"},
+        capability_id=16,
+    )
+
+    assert scalar.shape_supported is True
+    assert literal_root.shape_supported is True
+    assert scalar.request_shape != literal_root.request_shape
+
+
+@pytest.mark.parametrize(
+    ("approved_url", "approved_kwargs", "requested_url", "requested_kwargs"),
+    [
+        (
+            "https://allowed.example/search?q=one&q=two",
+            {},
+            "https://allowed.example/search?q=one&q[]=SECRET",
+            {},
+        ),
+        (
+            "https://allowed.example/search",
+            {"params": {"q": ["one", "two"]}},
+            "https://allowed.example/search",
+            {"params": {"q": "one", "q[]": "SECRET"}},
+        ),
+        (
+            "https://allowed.example/search",
+            {"json_payload": {"a": {"b": "text"}}},
+            "https://allowed.example/search",
+            {"json_payload": {"a": "SECRET", "a.b": "text"}},
+        ),
+        (
+            "https://allowed.example/search",
+            {"json_payload": "text"},
+            "https://allowed.example/search",
+            {"json_payload": {"$": "SECRET"}},
+        ),
+    ],
+)
+def test_structurally_distinct_request_cannot_reuse_shape_grant(
+    approved_url,
+    approved_kwargs,
+    requested_url,
+    requested_kwargs,
+):
+    approved_method = "POST" if "json_payload" in approved_kwargs else "GET"
+    approved_shape = _shape(
+        url=approved_url,
+        method=approved_method,
+        params=approved_kwargs.get("params"),
+        json_payload=approved_kwargs.get("json_payload"),
+    )
+    mediator = NetworkMediator(
+        disclosure_policy=_policy(
+            "https://allowed.example/search",
+            method=approved_method,
+            request_shape=approved_shape,
+        ),
+        disclosure_evidence_sink=_Sink(),
+        disclosure_classifier=lambda _facts: _context(),
+    )
+    mediator._registry = _Registry()
+    mediator._new_session = lambda: pytest.fail("shape mismatch reached HTTP client")
+
+    with pytest.raises(NetworkMediatorError, match="Data-Out denied"):
+        mediator.request(
+            16,
+            approved_method,
+            requested_url,
+            **requested_kwargs,
+        )
 
 
 def test_model_classifier_receives_nested_json_shape_without_values():
@@ -689,8 +819,15 @@ def test_model_classifier_receives_nested_json_shape_without_values():
             provider_class=ProviderClass.LOCAL_MODEL,
             capability_id=None,
             method="POST",
-            request_shape=frozenset(
-                {"json:model", "json:messages", "json:messages[]", "json:messages[].content"}
+            request_shape=_shape(
+                url="http://localhost:11434/api/chat",
+                method="POST",
+                transport=TransportClass.LOCAL_PRIVATE_MODEL,
+                json_payload={
+                    "model": "local",
+                    "messages": [{"content": "prompt"}],
+                },
+                capability_id=None,
             ),
         ),
         disclosure_evidence_sink=sink,
