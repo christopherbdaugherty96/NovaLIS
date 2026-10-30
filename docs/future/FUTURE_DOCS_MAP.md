@@ -6,8 +6,7 @@ bridge**, not a promotion. Listing a doc here does not add it to any active lane
 
 ## Authority
 
-- Ordering authority for what comes next: `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`
-  (lanes A–D + Horizon H1–H31). It does not use phase numbers.
+- Ordering authority for what comes next: owner operating sequence `OWNER_OPERATING_SEQUENCE_2026_10_27` in `README.md` and `docs/CANONICAL/00_INDEX.md`. The July master roadmap (lanes A–D + Horizon H1–H31) is historical direction, not current ordering.
 - What is real today: generated `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.
 - Product identity: `docs/product/PRODUCT_DEFINITION.md` (converged 2026-07-07).
 - **Uncited docs are reference until promoted.** By the roadmap's Supersession Note, anything in

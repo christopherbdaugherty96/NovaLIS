@@ -16,11 +16,10 @@ Use these sources in order of authority:
 
 ## Ordering authority and how to read this folder
 
-- The ordering authority for what comes next is
-  `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (lanes A–D + Horizon H1–H31). The older
-  `ROADMAP.md` is **superseded for ordering** and kept only as reference.
-- **A doc in this folder is reference until a lane in the July roadmap pulls it in.** Being
-  filed here is not a promise, a release plan, or an active priority.
+- The current ordering authority is the owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_27`) in the repository `README.md` and `docs/CANONICAL/00_INDEX.md`. Both `NOVA_MASTER_ROADMAP_2026-07-05.md` and the older `ROADMAP.md` are historical direction, **not current work orders**.
+- **A doc in this folder remains reference unless the current owner operating sequence and a
+  separate owner authorization activate its work.** Being filed here is not a promise, a
+  release plan, or an active priority. Historical roadmap placement grants no authority.
 - To tell whether a given doc is active, parked, superseded, a fixture, or design history, use
   **`FUTURE_DOCS_MAP.md`** — it classifies the orphaned docs and names each one's intended home.
 
@@ -45,7 +44,8 @@ The implemented system is a **partial realization** of these ideas, not full com
 
 - `NOVA_AUTHORITY_AND_DECISION_OS_DIRECTION_2026-07-28.md` - non-authorizing long-term
   strategic compass for Nova as a local-first authority and decision operating system. The
-  master roadmap still controls ordering and lane locks still control scope.
+  current owner operating sequence controls ordering, and separate owner authorization still
+  controls implementation scope.
 
 - Private Auralis commercial planning has moved outside the public-source boundary. See
   `../security/AURALIS_PUBLIC_BOUNDARY_2026-09-30.md`.

@@ -102,8 +102,7 @@ receipts, "why am I recommending this", and the approval moment before any actio
 >    `current_runtime/CURRENT_RUNTIME_STATE.md`. Authoritative for what is real.
 > 3. **Historical design phases 3.5–11** — `docs/design/` (engineering lineage; past Phase 8 these
 >    do NOT equal runtime meaning, and there is no runtime Phase 10/11).
-> 4. **Roadmap lanes A–D + Horizon H1–H31** — `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`, the
->    active ordering authority for what is next (no phase numbers).
+> 4. **Current owner operating sequence** — `OWNER_OPERATING_SEQUENCE_2026_10_27` in `README.md` and `docs/CANONICAL/00_INDEX.md` orders current work. The July master roadmap lanes A–D and Horizon H1–H31 are historical direction only.
 >
 > They are not in conflict *if kept distinct*: read (2) for what is real, (4) for what is next, and
 > treat (3) as design history. See [07_ROADMAP_TRUTH.md](07_ROADMAP_TRUTH.md) and

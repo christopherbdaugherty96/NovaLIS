@@ -48,8 +48,7 @@ cross-read:
 3. **Design phases 3.5–11** — this folder. HISTORICAL engineering lineage of design intent. Past
    Phase 8 these numbers no longer match runtime meaning: runtime "Phase 9" is a bounded OpenClaw
    slice, while design "Phase 9/10/11" is aspirational, and there is no runtime Phase 10 or 11.
-4. **Roadmap lanes A–D + Horizon H1–H31** — `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md`. The
-   ACTIVE ordering authority for what comes next; it does not use phase numbers.
+4. **Historical roadmap lanes A–D + Horizon H1–H31** — `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (historical direction, not active ordering). The current owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_27`) in `README.md` and `docs/CANONICAL/00_INDEX.md` determines what comes next.
 
 Rule: for what is **real**, read (2); for what is **next**, read (4). Treat the phase folders
 below as design history and reference, not as the current execution order. The "Current Phase

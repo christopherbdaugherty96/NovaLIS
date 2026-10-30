@@ -51,8 +51,7 @@ Authoritative Runtime Sources:
 Taxonomy note (design phase numbers are historical lineage):
 - These design "phases" are engineering lineage, not the current execution order.
 - What is real = generated runtime phases in `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.
-- What is next = roadmap lanes A–D + Horizon H1–H31 in
-  `docs/future/NOVA_MASTER_ROADMAP_2026-07-05.md` (the active ordering authority; no phase numbers).
+- What is next = the current owner operating sequence (`OWNER_OPERATING_SEQUENCE_2026_10_27`) in `README.md` and `docs/CANONICAL/00_INDEX.md`; July master roadmap lanes A–D + Horizon H1–H31 are historical direction, not current ordering.
 - Past Phase 8, design phase numbers do NOT equal runtime phase numbers (runtime "Phase 9" is a
   bounded OpenClaw slice; there is no runtime Phase 10 or 11). See `docs/design/README.md`
   Taxonomy Note.
