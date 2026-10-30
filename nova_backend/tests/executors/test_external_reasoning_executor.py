@@ -16,11 +16,34 @@ def test_external_reasoning_requires_text():
     assert result.structured_data["failure_kind"] == "missing_text"
 
 
+def test_external_reasoning_permission_off_stops_before_verifier(monkeypatch):
+    from src.executors import external_reasoning_executor as mod
+
+    monkeypatch.setattr(
+        mod.runtime_settings_store,
+        "is_permission_enabled",
+        lambda permission: permission != "external_reasoning_enabled",
+    )
+    monkeypatch.setattr(
+        mod.ResponseVerificationExecutor,
+        "execute",
+        lambda self, request: (_ for _ in ()).throw(
+            AssertionError("provider-off capability 62 reached nested verifier")
+        ),
+    )
+
+    result = mod.ExternalReasoningExecutor().execute(
+        _request({"text": "Private exchange"})
+    )
+
+    assert result.success is False
+    assert result.structured_data["failure_kind"] == "settings_paused"
+
+
 def test_external_reasoning_executor_delegates_with_cap62(monkeypatch):
     from src.executors import external_reasoning_executor as mod
 
     captured_requests: list = []
-    original_execute = mod.ResponseVerificationExecutor.execute
 
     def _capture_execute(self, request):
         captured_requests.append(request)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from src.conversation import prompts
 from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.usage.provider_usage_store import ProviderUsageStore
@@ -179,3 +178,37 @@ def test_deepseek_bridge_proceeds_when_cap62_enabled(monkeypatch):
     )
 
     assert result == "Analysis complete."
+
+
+def test_provider_off_uses_only_explicit_local_fallback(monkeypatch):
+    import src.conversation.deepseek_bridge as mod
+
+    monkeypatch.setattr(
+        mod.runtime_settings_store,
+        "is_permission_enabled",
+        lambda permission: permission != "external_reasoning_enabled",
+    )
+    monkeypatch.setattr(
+        mod.CapabilityRegistry,
+        "is_enabled",
+        lambda self, cap_id: cap_id == 62,
+    )
+    monkeypatch.setenv("NOVA_ALLOW_LOCAL_REASONING_FALLBACK", "true")
+    monkeypatch.setattr(
+        mod.DeepSeekReasoningProvider,
+        "analyze",
+        lambda self, **kwargs: pytest.fail("provider must remain off"),
+    )
+    monkeypatch.setattr(
+        mod.llm_gateway,
+        "generate_chat",
+        lambda *args, **kwargs: "Local-only analysis.",
+    )
+
+    result = mod.DeepSeekBridge().analyze(
+        "Review locally.",
+        [],
+        analysis_profile="task_scoped",
+    )
+
+    assert result == "Local-only analysis."

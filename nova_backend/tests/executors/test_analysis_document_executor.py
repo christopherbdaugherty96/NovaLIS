@@ -134,6 +134,29 @@ def test_create_document_fails_truthfully_when_analysis_is_unavailable(monkeypat
     assert "structured analysis is currently blocked or unavailable" in result.message.lower()
 
 
+def test_create_document_treats_provider_off_as_unavailable(monkeypatch):
+    from src.executors import analysis_document_executor as mod
+
+    monkeypatch.setattr(
+        mod.DeepSeekBridge,
+        "analyze",
+        lambda self, *args, **kwargs: "External reasoning is paused in Settings.",
+    )
+
+    result = mod.AnalysisDocumentExecutor().execute(
+        _request(
+            {
+                "action": "create",
+                "topic": "Private topic",
+                "analysis_documents": [],
+            }
+        )
+    )
+
+    assert result.success is False
+    assert result.structured_data["failure_kind"] == "analysis_unavailable"
+
+
 def test_explain_section_falls_back_to_section_text_when_analysis_is_unavailable(monkeypatch):
     from src.executors import analysis_document_executor as mod
 

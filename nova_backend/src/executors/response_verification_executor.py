@@ -13,6 +13,7 @@ class ResponseVerificationExecutor:
     _UNAVAILABLE_MARKERS = (
         "currently unavailable",
         "structured analysis",
+        "paused in settings",
         "model is blocked",
         "version mismatch",
     )

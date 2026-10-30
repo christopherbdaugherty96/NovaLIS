@@ -11,6 +11,7 @@ from src.providers.deepseek_reasoning_provider import (
     DeepSeekReasoningProvider,
     DeepSeekReasoningProviderError,
 )
+from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
 
 _CAP_62_ID = 62
@@ -55,6 +56,12 @@ class DeepSeekBridge:
         except CapabilityRegistryError:
             return "I can provide structured analysis, but the governed DeepSeek provider is not available."
 
+        provider_enabled = runtime_settings_store.is_permission_enabled(
+            "external_reasoning_enabled"
+        )
+        if not provider_enabled and not self._local_fallback_enabled():
+            return "External reasoning is paused in Settings."
+
         started_at = self._cognitive_log.started(
             module_name="deepseek_bridge",
             mode="analysis",
@@ -63,37 +70,42 @@ class DeepSeekBridge:
         prompt = prompts.build_analysis_prompt(user_message, context, profile=analysis_profile)
         response = ""
         try:
-            try:
-                provider_result = self._provider.analyze(
-                    prompt=prompt,
-                    request_id="deepseek_bridge",
-                    analysis_profile=analysis_profile,
-                    max_tokens=min(MAX_TOKENS, suggested_max_tokens),
-                    temperature=0.2,
-                    timeout=timeout_seconds,
-                )
-                if provider_result.route == "budget_blocked":
-                    if not self._local_fallback_enabled():
-                        return (
-                            "DeepSeek analysis is temporarily"
-                            " unavailable -- daily budget limit"
-                            " reached."
-                        )
-                    logger.info(
-                        "DeepSeek budget-blocked; falling"
-                        " through to local reasoning"
+            if provider_enabled:
+                try:
+                    provider_result = self._provider.analyze(
+                        prompt=prompt,
+                        request_id="deepseek_bridge",
+                        analysis_profile=analysis_profile,
+                        max_tokens=min(MAX_TOKENS, suggested_max_tokens),
+                        temperature=0.2,
+                        timeout=timeout_seconds,
                     )
-                else:
-                    response = provider_result.text
-                    if response:
-                        if analysis_profile == "deep_reason":
-                            return self._normalize_deep_reason_response(response)
-                        return response
-            except DeepSeekReasoningProviderError as error:
-                if not self._local_fallback_enabled():
-                    logger.error("DeepSeek provider unavailable: %s", error)
-                    return "I can provide structured analysis, but the governed DeepSeek provider is currently unavailable."
-                logger.warning("DeepSeek provider unavailable; using explicit local fallback: %s", error)
+                    if provider_result.route == "budget_blocked":
+                        if not self._local_fallback_enabled():
+                            return (
+                                "DeepSeek analysis is temporarily"
+                                " unavailable -- daily budget limit"
+                                " reached."
+                            )
+                        logger.info(
+                            "DeepSeek budget-blocked; falling"
+                            " through to local reasoning"
+                        )
+                    else:
+                        response = provider_result.text
+                        if response:
+                            if analysis_profile == "deep_reason":
+                                return self._normalize_deep_reason_response(response)
+                            return response
+                except DeepSeekReasoningProviderError as error:
+                    if not self._local_fallback_enabled():
+                        logger.error("DeepSeek provider unavailable: %s", error)
+                        return "I can provide structured analysis, but the governed DeepSeek provider is currently unavailable."
+                    logger.warning("DeepSeek provider unavailable; using explicit local fallback: %s", error)
+            else:
+                logger.info(
+                    "External reasoning paused; using explicitly enabled local fallback."
+                )
 
             response = llm_gateway.generate_chat(
                 prompt,
