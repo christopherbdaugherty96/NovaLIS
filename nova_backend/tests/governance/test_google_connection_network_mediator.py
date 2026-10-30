@@ -10,6 +10,20 @@ from src.governor.network_mediator import (
 )
 
 
+def _legacy_mediator() -> NetworkMediator:
+    mediator = NetworkMediator()
+    mediator._authorize_disclosure = lambda **_kwargs: None
+
+    class _Session:
+        def request(self, **kwargs):
+            from src.governor import network_mediator as module
+
+            return module.requests.request(**kwargs)
+
+    mediator._new_session = _Session
+    return mediator
+
+
 class _FailIfUsedRegistry:
     def get(self, capability_id: int):
         raise AssertionError("Google connection must not consult capability registry.")
@@ -38,7 +52,7 @@ class _Response:
 
 
 def test_allowlisted_connection_request_uses_no_capability_or_governor(monkeypatch):
-    mediator = NetworkMediator()
+    mediator = _legacy_mediator()
     mediator._registry = _FailIfUsedRegistry()
     ledger = _RecordingLedger()
     mediator.ledger = ledger
@@ -89,7 +103,7 @@ def test_connection_network_allowlist_rejects_methods_and_domain_endpoints(
     method,
     url,
 ):
-    mediator = NetworkMediator()
+    mediator = _legacy_mediator()
     with pytest.raises(NetworkMediatorError, match="not allowlisted"):
         mediator.connection_request(
             "google_workspace",
@@ -114,7 +128,7 @@ def test_google_connection_endpoint_policy_contains_auth_metadata_only():
 
 
 def test_connection_error_exposes_only_safe_oauth_code(monkeypatch):
-    mediator = NetworkMediator()
+    mediator = _legacy_mediator()
     ledger = _RecordingLedger()
     mediator.ledger = ledger
 
@@ -149,7 +163,7 @@ def test_connection_error_exposes_only_safe_oauth_code(monkeypatch):
 
 
 def test_connection_request_rejects_redirect_without_following_it(monkeypatch):
-    mediator = NetworkMediator()
+    mediator = _legacy_mediator()
     ledger = _RecordingLedger()
     mediator.ledger = ledger
 

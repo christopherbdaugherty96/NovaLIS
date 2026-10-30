@@ -11,11 +11,37 @@ from typing import Generator
 from urllib.parse import urlparse
 
 import requests
+from src.governor.disclosure_policy import (
+    DisclosureEvidenceSink,
+    DisclosurePolicy,
+    DisclosurePolicyEvaluator,
+    TransportClass,
+)
+from src.governor.disclosure_transport import (
+    HttpDisclosureClassifier,
+    HttpDisclosureContext,
+    authorize_http_disclosure,
+    disclosure_facts,
+)
 from src.ledger.writer import LedgerWriter
 
 ALLOWED_SCHEMES = {"http", "https"}
 ALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
 RATE_LIMIT_PER_MINUTE = 120
+
+
+def _safe_model_url(url: str) -> str:
+    """Return model URL evidence without userinfo, query, or fragment."""
+    try:
+        parsed = urlparse(url)
+        host = parsed.hostname or ""
+        if ":" in host and not host.startswith("["):
+            host = f"[{host}]"
+        port = parsed.port
+        authority = f"{host}:{port}" if port is not None else host
+        return parsed._replace(netloc=authority, query="", fragment="").geturl()
+    except (TypeError, ValueError):
+        return "invalid-url"
 
 
 class ModelNetworkMediatorError(RuntimeError):
@@ -36,14 +62,25 @@ class ModelNetworkMediator:
     - Ledger parity for model-call lifecycle events
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        disclosure_policy: DisclosurePolicy | None = None,
+        disclosure_evidence_sink: DisclosureEvidenceSink | None = None,
+        disclosure_evaluator: DisclosurePolicyEvaluator | None = None,
+        disclosure_classifier: HttpDisclosureClassifier | None = None,
+    ) -> None:
         self._ledger = LedgerWriter()
         self._request_times: list[float] = []
-        self._session = self._new_session()
-        self._default_session = self._session
+        self._session = None
+        self._default_session = None
         self._thread_local = threading.local()
         self._rate_lock = threading.Lock()
         self._session_lock = threading.Lock()
+        self._disclosure_policy = disclosure_policy
+        self._disclosure_evidence_sink = disclosure_evidence_sink
+        self._disclosure_evaluator = disclosure_evaluator or DisclosurePolicyEvaluator()
+        self._disclosure_classifier = disclosure_classifier
 
     @staticmethod
     def _new_session() -> requests.Session:
@@ -51,8 +88,19 @@ class ModelNetworkMediator:
         session.trust_env = False
         return session
 
+    @staticmethod
+    def _clear_implicit_cookies(session: requests.Session) -> None:
+        """Prevent Requests' response cookie jar from changing the admitted send."""
+        cookie_jar = getattr(session, "cookies", None)
+        if cookie_jar is None:
+            return
+        try:
+            cookie_jar.clear()
+        except Exception as error:
+            raise ModelNetworkMediatorError("Model cookie isolation failed.") from error
+
     def _request_session(self):
-        if self._session is not self._default_session:
+        if self._session is not None and self._session is not self._default_session:
             return self._session
         session = getattr(self._thread_local, "session", None)
         if session is not None:
@@ -63,6 +111,44 @@ class ModelNetworkMediator:
                 session = self._new_session()
                 self._thread_local.session = session
             return session
+
+    def _authorize_disclosure(
+        self,
+        *,
+        method: str,
+        url: str,
+        json_payload: dict | None,
+        has_body: bool,
+        request_id: str | None,
+        session_id: str | None,
+    ) -> None:
+        facts = disclosure_facts(
+            transport=TransportClass.LOCAL_PRIVATE_MODEL,
+            method=method,
+            url=url,
+            json_payload=json_payload,
+            capability_id=None,
+        )
+        context: HttpDisclosureContext | None = None
+        if self._disclosure_classifier is not None:
+            try:
+                context = self._disclosure_classifier(facts)
+            except Exception:
+                context = None
+        decision = authorize_http_disclosure(
+            evaluator=self._disclosure_evaluator,
+            policy=self._disclosure_policy,
+            evidence_sink=self._disclosure_evidence_sink,
+            context=context,
+            facts=facts,
+            ambient_tls_keylog=bool(os.getenv("SSLKEYLOGFILE")),
+            has_body=has_body,
+            capability_id=None,
+            request_id=request_id or "",
+            session_id=session_id or "",
+        )
+        if not decision.may_proceed:
+            raise ModelNetworkMediatorError(f"Data-Out denied ({decision.reason}).")
 
     def _validate_url(self, url: str) -> str:
         parsed = urlparse(url)
@@ -147,6 +233,14 @@ class ModelNetworkMediator:
         session_id: str | None = None,
     ) -> ModelResponse:
         self._check_rate_limit()
+        self._authorize_disclosure(
+            method=method,
+            url=url,
+            json_payload=json_payload,
+            has_body=json_payload is not None,
+            request_id=request_id,
+            session_id=session_id,
+        )
         url = self._validate_url(url)
         correlation: dict[str, str] = {}
         if request_id:
@@ -155,31 +249,38 @@ class ModelNetworkMediator:
             correlation["session_id"] = session_id
 
         try:
-            response = self._request_session().request(
-                method=method.upper(),
-                url=url,
-                json=json_payload,
-                timeout=timeout,
-                allow_redirects=False,
-            )
+            request_session = self._request_session()
+            self._clear_implicit_cookies(request_session)
+            try:
+                response = request_session.request(
+                    method=method.upper(),
+                    url=url,
+                    json=json_payload,
+                    timeout=timeout,
+                    allow_redirects=False,
+                )
+            finally:
+                self._clear_implicit_cookies(request_session)
             response.raise_for_status()
             payload = response.json() if response.content else {}
         except Exception as error:
             self._ledger.log_event(
                 "MODEL_NETWORK_CALL_FAILED",
                 {
-                    "url": url,
+                    "url": _safe_model_url(url),
                     "method": method.upper(),
-                    "error": str(error),
+                    "error": type(error).__name__,
                     **correlation,
                 },
             )
-            raise ModelNetworkMediatorError(str(error)) from error
+            raise ModelNetworkMediatorError(
+                f"Model network call failed ({type(error).__name__})."
+            ) from error
 
         self._ledger.log_event(
             "MODEL_NETWORK_CALL",
             {
-                "url": url,
+                "url": _safe_model_url(url),
                 "method": method.upper(),
                 "status_code": response.status_code,
                 **correlation,
@@ -204,6 +305,14 @@ class ModelNetworkMediator:
         on completion (not per-chunk).
         """
         self._check_rate_limit()
+        self._authorize_disclosure(
+            method="POST",
+            url=url,
+            json_payload=json_payload,
+            has_body=True,
+            request_id=request_id,
+            session_id=session_id,
+        )
         url = self._validate_url(url)
         self._thread_local.last_stream_done_reason = None
         correlation: dict[str, str] = {}
@@ -213,21 +322,28 @@ class ModelNetworkMediator:
             correlation["session_id"] = session_id
 
         try:
-            response = self._request_session().post(
-                url,
-                json=json_payload,
-                timeout=timeout,
-                stream=True,
-                allow_redirects=False,
-            )
+            request_session = self._request_session()
+            self._clear_implicit_cookies(request_session)
+            try:
+                response = request_session.post(
+                    url,
+                    json=json_payload,
+                    timeout=timeout,
+                    stream=True,
+                    allow_redirects=False,
+                )
+            finally:
+                self._clear_implicit_cookies(request_session)
             response.raise_for_status()
         except Exception as error:
             self._ledger.log_event(
                 "MODEL_NETWORK_CALL_FAILED",
-                {"url": url, "method": "POST", "error": str(error),
+                {"url": _safe_model_url(url), "method": "POST", "error": type(error).__name__,
                  **correlation},
             )
-            raise ModelNetworkMediatorError(str(error)) from error
+            raise ModelNetworkMediatorError(
+                f"Model network call failed ({type(error).__name__})."
+            ) from error
 
         try:
             for raw_line in response.iter_lines(decode_unicode=True):
@@ -247,11 +363,11 @@ class ModelNetworkMediator:
         except Exception as error:
             self._ledger.log_event(
                 "MODEL_NETWORK_CALL_FAILED",
-                {"url": url, "method": "POST",
-                 "error": f"stream read: {error}", **correlation},
+                {"url": _safe_model_url(url), "method": "POST",
+                 "error": f"stream_read_{type(error).__name__}", **correlation},
             )
             raise ModelNetworkMediatorError(
-                f"stream read: {error}"
+                f"Model stream read failed ({type(error).__name__})."
             ) from error
         finally:
             response.close()
@@ -260,13 +376,13 @@ class ModelNetworkMediator:
             error = "stream ended without a valid terminal frame"
             self._ledger.log_event(
                 "MODEL_NETWORK_CALL_FAILED",
-                {"url": url, "method": "POST", "error": error, **correlation},
+                {"url": _safe_model_url(url), "method": "POST", "error": error, **correlation},
             )
             raise ModelNetworkMediatorError(error)
 
         self._ledger.log_event(
             "MODEL_NETWORK_CALL",
-            {"url": url, "method": "POST",
+            {"url": _safe_model_url(url), "method": "POST",
              "status_code": response.status_code, "streamed": True,
              **correlation},
         )

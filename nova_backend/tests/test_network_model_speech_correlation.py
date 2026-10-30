@@ -32,6 +32,12 @@ def test_network_mediator_logs_request_and_session_ids(monkeypatch):
             return None
 
     mediator = NetworkMediator()
+    mediator._authorize_disclosure = lambda **_kwargs: None
+    mediator._new_session = lambda: SimpleNamespace(
+        request=lambda **kwargs: __import__(
+            "src.governor.network_mediator", fromlist=["requests"]
+        ).requests.request(**kwargs)
+    )
     mediator._registry = _FakeRegistry()
     mediator.ledger = SimpleNamespace(log_event=lambda event, meta: events.append((event, dict(meta))))
 
@@ -72,6 +78,7 @@ def test_model_network_mediator_logs_request_and_session_ids(monkeypatch):
             return None
 
     mediator = ModelNetworkMediator()
+    mediator._authorize_disclosure = lambda **_kwargs: None
     mediator._ledger = SimpleNamespace(log_event=lambda event, meta: events.append((event, dict(meta))))
     mediator._session = SimpleNamespace(request=lambda **kwargs: _Response())
 

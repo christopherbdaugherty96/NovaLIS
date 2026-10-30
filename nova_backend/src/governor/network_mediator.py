@@ -11,6 +11,18 @@ from typing import Any, Dict, Optional
 from urllib.parse import urljoin, urlparse, urlunparse
 
 import requests
+from src.governor.disclosure_policy import (
+    DisclosureEvidenceSink,
+    DisclosurePolicy,
+    DisclosurePolicyEvaluator,
+    TransportClass,
+)
+from src.governor.disclosure_transport import (
+    HttpDisclosureClassifier,
+    HttpDisclosureContext,
+    authorize_http_disclosure,
+    disclosure_facts,
+)
 from src.governor.exceptions import (
     CapabilityRegistryError,
     NetworkMediatorError,
@@ -91,11 +103,87 @@ class NetworkMediator:
     - All calls must be capability-bound.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        disclosure_policy: DisclosurePolicy | None = None,
+        disclosure_evidence_sink: DisclosureEvidenceSink | None = None,
+        disclosure_evaluator: DisclosurePolicyEvaluator | None = None,
+        disclosure_classifier: HttpDisclosureClassifier | None = None,
+    ):
         self._registry = None  # lazy-loaded
         self.ledger = LedgerWriter()
         self._request_times: Dict[Any, list] = defaultdict(list)
         self._lock = threading.Lock()
+        self._disclosure_policy = disclosure_policy
+        self._disclosure_evidence_sink = disclosure_evidence_sink
+        self._disclosure_evaluator = disclosure_evaluator or DisclosurePolicyEvaluator()
+        self._disclosure_classifier = disclosure_classifier
+
+    @staticmethod
+    def _new_session() -> requests.Session:
+        session = requests.Session()
+        # Ambient proxies, netrc, and REQUESTS_CA_BUNDLE/CURL_CA_BUNDLE are not
+        # part of the authorized request and must not be discovered implicitly.
+        session.trust_env = False
+        return session
+
+    @staticmethod
+    def _clear_implicit_cookies(session: requests.Session) -> None:
+        """Prevent Requests' response cookie jar from changing the admitted send."""
+        cookie_jar = getattr(session, "cookies", None)
+        if cookie_jar is None:
+            return
+        try:
+            cookie_jar.clear()
+        except Exception as error:
+            raise NetworkMediatorError("Network cookie isolation failed.") from error
+
+    def _authorize_disclosure(
+        self,
+        *,
+        transport: TransportClass,
+        method: str,
+        url: str,
+        headers: Optional[Dict[str, str]],
+        params: Optional[Dict[str, Any]] = None,
+        json_payload: Optional[Dict[str, Any]] = None,
+        form_payload: Optional[Dict[str, str]] = None,
+        has_body: bool,
+        capability_id: int | None,
+        request_id: str | None = None,
+        session_id: str | None = None,
+    ) -> None:
+        facts = disclosure_facts(
+            transport=transport,
+            method=method,
+            url=url,
+            headers=headers,
+            params=params,
+            json_payload=json_payload,
+            form_payload=form_payload,
+            capability_id=capability_id,
+        )
+        context: HttpDisclosureContext | None = None
+        if self._disclosure_classifier is not None:
+            try:
+                context = self._disclosure_classifier(facts)
+            except Exception:
+                context = None
+        decision = authorize_http_disclosure(
+            evaluator=self._disclosure_evaluator,
+            policy=self._disclosure_policy,
+            evidence_sink=self._disclosure_evidence_sink,
+            context=context,
+            facts=facts,
+            ambient_tls_keylog=bool(os.getenv("SSLKEYLOGFILE")),
+            has_body=has_body,
+            capability_id=capability_id,
+            request_id=request_id or "",
+            session_id=session_id or "",
+        )
+        if not decision.may_proceed:
+            raise NetworkMediatorError(f"Data-Out denied ({decision.reason}).")
 
     @property
     def registry(self):
@@ -201,8 +289,20 @@ class NetworkMediator:
 
         self._check_rate_limit(capability_id)
 
-        # 2) URL validation
-        self._validate_url(url)
+        # 2) Data-Out admission precedes URL validation, DNS, client creation,
+        # and every exact redirect hop.
+        self._authorize_disclosure(
+            transport=TransportClass.HTTP,
+            method=method,
+            url=url,
+            headers=headers,
+            params=params,
+            json_payload=json_payload,
+            has_body=json_payload is not None or params is not None,
+            capability_id=capability_id,
+            request_id=request_id,
+            session_id=session_id,
+        )
 
         # 3) Request execution
         req_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
@@ -226,17 +326,35 @@ class NetworkMediator:
 
         try:
             response = None
+            session = self._new_session()
             for _ in range(MAX_REDIRECT_HOPS + 1):
+                if current_url != url:
+                    self._authorize_disclosure(
+                        transport=TransportClass.HTTP,
+                        method=method,
+                        url=current_url,
+                        headers=headers,
+                        params=params,
+                        json_payload=json_payload,
+                        has_body=json_payload is not None or params is not None,
+                        capability_id=capability_id,
+                        request_id=request_id,
+                        session_id=session_id,
+                    )
                 self._validate_url(current_url)
-                response = requests.request(
-                    method=method.upper(),
-                    url=current_url,
-                    params=params,
-                    json=json_payload,
-                    headers=headers,
-                    timeout=req_timeout,
-                    allow_redirects=False,
-                )
+                self._clear_implicit_cookies(session)
+                try:
+                    response = session.request(
+                        method=method.upper(),
+                        url=current_url,
+                        params=params,
+                        json=json_payload,
+                        headers=headers,
+                        timeout=req_timeout,
+                        allow_redirects=False,
+                    )
+                finally:
+                    self._clear_implicit_cookies(session)
 
                 if response.is_redirect or response.is_permanent_redirect:
                     location = response.headers.get("Location")
@@ -284,8 +402,8 @@ class NetworkMediator:
             "EXTERNAL_NETWORK_CALL",
             {
                 "capability_id": capability_id,
-                "url": current_url,
-                "original_url": url,
+                "url": _url_without_credentials_or_query(current_url),
+                "original_url": _url_without_credentials_or_query(url),
                 "method": method.upper(),
                 "status_code": response.status_code,
                 **correlation,
@@ -324,11 +442,20 @@ class NetworkMediator:
             raise NetworkMediatorError("Provider connection operation is not allowlisted.")
 
         self._check_rate_limit(("connection", provider))
+        self._authorize_disclosure(
+            transport=TransportClass.OAUTH_SETUP,
+            method=method_name,
+            url=url,
+            headers=headers,
+            form_payload=form_payload,
+            has_body=form_payload is not None,
+            capability_id=None,
+        )
         self._validate_url(url)
         request_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
 
         try:
-            response = requests.request(
+            response = self._new_session().request(
                 method=method_name,
                 url=url,
                 data=form_payload,

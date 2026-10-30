@@ -1,0 +1,192 @@
+# Data-Out Slice 2 — Final HTTP/model boundary candidate
+
+Date: 2026-10-28
+
+Status: implementation candidate; not merged and not an authorization for Slice 3.
+
+## Scope
+
+This slice adds provider-neutral disclosure admission immediately inside:
+
+- `NetworkMediator.request`
+- `NetworkMediator.connection_request`
+- `ModelNetworkMediator.request_json`
+- `ModelNetworkMediator.request_stream`
+
+The admission runs before URL validation, DNS, HTTP session construction, or
+transport. Missing policy, missing evidence storage, missing classification,
+classifier failure, and evidence-write failure remain fail-closed.
+
+Governor and capability-registry checks remain independent requirements. This
+slice adds no provider, capability, external-model route, or runtime grant.
+
+## Trust boundary
+
+Ordinary request callers cannot assert their own authorization taxonomy. A
+composition-owned classifier receives value-free facts derived by the final
+transport boundary and returns the typed caller/purpose/provider taxonomy.
+Policy and a pre-verified local evidence sink are also constructor-injected.
+
+No production classifier, grant set, or evidence target is created here. The
+default production behavior is therefore `UNKNOWN` and zero-attempt denial.
+Later slices must provide reviewed mechanism-specific classifications and
+grants; they must not weaken this default.
+
+## Transport behavior
+
+- HTTP sessions are created only after admission and use `trust_env=False`.
+- Ambient proxies, netrc, and Requests CA-bundle environment settings are not
+  inherited by the session.
+- `SSLKEYLOGFILE` is represented as `tls_session_secret` data and therefore
+  requires an explicit matching grant.
+- URL userinfo, authorization/API-key/OAuth field names, and proxy credentials
+  are classified without retaining their values.
+- Cross-origin redirects remain disabled. Every allowed same-origin redirect
+  path receives a new exact-destination decision before its next send.
+- Network and model ledger URLs omit userinfo, query, and fragment material.
+- Model failure evidence records bounded exception types rather than raw error
+  strings.
+
+## Verification evidence
+
+Final focused boundary and mediator regression package after P1 closure:
+
+```text
+152 passed
+```
+
+Dedicated Slice 2 boundary tests additionally establish:
+
+- `DENY`/`UNKNOWN` before DNS and client construction;
+- missing evidence remains fail-closed even when a grant would otherwise match;
+- exact destination matching and secret-free evidence;
+- disabled ambient proxy discovery;
+- credential classification from actual URL/header/form field names;
+- TLS key-log classification;
+- value-free classifier facts;
+- classifier failure becomes secret-free `UNKNOWN` before DNS.
+
+The final full-suite pass completed:
+
+```text
+5,770 passed, 6 skipped, 2 expected xfails
+```
+
+An earlier pass found five legacy tests whose intended subject was downstream
+of the new admission boundary. They now bypass admission only inside those
+tests; no production bypass was added. The final full-suite rerun passed.
+
+Additional exact-candidate checks passed:
+
+- Slice 1 policy plus Slice 2 boundary tests: 79 passed;
+- source and changed-test Ruff checks;
+- dependency consistency;
+- operational-truth consistency;
+- generated runtime-document drift;
+- structural runtime smoke proof.
+
+## Independent-review P1 closure
+
+The review of `a4cd05cd47c63c37677212f9854cd05bae524970`
+confirmed two P1 defects. Red tests reproduced both before the correction.
+
+The corrected candidate now:
+
+- derives value-free, source-separated URL-query, parameter, header, cookie,
+  nested-JSON, and form field paths from the actual outgoing request;
+- marks unsupported names, values, nesting, and credential-like shapes
+  unclassified so admission fails before client construction;
+- exposes those value-free facts only to the construction-time trusted
+  classifier;
+- binds every HTTP disclosure request and grant independently to a normalized
+  HTTP method and an exact request-shape token set;
+- rejects grants that omit method or request-shape constraints;
+- re-evaluates the complete method and request shape at every permitted
+  redirect hop; and
+- fingerprints the authorized request shape in evidence instead of persisting
+  field names or values.
+
+Focused proof includes negative GET/DELETE, URL-query, cookie, custom-auth,
+nested-payload, unsupported-payload, and redirect-shape cases, plus positive
+exact-shape HTTP, OAuth, and local-model paths.
+
+The exact-head review of `f47f63ad4f0fd39b048ab5c98f90074f91c377b2`
+confirmed two further P1 defects. Red tests reproduced retained Requests-session
+cookies crossing both a same-origin redirect and a subsequent model request,
+and reproduced a collision between a dotted literal JSON key and a nested JSON
+path.
+
+The subsequent bounded correction now:
+
+- clears implicit Requests cookie jars immediately before and after each
+  governed network/model send, while leaving explicitly supplied and classified
+  `Cookie` headers subject to the normal exact-shape admission path; and
+- rejects JSON keys containing the structural path delimiters `.`, `[`, or `]`,
+  so ambiguous payload shapes fail closed before client construction.
+
+Focused proof covers both retained-session cookie reproductions and both
+colliding JSON payloads.
+
+The exact-head review of `96c7fa4157ccb40540599b195d76ab10749bacac`
+confirmed that string markers still shared a namespace with literal request
+names. Red tests reproduced repeated-query/parameter marker collisions and a
+JSON root-marker collision.
+
+The final structural correction replaces string request-shape tokens with an
+immutable canonical vocabulary containing separate typed components for:
+
+- field source;
+- literal path segments versus array-element steps;
+- scalar, object, and array value kinds; and
+- repetition metadata.
+
+Literal names are retained only as data inside typed field steps, so they
+cannot impersonate repetition, nesting, array elements, root types, or source
+metadata. Evidence continues to persist only a fingerprint of canonical JSON,
+not the field names or values. Negative transport-level regressions confirm
+that all known collision pairs are denied before client construction.
+
+The exact-head review of `86a9e1628527ce88a169aad93079e6901c51c42b`
+identified a further lossy-query P1. Python URL/query parsing could remove a
+literal control character or replace distinct invalid UTF-8 percent encodings
+before request-shape construction, even though Requests would transmit distinct
+field names.
+
+The bounded correction now rejects query identities before admission when the
+raw URL contains ASCII control/space characters, a field name contains a
+malformed percent escape, or a percent-decoded field name is not strict UTF-8.
+Five focused regressions cover the reported literal-tab and invalid-UTF-8
+spellings and confirm denial before HTTP client construction.
+
+The exact-head review of `ba1eac913641f55408cd6a8908e0b707990ca4f1`
+identified that a malformed percent escape in a query value makes Requests
+fall back to quoting every percent sign in the prepared URI. That could change
+an admitted field name such as `q%2F` into the distinct transmitted name
+`q%252F` after authorization.
+
+The correction rejects malformed percent escapes across the complete raw URL
+before component parsing or client construction. Focused proof reproduces the
+Requests rewrite without network I/O, denies the reviewed query-value case,
+and covers the equivalent malformed-path normalization boundary.
+
+The next exact-head review identified two additional parser disagreements:
+Requests treats a raw backslash in the authority differently from `urlsplit`,
+and `SimpleCookie` applies Set-Cookie attribute semantics to an explicitly
+supplied request Cookie header. Red tests reproduced both paths before repair.
+
+The bounded correction now rejects raw backslashes before URL parsing and
+classifies explicit Cookie headers as literal semicolon-delimited request
+cookie pairs with token-safe names. Regressions prove ambiguous authorities
+and ungranted cookie pairs deny before client construction while ordinary
+valid URL and Cookie inputs retain their intended classification.
+
+## Explicit non-claims
+
+This candidate does not claim:
+
+- external-model readiness;
+- mechanism-specific provider grants;
+- a verified-local production evidence root;
+- filesystem, subprocess, browser, application-handoff, or startup closure;
+- machine-wide monitoring;
+- completion of Data-Out Slices 3–8.

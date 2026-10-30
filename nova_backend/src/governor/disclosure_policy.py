@@ -96,6 +96,40 @@ class InitiationClass(str, Enum):
     AUTOMATIC = "automatic"
 
 
+class RequestShapeSource(str, Enum):
+    QUERY = "query"
+    PARAMETER = "parameter"
+    HEADER = "header"
+    COOKIE = "cookie"
+    JSON = "json"
+    FORM = "form"
+
+
+class RequestShapeStepKind(str, Enum):
+    FIELD = "field"
+    ARRAY_ELEMENT = "array_element"
+
+
+class RequestShapeValueKind(str, Enum):
+    SCALAR = "scalar"
+    OBJECT = "object"
+    ARRAY = "array"
+
+
+@dataclass(frozen=True)
+class RequestShapeStep:
+    kind: RequestShapeStepKind
+    name: str = ""
+
+
+@dataclass(frozen=True)
+class RequestShapeField:
+    source: RequestShapeSource
+    path: tuple[RequestShapeStep, ...]
+    value_kind: RequestShapeValueKind
+    repeated: bool = False
+
+
 @dataclass(frozen=True)
 class DisclosureRequest:
     caller: str
@@ -106,6 +140,8 @@ class DisclosureRequest:
     derived_destination: str
     policy_version: str
     data_categories: frozenset[DataCategory]
+    http_method: str = ""
+    request_shape: frozenset[RequestShapeField] = frozenset()
     credential_categories: frozenset[CredentialCategory] = frozenset()
     initiating_capability_id: int | None = None
     request_id: str = ""
@@ -127,6 +163,8 @@ class DisclosureGrant:
     effective_routes: frozenset[str]
     transports: frozenset[TransportClass]
     data_categories: frozenset[DataCategory]
+    http_methods: frozenset[str] = frozenset()
+    request_shapes: frozenset[frozenset[RequestShapeField]] = frozenset()
     credential_categories: frozenset[CredentialCategory] = frozenset()
     purposes: frozenset[str] = frozenset()
     callers: frozenset[str] = frozenset()
@@ -165,6 +203,8 @@ class DisclosureEvidenceRecord:
     caller: str
     purpose: str
     transport: str
+    http_method: str
+    request_shape_fingerprint: str
     provider: str
     provider_class: str
     destination: str
@@ -206,6 +246,8 @@ class DisclosureEvidenceRecord:
                 TransportClass,
                 fallback="unclassified_transport",
             ),
+            http_method=_safe_http_method(request.http_method),
+            request_shape_fingerprint=_request_shape_fingerprint(request.request_shape),
             provider=_evidence_taxonomy(
                 request.derived_provider,
                 fallback="unclassified_provider",
@@ -256,6 +298,8 @@ class DisclosureEvidenceRecord:
             "caller": self.caller,
             "purpose": self.purpose,
             "transport": self.transport,
+            "http_method": self.http_method,
+            "request_shape_fingerprint": self.request_shape_fingerprint,
             "provider": self.provider,
             "provider_class": self.provider_class,
             "destination": self.destination,
@@ -455,6 +499,11 @@ def _grant_matches(request: DisclosureRequest, grant: DisclosureGrant) -> bool:
         return False
     if request.transport not in grant.transports:
         return False
+    if request.transport in _HTTP_OPERATION_TRANSPORTS:
+        if request.http_method not in grant.http_methods:
+            return False
+        if request.request_shape not in grant.request_shapes:
+            return False
     if not request.data_categories.issubset(grant.data_categories):
         return False
     if not request.credential_categories.issubset(grant.credential_categories):
@@ -471,7 +520,7 @@ def _grant_matches(request: DisclosureRequest, grant: DisclosureGrant) -> bool:
 
 
 def _request_vocabulary_valid(request: DisclosureRequest) -> bool:
-    return (
+    base_valid = (
         isinstance(request.caller, str)
         and isinstance(request.purpose, str)
         and isinstance(request.derived_destination, str)
@@ -496,6 +545,14 @@ def _request_vocabulary_valid(request: DisclosureRequest) -> bool:
             or bool(_normalized_destination(request.declared_destination, request.transport))
         )
     )
+    if not base_valid:
+        return False
+    if request.transport in _HTTP_OPERATION_TRANSPORTS:
+        return (
+            _safe_http_method(request.http_method) == request.http_method
+            and _request_shape_valid(request.request_shape)
+        )
+    return request.http_method == "" and request.request_shape == frozenset()
 
 
 def _policy_vocabulary_valid(policy: DisclosurePolicy) -> bool:
@@ -519,6 +576,18 @@ def _policy_vocabulary_valid(policy: DisclosurePolicy) -> bool:
             or not isinstance(grant.transports, frozenset)
             or not all(isinstance(item, TransportClass) for item in grant.transports)
         ):
+            return False
+        if any(item in _HTTP_OPERATION_TRANSPORTS for item in grant.transports):
+            if (
+                not isinstance(grant.http_methods, frozenset)
+                or not grant.http_methods
+                or not all(_safe_http_method(item) == item for item in grant.http_methods)
+                or not isinstance(grant.request_shapes, frozenset)
+                or not grant.request_shapes
+                or not all(_request_shape_valid(item) for item in grant.request_shapes)
+            ):
+                return False
+        elif grant.http_methods or grant.request_shapes:
             return False
         if not all(
             isinstance(destination, str)
@@ -584,6 +653,82 @@ _URL_TRANSPORTS = {
     TransportClass.LOCAL_PRIVATE_MODEL,
     TransportClass.BROWSER_HANDOFF,
 }
+
+_HTTP_OPERATION_TRANSPORTS = {
+    TransportClass.HTTP,
+    TransportClass.OAUTH_SETUP,
+    TransportClass.LOCAL_PRIVATE_MODEL,
+}
+
+_HTTP_METHOD_RE = re.compile(r"^[A-Z]{3,16}$")
+def _safe_http_method(value: object) -> str:
+    if not isinstance(value, str):
+        return "unclassified_method"
+    method = value.strip().upper()
+    return method if _HTTP_METHOD_RE.fullmatch(method) else "unclassified_method"
+
+
+def _request_shape_valid(value: object) -> bool:
+    if not isinstance(value, frozenset):
+        return False
+    for item in value:
+        if not isinstance(item, RequestShapeField):
+            return False
+        if not isinstance(item.source, RequestShapeSource):
+            return False
+        if not isinstance(item.value_kind, RequestShapeValueKind):
+            return False
+        if not isinstance(item.path, tuple) or not all(
+            isinstance(step, RequestShapeStep)
+            and isinstance(step.kind, RequestShapeStepKind)
+            and isinstance(step.name, str)
+            and (
+                (
+                    step.kind is RequestShapeStepKind.FIELD
+                    and bool(step.name)
+                    and len(step.name) <= 240
+                )
+                or (
+                    step.kind is RequestShapeStepKind.ARRAY_ELEMENT
+                    and step.name == ""
+                )
+            )
+            for step in item.path
+        ):
+            return False
+        if item.source is not RequestShapeSource.JSON and (
+            len(item.path) != 1
+            or item.path[0].kind is not RequestShapeStepKind.FIELD
+            or item.value_kind is not RequestShapeValueKind.SCALAR
+        ):
+            return False
+        if item.repeated and item.source not in {
+            RequestShapeSource.QUERY,
+            RequestShapeSource.PARAMETER,
+        }:
+            return False
+    return True
+
+
+def _request_shape_fingerprint(value: object) -> str:
+    if not _request_shape_valid(value):
+        return "unclassified_shape"
+    canonical = [
+        {
+            "source": item.source.value,
+            "path": [
+                {"kind": step.kind.value, "name": step.name} for step in item.path
+            ],
+            "value_kind": item.value_kind.value,
+            "repeated": item.repeated,
+        }
+        for item in value
+    ]
+    canonical.sort(
+        key=lambda item: json.dumps(item, sort_keys=True, separators=(",", ":"))
+    )
+    serialized = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
+    return _fingerprint(serialized) or "empty_shape"
 
 
 def _normalized_destination(value: str, transport: TransportClass) -> str:

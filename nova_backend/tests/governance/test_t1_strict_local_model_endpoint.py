@@ -4,6 +4,12 @@ import pytest
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
 
 
+def _mediator() -> ModelNetworkMediator:
+    mediator = ModelNetworkMediator()
+    mediator._authorize_disclosure = lambda **_kwargs: None
+    return mediator
+
+
 @pytest.mark.parametrize(
     "url",
     (
@@ -14,7 +20,7 @@ from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMed
 )
 def test_trial_rejects_non_loopback_model_endpoint_before_transport(monkeypatch, url):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
     calls = []
     monkeypatch.setattr(
         mediator,
@@ -34,7 +40,7 @@ def test_trial_rejects_non_loopback_model_endpoint_before_transport(monkeypatch,
 )
 def test_trial_preserves_loopback_model_endpoints(monkeypatch, url):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
 
     mediator._validate_url(url)
 
@@ -45,7 +51,7 @@ def test_trial_rejects_localhost_when_dns_resolves_off_loopback(monkeypatch):
         "src.llm.model_network_mediator.socket.getaddrinfo",
         lambda *_args, **_kwargs: [(2, 1, 6, "", ("192.168.1.20", 0))],
     )
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
 
     with pytest.raises(ModelNetworkMediatorError, match="loopback"):
         mediator._validate_url("http://localhost:11434/api/chat")
@@ -53,7 +59,7 @@ def test_trial_rejects_localhost_when_dns_resolves_off_loopback(monkeypatch):
 
 def test_default_profile_still_allows_private_lan_model_endpoint(monkeypatch):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
 
     mediator._validate_url("http://192.168.1.20:11434/api/chat")
 
@@ -62,7 +68,7 @@ def test_trial_model_sessions_ignore_environment_proxies(monkeypatch):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
     monkeypatch.setenv("HTTP_PROXY", "http://192.168.1.25:8888")
     monkeypatch.setenv("NO_PROXY", "")
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
 
     assert mediator._request_session().trust_env is False
 
@@ -70,7 +76,7 @@ def test_trial_model_sessions_ignore_environment_proxies(monkeypatch):
 @pytest.mark.parametrize("streaming", (False, True))
 def test_trial_model_requests_disable_redirects(monkeypatch, streaming):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "trial")
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
     captured = {}
 
     class _Response:
@@ -120,7 +126,7 @@ def test_trial_model_transport_uses_validated_loopback_ip(monkeypatch, streaming
         "src.llm.model_network_mediator.socket.getaddrinfo",
         lambda *_args, **_kwargs: [(2, 1, 6, "", ("127.0.0.1", 0))],
     )
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
     captured = {}
 
     class _Response:
@@ -169,7 +175,7 @@ def test_trial_localhost_prefers_ipv4_loopback_when_resolver_returns_ipv6_first(
             (2, 1, 6, "", ("127.0.0.1", 0)),
         ],
     )
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
 
     assert (
         mediator._validate_url("http://localhost:11434/api/chat")
@@ -183,6 +189,6 @@ def test_trial_explicit_ipv6_endpoint_remains_ipv6(monkeypatch):
         "src.llm.model_network_mediator.socket.getaddrinfo",
         lambda *_args, **_kwargs: [(23, 1, 6, "", ("::1", 0, 0, 0))],
     )
-    mediator = ModelNetworkMediator()
+    mediator = _mediator()
 
     assert mediator._validate_url("http://[::1]:11434/api/chat") == "http://[::1]:11434/api/chat"

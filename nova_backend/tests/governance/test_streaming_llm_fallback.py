@@ -46,6 +46,7 @@ class TestMediatorRequestStream:
         from src.llm.model_network_mediator import ModelNetworkMediator
 
         mediator = ModelNetworkMediator()
+        mediator._authorize_disclosure = lambda **_kwargs: None
         lines = [
             _ollama_stream_line("Hello"),
             _ollama_stream_line(" world"),
@@ -77,6 +78,7 @@ class TestMediatorRequestStream:
         )
 
         mediator = ModelNetworkMediator()
+        mediator._authorize_disclosure = lambda **_kwargs: None
         lines = [
             "",
             "not json",
