@@ -227,7 +227,7 @@ def _query_names(url: object) -> tuple[list[str], bool]:
 
     if not isinstance(url, str) or any(
         ord(character) <= 0x20 or ord(character) == 0x7F for character in url
-    ):
+    ) or _INVALID_PERCENT_ESCAPE.search(url):
         return [], False
     parsed = urlsplit(url)
     names: list[str] = []

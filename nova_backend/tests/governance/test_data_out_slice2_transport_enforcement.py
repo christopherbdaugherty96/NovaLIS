@@ -258,6 +258,8 @@ def test_repeated_query_and_parameter_fields_have_distinct_value_free_shape():
         "https://allowed.example/search?q\t=SECRET",
         "https://allowed.example/search?q%FF=SECRET",
         "https://allowed.example/search?q%FE=SECRET",
+        "https://allowed.example/search?q%2F=%ZZ",
+        "https://allowed.example/%ZZ/search?q=public",
     ],
 )
 def test_lossy_query_field_spellings_are_unsupported(url):
@@ -833,6 +835,10 @@ def test_structurally_distinct_request_cannot_reuse_shape_grant(
             "https://allowed.example/search?q%FF=public",
             "https://allowed.example/search?q%FE=SECRET",
         ),
+        (
+            "https://allowed.example/search?q%2F=public",
+            "https://allowed.example/search?q%2F=%ZZ",
+        ),
     ],
 )
 def test_lossy_query_name_cannot_reuse_shape_grant(approved_url, requested_url):
@@ -849,6 +855,14 @@ def test_lossy_query_name_cannot_reuse_shape_grant(approved_url, requested_url):
 
     with pytest.raises(NetworkMediatorError, match="Data-Out denied"):
         mediator.request(16, "GET", requested_url)
+
+
+def test_malformed_query_value_would_requote_authorized_field_name():
+    prepared = requests.Request(
+        "GET", "https://allowed.example/search?q%2F=%ZZ"
+    ).prepare()
+
+    assert prepared.url == "https://allowed.example/search?q%252F=%25ZZ"
 
 
 def test_model_classifier_receives_nested_json_shape_without_values():

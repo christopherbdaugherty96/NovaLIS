@@ -52,7 +52,7 @@ grants; they must not weaken this default.
 Final focused boundary and mediator regression package after P1 closure:
 
 ```text
-146 passed
+150 passed
 ```
 
 Dedicated Slice 2 boundary tests additionally establish:
@@ -69,7 +69,7 @@ Dedicated Slice 2 boundary tests additionally establish:
 The final full-suite pass completed:
 
 ```text
-5,764 passed, 6 skipped, 2 expected xfails
+5,768 passed, 6 skipped, 2 expected xfails
 ```
 
 An earlier pass found five legacy tests whose intended subject was downstream
@@ -157,6 +157,17 @@ raw URL contains ASCII control/space characters, a field name contains a
 malformed percent escape, or a percent-decoded field name is not strict UTF-8.
 Five focused regressions cover the reported literal-tab and invalid-UTF-8
 spellings and confirm denial before HTTP client construction.
+
+The exact-head review of `ba1eac913641f55408cd6a8908e0b707990ca4f1`
+identified that a malformed percent escape in a query value makes Requests
+fall back to quoting every percent sign in the prepared URI. That could change
+an admitted field name such as `q%2F` into the distinct transmitted name
+`q%252F` after authorization.
+
+The correction rejects malformed percent escapes across the complete raw URL
+before component parsing or client construction. Focused proof reproduces the
+Requests rewrite without network I/O, denies the reviewed query-value case,
+and covers the equivalent malformed-path normalization boundary.
 
 ## Explicit non-claims
 
