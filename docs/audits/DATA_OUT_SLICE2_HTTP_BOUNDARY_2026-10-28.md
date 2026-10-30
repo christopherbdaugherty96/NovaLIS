@@ -52,7 +52,7 @@ grants; they must not weaken this default.
 Final focused boundary and mediator regression package after P1 closure:
 
 ```text
-109 passed
+146 passed
 ```
 
 Dedicated Slice 2 boundary tests additionally establish:
@@ -69,7 +69,7 @@ Dedicated Slice 2 boundary tests additionally establish:
 The final full-suite pass completed:
 
 ```text
-5,759 passed, 6 skipped, 2 expected xfails
+5,764 passed, 6 skipped, 2 expected xfails
 ```
 
 An earlier pass found five legacy tests whose intended subject was downstream
@@ -145,6 +145,18 @@ cannot impersonate repetition, nesting, array elements, root types, or source
 metadata. Evidence continues to persist only a fingerprint of canonical JSON,
 not the field names or values. Negative transport-level regressions confirm
 that all known collision pairs are denied before client construction.
+
+The exact-head review of `86a9e1628527ce88a169aad93079e6901c51c42b`
+identified a further lossy-query P1. Python URL/query parsing could remove a
+literal control character or replace distinct invalid UTF-8 percent encodings
+before request-shape construction, even though Requests would transmit distinct
+field names.
+
+The bounded correction now rejects query identities before admission when the
+raw URL contains ASCII control/space characters, a field name contains a
+malformed percent escape, or a percent-decoded field name is not strict UTF-8.
+Five focused regressions cover the reported literal-tab and invalid-UTF-8
+spellings and confirm denial before HTTP client construction.
 
 ## Explicit non-claims
 

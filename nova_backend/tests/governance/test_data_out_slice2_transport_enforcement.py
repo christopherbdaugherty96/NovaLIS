@@ -252,6 +252,25 @@ def test_repeated_query_and_parameter_fields_have_distinct_value_free_shape():
     assert "second" not in repr(facts)
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://allowed.example/search?q\t=SECRET",
+        "https://allowed.example/search?q%FF=SECRET",
+        "https://allowed.example/search?q%FE=SECRET",
+    ],
+)
+def test_lossy_query_field_spellings_are_unsupported(url):
+    facts = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="GET",
+        url=url,
+        capability_id=16,
+    )
+
+    assert facts.shape_supported is False
+
+
 def test_environment_proxy_is_not_discovered(monkeypatch):
     monkeypatch.setenv("HTTPS_PROXY", "http://proxy-user:proxy-secret@proxy.example")
     session = NetworkMediator._new_session()
@@ -801,6 +820,35 @@ def test_structurally_distinct_request_cannot_reuse_shape_grant(
             requested_url,
             **requested_kwargs,
         )
+
+
+@pytest.mark.parametrize(
+    ("approved_url", "requested_url"),
+    [
+        (
+            "https://allowed.example/search?q=public",
+            "https://allowed.example/search?q\t=SECRET",
+        ),
+        (
+            "https://allowed.example/search?q%FF=public",
+            "https://allowed.example/search?q%FE=SECRET",
+        ),
+    ],
+)
+def test_lossy_query_name_cannot_reuse_shape_grant(approved_url, requested_url):
+    mediator = NetworkMediator(
+        disclosure_policy=_policy(
+            "https://allowed.example/search",
+            request_shape=_shape(url=approved_url),
+        ),
+        disclosure_evidence_sink=_Sink(),
+        disclosure_classifier=lambda _facts: _context(),
+    )
+    mediator._registry = _Registry()
+    mediator._new_session = lambda: pytest.fail("lossy query reached HTTP client")
+
+    with pytest.raises(NetworkMediatorError, match="Data-Out denied"):
+        mediator.request(16, "GET", requested_url)
 
 
 def test_model_classifier_receives_nested_json_shape_without_values():

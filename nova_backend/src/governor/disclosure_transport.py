@@ -8,12 +8,13 @@ sink.  Missing inputs are deliberately fail-closed.
 from __future__ import annotations
 
 import ipaddress
+import re
 from collections import Counter
 from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
 from http.cookies import CookieError, SimpleCookie
 from typing import Iterable, Mapping, Protocol
-from urllib.parse import parse_qsl, urlsplit
+from urllib.parse import parse_qsl, unquote_to_bytes, urlsplit
 
 from src.governor.disclosure_policy import (
     CredentialCategory,
@@ -154,12 +155,8 @@ def disclosure_facts(
     destination, _destination_class = _classify_url_without_io(url)
     supported = bool(destination)
     try:
-        parsed = urlsplit(str(url or ""))
-        raw_query_fields = [
-            name for name, _ in parse_qsl(parsed.query, keep_blank_values=True)
-        ]
+        raw_query_fields, query_supported = _query_names(url)
         query_fields = tuple(sorted(raw_query_fields))
-        query_supported = all(_name_supported(name) for name in raw_query_fields)
     except (TypeError, ValueError):
         query_fields = tuple()
         query_supported = False
@@ -220,6 +217,36 @@ def disclosure_facts(
         capability_id=capability_id,
         request_shape=request_shape,
     )
+
+
+_INVALID_PERCENT_ESCAPE = re.compile(r"%(?![0-9A-Fa-f]{2})")
+
+
+def _query_names(url: object) -> tuple[list[str], bool]:
+    """Return query names only when parsing preserves their transmitted identity."""
+
+    if not isinstance(url, str) or any(
+        ord(character) <= 0x20 or ord(character) == 0x7F for character in url
+    ):
+        return [], False
+    parsed = urlsplit(url)
+    names: list[str] = []
+    for field in parsed.query.split("&"):
+        if not field:
+            continue
+        encoded_name = field.partition("=")[0]
+        if _INVALID_PERCENT_ESCAPE.search(encoded_name):
+            return [], False
+        try:
+            name = unquote_to_bytes(encoded_name.replace("+", " ")).decode(
+                "utf-8", errors="strict"
+            )
+        except UnicodeDecodeError:
+            return [], False
+        if not _name_supported(name):
+            return [], False
+        names.append(name)
+    return names, True
 
 
 def _safe_names(names: Iterable[object]) -> tuple[str, ...]:
