@@ -965,6 +965,12 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and "NetworkMediator" in provider_src
         and "api.deepseek.com" in provider_src
     )
+    provider_off_final_guard = (
+        "runtime_settings_store.is_permission_enabled" in bridge_src
+        and '"external_reasoning_enabled"' in bridge_src
+        and "runtime_settings_store.is_permission_enabled" in provider_src
+        and '"external_reasoning_enabled"' in provider_src
+    )
     governor_wired = "req.capability_id == 62" in governor_src
     mediator_wired = "SECOND_OPINION_RE" in mediator_src and "second opinion" in MEDIATOR_TRIGGER_PROBES
     trust_surface_present = (
@@ -997,6 +1003,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and executor_present
         and safety_wrapper_present
         and provider_mediated
+        and provider_off_final_guard
         and governor_wired
         and mediator_wired
         and trust_surface_present
@@ -1732,8 +1739,10 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_6_note = "Delegated policy layer remains design-only"
     if phase_7_status == "COMPLETE":
         phase_7_note = (
-            "Governed external reasoning is complete: answer-first research surfaces, explicit second-opinion capability, "
-            "provider transparency, actionable Settings controls, and advisory-only trust explanation are active"
+            "The Phase-7 external-reasoning product surface is complete, including the explicit second-opinion "
+            "capability, final provider-off guards, provider transparency, Settings controls, and advisory-only "
+            "trust explanation. External-provider transmission remains deny-only until later Data-Out composition "
+            "installs reviewed classification, grants, and trustworthy evidence."
         )
     elif phase_7_status == "ACTIVE":
         phase_7_note = "Governed external reasoning is active, but not all user-facing transparency surfaces are complete"

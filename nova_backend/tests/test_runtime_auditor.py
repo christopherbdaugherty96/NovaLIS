@@ -367,12 +367,21 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
             ]
         ),
         ra.SETTINGS_API_PATH: '@router.get("/api/settings/runtime")',
-        ra.DEEPSEEK_BRIDGE_PATH: "provider = DeepSeekReasoningProvider()",
-        ra.DEEPSEEK_PROVIDER_PATH: "NetworkMediator api.deepseek.com",
+        ra.DEEPSEEK_BRIDGE_PATH: (
+            'provider = DeepSeekReasoningProvider()\n'
+            'runtime_settings_store.is_permission_enabled("external_reasoning_enabled")'
+        ),
+        ra.DEEPSEEK_PROVIDER_PATH: (
+            'NetworkMediator api.deepseek.com\n'
+            'runtime_settings_store.is_permission_enabled("external_reasoning_enabled")'
+        ),
     }
     monkeypatch.setattr(ra, "_safe_read", lambda path: contents.get(path, ""))
 
     assert ra._phase_7_status(registry) == "COMPLETE"
+
+    contents[ra.DEEPSEEK_PROVIDER_PATH] = "NetworkMediator api.deepseek.com"
+    assert ra._phase_7_status(registry) == "ACTIVE"
 
 
 def test_governance_rows_prefer_explicit_registry_authority_metadata():

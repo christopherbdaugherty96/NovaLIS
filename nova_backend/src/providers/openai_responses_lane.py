@@ -45,7 +45,6 @@ class OpenAIResponsesLane:
         )
         usage_snapshot = provider_usage_store.snapshot()
 
-        api_key = str(os.getenv("OPENAI_API_KEY") or "").strip()
         permission_enabled = runtime_settings_store.is_permission_enabled("metered_openai_enabled")
         routing_mode = str(provider_policy.get("routing_mode") or "local_first").strip() or "local_first"
         preferred_model = str(provider_policy.get("preferred_openai_model") or "gpt-5.4-mini").strip() or "gpt-5.4-mini"
@@ -67,6 +66,7 @@ class OpenAIResponsesLane:
                 "preferred_model": preferred_model,
                 "budget_state": budget_state,
             }
+        api_key = str(os.getenv("OPENAI_API_KEY") or "").strip()
         if not api_key:
             return {
                 "allowed": False,
@@ -103,6 +103,17 @@ class OpenAIResponsesLane:
     ) -> dict[str, Any]:
         if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
             raise OpenAIResponsesLaneError("OpenAI isn't available in this trial version.")
+        plan = self.plan_for_openclaw_fallback()
+        if not bool(plan.get("allowed")):
+            raise OpenAIResponsesLaneError(
+                str(plan.get("reason") or "OpenAI disclosure is unavailable.")
+            )
+        approved_model = str(plan.get("preferred_model") or "").strip()
+        requested_model = str(model or "").strip()
+        if not approved_model or requested_model != approved_model:
+            raise OpenAIResponsesLaneError(
+                "OpenAI model changed after routing approval."
+            )
         api_key = str(os.getenv("OPENAI_API_KEY") or "").strip()
         if not api_key:
             raise OpenAIResponsesLaneError("OPENAI_API_KEY is not configured.")

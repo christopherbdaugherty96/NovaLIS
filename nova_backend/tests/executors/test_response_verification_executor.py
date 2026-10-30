@@ -112,6 +112,23 @@ def test_response_verification_returns_truthful_failure_when_analysis_is_unavail
     assert result.structured_data["failure_kind"] == "analysis_unavailable"
 
 
+def test_response_verification_treats_provider_off_as_unavailable(monkeypatch):
+    from src.executors import response_verification_executor as mod
+
+    monkeypatch.setattr(
+        mod.DeepSeekBridge,
+        "analyze",
+        lambda self, *args, **kwargs: "External reasoning is paused in Settings.",
+    )
+
+    result = mod.ResponseVerificationExecutor().execute(
+        _request({"text": "A claim requiring verification"})
+    )
+
+    assert result.success is False
+    assert result.structured_data["failure_kind"] == "analysis_unavailable"
+
+
 def test_response_verification_rejects_incomplete_report(monkeypatch):
     from src.executors import response_verification_executor as mod
 

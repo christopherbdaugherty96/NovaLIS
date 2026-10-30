@@ -94,3 +94,45 @@ def test_general_chat_deep_thought_requests_deep_reason_profile():
     assert result is not None
     assert result.success is True
     assert captured.get("analysis_profile") == "deep_reason"
+
+
+def test_general_chat_provider_off_never_reaches_external_provider(monkeypatch):
+    import src.conversation.deepseek_bridge as bridge_mod
+
+    monkeypatch.delenv("NOVA_ALLOW_LOCAL_REASONING_FALLBACK", raising=False)
+    monkeypatch.setattr(
+        bridge_mod.runtime_settings_store,
+        "is_permission_enabled",
+        lambda permission: permission != "external_reasoning_enabled",
+    )
+    monkeypatch.setattr(
+        bridge_mod.CapabilityRegistry,
+        "is_enabled",
+        lambda self, cap_id: cap_id == 62,
+    )
+    monkeypatch.setattr(
+        bridge_mod.DeepSeekReasoningProvider,
+        "analyze",
+        lambda self, **kwargs: (_ for _ in ()).throw(
+            AssertionError("provider-off General Chat reached external provider")
+        ),
+    )
+    skill = GeneralChatSkill()
+    session_state = {
+        "turn_count": 4,
+        "escalation_count": 0,
+        "last_escalation_turn": None,
+        "deep_mode_armed": True,
+        "deep_mode_disabled": False,
+    }
+
+    result = asyncio.run(
+        skill.handle(
+            "Analyze the long-term implications of inference demand.",
+            context=[{"role": "assistant", "content": "Earlier context"}] * 3,
+            session_state=session_state,
+        )
+    )
+
+    assert result is not None
+    assert "paused in Settings" in result.message

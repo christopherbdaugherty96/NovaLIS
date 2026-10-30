@@ -1,8 +1,10 @@
 import importlib
 
 import pytest
-
-from src.providers.openai_responses_lane import OpenAIResponsesLane
+from src.providers.openai_responses_lane import (
+    OpenAIResponsesLane,
+    OpenAIResponsesLaneError,
+)
 from src.settings.runtime_settings_store import RuntimeSettingsStore
 from src.usage.provider_usage_store import ProviderUsageStore
 
@@ -99,3 +101,67 @@ def test_openai_lane_records_usage_from_response_payload(monkeypatch, tmp_path):
     assert result["usage_meta"]["exact_total_tokens"] == 160
     assert result["usage_meta"]["estimated_cost_usd"] > 0
     assert usage_store.snapshot()["event_count"] == 1
+
+
+def test_openai_lane_permission_off_denies_before_network(monkeypatch, tmp_path):
+    settings_store, _usage_store = _install_stores(monkeypatch, tmp_path)
+    settings_store.set_permission("metered_openai_enabled", False, source="test")
+    settings_store.set_provider_policy(
+        routing_mode="budgeted_fallback",
+        preferred_openai_model="gpt-5.4-mini",
+        source="test",
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "must-not-be-transmitted")
+    network_calls = []
+
+    class _NetworkSpy:
+        def request(self, *args, **kwargs):
+            network_calls.append((args, kwargs))
+            return {
+                "status_code": 200,
+                "data": {"output_text": "This response must not be reachable."},
+            }
+
+    lane = OpenAIResponsesLane(network=_NetworkSpy())
+
+    with pytest.raises(OpenAIResponsesLaneError, match="paused in Settings"):
+        lane.summarize_task_report(
+            prompt="Private task context",
+            system_prompt="Private system context",
+            model="gpt-5.4-mini",
+            request_id="provider-off-direct-call",
+        )
+
+    assert network_calls == []
+
+
+def test_openai_lane_rejects_model_changed_after_plan(monkeypatch, tmp_path):
+    settings_store, _usage_store = _install_stores(monkeypatch, tmp_path)
+    settings_store.set_permission("metered_openai_enabled", True, source="test")
+    settings_store.set_provider_policy(
+        routing_mode="budgeted_fallback",
+        preferred_openai_model="gpt-5.4-mini",
+        source="test",
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "must-not-be-transmitted")
+    network_calls = []
+
+    class _NetworkSpy:
+        def request(self, *args, **kwargs):
+            network_calls.append((args, kwargs))
+            return {
+                "status_code": 200,
+                "data": {"output_text": "This response must not be reachable."},
+            }
+
+    lane = OpenAIResponsesLane(network=_NetworkSpy())
+
+    with pytest.raises(OpenAIResponsesLaneError, match="changed after routing approval"):
+        lane.summarize_task_report(
+            prompt="Private task context",
+            system_prompt="Private system context",
+            model="gpt-5.4",
+            request_id="changed-model-direct-call",
+        )
+
+    assert network_calls == []

@@ -1,9 +1,4 @@
-"""Slice 0 characterization of known Data-Out gaps on the pre-Slice-1 runtime.
-
-These strict xfails express the desired denial behavior. They remain red until the
-common provider-neutral boundary is implemented, then become XPASS failures that
-must be converted into ordinary regressions in the implementing slice.
-"""
+"""Slice 0 red baselines promoted to Slice 3A provider-off regressions."""
 
 from __future__ import annotations
 
@@ -36,11 +31,6 @@ class _TransportSpy:
         }
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="Slice 3 must make provider-off a final-boundary zero-attempt invariant.",
-)
 def test_red_baseline_provider_off_does_not_reach_deepseek_transport(monkeypatch, tmp_path):
     monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "slice0-fake-key")
@@ -55,19 +45,18 @@ def test_red_baseline_provider_off_does_not_reach_deepseek_transport(monkeypatch
     monkeypatch.setattr(provider_mod, "_log_budget_event", lambda **_kwargs: "normal")
     transport = _TransportSpy()
 
-    provider_mod.DeepSeekReasoningProvider(network=transport).analyze(
-        prompt="Private Slice 0 prompt",
-        request_id="slice0-provider-off",
-    )
+    with pytest.raises(
+        provider_mod.DeepSeekReasoningProviderError,
+        match="paused in Settings",
+    ):
+        provider_mod.DeepSeekReasoningProvider(network=transport).analyze(
+            prompt="Private Slice 0 prompt",
+            request_id="slice0-provider-off",
+        )
 
     assert transport.calls == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="Slice 3 must apply provider-off below every DeepSeekBridge caller.",
-)
 def test_red_baseline_provider_off_stops_bridge_before_provider(monkeypatch):
     monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
     monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
@@ -89,10 +78,11 @@ def test_red_baseline_provider_off_stops_bridge_before_provider(monkeypatch):
 
     monkeypatch.setattr(bridge_mod.DeepSeekReasoningProvider, "analyze", _provider_call)
 
-    bridge_mod.DeepSeekBridge().analyze(
+    result = bridge_mod.DeepSeekBridge().analyze(
         "Private Slice 0 prompt",
         [],
         analysis_profile="task_scoped",
     )
 
     assert provider_calls == []
+    assert result == "External reasoning is paused in Settings."

@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from src.governor.network_mediator import NetworkMediator, NetworkMediatorError
+from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
 
 _log = logging.getLogger(__name__)
@@ -299,6 +300,12 @@ class DeepSeekReasoningProvider:
         if str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip().lower() == "trial":
             raise DeepSeekReasoningProviderError(
                 "External reasoning isn't available in this trial version."
+            )
+        if not runtime_settings_store.is_permission_enabled(
+            "external_reasoning_enabled"
+        ):
+            raise DeepSeekReasoningProviderError(
+                "External reasoning is paused in Settings."
             )
         api_key = str(os.getenv("DEEPSEEK_API_KEY") or "").strip()
         if not api_key:
