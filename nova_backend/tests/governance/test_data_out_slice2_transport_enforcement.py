@@ -97,6 +97,7 @@ def _policy(
     capability_id: int | None = 16,
     method: str = "GET",
     request_shape=frozenset(),
+    credential_categories=frozenset(),
 ):
     return DisclosurePolicy(
         version="slice2-test-v1",
@@ -115,6 +116,7 @@ def _policy(
                 data_categories=frozenset({DataCategory.SEARCH_QUERY}),
                 http_methods=frozenset({method}),
                 request_shapes=frozenset({request_shape}),
+                credential_categories=credential_categories,
                 purposes=frozenset({"bounded_test"}),
                 callers=frozenset({"slice2_test"}),
                 capability_ids=frozenset({capability_id}),
@@ -863,6 +865,82 @@ def test_malformed_query_value_would_requote_authorized_field_name():
     ).prepare()
 
     assert prepared.url == "https://allowed.example/search?q%252F=%25ZZ"
+
+
+def test_ambiguous_authority_spelling_is_denied_before_client_construction():
+    approved_url = "https://user:password@allowed.example/search?q=public"
+    requested_url = "https://evil.example\\@allowed.example/search?q=SECRET"
+    prepared = requests.Request("GET", requested_url).prepare()
+    facts = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="GET",
+        url=requested_url,
+        capability_id=16,
+    )
+
+    assert prepared.url == "https://evil.example/%5C@allowed.example/search?q=SECRET"
+    assert facts.shape_supported is False
+
+    mediator = NetworkMediator(
+        disclosure_policy=_policy(
+            "https://allowed.example/search",
+            request_shape=_shape(url=approved_url),
+            credential_categories=frozenset(
+                {CredentialCategory.ORIGIN_CREDENTIAL}
+            ),
+        ),
+        disclosure_evidence_sink=_Sink(),
+        disclosure_classifier=lambda _facts: _context(),
+    )
+    mediator._registry = _Registry()
+    mediator._new_session = lambda: pytest.fail(
+        "ambiguous authority reached HTTP client"
+    )
+
+    with pytest.raises(NetworkMediatorError, match="Data-Out denied"):
+        mediator.request(16, "GET", requested_url)
+
+
+def test_explicit_cookie_pairs_are_all_classified_and_shape_bound():
+    approved_headers = {"Cookie": "q=public"}
+    requested_headers = {"Cookie": "q=public; path=SECRET"}
+    prepared = requests.Request(
+        "GET", "https://allowed.example/search", headers=requested_headers
+    ).prepare()
+    facts = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="GET",
+        url="https://allowed.example/search",
+        headers=requested_headers,
+        capability_id=16,
+    )
+
+    assert prepared.headers["Cookie"] == "q=public; path=SECRET"
+    assert facts.cookie_fields == ("path", "q")
+
+    mediator = NetworkMediator(
+        disclosure_policy=_policy(
+            "https://allowed.example/search",
+            request_shape=_shape(headers=approved_headers),
+            credential_categories=frozenset(
+                {CredentialCategory.ORIGIN_CREDENTIAL}
+            ),
+        ),
+        disclosure_evidence_sink=_Sink(),
+        disclosure_classifier=lambda _facts: _context(),
+    )
+    mediator._registry = _Registry()
+    mediator._new_session = lambda: pytest.fail(
+        "unclassified cookie pair reached HTTP client"
+    )
+
+    with pytest.raises(NetworkMediatorError, match="Data-Out denied"):
+        mediator.request(
+            16,
+            "GET",
+            "https://allowed.example/search",
+            headers=requested_headers,
+        )
 
 
 def test_model_classifier_receives_nested_json_shape_without_values():

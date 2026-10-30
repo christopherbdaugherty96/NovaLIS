@@ -52,7 +52,7 @@ grants; they must not weaken this default.
 Final focused boundary and mediator regression package after P1 closure:
 
 ```text
-150 passed
+152 passed
 ```
 
 Dedicated Slice 2 boundary tests additionally establish:
@@ -69,7 +69,7 @@ Dedicated Slice 2 boundary tests additionally establish:
 The final full-suite pass completed:
 
 ```text
-5,768 passed, 6 skipped, 2 expected xfails
+5,770 passed, 6 skipped, 2 expected xfails
 ```
 
 An earlier pass found five legacy tests whose intended subject was downstream
@@ -168,6 +168,17 @@ The correction rejects malformed percent escapes across the complete raw URL
 before component parsing or client construction. Focused proof reproduces the
 Requests rewrite without network I/O, denies the reviewed query-value case,
 and covers the equivalent malformed-path normalization boundary.
+
+The next exact-head review identified two additional parser disagreements:
+Requests treats a raw backslash in the authority differently from `urlsplit`,
+and `SimpleCookie` applies Set-Cookie attribute semantics to an explicitly
+supplied request Cookie header. Red tests reproduced both paths before repair.
+
+The bounded correction now rejects raw backslashes before URL parsing and
+classifies explicit Cookie headers as literal semicolon-delimited request
+cookie pairs with token-safe names. Regressions prove ambiguous authorities
+and ungranted cookie pairs deny before client construction while ordinary
+valid URL and Cookie inputs retain their intended classification.
 
 ## Explicit non-claims
 

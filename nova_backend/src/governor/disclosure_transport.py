@@ -12,7 +12,6 @@ import re
 from collections import Counter
 from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
-from http.cookies import CookieError, SimpleCookie
 from typing import Iterable, Mapping, Protocol
 from urllib.parse import parse_qsl, unquote_to_bytes, urlsplit
 
@@ -220,12 +219,13 @@ def disclosure_facts(
 
 
 _INVALID_PERCENT_ESCAPE = re.compile(r"%(?![0-9A-Fa-f]{2})")
+_COOKIE_NAME = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$")
 
 
 def _query_names(url: object) -> tuple[list[str], bool]:
     """Return query names only when parsing preserves their transmitted identity."""
 
-    if not isinstance(url, str) or any(
+    if not isinstance(url, str) or "\\" in url or any(
         ord(character) <= 0x20 or ord(character) == 0x7F for character in url
     ) or _INVALID_PERCENT_ESCAPE.search(url):
         return [], False
@@ -348,20 +348,22 @@ def _cookie_names(headers: Mapping[str, str] | None) -> tuple[tuple[str, ...], b
     ]
     if not cookie_values:
         return tuple(), True
-    names: set[str] = set()
-    try:
-        for raw in cookie_values:
-            if not isinstance(raw, str):
+    names: list[str] = []
+    for raw in cookie_values:
+        if not isinstance(raw, str):
+            return tuple(), False
+        if not raw:
+            continue
+        for item in raw.split(";"):
+            pair = item.strip()
+            if not pair or "=" not in pair:
                 return tuple(), False
-            parsed = SimpleCookie()
-            parsed.load(raw)
-            if raw and not parsed:
+            name, _value = pair.split("=", 1)
+            name = name.strip()
+            if not _name_supported(name) or _COOKIE_NAME.fullmatch(name) is None:
                 return tuple(), False
-            names.update(parsed.keys())
-    except (CookieError, TypeError, ValueError):
-        return tuple(), False
-    safe = _safe_names(names)
-    return safe, len(safe) == len(names)
+            names.append(name)
+    return tuple(sorted(names)), True
 
 
 def _structured_paths(
