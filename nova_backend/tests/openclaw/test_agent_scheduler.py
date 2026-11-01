@@ -3,11 +3,16 @@ from __future__ import annotations
 from datetime import datetime
 
 import pytest
-
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.openclaw.agent_scheduler import OpenClawAgentScheduler
 from src.settings.runtime_settings_store import RuntimeSettingsStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+
+
+def _local_test_time(*, hour: int = 7, minute: int = 5) -> datetime:
+    """Return a deterministic local timestamp with the date's real UTC offset."""
+
+    return datetime(2026, 1, 15, hour, minute).astimezone()
 
 
 @pytest.mark.asyncio
@@ -23,7 +28,7 @@ async def test_agent_scheduler_does_nothing_while_scheduler_permission_is_paused
             return {}
 
     scheduler = OpenClawAgentScheduler(store=store, runner=_FakeRunner(), settings=settings)
-    now = datetime.now().astimezone().replace(hour=7, minute=5, second=0, microsecond=0)
+    now = _local_test_time()
 
     completed = await scheduler.tick(now=now)
 
@@ -76,7 +81,7 @@ async def test_agent_scheduler_runs_due_template_and_records_outcome(tmp_path):
         settings=settings,
         ledger_logger=lambda event_type, metadata: events.append((event_type, dict(metadata))),
     )
-    now = datetime.now().astimezone().replace(hour=7, minute=5, second=0, microsecond=0)
+    now = _local_test_time()
 
     completed = await scheduler.tick(now=now)
 
@@ -117,7 +122,7 @@ async def test_agent_scheduler_suppresses_due_template_during_quiet_hours(tmp_pa
         notification_policy_store=notification_policy,
         ledger_logger=lambda event_type, metadata: events.append((event_type, dict(metadata))),
     )
-    now = datetime.now().astimezone().replace(hour=7, minute=5, second=0, microsecond=0)
+    now = _local_test_time()
     monkeypatch.setattr("src.openclaw.agent_runtime_store._local_now", lambda: now)
 
     completed = await scheduler.tick(now=now)
@@ -178,7 +183,7 @@ async def test_agent_scheduler_retries_suppressed_slot_after_quiet_hours_clear(t
         settings=settings,
         notification_policy_store=notification_policy,
     )
-    suppressed_now = datetime.now().astimezone().replace(hour=7, minute=5, second=0, microsecond=0)
+    suppressed_now = _local_test_time()
     monkeypatch.setattr("src.openclaw.agent_runtime_store._local_now", lambda: suppressed_now)
 
     await scheduler.tick(now=suppressed_now)
@@ -208,7 +213,7 @@ async def test_agent_scheduler_suppresses_due_template_when_rate_limited(tmp_pat
         max_deliveries_per_hour=1,
     )
     store.set_template_schedule_enabled("morning_brief", True)
-    now = datetime.now().astimezone().replace(hour=7, minute=5, second=0, microsecond=0)
+    now = _local_test_time()
     monkeypatch.setattr("src.openclaw.agent_runtime_store._local_now", lambda: now)
     store.record_run(
         {

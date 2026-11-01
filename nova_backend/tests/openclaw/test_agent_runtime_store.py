@@ -1,8 +1,22 @@
 from datetime import datetime
 from pathlib import Path
 
+import pytest
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.openclaw.run_state_machine import run_event_hub
+
+
+def _local_test_time(
+    *, year: int = 2026, month: int = 1, day: int = 15, hour: int = 7, minute: int = 5
+) -> datetime:
+    """Build a real local timestamp for a fixed calendar date.
+
+    Converting a naive fixed date lets the platform apply the offset that was
+    valid on that date.  Replacing fields on ``datetime.now().astimezone()``
+    can retain today's offset across a daylight-saving transition.
+    """
+
+    return datetime(year, month, day, hour, minute).astimezone()
 
 
 def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
@@ -198,7 +212,7 @@ def test_agent_runtime_store_can_enable_template_schedule(tmp_path: Path):
 def test_agent_runtime_store_claims_due_schedule_only_once_per_window(tmp_path: Path):
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
     store.set_template_schedule_enabled("morning_brief", True)
-    now = datetime.now().astimezone().replace(hour=7, minute=5, second=0, microsecond=0)
+    now = _local_test_time()
 
     first_claim = store.claim_due_scheduled_templates(now=now)
     second_claim = store.claim_due_scheduled_templates(now=now)
@@ -206,6 +220,28 @@ def test_agent_runtime_store_claims_due_schedule_only_once_per_window(tmp_path: 
     assert len(first_claim) == 1
     assert first_claim[0]["template_id"] == "morning_brief"
     assert second_claim == []
+
+
+@pytest.mark.parametrize(
+    ("year", "month", "day"),
+    [
+        (2026, 1, 1),
+        (2026, 11, 1),
+        (2026, 12, 31),
+        (2027, 1, 1),
+    ],
+)
+def test_agent_runtime_store_claims_fixed_local_slots_across_calendar_boundaries(
+    tmp_path: Path, year: int, month: int, day: int
+):
+    store = OpenClawAgentRuntimeStore(tmp_path / f"agent_runtime_{year}_{month}_{day}.json")
+    store.set_template_schedule_enabled("morning_brief", True)
+
+    claims = store.claim_due_scheduled_templates(
+        now=_local_test_time(year=year, month=month, day=day)
+    )
+
+    assert [claim["template_id"] for claim in claims] == ["morning_brief"]
 
 
 def test_agent_runtime_store_records_scheduled_run_outcome(tmp_path: Path):
@@ -216,7 +252,7 @@ def test_agent_runtime_store_records_scheduled_run_outcome(tmp_path: Path):
         "morning_brief",
         outcome="completed",
         note="Scheduled run completed.",
-        now=datetime.now().astimezone(),
+        now=_local_test_time(),
     )
 
     morning = next(item for item in snapshot["templates"] if item["id"] == "morning_brief")
@@ -227,7 +263,7 @@ def test_agent_runtime_store_records_scheduled_run_outcome(tmp_path: Path):
 def test_agent_runtime_store_skips_stale_same_day_schedule_windows(tmp_path: Path):
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
     store.set_template_schedule_enabled("morning_brief", True)
-    late_evening = datetime.now().astimezone().replace(hour=18, minute=0, second=0, microsecond=0)
+    late_evening = _local_test_time(hour=18, minute=0)
 
     due = store.due_scheduled_templates(now=late_evening)
     snapshot = store.snapshot()
