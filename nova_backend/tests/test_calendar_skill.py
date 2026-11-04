@@ -1,6 +1,7 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
+import pytest
 from src.skills.calendar import CalendarSkill
 
 
@@ -162,3 +163,22 @@ def test_calendar_skill_does_not_hijack_schedule_management_commands():
     assert skill.can_handle("upcoming events") is True
     assert skill.can_handle("what's coming up") is True
     assert skill.can_handle("agenda for tomorrow") is True
+
+
+@pytest.mark.parametrize(
+    ("local_now", "expected_date"),
+    (
+        (datetime(2026, 3, 8, 0, 30, tzinfo=timezone(timedelta(hours=-5))), "2026-03-09"),
+        (datetime(2026, 11, 1, 0, 30, tzinfo=timezone(timedelta(hours=-4))), "2026-11-02"),
+        (datetime(2026, 12, 31, 23, 30, tzinfo=timezone(timedelta(hours=-5))), "2027-01-01"),
+    ),
+)
+def test_tomorrow_scope_uses_applicable_local_date_across_boundaries(local_now, expected_date):
+    scope, start_date, end_date = CalendarSkill._scope_from_query(
+        "what do i have tomorrow",
+        local_now=local_now,
+    )
+
+    assert scope == "tomorrow"
+    assert start_date.isoformat() == expected_date
+    assert end_date == start_date
