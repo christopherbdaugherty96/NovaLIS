@@ -91,16 +91,37 @@ def _memory_search_tokens(value: Any) -> list[str]:
     raw = str(value or "").strip().lower()
     if not raw:
         return []
+    raw_tokens = re.findall(r"[a-z0-9]+", raw)
     tokens: list[str] = []
     seen: set[str] = set()
-    for cleaned in re.findall(r"[a-z0-9]+", raw):
+    for cleaned in raw_tokens:
         if len(cleaned) < 3 or cleaned in _MEMORY_SEARCH_STOPWORDS:
             continue
         if cleaned in seen:
             continue
         seen.add(cleaned)
         tokens.append(cleaned)
+    if _query_implies_airline_selection(raw_tokens) and "airline" not in seen:
+        tokens.append("airline")
     return tokens
+
+
+_MOBILE_CARRIER_CONTEXT = frozenset({"cell", "cellular", "mobile", "phone", "telecom", "wireless"})
+
+
+def _query_implies_airline_selection(raw_tokens: list[str]) -> bool:
+    words = set(raw_tokens)
+    if "carrier" in words:
+        return not bool(words & _MOBILE_CARRIER_CONTEXT)
+    who_positions = [index for index, token in enumerate(raw_tokens) if token == "who"]
+    fly_positions = [index for index, token in enumerate(raw_tokens) if token in {"fly", "flying"}]
+    with_positions = [index for index, token in enumerate(raw_tokens) if token == "with"]
+    return any(
+        who_index < fly_index < with_index
+        for who_index in who_positions
+        for fly_index in fly_positions
+        for with_index in with_positions
+    )
 
 
 def _normalized_search_text(value: Any) -> str:
