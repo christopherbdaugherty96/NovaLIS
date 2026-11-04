@@ -67,9 +67,14 @@ class CalendarSkill(BaseSkill):
         return False
 
     @staticmethod
-    def _scope_from_query(query: str) -> tuple[str, date, date]:
+    def _scope_from_query(
+        query: str,
+        *,
+        local_now: datetime | None = None,
+    ) -> tuple[str, date, date]:
         q = (query or "").strip().lower()
-        today = datetime.now().date()
+        now = local_now if local_now is not None else datetime.now().astimezone()
+        today = now.date()
         if "tomorrow" in q:
             tomorrow = today + timedelta(days=1)
             return ("tomorrow", tomorrow, tomorrow)

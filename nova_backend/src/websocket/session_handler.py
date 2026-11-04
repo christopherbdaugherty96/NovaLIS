@@ -136,6 +136,43 @@ def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) ->
     return ""
 
 
+_RELATIVE_TOMORROW_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:and\s+)?what\s+about\s+tomorrow\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+
+
+def calendar_relative_followup_action(text: str, session_state: dict[str, Any] | None) -> str:
+    """Classify one narrow relative-day follow-up without granting authority.
+
+    Returns ``tomorrow`` only for an active, successfully sourced calendar
+    surface. Other active domains keep their existing routing. With no active
+    domain the reference is ambiguous; an unavailable calendar fails closed.
+    """
+    if not _RELATIVE_TOMORROW_FOLLOWUP_RE.fullmatch(str(text or "")):
+        return ""
+
+    state = dict(session_state or {})
+    active_domain = str(state.get("active_brief_item") or "").strip().lower()
+    if active_domain in {"weather", "news", "awareness_brief"}:
+        return ""
+    if not active_domain:
+        return "clarify"
+    if active_domain != "calendar":
+        return ""
+
+    widget = state.get("brief_calendar")
+    if not isinstance(widget, dict):
+        return "unavailable"
+    if str(widget.get("type") or "").strip().lower() != "calendar":
+        return "unavailable"
+    if str(widget.get("status") or "").strip().lower() != "ok":
+        return "unavailable"
+    if widget.get("connected") is not True:
+        return "unavailable"
+    return "tomorrow"
+
+
 def _detect_session_mode(
     session_state: dict[str, Any],
     user_text: str = "",
@@ -3685,7 +3722,31 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["turn_count"] += 1
                 continue
 
-            if lowered in {
+            relative_calendar_action = calendar_relative_followup_action(
+                raw_text,
+                session_state,
+            )
+            if relative_calendar_action == "clarify":
+                await _complete_immediate_turn(
+                    "What did you mean for tomorrow — your calendar, the weather, or something else?",
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+            if relative_calendar_action == "unavailable":
+                await _complete_immediate_turn(
+                    "The active calendar source is unavailable, so I can't verify tomorrow's schedule and won't guess.",
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            calendar_command = (
+                "what do i have tomorrow"
+                if relative_calendar_action == "tomorrow"
+                else lowered
+            )
+            if calendar_command in {
                 "calendar",
                 "calendar update",
                 "agenda",
@@ -3718,7 +3779,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             }:
                 _, calendar_result = await invoke_governed_text_command(
                     governor,
-                    lowered,
+                    calendar_command,
                     session_id,
                 )
                 if calendar_result is None:
