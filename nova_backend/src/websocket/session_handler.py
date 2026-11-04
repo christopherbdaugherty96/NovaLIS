@@ -6,6 +6,7 @@ import os
 import re
 import time
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -496,6 +497,13 @@ _BODY_FIRST_REMINDER_WITH_TIME_RE = re.compile(
     re.IGNORECASE,
 )
 
+_IMMEDIATE_REMINDER_DAY_CORRECTION_RE = re.compile(
+    r"^\s*(?:no\s*[,;-]?\s*)?(?:i\s+)?meant\s+"
+    r"(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+    r"\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
 
 def _body_first_reminder_parts(raw: str) -> tuple[str, str] | None:
     match = _BODY_FIRST_REMINDER_WITH_TIME_RE.match(str(raw or "").strip().rstrip(".?!"))
@@ -918,6 +926,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     session_state = {
         "session_id": session_id,
         "turn_count": 0,
+        "user_message_seq": 0,
         "escalation_count": 0,
         "last_escalation_turn": None,
         "deep_mode_disabled": False,
@@ -1248,6 +1257,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             "schedule_id": schedule_id,
             "body": reminder_body,
             "scheduled_for": scheduled_for,
+            "saved_at_turn": session_state["turn_count"],
+            "saved_at_user_message_seq": session_state["user_message_seq"],
         }
 
         try:
@@ -1613,6 +1624,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
+            if not silent_widget_refresh:
+                session_state["user_message_seq"] += 1
             current_activity_origin = activity_origin_for_request(
                 silent_widget_refresh=silent_widget_refresh,
                 command_text=raw_text,
@@ -1844,6 +1857,194 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     "Reply yes/no immediately after an open prompt to resolve it instead.",
                 )
 
+            pending_reminder_correction = session_state.get("pending_reminder_correction")
+            if pending_reminder_correction:
+                if session_state["turn_count"] > int(
+                    pending_reminder_correction.get("expires_after_turn") or 0
+                ):
+                    session_state["pending_reminder_correction"] = None
+                    pending_reminder_correction = None
+
+            if pending_reminder_correction and not silent_widget_refresh:
+                correction_decision = SessionRouter.route_pending_web_confirmation(
+                    raw_text,
+                    whole_reply_only=True,
+                )
+                correction_action = (
+                    correction_decision.action
+                    if correction_decision.action in {"confirm", "cancel", "reprompt"}
+                    else ""
+                )
+                if correction_action == "cancel":
+                    session_state["pending_reminder_correction"] = None
+                    await _complete_immediate_turn(
+                        "Okay. The reminder was not changed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+                if correction_action == "reprompt":
+                    pending_reminder_correction["expires_after_turn"] = session_state["turn_count"] + 2
+                    session_state["pending_reminder_correction"] = pending_reminder_correction
+                    await _complete_immediate_turn(
+                        "Reply 'yes' to change that exact reminder or 'no' to leave it unchanged.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+                if correction_action == "confirm":
+                    schedule_id = str(
+                        pending_reminder_correction.get("schedule_id") or ""
+                    ).strip().upper()
+                    expected_due = str(
+                        pending_reminder_correction.get("expected_next_run_at") or ""
+                    ).strip()
+                    proposed_due = str(
+                        pending_reminder_correction.get("proposed_next_run_at") or ""
+                    ).strip()
+                    session_state["pending_reminder_correction"] = None
+                    try:
+                        current_item = notification_schedules.get_schedule(schedule_id)
+                    except Exception:
+                        current_item = None
+                        log.exception("Reminder correction precondition read failed")
+                    current_due = (
+                        str(current_item.get("next_run_at") or "").strip()
+                        if isinstance(current_item, dict)
+                        else ""
+                    )
+                    if (
+                        not isinstance(current_item, dict)
+                        or not bool(current_item.get("active"))
+                        or str(current_item.get("kind") or "").strip().lower() != "reminder"
+                        or str(current_item.get("recurrence") or "").strip().lower() != "once"
+                        or current_due != expected_due
+                    ):
+                        session_state["last_reminder_save_result"] = {
+                            "status": "not_verified",
+                            "reason": "correction_precondition_changed",
+                        }
+                        await _complete_immediate_turn(
+                            "I couldn't verify that the original reminder is still unchanged, "
+                            "so no reminder was changed.",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
+                    try:
+                        scheduled_for = datetime.fromisoformat(proposed_due)
+                        notification_schedules.reschedule_schedule(
+                            schedule_id,
+                            next_run_at=scheduled_for,
+                        )
+                        notification_schedules.grant_delivery_authority(
+                            schedule_id,
+                            channel="windows_toast",
+                            receipt_logger=governor.ledger.log_event,
+                        )
+                        verified_item = notification_schedules.get_schedule(schedule_id)
+                    except Exception:
+                        session_state["last_reminder_save_result"] = {
+                            "status": "not_verified",
+                            "reason": "correction_persistence_or_authorization_failure",
+                        }
+                        log.exception("Confirmed reminder correction failed")
+                        await _complete_immediate_turn(
+                            "I couldn't complete and verify that reminder correction. "
+                            "Do not rely on the changed time; use 'show schedules' to inspect it.",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
+                    if (
+                        not isinstance(verified_item, dict)
+                    ):
+                        session_state["last_reminder_save_result"] = {
+                            "status": "not_verified",
+                            "reason": "correction_read_back_failure",
+                        }
+                        await _complete_immediate_turn(
+                            "I couldn't verify the corrected reminder time, so I won't claim "
+                            "the reminder was changed.",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
+                    try:
+                        verified_due = datetime.fromisoformat(
+                            str(verified_item.get("next_run_at") or "").strip()
+                        )
+                    except (TypeError, ValueError):
+                        verified_due = None
+                    if verified_due is None or verified_due != scheduled_for:
+                        session_state["last_reminder_save_result"] = {
+                            "status": "not_verified",
+                            "reason": "correction_read_back_mismatch",
+                        }
+                        await _complete_immediate_turn(
+                            "I couldn't verify the corrected reminder time, so I won't claim "
+                            "the reminder was changed.",
+                            remember_response=False,
+                            tone_domain="system",
+                        )
+                        continue
+                    session_state["last_reminder_save_result"] = {
+                        "status": "saved",
+                        "schedule_id": schedule_id,
+                        "body": str(verified_item.get("body") or "").strip(),
+                        "scheduled_for": scheduled_for,
+                        "saved_at_turn": session_state["turn_count"],
+                        "saved_at_user_message_seq": session_state["user_message_seq"],
+                    }
+                    _log_ledger_event(
+                        governor,
+                        "NOTIFICATION_SCHEDULE_UPDATED",
+                        {
+                            "schedule_id": schedule_id,
+                            "kind": "reminder",
+                            "recurrence": "once",
+                        },
+                    )
+                    try:
+                        snapshot = notification_schedules.summarize()
+                    except Exception:
+                        snapshot = None
+                        log.exception("Reminder correction summary failed after persistence")
+                    message = (
+                        f"Reminder updated: {schedule_id}\n"
+                        f"New time: {_format_local_schedule_time(scheduled_for)}"
+                    )
+                    if isinstance(snapshot, dict):
+                        summary = str(snapshot.get("summary") or "").strip()
+                        if summary:
+                            message += f"\n\n{summary}"
+                    await send_chat_message(ws, message, tone_domain="system")
+                    if isinstance(snapshot, dict):
+                        await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                    await send_chat_done(ws)
+                    session_context.extend(
+                        [
+                            {
+                                "role": "user",
+                                "content": str(
+                                    session_state.get("_current_user_text") or ""
+                                ).strip(),
+                            },
+                            {"role": "nova_result", "content": message.strip()},
+                        ]
+                    )
+                    _trim_session_context(session_context, session_state)
+                    session_state["turn_count"] += 1
+                    continue
+
+                session_state["pending_reminder_correction"] = None
+                await send_chat_message(
+                    ws,
+                    "Cancelled the pending reminder correction before handling your new command. "
+                    "Reply yes/no immediately after the correction prompt to resolve it instead.",
+                    tone_domain="system",
+                )
+
             pending_reminder = session_state.get("pending_reminder")
             if pending_reminder:
                 if session_state["turn_count"] > int(pending_reminder.get("expires_after_turn") or 0):
@@ -1984,6 +2185,82 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             ):
                 await _complete_immediate_turn(
                     "No action is waiting for confirmation.",
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            reminder_day_correction = _IMMEDIATE_REMINDER_DAY_CORRECTION_RE.match(raw_text)
+            if reminder_day_correction:
+                last_save = session_state.get("last_reminder_save_result") or {}
+                saved_at_message_value = last_save.get("saved_at_user_message_seq")
+                saved_at_message = (
+                    int(saved_at_message_value)
+                    if isinstance(saved_at_message_value, int)
+                    else -100
+                )
+                if (
+                    last_save.get("status") != "saved"
+                    or session_state["user_message_seq"] != saved_at_message + 1
+                ):
+                    await _complete_immediate_turn(
+                        "I couldn't tie that correction to an immediately preceding verified "
+                        "reminder, so no reminder was changed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+                schedule_id = str(last_save.get("schedule_id") or "").strip().upper()
+                try:
+                    existing = notification_schedules.get_schedule(schedule_id)
+                except Exception:
+                    existing = None
+                    log.exception("Reminder correction grounding read failed")
+                if not isinstance(existing, dict) or not bool(existing.get("active")):
+                    await _complete_immediate_turn(
+                        "I couldn't verify the saved reminder, so no reminder was changed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+                if str(existing.get("recurrence") or "").strip().lower() != "once":
+                    await _complete_immediate_turn(
+                        "That is a recurring reminder. This correction only supports the "
+                        "immediately preceding one-time reminder, so it was not changed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+                current_due_raw = str(existing.get("next_run_at") or "").strip()
+                try:
+                    current_due = datetime.fromisoformat(current_due_raw)
+                    local_current_due = current_due.astimezone()
+                    weekday = str(reminder_day_correction.group("weekday") or "").strip().lower()
+                    time_label = local_current_due.strftime("%I:%M %p").lstrip("0")
+                    proposed_due = _parse_schedule_datetime(
+                        f"{weekday} at {time_label}",
+                        recurrence="once",
+                    )
+                except (TypeError, ValueError):
+                    await _complete_immediate_turn(
+                        "I couldn't safely resolve that corrected day, so no reminder was changed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
+                session_state["pending_reminder_correction"] = {
+                    "schedule_id": schedule_id,
+                    "expected_next_run_at": current_due_raw,
+                    "proposed_next_run_at": proposed_due.isoformat(),
+                    "expires_after_turn": session_state["turn_count"] + 2,
+                }
+                await _complete_immediate_turn(
+                    (
+                        f"Change reminder {schedule_id} from "
+                        f"{local_current_due.strftime('%A')}, {_format_local_schedule_time(current_due)} to "
+                        f"{proposed_due.strftime('%A')}, {_format_local_schedule_time(proposed_due)}? "
+                        "Reply 'yes' to change it or 'no' to leave it unchanged."
+                    ),
                     remember_response=False,
                     tone_domain="system",
                 )

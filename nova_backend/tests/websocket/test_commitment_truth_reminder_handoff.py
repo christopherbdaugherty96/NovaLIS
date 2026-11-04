@@ -16,6 +16,8 @@ pytestmark = pytest.mark.slow
 class _RecordingScheduleStore:
     def __init__(self) -> None:
         self.created: list[dict] = []
+        self.rescheduled: list[dict] = []
+        self.grants: list[dict] = []
 
     def create_schedule(self, **kwargs) -> dict:
         self.created.append(dict(kwargs))
@@ -51,13 +53,25 @@ class _RecordingScheduleStore:
     def get_schedule(self, schedule_id: str) -> dict | None:
         if schedule_id != "SCH-TEST-0001" or not self.created:
             return None
+        item = self.created[-1]
         return {
             "id": schedule_id,
-            "body": str(self.created[-1]["body"]),
+            "kind": str(item["kind"]),
+            "body": str(item["body"]),
+            "recurrence": str(item["recurrence"]),
+            "next_run_at": item["next_run_at"].isoformat(),
             "active": True,
         }
 
-    def grant_delivery_authority(self, schedule_id: str, **_kwargs) -> dict:
+    def reschedule_schedule(self, schedule_id: str, *, next_run_at: datetime) -> dict:
+        if schedule_id != "SCH-TEST-0001" or not self.created:
+            raise KeyError(schedule_id)
+        self.created[-1]["next_run_at"] = next_run_at
+        self.rescheduled.append({"schedule_id": schedule_id, "next_run_at": next_run_at})
+        return self.get_schedule(schedule_id) or {}
+
+    def grant_delivery_authority(self, schedule_id: str, **kwargs) -> dict:
+        self.grants.append({"schedule_id": schedule_id, **kwargs})
         return {"grant_id": "RDG-TEST", "schedule_id": schedule_id, "state": "active"}
 
 
@@ -84,6 +98,40 @@ class _ReadFailingScheduleStore(_RecordingScheduleStore):
 class _GrantFailingScheduleStore(_RecordingScheduleStore):
     def grant_delivery_authority(self, schedule_id: str, **_kwargs) -> dict:
         raise OSError("simulated delivery grant failure")
+
+
+class _ReplacementGrantFailingScheduleStore(_RecordingScheduleStore):
+    def grant_delivery_authority(self, schedule_id: str, **kwargs) -> dict:
+        if self.grants:
+            raise OSError("simulated replacement delivery grant failure")
+        return super().grant_delivery_authority(schedule_id, **kwargs)
+
+
+class _UtcNormalizingScheduleStore(_RecordingScheduleStore):
+    def reschedule_schedule(self, schedule_id: str, *, next_run_at: datetime) -> dict:
+        return super().reschedule_schedule(
+            schedule_id,
+            next_run_at=next_run_at.astimezone(timezone.utc),
+        )
+
+
+class _ChangedBeforeCorrectionConfirmationStore(_RecordingScheduleStore):
+    def __init__(self) -> None:
+        super().__init__()
+        self.read_count = 0
+
+    def get_schedule(self, schedule_id: str) -> dict | None:
+        item = super().get_schedule(schedule_id)
+        if item is None:
+            return None
+        self.read_count += 1
+        if self.read_count >= 3:
+            changed = dict(item)
+            changed["next_run_at"] = (
+                datetime.fromisoformat(str(item["next_run_at"])) + timedelta(hours=1)
+            ).isoformat()
+            return changed
+        return item
 
 
 def _run_session(
@@ -621,6 +669,305 @@ def test_abandoned_new_reminder_replaces_stale_saved_evidence(monkeypatch):
     assert any("reminder was not saved" in message.lower() for message in messages)
     assert any("did not save the most recent reminder request" in message for message in messages)
     assert sum("Yes. Nova saved reminder" in message for message in messages) == 0
+
+
+def test_immediate_reminder_day_correction_requires_confirmation_then_reschedules(monkeypatch):
+    store = _UtcNormalizingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "yes",
+        ],
+        store,
+    )
+
+    assert len(store.created) == 1
+    assert len(store.rescheduled) == 1
+    assert store.rescheduled[0]["schedule_id"] == "SCH-TEST-0001"
+    corrected_local = store.rescheduled[0]["next_run_at"].astimezone()
+    assert corrected_local.weekday() == 4
+    assert corrected_local.hour == 14
+    assert len(store.grants) == 2
+
+    messages = _chat_messages(ws)
+    assert any(
+        "Change reminder SCH-TEST-0001" in message
+        and "Friday" in message
+        and "Reply 'yes'" in message
+        for message in messages
+    )
+    assert any("Reminder updated: SCH-TEST-0001" in message for message in messages)
+
+
+def test_reminder_day_correction_does_not_mutate_before_confirmation(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "no",
+        ],
+        store,
+    )
+
+    assert store.rescheduled == []
+    assert len(store.grants) == 1
+    assert any(
+        "reminder was not changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
+
+
+def test_reminder_day_correction_without_immediate_saved_reminder_fails_closed(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, ["No, I meant Friday"], store)
+
+    assert store.created == []
+    assert store.rescheduled == []
+    assert any(
+        "couldn't tie that correction" in message.lower()
+        and "no reminder was changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
+
+
+def test_recurring_reminder_day_correction_is_excluded(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me daily at 2 PM to stretch", "No, I meant Friday"],
+        store,
+    )
+
+    assert len(store.created) == 1
+    assert store.created[0]["recurrence"] == "daily"
+    assert store.rescheduled == []
+    assert any(
+        "recurring reminder" in message.lower()
+        and "was not changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
+
+
+def test_reminder_correction_confirmation_rechecks_exact_original_schedule(monkeypatch):
+    store = _ChangedBeforeCorrectionConfirmationStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "yes",
+        ],
+        store,
+    )
+
+    assert store.rescheduled == []
+    assert len(store.grants) == 1
+    assert any(
+        "original reminder is still unchanged" in message.lower()
+        and "no reminder was changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
+
+
+def test_reminder_correction_reports_replacement_delivery_grant_failure(monkeypatch):
+    store = _ReplacementGrantFailingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "yes",
+        ],
+        store,
+    )
+
+    assert len(store.rescheduled) == 1
+    assert len(store.grants) == 1
+    messages = _chat_messages(ws)
+    assert any(
+        "couldn't complete and verify" in message.lower()
+        and "do not rely" in message.lower()
+        for message in messages
+    )
+    assert not any("Reminder updated:" in message for message in messages)
+
+
+def test_failed_reminder_correction_invalidates_cached_saved_evidence(monkeypatch):
+    store = _ReplacementGrantFailingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "yes",
+            "did you save the reminder?",
+        ],
+        store,
+    )
+
+    messages = _chat_messages(ws)
+    assert any("couldn't complete and verify" in message.lower() for message in messages)
+    assert any(
+        "do not have verified reminder-save evidence" in message.lower()
+        for message in messages
+    )
+    assert not any("Yes. Nova saved reminder" in message for message in messages)
+
+
+def test_successful_correction_advances_turn_before_stale_binding_check(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "yes",
+            "explain TCP",
+            "No, I meant Monday",
+        ],
+        store,
+        general_chat_response="TCP is a transport protocol.",
+    )
+
+    assert len(store.rescheduled) == 1
+    assert any(
+        "couldn't tie that correction" in message.lower()
+        and "no reminder was changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
+
+
+def test_show_schedules_breaks_immediate_reminder_correction_binding(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "show schedules",
+            "No, I meant Friday",
+            "yes",
+        ],
+        store,
+    )
+
+    assert store.rescheduled == []
+    assert any(
+        "couldn't tie that correction" in message.lower()
+        and "no reminder was changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
+
+
+def test_silent_widget_refresh_does_not_consume_immediate_correction_slot(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            {
+                "type": "chat",
+                "text": "show schedules",
+                "silent_widget_refresh": True,
+                "invocation_source": "ui",
+            },
+            "No, I meant Friday",
+            "no",
+        ],
+        store,
+    )
+
+    assert store.rescheduled == []
+    assert any(
+        "Change reminder SCH-TEST-0001" in message and "Friday" in message
+        for message in _chat_messages(ws)
+    )
+
+
+def test_silent_widget_refresh_does_not_cancel_pending_correction_confirmation(monkeypatch):
+    store = _RecordingScheduleStore()
+    _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            {
+                "type": "chat",
+                "text": "show schedules",
+                "silent_widget_refresh": True,
+                "invocation_source": "ui",
+            },
+            "yes",
+        ],
+        store,
+    )
+
+    assert len(store.rescheduled) == 1
+    assert store.rescheduled[0]["next_run_at"].astimezone().weekday() == 4
+
+
+def test_real_user_command_cancels_pending_correction_confirmation(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "show schedules",
+            "yes",
+        ],
+        store,
+    )
+
+    assert store.rescheduled == []
+    messages = _chat_messages(ws)
+    assert any("Cancelled the pending reminder correction" in message for message in messages)
+    assert any("No action is waiting for confirmation" in message for message in messages)
+
+
+def test_successful_correction_can_be_immediately_corrected_again(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "No, I meant Friday",
+            "yes",
+            "No, I meant Monday",
+            "no",
+        ],
+        store,
+    )
+
+    assert len(store.rescheduled) == 1
+    assert any(
+        "Change reminder SCH-TEST-0001" in message and "Monday" in message
+        for message in _chat_messages(ws)
+    )
+
+
+def test_reminder_correction_is_not_bound_after_an_unrelated_turn(monkeypatch):
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        [
+            "remind me tomorrow at 2 PM to call the dentist",
+            "explain TCP",
+            "No, I meant Friday",
+        ],
+        store,
+        general_chat_response="TCP is a transport protocol.",
+    )
+
+    assert store.rescheduled == []
+    assert any(
+        "couldn't tie that correction" in message.lower()
+        and "no reminder was changed" in message.lower()
+        for message in _chat_messages(ws)
+    )
 
 
 @pytest.mark.parametrize(
