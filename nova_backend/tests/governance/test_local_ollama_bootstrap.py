@@ -123,7 +123,7 @@ def test_listener_attestation_requires_valid_ollama_publisher(monkeypatch, tmp_p
         def create_time(self):
             return 1741132800.0
 
-    monkeypatch.setattr(bootstrap.os, "name", "nt")
+    monkeypatch.setattr(bootstrap, "_is_windows", lambda: True)
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
     monkeypatch.setattr(
         bootstrap, "_ollama_authenticode_is_valid", lambda _path: False
@@ -162,7 +162,7 @@ def test_publisher_attestation_is_cached_only_for_same_process(monkeypatch, tmp_
         def create_time(self):
             return creation_time[0]
 
-    monkeypatch.setattr(bootstrap.os, "name", "nt")
+    monkeypatch.setattr(bootstrap, "_is_windows", lambda: True)
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
     monkeypatch.setattr(
         bootstrap,

@@ -47,6 +47,10 @@ _ATTESTATION_LOCK = threading.Lock()
 _ATTESTED_PROCESS: tuple[str, int, float] | None = None
 
 
+def _is_windows() -> bool:
+    return os.name == "nt"
+
+
 def _ollama_authenticode_is_valid(executable: Path) -> bool:
     """Verify that Windows trusts the binary and attributes it to Ollama Inc."""
     system_root = Path(os.environ.get("SystemRoot") or r"C:\Windows").resolve()
@@ -104,7 +108,7 @@ def _ollama_authenticode_is_valid(executable: Path) -> bool:
 
 def _verified_evidence_target() -> VerifiedLocalEvidenceTarget:
     """Verify local Windows fixed-volume storage before claiming evidence locality."""
-    if os.name != "nt":
+    if not _is_windows():
         raise ModelNetworkMediatorError("Local Ollama evidence bootstrap requires Windows.")
     root = runtime_root(__file__).resolve(strict=True)
     if not root.is_absolute() or str(root).startswith("\\\\"):
@@ -130,7 +134,7 @@ def _verified_evidence_target() -> VerifiedLocalEvidenceTarget:
 def _attest_ollama_listener() -> None:
     """Require the user-installed Ollama executable to own the exact loopback listener."""
     global _ATTESTED_PROCESS
-    if os.name != "nt":
+    if not _is_windows():
         raise ModelNetworkMediatorError("No verified Windows Ollama listener.")
     local_appdata = os.environ.get("LOCALAPPDATA")
     if not local_appdata:
