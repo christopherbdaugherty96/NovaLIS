@@ -11,8 +11,8 @@ from typing import Any, Callable, Dict, Generator, Optional
 from src.durability.maintenance import authoritative_mutation
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.writer import LedgerWriter
-from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
 from src.llm.local_ollama_bootstrap import build_local_ollama_mediator
+from src.llm.model_network_mediator import ModelNetworkMediatorError
 from src.nova_config import (
     OLLAMA_FALLBACK_MODEL,
     OLLAMA_MODEL,
