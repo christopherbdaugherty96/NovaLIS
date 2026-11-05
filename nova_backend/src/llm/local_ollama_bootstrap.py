@@ -9,6 +9,7 @@ import ctypes
 import json
 import logging
 import os
+import stat
 import subprocess
 import threading
 from pathlib import Path
@@ -49,6 +50,29 @@ _ATTESTED_PROCESS: tuple[str, int, float] | None = None
 
 def _is_windows() -> bool:
     return os.name == "nt"
+
+
+def _is_link_or_reparse(path: Path) -> bool:
+    if path.is_symlink():
+        return True
+    try:
+        attributes = getattr(path.stat(follow_symlinks=False), "st_file_attributes", 0)
+    except OSError:
+        return False
+    return bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+
+
+def _path_has_link_or_reparse(path: Path, root: Path) -> bool:
+    current = path
+    while True:
+        if _is_link_or_reparse(current):
+            return True
+        if current == root:
+            return False
+        parent = current.parent
+        if parent == current:
+            return True
+        current = parent
 
 
 def _ollama_authenticode_is_valid(executable: Path) -> bool:
@@ -119,15 +143,10 @@ def _verified_evidence_target() -> VerifiedLocalEvidenceTarget:
     if ctypes.windll.kernel32.GetDriveTypeW(str(drive)) != 3:
         raise ModelNetworkMediatorError("Model evidence must reside on a local fixed drive.")
     target = root / "data" / "nova_state" / "ollama_disclosure_evidence.jsonl"
-    cursor = target.parent
-    while cursor != root.parent:
-        if cursor.is_symlink():
-            raise ModelNetworkMediatorError("Model evidence path contains a symlink.")
-        if cursor == root:
-            break
-        cursor = cursor.parent
-    if target.is_symlink():
-        raise ModelNetworkMediatorError("Model evidence file is a symlink.")
+    if _path_has_link_or_reparse(target.parent, root) or _is_link_or_reparse(target):
+        raise ModelNetworkMediatorError(
+            "Model evidence path contains a link or reparse point."
+        )
     return VerifiedLocalEvidenceTarget(path=target, locality_verified=True)
 
 

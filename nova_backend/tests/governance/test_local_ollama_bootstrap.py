@@ -138,6 +138,58 @@ def test_listener_attestation_requires_valid_ollama_publisher(monkeypatch, tmp_p
         bootstrap._attest_ollama_listener()
 
 
+def test_reparse_attribute_is_treated_as_unsafe(monkeypatch, tmp_path):
+    target = tmp_path / "junction"
+    target.mkdir()
+    attributes = getattr(bootstrap.stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+
+    monkeypatch.setattr(bootstrap.Path, "is_symlink", lambda _path: False)
+    monkeypatch.setattr(
+        bootstrap.Path,
+        "stat",
+        lambda _path, **_kwargs: type(
+            "_Stat", (), {"st_file_attributes": attributes}
+        )(),
+    )
+
+    assert bootstrap._is_link_or_reparse(target)
+
+
+def test_evidence_target_rejects_reparse_backed_parent(monkeypatch, tmp_path):
+    root = tmp_path.resolve()
+    monkeypatch.setattr(bootstrap, "_is_windows", lambda: True)
+    monkeypatch.setattr(bootstrap, "runtime_root", lambda _file: root)
+    monkeypatch.setattr(
+        bootstrap,
+        "ctypes",
+        type(
+            "_Ctypes",
+            (),
+            {
+                "windll": type(
+                    "_Windll",
+                    (),
+                    {
+                        "kernel32": type(
+                            "_Kernel32",
+                            (),
+                            {"GetDriveTypeW": staticmethod(lambda _drive: 3)},
+                        )()
+                    },
+                )()
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "_path_has_link_or_reparse",
+        lambda path, _root: path.name == "nova_state",
+    )
+
+    with pytest.raises(ModelNetworkMediatorError, match="reparse point"):
+        bootstrap._verified_evidence_target()
+
+
 def test_publisher_attestation_is_cached_only_for_same_process(monkeypatch, tmp_path):
     executable = tmp_path / "Programs" / "Ollama" / "ollama.exe"
     executable.parent.mkdir(parents=True)
