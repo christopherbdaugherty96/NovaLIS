@@ -29,6 +29,18 @@ ALLOWED_SCHEMES = {"http", "https"}
 ALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
 RATE_LIMIT_PER_MINUTE = 120
 
+def localhost_resolves_exclusively_to_loopback() -> bool:
+    """Network-boundary resolution proof for an already local-only transport."""
+    try:
+        resolved = [
+            ipaddress.ip_address(item[4][0])
+            for item in socket.getaddrinfo("localhost", 11434, type=socket.SOCK_STREAM)
+        ]
+    except (OSError, ValueError):
+        return False
+    return bool(resolved) and all(address.is_loopback for address in resolved)
+
+
 
 def _safe_model_url(url: str) -> str:
     """Return model URL evidence without userinfo, query, or fragment."""
