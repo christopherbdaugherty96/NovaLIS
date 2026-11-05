@@ -8,18 +8,59 @@ _VAGUE_DETAIL_RE = re.compile(
     re.IGNORECASE,
 )
 _SOURCE_RE = re.compile(
-    r"^(?:what (?:are|do) (?:the |other |additional )?sources (?:reporting|say)|"
-    r"what are other sources reporting)(?:\s+about\s+(?:that|it|this))?[.!?]*$",
+    r"^what (?:are (?:the )?(?:(?:other|additional) )?sources (?:reporting|saying)|"
+    r"do (?:the )?(?:(?:other|additional) )?sources say)"
+    r"(?:\s+about\s+(?:that|it|this))?[.!?]*$",
     re.IGNORECASE,
 )
 _AGREEMENT_RE = re.compile(
-    r"^do (?:those|the|these) sources agree[.!?]*$|^do they agree[.!?]*$",
+    r"^(?:do (?:those|the|these) sources agree|do they agree|"
+    r"are (?:those|the|these) sources in agreement|"
+    r"is there agreement (?:among|between) (?:those|the|these) sources)[.!?]*$",
     re.IGNORECASE,
 )
 _SIGNIFICANCE_RE = re.compile(
     r"^(?:explain )?why (?:does )?(?:this|that|it) matter(?:s)?[.!?]*$",
     re.IGNORECASE,
 )
+_TOPIC_STOPWORDS = {
+    "about",
+    "again",
+    "can",
+    "could",
+    "current",
+    "details",
+    "does",
+    "explain",
+    "happening",
+    "information",
+    "into",
+    "more",
+    "news",
+    "now",
+    "please",
+    "report",
+    "reporting",
+    "say",
+    "saying",
+    "show",
+    "situation",
+    "sources",
+    "tell",
+    "that",
+    "the",
+    "their",
+    "them",
+    "these",
+    "they",
+    "this",
+    "those",
+    "today",
+    "what",
+    "why",
+    "with",
+    "would",
+}
 
 
 def _clean_text(value: Any, *, limit: int) -> str:
@@ -137,3 +178,25 @@ def answer_news_evidence_followup(query: str, session_state: dict[str, Any]) -> 
         "The retrieved material can support the factual details shown above, but it does not by itself "
         "establish a verified explanation of why the development matters."
     )
+
+
+def _topic_terms(value: Any) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", str(value or "").lower())
+        if len(token) >= 4 and token not in _TOPIC_STOPWORDS
+    }
+
+
+def retire_news_evidence_for_unrelated_turn(
+    query: str,
+    session_state: dict[str, Any],
+) -> None:
+    """Retire follow-up eligibility when GeneralChat takes over an explicit new topic."""
+    evidence = session_state.get("active_news_evidence")
+    if not isinstance(evidence, dict):
+        return
+    active_terms = _topic_terms(evidence.get("query"))
+    incoming_terms = _topic_terms(query)
+    if active_terms and incoming_terms and active_terms.isdisjoint(incoming_terms):
+        session_state["active_news_evidence"] = {}

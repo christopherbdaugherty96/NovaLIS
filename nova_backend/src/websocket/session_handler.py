@@ -26,6 +26,7 @@ from src.conversation.brief_intent_resolver import resolve_brief_intent
 from src.conversation.news_evidence_integrity import (
     answer_news_evidence_followup,
     record_news_evidence_result,
+    retire_news_evidence_for_unrelated_turn,
 )
 from src.governor.approval_grants import ApprovalCapabilityDisabledError, ApprovalGrantError
 from src.llm.llm_gateway import model_status_snapshot
@@ -6174,6 +6175,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             # --- Bounded advisory general-chat fallback ---
+            retire_news_evidence_for_unrelated_turn(mediated_text, session_state)
             if not silent_widget_refresh:
                 await ws_send(
                     ws,

@@ -112,6 +112,67 @@ def test_failed_news_evidence_does_not_capture_explicit_unrelated_topic(monkeypa
     assert any("Photosynthesis converts" in message for message in _chat_messages(ws))
 
 
+@pytest.mark.parametrize(
+    "followup, expected",
+    [
+        ("What are other sources saying?", "no additional sources were retrieved"),
+        ("What do the other sources say?", "no additional sources were retrieved"),
+        ("Are those sources in agreement?", "can't say whether sources agree"),
+    ],
+)
+def test_failed_news_search_blocks_source_reporting_paraphrase(monkeypatch, followup, expected):
+    _disable_unrelated_gate(monkeypatch)
+
+    async def _invoke(*args, **kwargs):
+        return _failed_search()
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
+    ws = _ScriptedWebSocket(
+        [
+            "What's happening with Russia?",
+            followup,
+        ]
+    )
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        side_effect=AssertionError("Source-reporting paraphrase must not reach GeneralChat"),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    final = _chat_messages(ws)[-1]
+    assert expected in final.lower()
+
+
+def test_explicit_topic_switch_retires_prior_news_evidence(monkeypatch):
+    _disable_unrelated_gate(monkeypatch)
+
+    async def _invoke(*args, **kwargs):
+        return _failed_search()
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
+    ws = _ScriptedWebSocket(
+        [
+            "What's happening with Russia?",
+            "Tell me more about photosynthesis.",
+            "Tell me more about that.",
+        ]
+    )
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        side_effect=[
+            "Photosynthesis converts light energy into chemical energy.",
+            "Plants use that chemical energy to make sugars.",
+        ],
+    ) as model:
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert model.call_count == 2
+    assert "Plants use that chemical energy" in _chat_messages(ws)[-1]
+    assert "retrieval did not succeed" not in _chat_messages(ws)[-1]
+
+
 def test_successful_retrieval_replaces_failure_with_actual_source_evidence(monkeypatch):
     _disable_unrelated_gate(monkeypatch)
     results = [_failed_search(), _successful_search("Ukraine", "Reuters")]
