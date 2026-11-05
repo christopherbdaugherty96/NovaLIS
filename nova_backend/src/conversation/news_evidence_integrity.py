@@ -188,6 +188,25 @@ def _topic_terms(value: Any) -> set[str]:
     }
 
 
+def _explicit_topic_terms(query: str) -> set[str]:
+    normalized = _clean_text(query, limit=500).strip(".?! ")
+    patterns = (
+        r"\b(?:about|regarding|concerning)\s+(.+)$",
+        r"^(?:explain|describe|discuss)\s+(.+)$",
+        r"^what (?:is|are)\s+(.+)$",
+        r"^how (?:does|do)\s+(.+?)\s+work$",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, normalized, re.IGNORECASE)
+        if not match:
+            continue
+        subject = match.group(1).strip()
+        if subject.lower() in {"that", "this", "it", "them", "those", "these"}:
+            return set()
+        return _topic_terms(subject)
+    return set()
+
+
 def retire_news_evidence_for_unrelated_turn(
     query: str,
     session_state: dict[str, Any],
@@ -197,6 +216,6 @@ def retire_news_evidence_for_unrelated_turn(
     if not isinstance(evidence, dict):
         return
     active_terms = _topic_terms(evidence.get("query"))
-    incoming_terms = _topic_terms(query)
+    incoming_terms = _explicit_topic_terms(query)
     if active_terms and incoming_terms and active_terms.isdisjoint(incoming_terms):
         session_state["active_news_evidence"] = {}

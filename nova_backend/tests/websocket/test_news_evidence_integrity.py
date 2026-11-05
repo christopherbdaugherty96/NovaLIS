@@ -173,6 +173,31 @@ def test_explicit_topic_switch_retires_prior_news_evidence(monkeypatch):
     assert "retrieval did not succeed" not in _chat_messages(ws)[-1]
 
 
+def test_generic_clarification_preserves_failed_news_evidence(monkeypatch):
+    _disable_unrelated_gate(monkeypatch)
+
+    async def _invoke(*args, **kwargs):
+        return _failed_search()
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _invoke)
+    ws = _ScriptedWebSocket(
+        [
+            "What's happening with Russia?",
+            "Can you elaborate?",
+            "What are other sources saying?",
+        ]
+    )
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="I can only offer unverified general context.",
+    ) as model:
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert model.call_count == 1
+    assert "no additional sources were retrieved" in _chat_messages(ws)[-1].lower()
+
+
 def test_successful_retrieval_replaces_failure_with_actual_source_evidence(monkeypatch):
     _disable_unrelated_gate(monkeypatch)
     results = [_failed_search(), _successful_search("Ukraine", "Reuters")]
