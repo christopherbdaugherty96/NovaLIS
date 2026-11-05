@@ -1,6 +1,4 @@
 """Narrow bootstrap regressions; synthetic service proof, no real model calls."""
-import socket
-
 import pytest
 
 from src.governor.disclosure_policy import DisclosureDecisionValue
@@ -22,11 +20,8 @@ class _Sink:
 def _mediator(monkeypatch, sink=None):
     monkeypatch.setattr(bootstrap, "_attest_ollama_listener", lambda: None)
     monkeypatch.setattr(
-        bootstrap.socket, "getaddrinfo",
-        lambda *_args, **_kwargs: [
-            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("127.0.0.1", 11434)),
-            (socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("::1", 11434, 0, 0)),
-        ],
+        bootstrap, "localhost_resolves_exclusively_to_loopback",
+        lambda: True,
     )
     evidence = sink or _Sink()
     return bootstrap.VerifiedLoopbackOllamaMediator(
@@ -88,10 +83,8 @@ def test_loopback_bootstrap_rejects_substituted_destinations(monkeypatch, url):
 def test_localhost_must_not_resolve_to_lan(monkeypatch):
     mediator, sink = _mediator(monkeypatch)
     monkeypatch.setattr(
-        bootstrap.socket, "getaddrinfo",
-        lambda *_args, **_kwargs: [
-            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("192.168.0.10", 11434)),
-        ],
+        bootstrap, "localhost_resolves_exclusively_to_loopback",
+        lambda: False,
     )
     with pytest.raises(ModelNetworkMediatorError):
         _approve(mediator, "http://localhost:11434/api/show", "POST", {"model": "gemma2:2b"})
