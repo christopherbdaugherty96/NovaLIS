@@ -485,6 +485,8 @@ class LLMManager:
                         getattr(self._network, "last_stream_done_reason", "") or ""
                     ),
                 )
+                if result and getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
+                    return None
                 if result:
                     try:
                         on_chunk(result)
@@ -516,6 +518,8 @@ class LLMManager:
                 (response.data.get("message") or {}).get("content") or "",
                 done_reason=str(response.data.get("done_reason") or ""),
             )
+            if result and getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
+                return None
             # Success – reset failure count
             self.failure_count = 0
             return result
@@ -600,6 +604,8 @@ class LLMManager:
         if self.inference_blocked:
             logger.error("generate_stream called while model is blocked.")
             return
+        if getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
+            return
 
         now = time.time()
         if now < self.circuit_open_until:
@@ -643,6 +649,8 @@ class LLMManager:
                     getattr(self._network, "last_stream_done_reason", "") or ""
                 ),
             )
+            if result and getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
+                return
             if result:
                 yield result
             self.failure_count = 0
