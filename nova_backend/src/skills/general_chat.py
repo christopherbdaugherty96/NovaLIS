@@ -1684,9 +1684,9 @@ class GeneralChatSkill(BaseSkill):
     def _safe_geopolitical_fallback(query: str) -> str:
         topic = (query or "that topic").strip(".?! ")
         return (
-            f"Here is a neutral overview of {topic}: "
-            "current reporting indicates active developments and differing claims across sources. "
-            "For accuracy, rely on primary outlets and compare multiple reports before drawing conclusions."
+            f"I don't have verified current reporting about {topic} in this response. "
+            "I can provide general historical background, but current developments and source agreement "
+            "require retrieved evidence."
         )
 
     @classmethod

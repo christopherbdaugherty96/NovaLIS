@@ -27,5 +27,6 @@ def test_general_chat_geopolitical_refusal_helpers():
     assert GeneralChatSkill._is_geopolitical_query("tell me about the war") is True
     assert GeneralChatSkill._is_blanket_refusal("I'm sorry, I cannot assist with that topic") is True
     fallback = GeneralChatSkill._safe_geopolitical_fallback("tell me about the war")
-    assert "neutral overview" in fallback.lower()
-    assert "primary outlets" in fallback.lower()
+    assert "don't have verified current reporting" in fallback.lower()
+    assert "require retrieved evidence" in fallback.lower()
+    assert "current reporting indicates" not in fallback.lower()

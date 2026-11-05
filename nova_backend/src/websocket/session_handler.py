@@ -23,6 +23,10 @@ from src.conversation.brief_followup_grounding import (
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
+from src.conversation.news_evidence_integrity import (
+    answer_news_evidence_followup,
+    record_news_evidence_result,
+)
 from src.governor.approval_grants import ApprovalCapabilityDisabledError, ApprovalGrantError
 from src.llm.llm_gateway import model_status_snapshot
 from src.openclaw.run_state_machine import run_event_hub
@@ -947,6 +951,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "topic_memory_map": {},
         "last_brief_clusters": [],
         "active_news_surface": {},
+        "active_news_evidence": {},
         "pending_web_open": None,
         "pending_governed_confirm": None,
         "pending_interpret_confirm": None,
@@ -5650,6 +5655,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
                 action_message = _action_result_message(action_result)
                 action_payload = _action_result_payload(action_result)
+                if capability_id == 16:
+                    record_news_evidence_result(
+                        session_state,
+                        query=str(params.get("query") or mediated_text),
+                        success=bool(action_result.success),
+                        payload=action_payload,
+                    )
                 if isinstance(action_payload, dict) and "budget_state" in action_payload:
                     await send_token_budget_update(ws, action_result)
                 track_topic_hint = ""
@@ -6120,6 +6132,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     _trim_session_context(session_context, session_state)
                     session_state["turn_count"] += 1
                     continue
+
+            news_evidence_answer = answer_news_evidence_followup(mediated_text, session_state)
+            if news_evidence_answer:
+                session_state["last_response"] = news_evidence_answer
+                await send_chat_message(ws, news_evidence_answer, tone_domain="daily")
+                await send_chat_done(ws)
+                _maybe_auto_speak_for_voice_turn(session_state, news_evidence_answer)
+                session_context.extend(
+                    [
+                        {"role": "user", "content": mediated_text},
+                        {"role": "assistant", "content": news_evidence_answer},
+                    ]
+                )
+                _trim_session_context(session_context, session_state)
+                session_state["turn_count"] += 1
+                continue
 
             # --- Fallback truth guard (schedule / calendar / commitments) ---
             # Never let the local model improvise schedule facts. If the user asks
