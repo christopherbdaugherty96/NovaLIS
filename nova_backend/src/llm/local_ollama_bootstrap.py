@@ -6,10 +6,8 @@ default deny-only ModelNetworkMediator. No remote or LAN provider is admitted.
 from __future__ import annotations
 
 import ctypes
-import ipaddress
 import logging
 import os
-import socket
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -31,7 +29,11 @@ from src.governor.disclosure_transport import (
     authorize_http_disclosure,
     disclosure_facts,
 )
-from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
+from src.llm.model_network_mediator import (
+    ModelNetworkMediator,
+    ModelNetworkMediatorError,
+    localhost_resolves_exclusively_to_loopback,
+)
 from src.utils.persistent_state import runtime_root
 
 _LOG = logging.getLogger(__name__)
@@ -126,11 +128,7 @@ class VerifiedLoopbackOllamaMediator(ModelNetworkMediator):
             ):
                 raise ModelNetworkMediatorError("Unsupported local Ollama destination.")
             if parsed.hostname == "localhost":
-                resolved = {
-                    ipaddress.ip_address(info[4][0])
-                    for info in socket.getaddrinfo("localhost", _PORT, type=socket.SOCK_STREAM)
-                }
-                if not resolved or not all(ip.is_loopback for ip in resolved):
+                if not localhost_resolves_exclusively_to_loopback():
                     raise ModelNetworkMediatorError("localhost did not resolve exclusively to loopback.")
             return f"http://127.0.0.1:{_PORT}{parsed.path}"
         except ModelNetworkMediatorError:
