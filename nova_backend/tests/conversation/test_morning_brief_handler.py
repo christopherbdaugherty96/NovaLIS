@@ -64,6 +64,8 @@ class TestTriggerNormalization:
         "morning brief please",
         "Morning brief.",
         "give me my daily brief",
+        "give me my daily briefing",
+        "Daily briefing",
         "give me the daily brief please",
         "can you run the morning brief",
         "hey nova, daily brief",
@@ -84,6 +86,7 @@ class TestTriggerNormalization:
         "what should i focus on in my career",
         "daily standup notes",
         "news brief",
+        "write an article about daily briefings",
     ])
     def test_non_brief_phrases_rejected(self, phrase: str):
         assert is_daily_brief_request(phrase) is False

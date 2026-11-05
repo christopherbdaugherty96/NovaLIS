@@ -4,7 +4,7 @@ Single source of truth for the user-facing Daily Brief trigger and the
 governed brief assembly path. Uses run_daily_brief_routine() to produce
 a RoutineRun and RoutineReceipt alongside the brief text.
 
-One user-facing brief: every phrasing variant ("daily brief",
+One user-facing brief: every phrasing variant ("daily brief", "daily briefing",
 "morning brief", "brief me", "what matters today", a quick-action
 button) must resolve through is_daily_brief_request() to this one
 governed path. Do not add brief trigger sets elsewhere.
@@ -26,6 +26,7 @@ from src.trust.receipt_store import get_recent_receipts
 
 DAILY_BRIEF_TRIGGERS = frozenset({
     "daily brief",
+    "daily briefing",
     "morning brief",
     "morning",
     "brief",
