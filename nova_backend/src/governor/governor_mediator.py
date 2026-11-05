@@ -433,7 +433,12 @@ EXPLAIN_FOLLOWUP_RE = re.compile(
     r")\s*$",
     re.IGNORECASE,
 )
-SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+SET_REPORT_RE = re.compile(
+    r"^\s*(report|summarize)\s+"
+    r"(?!(?:our\s+discussion|our\s+conversation\s+so\s+far)\s*$)"
+    r"(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
 INLINE_PASTED_SUMMARY_RE = re.compile(
     r"^\s*(?:can\s+you\s+)?summari[sz]e\s+this"
     r"(?:\s+(?:note|email|message|text))?(?:\s+for\s+me)?\s*:\s*\S",

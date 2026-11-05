@@ -208,6 +208,15 @@ SESSION_ACTIVITY_RECAP_RE = re.compile(
     re.IGNORECASE,
 )
 
+LOCAL_CONVERSATION_SUMMARY_RE = re.compile(
+    r"^\s*(?:"
+    r"summari[sz]e\s+our\s+discussion"
+    r"|recap\s+what\s+we\s+discussed"
+    r"|summari[sz]e\s+our\s+conversation\s+so\s+far"
+    r")\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+
 # -------------------------------------------------
 # Reminder without time — clarification response
 # "remind me to call mom" (no "at TIME") → ask for time
