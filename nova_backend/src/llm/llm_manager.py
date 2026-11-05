@@ -362,8 +362,17 @@ class LLMManager:
             self._block_inference()
             raise ValueError("Cannot confirm a model without a verified digest.")
         previous = MODEL_HASH_FILE.read_text().strip() if MODEL_HASH_FILE.exists() else None
-        self._log_model_updated(previous, computed, user_confirmed=True)
         MODEL_HASH_FILE.write_text(computed)
+        try:
+            self._log_model_updated(previous, computed, user_confirmed=True)
+        except Exception:
+            # A failed durable receipt must not leave a newly trusted model.
+            self._block_inference()
+            if previous is None:
+                MODEL_HASH_FILE.unlink(missing_ok=True)
+            else:
+                MODEL_HASH_FILE.write_text(previous)
+            raise
         self.inference_blocked = False
         logger.info("Model update confirmed. Inference unblocked.")
 
@@ -418,8 +427,9 @@ class LLMManager:
         if self.inference_blocked:
             logger.error("Generate called while model is blocked.")
             return None
-        if getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
-            return None
+        if getattr(self, "_version_lock_active", False):
+            if self.active_model != self.model or not self._confirmed_model_identity_current():
+                return None
 
         # Circuit breaker
         now = time.time()
@@ -526,7 +536,7 @@ class LLMManager:
 
         except ModelNetworkMediatorError as error:
             logger.error("Model network call failed: %s", error)
-            if not self._using_fallback and self.fallback_model:
+            if not getattr(self, "_version_lock_active", False) and not self._using_fallback and self.fallback_model:
                 primary_model = self.model
                 self._using_fallback = True
                 self.failure_count = 0
@@ -604,8 +614,9 @@ class LLMManager:
         if self.inference_blocked:
             logger.error("generate_stream called while model is blocked.")
             return
-        if getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
-            return
+        if getattr(self, "_version_lock_active", False):
+            if self.active_model != self.model or not self._confirmed_model_identity_current():
+                return
 
         now = time.time()
         if now < self.circuit_open_until:
