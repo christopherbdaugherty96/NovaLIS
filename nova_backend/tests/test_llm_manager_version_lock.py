@@ -44,13 +44,13 @@ def test_get_model_digest_falls_back_to_tags_when_show_omits_digest():
                 ModelResponse(status_code=200, data={"model_info": {"general.architecture": "gemma4"}}),
                 ModelResponse(
                     status_code=200,
-                    data={"models": [{"name": "gemma4:e4b", "digest": "sha256:trusted"}]},
+                    data={"models": [{"name": "gemma4:e4b", "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]},
                 ),
             ]
         )
     )
 
-    assert manager._get_model_digest() == "sha256:trusted"
+    assert manager._get_model_digest() == "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 
 def test_check_model_version_accepts_trusted_hash_from_tags_fallback(tmp_path, monkeypatch):
@@ -58,7 +58,7 @@ def test_check_model_version_accepts_trusted_hash_from_tags_fallback(tmp_path, m
     wrapper_path.write_text("def run():\n    return 'ok'\n", encoding="utf-8")
 
     model_hash_path = tmp_path / "current_model_hash.txt"
-    trusted_digest = "sha256:trusted"
+    trusted_digest = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     trusted_hash = mod.compute_model_hash(
         trusted_digest,
         "test system prompt",
@@ -198,3 +198,68 @@ def test_try_recover_primary_switches_back_after_chat_probe_success():
     assert manager.active_model == "gemma4:e4b"
     assert captured["json_payload"]["options"]["num_predict"] == 1
     assert captured["json_payload"]["options"]["num_ctx"] == 512
+
+
+def test_unavailable_model_digest_cannot_be_confirmed(tmp_path, monkeypatch):
+    """Owner confirmation must never lock the synthetic fetch_failed identity."""
+    from src.governor.exceptions import LedgerWriteFailed
+
+    class _UnavailableNetwork:
+        def request_json(self, **_kwargs):
+            raise ModelNetworkMediatorError("Data-Out denied (evidence_unavailable).")
+
+    manager = _build_manager(_UnavailableNetwork())
+    manager.inference_blocked = True
+    hash_path = tmp_path / "model_hash.txt"
+    wrapper_path = tmp_path / "inference_wrapper.py"
+    wrapper_path.write_text("# fixture\n", encoding="utf-8")
+    monkeypatch.setattr(mod, "MODEL_HASH_FILE", hash_path)
+    monkeypatch.setattr(mod, "WRAPPER_PATH", wrapper_path)
+    monkeypatch.setattr(
+        manager, "_log_model_updated",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("unverified identity must not generate an update receipt")
+        ),
+    )
+
+    try:
+        manager.confirm_model_update()
+    except (ValueError, ModelNetworkMediatorError, LedgerWriteFailed):
+        pass
+
+    assert manager.inference_blocked is True
+    assert not hash_path.exists()
+
+
+def test_malformed_or_placeholder_model_digest_is_rejected():
+    for invalid in ("fetch_failed", "unknown", "sha256:trusted", "", "a" * 63):
+        manager = _build_manager(
+            _FakeNetwork(
+                [
+                    ModelResponse(status_code=200, data={"digest": invalid}),
+                    ModelResponse(
+                        status_code=200,
+                        data={"models": [{"name": "gemma4:e4b", "digest": invalid}]},
+                    ),
+                ]
+            )
+        )
+        assert manager._get_model_digest() is None
+
+
+def test_model_digest_must_match_exact_selected_model_from_tags():
+    valid = "b" * 64
+    manager = _build_manager(
+        _FakeNetwork(
+            [
+                ModelResponse(status_code=200, data={"model_info": {}}),
+                ModelResponse(
+                    status_code=200,
+                    data={"models": [
+                        {"name": "gemma2:2b", "digest": valid},
+                    ]},
+                ),
+            ]
+        )
+    )
+    assert manager._get_model_digest() is None
