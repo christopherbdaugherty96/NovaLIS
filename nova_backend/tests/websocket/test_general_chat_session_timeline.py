@@ -7,7 +7,7 @@ import pytest
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
-from tests.phase45._websocket_test_helpers import _ScriptedWebSocket
+from tests.phase45._websocket_test_helpers import _chat_messages, _ScriptedWebSocket
 
 pytestmark = pytest.mark.slow
 
@@ -153,7 +153,7 @@ def test_real_session_includes_compact_runtime_facts_for_model_question(monkeypa
     assert "local-only" in serialized.lower()
 
 
-def test_real_session_fallback_facts_name_answering_model_without_false_availability(monkeypatch):
+def test_real_session_does_not_substitute_an_unverified_fallback_model(monkeypatch):
     import importlib
 
     from src.llm import llm_gateway
@@ -190,12 +190,11 @@ def test_real_session_fallback_facts_name_answering_model_without_false_availabi
     ws = _ScriptedWebSocket(["which model are you running right now?"])
     asyncio.run(brain_server.websocket_endpoint(ws))
 
-    assert [payload["model"] for payload in payloads] == ["primary:test", "fallback:test"]
-    fallback_messages = payloads[-1]["messages"]
-    serialized = repr(fallback_messages).lower()
-    assert "responding model=fallback:test" in serialized
-    assert "primary model=primary:test; availability=unverified" in serialized
-    assert "primary model=primary:test; availability=available" not in serialized
+    assert [payload["model"] for payload in payloads] == ["primary:test"]
+    serialized = " ".join(_chat_messages(ws)).lower()
+    assert "fallback answered truthfully" not in serialized
+    assert "fallback:test" not in serialized
+    assert "didn't match that" in serialized
 
 
 def test_presence_mode_deterministic_turn_keeps_extended_timeline(monkeypatch):
