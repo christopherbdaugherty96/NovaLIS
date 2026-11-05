@@ -10,12 +10,10 @@ import ipaddress
 import logging
 import os
 import socket
-
 from pathlib import Path
 from urllib.parse import urlsplit
 
 import psutil
-
 from src.governor.disclosure_policy import (
     DataCategory,
     DestinationClass,
