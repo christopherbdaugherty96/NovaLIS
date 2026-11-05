@@ -69,33 +69,7 @@ graph TD
   Caps --> C65[65:shopify_intelligence_report]
   C65 --> C65A[authority=read_only_network, risk=low, cost=free_tier, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Runtime --> Routes[Skill Routes]
-  Routes --> R54_analysis_document[analysis_document -> capability 54]
-  Routes --> R21_brightness[brightness -> capability 21]
-  Routes --> R57_calendar_snapshot[calendar_snapshot -> capability 57]
-  Routes --> R32_diagnostics[diagnostics -> capability 32]
-  Routes --> R60_explain_anything[explain_anything -> capability 60]
-  Routes --> R62_external_reasoning_review[external_reasoning_review -> capability 62]
-  Routes --> R49_headline_summary[headline_summary -> capability 49]
-  Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
-  Routes --> R20_media[media -> capability 20]
-  Routes --> R61_memory_governance[memory_governance -> capability 61]
-  Routes --> R56_news_snapshot[news_snapshot -> capability 56]
   Routes --> R22_open_folder[open_folder -> capability 22]
-  Routes --> R17_open_website[open_website -> capability 17]
-  Routes --> R63_openclaw_execute[openclaw_execute -> capability 63]
-  Routes --> R49_report[report -> capability 49]
-  Routes --> R31_response_verification[response_verification -> capability 31]
-  Routes --> R59_screen_analysis[screen_analysis -> capability 59]
-  Routes --> R58_screen_capture[screen_capture -> capability 58]
-  Routes --> R48_search[search -> capability 48]
-  Routes --> R64_send_email_draft[send_email_draft -> capability 64]
-  Routes --> R65_shopify_intelligence_report[shopify_intelligence_report -> capability 65]
-  Routes --> R18_speak[speak -> capability 18]
-  Routes --> R52_story_tracker_update[story_tracker_update -> capability 52]
-  Routes --> R53_story_tracker_view[story_tracker_view -> capability 53]
-  Routes --> R51_topic_memory_map[topic_memory_map -> capability 51]
-  Routes --> R19_volume[volume -> capability 19]
-  Routes --> R55_weather_snapshot[weather_snapshot -> capability 55]
   Runtime --> LLM[Conversation/Model Surfaces]
   LLM --> src_conversation_deepseek_bridge_py[src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat only for explicit local fallback]
   LLM --> src_skills_general_chat_py[src/skills/general_chat.py uses llm_gateway.generate_chat]
@@ -141,33 +115,7 @@ Runtime
 |  |- 64 send_email_draft (authority=persistent_change, risk=confirm, cost=free, network=False, exfil=True, confirm=True, surface=Governor -> Executor)
 |  |- 65 shopify_intelligence_report (authority=read_only_network, risk=low, cost=free_tier, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
 |- Skill -> capability routes
-|  |- analysis_document -> 54
-|  |- brightness -> 21
-|  |- calendar_snapshot -> 57
-|  |- diagnostics -> 32
-|  |- explain_anything -> 60
-|  |- external_reasoning_review -> 62
-|  |- headline_summary -> 49
-|  |- intelligence_brief -> 50
-|  |- media -> 20
-|  |- memory_governance -> 61
-|  |- news_snapshot -> 56
 |  |- open_folder -> 22
-|  |- open_website -> 17
-|  |- openclaw_execute -> 63
-|  |- report -> 49
-|  |- response_verification -> 31
-|  |- screen_analysis -> 59
-|  |- screen_capture -> 58
-|  |- search -> 48
-|  |- send_email_draft -> 64
-|  |- shopify_intelligence_report -> 65
-|  |- speak -> 18
-|  |- story_tracker_update -> 52
-|  |- story_tracker_view -> 53
-|  |- topic_memory_map -> 51
-|  |- volume -> 19
-|  |- weather_snapshot -> 55
 |- Conversation/model surfaces
    |- src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat only for explicit local fallback
    |- src/skills/general_chat.py uses llm_gateway.generate_chat

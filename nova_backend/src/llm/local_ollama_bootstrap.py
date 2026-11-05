@@ -6,8 +6,11 @@ default deny-only ModelNetworkMediator. No remote or LAN provider is admitted.
 from __future__ import annotations
 
 import ctypes
+import json
 import logging
 import os
+import subprocess
+import threading
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -40,6 +43,63 @@ _LOG = logging.getLogger(__name__)
 _PORT = 11434
 _PATHS = {("POST", "/api/show"), ("GET", "/api/tags"), ("POST", "/api/chat")}
 _OPTIONS = {"temperature", "num_predict", "num_ctx", "top_k", "repeat_penalty", "stop"}
+_ATTESTATION_LOCK = threading.Lock()
+_ATTESTED_PROCESS: tuple[str, int, float] | None = None
+
+
+def _ollama_authenticode_is_valid(executable: Path) -> bool:
+    """Verify that Windows trusts the binary and attributes it to Ollama Inc."""
+    system_root = Path(os.environ.get("SystemRoot") or r"C:\Windows").resolve()
+    powershell = (
+        system_root
+        / "System32"
+        / "WindowsPowerShell"
+        / "v1.0"
+        / "powershell.exe"
+    ).resolve()
+    if not powershell.is_file():
+        return False
+    command = (
+        "$signature = Get-AuthenticodeSignature -LiteralPath "
+        "$env:NOVA_OLLAMA_ATTEST_PATH; "
+        "$subject = if ($signature.SignerCertificate) "
+        "{ [string]$signature.SignerCertificate.Subject } else { '' }; "
+        "[pscustomobject]@{Status=[string]$signature.Status;Subject=$subject} "
+        "| ConvertTo-Json -Compress"
+    )
+    environment = {
+        "NOVA_OLLAMA_ATTEST_PATH": str(executable),
+        "SystemRoot": str(system_root),
+        "WINDIR": str(system_root),
+    }
+    try:
+        completed = subprocess.run(
+            [
+                str(powershell),
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                command,
+            ],
+            capture_output=True,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            encoding="utf-8",
+            env=environment,
+            errors="strict",
+            timeout=15,
+        )
+        if completed.returncode != 0:
+            return False
+        result = json.loads(completed.stdout)
+    except (OSError, subprocess.SubprocessError, UnicodeError, ValueError):
+        return False
+    subject = str(result.get("Subject") or "")
+    return result.get("Status") == "Valid" and any(
+        component.strip() in {"CN=Ollama Inc.", "O=Ollama Inc."}
+        for component in subject.split(",")
+    )
 
 
 def _verified_evidence_target() -> VerifiedLocalEvidenceTarget:
@@ -69,6 +129,7 @@ def _verified_evidence_target() -> VerifiedLocalEvidenceTarget:
 
 def _attest_ollama_listener() -> None:
     """Require the user-installed Ollama executable to own the exact loopback listener."""
+    global _ATTESTED_PROCESS
     if os.name != "nt":
         raise ModelNetworkMediatorError("No verified Windows Ollama listener.")
     local_appdata = os.environ.get("LOCALAPPDATA")
@@ -99,6 +160,14 @@ def _attest_ollama_listener() -> None:
             or "serve" not in commands[1:]
         ):
             raise ModelNetworkMediatorError("Unexpected process owns the Ollama listener.")
+        identity = (str(executable).casefold(), process.pid, process.create_time())
+        with _ATTESTATION_LOCK:
+            if _ATTESTED_PROCESS != identity:
+                if not _ollama_authenticode_is_valid(executable):
+                    raise ModelNetworkMediatorError(
+                        "Ollama listener publisher could not be verified."
+                    )
+                _ATTESTED_PROCESS = identity
     except ModelNetworkMediatorError:
         raise
     except (OSError, psutil.Error, ValueError) as error:
@@ -172,13 +241,13 @@ class VerifiedLoopbackOllamaMediator(ModelNetworkMediator):
         self, *, method: str, url: str, json_payload: dict | None,
         has_body: bool, request_id: str | None, session_id: str | None,
     ) -> None:
-        self._strict_url(url, method)
-        categories = self._validate_payload(method, url, json_payload)
+        pinned_url = self._strict_url(url, method)
+        categories = self._validate_payload(method, pinned_url, json_payload)
         _attest_ollama_listener()
         facts = disclosure_facts(
             transport=TransportClass.LOCAL_PRIVATE_MODEL,
             method=method,
-            url=url,
+            url=pinned_url,
             json_payload=json_payload,
             capability_id=None,
         )
