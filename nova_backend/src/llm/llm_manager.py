@@ -12,6 +12,7 @@ from src.durability.maintenance import authoritative_mutation
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.writer import LedgerWriter
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
+from src.llm.local_ollama_bootstrap import build_local_ollama_mediator
 from src.nova_config import (
     OLLAMA_FALLBACK_MODEL,
     OLLAMA_MODEL,
@@ -143,7 +144,9 @@ class LLMManager:
         self.base_url = str(base_url or OLLAMA_URL or "http://localhost:11434").strip()
         self.timeout = OLLAMA_TIMEOUT
         self.system_prompt = SYSTEM_PROMPT
-        self._network = ModelNetworkMediator()
+        self._network = build_local_ollama_mediator(self.base_url, self.model)
+        self._version_lock_active = True
+        self._verified_model_digest: str | None = None
 
         # Circuit breaker state
         self.failure_count = 0
@@ -172,6 +175,8 @@ class LLMManager:
 
     def try_recover_primary(self) -> bool:
         """Attempt to switch back to the primary model after fallback."""
+        if getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
+            return False
         if not self._using_fallback:
             return True
         try:
@@ -212,6 +217,13 @@ class LLMManager:
 
     # ----- Version lock helpers -------------------------------------------------
 
+    @staticmethod
+    def _valid_model_digest(value: object) -> bool:
+        return isinstance(value, str) and bool(
+            re.fullmatch(r"(?:sha256:)?[a-fA-F0-9]{64}", value)
+        )
+
+
     def _get_model_digest(self) -> Optional[str]:
         """Query Ollama for the current model's digest (SHA256 of the blob)."""
         try:
@@ -223,9 +235,9 @@ class LLMManager:
             )
             data = response.data
             digest = data.get("digest")
-            if digest:
+            if self._valid_model_digest(digest):
                 return digest
-            logger.info("Ollama /api/show omitted digest for model %s; falling back to /api/tags.", self.model)
+            logger.info("Ollama /api/show provided no valid digest; checking /api/tags.")
             return self._get_model_digest_from_tags()
         except Exception as e:
             logger.warning(f"Could not fetch model digest: {e}")
@@ -247,18 +259,20 @@ class LLMManager:
         for model_entry in models:
             if model_entry.get("name") == self.model:
                 digest = model_entry.get("digest")
-                if digest:
+                if self._valid_model_digest(digest):
                     return digest
         return None
 
-    def _compute_current_hash(self) -> str:
-        """Compute hash based on current configuration."""
+    def _compute_current_hash(self) -> str | None:
+        """No model hash exists when the real digest cannot be verified."""
         model_digest = self._get_model_digest()
-        if model_digest is None:
-            model_digest = "fetch_failed"
-            logger.warning("Using fallback digest 'fetch_failed' – inference will block until confirmed.")
+        if not self._valid_model_digest(model_digest):
+            self._verified_model_digest = None
+            logger.warning("Model identity unavailable; version lock remains closed.")
+            return None
         with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
             wrapper_code = f.read()
+        self._verified_model_digest = model_digest
         return compute_model_hash(
             model_digest,
             self.system_prompt,
@@ -286,7 +300,10 @@ class LLMManager:
         with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
             wrapper_code = f.read()
         wrapper_hash = hashlib.sha256(wrapper_code.encode()).hexdigest()
-        model_digest = self._get_model_digest() or "unknown"
+        model_digest = getattr(self, "_verified_model_digest", None)
+        if not self._valid_model_digest(model_digest):
+            self._block_inference()
+            raise ValueError("Model identity not verified; update receipt prohibited.")
 
         metadata = {
             "model_name": self.model,
@@ -309,6 +326,9 @@ class LLMManager:
     def _check_model_version(self):
         """Compare stored hash with current; block if mismatch or first run."""
         computed = self._compute_current_hash()
+        if computed is None:
+            self._block_inference()
+            return
 
         if MODEL_HASH_FILE.exists():
             stored = MODEL_HASH_FILE.read_text().strip()
@@ -338,13 +358,25 @@ class LLMManager:
         MODEL_HASH_FILE.parent.mkdir(parents=True, exist_ok=True)
 
         computed = self._compute_current_hash()
-        previous = None
-        if MODEL_HASH_FILE.exists():
-            previous = MODEL_HASH_FILE.read_text().strip()
+        if computed is None:
+            self._block_inference()
+            raise ValueError("Cannot confirm a model without a verified digest.")
+        previous = MODEL_HASH_FILE.read_text().strip() if MODEL_HASH_FILE.exists() else None
+        self._log_model_updated(previous, computed, user_confirmed=True)
         MODEL_HASH_FILE.write_text(computed)
         self.inference_blocked = False
-        self._log_model_updated(previous, computed, user_confirmed=True)
         logger.info("Model update confirmed. Inference unblocked.")
+
+    def _confirmed_model_identity_current(self) -> bool:
+        """Recheck the selected model identity before each live inference."""
+        computed = self._compute_current_hash()
+        if computed is None or not MODEL_HASH_FILE.exists():
+            self._block_inference()
+            return False
+        if MODEL_HASH_FILE.read_text().strip() != computed:
+            self._block_inference()
+            return False
+        return True
 
     # ----- Existing functionality (circuit breaker, generate) -----------------
 
@@ -385,6 +417,8 @@ class LLMManager:
         """
         if self.inference_blocked:
             logger.error("Generate called while model is blocked.")
+            return None
+        if getattr(self, "_version_lock_active", False) and not self._confirmed_model_identity_current():
             return None
 
         # Circuit breaker
