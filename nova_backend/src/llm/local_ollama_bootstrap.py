@@ -12,6 +12,7 @@ import os
 import stat
 import subprocess
 import threading
+from enum import Enum
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -46,6 +47,14 @@ _PATHS = {("POST", "/api/show"), ("GET", "/api/tags"), ("POST", "/api/chat")}
 _OPTIONS = {"temperature", "num_predict", "num_ctx", "top_k", "repeat_penalty", "stop"}
 _ATTESTATION_LOCK = threading.Lock()
 _ATTESTED_PROCESS: tuple[str, int, float] | None = None
+
+
+class LocalOllamaStartupStatus(str, Enum):
+    """Startup-safe result that keeps policy denial distinct from offline."""
+
+    AVAILABLE = "available"
+    OFFLINE = "offline"
+    DENIED = "denied"
 
 
 def _is_windows() -> bool:
@@ -195,6 +204,23 @@ def _attest_ollama_listener() -> None:
         raise
     except (OSError, psutil.Error, ValueError) as error:
         raise ModelNetworkMediatorError("Unable to attest Ollama listener.") from error
+
+
+def _ollama_listener_is_absent() -> bool:
+    """Return True only when no process is listening on the fixed Ollama port."""
+    if not _is_windows():
+        raise ModelNetworkMediatorError("No verified Windows Ollama listener.")
+    try:
+        listeners = [
+            connection
+            for connection in psutil.net_connections(kind="tcp")
+            if connection.status == psutil.CONN_LISTEN
+            and connection.laddr
+            and connection.laddr.port == _PORT
+        ]
+    except (OSError, psutil.Error) as error:
+        raise ModelNetworkMediatorError("Unable to inspect Ollama listener.") from error
+    return not listeners
 
 
 class VerifiedLoopbackOllamaMediator(ModelNetworkMediator):
@@ -370,3 +396,39 @@ def verified_local_ollama_status(
     except ModelNetworkMediatorError:
         return False
     return response.status_code == 200
+
+
+def verified_local_ollama_startup_status(
+    *,
+    base_url: str,
+    model: str,
+    request_id: str,
+    session_id: str,
+    timeout: float = 2.0,
+) -> LocalOllamaStartupStatus:
+    """Classify startup readiness without turning trust denial into offline.
+
+    ``OFFLINE`` is returned only after the exact loopback endpoint and trusted
+    evidence target have been validated and no listener exists on port 11434.
+    A present listener is probed only through the fully verified mediator.
+    """
+    try:
+        VerifiedLoopbackOllamaMediator._strict_url(
+            base_url.rstrip("/") + "/api/tags", "GET"
+        )
+        _verified_evidence_target()
+        listener_absent = _ollama_listener_is_absent()
+    except Exception:
+        return LocalOllamaStartupStatus.DENIED
+
+    if listener_absent:
+        return LocalOllamaStartupStatus.OFFLINE
+    if verified_local_ollama_status(
+        base_url=base_url,
+        model=model,
+        request_id=request_id,
+        session_id=session_id,
+        timeout=timeout,
+    ):
+        return LocalOllamaStartupStatus.AVAILABLE
+    return LocalOllamaStartupStatus.DENIED

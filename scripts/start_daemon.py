@@ -40,6 +40,10 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from local_readiness_probe import probe_phase_status
+from src.llm.local_ollama_bootstrap import (
+    LocalOllamaStartupStatus,
+    verified_local_ollama_startup_status,
+)
 from src.utils.loopback_bind import require_loopback_bind_host
 
 HOST = require_loopback_bind_host(os.environ.get("NOVA_HOST", "127.0.0.1"))
@@ -137,16 +141,31 @@ def _current_nova_listener_pid(fallback_pid: int) -> int:
 
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma4:e4b")
 
 
-def _ensure_ollama() -> None:
-    """Start Ollama serve if it's installed but not running."""
-    try:
-        import urllib.request
-        urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=3)
-        return  # already running
-    except Exception:
-        pass
+def _startup_ollama_status(*, timeout: float, attempt: int) -> LocalOllamaStartupStatus:
+    return verified_local_ollama_startup_status(
+        base_url=OLLAMA_URL,
+        model=OLLAMA_MODEL,
+        request_id=f"startup-ollama-{attempt}",
+        session_id="startup-daemon",
+        timeout=timeout,
+    )
+
+
+def _ensure_ollama() -> bool:
+    """Start Ollama only after a trusted probe proves it is genuinely offline."""
+    status = _startup_ollama_status(timeout=3, attempt=0)
+    if status is LocalOllamaStartupStatus.AVAILABLE:
+        return True
+    if status is LocalOllamaStartupStatus.DENIED:
+        print(
+            "[Nova] WARNING: Ollama startup admission was denied; "
+            "the local model will remain unavailable.",
+            file=sys.stderr,
+        )
+        return False
 
     try:
         creation_flags = 0
@@ -161,14 +180,22 @@ def _ensure_ollama() -> None:
         print("[Nova] Started Ollama in background — waiting for it to be ready...")
         # Poll the Ollama health endpoint instead of sleeping a fixed amount.
         # Ollama typically binds within 1-3 seconds but can be slower on first run.
-        for _ in range(30):
-            try:
-                urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=1)
-                break  # Ollama is up
-            except Exception:
-                time.sleep(0.5)
+        for attempt in range(1, 31):
+            status = _startup_ollama_status(timeout=1, attempt=attempt)
+            if status is LocalOllamaStartupStatus.AVAILABLE:
+                return True
+            if status is LocalOllamaStartupStatus.DENIED:
+                print(
+                    "[Nova] WARNING: Ollama readiness admission was denied; "
+                    "startup polling stopped.",
+                    file=sys.stderr,
+                )
+                return False
+            time.sleep(0.5)
+        return False
     except FileNotFoundError:
         print("[Nova] WARNING: Ollama not found. LLM features will be unavailable.")
+        return False
 
 
 def _find_nova_command() -> list[str]:

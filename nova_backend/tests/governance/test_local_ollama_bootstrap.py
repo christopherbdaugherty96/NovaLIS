@@ -316,3 +316,122 @@ def test_provider_status_probe_has_no_direct_fallback_after_denial(monkeypatch):
         session_id="session-test",
     )
     assert len(attempts) == 1
+
+
+def test_startup_status_reports_offline_only_after_trust_preflight(monkeypatch):
+    monkeypatch.setattr(
+        bootstrap.VerifiedLoopbackOllamaMediator,
+        "_strict_url",
+        lambda url, method: url,
+    )
+    monkeypatch.setattr(bootstrap, "_verified_evidence_target", lambda: object())
+    monkeypatch.setattr(bootstrap, "_ollama_listener_is_absent", lambda: True)
+    monkeypatch.setattr(
+        bootstrap,
+        "verified_local_ollama_status",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("an absent listener must not be probed")
+        ),
+    )
+
+    result = bootstrap.verified_local_ollama_startup_status(
+        base_url="http://127.0.0.1:11434",
+        model="gemma2:2b",
+        request_id="startup-test",
+        session_id="startup-daemon",
+    )
+    assert result is bootstrap.LocalOllamaStartupStatus.OFFLINE
+
+
+def test_startup_status_denies_when_evidence_preflight_fails(monkeypatch):
+    monkeypatch.setattr(
+        bootstrap.VerifiedLoopbackOllamaMediator,
+        "_strict_url",
+        lambda url, method: url,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "_verified_evidence_target",
+        lambda: (_ for _ in ()).throw(
+            ModelNetworkMediatorError("evidence unavailable")
+        ),
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "_ollama_listener_is_absent",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("denial must stop before listener inspection")
+        ),
+    )
+
+    result = bootstrap.verified_local_ollama_startup_status(
+        base_url="http://127.0.0.1:11434",
+        model="gemma2:2b",
+        request_id="startup-test",
+        session_id="startup-daemon",
+    )
+    assert result is bootstrap.LocalOllamaStartupStatus.DENIED
+
+
+def test_startup_status_denies_invalid_destination_before_local_checks(monkeypatch):
+    monkeypatch.setattr(
+        bootstrap,
+        "_verified_evidence_target",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("invalid destination must stop before evidence inspection")
+        ),
+    )
+
+    result = bootstrap.verified_local_ollama_startup_status(
+        base_url="https://example.com:11434",
+        model="gemma2:2b",
+        request_id="startup-test",
+        session_id="startup-daemon",
+    )
+    assert result is bootstrap.LocalOllamaStartupStatus.DENIED
+
+
+def test_startup_status_fails_closed_on_unexpected_preflight_error(monkeypatch):
+    monkeypatch.setattr(
+        bootstrap.VerifiedLoopbackOllamaMediator,
+        "_strict_url",
+        lambda url, method: url,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "_verified_evidence_target",
+        lambda: (_ for _ in ()).throw(OSError("storage unavailable")),
+    )
+
+    result = bootstrap.verified_local_ollama_startup_status(
+        base_url="http://127.0.0.1:11434",
+        model="gemma2:2b",
+        request_id="startup-test",
+        session_id="startup-daemon",
+    )
+    assert result is bootstrap.LocalOllamaStartupStatus.DENIED
+
+
+def test_startup_status_uses_verified_probe_when_listener_exists(monkeypatch):
+    monkeypatch.setattr(
+        bootstrap.VerifiedLoopbackOllamaMediator,
+        "_strict_url",
+        lambda url, method: url,
+    )
+    monkeypatch.setattr(bootstrap, "_verified_evidence_target", lambda: object())
+    monkeypatch.setattr(bootstrap, "_ollama_listener_is_absent", lambda: False)
+    calls = []
+    monkeypatch.setattr(
+        bootstrap,
+        "verified_local_ollama_status",
+        lambda **kwargs: (calls.append(kwargs) or True),
+    )
+
+    result = bootstrap.verified_local_ollama_startup_status(
+        base_url="http://127.0.0.1:11434",
+        model="gemma2:2b",
+        request_id="startup-test",
+        session_id="startup-daemon",
+    )
+    assert result is bootstrap.LocalOllamaStartupStatus.AVAILABLE
+    assert len(calls) == 1
