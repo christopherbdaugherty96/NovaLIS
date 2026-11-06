@@ -23,6 +23,7 @@ from src.conversation.brief_followup_grounding import (
     store_brief_widget,
 )
 from src.conversation.brief_intent_resolver import resolve_brief_intent
+from src.conversation.local_conversation_summary import render_local_conversation_summary
 from src.conversation.news_evidence_integrity import (
     answer_news_evidence_followup,
     record_news_evidence_result,
@@ -742,6 +743,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _openclaw_capability_help_message = deps._openclaw_capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     SESSION_ACTIVITY_RECAP_RE = deps.SESSION_ACTIVITY_RECAP_RE
+    LOCAL_CONVERSATION_SUMMARY_RE = deps.LOCAL_CONVERSATION_SUMMARY_RE
     _render_local_time_message = deps._render_local_time_message
     _prepare_explicit_memory_save_params = deps._prepare_explicit_memory_save_params
     _invoke_governed_capability = deps.invoke_governed_capability
@@ -2308,6 +2310,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     render_session_activity_recap(
                         session_id=trusted_session_id,
                         activity_facts=session_state.get("session_activity_facts") or [],
+                    ),
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
+
+            if LOCAL_CONVERSATION_SUMMARY_RE.match(text):
+                activity_recap = render_session_activity_recap(
+                    session_id=trusted_session_id,
+                    activity_facts=session_state.get("session_activity_facts") or [],
+                )
+                await _complete_immediate_turn(
+                    render_local_conversation_summary(
+                        session_context=session_context,
+                        active_news_evidence=session_state.get("active_news_evidence"),
+                        activity_recap=activity_recap,
                     ),
                     remember_response=False,
                     tone_domain="system",

@@ -28,6 +28,7 @@ from src.websocket.intent_patterns import (
     CAPABILITY_HELP_RE,
     EMAIL_INBOX_RE,
     HELP_ORIENT_RE,
+    LOCAL_CONVERSATION_SUMMARY_RE,
     REMIND_ME_RE,
     REMIND_ME_TIMELESS_RE,
     REMINDER_ACTION_REQUEST_RE,
@@ -72,6 +73,8 @@ def _pipeline(raw: str) -> str | int | None:
         return "TIME_QUERY"
     if SESSION_ACTIVITY_RECAP_RE.match(command_text):
         return "SESSION_ACTIVITY_RECAP"
+    if LOCAL_CONVERSATION_SUMMARY_RE.match(command_text):
+        return "LOCAL_CONVERSATION_SUMMARY"
     if CALENDAR_WRITE_REQUEST_RE.match(command_text):
         return "CALENDAR_WRITE"
     if is_private_google_drive_search(command_text):
@@ -311,6 +314,44 @@ class TestSessionActivityRecapRouting:
     )
     def test_generic_happened_and_discussion_phrases_do_not_hit_recap(self, raw: str):
         assert _pipeline(raw) != "SESSION_ACTIVITY_RECAP"
+
+
+class TestLocalConversationSummaryRouting:
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "Summarize our discussion.",
+            "Recap what we discussed.",
+            "Summarize our conversation so far.",
+        ],
+    )
+    def test_conversation_summary_phrases_use_local_route(self, raw: str):
+        assert _pipeline(raw) == "LOCAL_CONVERSATION_SUMMARY"
+
+    @pytest.mark.parametrize(
+        "raw, expected_capability",
+        [
+            ("summarize today's news", 49),
+            ("summarize doc 2", 54),
+            ("research Russia-Ukraine developments", 48),
+        ],
+    )
+    def test_existing_summary_and_research_routes_are_unchanged(
+        self,
+        raw: str,
+        expected_capability: int,
+    ):
+        assert _pipeline(raw) == expected_capability
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            "Summarize our discussion",
+            "Summarize our conversation so far",
+        ],
+    )
+    def test_governor_does_not_reinterpret_local_summary_as_external_report(self, raw: str):
+        assert GovernorMediator.parse_governed_invocation(raw) is None
 
 
 # ---------------------------------------------------------------------------
