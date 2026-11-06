@@ -88,6 +88,74 @@ def test_allowlisted_connection_request_uses_no_capability_or_governor(monkeypat
         assert secret not in rendered_ledger
 
 
+def test_connection_query_parameters_are_admitted_and_sent_without_ledger_leak(
+    monkeypatch,
+):
+    mediator = _legacy_mediator()
+    ledger = _RecordingLedger()
+    mediator.ledger = ledger
+    captured: dict[str, Any] = {}
+
+    def fake_request(**kwargs):
+        captured.update(kwargs)
+        return _Response()
+
+    monkeypatch.setattr("src.governor.network_mediator.requests.request", fake_request)
+    from src.governor import network_mediator as module
+
+    monkeypatch.setitem(
+        module.CONNECTION_OPERATION_ENDPOINTS,
+        "health-test",
+        {"health": ("GET", "https://health.example.test/status")},
+    )
+    mediator.connection_request(
+        "health-test",
+        "health",
+        "GET",
+        "https://health.example.test/status",
+        params={"apiKey": "synthetic-query-secret", "count": "1"},
+    )
+
+    assert captured["params"] == {
+        "apiKey": "synthetic-query-secret",
+        "count": "1",
+    }
+    assert "synthetic-query-secret" not in str(ledger.events)
+
+
+def test_connection_query_parameters_are_bound_to_disclosure_admission(monkeypatch):
+    mediator = _legacy_mediator()
+    admitted: dict[str, Any] = {}
+    mediator._authorize_disclosure = lambda **kwargs: admitted.update(kwargs)
+    mediator.ledger = _RecordingLedger()
+
+    class _LocalSession:
+        def request(self, **_kwargs):
+            return _Response()
+
+    mediator._new_session = _LocalSession
+    from src.governor import network_mediator as module
+
+    monkeypatch.setitem(
+        module.CONNECTION_OPERATION_ENDPOINTS,
+        "health-test",
+        {"health": ("GET", "https://health.example.test/status")},
+    )
+    mediator.connection_request(
+        "health-test",
+        "health",
+        "GET",
+        "https://health.example.test/status",
+        params={"apiKey": "synthetic-query-secret", "count": "1"},
+    )
+
+    assert admitted["params"] == {
+        "apiKey": "synthetic-query-secret",
+        "count": "1",
+    }
+    assert admitted["url"] == "https://health.example.test/status"
+
+
 @pytest.mark.parametrize(
     ("operation", "method", "url"),
     [

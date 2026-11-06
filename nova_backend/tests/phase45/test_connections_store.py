@@ -175,6 +175,50 @@ class TestRecordHealth:
         snap = {p["id"]: p for p in store.snapshot()}
         assert snap["openai"]["connected"] is False
 
+    def test_unavailable_invalidates_stale_success_without_key_failure(self, tmp_path):
+        store = _make_store(tmp_path)
+        store.save_key("openai", "synthetic-secret-key")
+        store.record_health("openai", ok=True, detail="Connected")
+
+        unavailable = store.record_health_unavailable(
+            "openai", detail="Connection verification unavailable under policy."
+        )
+
+        assert unavailable["health_ok"] is None
+        assert unavailable["connected"] is False
+        assert unavailable["last_checked"] == ""
+        assert "unavailable" in unavailable["health_detail"].lower()
+
+    def test_health_result_requires_exact_configuration_generation(self, tmp_path):
+        store = _make_store(tmp_path)
+        _first, stale_generation = store.save_key_with_generation(
+            "openai", "same-synthetic-key"
+        )
+        _second, current_generation = store.save_key_with_generation(
+            "openai", "same-synthetic-key"
+        )
+
+        applied, snapshot = store.record_health_if_current(
+            "openai",
+            expected_generation=stale_generation,
+            ok=True,
+            detail="Stale success",
+        )
+
+        assert current_generation > stale_generation
+        assert applied is False
+        assert snapshot["health_ok"] is None
+        assert snapshot["connected"] is False
+
+        applied, snapshot = store.record_health_if_current(
+            "openai",
+            expected_generation=current_generation,
+            ok=True,
+            detail="Current success",
+        )
+        assert applied is True
+        assert snapshot["health_ok"] is True
+
     def test_provider_state_matrix_distinguishes_unverified_healthy_and_failed(self, tmp_path, monkeypatch):
         monkeypatch.delenv("WEATHER_API_KEY", raising=False)
         store = _make_store(tmp_path)

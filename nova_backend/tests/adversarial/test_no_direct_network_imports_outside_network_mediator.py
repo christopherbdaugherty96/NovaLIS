@@ -24,11 +24,6 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     # DNS rebinding guard. It makes no outbound network calls — urllib.parse is a
     # standard-library string parser, not a network client.
     SRC_ROOT / "utils" / "local_request_guard.py",
-    # connections_api.py uses requests only inside health-check functions (_check_openai,
-    # _check_brave, etc.) that are user-initiated provider ping probes (POST /key or /test).
-    # These are connectivity validators, not intelligence or data-collection calls, and do
-    # not pass through the governor network budget.
-    SRC_ROOT / "api" / "connections_api.py",
     # task_envelope.py uses urllib.parse only for URL hostname extraction in url_allowed().
     # It does not perform any outbound network activity.
     SRC_ROOT / "openclaw" / "task_envelope.py",

@@ -25,6 +25,7 @@ from src.governor.disclosure_transport import (
 )
 from src.governor.exceptions import (
     CapabilityRegistryError,
+    DisclosureDeniedError,
     NetworkMediatorError,
     ProviderConnectionNetworkError,
 )
@@ -46,7 +47,24 @@ CONNECTION_OPERATION_ENDPOINTS: dict[str, dict[str, tuple[str, str]]] = {
             "https://openidconnect.googleapis.com/v1/userinfo",
         ),
         "revoke": ("POST", "https://oauth2.googleapis.com/revoke"),
-    }
+    },
+    "openai": {"health": ("GET", "https://api.openai.com/v1/models")},
+    "brave": {
+        "health": ("GET", "https://api.search.brave.com/res/v1/web/search")
+    },
+    "news": {"health": ("GET", "https://newsapi.org/v2/top-headlines")},
+    "weather": {
+        "health": (
+            "GET",
+            "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/london",
+        )
+    },
+}
+CONNECTION_OPERATION_TRANSPORTS: dict[tuple[str, str], TransportClass] = {
+    ("openai", "health"): TransportClass.HTTP,
+    ("brave", "health"): TransportClass.HTTP,
+    ("news", "health"): TransportClass.HTTP,
+    ("weather", "health"): TransportClass.HTTP,
 }
 SAFE_CONNECTION_ERROR_RE = re.compile(r"^[a-z0-9_-]{1,64}$")
 
@@ -183,7 +201,7 @@ class NetworkMediator:
             session_id=session_id or "",
         )
         if not decision.may_proceed:
-            raise NetworkMediatorError(f"Data-Out denied ({decision.reason}).")
+            raise DisclosureDeniedError(decision.reason)
 
     @property
     def registry(self):
@@ -420,6 +438,7 @@ class NetworkMediator:
         url: str,
         *,
         form_payload: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
         as_json: bool = True,
         timeout: Optional[float] = None,
@@ -441,16 +460,21 @@ class NetworkMediator:
         if expected is None or expected != (method_name, url):
             raise NetworkMediatorError("Provider connection operation is not allowlisted.")
 
-        self._check_rate_limit(("connection", provider))
         self._authorize_disclosure(
-            transport=TransportClass.OAUTH_SETUP,
+            transport=CONNECTION_OPERATION_TRANSPORTS.get(
+                (provider, operation_name), TransportClass.OAUTH_SETUP
+            ),
             method=method_name,
             url=url,
             headers=headers,
+            params=params,
             form_payload=form_payload,
-            has_body=form_payload is not None,
+            has_body=form_payload is not None or params is not None,
             capability_id=None,
         )
+        # Denied requests never consume the transport-attempt budget. Admission
+        # precedes this limit as well as DNS, client creation, and transmission.
+        self._check_rate_limit(("connection", provider))
         self._validate_url(url)
         request_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
 
@@ -459,6 +483,7 @@ class NetworkMediator:
                 method=method_name,
                 url=url,
                 data=form_payload,
+                params=params,
                 headers=headers,
                 timeout=request_timeout,
                 allow_redirects=False,

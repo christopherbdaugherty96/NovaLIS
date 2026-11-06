@@ -15,6 +15,14 @@ class NetworkMediatorError(Exception):
     pass
 
 
+class DisclosureDeniedError(NetworkMediatorError):
+    """Raised when Data-Out admission denies or cannot verify a request."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = str(reason or "unavailable")
+        super().__init__(f"Data-Out denied ({self.reason}).")
+
+
 class ProviderConnectionNetworkError(NetworkMediatorError):
     """Safe provider-connection failure without response bodies or credentials."""
 
