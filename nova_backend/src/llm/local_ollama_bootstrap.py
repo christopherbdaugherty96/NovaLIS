@@ -342,3 +342,31 @@ def build_local_ollama_mediator(base_url: str, model: str) -> ModelNetworkMediat
     except Exception as error:
         _LOG.warning("Local Ollama trust bootstrap unavailable: %s", type(error).__name__)
         return ModelNetworkMediator()
+
+
+def verified_local_ollama_status(
+    *,
+    base_url: str,
+    model: str,
+    request_id: str,
+    session_id: str,
+    timeout: float = 2.0,
+) -> bool:
+    """Probe Ollama only through the verified local-model boundary.
+
+    A false result never falls back to a direct socket or HTTP client. The
+    mediator admits only the attested, fixed-loopback ``GET /api/tags`` shape
+    and records the disclosure decision before opening a connection.
+    """
+    mediator = build_local_ollama_mediator(base_url, model)
+    try:
+        response = mediator.request_json(
+            method="GET",
+            url=base_url.rstrip("/") + "/api/tags",
+            timeout=timeout,
+            request_id=request_id,
+            session_id=session_id,
+        )
+    except ModelNetworkMediatorError:
+        return False
+    return response.status_code == 200

@@ -259,3 +259,60 @@ def test_default_mediator_without_policy_and_evidence_remains_fail_closed(monkey
     mediator = ModelNetworkMediator()
     with pytest.raises(ModelNetworkMediatorError):
         _approve(mediator, "http://127.0.0.1:11434/api/show", "POST", {"model": "gemma2:2b"})
+
+
+def test_provider_status_probe_uses_exact_verified_tags_request(monkeypatch):
+    calls = []
+
+    class _Mediator:
+        def request_json(self, **kwargs):
+            calls.append(kwargs)
+            return type("_Response", (), {"status_code": 200})()
+
+    monkeypatch.setattr(
+        bootstrap,
+        "build_local_ollama_mediator",
+        lambda base_url, model: (
+            calls.append({"bootstrap": (base_url, model)}) or _Mediator()
+        ),
+    )
+
+    assert bootstrap.verified_local_ollama_status(
+        base_url="http://localhost:11434",
+        model="gemma2:2b",
+        request_id="provider-status-test",
+        session_id="session-test",
+    )
+    assert calls == [
+        {"bootstrap": ("http://localhost:11434", "gemma2:2b")},
+        {
+            "method": "GET",
+            "url": "http://localhost:11434/api/tags",
+            "timeout": 2.0,
+            "request_id": "provider-status-test",
+            "session_id": "session-test",
+        },
+    ]
+
+
+def test_provider_status_probe_has_no_direct_fallback_after_denial(monkeypatch):
+    attempts = []
+
+    class _DeniedMediator:
+        def request_json(self, **kwargs):
+            attempts.append(kwargs)
+            raise ModelNetworkMediatorError("identity unavailable")
+
+    monkeypatch.setattr(
+        bootstrap,
+        "build_local_ollama_mediator",
+        lambda _base_url, _model: _DeniedMediator(),
+    )
+
+    assert not bootstrap.verified_local_ollama_status(
+        base_url="http://localhost:11434",
+        model="gemma2:2b",
+        request_id="provider-status-test",
+        session_id="session-test",
+    )
+    assert len(attempts) == 1

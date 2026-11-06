@@ -6,6 +6,7 @@ without modifying any call paths or runtime behavior.
 from __future__ import annotations
 
 import os
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -42,27 +43,23 @@ def _env_key_present(key: str) -> bool:
     return bool(os.environ.get(key, "").strip())
 
 
-def _ollama_status() -> dict[str, Any]:
-    """Check Ollama availability without importing heavy modules."""
+def _ollama_status(*, session_id: str = "") -> dict[str, Any]:
+    """Check Ollama only through the verified local-model boundary."""
     try:
-        import urllib.error
-        import urllib.request
+        from src.llm.local_ollama_bootstrap import verified_local_ollama_status
+        from src.nova_config import OLLAMA_MODEL, OLLAMA_URL
 
-        class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
-            def redirect_request(self, req, fp, code, msg, headers, newurl):
-                raise urllib.error.HTTPError(newurl, code, msg, headers, fp)
-
-        opener = urllib.request.build_opener(
-            urllib.request.ProxyHandler({}),
-            _NoRedirectHandler(),
+        connected = verified_local_ollama_status(
+            base_url=str(OLLAMA_URL or "http://localhost:11434").strip(),
+            model=str(OLLAMA_MODEL or "gemma4:e4b").strip(),
+            request_id=f"provider-status-{uuid.uuid4()}",
+            session_id=session_id,
         )
-        request = urllib.request.Request("http://127.0.0.1:11434/api/tags", method="GET")
-        with opener.open(request, timeout=2) as resp:
-            if resp.status == 200:
-                return {"connected": True, "error": ""}
+        if connected:
+            return {"connected": True, "error": ""}
+        return {"connected": False, "error": "Local Ollama identity unavailable"}
     except Exception as exc:
         return {"connected": False, "error": str(exc)[:120]}
-    return {"connected": False, "error": "unexpected"}
 
 
 def _calendar_status() -> dict[str, Any]:
@@ -90,17 +87,18 @@ def _email_status() -> dict[str, Any]:
 def provider_status(
     *,
     policies: dict[str, ProviderBudgetPolicy] | None = None,
+    session_id: str = "",
 ) -> dict[str, Any]:
     """Build a read-only snapshot of all provider states.
 
-    Does NOT call any provider API. Only checks env vars and
-    local state to determine connected/enabled status.
+    The local Ollama availability check uses Nova's verified, evidenced
+    loopback boundary. Other entries inspect configuration and local state.
     """
     pol = policies or DEFAULT_POLICIES
 
     entries: list[dict[str, Any]] = []
 
-    ollama = _ollama_status()
+    ollama = _ollama_status(session_id=session_id)
     entries.append(
         ProviderStatusEntry(
             provider_id="ollama",

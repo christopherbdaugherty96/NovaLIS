@@ -11,10 +11,8 @@ Proves:
 """
 from __future__ import annotations
 
-import urllib.request
 from unittest.mock import patch
 
-import pytest
 from src.usage.provider_budget_policy import (
     DEFAULT_POLICIES,
 )
@@ -69,42 +67,37 @@ class TestProviderStatusRE:
         assert CONNECTION_STATUS_RE.match("show connections")
 
 
-def test_ollama_status_disables_environment_proxy_and_redirects(monkeypatch):
-    handlers = []
+def test_ollama_status_uses_verified_boundary(monkeypatch):
+    calls = []
 
-    class _Response:
-        status = 200
+    def _verified_status(**kwargs):
+        calls.append(kwargs)
+        return True
 
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *_args):
-            return False
-
-    class _Opener:
-        def open(self, request, timeout):
-            assert request.full_url == "http://127.0.0.1:11434/api/tags"
-            assert timeout == 2
-            return _Response()
-
-    def _build_opener(*items):
-        handlers.extend(items)
-        return _Opener()
-
-    monkeypatch.setattr(urllib.request, "build_opener", _build_opener)
     monkeypatch.setattr(
-        urllib.request,
-        "urlopen",
-        lambda *_args, **_kwargs: pytest.fail("global proxy-aware urlopen must not be used"),
+        "src.llm.local_ollama_bootstrap.verified_local_ollama_status",
+        _verified_status,
     )
 
-    assert _ollama_status() == {"connected": True, "error": ""}
-    proxy_handlers = [item for item in handlers if isinstance(item, urllib.request.ProxyHandler)]
-    redirect_handlers = [item for item in handlers if isinstance(item, urllib.request.HTTPRedirectHandler)]
-    assert len(proxy_handlers) == 1
-    assert proxy_handlers[0].proxies == {}
-    assert len(redirect_handlers) == 1
-    assert type(redirect_handlers[0]).redirect_request is not urllib.request.HTTPRedirectHandler.redirect_request
+    assert _ollama_status(session_id="provider-session") == {
+        "connected": True,
+        "error": "",
+    }
+    assert calls[0]["session_id"] == "provider-session"
+    assert calls[0]["request_id"].startswith("provider-status-")
+    assert calls[0]["base_url"]
+    assert calls[0]["model"]
+
+
+def test_ollama_status_fails_closed_without_verified_identity(monkeypatch):
+    monkeypatch.setattr(
+        "src.llm.local_ollama_bootstrap.verified_local_ollama_status",
+        lambda **_kwargs: False,
+    )
+
+    result = _ollama_status()
+    assert result["connected"] is False
+    assert result["error"] == "Local Ollama identity unavailable"
 
 
 class TestCalendarStatus:
@@ -271,6 +264,16 @@ class TestNoProviderCallsForStatus:
         assert "record" not in block.lower()
         assert "write" not in block.lower()
         assert "execute" not in block.lower()
+
+    def test_session_handler_provider_probe_runs_off_event_loop(self):
+        import src.websocket.session_handler as mod
+
+        source = open(mod.__file__, encoding="utf-8", errors="replace").read()
+        block_start = source.find("PROVIDER_STATUS_RE.match")
+        assert block_start > 0
+        block_end = source.find("continue", block_start)
+        block = source[block_start:block_end]
+        assert "await asyncio.to_thread" in block
 
 
 class TestMorningBriefUnchanged:
