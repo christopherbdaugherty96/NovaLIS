@@ -176,14 +176,14 @@ def test_current_runtime_state_qualifies_network_and_execution_invariants():
     assert "Runtime Surface Families:" in rendered
 
 
-def test_bypass_report_classifies_known_network_exception():
+def test_bypass_report_records_no_requests_network_exception_after_slice4a():
     rendered = ra.render_bypass_surfaces_markdown()
 
     assert "## requests-based direct-network classification" in rendered
     assert "existing requests-library scanner" in rendered
     assert "does not prove the absence of every possible network mechanism" in rendered
-    assert "nova_backend/src/api/connections_api.py" in rendered
-    assert "local_administrative_health_probe" in rendered
+    assert "Known requests-based exceptions: None detected." in rendered
+    assert "nova_backend/src/api/connections_api.py" not in rendered
 
 
 def _load_operational_checker():
@@ -233,8 +233,8 @@ def test_generator_entrypoint_writes_instrumented_runtime_truth(tmp_path, monkey
     discrepancy_section = current.split("## Runtime Truth Discrepancies", 1)[1].split(
         "## Design Runtime Divergences", 1
     )[0]
-    assert "KNOWN_DIRECT_NETWORK_EXCEPTION" in discrepancy_section
-    assert "- None" not in discrepancy_section
+    assert "KNOWN_DIRECT_NETWORK_EXCEPTION" not in discrepancy_section
+    assert "- None" in discrepancy_section
 
     assert "src.openclaw.thinking_loop.ThinkingLoop" in current
     assert "src.openclaw.tool_registry.ToolRegistry" in current
@@ -246,8 +246,8 @@ def test_generator_entrypoint_writes_instrumented_runtime_truth(tmp_path, monkey
     assert "src.identity.nova_self_awareness.build_self_awareness_block" in current
     assert "requests-based direct paths detectable by the existing scanner" in current
 
-    assert "nova_backend/src/api/connections_api.py" in bypass
-    assert "local_administrative_health_probe" in bypass
+    assert "Known requests-based exceptions: None detected." in bypass
+    assert "nova_backend/src/api/connections_api.py" not in bypass
     assert "existing requests-library scanner" in bypass
 
     assert "scope_version: behaviorally_active_v2" in fingerprint

@@ -175,6 +175,20 @@ class TestRecordHealth:
         snap = {p["id"]: p for p in store.snapshot()}
         assert snap["openai"]["connected"] is False
 
+    def test_unavailable_invalidates_stale_success_without_key_failure(self, tmp_path):
+        store = _make_store(tmp_path)
+        store.save_key("openai", "synthetic-secret-key")
+        store.record_health("openai", ok=True, detail="Connected")
+
+        unavailable = store.record_health_unavailable(
+            "openai", detail="Connection verification unavailable under policy."
+        )
+
+        assert unavailable["health_ok"] is None
+        assert unavailable["connected"] is False
+        assert unavailable["last_checked"] == ""
+        assert "unavailable" in unavailable["health_detail"].lower()
+
     def test_provider_state_matrix_distinguishes_unverified_healthy_and_failed(self, tmp_path, monkeypatch):
         monkeypatch.delenv("WEATHER_API_KEY", raising=False)
         store = _make_store(tmp_path)

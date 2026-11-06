@@ -210,6 +210,25 @@ class ConnectionsStore:
         return self._provider_snapshot(provider_id, state)
 
     @authoritative_mutation
+    def record_health_unavailable(
+        self,
+        provider_id: str,
+        *,
+        detail: str,
+    ) -> dict[str, Any]:
+        """Invalidate stale health without representing policy denial as key failure."""
+        with self._lock:
+            state = self._read_state()
+            providers = state.setdefault("providers", {})
+            entry = providers.setdefault(provider_id, {})
+            entry["health_ok"] = None
+            entry["health_detail"] = str(detail).strip()[:200]
+            entry["last_checked"] = ""
+            state["updated_at"] = _now()
+            self._write_state(state)
+        return self._provider_snapshot(provider_id, state)
+
+    @authoritative_mutation
     def clear_key(self, provider_id: str) -> dict[str, Any]:
         """Remove stored key and clear env var."""
         meta = PROVIDER_REGISTRY.get(provider_id)

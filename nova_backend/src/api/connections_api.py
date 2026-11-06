@@ -11,13 +11,63 @@ DELETE /api/settings/connections/{provider}        — clear single provider key
 DELETE /api/settings/connections/all               — clear all provider keys (with confirmed=true guard)
 """
 
+import asyncio
 import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from fastapi import APIRouter, HTTPException
 
 from src.connections.connections_store import PROVIDER_REGISTRY, connections_store
+from src.governor.exceptions import (
+    DisclosureDeniedError,
+    NetworkMediatorError,
+    ProviderConnectionNetworkError,
+)
+from src.governor.network_mediator import NetworkMediator
+
+
+@dataclass(frozen=True)
+class ConnectionHealthOperation:
+    url: str
+    params: Callable[[str], dict[str, str] | None]
+    headers: Callable[[str], dict[str, str] | None]
+
+
+CONNECTION_HEALTH_OPERATIONS = {
+    "openai": ConnectionHealthOperation(
+        url="https://api.openai.com/v1/models",
+        params=lambda _key: None,
+        headers=lambda key: {"Authorization": f"Bearer {key}"},
+    ),
+    "brave": ConnectionHealthOperation(
+        url="https://api.search.brave.com/res/v1/web/search",
+        params=lambda _key: {"q": "test", "count": "1"},
+        headers=lambda key: {
+            "X-Subscription-Token": key,
+            "Accept": "application/json",
+        },
+    ),
+    "news": ConnectionHealthOperation(
+        url="https://newsapi.org/v2/top-headlines",
+        params=lambda key: {"country": "us", "pageSize": "1", "apiKey": key},
+        headers=lambda _key: None,
+    ),
+    "weather": ConnectionHealthOperation(
+        url=(
+            "https://weather.visualcrossing.com/VisualCrossingWebServices/"
+            "rest/services/timeline/london"
+        ),
+        params=lambda key: {
+            "key": key,
+            "include": "current",
+            "contentType": "json",
+            "unitGroup": "metric",
+        },
+        headers=lambda _key: None,
+    ),
+}
 
 
 def _reject_trial_provider_operation() -> None:
@@ -28,8 +78,11 @@ def _reject_trial_provider_operation() -> None:
         )
 
 
-def build_connections_router() -> APIRouter:
+def build_connections_router(
+    *, network_mediator: NetworkMediator | None = None
+) -> APIRouter:
     router = APIRouter()
+    mediator = network_mediator or NetworkMediator()
 
     # ------------------------------------------------------------------
     # GET /api/settings/connections
@@ -59,8 +112,8 @@ def build_connections_router() -> APIRouter:
         connections_store.save_key(provider, key)
 
         # Run health check
-        ok, detail = _health_check(provider, key)
-        snap = connections_store.record_health(provider, ok=ok, detail=detail)
+        ok, detail = await asyncio.to_thread(_health_check, provider, key, mediator)
+        snap = _record_health_outcome(provider, ok=ok, detail=detail)
 
         return {"ok": ok, "detail": detail, "provider": snap}
 
@@ -79,8 +132,8 @@ def build_connections_router() -> APIRouter:
         if not key:
             raise HTTPException(status_code=400, detail="No key stored for this provider")
 
-        ok, detail = _health_check(provider, key)
-        snap = connections_store.record_health(provider, ok=ok, detail=detail)
+        ok, detail = await asyncio.to_thread(_health_check, provider, key, mediator)
+        snap = _record_health_outcome(provider, ok=ok, detail=detail)
 
         return {"ok": ok, "detail": detail, "provider": snap}
 
@@ -120,7 +173,17 @@ def build_connections_router() -> APIRouter:
 # Health-check implementations (one per provider kind)
 # ---------------------------------------------------------------------------
 
-def _health_check(provider_id: str, key: str) -> tuple[bool, str]:
+def _record_health_outcome(
+    provider_id: str, *, ok: bool | None, detail: str
+) -> dict[str, Any]:
+    if ok is None:
+        return connections_store.record_health_unavailable(provider_id, detail=detail)
+    return connections_store.record_health(provider_id, ok=ok, detail=detail)
+
+
+def _health_check(
+    provider_id: str, key: str, mediator: NetworkMediator
+) -> tuple[bool | None, str]:
     """Run a lightweight connectivity check for the given provider.
 
     Returns (ok: bool, detail: str).  Never raises — all errors are caught
@@ -128,94 +191,59 @@ def _health_check(provider_id: str, key: str) -> tuple[bool, str]:
     """
     try:
         checker = _HEALTH_CHECKERS.get(provider_id, _check_token)
+        if provider_id in CONNECTION_HEALTH_OPERATIONS:
+            return checker(key, mediator)
         return checker(key)
-    except Exception as exc:
-        return False, f"Unexpected error: {exc}"
-
-
-def _check_openai(key: str) -> tuple[bool, str]:
-    import requests
-    try:
-        r = requests.get(
-            "https://api.openai.com/v1/models",
-            headers={"Authorization": f"Bearer {key}"},
-            timeout=8,
-        )
-        if r.status_code == 200:
-            return True, "Connected — models endpoint responded."
-        if r.status_code == 401:
-            return False, "Invalid API key (401)."
-        if r.status_code == 429:
+    except DisclosureDeniedError:
+        return None, "Connection verification unavailable under the current Data-Out policy."
+    except ProviderConnectionNetworkError as exc:
+        if exc.status_code == 429 and provider_id in {"openai", "brave", "weather"}:
             return True, "Key valid but rate-limited (429). Treating as connected."
-        return False, f"Unexpected status {r.status_code}."
-    except requests.exceptions.Timeout:
-        return False, "Request timed out."
-    except requests.exceptions.ConnectionError:
-        return False, "Could not reach api.openai.com. Check your network."
-
-
-def _check_brave(key: str) -> tuple[bool, str]:
-    import requests
-    try:
-        r = requests.get(
-            "https://api.search.brave.com/res/v1/web/search",
-            params={"q": "test", "count": "1"},
-            headers={"X-Subscription-Token": key, "Accept": "application/json"},
-            timeout=8,
-        )
-        if r.status_code == 200:
-            return True, "Connected — search endpoint responded."
-        if r.status_code == 401:
-            return False, "Invalid subscription token (401)."
-        if r.status_code == 429:
-            return True, "Key valid but rate-limited (429). Treating as connected."
-        return False, f"Unexpected status {r.status_code}."
-    except requests.exceptions.Timeout:
-        return False, "Request timed out."
-    except requests.exceptions.ConnectionError:
-        return False, "Could not reach api.search.brave.com."
-
-
-def _check_news(key: str) -> tuple[bool, str]:
-    import requests
-    try:
-        r = requests.get(
-            "https://newsapi.org/v2/top-headlines",
-            params={"country": "us", "pageSize": "1", "apiKey": key},
-            timeout=8,
-        )
-        if r.status_code == 200:
-            return True, "Connected — headlines endpoint responded."
-        if r.status_code == 401:
+        if exc.status_code == 401:
             return False, "Invalid API key (401)."
-        if r.status_code == 426:
+        if exc.status_code == 426 and provider_id == "news":
             return False, "Plan upgrade required (426)."
-        return False, f"Unexpected status {r.status_code}."
-    except requests.exceptions.Timeout:
-        return False, "Request timed out."
-    except requests.exceptions.ConnectionError:
-        return False, "Could not reach newsapi.org."
+        return False, f"Unexpected status {exc.status_code}."
+    except NetworkMediatorError:
+        return False, "Provider connection request failed."
+    except Exception:
+        return False, "Unexpected internal error."
 
 
-def _check_weather(key: str) -> tuple[bool, str]:
-    import requests
-    try:
-        r = requests.get(
-            "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/london",
-            params={"key": key, "include": "current", "contentType": "json", "unitGroup": "metric"},
-            timeout=8,
-        )
-        if r.status_code == 200:
-            return True, "Connected — forecast endpoint responded."
-        if r.status_code == 401:
-            return False, "Invalid API key (401)."
-        if r.status_code == 429:
-            return True, "Key valid but rate-limited (429). Treating as connected."
-        return False, f"Unexpected status {r.status_code}."
-    except requests.exceptions.Timeout:
-        return False, "Request timed out."
-    except requests.exceptions.ConnectionError:
-        return False, "Could not reach weather.visualcrossing.com."
+def _governed_health_request(
+    provider: str, key: str, mediator: NetworkMediator
+) -> dict[str, Any]:
+    operation = CONNECTION_HEALTH_OPERATIONS[provider]
+    return mediator.connection_request(
+        provider,
+        "health",
+        "GET",
+        operation.url,
+        params=operation.params(key),
+        headers=operation.headers(key),
+        as_json=False,
+        timeout=8,
+    )
+
+
+def _check_openai(key: str, mediator: NetworkMediator) -> tuple[bool, str]:
+    _governed_health_request("openai", key, mediator)
+    return True, "Connected — models endpoint responded."
+
+
+def _check_brave(key: str, mediator: NetworkMediator) -> tuple[bool, str]:
+    _governed_health_request("brave", key, mediator)
+    return True, "Connected — search endpoint responded."
+
+
+def _check_news(key: str, mediator: NetworkMediator) -> tuple[bool, str]:
+    _governed_health_request("news", key, mediator)
+    return True, "Connected — headlines endpoint responded."
+
+
+def _check_weather(key: str, mediator: NetworkMediator) -> tuple[bool, str]:
+    _governed_health_request("weather", key, mediator)
+    return True, "Connected — forecast endpoint responded."
 
 
 def _check_calendar(path: str) -> tuple[bool, str]:
