@@ -9,6 +9,17 @@ OUT_LOG="$PID_DIR/nova_backend.out.log"
 ERR_LOG="$PID_DIR/nova_backend.err.log"
 NOVA_BIND_HOST="${NOVA_HOST:-127.0.0.1}"
 NOVA_BIND_PORT="${NOVA_PORT:-8000}"
+case "$NOVA_BIND_HOST" in
+  127.0.0.1|::1) ;;
+  *)
+    echo "[Nova] NOVA_HOST must be the literal loopback address 127.0.0.1 or ::1."
+    exit 1
+    ;;
+esac
+if ! [[ "$NOVA_BIND_PORT" =~ ^[0-9]+$ ]] || (( NOVA_BIND_PORT < 1 || NOVA_BIND_PORT > 65535 )); then
+  echo "[Nova] NOVA_PORT must be an integer from 1 to 65535."
+  exit 1
+fi
 if [[ "$NOVA_BIND_HOST" == *:* ]]; then
   NOVA_URL_HOST="[$NOVA_BIND_HOST]"
 else
@@ -36,12 +47,10 @@ if [[ ! -x "$PYTHON_EXE" ]]; then
 fi
 
 check_ready() {
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsS "$DASHBOARD_URL/phase-status" >/dev/null 2>&1
-    return $?
-  fi
-
-  "$PYTHON_EXE" -c "import sys, urllib.request; urllib.request.urlopen('$DASHBOARD_URL/phase-status', timeout=2); sys.exit(0)" >/dev/null 2>&1
+  "$PYTHON_EXE" "$ROOT_DIR/scripts/local_readiness_probe.py" \
+    --host "$NOVA_BIND_HOST" \
+    --port "$NOVA_BIND_PORT" \
+    --timeout 2 >/dev/null 2>&1
 }
 
 open_dashboard() {

@@ -1,11 +1,11 @@
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 START_DAEMON_PATH = PROJECT_ROOT / "scripts" / "start_daemon.py"
 STOP_DAEMON_PATH = PROJECT_ROOT / "scripts" / "stop_daemon.py"
 START_BAT_PATH = PROJECT_ROOT / "start_nova.bat"
 STOP_BAT_PATH = PROJECT_ROOT / "stop_nova.bat"
+START_SH_PATH = PROJECT_ROOT / "start_nova.sh"
 
 
 def test_startup_script_waits_for_phase_status_readiness():
@@ -38,6 +38,22 @@ def test_start_daemon_supports_app_window_mode():
     assert "NOVA_BROWSER_MODE" in source
     assert "_open_dashboard" in source
     assert "--app=" in source
+
+
+def test_start_daemon_uses_bounded_readiness_probe():
+    source = START_DAEMON_PATH.read_text(encoding="utf-8")
+    running_block = source.split("def _is_running", 1)[1].split("def _port_listener", 1)[0]
+    assert "probe_phase_status" in running_block
+    assert "urlopen" not in running_block
+
+
+def test_shell_launcher_uses_bounded_readiness_probe_without_curl():
+    source = START_SH_PATH.read_text(encoding="utf-8")
+    readiness_block = source.split("check_ready()", 1)[1].split("open_dashboard()", 1)[0]
+    assert "local_readiness_probe.py" in readiness_block
+    assert "curl" not in readiness_block
+    assert "urllib.request" not in readiness_block
+    assert '127.0.0.1|::1' in source
 
 
 def test_stop_bat_delegates_to_stop_daemon():
