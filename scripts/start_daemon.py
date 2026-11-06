@@ -33,9 +33,13 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_DIR = PROJECT_ROOT / "nova_backend"
+SCRIPT_DIR = Path(__file__).resolve().parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
+from local_readiness_probe import probe_phase_status
 from src.utils.loopback_bind import require_loopback_bind_host
 
 HOST = require_loopback_bind_host(os.environ.get("NOVA_HOST", "127.0.0.1"))
@@ -50,12 +54,7 @@ PID_FILE = PID_DIR / "nova_backend.pid"
 
 def _is_running() -> bool:
     """Return True if Nova is already responding on PORT."""
-    try:
-        import urllib.request
-        with urllib.request.urlopen(HEALTH_ENDPOINT, timeout=3):
-            return True
-    except Exception:
-        return False
+    return probe_phase_status(host=HOST, port=PORT, timeout=3)
 
 
 def _port_listener() -> tuple[int, str] | None:
