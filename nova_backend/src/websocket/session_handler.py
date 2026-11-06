@@ -3420,7 +3420,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if PROVIDER_STATUS_RE.match(command_text):
                 await send_trust_status(ws, session_state["trust_status"])
                 from src.usage.provider_status import provider_status as _provider_status_fn
-                _ps_snapshot = _provider_status_fn()
+                _ps_snapshot = await asyncio.to_thread(
+                    _provider_status_fn,
+                    session_id=str(session_state.get("session_id") or ""),
+                )
                 provider_msg, provider_suggestions = _render_provider_status_message(
                     _ps_snapshot
                 )
