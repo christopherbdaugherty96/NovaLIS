@@ -460,7 +460,6 @@ class NetworkMediator:
         if expected is None or expected != (method_name, url):
             raise NetworkMediatorError("Provider connection operation is not allowlisted.")
 
-        self._check_rate_limit(("connection", provider))
         self._authorize_disclosure(
             transport=CONNECTION_OPERATION_TRANSPORTS.get(
                 (provider, operation_name), TransportClass.OAUTH_SETUP
@@ -473,6 +472,9 @@ class NetworkMediator:
             has_body=form_payload is not None or params is not None,
             capability_id=None,
         )
+        # Denied requests never consume the transport-attempt budget. Admission
+        # precedes this limit as well as DNS, client creation, and transmission.
+        self._check_rate_limit(("connection", provider))
         self._validate_url(url)
         request_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
 

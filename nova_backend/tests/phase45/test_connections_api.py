@@ -147,6 +147,33 @@ class TestSaveKey:
         assert data["ok"] is False
         assert "401" in data["detail"]
 
+    def test_stale_offloaded_result_cannot_mark_replaced_configuration_healthy(
+        self, client, store, monkeypatch, tmp_path
+    ):
+        original = tmp_path / "original.ics"
+        original.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR", encoding="utf-8")
+        replacement = tmp_path / "missing.ics"
+
+        def replace_before_result(provider, key, mediator):
+            assert key == str(original)
+            store.save_key("calendar", str(replacement))
+            return True, "File found."
+
+        monkeypatch.setattr(
+            "src.api.connections_api._health_check", replace_before_result
+        )
+
+        res = client.post(
+            "/api/settings/connections/calendar/key", json={"key": str(original)}
+        )
+
+        assert res.status_code == 200
+        assert res.json()["ok"] is None
+        assert store.get_key("calendar") == str(replacement)
+        provider = res.json()["provider"]
+        assert provider["health_ok"] is None
+        assert provider["connected"] is False
+
 
 # ---------------------------------------------------------------------------
 # POST /api/settings/connections/{provider}/test
@@ -265,6 +292,41 @@ class TestTestKey:
         assert ok is False
         assert detail == "Provider connection request failed."
         assert "synthetic-secret" not in detail
+
+    def test_existing_key_check_rejects_result_after_configuration_change(
+        self, client, store, monkeypatch, tmp_path
+    ):
+        original = tmp_path / "original.ics"
+        original.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR", encoding="utf-8")
+        replacement = tmp_path / "missing.ics"
+        store.save_key("calendar", str(original))
+
+        def replace_before_result(provider, key, mediator):
+            assert key == str(original)
+            store.save_key("calendar", str(replacement))
+            return True, "File found."
+
+        monkeypatch.setattr(
+            "src.api.connections_api._health_check", replace_before_result
+        )
+
+        res = client.post("/api/settings/connections/calendar/test")
+
+        assert res.status_code == 200
+        assert res.json()["ok"] is None
+        assert store.get_key("calendar") == str(replacement)
+        assert res.json()["provider"]["health_ok"] is None
+
+    def test_repeated_policy_denials_remain_unverified(self):
+        mediator = NetworkMediator()
+
+        results = [
+            __import__("src.api.connections_api", fromlist=["_health_check"])
+            ._health_check("openai", "synthetic-key", mediator)[0]
+            for _ in range(51)
+        ]
+
+        assert results == [None] * 51
 
 
 @pytest.mark.parametrize("provider", ["openai", "brave", "news", "weather"])

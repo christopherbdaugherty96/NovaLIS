@@ -109,11 +109,19 @@ def build_connections_router(
             raise HTTPException(status_code=400, detail="key must be a non-empty string")
 
         # Persist key and update env var
-        connections_store.save_key(provider, key)
+        _saved, generation = connections_store.save_key_with_generation(provider, key)
 
         # Run health check
         ok, detail = await asyncio.to_thread(_health_check, provider, key, mediator)
-        snap = _record_health_outcome(provider, ok=ok, detail=detail)
+        applied, snap = _record_health_outcome(
+            provider,
+            expected_generation=generation,
+            ok=ok,
+            detail=detail,
+        )
+        if not applied:
+            ok = None
+            detail = "Connection configuration changed before verification completed."
 
         return {"ok": ok, "detail": detail, "provider": snap}
 
@@ -128,12 +136,20 @@ def build_connections_router(
         if provider not in PROVIDER_REGISTRY:
             raise HTTPException(status_code=404, detail=f"Unknown provider: {provider}")
 
-        key = connections_store.get_key(provider)
+        key, generation = connections_store.get_key_with_generation(provider)
         if not key:
             raise HTTPException(status_code=400, detail="No key stored for this provider")
 
         ok, detail = await asyncio.to_thread(_health_check, provider, key, mediator)
-        snap = _record_health_outcome(provider, ok=ok, detail=detail)
+        applied, snap = _record_health_outcome(
+            provider,
+            expected_generation=generation,
+            ok=ok,
+            detail=detail,
+        )
+        if not applied:
+            ok = None
+            detail = "Connection configuration changed before verification completed."
 
         return {"ok": ok, "detail": detail, "provider": snap}
 
@@ -174,11 +190,18 @@ def build_connections_router(
 # ---------------------------------------------------------------------------
 
 def _record_health_outcome(
-    provider_id: str, *, ok: bool | None, detail: str
-) -> dict[str, Any]:
-    if ok is None:
-        return connections_store.record_health_unavailable(provider_id, detail=detail)
-    return connections_store.record_health(provider_id, ok=ok, detail=detail)
+    provider_id: str,
+    *,
+    expected_generation: int,
+    ok: bool | None,
+    detail: str,
+) -> tuple[bool, dict[str, Any]]:
+    return connections_store.record_health_if_current(
+        provider_id,
+        expected_generation=expected_generation,
+        ok=ok,
+        detail=detail,
+    )
 
 
 def _health_check(

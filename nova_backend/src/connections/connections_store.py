@@ -163,6 +163,19 @@ class ConnectionsStore:
     @authoritative_mutation
     def save_key(self, provider_id: str, key: str) -> dict[str, Any]:
         """Persist key, update os.environ. Does NOT run health check."""
+        snapshot, _generation = self._save_key_with_generation(provider_id, key)
+        return snapshot
+
+    @authoritative_mutation
+    def save_key_with_generation(
+        self, provider_id: str, key: str
+    ) -> tuple[dict[str, Any], int]:
+        """Persist a key and return the opaque generation that health may update."""
+        return self._save_key_with_generation(provider_id, key)
+
+    def _save_key_with_generation(
+        self, provider_id: str, key: str
+    ) -> tuple[dict[str, Any], int]:
         meta = PROVIDER_REGISTRY.get(provider_id)
         if not meta:
             raise KeyError(f"Unknown provider: {provider_id}")
@@ -172,7 +185,9 @@ class ConnectionsStore:
             state = self._read_state()
             providers = state.setdefault("providers", {})
             entry = providers.setdefault(provider_id, {})
+            generation = int(entry.get("configuration_generation") or 0) + 1
             entry["key"] = key
+            entry["configuration_generation"] = generation
             entry["updated_at"] = _now()
             # Reset health so UI doesn't show stale state before next check
             entry["health_ok"] = None
@@ -187,7 +202,7 @@ class ConnectionsStore:
         else:
             os.environ.pop(meta["env_var"], None)
 
-        return self._provider_snapshot(provider_id, state)
+        return self._provider_snapshot(provider_id, state), generation
 
     @authoritative_mutation
     def record_health(
@@ -229,6 +244,30 @@ class ConnectionsStore:
         return self._provider_snapshot(provider_id, state)
 
     @authoritative_mutation
+    def record_health_if_current(
+        self,
+        provider_id: str,
+        *,
+        expected_generation: int,
+        ok: bool | None,
+        detail: str,
+    ) -> tuple[bool, dict[str, Any]]:
+        """Atomically ignore a health result for a replaced configuration."""
+        with self._lock:
+            state = self._read_state()
+            providers = state.setdefault("providers", {})
+            entry = providers.setdefault(provider_id, {})
+            current_generation = int(entry.get("configuration_generation") or 0)
+            if current_generation != int(expected_generation):
+                return False, self._provider_snapshot(provider_id, state)
+            entry["health_ok"] = ok
+            entry["health_detail"] = str(detail).strip()[:200]
+            entry["last_checked"] = _now() if ok is not None else ""
+            state["updated_at"] = _now()
+            self._write_state(state)
+        return True, self._provider_snapshot(provider_id, state)
+
+    @authoritative_mutation
     def clear_key(self, provider_id: str) -> dict[str, Any]:
         """Remove stored key and clear env var."""
         meta = PROVIDER_REGISTRY.get(provider_id)
@@ -239,6 +278,9 @@ class ConnectionsStore:
             state = self._read_state()
             providers = state.setdefault("providers", {})
             entry = providers.get(provider_id) or {}
+            entry["configuration_generation"] = (
+                int(entry.get("configuration_generation") or 0) + 1
+            )
             entry["key"] = ""
             entry["health_ok"] = None
             entry["health_detail"] = ""
@@ -258,6 +300,9 @@ class ConnectionsStore:
             state = self._read_state()
             providers = state.get("providers") or {}
             for pid in list(providers.keys()):
+                providers[pid]["configuration_generation"] = (
+                    int(providers[pid].get("configuration_generation") or 0) + 1
+                )
                 providers[pid]["key"] = ""
                 providers[pid]["health_ok"] = None
                 providers[pid]["health_detail"] = ""
@@ -277,6 +322,13 @@ class ConnectionsStore:
         with self._lock:
             state = self._read_state()
         return (state.get("providers") or {}).get(provider_id, {}).get("key") or ""
+
+    def get_key_with_generation(self, provider_id: str) -> tuple[str, int]:
+        """Return the key and opaque configuration generation under one lock."""
+        with self._lock:
+            state = self._read_state()
+        entry = (state.get("providers") or {}).get(provider_id, {})
+        return entry.get("key") or "", int(entry.get("configuration_generation") or 0)
 
     # ------------------------------------------------------------------
     # Internal helpers
