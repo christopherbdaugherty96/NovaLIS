@@ -58,7 +58,7 @@ def test_offline_status_launches_then_polls_only_verified_boundary(monkeypatch):
         "Popen",
         lambda *args, **kwargs: launches.append((args, kwargs)),
     )
-    monkeypatch.setattr(daemon.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(daemon.platform, "system", lambda: "Linux")
     monkeypatch.setattr(daemon.time, "sleep", lambda _seconds: None)
 
     assert daemon._ensure_ollama() is True
@@ -87,7 +87,7 @@ def test_denial_during_post_launch_polling_stops_without_more_attempts(monkeypat
         "Popen",
         lambda *args, **kwargs: launches.append((args, kwargs)),
     )
-    monkeypatch.setattr(daemon.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(daemon.platform, "system", lambda: "Linux")
 
     assert daemon._ensure_ollama() is False
     assert len(launches) == 1
