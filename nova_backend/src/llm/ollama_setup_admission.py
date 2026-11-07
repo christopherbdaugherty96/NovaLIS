@@ -67,17 +67,32 @@ class DelegatedProcessOutcomeRecord:
     correlation_id: str
     outcome: str
     exit_code: int | None
+    transport_observed: bool
 
     def as_dict(self) -> dict[str, object]:
         return {
             "record_kind": "delegated_process_outcome",
-            "transport_observed": True,
+            "transport_observed": self.transport_observed,
             "operation": self.operation.value,
             "command_fingerprint": self.command_fingerprint,
             "executable_fingerprint": self.executable_fingerprint,
             "correlation_id": _fingerprint(self.correlation_id),
             "outcome": self.outcome,
             "exit_code": self.exit_code,
+            "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+        }
+
+
+@dataclass(frozen=True)
+class VerificationProcessAdmissionRecord:
+    correlation_id: str
+
+    def as_dict(self) -> dict[str, object]:
+        return {
+            "record_kind": "verification_process_admission",
+            "transport_observed": False,
+            "purpose": "verify_ollama_executable_and_listener_identity",
+            "correlation_id": _fingerprint(self.correlation_id),
             "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -131,6 +146,7 @@ def build_ollama_admission(
     model: str,
     correlation_id: str,
     online_consent: bool,
+    evidence_ready: bool = False,
 ) -> OllamaCommandAdmission:
     if not isinstance(operation, OllamaSetupOperation):
         raise OllamaSetupAdmissionError("Unsupported Ollama setup operation.")
@@ -140,6 +156,10 @@ def build_ollama_admission(
         raise OllamaSetupAdmissionError("The requested model is not installation-authorized.")
     if operation is OllamaSetupOperation.PULL and not online_consent:
         raise OllamaSetupAdmissionError("Ollama pull requires explicit online consent.")
+    if not evidence_ready:
+        raise OllamaSetupAdmissionError(
+            "Trusted evidence must be ready before Ollama identity verification."
+        )
 
     executable = _trusted_ollama_executable().resolve(strict=True)
     if not _ollama_authenticode_is_valid(executable):
@@ -238,14 +258,19 @@ def run_ollama_command(
     timeout: float = 1800.0,
 ) -> subprocess.CompletedProcess[str]:
     """Admit, evidence, revalidate and run one exact Ollama setup command."""
-    admission = build_ollama_admission(
-        operation=operation,
-        model=model,
-        correlation_id=correlation_id,
-        online_consent=online_consent,
-    )
     try:
         sink = _process_evidence_sink()
+        # Authenticode verification uses a tightly bounded PowerShell child.
+        # Prove the trusted sink is writable before that verifier or any
+        # Ollama process can be created.
+        sink.append(VerificationProcessAdmissionRecord(correlation_id=correlation_id))
+        admission = build_ollama_admission(
+            operation=operation,
+            model=model,
+            correlation_id=correlation_id,
+            online_consent=online_consent,
+            evidence_ready=True,
+        )
         _record_admission(admission, sink)
     except OllamaSetupAdmissionError:
         raise
@@ -255,6 +280,7 @@ def run_ollama_command(
 
     outcome = "exception"
     exit_code: int | None = None
+    transport_observed = False
     try:
         result = subprocess.run(
             list(admission.command),
@@ -265,11 +291,21 @@ def run_ollama_command(
             errors="strict",
             timeout=timeout,
         )
+        transport_observed = True
         exit_code = result.returncode
         outcome = "exit_success" if result.returncode == 0 else "exit_failure"
         return result
     except subprocess.TimeoutExpired:
+        transport_observed = True
         outcome = "timeout"
+        raise
+    except OSError:
+        outcome = "spawn_failure"
+        raise
+    except Exception:
+        # Errors raised while communicating with or decoding output from a
+        # created process still mean that delegation occurred.
+        transport_observed = True
         raise
     finally:
         try:
@@ -281,6 +317,7 @@ def run_ollama_command(
                     correlation_id=admission.correlation_id,
                     outcome=outcome,
                     exit_code=exit_code,
+                    transport_observed=transport_observed,
                 )
             )
         except Exception as error:

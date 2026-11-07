@@ -26,8 +26,6 @@ def test_process_is_not_spawned_when_admission_evidence_fails(monkeypatch, tmp_p
     spawned = []
 
     monkeypatch.setattr(admission, "_trusted_ollama_executable", lambda: executable)
-    monkeypatch.setattr(admission, "_attest_ollama_listener", lambda: None)
-    monkeypatch.setattr(admission, "_ollama_authenticode_is_valid", lambda _path: True)
     monkeypatch.setattr(
         admission,
         "_process_evidence_sink",
@@ -98,10 +96,11 @@ def test_exact_command_and_minimal_environment_are_bound_before_spawn(
     assert spawned[0][0] == [str(executable.resolve()), "list"]
     assert spawned[0][1]["env"] == admission._minimal_child_environment()
     assert [item["record_kind"] for item in recorded] == [
+        "verification_process_admission",
         "disclosure_policy_evaluation",
         "delegated_process_outcome",
     ]
-    assert recorded[1]["outcome"] == "exit_success"
+    assert recorded[2]["outcome"] == "exit_success"
 
 
 def test_fetch_models_rejects_silent_or_arbitrary_pull(monkeypatch):
@@ -175,11 +174,77 @@ def test_outcome_record_never_contains_process_output():
         correlation_id="install-attempt-5",
         outcome="exit_failure",
         exit_code=9,
+        transport_observed=True,
     ).as_dict()
 
     serialized = json.dumps(record)
     assert "stdout" not in serialized
     assert "stderr" not in serialized
+
+
+def test_identity_verifier_runs_only_after_evidence_is_durable(monkeypatch, tmp_path):
+    executable = tmp_path / "ollama.exe"
+    executable.write_bytes(b"signed ollama")
+    order = []
+
+    class Sink:
+        def append(self, record):
+            order.append(record.as_dict()["record_kind"])
+
+    monkeypatch.setattr(admission, "_trusted_ollama_executable", lambda: executable)
+    monkeypatch.setattr(
+        admission,
+        "_ollama_authenticode_is_valid",
+        lambda _path: order.append("authenticode_verifier") or True,
+    )
+    monkeypatch.setattr(admission, "_attest_ollama_listener", lambda: None)
+    monkeypatch.setattr(admission, "_process_evidence_sink", lambda: Sink())
+    monkeypatch.setattr(
+        admission.subprocess,
+        "run",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "NAME\n", ""),
+    )
+
+    admission.run_ollama_command(
+        operation=admission.OllamaSetupOperation.LIST,
+        model=admission.APPROVED_INSTALL_MODEL,
+        correlation_id="install-attempt-order",
+        online_consent=False,
+    )
+
+    assert order.index("verification_process_admission") < order.index(
+        "authenticode_verifier"
+    )
+
+
+def test_spawn_failure_is_recorded_as_unobserved(monkeypatch, tmp_path):
+    executable = tmp_path / "ollama.exe"
+    executable.write_bytes(b"signed ollama")
+    records = []
+
+    class Sink:
+        def append(self, record):
+            records.append(record.as_dict())
+
+    monkeypatch.setattr(admission, "_trusted_ollama_executable", lambda: executable)
+    monkeypatch.setattr(admission, "_attest_ollama_listener", lambda: None)
+    monkeypatch.setattr(admission, "_ollama_authenticode_is_valid", lambda _path: True)
+    monkeypatch.setattr(admission, "_process_evidence_sink", lambda: Sink())
+
+    def fail_spawn(*args, **kwargs):
+        raise OSError("process was not created")
+
+    monkeypatch.setattr(admission.subprocess, "run", fail_spawn)
+    with pytest.raises(OSError):
+        admission.run_ollama_command(
+            operation=admission.OllamaSetupOperation.LIST,
+            model=admission.APPROVED_INSTALL_MODEL,
+            correlation_id="install-attempt-spawn-failure",
+            online_consent=False,
+        )
+
+    assert records[-1]["outcome"] == "spawn_failure"
+    assert records[-1]["transport_observed"] is False
 
 
 @pytest.mark.parametrize(
