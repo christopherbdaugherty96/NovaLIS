@@ -344,7 +344,10 @@ def test_session_approved_cap64_uses_real_governor_ledger_sequence(monkeypatch):
     assert _event_types(ledger).count("ACTION_ATTEMPTED") == 1
     assert "EMAIL_DRAFT_CREATED" in _event_types(ledger)
     assert _event_types(ledger).count("ACTION_COMPLETED") == 1
-    assert any("Email draft" in message and "opened in your mail client" in message for message in _chat_messages(ws))
+    assert any(
+        "Email draft" in message and "handed to your mail client" in message
+        for message in _chat_messages(ws)
+    )
 
 
 def test_session_no_clears_pending_without_execution(monkeypatch):

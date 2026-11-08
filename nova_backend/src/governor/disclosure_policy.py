@@ -734,6 +734,20 @@ def _request_shape_fingerprint(value: object) -> str:
 def _normalized_destination(value: str, transport: TransportClass) -> str:
     raw = str(value or "")
     try:
+        if transport is TransportClass.BROWSER_HANDOFF:
+            parsed = urlsplit(raw)
+            if (
+                parsed.scheme.lower() not in {"http", "https"}
+                or not parsed.hostname
+                or parsed.username is not None
+                or parsed.password is not None
+            ):
+                return ""
+            # A browser handoff authorizes the exact string delegated to the OS,
+            # including query and fragment. HTTP transport normalization omits
+            # query values because request-shape authorization owns them; no such
+            # later boundary exists after an OS browser handoff.
+            return raw
         if transport in _URL_TRANSPORTS:
             parsed = urlsplit(raw.strip())
             if (

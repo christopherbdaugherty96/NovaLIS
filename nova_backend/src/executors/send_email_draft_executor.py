@@ -18,10 +18,14 @@ Reversible: false (once opened the draft is in the mail client)
 """
 from __future__ import annotations
 
-import webbrowser
 from typing import Any
 
 from src.actions.action_result import ActionResult
+from src.governor.url_handoff_admission import (
+    URLHandoffAdmissionError,
+    URLHandoffKind,
+    open_governed_url_handoff,
+)
 from src.ledger.writer import LedgerWriter
 from src.skills.general_chat import generate_chat
 
@@ -93,7 +97,16 @@ class SendEmailDraftExecutor:
 
         # Build and open mailto: URI
         mailto_uri = self._build_mailto(to=to, subject=subject, body=body)
-        open_ok = self._open_mailto(mailto_uri)
+        handoff_uncertain = False
+        try:
+            open_ok = self._open_mailto(
+                mailto_uri,
+                request_id=str(req.request_id or ""),
+                session_id=session_id,
+            )
+        except URLHandoffAdmissionError as error:
+            open_ok = False
+            handoff_uncertain = error.handoff_attempted
 
         # Log to ledger
         try:
@@ -103,20 +116,27 @@ class SendEmailDraftExecutor:
                     "capability_id": 64,
                     "request_id": req.request_id,
                     "session_id": session_id,
-                    "to": to or "(not specified)",
-                    "subject": subject or "(not specified)",
+                    "recipient_present": bool(to),
+                    "subject_present": bool(subject),
                     "body_length": len(body),
                     "mailto_opened": open_ok,
+                    "handoff_uncertain": handoff_uncertain,
                 },
             )
         except Exception:
             pass  # ledger failure must not block user response
 
         if not open_ok:
+            status_message = (
+                "I asked the operating system to open this draft, but couldn't "
+                "verify whether the mail-client handoff was accepted."
+                if handoff_uncertain
+                else "I composed a draft but couldn't open your mail client automatically."
+            )
             return ActionResult(
                 success=False,
                 message=(
-                    "I composed a draft but couldn't open your mail client automatically.\n\n"
+                    f"{status_message}\n\n"
                     f"**To:** {to or '(fill in)'}\n"
                     f"**Subject:** {subject or '(fill in)'}\n\n"
                     f"{body}"
@@ -140,7 +160,7 @@ class SendEmailDraftExecutor:
             summary_parts.append(f"to **{to}**")
         if subject:
             summary_parts.append(f"about *{subject}*")
-        summary = "Email draft " + (" ".join(summary_parts) if summary_parts else "") + " opened in your mail client. Review and send when ready."
+        summary = "Email draft " + (" ".join(summary_parts) if summary_parts else "") + " handed to your mail client. Review and send when ready."
 
         return ActionResult(
             success=True,
@@ -189,9 +209,11 @@ class SendEmailDraftExecutor:
         query = "&".join(parts)
         return f"mailto:{encoded_to}{'?' + query if query else ''}"
 
-    def _open_mailto(self, uri: str) -> bool:
-        """Open the mailto: URI in the OS default mail client. Returns True on success."""
-        try:
-            return webbrowser.open(uri)
-        except Exception:
-            return False
+    def _open_mailto(self, uri: str, *, request_id: str, session_id: str) -> bool:
+        """Admit the exact mailto URI before asking the OS to open it."""
+        return open_governed_url_handoff(
+            uri=uri,
+            kind=URLHandoffKind.MAIL_CLIENT,
+            request_id=request_id,
+            session_id=session_id,
+        )

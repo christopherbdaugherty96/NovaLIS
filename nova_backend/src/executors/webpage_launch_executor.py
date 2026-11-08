@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-import webbrowser
-
 from src.actions.action_result import ActionResult
+from src.governor.url_handoff_admission import (
+    URLHandoffAdmissionError,
+    URLHandoffKind,
+    open_governed_url_handoff,
+)
 from src.ledger.writer import LedgerWriter
 from src.utils.web_target_planner import domain_from_url, plan_web_open
 
@@ -49,7 +52,11 @@ class WebpageLaunchExecutor:
             )
 
         try:
-            opened = bool(webbrowser.open(url))
+            opened = open_governed_url_handoff(
+                uri=url,
+                kind=URLHandoffKind.WEBPAGE,
+                request_id=str(request.request_id or ""),
+            )
             if not opened:
                 self.ledger.log_event(
                     "WEBPAGE_LAUNCH",
@@ -79,7 +86,7 @@ class WebpageLaunchExecutor:
             )
             return ActionResult.ok(
                 message=(
-                    f"Opened {domain or url} in your default browser.\n"
+                    f"Asked your default browser to open {domain or url}.\n"
                     "Reason: user-invoked.\n"
                     "Risk: low.\n"
                     f"URL: {url}"
@@ -87,7 +94,7 @@ class WebpageLaunchExecutor:
                 request_id=request.request_id,
                 data={"opened_domain": domain or url, "url": url},
             )
-        except Exception as error:
+        except URLHandoffAdmissionError as error:
             self.ledger.log_event(
                 "WEBPAGE_LAUNCH",
                 {
@@ -99,8 +106,14 @@ class WebpageLaunchExecutor:
                     "reason": plan.get("reason"),
                 },
             )
+            message = (
+                "I asked the operating system to open that website, but couldn't "
+                "verify whether the handoff was accepted."
+                if error.handoff_attempted
+                else "I couldn't safely hand that website to your default browser."
+            )
             return ActionResult.failure(
-                "I couldn't open your default browser for that website.",
+                message,
                 data={"url": url, "domain": domain},
                 request_id=request.request_id,
             )
