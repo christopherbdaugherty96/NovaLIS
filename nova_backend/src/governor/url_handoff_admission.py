@@ -124,7 +124,10 @@ def _validate_uri(uri: str, kind: URLHandoffKind) -> str:
         ):
             raise URLHandoffAdmissionError("The webpage handoff destination is invalid.")
     elif kind is URLHandoffKind.MAIL_CLIENT:
-        if parsed.scheme.lower() != "mailto" or not parsed.path:
+        # RFC 6068 permits a draft with no prefilled recipient. Nova uses that
+        # form when the user supplies subject/body and plans to fill in the
+        # recipient in the mail client. A completely empty mailto remains invalid.
+        if parsed.scheme.lower() != "mailto" or not (parsed.path or parsed.query):
             raise URLHandoffAdmissionError("The mail-client handoff destination is invalid.")
     else:
         raise URLHandoffAdmissionError("The URL handoff kind is unsupported.")

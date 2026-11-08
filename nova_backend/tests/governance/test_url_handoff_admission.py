@@ -82,6 +82,32 @@ def test_mail_evidence_never_contains_raw_sensitive_values(monkeypatch):
     assert raw_uri not in serialized
 
 
+def test_mail_draft_without_recipient_is_admitted(monkeypatch):
+    events: list[object] = []
+    attempts: list[str] = []
+    monkeypatch.setattr(admission, "_handoff_evidence_sink", lambda: Sink(events))
+    uri = "mailto:?subject=Meeting&body=Please%20review"
+
+    assert admission.open_governed_url_handoff(
+        uri=uri,
+        kind=admission.URLHandoffKind.MAIL_CLIENT,
+        request_id="req-mail-no-recipient",
+        opener=lambda target: attempts.append(target) or True,
+    )
+
+    assert attempts == [uri]
+
+
+def test_completely_empty_mailto_is_denied():
+    with pytest.raises(admission.URLHandoffAdmissionError):
+        admission._build_admission(
+            uri="mailto:",
+            kind=admission.URLHandoffKind.MAIL_CLIENT,
+            request_id="req-mail-empty",
+            session_id="",
+        )
+
+
 def test_exact_uri_mutation_is_denied_before_handoff(monkeypatch):
     events: list[object] = []
     original = "https://example.com/report?account=approved"
