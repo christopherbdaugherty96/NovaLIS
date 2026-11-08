@@ -247,7 +247,7 @@ def spawn_verified_ollama_server(*, correlation_id: str) -> subprocess.Popen[byt
                     list(admission.command),
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
-                    creationflags=subprocess.CREATE_NO_WINDOW,  # type: ignore[attr-defined]
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
                     env=_minimal_child_environment(),
                 )
             except OSError as error:
