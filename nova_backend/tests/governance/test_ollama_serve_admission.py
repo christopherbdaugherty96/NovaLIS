@@ -147,7 +147,9 @@ def test_non_windows_or_untrusted_identity_fails_closed(monkeypatch):
         lambda *args, **kwargs: spawned.append((args, kwargs)),
     )
 
-    with pytest.raises(admission.OllamaServeAdmissionError, match="Windows"):
+    # Depending on the host, the trusted evidence target can reject the
+    # operation before executable identity reaches its Windows-only check.
+    with pytest.raises(admission.OllamaServeAdmissionError, match="evidence|Windows"):
         admission.spawn_verified_ollama_server(correlation_id="startup-test")
 
     assert spawned == []
