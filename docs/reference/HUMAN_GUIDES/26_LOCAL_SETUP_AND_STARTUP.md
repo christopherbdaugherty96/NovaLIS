@@ -87,11 +87,16 @@ macOS/Linux:
 - `.venv/bin/python -m pip install -e .`
 
 ### 3. Fetch local models
-Windows:
-- `.venv\\Scripts\\python scripts\\fetch_models.py`
+On Windows, use the interactive bootstrap and explicitly approve the exact
+model pull for that setup attempt:
 
-macOS/Linux:
-- `.venv/bin/python scripts/fetch_models.py`
+- `powershell -File installer\\windows\\nova_bootstrap.ps1 -AllowOnlineModelSetup`
+
+Silent installer mode does not authorize model acquisition. The governed
+model-fetch helper also requires trusted local evidence storage, the signed
+Ollama executable at its expected path, and the exact loopback Ollama daemon.
+The helper is fail-closed on macOS/Linux; it does not provide a general
+cross-platform or arbitrary-model download command.
 
 ### 4. Start Nova
 Windows:

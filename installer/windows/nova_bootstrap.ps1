@@ -36,6 +36,7 @@ param(
     [switch]$SkipModel,
     [switch]$NoLaunch,
     [switch]$NonInteractive,
+    [switch]$AllowOnlineModelSetup,
     # When called from the Inno Setup installer, pass -SkipShortcut so the
     # bootstrap does not create a Start Menu shortcut — the [Icons] section
     # in nova_setup.iss owns shortcut creation for the installer path.
@@ -178,16 +179,15 @@ if (-not $pythonCmd) {
 }
 
 # ------------------------------------------------------------------
-# Step 2: Ollama
+# Step 2: Ollama installation presence (no process execution)
 # ------------------------------------------------------------------
 Write-Host "[2/6] Checking Ollama..." -ForegroundColor Yellow
 
-$ollamaFound = $false
-try {
-    $null = & ollama --version 2>&1
-    $ollamaFound = $true
+$ollamaPath = Join-Path $env:LOCALAPPDATA "Programs\Ollama\ollama.exe"
+$ollamaFound = Test-Path -LiteralPath $ollamaPath -PathType Leaf
+if ($ollamaFound) {
     Write-Host "       Found Ollama." -ForegroundColor Green
-} catch { }
+}
 
 if (-not $ollamaFound) {
     Write-Host "       Ollama not found." -ForegroundColor Red
@@ -238,11 +238,23 @@ if (Test-Path $NovaStart) {
 # ------------------------------------------------------------------
 # Step 5: Pull model
 # ------------------------------------------------------------------
-if (-not $SkipModel) {
+if (-not $SkipModel -and $AllowOnlineModelSetup -and $NonInteractive) {
+    Write-Host "[5/6] ERROR: Silent mode cannot authorize an online model pull." -ForegroundColor Red
+    exit 3
+} elseif (-not $SkipModel -and $AllowOnlineModelSetup) {
     Write-Host "[5/6] Pulling default Ollama model..." -ForegroundColor Yellow
-    Invoke-ExternalStep -Description "default model pull" -Command { & $VenvPython (Join-Path $InstallDir "scripts\fetch_models.py") } -AllowFailure
+    $approvedModel = "gemma4:e4b"
+    $consent = Read-Host "       Allow this setup attempt to run 'ollama pull $approvedModel'? (y/N)"
+    if ($consent -eq "y") {
+        $correlationId = [guid]::NewGuid().ToString()
+        Invoke-ExternalStep -Description "default model pull" -Command {
+            & $VenvPython (Join-Path $InstallDir "scripts\fetch_models.py") --allow-online-pull --model $approvedModel --correlation-id $correlationId
+        }
+    } else {
+        Write-Host "       Model pull not authorized." -ForegroundColor Yellow
+    }
 } else {
-    Write-Host "[5/6] Skipping model pull (--SkipModel)." -ForegroundColor Yellow
+    Write-Host "[5/6] Skipping model pull (no explicit online model consent)." -ForegroundColor Yellow
 }
 
 # ------------------------------------------------------------------
