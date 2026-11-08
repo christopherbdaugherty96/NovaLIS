@@ -10,11 +10,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from src.actions.action_result import ActionResult
 from src.executors.send_email_draft_executor import SendEmailDraftExecutor
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -214,7 +210,7 @@ def test_ledger_records_email_draft_failed_when_open_fails():
     assert "EMAIL_DRAFT_FAILED" in event_names
 
 
-def test_ledger_event_includes_to_and_subject():
+def test_ledger_event_records_structure_without_recipient_or_subject():
     ledger = _FakeLedger()
     ex = _make_executor(ledger)
 
@@ -227,8 +223,10 @@ def test_ledger_event_includes_to_and_subject():
     events = {name: payload for name, payload in ledger.events}
     assert "EMAIL_DRAFT_CREATED" in events
     payload = events["EMAIL_DRAFT_CREATED"]
-    assert payload["to"] == "iris@example.com"
-    assert payload["subject"] == "Test subject"
+    assert payload["recipient_present"] is True
+    assert payload["subject_present"] is True
+    assert "to" not in payload
+    assert "subject" not in payload
     assert payload["capability_id"] == 64
 
 
@@ -297,14 +295,16 @@ def test_open_mailto_is_the_only_external_call_on_success():
 
     with (
         patch("src.executors.send_email_draft_executor.generate_chat", return_value="Body"),
-        patch("src.executors.send_email_draft_executor.webbrowser") as mock_webbrowser,
+        patch(
+            "src.executors.send_email_draft_executor.open_governed_url_handoff",
+            return_value=True,
+        ) as mock_handoff,
     ):
-        mock_webbrowser.open.return_value = True
         result = ex.execute(_req({"to": "leo@example.com", "subject": "Draft test"}))
 
     assert result.success is True
-    mock_webbrowser.open.assert_called_once()
-    opened_uri = mock_webbrowser.open.call_args[0][0]
+    mock_handoff.assert_called_once()
+    opened_uri = mock_handoff.call_args.kwargs["uri"]
     assert str(opened_uri).startswith("mailto:")
 
 

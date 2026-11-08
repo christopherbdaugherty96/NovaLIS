@@ -49,7 +49,10 @@ def test_execute_preview_returns_widget():
 def test_execute_open_includes_reason_and_risk(monkeypatch):
     from src.executors.webpage_launch_executor import WebpageLaunchExecutor
 
-    monkeypatch.setattr("src.executors.webpage_launch_executor.webbrowser.open", lambda *_: True)
+    monkeypatch.setattr(
+        "src.executors.webpage_launch_executor.open_governed_url_handoff",
+        lambda **_kwargs: True,
+    )
     ledger = _FakeLedger()
     executor = WebpageLaunchExecutor(ledger=ledger)
 
@@ -64,7 +67,10 @@ def test_execute_open_includes_reason_and_risk(monkeypatch):
 def test_execute_open_returns_failure_when_browser_open_returns_false(monkeypatch):
     from src.executors.webpage_launch_executor import WebpageLaunchExecutor
 
-    monkeypatch.setattr("src.executors.webpage_launch_executor.webbrowser.open", lambda *_: False)
+    monkeypatch.setattr(
+        "src.executors.webpage_launch_executor.open_governed_url_handoff",
+        lambda **_kwargs: False,
+    )
     ledger = _FakeLedger()
     executor = WebpageLaunchExecutor(ledger=ledger)
 
@@ -74,3 +80,21 @@ def test_execute_open_returns_failure_when_browser_open_returns_false(monkeypatc
     launch_events = [evt for evt in ledger.events if evt[0] == "WEBPAGE_LAUNCH"]
     assert launch_events
     assert launch_events[-1][1].get("success") is False
+
+
+def test_execute_denied_handoff_reports_local_failure(monkeypatch):
+    from src.executors.webpage_launch_executor import WebpageLaunchExecutor
+    from src.governor.url_handoff_admission import URLHandoffAdmissionError
+
+    monkeypatch.setattr(
+        "src.executors.webpage_launch_executor.open_governed_url_handoff",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            URLHandoffAdmissionError("policy unavailable")
+        ),
+    )
+    ledger = _FakeLedger()
+
+    result = WebpageLaunchExecutor(ledger=ledger).execute(_request({"target": "github"}))
+
+    assert result.success is False
+    assert "safely hand" in result.message.lower()

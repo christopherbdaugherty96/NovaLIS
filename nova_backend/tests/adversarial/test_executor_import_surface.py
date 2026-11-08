@@ -1,9 +1,7 @@
 # tests/adversarial/test_executor_import_surface.py
 from __future__ import annotations
 
-from pathlib import Path
-
-from tests.adversarial._helpers import SRC_ROOT, assert_no_imports, find_py_files
+from tests.adversarial._helpers import SRC_ROOT, assert_no_imports, ast_imports, find_py_files
 
 """
 Goal:
@@ -37,6 +35,17 @@ GOVERNOR_READ_ALLOWLIST = {
     # invoke governor dispatch. Read-only diagnostic access is permitted.
 }
 
+# These two executors may call only the final URL-handoff enforcement boundary.
+# They remain unable to import Governor dispatch, gates, or ActionRequest surfaces.
+GOVERNOR_ENFORCEMENT_ALLOWLIST = {
+    EXECUTORS_DIR / "webpage_launch_executor.py": {
+        "src.governor.url_handoff_admission"
+    },
+    EXECUTORS_DIR / "send_email_draft_executor.py": {
+        "src.governor.url_handoff_admission"
+    },
+}
+
 
 def test_executors_do_not_import_authority_surfaces():
     assert EXECUTORS_DIR.exists(), f"Missing {EXECUTORS_DIR}"
@@ -44,6 +53,16 @@ def test_executors_do_not_import_authority_surfaces():
         if py in GOVERNOR_READ_ALLOWLIST:
             # Allow governor reads for diagnostics; still block dispatch and gate surfaces
             restricted = [f for f in FORBIDDEN if f not in ("src.governor",)]
+            assert_no_imports(py, restricted)
+        elif py in GOVERNOR_ENFORCEMENT_ALLOWLIST:
+            imports = ast_imports(py)
+            governor_imports = {
+                item
+                for item in imports
+                if item == "src.governor" or item.startswith("src.governor.")
+            }
+            assert governor_imports <= GOVERNOR_ENFORCEMENT_ALLOWLIST[py]
+            restricted = [item for item in FORBIDDEN if item != "src.governor"]
             assert_no_imports(py, restricted)
         else:
             assert_no_imports(py, FORBIDDEN)
