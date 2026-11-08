@@ -54,15 +54,15 @@ def test_offline_status_launches_then_polls_only_verified_boundary(monkeypatch):
         lambda **kwargs: (probes.append(kwargs) or next(statuses)),
     )
     monkeypatch.setattr(
-        daemon.subprocess,
-        "Popen",
-        lambda *args, **kwargs: launches.append((args, kwargs)),
+        daemon,
+        "spawn_verified_ollama_server",
+        lambda **kwargs: launches.append(kwargs),
     )
-    monkeypatch.setattr(daemon.platform, "system", lambda: "Linux")
     monkeypatch.setattr(daemon.time, "sleep", lambda _seconds: None)
 
     assert daemon._ensure_ollama() is True
     assert len(launches) == 1
+    assert launches[0]["correlation_id"] == "startup-daemon-ollama-serve"
     assert len(probes) == 3
     assert [call["attempt"] for call in probes] == [0, 1, 2]
 
@@ -83,15 +83,39 @@ def test_denial_during_post_launch_polling_stops_without_more_attempts(monkeypat
         lambda **kwargs: (probes.append(kwargs) or next(statuses)),
     )
     monkeypatch.setattr(
-        daemon.subprocess,
-        "Popen",
-        lambda *args, **kwargs: launches.append((args, kwargs)),
+        daemon,
+        "spawn_verified_ollama_server",
+        lambda **kwargs: launches.append(kwargs),
     )
-    monkeypatch.setattr(daemon.platform, "system", lambda: "Linux")
 
     assert daemon._ensure_ollama() is False
     assert len(launches) == 1
     assert len(probes) == 2
+
+
+def test_serve_admission_denial_makes_zero_process_attempts(monkeypatch):
+    daemon = _load_start_daemon()
+    monkeypatch.setattr(
+        daemon,
+        "_startup_ollama_status",
+        lambda **_kwargs: daemon.LocalOllamaStartupStatus.OFFLINE,
+    )
+    monkeypatch.setattr(
+        daemon,
+        "spawn_verified_ollama_server",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            daemon.OllamaServeAdmissionError("evidence unavailable")
+        ),
+    )
+    monkeypatch.setattr(
+        daemon.subprocess,
+        "Popen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("start_daemon must not spawn Ollama directly")
+        ),
+    )
+
+    assert daemon._ensure_ollama() is False
 
 
 def test_startup_probe_contract_has_no_direct_urlopen():
@@ -103,3 +127,5 @@ def test_startup_probe_contract_has_no_direct_urlopen():
     assert "verified_local_ollama_startup_status" in source
     assert "urlopen" not in ensure_block
     assert "urllib.request" not in ensure_block
+    assert "subprocess.Popen" not in ensure_block
+    assert '["ollama", "serve"]' not in ensure_block

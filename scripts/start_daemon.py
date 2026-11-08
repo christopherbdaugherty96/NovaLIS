@@ -44,6 +44,10 @@ from src.llm.local_ollama_bootstrap import (
     LocalOllamaStartupStatus,
     verified_local_ollama_startup_status,
 )
+from src.llm.ollama_serve_admission import (
+    OllamaServeAdmissionError,
+    spawn_verified_ollama_server,
+)
 from src.utils.loopback_bind import require_loopback_bind_host
 
 HOST = require_loopback_bind_host(os.environ.get("NOVA_HOST", "127.0.0.1"))
@@ -168,14 +172,8 @@ def _ensure_ollama() -> bool:
         return False
 
     try:
-        creation_flags = 0
-        if platform.system() == "Windows":
-            creation_flags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-        subprocess.Popen(
-            ["ollama", "serve"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            creationflags=creation_flags,
+        spawn_verified_ollama_server(
+            correlation_id="startup-daemon-ollama-serve",
         )
         print("[Nova] Started Ollama in background — waiting for it to be ready...")
         # Poll the Ollama health endpoint instead of sleeping a fixed amount.
@@ -193,8 +191,12 @@ def _ensure_ollama() -> bool:
                 return False
             time.sleep(0.5)
         return False
-    except FileNotFoundError:
-        print("[Nova] WARNING: Ollama not found. LLM features will be unavailable.")
+    except OllamaServeAdmissionError as error:
+        print(
+            f"[Nova] WARNING: Ollama startup was not admitted ({error}); "
+            "LLM features will be unavailable.",
+            file=sys.stderr,
+        )
         return False
 
 
