@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+from contextlib import nullcontext
 from pathlib import Path
 
 import pytest
@@ -16,12 +17,24 @@ class Sink:
         self.events.append(event)
 
 
-def _trusted_setup(monkeypatch, tmp_path: Path, events: list[object]) -> Path:
+def _trusted_setup(
+    monkeypatch,
+    tmp_path: Path,
+    events: list[object],
+    *,
+    use_real_lock: bool = False,
+) -> Path:
     executable = tmp_path / "ollama.exe"
     executable.write_bytes(b"trusted-ollama")
     monkeypatch.setattr(admission, "_trusted_ollama_executable", lambda: executable)
     monkeypatch.setattr(admission, "_ollama_authenticode_is_valid", lambda _path: True)
     monkeypatch.setattr(admission, "_process_evidence_sink", lambda: Sink(events))
+    if not use_real_lock:
+        monkeypatch.setattr(
+            admission,
+            "_locked_executable_identity",
+            lambda _path: nullcontext(),
+        )
     return executable
 
 
@@ -101,6 +114,11 @@ def test_outcome_evidence_failure_terminates_spawned_process(monkeypatch, tmp_pa
     executable.write_bytes(b"trusted-ollama")
     monkeypatch.setattr(admission, "_trusted_ollama_executable", lambda: executable)
     monkeypatch.setattr(admission, "_ollama_authenticode_is_valid", lambda _path: True)
+    monkeypatch.setattr(
+        admission,
+        "_locked_executable_identity",
+        lambda _path: nullcontext(),
+    )
 
     class FailThirdAppend:
         def __init__(self):
@@ -205,7 +223,7 @@ def test_executable_lock_denies_replacement_until_process_creation(tmp_path):
 @pytest.mark.skipif(os.name != "nt", reason="Windows file-sharing contract")
 def test_spawn_holds_identity_lock_through_popen(monkeypatch, tmp_path):
     events: list[object] = []
-    executable = _trusted_setup(monkeypatch, tmp_path, events)
+    executable = _trusted_setup(monkeypatch, tmp_path, events, use_real_lock=True)
     replacement = tmp_path / "replacement.exe"
     replacement.write_bytes(b"replacement")
     process = object()
