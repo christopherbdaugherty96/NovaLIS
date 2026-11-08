@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import os
 import subprocess
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -105,10 +106,58 @@ def _minimal_child_environment() -> dict[str, str]:
     return environment
 
 
-def _build_admission(*, correlation_id: str) -> OllamaServeAdmission:
+@contextmanager
+def _locked_executable_identity(executable: Path):
+    """Hold a Windows handle that denies write/delete through process creation."""
+    if os.name != "nt":
+        raise OllamaServeAdmissionError("Ollama serve admission requires Windows.")
+
+    import ctypes
+    from ctypes import wintypes
+
+    create_file = ctypes.WinDLL("kernel32", use_last_error=True).CreateFileW
+    create_file.argtypes = (
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    )
+    create_file.restype = wintypes.HANDLE
+    close_handle = ctypes.WinDLL("kernel32", use_last_error=True).CloseHandle
+    close_handle.argtypes = (wintypes.HANDLE,)
+    close_handle.restype = wintypes.BOOL
+
+    generic_read = 0x80000000
+    share_read = 0x00000001
+    open_existing = 3
+    file_attribute_normal = 0x00000080
+    handle = create_file(
+        str(executable),
+        generic_read,
+        share_read,
+        None,
+        open_existing,
+        file_attribute_normal,
+        None,
+    )
+    invalid_handle = wintypes.HANDLE(-1).value
+    if handle == invalid_handle:
+        raise OllamaServeAdmissionError("Ollama executable identity could not be locked.")
+    try:
+        yield
+    finally:
+        close_handle(handle)
+
+
+def _build_admission(
+    *, correlation_id: str, executable: Path
+) -> OllamaServeAdmission:
     if not correlation_id or len(correlation_id) > _CORRELATION_LIMIT:
         raise OllamaServeAdmissionError("A bounded startup correlation ID is required.")
-    executable = _trusted_ollama_executable().resolve(strict=True)
+    executable = executable.resolve(strict=True)
     if not _ollama_authenticode_is_valid(executable):
         raise OllamaServeAdmissionError("Ollama executable publisher is untrusted.")
     executable_fingerprint = _file_fingerprint(executable)
@@ -185,41 +234,44 @@ def spawn_verified_ollama_server(*, correlation_id: str) -> subprocess.Popen[byt
         # Establish durable evidence before Authenticode verification or any
         # Ollama process creation. No PATH search is used by this module.
         sink.append(VerificationProcessAdmissionRecord(correlation_id=correlation_id))
-        admission = _build_admission(correlation_id=correlation_id)
-        _record_admission(admission, sink)
-        _revalidate(admission)
+        executable = _trusted_ollama_executable().resolve(strict=True)
+        with _locked_executable_identity(executable):
+            admission = _build_admission(
+                correlation_id=correlation_id,
+                executable=executable,
+            )
+            _record_admission(admission, sink)
+            _revalidate(admission)
+            try:
+                process = subprocess.Popen(
+                    list(admission.command),
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NO_WINDOW,  # type: ignore[attr-defined]
+                    env=_minimal_child_environment(),
+                )
+            except OSError as error:
+                try:
+                    sink.append(
+                        DelegatedServeOutcomeRecord(
+                            command_fingerprint=admission.command_fingerprint,
+                            executable_fingerprint=admission.executable_fingerprint,
+                            correlation_id=admission.correlation_id,
+                            outcome="spawn_failure",
+                            process_observed=False,
+                        )
+                    )
+                except Exception as evidence_error:
+                    raise OllamaServeAdmissionError(
+                        "Ollama serve outcome evidence could not be recorded."
+                    ) from evidence_error
+                raise OllamaServeAdmissionError(
+                    "Ollama serve process could not be created."
+                ) from error
     except OllamaServeAdmissionError:
         raise
     except Exception as error:
         raise OllamaServeAdmissionError("Ollama serve evidence is unavailable.") from error
-
-    creation_flags = 0
-    if os.name == "nt":
-        creation_flags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    try:
-        process = subprocess.Popen(
-            list(admission.command),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            creationflags=creation_flags,
-            env=_minimal_child_environment(),
-        )
-    except OSError as error:
-        try:
-            sink.append(
-                DelegatedServeOutcomeRecord(
-                    command_fingerprint=admission.command_fingerprint,
-                    executable_fingerprint=admission.executable_fingerprint,
-                    correlation_id=admission.correlation_id,
-                    outcome="spawn_failure",
-                    process_observed=False,
-                )
-            )
-        except Exception as evidence_error:
-            raise OllamaServeAdmissionError(
-                "Ollama serve outcome evidence could not be recorded."
-            ) from evidence_error
-        raise OllamaServeAdmissionError("Ollama serve process could not be created.") from error
 
     try:
         sink.append(

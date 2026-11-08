@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -79,16 +80,10 @@ def test_allowed_spawn_uses_exact_command_and_minimal_environment(monkeypatch, t
 
 def test_changed_executable_identity_prevents_spawn(monkeypatch, tmp_path):
     events: list[object] = []
-    executable = _trusted_setup(monkeypatch, tmp_path, events)
+    _trusted_setup(monkeypatch, tmp_path, events)
     spawned = []
-
-    original_record = admission._record_admission
-
-    def mutate_after_record(item, sink):
-        original_record(item, sink)
-        executable.write_bytes(b"replacement")
-
-    monkeypatch.setattr(admission, "_record_admission", mutate_after_record)
+    fingerprints = iter(("original", "replacement"))
+    monkeypatch.setattr(admission, "_file_fingerprint", lambda _path: next(fingerprints))
     monkeypatch.setattr(
         admission.subprocess,
         "Popen",
@@ -190,3 +185,38 @@ def test_untrusted_publisher_is_denied_before_spawn(monkeypatch, tmp_path):
 
     assert executable.is_file()
     assert spawned == []
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows file-sharing contract")
+def test_executable_lock_denies_replacement_until_process_creation(tmp_path):
+    executable = tmp_path / "ollama.exe"
+    executable.write_bytes(b"trusted-ollama")
+    replacement = tmp_path / "replacement.exe"
+    replacement.write_bytes(b"replacement")
+
+    with admission._locked_executable_identity(executable):
+        with pytest.raises(PermissionError):
+            replacement.replace(executable)
+
+    replacement.replace(executable)
+    assert executable.read_bytes() == b"replacement"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows file-sharing contract")
+def test_spawn_holds_identity_lock_through_popen(monkeypatch, tmp_path):
+    events: list[object] = []
+    executable = _trusted_setup(monkeypatch, tmp_path, events)
+    replacement = tmp_path / "replacement.exe"
+    replacement.write_bytes(b"replacement")
+    process = object()
+
+    def fake_popen(*_args, **_kwargs):
+        with pytest.raises(PermissionError):
+            replacement.replace(executable)
+        return process
+
+    monkeypatch.setattr(admission.subprocess, "Popen", fake_popen)
+
+    assert admission.spawn_verified_ollama_server(correlation_id="startup-test") is process
+    replacement.replace(executable)
+    assert executable.read_bytes() == b"replacement"
