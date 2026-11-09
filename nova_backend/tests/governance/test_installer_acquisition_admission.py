@@ -56,7 +56,8 @@ def test_admission_binds_exact_sources_and_disables_ambient_configuration() -> N
     assert '"--exact"' in source
     assert '"--isolated"' in source
     assert '"--index-url", "https://pypi.org/simple"' in source
-    assert 'SetEnvironmentVariable("PIP_CONFIG_FILE", $pipConfig, "Process")' in source
+    assert 'SetEnvironmentVariable("PIP_CONFIG_FILE", "NUL", "Process")' in source
+    assert "GetTempFileName" not in source
     for forbidden in (
         "HTTP_PROXY",
         "HTTPS_PROXY",
@@ -126,6 +127,7 @@ def test_admission_is_durable_before_minimal_environment_delegation(tmp_path: Pa
     executable.write_text(
         "@echo off\r\n"
         f'if not exist "{evidence}" exit /b 92\r\n'
+        "echo delegated diagnostic output\r\n"
         f'>"{sentinel}" echo proxy=%HTTPS_PROXY%\r\n'
         f'>>"{sentinel}" echo pip_config=%PIP_CONFIG_FILE%\r\n'
         "exit /b 0\r\n",
@@ -135,6 +137,7 @@ def test_admission_is_durable_before_minimal_environment_delegation(tmp_path: Pa
         f". '{ADMISSION}'; "
         f"$code = Invoke-NovaInstallerAcquisition -Operation 'pip_install_nova' -ExecutablePath '{executable}' "
         f"-InstallDir '{ROOT}' -EvidencePath '{evidence}' -CorrelationId 'allow-test' -ExplicitConsent $true; "
+        "if ($code -isnot [int]) { exit 93 }; "
         "exit $code"
     )
     child_env = dict(os.environ)

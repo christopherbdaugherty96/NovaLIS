@@ -128,7 +128,6 @@ function Invoke-NovaInstallerAcquisition {
     foreach ($entry in [Environment]::GetEnvironmentVariables("Process").GetEnumerator()) {
         $savedEnvironment[[string]$entry.Key] = [string]$entry.Value
     }
-    $pipConfig = [System.IO.Path]::GetTempFileName()
     $processStarted = $false
     try {
         foreach ($key in @($savedEnvironment.Keys)) {
@@ -139,8 +138,9 @@ function Invoke-NovaInstallerAcquisition {
                 [Environment]::SetEnvironmentVariable($key, $savedEnvironment[$key], "Process")
             }
         }
-        # An empty config file plus --isolated prevents user/global pip configuration.
-        [Environment]::SetEnvironmentVariable("PIP_CONFIG_FILE", $pipConfig, "Process")
+        # NUL is pip's documented Windows null-device value. Unlike an empty
+        # file, it disables global/site config files as well as user config.
+        [Environment]::SetEnvironmentVariable("PIP_CONFIG_FILE", "NUL", "Process")
         foreach ($forbidden in $script:NovaForbiddenChildEnvironment) {
             if ($forbidden -ne "PIP_CONFIG_FILE") {
                 [Environment]::SetEnvironmentVariable($forbidden, $null, "Process")
@@ -150,7 +150,9 @@ function Invoke-NovaInstallerAcquisition {
         $executable = [string]$plan.executable
         $arguments = [string[]]$plan.arguments
         $processStarted = $true
-        & $executable @arguments
+        # Consume native output through the host stream so this function's
+        # success stream contains only the numeric exit code returned below.
+        & $executable @arguments 2>&1 | Out-Host
         $exitCode = $LASTEXITCODE
         $outcomeRecord = @{
             record_kind = "delegated_process_outcome"
@@ -189,6 +191,5 @@ function Invoke-NovaInstallerAcquisition {
         foreach ($key in $savedEnvironment.Keys) {
             [Environment]::SetEnvironmentVariable($key, $savedEnvironment[$key], "Process")
         }
-        Remove-Item -LiteralPath $pipConfig -Force -ErrorAction SilentlyContinue
     }
 }
