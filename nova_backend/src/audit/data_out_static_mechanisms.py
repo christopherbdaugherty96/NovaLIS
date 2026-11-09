@@ -275,8 +275,11 @@ def _import_aliases(tree: ast.AST) -> dict[str, str]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for item in node.names:
-                local = item.asname or item.name.split(".", 1)[0]
-                aliases[local] = item.name
+                if item.asname:
+                    aliases[item.asname] = item.name
+                else:
+                    root = item.name.split(".", 1)[0]
+                    aliases[root] = root
         elif isinstance(node, ast.ImportFrom) and node.module:
             for item in node.names:
                 if item.name == "*":

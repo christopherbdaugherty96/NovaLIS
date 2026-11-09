@@ -27,6 +27,29 @@ def test_alias_call_is_detected_at_exact_site(tmp_path: Path) -> None:
     ]
 
 
+def test_urllib_urlopen_is_detected_for_both_import_forms(tmp_path: Path) -> None:
+    dotted = tmp_path / "dotted.py"
+    dotted.write_text(
+        "import urllib.request\nurllib.request.urlopen('https://example.invalid')\n",
+        encoding="utf-8",
+    )
+    direct = tmp_path / "direct.py"
+    direct.write_text(
+        "from urllib.request import urlopen\nurlopen('https://example.invalid')\n",
+        encoding="utf-8",
+    )
+
+    dotted_findings = scan_python_file(dotted, repository_root=tmp_path)
+    direct_findings = scan_python_file(direct, repository_root=tmp_path)
+
+    assert [finding.symbol for finding in dotted_findings] == [
+        "urllib.request.urlopen"
+    ]
+    assert [finding.symbol for finding in direct_findings] == [
+        "urllib.request.urlopen"
+    ]
+
+
 def test_registration_is_per_call_site_not_per_module(tmp_path: Path) -> None:
     source = tmp_path / "worker.py"
     source.write_text(
