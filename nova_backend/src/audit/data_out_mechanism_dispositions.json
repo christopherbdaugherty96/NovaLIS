@@ -1,0 +1,1128 @@
+{
+  "schema_version": 1,
+  "scope": "frozen_supported_runtime_and_setup_mechanisms",
+  "closure_families": [
+    {
+      "id": "F02_external_read_and_setup",
+      "status": "unresolved",
+      "reason": "Caller-level typed-adapter and zero-attempt proof remains incomplete for every supported external-read and setup route."
+    },
+    {
+      "id": "F03_openclaw_provider_routes",
+      "status": "unresolved",
+      "reason": "Every reachable OpenClaw tool and alternate provider caller still requires exact disclosure and zero-attempt proof."
+    },
+    {
+      "id": "F04_installer_acquisition",
+      "status": "unresolved",
+      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+    },
+    {
+      "id": "F05_non_ollama_delegation",
+      "status": "unresolved",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "id": "F06_trusted_runtime_roots",
+      "status": "unresolved",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "id": "F07_installation_state_roots",
+      "status": "unresolved",
+      "reason": "Installation-relative goal, story, repository, and setup state require locality proof before target access."
+    },
+    {
+      "id": "F08_user_and_temp_paths",
+      "status": "unresolved",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "id": "F09_executable_discovery_roots",
+      "status": "unresolved",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "id": "F10_setup_shell_folders",
+      "status": "unresolved",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "id": "F11_storage_diagnostics_roots",
+      "status": "unresolved",
+      "reason": "Storage-health roots require locality classification before disk probing."
+    }
+  ],
+  "dispositions": [
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 59,
+      "column": 4,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 108,
+      "column": 15,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 125,
+      "column": 18,
+      "mechanism": "setup_shell_folder",
+      "symbol": "powershell filesystem probe",
+      "status": "unresolved",
+      "closure_family": "F07_installation_state_roots",
+      "reason": "Installation-relative goal, story, repository, and setup state require locality proof before target access."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 130,
+      "column": 16,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 139,
+      "column": 22,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 143,
+      "column": 0,
+      "mechanism": "setup_acquisition",
+      "symbol": "winget install",
+      "status": "unresolved",
+      "closure_family": "F04_installer_acquisition",
+      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 163,
+      "column": 19,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 187,
+      "column": 15,
+      "mechanism": "setup_shell_folder",
+      "symbol": "powershell filesystem probe",
+      "status": "unresolved",
+      "closure_family": "F07_installation_state_roots",
+      "reason": "Installation-relative goal, story, repository, and setup state require locality proof before target access."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 196,
+      "column": 0,
+      "mechanism": "setup_acquisition",
+      "symbol": "winget install",
+      "status": "unresolved",
+      "closure_family": "F04_installer_acquisition",
+      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 213,
+      "column": 10,
+      "mechanism": "setup_shell_folder",
+      "symbol": "powershell filesystem probe",
+      "status": "unresolved",
+      "closure_family": "F07_installation_state_roots",
+      "reason": "Installation-relative goal, story, repository, and setup state require locality proof before target access."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 214,
+      "column": 79,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 227,
+      "column": 0,
+      "mechanism": "setup_acquisition",
+      "symbol": "pip install",
+      "status": "unresolved",
+      "closure_family": "F04_installer_acquisition",
+      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 227,
+      "column": 58,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 228,
+      "column": 0,
+      "mechanism": "setup_acquisition",
+      "symbol": "pip install",
+      "status": "unresolved",
+      "closure_family": "F04_installer_acquisition",
+      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 228,
+      "column": 78,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 232,
+      "column": 4,
+      "mechanism": "setup_shell_folder",
+      "symbol": "powershell filesystem probe",
+      "status": "unresolved",
+      "closure_family": "F07_installation_state_roots",
+      "reason": "Installation-relative goal, story, repository, and setup state require locality proof before target access."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 251,
+      "column": 12,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 273,
+      "column": 14,
+      "mechanism": "setup_shell_folder",
+      "symbol": "powershell filesystem probe",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 274,
+      "column": 8,
+      "mechanism": "setup_shell_folder",
+      "symbol": "powershell filesystem probe",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 279,
+      "column": 22,
+      "mechanism": "setup_shell_folder",
+      "symbol": "shortcut write",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 285,
+      "column": 13,
+      "mechanism": "setup_shell_folder",
+      "symbol": "shortcut write",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_bootstrap.ps1",
+      "line": 296,
+      "column": 63,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "installer/windows/nova_setup.iss",
+      "line": 66,
+      "column": 0,
+      "mechanism": "setup_shell_folder",
+      "symbol": "inno shortcut destination",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_setup.iss",
+      "line": 67,
+      "column": 0,
+      "mechanism": "setup_shell_folder",
+      "symbol": "inno shortcut destination",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_setup.iss",
+      "line": 68,
+      "column": 0,
+      "mechanism": "setup_shell_folder",
+      "symbol": "inno shortcut destination",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_setup.iss",
+      "line": 69,
+      "column": 0,
+      "mechanism": "setup_shell_folder",
+      "symbol": "inno shortcut destination",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "nova_backend/src/api/audit_api.py",
+      "line": 20,
+      "column": 17,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/api/audit_api.py",
+      "line": 27,
+      "column": 19,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/api/audit_api.py",
+      "line": 34,
+      "column": 17,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/api/audit_api.py",
+      "line": 41,
+      "column": 20,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/api/live_screen_api.py",
+      "line": 39,
+      "column": 17,
+      "mechanism": "temporary_storage",
+      "symbol": "tempfile.NamedTemporaryFile",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/durability/recovery_candidate.py",
+      "line": 1431,
+      "column": 23,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:NOVA_RUNTIME_DIR",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/durability/recovery_candidate.py",
+      "line": 1435,
+      "column": 32,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:LOCALAPPDATA",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/durability/snapshot.py",
+      "line": 1166,
+      "column": 23,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:NOVA_RUNTIME_DIR",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/durability/snapshot.py",
+      "line": 1170,
+      "column": 32,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:LOCALAPPDATA",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/executors/os_diagnostics_executor.py",
+      "line": 39,
+      "column": 23,
+      "mechanism": "storage_diagnostic",
+      "symbol": "shutil.disk_usage",
+      "status": "unresolved",
+      "closure_family": "F11_storage_diagnostics_roots",
+      "reason": "Storage-health roots require locality classification before disk probing."
+    },
+    {
+      "path": "nova_backend/src/executors/os_diagnostics_executor.py",
+      "line": 1479,
+      "column": 15,
+      "mechanism": "storage_diagnostic",
+      "symbol": "shutil.disk_usage",
+      "status": "unresolved",
+      "closure_family": "F11_storage_diagnostics_roots",
+      "reason": "Storage-health roots require locality classification before disk probing."
+    },
+    {
+      "path": "nova_backend/src/governor/network_mediator.py",
+      "line": 143,
+      "column": 18,
+      "mechanism": "network_client",
+      "symbol": "requests.Session",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "Transport construction occurs inside the final governed HTTP boundary.",
+      "boundary": "NetworkMediator"
+    },
+    {
+      "path": "nova_backend/src/governor/network_mediator.py",
+      "line": 258,
+      "column": 24,
+      "mechanism": "network_client",
+      "symbol": "socket.getaddrinfo",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "Transport construction occurs inside the final governed HTTP boundary.",
+      "boundary": "NetworkMediator"
+    },
+    {
+      "path": "nova_backend/src/llm/local_ollama_bootstrap.py",
+      "line": 113,
+      "column": 20,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "The bounded local-model identity bootstrap verifies executable and evidence locality.",
+      "boundary": "verified local Ollama bootstrap"
+    },
+    {
+      "path": "nova_backend/src/llm/local_ollama_bootstrap.py",
+      "line": 167,
+      "column": 20,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:LOCALAPPDATA",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "The bounded local-model identity bootstrap verifies executable and evidence locality.",
+      "boundary": "verified local Ollama bootstrap"
+    },
+    {
+      "path": "nova_backend/src/llm/model_network_mediator.py",
+      "line": 37,
+      "column": 24,
+      "mechanism": "network_client",
+      "symbol": "socket.getaddrinfo",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "Model transport construction occurs inside the governed model-network boundary.",
+      "boundary": "ModelNetworkMediator"
+    },
+    {
+      "path": "nova_backend/src/llm/model_network_mediator.py",
+      "line": 99,
+      "column": 18,
+      "mechanism": "network_client",
+      "symbol": "requests.Session",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "Model transport construction occurs inside the governed model-network boundary.",
+      "boundary": "ModelNetworkMediator"
+    },
+    {
+      "path": "nova_backend/src/llm/model_network_mediator.py",
+      "line": 187,
+      "column": 24,
+      "mechanism": "network_client",
+      "symbol": "socket.getaddrinfo",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "Model transport construction occurs inside the governed model-network boundary.",
+      "boundary": "ModelNetworkMediator"
+    },
+    {
+      "path": "nova_backend/src/llm/ollama_serve_admission.py",
+      "line": 246,
+      "column": 26,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "The exact Ollama serve process is admitted and evidenced before spawn.",
+      "boundary": "spawn_verified_ollama_server"
+    },
+    {
+      "path": "nova_backend/src/llm/ollama_setup_admission.py",
+      "line": 115,
+      "column": 20,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:LOCALAPPDATA",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "The exact installer Ollama command and evidence target are verified before delegation.",
+      "boundary": "run_verified_ollama_command"
+    },
+    {
+      "path": "nova_backend/src/llm/ollama_setup_admission.py",
+      "line": 285,
+      "column": 17,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "The exact installer Ollama command and evidence target are verified before delegation.",
+      "boundary": "run_verified_ollama_command"
+    },
+    {
+      "path": "nova_backend/src/services/stt_engine.py",
+      "line": 97,
+      "column": 11,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/services/stt_engine.py",
+      "line": 180,
+      "column": 9,
+      "mechanism": "temporary_storage",
+      "symbol": "tempfile.TemporaryDirectory",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/services/stt_engine.py",
+      "line": 207,
+      "column": 19,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/skills/calendar.py",
+      "line": 87,
+      "column": 15,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:NOVA_CALENDAR_ICS_PATH",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 128,
+      "column": 24,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 136,
+      "column": 24,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 201,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 203,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 208,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 210,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 215,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 217,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 222,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 224,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 229,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 231,
+      "column": 15,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 292,
+      "column": 11,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 307,
+      "column": 11,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 354,
+      "column": 19,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 390,
+      "column": 19,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 391,
+      "column": 23,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 419,
+      "column": 19,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 478,
+      "column": 16,
+      "mechanism": "application_handoff",
+      "symbol": "os.startfile",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/system_control/system_control_executor.py",
+      "line": 502,
+      "column": 24,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/usage/provider_status.py",
+      "line": 67,
+      "column": 15,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:NOVA_CALENDAR_ICS_PATH",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/utils/persistent_state.py",
+      "line": 52,
+      "column": 15,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:NOVA_RUNTIME_DIR",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/utils/persistent_state.py",
+      "line": 69,
+      "column": 33,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:LOCALAPPDATA",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/utils/persistent_state.py",
+      "line": 82,
+      "column": 15,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:NOVA_RUNTIME_DIR",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/utils/persistent_state.py",
+      "line": 95,
+      "column": 33,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:LOCALAPPDATA",
+      "status": "unresolved",
+      "closure_family": "F06_trusted_runtime_roots",
+      "reason": "General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 29,
+      "column": 66,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 33,
+      "column": 17,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:NOVA_PIPER_MODEL_PATH",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 90,
+      "column": 28,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 97,
+      "column": 25,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:NOVA_PIPER_MODEL_PATH",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 109,
+      "column": 28,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.getenv:TEMP",
+      "status": "unresolved",
+      "closure_family": "F08_user_and_temp_paths",
+      "reason": "Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 124,
+      "column": 12,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 162,
+      "column": 23,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 167,
+      "column": 27,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 173,
+      "column": 27,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 188,
+      "column": 21,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 188,
+      "column": 51,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 192,
+      "column": 23,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 203,
+      "column": 17,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "nova_backend/src/voice/tts_engine.py",
+      "line": 206,
+      "column": 23,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 208,
+      "column": 17,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 233,
+      "column": 16,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 241,
+      "column": 4,
+      "mechanism": "application_handoff",
+      "symbol": "webbrowser.open",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 245,
+      "column": 25,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:ProgramFiles",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 246,
+      "column": 29,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:ProgramFiles(x86)",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 247,
+      "column": 26,
+      "mechanism": "configured_storage_root",
+      "symbol": "os.environ.get:LOCALAPPDATA",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "scripts/start_daemon.py",
+      "line": 285,
+      "column": 11,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "scripts/stop_daemon.py",
+      "line": 95,
+      "column": 13,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 39,
+      "column": 5,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 40,
+      "column": 18,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 41,
+      "column": 7,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 42,
+      "column": 18,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 57,
+      "column": 5,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 58,
+      "column": 4,
+      "mechanism": "application_handoff",
+      "symbol": "shell application handoff",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 59,
+      "column": 7,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+    },
+    {
+      "path": "start_nova.sh",
+      "line": 60,
+      "column": 4,
+      "mechanism": "application_handoff",
+      "symbol": "shell application handoff",
+      "status": "unresolved",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+    }
+  ]
+}

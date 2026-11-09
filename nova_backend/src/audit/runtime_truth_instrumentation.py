@@ -20,6 +20,12 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+from src.audit.data_out_static_mechanisms import (
+    MechanismStatus,
+    report_as_dict,
+    validate_repository_dispositions,
+)
+
 KNOWN_NETWORK_MEDIATOR_EXCEPTIONS: dict[str, dict[str, str]] = {
     "nova_backend/src/api/connections_api.py": {
         "classification": "local_administrative_health_probe",
@@ -144,6 +150,43 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                 )
             )
 
+        mechanism_report = validate_repository_dispositions()
+        if mechanism_report.unregistered or mechanism_report.stale:
+            discrepancies.append(
+                auditor.Discrepancy(
+                    severity="hard_fail",
+                    code="DATA_OUT_STATIC_MECHANISM_REGISTRY_DRIFT",
+                    message=(
+                        "Supported Data-Out mechanism sites are unregistered or their "
+                        "exact-site dispositions are stale."
+                    ),
+                    details=report_as_dict(mechanism_report),
+                )
+            )
+
+        unresolved_families = [
+            item
+            for item in mechanism_report.families
+            if item.status is MechanismStatus.UNRESOLVED
+        ]
+        if unresolved_families:
+            discrepancies.append(
+                auditor.Discrepancy(
+                    severity="warning",
+                    code="DATA_OUT_UNRESOLVED_MECHANISM_FAMILIES",
+                    message=(
+                        "Known supported Data-Out mechanism families remain unresolved; "
+                        "static registration is not runtime closure."
+                    ),
+                    details={
+                        "families": [
+                            {"id": item.family.value, "reason": item.reason}
+                            for item in unresolved_families
+                        ]
+                    },
+                )
+            )
+
         return discrepancies
 
     def render_bypass_surfaces_markdown() -> str:
@@ -183,6 +226,29 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
                 ["", "- Unclassified requests-based direct-network paths: None detected."]
             )
 
+        lines.append("")
+        mechanism_report = validate_repository_dispositions()
+        mechanism_payload = report_as_dict(mechanism_report)
+        summary = mechanism_payload["summary"]
+        lines.extend(
+            [
+                "## Supported Data-Out mechanism dispositions",
+                "",
+                "This exact-call-site registry is static regression enforcement, not proof of runtime denial, filesystem locality, or complete Data-Out closure.",
+                "",
+                f"- Detected exact sites: {summary['detected']}",
+                f"- Governed sites: {summary['governed']}",
+                f"- Unresolved sites: {summary['unresolved']}",
+                f"- Frozen-scope exclusions: {summary['excluded']}",
+                f"- Unregistered sites: {summary['unregistered']}",
+                f"- Stale dispositions: {summary['stale']}",
+                "",
+                "Unresolved closure families:",
+            ]
+        )
+        for family in mechanism_payload["closure_families"]:
+            if family["status"] == MechanismStatus.UNRESOLVED.value:
+                lines.append(f"- `{family['id']}`: {family['reason']}")
         lines.append("")
         return "\n".join(lines)
 
@@ -316,6 +382,9 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         report = original_run_audit()
         checks = report.setdefault("checks", {})
         checks["direct_network_paths"] = auditor._classify_direct_network_paths()
+        checks["data_out_static_mechanisms"] = report_as_dict(
+            validate_repository_dispositions()
+        )
         checks["phase_9_live_evidence"] = auditor._phase_9_live_evidence()
         checks["fingerprint_scope"] = {
             "scope_version": FINGERPRINT_SCOPE_VERSION,

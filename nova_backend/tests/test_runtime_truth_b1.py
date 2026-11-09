@@ -234,7 +234,8 @@ def test_generator_entrypoint_writes_instrumented_runtime_truth(tmp_path, monkey
         "## Design Runtime Divergences", 1
     )[0]
     assert "KNOWN_DIRECT_NETWORK_EXCEPTION" not in discrepancy_section
-    assert "- None" in discrepancy_section
+    assert "DATA_OUT_UNRESOLVED_MECHANISM_FAMILIES" in discrepancy_section
+    assert "DATA_OUT_STATIC_MECHANISM_REGISTRY_DRIFT" not in discrepancy_section
 
     assert "src.openclaw.thinking_loop.ThinkingLoop" in current
     assert "src.openclaw.tool_registry.ToolRegistry" in current
@@ -249,6 +250,10 @@ def test_generator_entrypoint_writes_instrumented_runtime_truth(tmp_path, monkey
     assert "Known requests-based exceptions: None detected." in bypass
     assert "nova_backend/src/api/connections_api.py" not in bypass
     assert "existing requests-library scanner" in bypass
+    assert "## Supported Data-Out mechanism dispositions" in bypass
+    assert "Unregistered sites: 0" in bypass
+    assert "Stale dispositions: 0" in bypass
+    assert "F04_installer_acquisition" in bypass
 
     assert "scope_version: behaviorally_active_v2" in fingerprint
     for family in ("brain", "connections", "identity", "memory", "usage"):
