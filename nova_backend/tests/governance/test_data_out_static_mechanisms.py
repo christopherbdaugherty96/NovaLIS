@@ -50,6 +50,27 @@ def test_urllib_urlopen_is_detected_for_both_import_forms(tmp_path: Path) -> Non
     ]
 
 
+def test_colliding_function_local_imports_keep_their_lexical_bindings(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "scoped.py"
+    source.write_text(
+        "def delegated():\n"
+        "    from subprocess import run\n"
+        "    run(['tool'])\n\n"
+        "def asynchronous():\n"
+        "    from asyncio import run\n"
+        "    run(task())\n",
+        encoding="utf-8",
+    )
+
+    findings = scan_python_file(source, repository_root=tmp_path)
+
+    assert [(finding.symbol, finding.line) for finding in findings] == [
+        ("subprocess.run", 3)
+    ]
+
+
 def test_registration_is_per_call_site_not_per_module(tmp_path: Path) -> None:
     source = tmp_path / "worker.py"
     source.write_text(

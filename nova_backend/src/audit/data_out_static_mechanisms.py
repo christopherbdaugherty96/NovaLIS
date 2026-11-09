@@ -270,9 +270,13 @@ def _attribute_name(node: ast.AST) -> str | None:
     return None
 
 
-def _import_aliases(tree: ast.AST) -> dict[str, str]:
+def _import_aliases(nodes: list[ast.stmt]) -> dict[str, str]:
     aliases: dict[str, str] = {}
-    for node in ast.walk(tree):
+    pending: list[ast.AST] = list(nodes)
+    while pending:
+        node = pending.pop()
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            continue
         if isinstance(node, ast.Import):
             for item in node.names:
                 if item.asname:
@@ -285,6 +289,8 @@ def _import_aliases(tree: ast.AST) -> dict[str, str]:
                 if item.name == "*":
                     continue
                 aliases[item.asname or item.name] = f"{node.module}.{item.name}"
+        else:
+            pending.extend(ast.iter_child_nodes(node))
     return aliases
 
 
@@ -311,32 +317,84 @@ def scan_python_file(
     path: Path, *, repository_root: Path = REPOSITORY_ROOT
 ) -> tuple[MechanismFinding, ...]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    aliases = _import_aliases(tree)
     relative = path.resolve().relative_to(repository_root.resolve()).as_posix()
-    findings: list[MechanismFinding] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        raw_name = _attribute_name(node.func)
-        if raw_name is None:
-            continue
-        canonical = _canonical_name(raw_name, aliases)
-        mechanism = _PYTHON_CALLS.get(canonical)
-        symbol = canonical
-        storage_symbol = _configured_storage_symbol(node, canonical, aliases)
-        if storage_symbol is not None:
-            mechanism = Mechanism.CONFIGURED_STORAGE_ROOT
-            symbol = storage_symbol
-        if mechanism is None:
-            continue
-        findings.append(
-            MechanismFinding(
-                site=MechanismSite(relative, node.lineno, node.col_offset),
-                mechanism=mechanism,
-                symbol=symbol,
-            )
-        )
-    return tuple(sorted(findings))
+
+    class MechanismVisitor(ast.NodeVisitor):
+        def __init__(self) -> None:
+            module_aliases = _import_aliases(tree.body)
+            self.aliases = module_aliases
+            self.closure_aliases = module_aliases
+            self.findings: list[MechanismFinding] = []
+
+        def _visit_function(
+            self, node: ast.FunctionDef | ast.AsyncFunctionDef
+        ) -> None:
+            for decorator in node.decorator_list:
+                self.visit(decorator)
+            for default in (*node.args.defaults, *node.args.kw_defaults):
+                if default is not None:
+                    self.visit(default)
+            previous_aliases = self.aliases
+            previous_closure = self.closure_aliases
+            local_aliases = dict(self.closure_aliases)
+            local_aliases.update(_import_aliases(node.body))
+            self.aliases = local_aliases
+            self.closure_aliases = local_aliases
+            for statement in node.body:
+                self.visit(statement)
+            self.aliases = previous_aliases
+            self.closure_aliases = previous_closure
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            self._visit_function(node)
+
+        def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+            self._visit_function(node)
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            for decorator in node.decorator_list:
+                self.visit(decorator)
+            for base in node.bases:
+                self.visit(base)
+            previous_aliases = self.aliases
+            previous_closure = self.closure_aliases
+            class_aliases = dict(self.closure_aliases)
+            class_aliases.update(_import_aliases(node.body))
+            self.aliases = class_aliases
+            # Class-local names are not lexical closures for method bodies.
+            for statement in node.body:
+                self.visit(statement)
+            self.aliases = previous_aliases
+            self.closure_aliases = previous_closure
+
+        def visit_Call(self, node: ast.Call) -> None:
+            raw_name = _attribute_name(node.func)
+            if raw_name is not None:
+                canonical = _canonical_name(raw_name, self.aliases)
+                mechanism = _PYTHON_CALLS.get(canonical)
+                symbol = canonical
+                storage_symbol = _configured_storage_symbol(
+                    node, canonical, self.aliases
+                )
+                if storage_symbol is not None:
+                    mechanism = Mechanism.CONFIGURED_STORAGE_ROOT
+                    symbol = storage_symbol
+                if mechanism is not None:
+                    self.findings.append(
+                        MechanismFinding(
+                            site=MechanismSite(
+                                relative, node.lineno, node.col_offset
+                            ),
+                            mechanism=mechanism,
+                            symbol=symbol,
+                        )
+                    )
+            self.generic_visit(node)
+
+    visitor = MechanismVisitor()
+    for statement in tree.body:
+        visitor.visit(statement)
+    return tuple(sorted(visitor.findings))
 
 
 def scan_text_file(
