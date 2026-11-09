@@ -20,7 +20,14 @@ function Get-NovaSha256Text {
 
 function Get-NovaFileSha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
-    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        return ([System.BitConverter]::ToString($sha.ComputeHash($stream))).Replace("-", "").ToLowerInvariant()
+    } finally {
+        $stream.Dispose()
+        $sha.Dispose()
+    }
 }
 
 function Write-NovaAcquisitionEvidence {
@@ -150,10 +157,17 @@ function Invoke-NovaInstallerAcquisition {
         $executable = [string]$plan.executable
         $arguments = [string[]]$plan.arguments
         $processStarted = $true
-        # Consume native output through the host stream so this function's
-        # success stream contains only the numeric exit code returned below.
-        & $executable @arguments 2>&1 | Out-Host
-        $exitCode = $LASTEXITCODE
+        # Windows PowerShell 5.1 converts redirected native stderr into a
+        # NativeCommandError. Temporarily keep that record non-terminating,
+        # consume both streams through the host, and preserve the real exit.
+        $savedErrorActionPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
+            & $executable @arguments 2>&1 | Out-Host
+            $exitCode = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $savedErrorActionPreference
+        }
         $outcomeRecord = @{
             record_kind = "delegated_process_outcome"
             policy_version = $script:NovaAcquisitionPolicyVersion

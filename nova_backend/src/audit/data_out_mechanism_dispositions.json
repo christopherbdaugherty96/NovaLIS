@@ -56,8 +56,8 @@
   "dispositions": [
     {
       "path": "installer/windows/installer_acquisition_admission.ps1",
-      "line": 155,
-      "column": 8,
+      "line": 166,
+      "column": 12,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
       "status": "governed",

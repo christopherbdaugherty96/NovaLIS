@@ -79,6 +79,8 @@ def test_evidence_is_written_before_process_start_and_outcome_is_separate() -> N
     assert evidence < process < outcome
     assert 'record_kind = "installer_acquisition_admission"' in source
     assert 'record_kind = "delegated_process_outcome"' in source
+    assert '$ErrorActionPreference = "Continue"' in source
+    assert "$ErrorActionPreference = $savedErrorActionPreference" in source
 
 
 def test_installer_does_not_silently_enable_online_acquisition() -> None:
@@ -128,12 +130,14 @@ def test_admission_is_durable_before_minimal_environment_delegation(tmp_path: Pa
         "@echo off\r\n"
         f'if not exist "{evidence}" exit /b 92\r\n'
         "echo delegated diagnostic output\r\n"
+        "echo delegated warning output 1>&2\r\n"
         f'>"{sentinel}" echo proxy=%HTTPS_PROXY%\r\n'
         f'>>"{sentinel}" echo pip_config=%PIP_CONFIG_FILE%\r\n'
         "exit /b 0\r\n",
         encoding="utf-8",
     )
     command = (
+        "$ErrorActionPreference = 'Stop'; "
         f". '{ADMISSION}'; "
         f"$code = Invoke-NovaInstallerAcquisition -Operation 'pip_install_nova' -ExecutablePath '{executable}' "
         f"-InstallDir '{ROOT}' -EvidencePath '{evidence}' -CorrelationId 'allow-test' -ExplicitConsent $true; "
