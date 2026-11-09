@@ -45,3 +45,26 @@ This classification covers paths detectable by the existing requests-library sca
 - Known requests-based exceptions: None detected.
 
 - Unclassified requests-based direct-network paths: None detected.
+
+## Supported Data-Out mechanism dispositions
+
+This exact-call-site registry is static regression enforcement, not proof of runtime denial, filesystem locality, or complete Data-Out closure.
+
+- Detected exact sites: 106
+- Governed sites: 10
+- Unresolved sites: 96
+- Frozen-scope exclusions: 0
+- Unregistered sites: 0
+- Stale dispositions: 0
+
+Unresolved closure families:
+- `F02_external_read_and_setup`: Caller-level typed-adapter and zero-attempt proof remains incomplete for every supported external-read and setup route.
+- `F03_openclaw_provider_routes`: Every reachable OpenClaw tool and alternate provider caller still requires exact disclosure and zero-attempt proof.
+- `F04_installer_acquisition`: Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence.
+- `F05_non_ollama_delegation`: Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes.
+- `F06_trusted_runtime_roots`: General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof.
+- `F07_installation_state_roots`: Installation-relative goal, story, repository, and setup state require locality proof before target access.
+- `F08_user_and_temp_paths`: Temporary, calendar, audio, selected-file, and working-context paths require locality proof before first access.
+- `F09_executable_discovery_roots`: PATH and browser-candidate roots require locality classification before executable discovery.
+- `F10_setup_shell_folders`: Start Menu and desktop destinations require locality classification before probe or shortcut creation.
+- `F11_storage_diagnostics_roots`: Storage-health roots require locality classification before disk probing.
