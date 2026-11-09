@@ -28,14 +28,17 @@
     Don't start Nova after installation.
 
 .PARAMETER NonInteractive
-    Auto-accept all prompts (used when called from the Inno Setup
-    installer with runhidden — Read-Host would hang in a hidden window).
+    Never prompts. Online acquisition remains denied unless the exact
+    operation is separately authorized with its matching switch.
 #>
 param(
     [string]$InstallDir = "",
     [switch]$SkipModel,
     [switch]$NoLaunch,
     [switch]$NonInteractive,
+    [switch]$AllowOnlinePythonInstall,
+    [switch]$AllowOnlineOllamaInstall,
+    [switch]$AllowOnlinePipSetup,
     [switch]$AllowOnlineModelSetup,
     # When called from the Inno Setup installer, pass -SkipShortcut so the
     # bootstrap does not create a Start Menu shortcut — the [Icons] section
@@ -46,6 +49,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "installer_acquisition_admission.ps1")
 
 function Invoke-ExternalStep {
     param(
@@ -88,6 +92,7 @@ $BackendDir = Join-Path $InstallDir "nova_backend"
 $VenvDir = Join-Path $BackendDir "venv"
 $VenvPython = Join-Path $VenvDir "Scripts\python.exe"
 $NovaStart = Join-Path $VenvDir "Scripts\nova-start.exe"
+$AcquisitionEvidence = Join-Path $InstallDir "data\disclosure\installer_acquisition.jsonl"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -138,12 +143,21 @@ if (-not $pythonCmd) {
         $wingetAvailable = $false
         try { $null = Get-Command winget -ErrorAction Stop; $wingetAvailable = $true } catch { }
         if ($wingetAvailable) {
-            if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Python via winget? (Y/n)" }
+            if ($NonInteractive -and -not $AllowOnlinePythonInstall) {
+                Write-Host "       ERROR: Silent mode cannot authorize Python acquisition." -ForegroundColor Red
+                exit 3
+            }
+            if ($AllowOnlinePythonInstall) { $install = "y" } else { $install = Read-Host "       Allow online Python acquisition from the winget source? (y/N)" }
             if ($install -ne "n") {
-                winget install Python.Python.3.12 --accept-source-agreements --accept-package-agreements
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Host "       ERROR: Python installation via winget failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+                if ($install -ne "y") {
+                    Write-Host "       ERROR: Python acquisition was not authorized." -ForegroundColor Red
                     exit 1
+                }
+                $wingetPath = (Get-Command winget -ErrorAction Stop).Source
+                $exitCode = Invoke-NovaInstallerAcquisition -Operation "winget_python" -ExecutablePath $wingetPath -InstallDir $InstallDir -EvidencePath $AcquisitionEvidence -CorrelationId ([guid]::NewGuid().ToString()) -ExplicitConsent $true
+                if ($exitCode -ne 0) {
+                    Write-Host "       ERROR: Python installation via winget failed (exit code $exitCode)." -ForegroundColor Red
+                    exit $exitCode
                 }
             } else {
                 Write-Host "       ERROR: Python is required. Install from https://python.org" -ForegroundColor Red
@@ -191,13 +205,25 @@ if ($ollamaFound) {
 
 if (-not $ollamaFound) {
     Write-Host "       Ollama not found." -ForegroundColor Red
-    if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Ollama via winget? (Y/n)" }
+    if ($NonInteractive -and -not $AllowOnlineOllamaInstall) {
+        Write-Host "       Silent mode cannot authorize Ollama acquisition; skipping it." -ForegroundColor Yellow
+        $install = "n"
+    } elseif ($AllowOnlineOllamaInstall) {
+        $install = "y"
+    } else {
+        $install = Read-Host "       Allow online Ollama acquisition from the winget source? (y/N)"
+    }
     if ($install -ne "n") {
-        winget install Ollama.Ollama --accept-source-agreements --accept-package-agreements
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "       WARNING: Ollama installation failed (exit code $LASTEXITCODE)." -ForegroundColor Yellow
-            Write-Host "       LLM features will not work until Ollama is installed manually." -ForegroundColor Yellow
+        if ($install -ne "y") {
+            Write-Host "       Ollama acquisition was not authorized." -ForegroundColor Yellow
         } else {
+            $wingetPath = (Get-Command winget -ErrorAction Stop).Source
+            $exitCode = Invoke-NovaInstallerAcquisition -Operation "winget_ollama" -ExecutablePath $wingetPath -InstallDir $InstallDir -EvidencePath $AcquisitionEvidence -CorrelationId ([guid]::NewGuid().ToString()) -ExplicitConsent $true
+        }
+        if ($install -eq "y" -and $exitCode -ne 0) {
+            Write-Host "       WARNING: Ollama installation failed (exit code $exitCode)." -ForegroundColor Yellow
+            Write-Host "       LLM features will not work until Ollama is installed manually." -ForegroundColor Yellow
+        } elseif ($install -eq "y") {
             Write-Host "       Ollama installed." -ForegroundColor Green
         }
     } else {
@@ -222,10 +248,21 @@ if (-not (Test-Path $VenvPython)) {
 # ------------------------------------------------------------------
 Write-Host "[4/6] Installing Nova (pip install -e .)..." -ForegroundColor Yellow
 
-# Note: use *> $null rather than 2>&1 | Out-Null — piping to Out-Null resets
-# $LASTEXITCODE to 0 even on failure, masking pip errors inside Invoke-ExternalStep.
-Invoke-ExternalStep -Description "pip upgrade" -Command { & $VenvPython -m pip install --upgrade pip --quiet *> $null }
-Invoke-ExternalStep -Description "Nova install (pip install -e .)" -Command { & $VenvPython -m pip install -e $InstallDir --quiet }
+if ($NonInteractive -and -not $AllowOnlinePipSetup) {
+    Write-Host "       ERROR: Silent mode cannot authorize pip acquisition." -ForegroundColor Red
+    exit 3
+}
+if (-not $AllowOnlinePipSetup) {
+    $pipConsent = Read-Host "       Allow pip to acquire packages only from https://pypi.org/simple? (y/N)"
+    if ($pipConsent -ne "y") {
+        Write-Host "       ERROR: Pip acquisition was not authorized." -ForegroundColor Red
+        exit 3
+    }
+}
+# Do not upgrade pip as an installer side effect. The venv-bundled pip is
+# sufficient to perform the one explicitly admitted Nova dependency install.
+$pipInstallExit = Invoke-NovaInstallerAcquisition -Operation "pip_install_nova" -ExecutablePath $VenvPython -InstallDir $InstallDir -EvidencePath $AcquisitionEvidence -CorrelationId ([guid]::NewGuid().ToString()) -ExplicitConsent $true
+if ($pipInstallExit -ne 0) { exit $pipInstallExit }
 Write-Host "       Nova installed." -ForegroundColor Green
 
 # Verify entry point

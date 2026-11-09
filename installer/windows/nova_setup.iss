@@ -57,6 +57,7 @@ Source: "..\..\start_nova.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\stop_nova.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; Include the bootstrap script itself
 Source: "nova_bootstrap.ps1"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
+Source: "installer_acquisition_admission.ps1"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
 ; Bundled Python installer — used by bootstrap if Python is not found
 Source: "deps\python-3.12.8-amd64.exe"; DestDir: "{app}\installer\windows\deps"; Flags: ignoreversion
 
@@ -70,6 +71,9 @@ Name: "{autodesktop}\Nova"; Filename: "powershell.exe"; Parameters: "-ExecutionP
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
+Name: "onlinepip"; Description: "Allow setup to download Nova's required Python packages only from pypi.org"; GroupDescription: "Online setup permissions (off by default):"; Flags: unchecked
+Name: "onlinepython"; Description: "Allow fallback Python installation only from the winget community source"; GroupDescription: "Online setup permissions (off by default):"; Flags: unchecked
+Name: "onlineollama"; Description: "Allow optional Ollama installation only from the winget community source"; GroupDescription: "Online setup permissions (off by default):"; Flags: unchecked
 
 [Run]
 ; Run the bootstrap script after files are copied.
@@ -77,7 +81,7 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 ; Note: logging is handled inside the script via Start-Transcript → {app}\bootstrap.log
 ; Do NOT add shell-redirect operators here — Inno Setup uses CreateProcess, not CMD,
 ; so *> would be passed as a literal argument to PowerShell and break parameter binding.
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\installer\windows\nova_bootstrap.ps1"" -InstallDir ""{app}"" -NonInteractive -NoLaunch -SkipShortcut -SkipModel"; StatusMsg: "Setting up Nova (Python and local runtime)..."; Flags: runhidden waituntilterminated
+Filename: "powershell.exe"; Parameters: "{code:GetBootstrapParameters}"; StatusMsg: "Setting up Nova (Python and local runtime)..."; Flags: runhidden waituntilterminated
 
 [UninstallRun]
 ; Stop Nova before uninstalling
@@ -91,6 +95,18 @@ Type: files; Name: "{app}\bootstrap.log"
 Type: dirifempty; Name: "{app}"
 
 [Code]
+function GetBootstrapParameters(Param: String): String;
+begin
+  Result := '-ExecutionPolicy Bypass -File "' + ExpandConstant('{app}\installer\windows\nova_bootstrap.ps1') +
+            '" -InstallDir "' + ExpandConstant('{app}') + '" -NonInteractive -NoLaunch -SkipShortcut -SkipModel';
+  if WizardIsTaskSelected('onlinepip') then
+    Result := Result + ' -AllowOnlinePipSetup';
+  if WizardIsTaskSelected('onlinepython') then
+    Result := Result + ' -AllowOnlinePythonInstall';
+  if WizardIsTaskSelected('onlineollama') then
+    Result := Result + ' -AllowOnlineOllamaInstall';
+end;
+
 // After bootstrap runs, check if it succeeded. If not, show the user
 // a helpful message with log location. Only offer to launch if venv exists.
 function NextButtonClick(CurPageID: Integer): Boolean;
