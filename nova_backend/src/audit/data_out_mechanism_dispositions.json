@@ -15,7 +15,7 @@
     {
       "id": "F04_installer_acquisition",
       "status": "unresolved",
-      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+      "reason": "Installer acquisition admission is implemented; trusted evidence locality and Windows installer acceptance proof remain required for family closure."
     },
     {
       "id": "F05_non_ollama_delegation",
@@ -55,8 +55,18 @@
   ],
   "dispositions": [
     {
+      "path": "installer/windows/installer_acquisition_admission.ps1",
+      "line": 166,
+      "column": 12,
+      "mechanism": "process_delegation",
+      "symbol": "powershell process launch",
+      "status": "governed",
+      "reason": "Exact acquisition operation and source are consent-bound, the child environment is minimized, and sanitized admission evidence is flushed before delegation.",
+      "boundary": "installer-acquisition-admission-v1"
+    },
+    {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 59,
+      "line": 63,
       "column": 4,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
@@ -66,7 +76,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 108,
+      "line": 113,
       "column": 15,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
@@ -76,7 +86,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 125,
+      "line": 130,
       "column": 18,
       "mechanism": "setup_shell_folder",
       "symbol": "powershell filesystem probe",
@@ -86,7 +96,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 130,
+      "line": 135,
       "column": 16,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
@@ -96,7 +106,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 139,
+      "line": 144,
       "column": 22,
       "mechanism": "executable_discovery",
       "symbol": "shell executable discovery",
@@ -106,17 +116,17 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 143,
-      "column": 0,
-      "mechanism": "setup_acquisition",
-      "symbol": "winget install",
+      "line": 156,
+      "column": 31,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
       "status": "unresolved",
-      "closure_family": "F04_installer_acquisition",
-      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 163,
+      "line": 177,
       "column": 19,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
@@ -126,7 +136,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 187,
+      "line": 201,
       "column": 15,
       "mechanism": "setup_shell_folder",
       "symbol": "powershell filesystem probe",
@@ -136,17 +146,17 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 196,
-      "column": 0,
-      "mechanism": "setup_acquisition",
-      "symbol": "winget install",
+      "line": 220,
+      "column": 27,
+      "mechanism": "executable_discovery",
+      "symbol": "shell executable discovery",
       "status": "unresolved",
-      "closure_family": "F04_installer_acquisition",
-      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 213,
+      "line": 239,
       "column": 10,
       "mechanism": "setup_shell_folder",
       "symbol": "powershell filesystem probe",
@@ -156,7 +166,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 214,
+      "line": 240,
       "column": 79,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
@@ -166,47 +176,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 227,
-      "column": 0,
-      "mechanism": "setup_acquisition",
-      "symbol": "pip install",
-      "status": "unresolved",
-      "closure_family": "F04_installer_acquisition",
-      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
-    },
-    {
-      "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 227,
-      "column": 58,
-      "mechanism": "process_delegation",
-      "symbol": "powershell process launch",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 228,
-      "column": 0,
-      "mechanism": "setup_acquisition",
-      "symbol": "pip install",
-      "status": "unresolved",
-      "closure_family": "F04_installer_acquisition",
-      "reason": "Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence."
-    },
-    {
-      "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 228,
-      "column": 78,
-      "mechanism": "process_delegation",
-      "symbol": "powershell process launch",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 232,
+      "line": 269,
       "column": 4,
       "mechanism": "setup_shell_folder",
       "symbol": "powershell filesystem probe",
@@ -216,7 +186,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 251,
+      "line": 288,
       "column": 12,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
@@ -226,7 +196,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 273,
+      "line": 310,
       "column": 14,
       "mechanism": "setup_shell_folder",
       "symbol": "powershell filesystem probe",
@@ -236,7 +206,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 274,
+      "line": 311,
       "column": 8,
       "mechanism": "setup_shell_folder",
       "symbol": "powershell filesystem probe",
@@ -246,7 +216,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 279,
+      "line": 316,
       "column": 22,
       "mechanism": "setup_shell_folder",
       "symbol": "shortcut write",
@@ -256,7 +226,7 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 285,
+      "line": 322,
       "column": 13,
       "mechanism": "setup_shell_folder",
       "symbol": "shortcut write",
@@ -266,23 +236,13 @@
     },
     {
       "path": "installer/windows/nova_bootstrap.ps1",
-      "line": 296,
+      "line": 333,
       "column": 63,
       "mechanism": "process_delegation",
       "symbol": "powershell process launch",
       "status": "unresolved",
       "closure_family": "F05_non_ollama_delegation",
       "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "installer/windows/nova_setup.iss",
-      "line": 66,
-      "column": 0,
-      "mechanism": "setup_shell_folder",
-      "symbol": "inno shortcut destination",
-      "status": "unresolved",
-      "closure_family": "F10_setup_shell_folders",
-      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
     },
     {
       "path": "installer/windows/nova_setup.iss",
@@ -307,6 +267,16 @@
     {
       "path": "installer/windows/nova_setup.iss",
       "line": 69,
+      "column": 0,
+      "mechanism": "setup_shell_folder",
+      "symbol": "inno shortcut destination",
+      "status": "unresolved",
+      "closure_family": "F10_setup_shell_folders",
+      "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
+    },
+    {
+      "path": "installer/windows/nova_setup.iss",
+      "line": 70,
       "column": 0,
       "mechanism": "setup_shell_folder",
       "symbol": "inno shortcut destination",

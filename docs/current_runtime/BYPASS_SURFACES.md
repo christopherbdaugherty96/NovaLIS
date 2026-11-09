@@ -50,9 +50,9 @@ This classification covers paths detectable by the existing requests-library sca
 
 This exact-call-site registry is static regression enforcement, not proof of runtime denial, filesystem locality, or complete Data-Out closure.
 
-- Detected exact sites: 106
-- Governed sites: 10
-- Unresolved sites: 96
+- Detected exact sites: 103
+- Governed sites: 11
+- Unresolved sites: 92
 - Frozen-scope exclusions: 0
 - Unregistered sites: 0
 - Stale dispositions: 0
@@ -60,7 +60,7 @@ This exact-call-site registry is static regression enforcement, not proof of run
 Unresolved closure families:
 - `F02_external_read_and_setup`: Caller-level typed-adapter and zero-attempt proof remains incomplete for every supported external-read and setup route.
 - `F03_openclaw_provider_routes`: Every reachable OpenClaw tool and alternate provider caller still requires exact disclosure and zero-attempt proof.
-- `F04_installer_acquisition`: Pip and winget acquisition require explicit admission, constrained source identity, minimal environment, offline denial, and outcome evidence.
+- `F04_installer_acquisition`: Installer acquisition admission is implemented; trusted evidence locality and Windows installer acceptance proof remain required for family closure.
 - `F05_non_ollama_delegation`: Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes.
 - `F06_trusted_runtime_roots`: General trusted runtime and evidence-root enrollment remains blocked on the Slice 5A Windows proof.
 - `F07_installation_state_roots`: Installation-relative goal, story, repository, and setup state require locality proof before target access.

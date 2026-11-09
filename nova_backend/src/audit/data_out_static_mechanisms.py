@@ -245,6 +245,7 @@ _PYTHON_SCAN_ROOTS = (
     Path("scripts/fetch_models.py"),
 )
 _TEXT_SCAN_PATHS = (
+    Path("installer/windows/installer_acquisition_admission.ps1"),
     Path("installer/windows/nova_bootstrap.ps1"),
     Path("installer/windows/nova_setup.iss"),
     Path("start_nova.sh"),
