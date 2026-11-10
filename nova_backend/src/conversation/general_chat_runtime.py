@@ -27,6 +27,7 @@ from src.conversation.request_understanding_review_card import (
 )
 from src.conversation.session_router import SessionRouter
 from src.conversation.task_understanding_preview import build_task_understanding_preview
+from src.governor.disclosure_policy import InitiationClass
 from src.governor.network_mediator import NetworkMediator
 from src.memory.memory_skill import MemorySkill
 from src.personality.tone_profile_store import ToneProfileStore
@@ -98,7 +99,10 @@ async def _fetch_weather_for_brief(
 ) -> Optional[dict[str, Any]]:
     """Fetch current weather for the brief. Returns None on any failure."""
     try:
-        service = WeatherService(network=network)
+        service = WeatherService(
+            network=network,
+            initiation=InitiationClass.AUTOMATIC,
+        )
         data = await service.get_current_weather()
         return dict(data) if isinstance(data, dict) else None
     except Exception:

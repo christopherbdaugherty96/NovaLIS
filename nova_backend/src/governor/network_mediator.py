@@ -171,6 +171,7 @@ class NetworkMediator:
         capability_id: int | None,
         request_id: str | None = None,
         session_id: str | None = None,
+        disclosure_classifier: HttpDisclosureClassifier | None = None,
     ) -> None:
         facts = disclosure_facts(
             transport=transport,
@@ -183,9 +184,14 @@ class NetworkMediator:
             capability_id=capability_id,
         )
         context: HttpDisclosureContext | None = None
-        if self._disclosure_classifier is not None:
+        classifier = (
+            disclosure_classifier
+            if disclosure_classifier is not None
+            else self._disclosure_classifier
+        )
+        if classifier is not None:
             try:
-                context = self._disclosure_classifier(facts)
+                context = classifier(facts)
             except Exception:
                 context = None
         decision = authorize_http_disclosure(
@@ -279,6 +285,7 @@ class NetworkMediator:
         timeout: Optional[float] = None,
         request_id: Optional[str] = None,
         session_id: Optional[str] = None,
+        disclosure_classifier: HttpDisclosureClassifier | None = None,
     ) -> Dict[str, Any]:
         """
         Perform an HTTP request on behalf of a capability or skill.
@@ -320,6 +327,7 @@ class NetworkMediator:
             capability_id=capability_id,
             request_id=request_id,
             session_id=session_id,
+            disclosure_classifier=disclosure_classifier,
         )
 
         # 3) Request execution
@@ -358,6 +366,7 @@ class NetworkMediator:
                         capability_id=capability_id,
                         request_id=request_id,
                         session_id=session_id,
+                        disclosure_classifier=disclosure_classifier,
                     )
                 self._validate_url(current_url)
                 self._clear_implicit_cookies(session)

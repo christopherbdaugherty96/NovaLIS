@@ -149,6 +149,7 @@ class ToolRegistry:
 
 def _bootstrap() -> ToolRegistry:
     """Create and populate the global tool registry."""
+    from src.governor.disclosure_policy import InitiationClass
     from src.skills.calendar import CalendarSkill
     from src.skills.executor_adapter import ExecutorSkillAdapter
     from src.skills.news import NewsSkill
@@ -160,7 +161,10 @@ def _bootstrap() -> ToolRegistry:
 
     registry.register(
         "weather",
-        lambda network=None: WeatherSkill(network=network),
+        lambda network=None: WeatherSkill(
+            network=network,
+            initiation=InitiationClass.APPROVED,
+        ),
         ToolMetadata(
             name="weather",
             description="Fetch current weather and short-term forecast",
