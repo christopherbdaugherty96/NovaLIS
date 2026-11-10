@@ -233,9 +233,13 @@ import asyncio
 import os
 import re
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlsplit
 
 _DEFAULT_API_VERSION = "2026-04"
 _API_VERSION_RE = re.compile(r"^\d{4}-\d{2}$")
+_SHOPIFY_SHOP_HOST_RE = re.compile(
+    r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.myshopify\.com$"
+)
 
 
 def _normalize_api_version(value: str | None) -> str:
@@ -247,6 +251,110 @@ def _normalize_api_version(value: str | None) -> str:
     raise ShopifyConnectorError(
         "Invalid Shopify API version. Use YYYY-MM, for example 2026-04."
     )
+
+
+def _normalize_shopify_shop_domain(value: str) -> str:
+    """Return one canonical Shopify Admin host without performing I/O."""
+
+    raw = str(value or "").strip()
+    if (
+        not raw
+        or not raw.isascii()
+        or "%" in raw
+        or "\\" in raw
+        or any(ord(character) <= 0x20 or ord(character) == 0x7F for character in raw)
+    ):
+        raise ShopifyConnectorError(
+            "Invalid Shopify destination. Configure a canonical Shopify shop domain."
+        )
+
+    if "://" in raw:
+        try:
+            parsed = urlsplit(raw)
+            port = parsed.port
+        except ValueError as error:
+            raise ShopifyConnectorError(
+                "Invalid Shopify destination. Configure a canonical Shopify shop domain."
+            ) from error
+        if (
+            parsed.scheme.lower() != "https"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or port is not None
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ShopifyConnectorError(
+                "Invalid Shopify destination. Configure a canonical Shopify shop domain."
+            )
+        host = parsed.hostname.lower()
+    else:
+        if any(separator in raw for separator in ("/", "?", "#", "@", ":")):
+            raise ShopifyConnectorError(
+                "Invalid Shopify destination. Configure a canonical Shopify shop domain."
+            )
+        host = raw.lower()
+
+    if _SHOPIFY_SHOP_HOST_RE.fullmatch(host) is None:
+        raise ShopifyConnectorError(
+            "Invalid Shopify destination. Configure a canonical Shopify shop domain."
+        )
+    return host
+
+
+def _shopify_disclosure_classifier(expected_url: str):
+    """Bind Cap 65 taxonomy only to the exact supported GraphQL request."""
+
+    from src.governor.disclosure_policy import (
+        CredentialCategory,
+        DataCategory,
+        InitiationClass,
+        ProviderClass,
+        TransportClass,
+    )
+    from src.governor.disclosure_transport import HttpDisclosureContext
+
+    expected_headers = frozenset(
+        {"content-type", "user-agent", "x-shopify-access-token"}
+    )
+
+    def classify(facts):
+        json_fields = set(facts.json_fields)
+        if (
+            facts.transport is not TransportClass.HTTP
+            or facts.method != "POST"
+            or facts.destination != expected_url
+            or facts.capability_id != 65
+            or not facts.shape_supported
+            or facts.query_fields
+            or facts.parameter_fields
+            or facts.cookie_fields
+            or facts.form_fields
+            or frozenset(facts.header_fields) != expected_headers
+            or "query" not in json_fields
+            or "variables" not in json_fields
+            or any(
+                field != "query"
+                and field != "variables"
+                and not field.startswith("variables.")
+                for field in json_fields
+            )
+            or facts.credential_categories
+            != frozenset({CredentialCategory.ORIGIN_CREDENTIAL})
+        ):
+            return None
+        return HttpDisclosureContext(
+            caller="shopify_connector.capability_65",
+            purpose="shopify_read_only_admin_graphql",
+            provider="shopify",
+            provider_class=ProviderClass.COMMERCE,
+            data_categories=frozenset({DataCategory.SHOP_DATA}),
+            initiation=InitiationClass.USER_INITIATED,
+        )
+
+    return classify
 
 _SHOP_QUERY = """
 {
@@ -315,12 +423,7 @@ class HttpShopifyConnector(ShopifyConnector):
     """
 
     def __init__(self, shop_domain: str, access_token: str, *, api_version: str | None = None) -> None:
-        domain = shop_domain.strip().lower().rstrip("/")
-        for prefix in ("https://", "http://"):
-            if domain.startswith(prefix):
-                domain = domain[len(prefix):]
-                break
-        self._shop_domain = domain
+        self._shop_domain = _normalize_shopify_shop_domain(shop_domain)
         self._access_token = access_token.strip()
         self._api_version = _normalize_api_version(api_version or os.getenv("NOVA_SHOPIFY_API_VERSION"))
 
@@ -345,7 +448,9 @@ class HttpShopifyConnector(ShopifyConnector):
     async def _gql(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
         from src.governor.network_mediator import NetworkMediator, NetworkMediatorError
 
-        mediator = NetworkMediator()
+        mediator = NetworkMediator(
+            disclosure_classifier=_shopify_disclosure_classifier(self._url())
+        )
         try:
             resp = await asyncio.to_thread(
                 mediator.request,
@@ -500,4 +605,12 @@ def bootstrap_shopify_connector() -> None:
     token = os.getenv("NOVA_SHOPIFY_ACCESS_TOKEN", "").strip()
     api_version = os.getenv("NOVA_SHOPIFY_API_VERSION", "").strip()
     if domain and token:
-        set_shopify_connector(HttpShopifyConnector(domain, token, api_version=api_version))
+        try:
+            connector = HttpShopifyConnector(domain, token, api_version=api_version)
+        except ShopifyConnectorError:
+            # Invalid configuration is unavailable, never a startup failure or
+            # an excuse to retain a previously registered destination.
+            global _shopify_connector
+            _shopify_connector = None
+            return
+        set_shopify_connector(connector)
