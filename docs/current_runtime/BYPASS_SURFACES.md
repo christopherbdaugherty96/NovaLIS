@@ -50,8 +50,8 @@ This classification covers paths detectable by the existing requests-library sca
 
 This exact-call-site registry is static regression enforcement, not proof of runtime denial, filesystem locality, or complete Data-Out closure.
 
-- Detected exact sites: 103
-- Governed sites: 11
+- Detected exact sites: 104
+- Governed sites: 12
 - Unresolved sites: 92
 - Frozen-scope exclusions: 0
 - Unregistered sites: 0
