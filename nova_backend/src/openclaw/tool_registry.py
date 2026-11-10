@@ -223,7 +223,10 @@ def _bootstrap() -> ToolRegistry:
 
     registry.register(
         "web_search",
-        lambda network=None: WebSearchSkill(network=network),
+        lambda network=None: WebSearchSkill(
+            network=network,
+            initiation=InitiationClass.APPROVED,
+        ),
         ToolMetadata(
             name="web_search",
             description="Search the web for information using Brave Search or DuckDuckGo",

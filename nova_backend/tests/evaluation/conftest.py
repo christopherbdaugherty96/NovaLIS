@@ -19,8 +19,9 @@ def deterministic_eval_env(monkeypatch: pytest.MonkeyPatch):
         timeout=5,
         request_id=None,
         session_id=None,
+        disclosure_classifier=None,
     ):
-        del request_id, session_id
+        del request_id, session_id, disclosure_classifier
         query = str((params or {}).get("q") or "").strip() or "test query"
         return {
             "status_code": 200,

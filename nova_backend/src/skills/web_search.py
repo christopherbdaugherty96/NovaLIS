@@ -17,6 +17,7 @@ from typing import Any
 
 from src.base_skill import BaseSkill, SkillResult
 from src.governor.network_mediator import NetworkMediator
+from src.services.search_disclosure import InitiationClass, is_disclosure_denial
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,15 @@ class WebSearchSkill(BaseSkill):
     name = "web_search"
     description = "Search the web for information using Brave Search or DuckDuckGo"
 
-    def __init__(self, network: NetworkMediator | None = None) -> None:
+    def __init__(
+        self,
+        network: NetworkMediator | None = None,
+        initiation: InitiationClass = InitiationClass.USER_INITIATED,
+    ) -> None:
+        if not isinstance(initiation, InitiationClass):
+            raise ValueError("Search initiation must use the governed taxonomy.")
         self._network = network or NetworkMediator()
+        self.initiation = initiation
 
     def can_handle(self, query: str) -> bool:
         q = (query or "").strip().lower()
@@ -56,6 +64,17 @@ class WebSearchSkill(BaseSkill):
             )
             return result
         except Exception as exc:
+            if is_disclosure_denial(exc):
+                logger.warning("Web search denied by Data-Out policy.")
+                return SkillResult(
+                    success=False,
+                    message=(
+                        "Web search is unavailable because this request was not "
+                        "authorized."
+                    ),
+                    data={"failure_kind": "disclosure_denied"},
+                    skill=self.name,
+                )
             logger.warning("Web search failed: %s", exc)
             return SkillResult(
                 success=False,
@@ -70,7 +89,11 @@ class WebSearchSkill(BaseSkill):
         from src.governor.execute_boundary import ExecuteBoundary
 
         boundary = ExecuteBoundary()
-        executor = WebSearchExecutor(self._network, boundary)
+        executor = WebSearchExecutor(
+            self._network,
+            boundary,
+            initiation=self.initiation,
+        )
 
         # Build a minimal ActionRequest-compatible object
         request = _SearchRequest(
