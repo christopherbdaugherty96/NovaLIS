@@ -14,10 +14,15 @@ from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.llm.llm_gateway import generate_chat
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
+from src.services.search_disclosure import (
+    BRAVE_SEARCH_URL,
+    DUCK_SEARCH_URL,
+    InitiationClass,
+    is_disclosure_denial,
+    search_disclosure_classifier,
+)
 from src.validation.pipeline import ValidationPipeline
 
-BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
-DUCK_SEARCH_URL = "https://api.duckduckgo.com/"
 ANALYST_NOTE_TIMEOUT_SECONDS = 3.5
 COUNTER_ANALYSIS_TIMEOUT_SECONDS = 2.5
 
@@ -351,12 +356,19 @@ class MultiSourceReportingExecutor:
                         timeout=5,
                         request_id=request_id,
                         session_id=session_id,
+                        disclosure_classifier=search_disclosure_classifier(
+                            provider="brave",
+                            capability_id=capability_id,
+                            initiation=InitiationClass.APPROVED,
+                        ),
                     )
                     if int(response.get("status_code") or 0) == 200:
                         results = ((response.get("data") or {}).get("web") or {}).get("results") or []
                         if isinstance(results, list) and results:
                             return list(results), "brave"
-                except Exception:
+                except Exception as error:
+                    if is_disclosure_denial(error):
+                        raise
                     pass
                 continue
             if destination != "DuckDuckGo":
@@ -372,11 +384,18 @@ class MultiSourceReportingExecutor:
                     timeout=4,
                     request_id=request_id,
                     session_id=session_id,
+                    disclosure_classifier=search_disclosure_classifier(
+                        provider="duckduckgo",
+                        capability_id=capability_id,
+                        initiation=InitiationClass.APPROVED,
+                    ),
                 )
                 if int(response.get("status_code") or 0) != 200:
                     return [], "none"
                 return self._parse_duck_results(response.get("data") or {}), "duckduckgo"
-            except Exception:
+            except Exception as error:
+                if is_disclosure_denial(error):
+                    raise
                 return [], "none"
         return [], "none"
 
@@ -415,12 +434,21 @@ class MultiSourceReportingExecutor:
                 "Findings:\n"
             )
 
-        results, provider = self._fetch_governed_results(
-            capability_id=48,
-            request_id=request.request_id,
-            session_id=session_id,
-            network_plan=current_plan,
-        )
+        try:
+            results, provider = self._fetch_governed_results(
+                capability_id=48,
+                request_id=request.request_id,
+                session_id=session_id,
+                network_plan=current_plan,
+            )
+        except Exception as error:
+            if not is_disclosure_denial(error):
+                raise
+            return self._failure_result(
+                "The approved report search is unavailable because the request was not authorized.",
+                request_id=request.request_id,
+                failure_kind="disclosure_denied",
+            )
         if not results:
             return self._failure_result(
                 "I couldn't build the report due to a network issue.",

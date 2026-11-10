@@ -11,13 +11,19 @@ from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
 from src.conversation.response_formatter import ResponseFormatter
 from src.llm.llm_gateway import generate_chat
+from src.services.search_disclosure import (
+    BRAVE_SEARCH_URL,
+    DUCK_SEARCH_URL,
+    InitiationClass,
+    is_disclosure_denial,
+    is_network_mediator_error,
+    search_disclosure_classifier,
+)
 from src.utils.content_extractor import extract_text_from_html
 
 logger = logging.getLogger(__name__)
 
 SEARCH_HARD_TIMEOUT_SECONDS = 7.0
-BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
-DUCK_SEARCH_URL = "https://api.duckduckgo.com/"
 MAX_SOURCE_READS = 3
 SOURCE_READ_TIMEOUT_SECONDS = 2.5
 MAX_SOURCE_TEXT_CHARS = 2800
@@ -34,9 +40,31 @@ class WebSearchExecutor:
     All outbound HTTP is routed through NetworkMediator.
     """
 
-    def __init__(self, network, execute_boundary):
+    def __init__(
+        self,
+        network,
+        execute_boundary,
+        initiation: InitiationClass = InitiationClass.USER_INITIATED,
+    ):
+        if not isinstance(initiation, InitiationClass):
+            raise ValueError("Search initiation must use the governed taxonomy.")
         self.network = network
         self.execute_boundary = execute_boundary
+        self.initiation = initiation
+
+    def _disclosure_classifier(self, provider: str, capability_id: int):
+        return search_disclosure_classifier(
+            provider=provider,
+            capability_id=capability_id,
+            initiation=self.initiation,
+        )
+
+    def _disclosure_denied_result(self, query: str, request_id: str | None) -> ActionResult:
+        return ActionResult.failure(
+            "I'm checking online. Search is unavailable because this request was not authorized.",
+            data=self._empty_widget(query=query),
+            request_id=request_id,
+        )
 
     @staticmethod
     def _format_provider_label(provider: str) -> str:
@@ -201,9 +229,14 @@ class WebSearchExecutor:
                 timeout=4,
                 request_id=request.request_id,
                 session_id=session_id,
+                disclosure_classifier=self._disclosure_classifier(
+                    "duckduckgo", request.capability_id
+                ),
             )
         except Exception as error:
-            if error.__class__.__name__ == "NetworkMediatorError":
+            if is_disclosure_denial(error):
+                raise
+            if is_network_mediator_error(error):
                 return None
             raise
 
@@ -495,6 +528,9 @@ class WebSearchExecutor:
                         timeout=5,
                         request_id=request.request_id,
                         session_id=session_id,
+                        disclosure_classifier=self._disclosure_classifier(
+                            "brave", request.capability_id
+                        ),
                     )
                     brave_status_code = int(response.get("status_code") or 0)
                     if brave_status_code == 200:
@@ -503,7 +539,11 @@ class WebSearchExecutor:
                     response = None
                     break
                 except Exception as error:
-                    if error.__class__.__name__ != "NetworkMediatorError":
+                    if is_disclosure_denial(error):
+                        return self._disclosure_denied_result(
+                            query, request.request_id
+                        )
+                    if not is_network_mediator_error(error):
                         raise
                     logger.debug("Attempt %s failed: %s", attempt + 1, error)
                     if attempt == max_retries:
@@ -526,7 +566,12 @@ class WebSearchExecutor:
                     data=self._empty_widget(query=query),
                     request_id=request.request_id,
                 )
-            response = self._search_duckduckgo(request, query, session_id)
+            try:
+                response = self._search_duckduckgo(request, query, session_id)
+            except Exception as error:
+                if not is_disclosure_denial(error):
+                    raise
+                return self._disclosure_denied_result(query, request.request_id)
             if response and int(response.get("status_code") or 0) == 200:
                 used_provider = "duckduckgo"
             else:
