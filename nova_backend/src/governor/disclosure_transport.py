@@ -44,6 +44,10 @@ class HttpDisclosureContext:
     provider: str
     provider_class: ProviderClass
     data_categories: frozenset[DataCategory]
+    # Some providers use ambiguous field names (for example Visual Crossing's
+    # `key`).  A trusted, request-shape-specific classifier may add the
+    # credential taxonomy without broadening the global name heuristic.
+    credential_categories: frozenset[CredentialCategory] = frozenset()
     initiation: InitiationClass = InitiationClass.AUTOMATIC
     action_id: str = ""
 
@@ -104,6 +108,7 @@ def authorize_http_disclosure(
         provider = context.provider
         provider_class = context.provider_class
         categories = context.data_categories
+        credentials.update(context.credential_categories)
         initiation = context.initiation
         action_id = context.action_id
 

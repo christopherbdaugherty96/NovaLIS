@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 
 from src.base_skill import BaseSkill, SkillResult
+from src.governor.disclosure_policy import InitiationClass
 from src.governor.network_mediator import NetworkMediator
 from src.services.weather_service import WeatherService
 
@@ -32,10 +33,16 @@ class WeatherSkill(BaseSkill):
         network: NetworkMediator | None = None,
         location: str | None = None,
         scope: str = "today",
+        initiation: InitiationClass = InitiationClass.USER_INITIATED,
     ):
         self.requested_location = str(location or "").strip()
         self.scope = "tomorrow" if str(scope).strip().lower() == "tomorrow" else "today"
-        self.service = WeatherService(location=location, network=network, scope=self.scope)
+        self.service = WeatherService(
+            location=location,
+            network=network,
+            scope=self.scope,
+            initiation=initiation,
+        )
 
     def can_handle(self, text: str) -> bool:
         query = str(text or "").strip().lower()

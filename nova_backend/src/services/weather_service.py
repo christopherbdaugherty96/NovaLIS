@@ -4,14 +4,64 @@ import asyncio
 import os
 import re
 from typing import Dict, Optional
+from urllib.parse import quote
 
-from src.governor.exceptions import NetworkMediatorError
+from src.governor.disclosure_policy import (
+    CredentialCategory,
+    DataCategory,
+    InitiationClass,
+    ProviderClass,
+    TransportClass,
+)
+from src.governor.disclosure_transport import HttpDisclosureContext
+from src.governor.exceptions import DisclosureDeniedError, NetworkMediatorError
 from src.governor.network_mediator import NetworkMediator
 
 NETWORK_CAPABILITY_ID = 55
 WEATHER_TIMEOUT_SECONDS = 8.0
 WEATHER_MAX_RETRIES = 1
 WEATHER_RETRY_BACKOFF_SECONDS = 0.35
+
+
+def _weather_disclosure_classifier(
+    expected_url: str,
+    *,
+    initiation: InitiationClass,
+):
+    """Classify only the exact supported Visual Crossing request shape."""
+
+    expected_parameters = frozenset(
+        {"contentType", "include", "key", "unitGroup"}
+    )
+
+    def classify(facts):
+        if (
+            facts.transport is not TransportClass.HTTP
+            or facts.method != "GET"
+            or facts.destination != expected_url
+            or facts.capability_id != NETWORK_CAPABILITY_ID
+            or not facts.shape_supported
+            or facts.query_fields
+            or facts.header_fields
+            or facts.cookie_fields
+            or facts.json_fields
+            or facts.form_fields
+            or frozenset(facts.parameter_fields) != expected_parameters
+            or len(facts.parameter_fields) != len(expected_parameters)
+            or facts.credential_categories
+        ):
+            return None
+        return HttpDisclosureContext(
+            caller="weather_service.capability_55",
+            purpose="weather_forecast_retrieval",
+            provider="visual_crossing",
+            provider_class=ProviderClass.WEATHER,
+            data_categories=frozenset({DataCategory.LOCATION}),
+            credential_categories=frozenset({CredentialCategory.API_KEY}),
+            initiation=initiation,
+        )
+
+    return classify
 
 
 class WeatherService:
@@ -105,14 +155,26 @@ class WeatherService:
         location: Optional[str] = None,
         network: Optional[NetworkMediator] = None,
         scope: str = "today",
+        initiation: InitiationClass = InitiationClass.USER_INITIATED,
     ):
         self.location = location or self.DEFAULT_LOCATION
         self.network = network or NetworkMediator()
         self.scope = "tomorrow" if str(scope).strip().lower() == "tomorrow" else "today"
+        if not isinstance(initiation, InitiationClass):
+            raise ValueError("Weather initiation must use the governed taxonomy.")
+        self.initiation = initiation
 
     def _build_request_url(self) -> str:
         normalized_location = self._clean_text(self.location, limit=120) or self.DEFAULT_LOCATION
-        encoded_location = normalized_location.replace("%", "").replace(" ", "%20")
+        if any(
+            ord(character) <= 0x1F or ord(character) == 0x7F
+            for character in normalized_location
+        ):
+            raise RuntimeError("Invalid weather location.")
+        # Preserve familiar commas while ensuring the entire location remains
+        # one path segment. Reserved URL characters and literal percent signs
+        # are data, never URL syntax supplied by the caller.
+        encoded_location = quote(normalized_location, safe=",.-")
         return (
             "https://weather.visualcrossing.com/"
             "VisualCrossingWebServices/rest/services/timeline/"
@@ -134,6 +196,10 @@ class WeatherService:
                     headers=None,
                     as_json=True,
                     timeout=WEATHER_TIMEOUT_SECONDS,
+                    disclosure_classifier=_weather_disclosure_classifier(
+                        url,
+                        initiation=self.initiation,
+                    ),
                 )
 
                 status_code = int(resp.get("status_code") or 0)
@@ -147,6 +213,8 @@ class WeatherService:
 
             except (NetworkMediatorError, RuntimeError) as error:
                 last_error = error
+                if isinstance(error, DisclosureDeniedError):
+                    break
                 if attempt < WEATHER_MAX_RETRIES:
                     await asyncio.sleep(WEATHER_RETRY_BACKOFF_SECONDS * (attempt + 1))
                     continue

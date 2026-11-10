@@ -417,7 +417,7 @@
     },
     {
       "path": "nova_backend/src/governor/network_mediator.py",
-      "line": 258,
+      "line": 264,
       "column": 24,
       "mechanism": "network_client",
       "symbol": "socket.getaddrinfo",
