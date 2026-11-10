@@ -82,6 +82,7 @@ jobs:
             package_install_attempted = $false
             alternate_source = $alternateArg
             remove_exit_code = $null
+            remove_alternate_alias_exit_code = $null
             add_exit_code = $null
             rebound_source = $null
             nova_plan_source_policy = $null
@@ -92,9 +93,16 @@ jobs:
           }
 
           try {
+            # Native stderr is evidence to capture, not a PowerShell exception.
+            # Every WinGet result is evaluated from its explicit exit code.
+            $ErrorActionPreference = "Continue"
             & $winget source remove --name winget --disable-interactivity | Out-Host
             $result.remove_exit_code = $LASTEXITCODE
             if ($LASTEXITCODE -ne 0) { throw "Unable to remove the disposable runner's default winget source." }
+
+            & $winget source remove --name msstore --disable-interactivity | Out-Host
+            $result.remove_alternate_alias_exit_code = $LASTEXITCODE
+            if ($LASTEXITCODE -ne 0) { throw "Unable to release the alternate official source identity on the disposable runner." }
 
             & $winget source add --name winget --arg $alternateArg --type Microsoft.Rest --trust-level trusted --accept-source-agreements --disable-interactivity | Out-Host
             $result.add_exit_code = $LASTEXITCODE
@@ -116,7 +124,9 @@ jobs:
           } catch {
             $result.error = $_.Exception.Message
           } finally {
-            & $winget source reset --name winget --force --disable-interactivity | Out-Host
+            # Reset every default source. A name-specific reset cannot recreate a
+            # default source after that name has been removed.
+            & $winget source reset --force --disable-interactivity | Out-Host
             $result.reset_exit_code = $LASTEXITCODE
             if ($LASTEXITCODE -eq 0) {
               $restored = (& $winget source export winget --disable-interactivity | Out-String).Trim() | ConvertFrom-Json
@@ -135,6 +145,9 @@ jobs:
 
           $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath evidence/source-rebinding.json -Encoding UTF8
           Get-Content -LiteralPath evidence/source-rebinding.json
+          # The feasibility outcome is carried by the artifact, including a
+          # nonzero WinGet result. Do not leak LASTEXITCODE into the job result.
+          exit 0
 
       - name: Record an unsuitable-runner result
         if: steps.preflight.outputs.suitable != 'true'
