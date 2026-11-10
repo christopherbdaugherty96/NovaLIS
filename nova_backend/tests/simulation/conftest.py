@@ -21,8 +21,19 @@ def deterministic_simulation_env(monkeypatch: pytest.MonkeyPatch):
         timeout=5,
         request_id=None,
         session_id=None,
+        disclosure_classifier=None,
     ):
-        del self, capability_id, method, json_payload, headers, timeout, request_id, session_id
+        del (
+            self,
+            capability_id,
+            method,
+            json_payload,
+            headers,
+            timeout,
+            request_id,
+            session_id,
+            disclosure_classifier,
+        )
         lower_url = str(url or "").lower()
 
         if "visualcrossing" in lower_url:

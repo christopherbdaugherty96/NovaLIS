@@ -192,7 +192,10 @@ def _bootstrap() -> ToolRegistry:
 
     registry.register(
         "news",
-        lambda network=None: NewsSkill(network=network),
+        lambda network=None: NewsSkill(
+            network=network,
+            initiation=InitiationClass.APPROVED,
+        ),
         ToolMetadata(
             name="news",
             description="Fetch latest news headlines from RSS feeds",

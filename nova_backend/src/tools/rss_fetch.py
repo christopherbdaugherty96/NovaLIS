@@ -1,14 +1,16 @@
 # src/tools/rss_fetch.py
 
 import asyncio
-import xml.etree.ElementTree as ET
-from defusedxml.ElementTree import fromstring as _safe_fromstring
 import html
 import re
-from typing import Dict, Any, List
+import xml.etree.ElementTree as ET
+from typing import Any, Dict, List
 
-from src.governor.network_mediator import NetworkMediator
+from defusedxml.ElementTree import fromstring as _safe_fromstring
+
+from src.governor.disclosure_transport import HttpDisclosureClassifier
 from src.governor.exceptions import NetworkMediatorError
+from src.governor.network_mediator import NetworkMediator
 
 NETWORK_CAPABILITY_ID = 56
 SUMMARY_CHAR_LIMIT = 260
@@ -128,6 +130,7 @@ async def fetch_rss_headlines(
     feed_url: str,
     timeout: float = 8.0,
     network: NetworkMediator | None = None,
+    disclosure_classifier: HttpDisclosureClassifier | None = None,
 ) -> List[Dict[str, Any]]:
     """
     Fetch and parse an RSS or Atom feed.
@@ -142,6 +145,10 @@ async def fetch_rss_headlines(
         ]
     """
     mediator = network or NetworkMediator()
+    # RSS transport is only admissible when the trusted News composition
+    # supplies an exact catalog-bound classifier.  Never inherit a broad
+    # mediator-level classifier for an arbitrary feed URL.
+    classifier = disclosure_classifier or (lambda _facts: None)
 
     try:
         resp = await asyncio.to_thread(
@@ -154,6 +161,7 @@ async def fetch_rss_headlines(
             headers=dict(_RSS_HEADERS),
             as_json=False,  # RSS is XML/text
             timeout=timeout,
+            disclosure_classifier=classifier,
         )
         text = resp.get("text", "")
         if not text:
