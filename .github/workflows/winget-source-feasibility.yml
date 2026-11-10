@@ -1,0 +1,156 @@
+name: WinGet source identity feasibility
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/winget-source-feasibility.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: winget-source-feasibility-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  feasibility:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'codex/winget-source-feasibility'
+    runs-on: windows-2025
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the assessment branch
+        uses: actions/checkout@v4
+
+      - name: Gate A — establish runner and WinGet feasibility
+        id: preflight
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Path evidence -Force | Out-Null
+
+          $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+          $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+          $isAdministrator = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
+
+          $preflight = [ordered]@{
+            runner_image = $env:ImageOS
+            runner_image_version = $env:ImageVersion
+            operating_system = [Environment]::OSVersion.VersionString
+            powershell_version = $PSVersionTable.PSVersion.ToString()
+            administrator = $isAdministrator
+            winget_found = $null -ne $winget
+            winget_version = $null
+            initial_source = $null
+            suitable = $false
+          }
+
+          if ($null -ne $winget) {
+            $preflight.winget_version = (& $winget.Source --version | Out-String).Trim()
+            $sourceText = (& $winget.Source source export winget --disable-interactivity | Out-String).Trim()
+            try {
+              $source = $sourceText | ConvertFrom-Json -ErrorAction Stop
+              $preflight.initial_source = [ordered]@{
+                name = $source.Name
+                arg = $source.Arg
+                identifier = $source.Identifier
+                type = $source.Type
+                trust_level = @($source.TrustLevel)
+              }
+              $preflight.suitable = $isAdministrator -and $source.Name -eq "winget" -and $source.Arg -eq "https://cdn.winget.microsoft.com/cache"
+            } catch {
+              $preflight.initial_source = [ordered]@{ parse_error = $_.Exception.Message }
+            }
+          }
+
+          $preflight | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath evidence/preflight.json -Encoding UTF8
+          "suitable=$($preflight.suitable.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Get-Content -LiteralPath evidence/preflight.json
+
+      - name: Gate B — test source-name rebinding without package installation
+        if: steps.preflight.outputs.suitable == 'true'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $winget = (Get-Command winget.exe -ErrorAction Stop).Source
+          $canonicalArg = "https://cdn.winget.microsoft.com/cache"
+          $alternateArg = "https://storeedgefd.dsx.mp.microsoft.com/v9.0"
+          $result = [ordered]@{
+            attempted = $true
+            package_install_attempted = $false
+            alternate_source = $alternateArg
+            remove_exit_code = $null
+            add_exit_code = $null
+            rebound_source = $null
+            nova_plan_source_policy = $null
+            nova_plan_bound_effective_source = $false
+            reset_exit_code = $null
+            restored_source = $null
+            error = $null
+          }
+
+          try {
+            & $winget source remove --name winget --disable-interactivity | Out-Host
+            $result.remove_exit_code = $LASTEXITCODE
+            if ($LASTEXITCODE -ne 0) { throw "Unable to remove the disposable runner's default winget source." }
+
+            & $winget source add --name winget --arg $alternateArg --type Microsoft.Rest --trust-level trusted --accept-source-agreements --disable-interactivity | Out-Host
+            $result.add_exit_code = $LASTEXITCODE
+            if ($LASTEXITCODE -eq 0) {
+              $rebound = (& $winget source export winget --disable-interactivity | Out-String).Trim() | ConvertFrom-Json
+              $result.rebound_source = [ordered]@{
+                name = $rebound.Name
+                arg = $rebound.Arg
+                identifier = $rebound.Identifier
+                type = $rebound.Type
+                trust_level = @($rebound.TrustLevel)
+              }
+
+              . ./installer/windows/installer_acquisition_admission.ps1
+              $plan = New-NovaAcquisitionPlan -Operation winget_python -ExecutablePath $winget -InstallDir $PWD.Path -CorrelationId "github-feasibility-synthetic" -ExplicitConsent $true
+              $result.nova_plan_source_policy = $plan.source_policy
+              $result.nova_plan_bound_effective_source = $plan.source_policy -match [regex]::Escape($rebound.Arg)
+            }
+          } catch {
+            $result.error = $_.Exception.Message
+          } finally {
+            & $winget source reset --name winget --force --disable-interactivity | Out-Host
+            $result.reset_exit_code = $LASTEXITCODE
+            if ($LASTEXITCODE -eq 0) {
+              $restored = (& $winget source export winget --disable-interactivity | Out-String).Trim() | ConvertFrom-Json
+              $result.restored_source = [ordered]@{
+                name = $restored.Name
+                arg = $restored.Arg
+                identifier = $restored.Identifier
+                type = $restored.Type
+                trust_level = @($restored.TrustLevel)
+              }
+              if ($restored.Arg -ne $canonicalArg) {
+                $result.error = "WinGet reset did not restore the canonical community source."
+              }
+            }
+          }
+
+          $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath evidence/source-rebinding.json -Encoding UTF8
+          Get-Content -LiteralPath evidence/source-rebinding.json
+
+      - name: Record an unsuitable-runner result
+        if: steps.preflight.outputs.suitable != 'true'
+        shell: powershell
+        run: |
+          [ordered]@{
+            attempted = $false
+            reason = "Gate A did not establish a suitable WinGet environment."
+            package_install_attempted = $false
+          } | ConvertTo-Json | Set-Content -LiteralPath evidence/source-rebinding.json -Encoding UTF8
+
+      - name: Upload sanitized feasibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-source-feasibility-${{ github.run_id }}
+          path: evidence/*.json
+          if-no-files-found: error
+          retention-days: 14
