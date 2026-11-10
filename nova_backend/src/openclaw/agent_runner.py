@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.maintenance import authoritative_mutation
+from src.governor.disclosure_policy import InitiationClass
 from src.governor.network_mediator import NetworkMediator
 from src.llm import llm_gateway
 from src.openclaw.agent_personality_bridge import (
@@ -697,7 +698,10 @@ class OpenClawAgentRunner:
             stage_label="Collecting calendar",
         )
         news_result = await self._call_skill(
-            NewsSkill(network=self._network_for_run()),
+            NewsSkill(
+                network=self._network_for_run(),
+                initiation=InitiationClass.APPROVED,
+            ),
             "news",
             self.NEWS_TIMEOUT_SECONDS,
             stage_label="Collecting news",
@@ -740,7 +744,10 @@ class OpenClawAgentRunner:
                 summary="Reading the bounded market-news sources for this run.",
             )
 
-        skill = NewsSkill(network=self._network_for_run())
+        skill = NewsSkill(
+            network=self._network_for_run(),
+            initiation=InitiationClass.APPROVED,
+        )
         crypto_group = next(
             (group for group in list(skill.CATEGORY_GROUPS) if str(group.get("key") or "").strip() == "crypto"),
             {},

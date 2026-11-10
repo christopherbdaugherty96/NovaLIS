@@ -15,6 +15,13 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from src.base_skill import BaseSkill, SkillResult
+from src.governor.disclosure_policy import (
+    DataCategory,
+    InitiationClass,
+    ProviderClass,
+    TransportClass,
+)
+from src.governor.disclosure_transport import HttpDisclosureContext
 from src.governor.network_mediator import NetworkMediator
 from src.tools.news_fallback import fallback_headline
 from src.tools.rss_fetch import fetch_rss_headlines
@@ -38,6 +45,57 @@ def reset_news_result_cache() -> None:
     """Clear the cache. Used by test isolation; safe at runtime."""
     with _result_cache_lock:
         _result_cache.clear()
+
+
+def _provider_key(domain: object) -> str:
+    value = str(domain or "").strip().lower().removeprefix("www.")
+    return re.sub(r"[^a-z0-9]+", "_", value).strip("_")
+
+
+def _catalogued_feed_provider(feed_url: str) -> str:
+    """Return the stable provider key only for an exact built-in feed URL."""
+
+    return _CANONICAL_FEED_PROVIDERS.get(str(feed_url or "").strip(), "")
+
+
+def _news_rss_disclosure_classifier(
+    expected_url: str,
+    *,
+    provider: str,
+    initiation: InitiationClass,
+):
+    """Classify only an exact, built-in, credential-free News RSS request."""
+
+    catalogued_provider = _catalogued_feed_provider(expected_url)
+
+    def classify(facts):
+        if (
+            not catalogued_provider
+            or provider != catalogued_provider
+            or facts.transport is not TransportClass.HTTP
+            or facts.method != "GET"
+            or facts.destination != expected_url
+            or facts.capability_id != 56
+            or not facts.shape_supported
+            or facts.query_fields
+            or facts.parameter_fields
+            or facts.cookie_fields
+            or facts.json_fields
+            or facts.form_fields
+            or facts.header_fields != ("accept", "user-agent")
+            or facts.credential_categories
+        ):
+            return None
+        return HttpDisclosureContext(
+            caller="news_skill.capability_56",
+            purpose="news_rss_retrieval",
+            provider=provider,
+            provider_class=ProviderClass.NEWS_SOURCE,
+            data_categories=frozenset({DataCategory.SOURCE_URL}),
+            initiation=initiation,
+        )
+
+    return classify
 
 
 class NewsSkill(BaseSkill):
@@ -147,8 +205,15 @@ class NewsSkill(BaseSkill):
         },
     ]
 
-    def __init__(self, network: NetworkMediator | None = None):
+    def __init__(
+        self,
+        network: NetworkMediator | None = None,
+        initiation: InitiationClass = InitiationClass.USER_INITIATED,
+    ):
+        if not isinstance(initiation, InitiationClass):
+            raise ValueError("News initiation must use the governed taxonomy.")
         self.network = network
+        self.initiation = initiation
 
     def can_handle(self, query: str) -> bool:
         q = (query or "").lower()
@@ -399,7 +464,16 @@ class NewsSkill(BaseSkill):
 
         for feed_url in self._source_feed_urls(source):
             try:
-                items = await fetch_rss_headlines(feed_url, network=self.network)
+                provider = _catalogued_feed_provider(feed_url)
+                items = await fetch_rss_headlines(
+                    feed_url,
+                    network=self.network,
+                    disclosure_classifier=_news_rss_disclosure_classifier(
+                        feed_url,
+                        provider=provider,
+                        initiation=self.initiation,
+                    ),
+                )
                 if not items:
                     continue
                 first = items[0]
@@ -422,3 +496,29 @@ class NewsSkill(BaseSkill):
             return fallback_headline(name, domain)
 
         return None
+
+
+def _freeze_canonical_feed_providers() -> dict[str, str]:
+    providers: dict[str, str] = {}
+    sources = [
+        *NewsSkill.SOURCES,
+        *[
+            item
+            for group in NewsSkill.CATEGORY_GROUPS
+            for item in list(group.get("sources") or [])
+        ],
+    ]
+    for source in sources:
+        feeds = list(source.get("feeds") or [])
+        fallback = str(source.get("feed") or "").strip()
+        if fallback:
+            feeds.append(fallback)
+        provider = _provider_key(source.get("domain"))
+        for feed_url in feeds:
+            normalized = str(feed_url or "").strip()
+            if normalized and provider:
+                providers.setdefault(normalized, provider)
+    return providers
+
+
+_CANONICAL_FEED_PROVIDERS = _freeze_canonical_feed_providers()
