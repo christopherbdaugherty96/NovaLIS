@@ -451,6 +451,7 @@ class NetworkMediator:
         headers: Optional[Dict[str, str]] = None,
         as_json: bool = True,
         timeout: Optional[float] = None,
+        disclosure_classifier: HttpDisclosureClassifier | None = None,
     ) -> Dict[str, Any]:
         """Perform one allowlisted, user-initiated provider connection request.
 
@@ -480,6 +481,7 @@ class NetworkMediator:
             form_payload=form_payload,
             has_body=form_payload is not None or params is not None,
             capability_id=None,
+            disclosure_classifier=disclosure_classifier,
         )
         # Denied requests never consume the transport-attempt budget. Admission
         # precedes this limit as well as DNS, client creation, and transmission.
