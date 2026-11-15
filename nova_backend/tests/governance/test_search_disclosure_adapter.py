@@ -349,5 +349,5 @@ def test_normal_brave_provider_failure_may_fall_back_to_duck(monkeypatch):
     assert result.success is True
     assert calls[0]["url"] == BRAVE_URL
     assert calls[1]["url"] == DUCK_URL
-    # Any later result-page read remains a separate dynamic destination path.
-    assert all("disclosure_classifier" not in call for call in calls[2:])
+    # Any later result-page read remains separately admitted from fixed search.
+    assert all(call.get("disclosure_classifier") is not None for call in calls[2:])
