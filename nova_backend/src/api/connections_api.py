@@ -26,6 +26,9 @@ from src.governor.exceptions import (
     ProviderConnectionNetworkError,
 )
 from src.governor.network_mediator import NetworkMediator
+from src.services.provider_health_disclosure import (
+    provider_health_disclosure_classifier,
+)
 
 
 @dataclass(frozen=True)
@@ -246,6 +249,7 @@ def _governed_health_request(
         headers=operation.headers(key),
         as_json=False,
         timeout=8,
+        disclosure_classifier=provider_health_disclosure_classifier(provider),
     )
 
 
