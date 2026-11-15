@@ -5,7 +5,7 @@ from __future__ import annotations
 import ipaddress
 import re
 from dataclasses import dataclass
-from urllib.parse import parse_qsl, urlsplit
+from urllib.parse import urlsplit
 
 from src.governor.disclosure_policy import (
     DataCategory,
@@ -13,7 +13,7 @@ from src.governor.disclosure_policy import (
     ProviderClass,
     TransportClass,
 )
-from src.governor.disclosure_transport import HttpDisclosureContext
+from src.governor.disclosure_transport import HttpDisclosureContext, disclosure_facts
 
 _SEARCH_PROVIDERS = frozenset({"brave", "duckduckgo"})
 _DNS_LABEL_RE = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z")
@@ -93,11 +93,17 @@ def build_search_source_admission(
         raise ValueError("Search-result provenance requires a request identifier.")
     if not isinstance(initiation, InitiationClass):
         raise ValueError("Search-result provenance requires governed initiation.")
+    facts = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="GET",
+        url=canonical_url,
+        capability_id=16,
+    )
     return SearchSourceAdmission(
         url=canonical_url,
-        destination=urlsplit(canonical_url)._replace(query="", fragment="").geturl(),
+        destination=facts.destination,
         hostname=hostname,
-        query_fields=tuple(sorted(key.lower() for key, _value in parse_qsl(urlsplit(canonical_url).query))),
+        query_fields=facts.query_fields,
         search_provider=normalized_provider,
         capability_id=16,
         request_id=normalized_request_id,

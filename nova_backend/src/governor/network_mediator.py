@@ -286,6 +286,7 @@ class NetworkMediator:
         request_id: Optional[str] = None,
         session_id: Optional[str] = None,
         disclosure_classifier: HttpDisclosureClassifier | None = None,
+        follow_redirects: bool = True,
     ) -> Dict[str, Any]:
         """
         Perform an HTTP request on behalf of a capability or skill.
@@ -384,6 +385,9 @@ class NetworkMediator:
                     self._clear_implicit_cookies(session)
 
                 if response.is_redirect or response.is_permanent_redirect:
+                    if not follow_redirects:
+                        log_failure("redirect_rejected")
+                        raise NetworkMediatorError("Network redirects are not allowed for this request.")
                     location = response.headers.get("Location")
                     if not location:
                         raise NetworkMediatorError("Redirect response missing Location header.")

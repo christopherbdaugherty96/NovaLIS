@@ -287,6 +287,7 @@ class WebSearchExecutor:
                 request_id=request_id,
                 session_id=session_id,
                 disclosure_classifier=search_source_disclosure_classifier(admission),
+                follow_redirects=False,
             )
             html = str(response.get("text") or "")
             if not html:

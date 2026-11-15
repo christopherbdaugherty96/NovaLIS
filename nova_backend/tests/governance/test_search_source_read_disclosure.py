@@ -59,6 +59,26 @@ def test_source_classifier_binds_exact_current_search_result():
 
 
 @pytest.mark.parametrize(
+    "url",
+    [
+        "https://example.com",
+        "https://example.com/report?ID=7",
+        "https://example.com/report?id=",
+    ],
+)
+def test_source_admission_uses_transport_url_canonicalization(url):
+    admission = _admission(url=url)
+    facts = disclosure_facts(
+        transport=TransportClass.HTTP,
+        method="GET",
+        url=url,
+        capability_id=16,
+    )
+
+    assert search_source_disclosure_classifier(admission)(facts) is not None
+
+
+@pytest.mark.parametrize(
     "facts",
     [
         disclosure_facts(
@@ -311,3 +331,71 @@ def test_synthetic_source_allow_records_sanitized_evidence():
     assert sink.records[0].decision == "allow"
     assert sink.records[0].data_categories == ("source_url",)
     assert "id=7" not in repr(sink.records)
+
+
+def test_source_read_self_redirect_stops_after_one_http_attempt():
+    admission = _admission()
+    facts = _facts()
+    policy = DisclosurePolicy(
+        version="source-read-test-v1",
+        grants=(
+            DisclosureGrant(
+                provider="example.com",
+                provider_class=ProviderClass.SEARCH,
+                destination_class=DestinationClass.EXTERNAL_WEB,
+                destinations=frozenset({admission.destination}),
+                effective_routes=frozenset({"direct"}),
+                transports=frozenset({TransportClass.HTTP}),
+                data_categories=frozenset({DataCategory.SOURCE_URL}),
+                http_methods=frozenset({"GET"}),
+                request_shapes=frozenset({facts.request_shape}),
+                credential_categories=frozenset(),
+                purposes=frozenset({"read_current_search_result"}),
+                callers=frozenset({"search_result_source.capability_16"}),
+                capability_ids=frozenset({16}),
+                initiations=frozenset({InitiationClass.USER_INITIATED}),
+            ),
+        ),
+    )
+
+    class _Sink:
+        def __init__(self):
+            self.records = []
+
+        def append(self, record):
+            self.records.append(record)
+
+    sink = _Sink()
+    mediator = NetworkMediator(disclosure_policy=policy, disclosure_evidence_sink=sink)
+    mediator._registry = type(
+        "Registry",
+        (),
+        {"get": lambda _self, _capability_id: object(), "is_enabled": lambda _self, _capability_id: True},
+    )()
+    mediator._validate_url = lambda _url: None
+    attempts = []
+
+    class _Redirect:
+        status_code = 302
+        content = b""
+        text = ""
+        is_redirect = True
+        is_permanent_redirect = False
+        headers = {"Location": admission.url}
+
+    class _Session:
+        def request(self, **kwargs):
+            attempts.append(kwargs)
+            return _Redirect()
+
+    mediator._new_session = _Session
+    outcome = WebSearchExecutor(mediator, object())._fetch_source_text(
+        capability_id=16,
+        admission=admission,
+        request_id="request-1",
+        session_id="session-1",
+    )
+
+    assert outcome.status == "unavailable"
+    assert len(attempts) == 1
+    assert len(sink.records) == 1
