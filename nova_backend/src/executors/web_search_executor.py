@@ -6,6 +6,7 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import TimeoutError as FuturesTimeoutError
+from dataclasses import dataclass
 
 from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
@@ -19,6 +20,11 @@ from src.services.search_disclosure import (
     is_network_mediator_error,
     search_disclosure_classifier,
 )
+from src.services.search_source_disclosure import (
+    SearchSourceAdmission,
+    build_search_source_admission,
+    search_source_disclosure_classifier,
+)
 from src.utils.content_extractor import extract_text_from_html
 
 logger = logging.getLogger(__name__)
@@ -29,6 +35,19 @@ SOURCE_READ_TIMEOUT_SECONDS = 2.5
 MAX_SOURCE_TEXT_CHARS = 2800
 SYNTHESIS_TIMEOUT_SECONDS = 4.2
 MIN_SYNTHESIS_CONTENT_CHARS = 300
+
+
+@dataclass(frozen=True)
+class SourceReadOutcome:
+    text: str = ""
+    status: str = "unavailable"
+
+
+class SourcePacketCollection(list):
+    def __init__(self, *args, denied_count: int = 0, unavailable_count: int = 0):
+        super().__init__(*args)
+        self.denied_count = int(denied_count)
+        self.unavailable_count = int(unavailable_count)
 
 
 class WebSearchExecutor:
@@ -244,56 +263,81 @@ class WebSearchExecutor:
         self,
         *,
         capability_id: int,
-        url: str,
+        admission: SearchSourceAdmission,
         request_id: str | None,
         session_id: str | None,
         timeout_seconds: float | None = None,
-    ) -> str:
-        cleaned_url = str(url or "").strip()
-        if not cleaned_url:
-            return ""
+    ) -> SourceReadOutcome:
+        if (
+            capability_id != 16
+            or not isinstance(admission, SearchSourceAdmission)
+            or admission.capability_id != capability_id
+            or admission.request_id != str(request_id or "").strip()
+            or admission.session_id != str(session_id or "").strip()
+        ):
+            return SourceReadOutcome(status="denied")
         effective_timeout = SOURCE_READ_TIMEOUT_SECONDS if timeout_seconds is None else max(0.05, timeout_seconds)
         try:
             response = self.network.request(
                 capability_id=capability_id,
                 method="GET",
-                url=cleaned_url,
+                url=admission.url,
                 as_json=False,
                 timeout=effective_timeout,
                 request_id=request_id,
                 session_id=session_id,
+                disclosure_classifier=search_source_disclosure_classifier(admission),
             )
             html = str(response.get("text") or "")
             if not html:
-                return ""
-            return extract_text_from_html(html, max_chars=MAX_SOURCE_TEXT_CHARS).strip()
-        except Exception:
-            return ""
+                return SourceReadOutcome()
+            text = extract_text_from_html(html, max_chars=MAX_SOURCE_TEXT_CHARS).strip()
+            return SourceReadOutcome(text=text, status="read" if text else "unavailable")
+        except Exception as error:
+            if is_disclosure_denial(error):
+                return SourceReadOutcome(status="denied")
+            return SourceReadOutcome()
 
     def _collect_source_packets(
         self,
         *,
         capability_id: int,
         results: list[dict],
+        search_provider: str,
         request_id: str | None,
         session_id: str | None,
         deadline: float | None = None,
-    ) -> list[dict]:
-        candidates: list[dict] = []
+    ) -> SourcePacketCollection:
+        candidates: list[tuple[dict, SearchSourceAdmission]] = []
         seen_urls: set[str] = set()
+        invalid_count = 0
+        considered_count = 0
         for item in results:
             url = str(item.get("url") or "").strip()
             if not url or url in seen_urls:
                 continue
             seen_urls.add(url)
-            candidates.append(item)
-            if len(candidates) >= MAX_SOURCE_READS:
+            considered_count += 1
+            try:
+                admission = build_search_source_admission(
+                    url=url,
+                    search_provider=search_provider,
+                    capability_id=capability_id,
+                    request_id=request_id,
+                    session_id=session_id,
+                    initiation=self.initiation,
+                )
+            except (TypeError, ValueError):
+                invalid_count += 1
+            else:
+                candidates.append((item, admission))
+            if considered_count >= MAX_SOURCE_READS:
                 break
 
         if not candidates:
-            return []
+            return SourcePacketCollection(denied_count=invalid_count)
 
-        packets: list[dict] = []
+        packets = SourcePacketCollection(denied_count=invalid_count)
         worker_count = min(3, len(candidates))
         if deadline is None:
             remaining_budget = SOURCE_READ_TIMEOUT_SECONDS
@@ -306,21 +350,34 @@ class WebSearchExecutor:
             pool.submit(
                 self._fetch_source_text,
                 capability_id=capability_id,
-                url=str(item.get("url") or ""),
+                admission=admission,
                 request_id=request_id,
                 session_id=session_id,
                 timeout_seconds=remaining_budget,
             ): item
-            for item in candidates
+            for item, admission in candidates
         }
         try:
             for future in as_completed(futures, timeout=remaining_budget + 0.1):
                 item = futures[future]
                 try:
-                    text = (future.result() or "").strip()
+                    raw_outcome = future.result()
                 except Exception:
-                    text = ""
+                    raw_outcome = SourceReadOutcome()
+                if isinstance(raw_outcome, SourceReadOutcome):
+                    outcome = raw_outcome
+                else:
+                    text = str(raw_outcome or "").strip()
+                    outcome = SourceReadOutcome(text=text, status="read" if text else "unavailable")
+                if outcome.status == "denied":
+                    packets.denied_count += 1
+                    continue
+                if outcome.status != "read":
+                    packets.unavailable_count += 1
+                    continue
+                text = outcome.text.strip()
                 if not text:
+                    packets.unavailable_count += 1
                     continue
                 packets.append(
                     {
@@ -677,6 +734,7 @@ class WebSearchExecutor:
         source_packets = self._collect_source_packets(
             capability_id=request.capability_id,
             results=results,
+            search_provider=used_provider,
             request_id=request.request_id,
             session_id=session_id,
             deadline=search_deadline,
@@ -702,6 +760,30 @@ class WebSearchExecutor:
         confidence_label, known_note, unclear_note = render_evidence_notes(evidence)
 
         researched_summary = ResponseFormatter.strip_html_entities(researched_summary)
+        denied_source_reads = int(getattr(source_packets, "denied_count", 0))
+        unavailable_source_reads = int(getattr(source_packets, "unavailable_count", 0))
+        if denied_source_reads:
+            reviewed_prefix = (
+                f"reviewed {len(source_packets)} page{'s' if len(source_packets) != 1 else ''}; "
+                if source_packets
+                else ""
+            )
+            source_read_note = (
+                f"Source reading: {reviewed_prefix}authorization was unavailable for "
+                f"{denied_source_reads} page{'s' if denied_source_reads != 1 else ''}; "
+                "those pages were not read."
+            )
+        elif unavailable_source_reads:
+            source_read_note = (
+                f"Source reading: reviewed {len(source_packets)} "
+                f"page{'s' if len(source_packets) != 1 else ''} via {provider_label}; "
+                f"{unavailable_source_reads} page{'s were' if unavailable_source_reads != 1 else ' was'} unavailable."
+            )
+        else:
+            source_read_note = (
+                f"Source reading: reviewed {len(source_packets)} "
+                f"page{'s' if len(source_packets) != 1 else ''} via {provider_label}."
+            )
         report_sections = [
             f"Bottom line: {researched_summary}",
             "",
@@ -713,7 +795,7 @@ class WebSearchExecutor:
             f"Confidence: {confidence_label}",
             f"What is known: {known_note}",
             f"What is unclear: {unclear_note}",
-            f"Source reading: reviewed {len(source_packets)} page{'s' if len(source_packets) != 1 else ''} via {provider_label}.",
+            source_read_note,
             "",
             "Try next",
             "- show sources",
