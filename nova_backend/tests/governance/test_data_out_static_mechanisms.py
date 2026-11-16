@@ -141,16 +141,22 @@ def test_repository_registry_has_no_unregistered_supported_mechanisms() -> None:
     assert report.stale == ()
 
 
-def test_registry_preserves_all_ten_non_static_closure_families() -> None:
+def test_registry_records_supported_runtime_f02_closure_and_deferred_google() -> None:
     report = validate_repository_dispositions()
+    families = {item.family: item for item in report.families}
     unresolved_families = {
         disposition.family
         for disposition in report.families
         if disposition.status is MechanismStatus.UNRESOLVED
     }
 
+    f02 = families[ClosureFamily.EXTERNAL_READ_AND_SETUP]
+    assert f02.status is MechanismStatus.GOVERNED
+    assert "supported" in f02.reason.lower()
+    assert "google oauth" in f02.reason.lower()
+    assert "deferred" in f02.reason.lower()
+    assert "production-unreachable" in f02.reason.lower()
     assert unresolved_families == {
-        ClosureFamily.EXTERNAL_READ_AND_SETUP,
         ClosureFamily.OPENCLAW_PROVIDER_ROUTES,
         ClosureFamily.INSTALLER_ACQUISITION,
         ClosureFamily.NON_OLLAMA_DELEGATION,

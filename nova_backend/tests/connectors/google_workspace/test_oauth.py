@@ -19,7 +19,8 @@ from src.connectors.google_workspace.oauth import (
     GoogleOAuthProtocolError,
     create_authorization_session,
 )
-from src.governor.exceptions import ProviderConnectionNetworkError
+from src.governor.exceptions import DisclosureDeniedError, ProviderConnectionNetworkError
+from src.governor.network_mediator import NetworkMediator
 
 NOW = datetime(2026, 8, 10, 10, 0, tzinfo=timezone.utc)
 
@@ -139,6 +140,45 @@ def test_oauth_transport_uses_only_auth_endpoints_and_preserves_actual_scopes():
         USERINFO_ENDPOINT,
         REVOCATION_ENDPOINT,
     ]
+
+
+def test_deferred_google_oauth_operations_fail_closed_before_any_network_attempt(
+    monkeypatch,
+):
+    attempts = {"dns": 0, "session": 0}
+
+    def fail_dns(*_args, **_kwargs):
+        attempts["dns"] += 1
+        raise AssertionError("denied Google OAuth must not resolve DNS")
+
+    def fail_session():
+        attempts["session"] += 1
+        raise AssertionError("denied Google OAuth must not construct a client")
+
+    monkeypatch.setattr("src.governor.network_mediator.socket.getaddrinfo", fail_dns)
+    monkeypatch.setattr(NetworkMediator, "_new_session", staticmethod(fail_session))
+
+    config = GoogleOAuthClientConfig("fake-client-id", "fake-client-secret")
+    session, _ = create_authorization_session(
+        config,
+        profile_id="identity",
+        scopes=("openid", "email"),
+        redirect_uri="http://127.0.0.1:49152/oauth/callback",
+        now=NOW,
+    )
+    transport = GoogleOAuthNetworkTransport()
+    operations = (
+        lambda: transport.exchange_code(config, session, "fake-auth-code"),
+        lambda: transport.refresh_token(config, "fake-refresh-token"),
+        lambda: transport.fetch_identity("fake-access-token"),
+        lambda: transport.revoke_token("fake-refresh-token"),
+    )
+
+    for operation in operations:
+        with pytest.raises(DisclosureDeniedError):
+            operation()
+
+    assert attempts == {"dns": 0, "session": 0}
 
 
 def test_revocation_invalid_token_remains_an_unverified_provider_error():

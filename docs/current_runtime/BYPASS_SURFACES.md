@@ -58,7 +58,6 @@ This exact-call-site registry is static regression enforcement, not proof of run
 - Stale dispositions: 0
 
 Unresolved closure families:
-- `F02_external_read_and_setup`: Caller-level typed-adapter and zero-attempt proof remains incomplete for every supported external-read and setup route.
 - `F03_openclaw_provider_routes`: Every reachable OpenClaw tool and alternate provider caller still requires exact disclosure and zero-attempt proof.
 - `F04_installer_acquisition`: Installer acquisition admission is implemented; trusted evidence locality and Windows installer acceptance proof remain required for family closure.
 - `F05_non_ollama_delegation`: Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes.
@@ -68,3 +67,6 @@ Unresolved closure families:
 - `F09_executable_discovery_roots`: PATH and browser-candidate roots require locality classification before executable discovery.
 - `F10_setup_shell_folders`: Start Menu and desktop destinations require locality classification before probe or shortcut creation.
 - `F11_storage_diagnostics_roots`: Storage-health roots require locality classification before disk probing.
+
+Governed closure families:
+- `F02_external_read_and_setup`: Supported and production-reachable external-read routes have caller-level admission and zero-attempt denial proof. Google OAuth setup remains explicitly deferred, production-unreachable, and fail-closed; this supported-runtime closure does not complete or authorize Google provider expansion.

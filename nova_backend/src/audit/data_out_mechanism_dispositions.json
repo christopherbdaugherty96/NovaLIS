@@ -4,8 +4,8 @@
   "closure_families": [
     {
       "id": "F02_external_read_and_setup",
-      "status": "unresolved",
-      "reason": "Caller-level typed-adapter and zero-attempt proof remains incomplete for every supported external-read and setup route."
+      "status": "governed",
+      "reason": "Supported and production-reachable external-read routes have caller-level admission and zero-attempt denial proof. Google OAuth setup remains explicitly deferred, production-unreachable, and fail-closed; this supported-runtime closure does not complete or authorize Google provider expansion."
     },
     {
       "id": "F03_openclaw_provider_routes",
