@@ -6,6 +6,7 @@ import time
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import TimeoutError as FuturesTimeoutError
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from itertools import combinations
 from pathlib import Path
@@ -19,6 +20,14 @@ from src.executors.news_synthesis_async import (
 from src.executors.news_synthesis_cache import NewsSynthesisCache
 from src.llm.llm_gateway import generate_chat, model_status_snapshot
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
+from src.services.news_source_provenance import (
+    NewsSourceAdmission,
+    is_news_disclosure_denial,
+    news_initiation_for_activity,
+    news_source_disclosure_classifier,
+    news_source_provenance_registry,
+)
+from src.trust.session_activity import TRUSTED_ACTIVITY_ORIGIN_PARAM
 from src.utils.content_extractor import extract_text_from_html
 
 MAX_HEADLINES_PER_SUMMARY = 3
@@ -36,6 +45,19 @@ MAX_SOURCE_TEXT_CHARS = 3500
 MAX_CLUSTER_STORIES = 4
 MAX_RELATED_PAIRS = 3
 MAX_HEADLINE_SUMMARY_CHARS = 320
+
+
+@dataclass(frozen=True)
+class SourceReadOutcome:
+    text: str = ""
+    status: str = "unavailable"
+
+
+class SourcePacketCollection(list):
+    def __init__(self, *args, denied_count: int = 0, unavailable_count: int = 0):
+        super().__init__(*args)
+        self.denied_count = int(denied_count)
+        self.unavailable_count = int(unavailable_count)
 
 STOPWORDS = {
     "the",
@@ -221,6 +243,7 @@ class NewsIntelligenceExecutor:
                     "summary": (item.get("summary") or "").strip(),
                     "published": (item.get("published") or "").strip(),
                     "video_url": (item.get("video_url") or "").strip(),
+                    "source_provenance": (item.get("source_provenance") or "").strip(),
                 }
             )
         return out
@@ -437,16 +460,21 @@ class NewsIntelligenceExecutor:
 
     def _fetch_source_text(
         self,
-        url: str,
+        admission: NewsSourceAdmission,
         capability_id: int,
         *,
         request_id: str | None = None,
         session_id: str | None = None,
         timeout_seconds: float | None = None,
-    ) -> str:
-        cleaned_url = (url or "").strip()
-        if not cleaned_url or self.network is None:
-            return ""
+    ) -> SourceReadOutcome:
+        if (
+            self.network is None
+            or not isinstance(admission, NewsSourceAdmission)
+            or admission.capability_id != capability_id
+            or admission.request_id != str(request_id or "").strip()
+            or admission.session_id != str(session_id or "").strip()
+        ):
+            return SourceReadOutcome(status="denied")
         effective_timeout = (
             SOURCE_FETCH_TIMEOUT_SECONDS if timeout_seconds is None else max(0.05, timeout_seconds)
         )
@@ -454,18 +482,23 @@ class NewsIntelligenceExecutor:
             response = self.network.request(
                 capability_id=capability_id,
                 method="GET",
-                url=cleaned_url,
+                url=admission.url,
                 as_json=False,
                 timeout=effective_timeout,
                 request_id=request_id,
                 session_id=session_id,
+                disclosure_classifier=news_source_disclosure_classifier(admission),
+                follow_redirects=False,
             )
             html = str(response.get("text") or "")
             if not html:
-                return ""
-            return extract_text_from_html(html, max_chars=MAX_SOURCE_TEXT_CHARS).strip()
-        except Exception:
-            return ""
+                return SourceReadOutcome()
+            text = extract_text_from_html(html, max_chars=MAX_SOURCE_TEXT_CHARS).strip()
+            return SourceReadOutcome(text=text, status="read" if text else "unavailable")
+        except Exception as error:
+            if is_news_disclosure_denial(error):
+                return SourceReadOutcome(status="denied")
+            return SourceReadOutcome()
 
     def _collect_source_packets(
         self,
@@ -475,47 +508,71 @@ class NewsIntelligenceExecutor:
         request_id: str | None = None,
         session_id: str | None = None,
         deadline: float | None = None,
-    ) -> list[dict[str, str]]:
-        candidates: list[dict[str, str]] = []
+        initiation=None,
+    ) -> SourcePacketCollection:
+        candidates: list[tuple[dict[str, str], NewsSourceAdmission]] = []
         seen_urls: set[str] = set()
+        denied_count = 0
         for item in headlines:
             url = (item.get("url") or "").strip()
             if not url or url in seen_urls:
                 continue
             seen_urls.add(url)
-            candidates.append(item)
+            try:
+                admission = news_source_provenance_registry.admit(
+                    token=str(item.get("source_provenance") or ""),
+                    url=url,
+                    capability_id=capability_id,
+                    request_id=request_id,
+                    session_id=session_id,
+                    initiation=initiation,
+                )
+            except (TypeError, ValueError):
+                denied_count += 1
+                continue
+            candidates.append((item, admission))
             if len(candidates) >= MAX_SOURCE_PAGES_PER_BRIEF:
                 break
         if not candidates:
-            return []
+            return SourcePacketCollection(denied_count=denied_count)
 
         request_timeout = self._bounded_timeout(deadline, SOURCE_FETCH_TIMEOUT_SECONDS)
         if request_timeout <= 0.05:
-            return []
+            return SourcePacketCollection(denied_count=denied_count)
 
-        packets: list[dict[str, str]] = []
+        packets = SourcePacketCollection(denied_count=denied_count)
         worker_count = min(MAX_SOURCE_PAGES_PER_BRIEF, len(candidates))
         pool = ThreadPoolExecutor(max_workers=worker_count)
         futures = {
             pool.submit(
                 self._fetch_source_text,
-                (item.get("url") or "").strip(),
+                admission,
                 capability_id=capability_id,
                 request_id=request_id,
                 session_id=session_id,
                 timeout_seconds=request_timeout,
             ): item
-            for item in candidates
+            for item, admission in candidates
         }
         try:
             for future in as_completed(futures, timeout=request_timeout + 0.1):
                 item = futures[future]
                 try:
-                    text = (future.result() or "").strip()
+                    raw_outcome = future.result()
                 except Exception:
-                    text = ""
-                if not text:
+                    raw_outcome = SourceReadOutcome()
+                if isinstance(raw_outcome, SourceReadOutcome):
+                    outcome = raw_outcome
+                else:
+                    text = str(raw_outcome or "").strip()
+                    outcome = SourceReadOutcome(text=text, status="read" if text else "unavailable")
+                if outcome.status == "denied":
+                    packets.denied_count += 1
                     continue
+                if outcome.status != "read":
+                    packets.unavailable_count += 1
+                    continue
+                text = outcome.text.strip()
                 packets.append(
                     {
                         "title": (item.get("title") or "").strip(),
@@ -1312,14 +1369,48 @@ class NewsIntelligenceExecutor:
                 data={"story_index": story_index},
             )
 
-        source_text = self._fetch_source_text(
-            url,
+        source_request_id = f"{request.request_id}:story-page:{story_index}"
+        try:
+            admission = news_source_provenance_registry.admit(
+                token=str(item.get("source_provenance") or ""),
+                url=url,
+                capability_id=request.capability_id,
+                request_id=source_request_id,
+                session_id=session_id,
+                initiation=news_initiation_for_activity(
+                    (request.params or {}).get(TRUSTED_ACTIVITY_ORIGIN_PARAM)
+                ),
+            )
+        except (TypeError, ValueError):
+            return self._failure_result(
+                (
+                    f"I couldn't read the article page for story {story_index} because "
+                    "authorization for this current news source is unavailable. Refresh today's news and try again."
+                ),
+                request_id=request.request_id,
+                failure_kind="story_page_authorization_unavailable",
+                data={"story_index": story_index, "url": url},
+            )
+
+        outcome = self._fetch_source_text(
+            admission,
             capability_id=request.capability_id,
-            request_id=f"{request.request_id}:story-page:{story_index}",
+            request_id=source_request_id,
             session_id=session_id,
             timeout_seconds=self._bounded_timeout(deadline, SOURCE_FETCH_TIMEOUT_SECONDS),
         )
-        if not source_text:
+        if outcome.status == "denied":
+            return self._failure_result(
+                (
+                    f"I couldn't read the article page for story {story_index} because "
+                    "authorization for this source read was denied."
+                ),
+                request_id=request.request_id,
+                failure_kind="story_page_authorization_unavailable",
+                data={"story_index": story_index, "url": url},
+            )
+        source_text = outcome.text.strip()
+        if outcome.status != "read" or not source_text:
             return self._failure_result(
                 (
                     f"I couldn't read the article page for story {story_index} right now. "
@@ -1489,6 +1580,9 @@ class NewsIntelligenceExecutor:
             request_id=f"{request.request_id}:headline-source",
             session_id=session_id,
             deadline=deadline,
+            initiation=news_initiation_for_activity(
+                (request.params or {}).get(TRUSTED_ACTIVITY_ORIGIN_PARAM)
+            ),
         )
         source_by_url = {
             str(packet.get("url") or "").strip(): str(packet.get("text") or "")
@@ -1517,6 +1611,16 @@ class NewsIntelligenceExecutor:
             selected_indices=indices,
             report_title=report_title,
         )
+        if source_packets.denied_count:
+            report = (
+                f"{report}\n\nNote: {source_packets.denied_count} source page(s) were not read because "
+                "current source authorization was unavailable; those summaries remain headline-level."
+            )
+        elif source_packets.unavailable_count:
+            report = (
+                f"{report}\n\nNote: {source_packets.unavailable_count} authorized source page(s) were unavailable; "
+                "those summaries remain headline-level."
+            )
 
         payload = {
             "widget": {
@@ -1526,6 +1630,9 @@ class NewsIntelligenceExecutor:
                     "count": len(selected),
                     "selection": selection or "indices",
                     "category_key": (request.params or {}).get("category_key"),
+                    "source_pages_read": len(source_packets),
+                    "source_pages_denied": source_packets.denied_count,
+                    "source_pages_unavailable": source_packets.unavailable_count,
                     "summary_text": report,
                 },
             },
@@ -1591,6 +1698,9 @@ class NewsIntelligenceExecutor:
                 request_id=request.request_id,
                 session_id=session_id,
                 deadline=deadline,
+                initiation=news_initiation_for_activity(
+                    (request.params or {}).get(TRUSTED_ACTIVITY_ORIGIN_PARAM)
+                ),
             )
             if packets:
                 clusters = self._cluster_packets(packets)
@@ -1679,6 +1789,15 @@ class NewsIntelligenceExecutor:
                         report = (
                             f"{report}\n\nNote: {placeholder_clusters} topic cluster(s) are using placeholder source-grounded summaries because synthesis was unavailable."
                         )
+                    if packets.denied_count:
+                        report = (
+                            f"{report}\n\nNote: {packets.denied_count} source page(s) were excluded because "
+                            "current source authorization was unavailable."
+                        )
+                    if packets.unavailable_count:
+                        report = (
+                            f"{report}\n\nNote: {packets.unavailable_count} authorized source page(s) were unavailable."
+                        )
                     if omitted_clusters:
                         report = (
                             f"{report}\n\nNote: {omitted_clusters} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
@@ -1689,6 +1808,8 @@ class NewsIntelligenceExecutor:
                             "data": {
                                 "headline_count": len(source),
                                 "source_pages_read": len(packets),
+                                "source_pages_denied": packets.denied_count,
+                                "source_pages_unavailable": packets.unavailable_count,
                                 "cluster_count": len(rendered_clusters),
                                 "placeholder_cluster_count": placeholder_clusters,
                                 "omitted_cluster_count": omitted_clusters,
@@ -1712,10 +1833,16 @@ class NewsIntelligenceExecutor:
                         ),
                     )
             else:
-                degraded_note = (
-                    "Note: I couldn't read enough source pages in time, "
-                    "so this is a quicker headline-only brief. You can retry with today's news or narrow the topic."
-                )
+                if packets.denied_count:
+                    degraded_note = (
+                        "Note: source-page authorization was unavailable, so this is a headline-only brief. "
+                        "Refresh today's news and retry if you want source-page analysis."
+                    )
+                else:
+                    degraded_note = (
+                        "Note: source pages were unavailable, so this is a quicker headline-only brief. "
+                        "You can retry with today's news or narrow the topic."
+                    )
 
         developing_stories = self._load_developing_stories()
         source = self._apply_story_evolution(source, developing_stories)
