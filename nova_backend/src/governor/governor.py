@@ -36,7 +36,7 @@ from src.governor.execute_boundary.execute_boundary import (
     ExecutionCPUExceededError,
 )
 from src.governor.single_action_queue import SingleActionQueue
-from src.trust.session_activity import normalize_activity_origin
+from src.trust.session_activity import TRUSTED_ACTIVITY_ORIGIN_PARAM, normalize_activity_origin
 
 CAPABILITY_TIMEOUT_OVERRIDES = {
     16: 20.0,  # Governed web search may need search, source reads, and bounded synthesis.
@@ -334,6 +334,13 @@ class Governor:
             return self._approval_refusal(capability_id, reason)
         except ApprovalGrantError:
             return self._approval_refusal(capability_id, "invalid_action_parameters")
+
+        if capability_id in {49, 50, 56}:
+            action_params[TRUSTED_ACTIVITY_ORIGIN_PARAM] = trusted_activity_origin
+            if trusted_session_id:
+                action_params["session_id"] = trusted_session_id
+            else:
+                action_params.pop("session_id", None)
 
         requires_approval = self._requires_approval(cap, capability_id, action_params)
         if requires_approval or approval_id:

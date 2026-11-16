@@ -5,8 +5,36 @@ from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 
+def _trusted_headlines(headlines: list[dict], *, session_id: str = "test-session") -> list[dict]:
+    from src.services.news_source_provenance import news_source_provenance_registry
+
+    trusted: list[dict] = []
+    for raw in headlines:
+        item = dict(raw)
+        url = str(item.get("url") or "").strip()
+        source = str(item.get("source") or "news").strip().lower()
+        provider = "".join(char if char.isalnum() else "_" for char in source).strip("_") or "news"
+        try:
+            item["source_provenance"] = news_source_provenance_registry.issue(
+                url=url,
+                provider=provider,
+                session_id=session_id,
+                fetched_at=datetime.now(timezone.utc),
+                ttl_seconds=180,
+            )
+        except ValueError:
+            pass
+        trusted.append(item)
+    return trusted
+
+
 def _request(capability_id: int, params: dict):
-    return SimpleNamespace(capability_id=capability_id, params=params, request_id="req-1")
+    prepared = dict(params)
+    prepared.setdefault("session_id", "test-session")
+    prepared.setdefault("_nova_trusted_activity_origin", "user_action")
+    if isinstance(prepared.get("headlines"), list):
+        prepared["headlines"] = _trusted_headlines(prepared["headlines"])
+    return SimpleNamespace(capability_id=capability_id, params=prepared, request_id="req-1")
 
 
 def test_summary_requires_cached_headlines():
@@ -638,7 +666,10 @@ def test_brief_uses_cached_source_synthesis_without_calling_llm(monkeypatch, tmp
         network=_FakeNetwork(),
         synthesis_cache=NewsSynthesisCache(tmp_path / "news_synthesis_cache.json"),
     )
-    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    packets = executor._collect_source_packets(
+        _trusted_headlines(headlines), capability_id=50, request_id="seed", session_id="test-session",
+        initiation=mod.news_initiation_for_activity("user_action")
+    )
     cluster = executor._cluster_packets(packets)[0]
     executor.synthesis_cache.put(
         cluster,
@@ -721,7 +752,10 @@ def test_brief_stores_successful_source_synthesis_in_cache(monkeypatch, tmp_path
     executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork(), synthesis_cache=cache)
 
     result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
-    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    packets = executor._collect_source_packets(
+        _trusted_headlines(headlines), capability_id=50, request_id="seed", session_id="test-session",
+        initiation=mod.news_initiation_for_activity("user_action")
+    )
     cluster = executor._cluster_packets(packets)[0]
     cached = cache.get(cluster)
 
@@ -753,7 +787,10 @@ def test_brief_does_not_store_placeholder_synthesis_in_cache(monkeypatch, tmp_pa
     executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork(), synthesis_cache=cache)
 
     result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
-    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    packets = executor._collect_source_packets(
+        _trusted_headlines(headlines), capability_id=50, request_id="seed", session_id="test-session",
+        initiation=mod.news_initiation_for_activity("user_action")
+    )
     cluster = executor._cluster_packets(packets)[0]
 
     assert result.success is True
@@ -871,7 +908,10 @@ def test_brief_async_fill_populates_cache_and_emits_ready_update(monkeypatch, tm
             },
         )
     )
-    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    packets = executor._collect_source_packets(
+        _trusted_headlines(headlines), capability_id=50, request_id="seed", session_id="test-session",
+        initiation=mod.news_initiation_for_activity("user_action")
+    )
     cluster = executor._cluster_packets(packets)[0]
     cached = cache.get(cluster)
 
@@ -925,7 +965,10 @@ def test_brief_async_fill_pauses_when_foreground_model_is_busy(monkeypatch, tmp_
             },
         )
     )
-    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    packets = executor._collect_source_packets(
+        _trusted_headlines(headlines), capability_id=50, request_id="seed", session_id="test-session",
+        initiation=mod.news_initiation_for_activity("user_action")
+    )
     cluster = executor._cluster_packets(packets)[0]
 
     assert result.success is True
@@ -995,7 +1038,10 @@ def test_brief_uses_stale_cache_and_queues_refresh(monkeypatch, tmp_path):
         synthesis_cache=cache,
         synthesis_fill_queue=NewsSynthesisFillQueue(inline=True),
     )
-    packets = executor._collect_source_packets(headlines, capability_id=50, request_id="seed", session_id=None)
+    packets = executor._collect_source_packets(
+        _trusted_headlines(headlines), capability_id=50, request_id="seed", session_id="test-session",
+        initiation=mod.news_initiation_for_activity("user_action")
+    )
     cluster = executor._cluster_packets(packets)[0]
     cache.put(
         cluster,

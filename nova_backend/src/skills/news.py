@@ -485,6 +485,8 @@ class NewsSkill(BaseSkill):
                         "title": title,
                         "url": url,
                         "source": name,
+                        "source_provider": provider,
+                        "source_retrieved": True,
                         "summary": summary,
                         "published": str(first.get("published") or "").strip(),
                         "video_url": str(first.get("video_url") or "").strip(),
@@ -493,7 +495,9 @@ class NewsSkill(BaseSkill):
                 continue
 
         if domain:
-            return fallback_headline(name, domain)
+            fallback = fallback_headline(name, domain)
+            fallback["source_retrieved"] = False
+            return fallback
 
         return None
 

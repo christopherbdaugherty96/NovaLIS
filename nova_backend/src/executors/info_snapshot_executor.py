@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import re
+from copy import deepcopy
 from typing import Any
 
 from src.actions.action_result import ActionResult
@@ -185,7 +186,9 @@ class NewsSnapshotExecutor:
                 reversible=True,
             )
         widget = getattr(result, "widget_data", None)
-        safe_widget = widget if isinstance(widget, dict) else _fallback_widget(56)
+        safe_widget = deepcopy(widget) if isinstance(widget, dict) else _fallback_widget(56)
+        if getattr(result, "success", False):
+            self._attach_source_provenance(safe_widget, request)
         fallback_message = str(getattr(result, "message", "") or "News is currently unavailable.").strip()
         message = _build_snapshot_message(56, safe_widget, fallback_message)
         if getattr(result, "success", False):
@@ -205,6 +208,42 @@ class NewsSnapshotExecutor:
             external_effect=False,
             reversible=True,
         )
+
+    @staticmethod
+    def _attach_source_provenance(widget: dict[str, Any], request: Any) -> None:
+        from src.services.news_source_provenance import news_source_provenance_registry
+
+        params = request.params if isinstance(getattr(request, "params", None), dict) else {}
+        session_id = str(params.get("session_id") or "").strip()
+        fetched_at = widget.get("fetched_at")
+        ttl_seconds = widget.get("cache_ttl_seconds")
+        if not session_id or not fetched_at or not ttl_seconds:
+            return
+
+        collections: list[list[Any]] = []
+        items = widget.get("items")
+        if isinstance(items, list):
+            collections.append(items)
+        categories = widget.get("categories")
+        if isinstance(categories, dict):
+            for bucket in categories.values():
+                if isinstance(bucket, dict) and isinstance(bucket.get("items"), list):
+                    collections.append(bucket["items"])
+
+        for collection in collections:
+            for item in collection:
+                if not isinstance(item, dict) or item.get("source_retrieved") is not True:
+                    continue
+                try:
+                    item["source_provenance"] = news_source_provenance_registry.issue(
+                        url=str(item.get("url") or ""),
+                        provider=str(item.get("source_provider") or ""),
+                        session_id=session_id,
+                        fetched_at=fetched_at,
+                        ttl_seconds=float(ttl_seconds),
+                    )
+                except (TypeError, ValueError):
+                    item.pop("source_provenance", None)
 
 
 class CalendarSnapshotExecutor:
