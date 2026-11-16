@@ -295,46 +295,6 @@
       "reason": "Start Menu and desktop destinations require locality classification before probe or shortcut creation."
     },
     {
-      "path": "nova_backend/src/api/audit_api.py",
-      "line": 20,
-      "column": 17,
-      "mechanism": "process_delegation",
-      "symbol": "subprocess.run",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "nova_backend/src/api/audit_api.py",
-      "line": 27,
-      "column": 19,
-      "mechanism": "process_delegation",
-      "symbol": "subprocess.run",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "nova_backend/src/api/audit_api.py",
-      "line": 34,
-      "column": 17,
-      "mechanism": "process_delegation",
-      "symbol": "subprocess.run",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "nova_backend/src/api/audit_api.py",
-      "line": 41,
-      "column": 20,
-      "mechanism": "process_delegation",
-      "symbol": "subprocess.run",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
       "path": "nova_backend/src/api/live_screen_api.py",
       "line": 39,
       "column": 17,
@@ -403,6 +363,17 @@
       "status": "unresolved",
       "closure_family": "F11_storage_diagnostics_roots",
       "reason": "Storage-health roots require locality classification before disk probing."
+    },
+    {
+      "path": "nova_backend/src/governor/git_child_admission.py",
+      "line": 272,
+      "column": 28,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.run",
+      "status": "governed",
+      "closure_family": null,
+      "reason": "The four fixed phase-status Git reads are admitted and evidenced before spawn with an isolated child environment.",
+      "boundary": "run_git_identity_plan"
     },
     {
       "path": "nova_backend/src/governor/network_mediator.py",
