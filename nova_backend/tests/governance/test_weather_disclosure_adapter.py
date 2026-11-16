@@ -338,13 +338,13 @@ def test_daily_brief_weather_uses_automatic_initiation(monkeypatch):
     assert mediator.contexts[0].initiation is InitiationClass.AUTOMATIC
 
 
-def test_openclaw_weather_uses_approved_initiation():
+def test_openclaw_weather_defaults_legacy_origin_to_automatic():
     marker = object()
 
     skill = get_tool_registry().create("weather", network=marker)
 
     assert skill.service.network is marker
-    assert skill.service.initiation is InitiationClass.APPROVED
+    assert skill.service.initiation is InitiationClass.AUTOMATIC
 
 
 @pytest.mark.parametrize(

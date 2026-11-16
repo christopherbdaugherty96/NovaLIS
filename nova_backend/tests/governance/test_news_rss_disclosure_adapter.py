@@ -206,10 +206,10 @@ def test_news_rss_classifier_rejects_uncatalogued_feed():
     assert classifier(_rss_facts(url=url)) is None
 
 
-def test_openclaw_news_uses_approved_initiation():
+def test_openclaw_news_defaults_legacy_origin_to_automatic():
     marker = object()
 
     skill = get_tool_registry().create("news", network=marker)
 
     assert skill.network is marker
-    assert skill.initiation is InitiationClass.APPROVED
+    assert skill.initiation is InitiationClass.AUTOMATIC

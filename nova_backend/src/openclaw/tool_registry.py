@@ -149,7 +149,7 @@ class ToolRegistry:
 
 def _bootstrap() -> ToolRegistry:
     """Create and populate the global tool registry."""
-    from src.governor.disclosure_policy import InitiationClass
+    from src.openclaw.initiation_provenance import classify_openclaw_initiation
     from src.skills.calendar import CalendarSkill
     from src.skills.executor_adapter import ExecutorSkillAdapter
     from src.skills.news import NewsSkill
@@ -161,9 +161,9 @@ def _bootstrap() -> ToolRegistry:
 
     registry.register(
         "weather",
-        lambda network=None: WeatherSkill(
+        lambda network=None, triggered_by=None: WeatherSkill(
             network=network,
-            initiation=InitiationClass.APPROVED,
+            initiation=classify_openclaw_initiation(triggered_by),
         ),
         ToolMetadata(
             name="weather",
@@ -192,9 +192,9 @@ def _bootstrap() -> ToolRegistry:
 
     registry.register(
         "news",
-        lambda network=None: NewsSkill(
+        lambda network=None, triggered_by=None: NewsSkill(
             network=network,
-            initiation=InitiationClass.APPROVED,
+            initiation=classify_openclaw_initiation(triggered_by),
         ),
         ToolMetadata(
             name="news",
@@ -223,9 +223,9 @@ def _bootstrap() -> ToolRegistry:
 
     registry.register(
         "web_search",
-        lambda network=None: WebSearchSkill(
+        lambda network=None, triggered_by=None: WebSearchSkill(
             network=network,
-            initiation=InitiationClass.APPROVED,
+            initiation=classify_openclaw_initiation(triggered_by),
         ),
         ToolMetadata(
             name="web_search",

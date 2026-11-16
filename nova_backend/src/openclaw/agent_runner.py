@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any
 
 from src.durability.maintenance import authoritative_mutation
-from src.governor.disclosure_policy import InitiationClass
 from src.governor.network_mediator import NetworkMediator
 from src.llm import llm_gateway
 from src.openclaw.agent_personality_bridge import (
@@ -21,6 +20,7 @@ from src.openclaw.agent_runtime_store import (
     openclaw_agent_runtime_store,
 )
 from src.openclaw.execution_memory import ExecutionMemory
+from src.openclaw.initiation_provenance import classify_openclaw_initiation
 from src.openclaw.per_tool_budget import PerToolBudgetTracker
 from src.openclaw.robust_executor import RetryConfig, RobustExecutor
 from src.openclaw.run_state_machine import RUN_CANCELLED, RUN_FAILED, RUN_SUCCEEDED
@@ -228,6 +228,7 @@ class OpenClawAgentRunner:
         self._openai_lane = openai_lane or OpenAIResponsesLane(network=network)
         self._active_budget_meter: RunBudgetMeter | None = None
         self._active_envelope: TaskEnvelope | None = None
+        self._active_triggered_by = "legacy"
         self._robust_executor = RobustExecutor(retry_config=RetryConfig(max_retries=1))
         self._execution_memory = execution_memory or ExecutionMemory()
         self._tool_registry = get_tool_registry()
@@ -256,6 +257,7 @@ class OpenClawAgentRunner:
         budget_meter = RunBudgetMeter(envelope)
         self._active_budget_meter = budget_meter
         self._active_envelope = envelope
+        self._active_triggered_by = triggered_by
         self._store.set_active_run(
             {
                 "envelope_id": envelope.id,
@@ -425,6 +427,7 @@ class OpenClawAgentRunner:
         finally:
             self._active_budget_meter = None
             self._active_envelope = None
+            self._active_triggered_by = "legacy"
             self._store.clear_active_run(envelope.id)
 
     def _check_cancel(self, envelope_id: str) -> None:
@@ -578,7 +581,9 @@ class OpenClawAgentRunner:
         # Build parallel call list using the tool registry
         calls = [
             {
-                "skill": self._tool_registry.create("weather", network=network),
+                "skill": self._tool_registry.create(
+                    "weather", network=network, triggered_by=self._active_triggered_by
+                ),
                 "query": "weather",
                 "timeout": self.WEATHER_TIMEOUT_SECONDS,
                 "tool_name": "weather",
@@ -592,7 +597,9 @@ class OpenClawAgentRunner:
                 "is_network_tool": False,
             },
             {
-                "skill": self._tool_registry.create("news", network=network),
+                "skill": self._tool_registry.create(
+                    "news", network=network, triggered_by=self._active_triggered_by
+                ),
                 "query": "news",
                 "timeout": self.NEWS_TIMEOUT_SECONDS,
                 "tool_name": "news",
@@ -700,7 +707,7 @@ class OpenClawAgentRunner:
         news_result = await self._call_skill(
             NewsSkill(
                 network=self._network_for_run(),
-                initiation=InitiationClass.APPROVED,
+                initiation=classify_openclaw_initiation(self._active_triggered_by),
             ),
             "news",
             self.NEWS_TIMEOUT_SECONDS,
@@ -746,7 +753,7 @@ class OpenClawAgentRunner:
 
         skill = NewsSkill(
             network=self._network_for_run(),
-            initiation=InitiationClass.APPROVED,
+            initiation=classify_openclaw_initiation(self._active_triggered_by),
         )
         crypto_group = next(
             (group for group in list(skill.CATEGORY_GROUPS) if str(group.get("key") or "").strip() == "crypto"),
@@ -1246,6 +1253,7 @@ class OpenClawAgentRunner:
             executor=self._robust_executor,
             network=metered_network,       # PATCH C: network budget enforced
             execution_memory=self._execution_memory,
+            triggered_by=triggered_by,
         )
 
         # Track active run for progress/cancellation

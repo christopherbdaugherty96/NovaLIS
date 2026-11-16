@@ -71,11 +71,13 @@ class ThinkingLoop:
         executor: RobustExecutor,
         network: Any = None,
         execution_memory: ExecutionMemory | None = None,
+        triggered_by: str = "legacy",
     ) -> None:
         self._registry = registry
         self._executor = executor
         self._network = network
         self._execution_memory = execution_memory
+        self._triggered_by = triggered_by
         self._on_progress: Callable[[int, str, list[str]], None] | None = None
         self.thoughts: list[ThoughtStep] = []
 
@@ -134,7 +136,11 @@ class ThinkingLoop:
                     continue
 
                 meta = self._registry.get_metadata(tool_name)
-                kwargs = {"network": self._network} if meta.is_network_tool else {}
+                kwargs = (
+                    {"network": self._network, "triggered_by": self._triggered_by}
+                    if meta.is_network_tool
+                    else {}
+                )
                 skill = self._registry.create(tool_name, **kwargs)
                 timeout = meta.timeout_seconds
                 result = await self._executor.call_skill(
