@@ -80,6 +80,38 @@ def test_google_foundation_does_not_import_authority_execution_or_model_surfaces
     )
 
 
+def test_google_oauth_foundation_is_unreachable_from_production_runtime():
+    src_root = PACKAGE_ROOT.parents[1]
+    forbidden_modules = {
+        "src.connectors.google_workspace",
+        "src.connectors.google_workspace.manager",
+        "src.connectors.google_workspace.oauth",
+    }
+    production_imports: list[tuple[str, str]] = []
+
+    for path in sorted(src_root.rglob("*.py")):
+        if path.is_relative_to(PACKAGE_ROOT):
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                imported = node.module or ""
+                if imported in forbidden_modules or imported.startswith(
+                    "src.connectors.google_workspace."
+                ):
+                    production_imports.append((str(path.relative_to(src_root)), imported))
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name in forbidden_modules or alias.name.startswith(
+                        "src.connectors.google_workspace."
+                    ):
+                        production_imports.append(
+                            (str(path.relative_to(src_root)), alias.name)
+                        )
+
+    assert production_imports == []
+
+
 def test_google_foundation_reuses_source_identity_but_creates_no_domain_evidence():
     source = _source()
 

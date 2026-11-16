@@ -249,6 +249,10 @@ def install_runtime_truth_instrumentation(auditor: ModuleType) -> None:
         for family in mechanism_payload["closure_families"]:
             if family["status"] == MechanismStatus.UNRESOLVED.value:
                 lines.append(f"- `{family['id']}`: {family['reason']}")
+        lines.extend(["", "Governed closure families:"])
+        for family in mechanism_payload["closure_families"]:
+            if family["status"] == MechanismStatus.GOVERNED.value:
+                lines.append(f"- `{family['id']}`: {family['reason']}")
         lines.append("")
         return "\n".join(lines)
 

@@ -253,6 +253,9 @@ def test_generator_entrypoint_writes_instrumented_runtime_truth(tmp_path, monkey
     assert "## Supported Data-Out mechanism dispositions" in bypass
     assert "Unregistered sites: 0" in bypass
     assert "Stale dispositions: 0" in bypass
+    assert "Governed closure families:" in bypass
+    assert "F02_external_read_and_setup" in bypass
+    assert "Google OAuth setup remains explicitly deferred" in bypass
     assert "F04_installer_acquisition" in bypass
 
     assert "scope_version: behaviorally_active_v2" in fingerprint
