@@ -164,6 +164,51 @@ async def test_run_single_step_goal_achieved():
 
 
 @pytest.mark.asyncio
+async def test_run_passes_user_origin_to_network_tool_factory():
+    captured: dict[str, object] = {}
+    registry = ToolRegistry()
+
+    def _factory(**kwargs):
+        captured.update(kwargs)
+        return _FakeSkill("sunny")
+
+    registry.register(
+        "weather",
+        _factory,
+        ToolMetadata(
+            name="weather",
+            description="Weather",
+            category="collection",
+            tags=("weather",),
+            timeout_seconds=5.0,
+            is_network_tool=True,
+        ),
+    )
+    marker = object()
+    loop = ThinkingLoop(
+        registry=registry,
+        executor=RobustExecutor(retry_config=RetryConfig(max_retries=0)),
+        network=marker,
+        triggered_by="agent_page",
+    )
+    llm_responses = iter(
+        [
+            "Fetch the weather.",
+            '["weather"]',
+            '{"location": "auto"}',
+            "yes",
+        ]
+    )
+
+    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+        mock_gw.generate_chat = lambda *_args, **_kwargs: next(llm_responses)
+        result = await loop.run("What's the weather?")
+
+    assert result["success"] is True
+    assert captured == {"network": marker, "triggered_by": "agent_page"}
+
+
+@pytest.mark.asyncio
 async def test_run_terminates_on_empty_reasoning():
     """If LLM returns empty reasoning, loop should stop."""
     loop = _make_loop()

@@ -317,7 +317,7 @@ def test_cap16_synthetic_allow_records_sanitized_evidence(monkeypatch):
     assert secret not in repr(sink.records)
 
 
-def test_openclaw_search_uses_approved_initiation_and_sanitizes_denial():
+def test_openclaw_search_defaults_legacy_origin_to_automatic_and_sanitizes_denial():
     class _Network:
         def request(self, **_kwargs):
             raise DisclosureDeniedError("sensitive-policy-reason")
@@ -325,7 +325,7 @@ def test_openclaw_search_uses_approved_initiation_and_sanitizes_denial():
     skill = get_tool_registry().create("web_search", network=_Network())
     result = asyncio.run(skill.handle("search private topic"))
 
-    assert skill.initiation is InitiationClass.APPROVED
+    assert skill.initiation is InitiationClass.AUTOMATIC
     assert result.success is False
     assert "sensitive-policy-reason" not in result.message
     assert "sensitive-policy-reason" not in repr(result.data)
