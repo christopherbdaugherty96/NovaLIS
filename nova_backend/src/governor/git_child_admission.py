@@ -1,4 +1,4 @@
-"""Bounded custody for the four read-only Git build-identity children.
+"""Bounded custody for the read-only Git build-identity children.
 
 This boundary removes ambient credentials and Git configuration from the
 children used by ``/phase-status``.  Git executable discovery still depends on
@@ -42,6 +42,7 @@ class GitChildAdmissionError(RuntimeError):
 
 
 class GitIdentityOperation(str, Enum):
+    FILTER_GUARD = "filter_guard"
     COMMIT = "commit"
     UNSTAGED = "unstaged"
     STAGED = "staged"
@@ -61,11 +62,12 @@ class GitChildOutcomeRecord:
     plan_fingerprint: str
     outcome: str
     exit_code: int | None
+    transport_observed: bool
 
     def as_dict(self) -> dict[str, object]:
         return {
             "record_kind": "delegated_process_outcome",
-            "transport_observed": True,
+            "transport_observed": self.transport_observed,
             "operation": self.operation.value,
             "plan_fingerprint": self.plan_fingerprint,
             "outcome": self.outcome,
@@ -108,6 +110,16 @@ def build_git_identity_plan(source_root: Path) -> GitIdentityPlan:
         raise GitChildAdmissionError("An absolute source root is required.")
     prefix = _git_prefix(source_root)
     commands = (
+        (
+            GitIdentityOperation.FILTER_GUARD,
+            (
+                *prefix,
+                "config",
+                "--includes",
+                "--get-regexp",
+                r"^filter\..*\.(clean|process)$",
+            ),
+        ),
         (GitIdentityOperation.COMMIT, (*prefix, "rev-parse", "--verify", "HEAD")),
         (
             GitIdentityOperation.UNSTAGED,
@@ -172,6 +184,7 @@ def minimal_git_environment() -> dict[str, str]:
         {
             "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_CONFIG_GLOBAL": os.devnull,
+            "GIT_ATTR_NOSYSTEM": "1",
             "GIT_TERMINAL_PROMPT": "0",
             "GIT_OPTIONAL_LOCKS": "0",
             "GIT_NO_LAZY_FETCH": "1",
@@ -236,6 +249,53 @@ def _record_admission(plan: GitIdentityPlan, policy: DisclosurePolicy, sink) -> 
         )
 
 
+def _record_outcome(
+    sink,
+    *,
+    operation: GitIdentityOperation,
+    plan: GitIdentityPlan,
+    outcome: str,
+    exit_code: int | None,
+    transport_observed: bool,
+) -> None:
+    try:
+        sink.append(
+            GitChildOutcomeRecord(
+                operation=operation,
+                plan_fingerprint=plan.plan_fingerprint,
+                outcome=outcome,
+                exit_code=exit_code,
+                transport_observed=transport_observed,
+            )
+        )
+    except Exception as error:
+        raise GitChildAdmissionError("Git child outcome evidence failed.") from error
+
+
+def _validate_result(
+    operation: GitIdentityOperation,
+    completed: subprocess.CompletedProcess[str],
+) -> None:
+    if operation is GitIdentityOperation.FILTER_GUARD:
+        if completed.returncode == 0:
+            raise GitChildAdmissionError(
+                "Repository Git filters are not admitted for build-identity reads."
+            )
+        if completed.returncode != 1:
+            raise GitChildAdmissionError("Git filter configuration was unavailable.")
+        return
+    if operation in {GitIdentityOperation.COMMIT, GitIdentityOperation.UNTRACKED}:
+        if completed.returncode != 0:
+            raise GitChildAdmissionError(
+                f"Git identity operation {operation.value} failed."
+            )
+        return
+    if completed.returncode not in {0, 1}:
+        raise GitChildAdmissionError(
+            f"Git identity operation {operation.value} failed."
+        )
+
+
 def run_git_identity_plan(
     source_root: Path,
     *,
@@ -244,7 +304,7 @@ def run_git_identity_plan(
     runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
     timeout: float = 2.0,
 ) -> dict[GitIdentityOperation, subprocess.CompletedProcess[str]]:
-    """Admit all four commands before spawning any, then execute the exact plan."""
+    """Admit the fixed plan before spawning, then execute its guard and four reads."""
 
     plan = build_git_identity_plan(source_root)
     selected_policy = _default_policy(plan) if policy is _DEFAULT else policy
@@ -268,24 +328,71 @@ def run_git_identity_plan(
                 "env": dict(environment),
                 "shell": False,
             }
-            if runner is None:
-                completed = subprocess.run(list(command), **arguments)
-            else:
-                completed = runner(list(command), **arguments)
+            try:
+                if runner is None:
+                    completed = subprocess.run(list(command), **arguments)
+                else:
+                    completed = runner(list(command), **arguments)
+            except subprocess.TimeoutExpired as error:
+                _record_outcome(
+                    sink,
+                    operation=operation,
+                    plan=plan,
+                    outcome="timeout",
+                    exit_code=None,
+                    transport_observed=True,
+                )
+                raise GitChildAdmissionError(
+                    f"Git identity operation {operation.value} timed out."
+                ) from error
+            except OSError as error:
+                _record_outcome(
+                    sink,
+                    operation=operation,
+                    plan=plan,
+                    outcome="spawn_failed",
+                    exit_code=None,
+                    transport_observed=False,
+                )
+                raise GitChildAdmissionError(
+                    f"Git identity operation {operation.value} could not start."
+                ) from error
+            except Exception as error:
+                _record_outcome(
+                    sink,
+                    operation=operation,
+                    plan=plan,
+                    outcome="execution_unknown",
+                    exit_code=None,
+                    transport_observed=True,
+                )
+                raise GitChildAdmissionError(
+                    f"Git identity operation {operation.value} had an uncertain outcome."
+                ) from error
+        except GitChildAdmissionError:
+            raise
         except Exception as error:
             raise GitChildAdmissionError(
                 f"Git identity operation {operation.value} was unavailable."
             ) from error
         results[operation] = completed
-        try:
-            sink.append(
-                GitChildOutcomeRecord(
-                    operation=operation,
-                    plan_fingerprint=plan.plan_fingerprint,
-                    outcome="exit_success" if completed.returncode == 0 else "exit_failure",
-                    exit_code=int(completed.returncode),
-                )
+        if operation is GitIdentityOperation.FILTER_GUARD:
+            outcome = (
+                "filter_configuration_absent"
+                if completed.returncode == 1
+                else "filter_configuration_present"
+                if completed.returncode == 0
+                else "exit_failure"
             )
-        except Exception as error:
-            raise GitChildAdmissionError("Git child outcome evidence failed.") from error
+        else:
+            outcome = "exit_success" if completed.returncode == 0 else "exit_failure"
+        _record_outcome(
+            sink,
+            operation=operation,
+            plan=plan,
+            outcome=outcome,
+            exit_code=int(completed.returncode),
+            transport_observed=True,
+        )
+        _validate_result(operation, completed)
     return results
