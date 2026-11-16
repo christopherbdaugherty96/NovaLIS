@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
+
+from src.governor.git_child_admission import (
+    GitChildAdmissionError,
+    GitIdentityOperation,
+    run_git_identity_plan,
+)
 
 
 def _runtime_build_identity() -> dict[str, object]:
@@ -17,35 +22,12 @@ def _runtime_build_identity() -> dict[str, object]:
         "git_available": False,
     }
     try:
-        commit = subprocess.run(
-            ["git", "-C", str(source_root), "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=2,
-        ).stdout.strip()
-        unstaged = subprocess.run(
-            ["git", "-C", str(source_root), "diff", "--quiet", "--ignore-submodules", "--"],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=2,
-        )
-        staged = subprocess.run(
-            ["git", "-C", str(source_root), "diff", "--cached", "--quiet", "--ignore-submodules", "--"],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=2,
-        )
-        untracked = subprocess.run(
-            ["git", "-C", str(source_root), "ls-files", "--others", "--exclude-standard"],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=2,
-        ).stdout
-    except (OSError, subprocess.SubprocessError):
+        results = run_git_identity_plan(source_root)
+        commit = results[GitIdentityOperation.COMMIT].stdout.strip()
+        unstaged = results[GitIdentityOperation.UNSTAGED]
+        staged = results[GitIdentityOperation.STAGED]
+        untracked = results[GitIdentityOperation.UNTRACKED].stdout
+    except GitChildAdmissionError:
         return identity
 
     if unstaged.returncode not in {0, 1} or staged.returncode not in {0, 1}:

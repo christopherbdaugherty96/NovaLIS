@@ -6,6 +6,18 @@ from types import SimpleNamespace
 from fastapi.testclient import TestClient
 from src import brain_server
 from src.api import audit_api
+from src.governor.git_child_admission import GitIdentityOperation
+
+
+def _identity_results(*, commit: str = "a" * 40, dirty: bool = False):
+    return {
+        GitIdentityOperation.COMMIT: SimpleNamespace(stdout=commit + "\n", returncode=0),
+        GitIdentityOperation.UNSTAGED: SimpleNamespace(
+            stdout="", returncode=1 if dirty else 0
+        ),
+        GitIdentityOperation.STAGED: SimpleNamespace(stdout="", returncode=0),
+        GitIdentityOperation.UNTRACKED: SimpleNamespace(stdout="", returncode=0),
+    }
 
 
 def test_phase_status_returns_phase_fields():
@@ -39,7 +51,8 @@ def test_phase_status_returns_phase_display_string():
     assert len(data["phase_display"]) > 0
 
 
-def test_phase_status_reports_running_build_identity():
+def test_phase_status_reports_running_build_identity(monkeypatch):
+    monkeypatch.setattr(audit_api, "run_git_identity_plan", lambda _root: _identity_results())
     client = TestClient(brain_server.app)
 
     response = client.get("/phase-status")
@@ -52,10 +65,10 @@ def test_phase_status_reports_running_build_identity():
 
 
 def test_runtime_build_identity_degrades_when_git_is_unavailable(monkeypatch):
-    def _raise(*args, **kwargs):
-        raise FileNotFoundError("git unavailable")
+    def _raise(*_args, **_kwargs):
+        raise audit_api.GitChildAdmissionError("git unavailable")
 
-    monkeypatch.setattr(audit_api.subprocess, "run", _raise)
+    monkeypatch.setattr(audit_api, "run_git_identity_plan", _raise)
 
     identity = audit_api._runtime_build_identity()
 
@@ -66,15 +79,11 @@ def test_runtime_build_identity_degrades_when_git_is_unavailable(monkeypatch):
 
 
 def test_runtime_build_identity_uses_content_and_untracked_state(monkeypatch):
-    results = iter(
-        [
-            SimpleNamespace(stdout="a" * 40 + "\n", returncode=0),
-            SimpleNamespace(stdout="", returncode=0),
-            SimpleNamespace(stdout="", returncode=0),
-            SimpleNamespace(stdout="", returncode=0),
-        ]
+    monkeypatch.setattr(
+        audit_api,
+        "run_git_identity_plan",
+        lambda _root: _identity_results(),
     )
-    monkeypatch.setattr(audit_api.subprocess, "run", lambda *args, **kwargs: next(results))
 
     identity = audit_api._runtime_build_identity()
 
