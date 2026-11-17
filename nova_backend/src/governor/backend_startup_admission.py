@@ -46,6 +46,28 @@ _PROVIDER_ENVIRONMENT_KEYS = frozenset(
         "SHOPIFY_STORE",
     }
 )
+_API_KEY_ENVIRONMENT_KEYS = frozenset(
+    {
+        "OPENAI_API_KEY",
+        "BRAVE_API_KEY",
+        "NEWS_API_KEY",
+        "WEATHER_API_KEY",
+        "DEEPSEEK_API_KEY",
+    }
+)
+_ORIGIN_CREDENTIAL_ENVIRONMENT_KEYS = frozenset(
+    {
+        "SHOPIFY_ACCESS_TOKEN",
+        "NOVA_SHOPIFY_ACCESS_TOKEN",
+        "NOVA_GOOGLE_OAUTH_CLIENT_SECRET",
+    }
+)
+_LAUNCHER_RELATIVE_PATH_KEYS = frozenset(
+    {
+        "NOVA_RUNTIME_DIR",
+        "NOVA_CALENDAR_ICS_PATH",
+    }
+)
 _OS_ENVIRONMENT_KEYS = frozenset(
     {
         "SystemRoot",
@@ -150,14 +172,18 @@ def _minimal_backend_environment(executable: Path) -> dict[str, str]:
     # Do not inherit proxy configuration or an ambient executable search path.
     # The bounded backend command uses the exact current Python executable.
     normalized_environment = {key.upper(): value for key, value in environment.items()}
-    runtime_dir_key = next(
-        (key for key in environment if key.upper() == "NOVA_RUNTIME_DIR"),
-        None,
-    )
-    if runtime_dir_key is not None:
-        runtime_dir = Path(environment[runtime_dir_key]).expanduser()
-        if not runtime_dir.is_absolute():
-            environment[runtime_dir_key] = str((Path.cwd() / runtime_dir).resolve(strict=False))
+    for path_key in _LAUNCHER_RELATIVE_PATH_KEYS:
+        actual_key = next(
+            (key for key in environment if key.upper() == path_key),
+            None,
+        )
+        if actual_key is None:
+            continue
+        configured_path = Path(environment[actual_key]).expanduser()
+        if not configured_path.is_absolute():
+            environment[actual_key] = str(
+                (Path.cwd() / configured_path).resolve(strict=False)
+            )
     system_root = normalized_environment.get("SYSTEMROOT") or normalized_environment.get("WINDIR")
     path_entries: list[str] = []
     if system_root:
@@ -237,17 +263,11 @@ def build_backend_startup_plan(
     environment_fingerprint = _fingerprint(
         "\0".join(f"{key}\0{value}" for key, value in environment)
     )
-    environment_keys = {key for key, _value in environment}
+    environment_keys = {key.upper() for key, _value in environment}
     credential_categories: set[CredentialCategory] = set()
-    if environment_keys & {
-        "OPENAI_API_KEY",
-        "BRAVE_API_KEY",
-        "NEWS_API_KEY",
-        "WEATHER_API_KEY",
-        "DEEPSEEK_API_KEY",
-    }:
+    if environment_keys & _API_KEY_ENVIRONMENT_KEYS:
         credential_categories.add(CredentialCategory.API_KEY)
-    if "SHOPIFY_ACCESS_TOKEN" in environment_keys:
+    if environment_keys & _ORIGIN_CREDENTIAL_ENVIRONMENT_KEYS:
         credential_categories.add(CredentialCategory.ORIGIN_CREDENTIAL)
     plan_fingerprint = _fingerprint(
         "\0".join(

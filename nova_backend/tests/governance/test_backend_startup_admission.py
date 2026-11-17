@@ -59,6 +59,8 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     monkeypatch.setenv("OPENAI_API_KEY", "approved-provider-secret")
     monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-provider-secret")
     monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-reasoner")
+    monkeypatch.setenv("NOVA_SHOPIFY_ACCESS_TOKEN", "shopify-provider-secret")
+    monkeypatch.setenv("NOVA_GOOGLE_OAUTH_CLIENT_SECRET", "google-client-secret")
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "unrelated-secret")
     monkeypatch.setenv("HTTP_PROXY", "http://proxy.invalid")
     sink = Sink()
@@ -90,6 +92,8 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     assert environment["OPENAI_API_KEY"] == "approved-provider-secret"
     assert environment["DEEPSEEK_API_KEY"] == "deepseek-provider-secret"
     assert environment["DEEPSEEK_MODEL"] == "deepseek-reasoner"
+    assert environment["NOVA_SHOPIFY_ACCESS_TOKEN"] == "shopify-provider-secret"
+    assert environment["NOVA_GOOGLE_OAUTH_CLIENT_SECRET"] == "google-client-secret"
     assert "AWS_SECRET_ACCESS_KEY" not in environment
     assert "HTTP_PROXY" not in environment
     assert "HTTPS_PROXY" not in environment
@@ -98,7 +102,9 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     assert sink.records[1]["outcome"] == "spawn_observed_not_ready"
     assert "approved-provider-secret" not in json.dumps(sink.records)
     assert "deepseek-provider-secret" not in json.dumps(sink.records)
-    assert sink.records[0]["credential_categories"] == ["api_key"]
+    assert "shopify-provider-secret" not in json.dumps(sink.records)
+    assert "google-client-secret" not in json.dumps(sink.records)
+    assert sink.records[0]["credential_categories"] == ["api_key", "origin_credential"]
 
 
 def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_path, monkeypatch):
@@ -151,6 +157,18 @@ def test_relative_runtime_dir_is_bound_to_launcher_location(tmp_path, monkeypatc
     environment = admission._minimal_backend_environment(executable)
 
     assert environment["NOVA_RUNTIME_DIR"] == str(launcher_dir / "relative-state")
+
+
+def test_relative_calendar_path_is_bound_to_launcher_location(tmp_path, monkeypatch):
+    executable = _python(tmp_path)
+    launcher_dir = tmp_path / "launcher"
+    launcher_dir.mkdir()
+    monkeypatch.chdir(launcher_dir)
+    monkeypatch.setenv("NOVA_CALENDAR_ICS_PATH", "calendar.ics")
+
+    environment = admission._minimal_backend_environment(executable)
+
+    assert environment["NOVA_CALENDAR_ICS_PATH"] == str(launcher_dir / "calendar.ics")
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX virtualenv symlink contract")
