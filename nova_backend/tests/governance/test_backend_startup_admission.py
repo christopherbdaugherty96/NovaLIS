@@ -171,6 +171,18 @@ def test_relative_calendar_path_is_bound_to_launcher_location(tmp_path, monkeypa
     assert environment["NOVA_CALENDAR_ICS_PATH"] == str(launcher_dir / "calendar.ics")
 
 
+def test_relative_piper_model_path_is_bound_to_launcher_location(tmp_path, monkeypatch):
+    executable = _python(tmp_path)
+    launcher_dir = tmp_path / "launcher"
+    launcher_dir.mkdir()
+    monkeypatch.chdir(launcher_dir)
+    monkeypatch.setenv("NOVA_PIPER_MODEL_PATH", "voice.onnx")
+
+    environment = admission._minimal_backend_environment(executable)
+
+    assert environment["NOVA_PIPER_MODEL_PATH"] == str(launcher_dir / "voice.onnx")
+
+
 @pytest.mark.skipif(os.name == "nt", reason="POSIX virtualenv symlink contract")
 def test_symlinked_virtualenv_interpreter_is_preserved_for_invocation(tmp_path):
     base_dir = tmp_path / "base"

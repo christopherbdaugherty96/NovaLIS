@@ -917,7 +917,7 @@
     },
     {
       "path": "nova_backend/src/governor/backend_startup_admission.py",
-      "line": 434,
+      "line": 435,
       "column": 26,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",

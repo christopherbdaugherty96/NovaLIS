@@ -66,6 +66,7 @@ _LAUNCHER_RELATIVE_PATH_KEYS = frozenset(
     {
         "NOVA_RUNTIME_DIR",
         "NOVA_CALENDAR_ICS_PATH",
+        "NOVA_PIPER_MODEL_PATH",
     }
 )
 _OS_ENVIRONMENT_KEYS = frozenset(

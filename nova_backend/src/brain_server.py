@@ -281,7 +281,14 @@ windows_startup_registration = WindowsStartupRegistration(
         "--no-browser",
         "--automatic-startup",
     ),
+    legacy_arguments=(
+        (
+            str(_project_root / "scripts" / "start_daemon.py"),
+            "--no-browser",
+        ),
+    ),
 )
+windows_startup_registration.migrate_legacy_entry()
 reminder_delivery_service = ReminderDeliveryService(
     store=NotificationScheduleStore(),
     notifier=WindowsToastNotifier("Nova"),
