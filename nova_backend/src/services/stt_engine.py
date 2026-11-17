@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -90,10 +91,24 @@ def _resolve_ffmpeg() -> str | None:
     """
     Locate ffmpeg executable.
     Priority:
-    1. System PATH (shutil.which)
-    2. Search recursively inside tools/ffmpeg/ for ffmpeg.exe
+    1. Exact launcher-admitted NOVA_FFMPEG_PATH
+    2. System PATH (shutil.which)
+    3. Search recursively inside tools/ffmpeg/ for ffmpeg.exe
     Returns None if not found.
     """
+    admitted = os.getenv("NOVA_FFMPEG_PATH", "").strip()
+    if admitted:
+        try:
+            admitted_path = Path(admitted).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError):
+            admitted_path = None
+        if (
+            admitted_path is not None
+            and admitted_path.is_file()
+            and admitted_path.name.lower() in {"ffmpeg", "ffmpeg.exe"}
+        ):
+            return str(admitted_path)
+
     path = shutil.which("ffmpeg")
     if path:
         return path

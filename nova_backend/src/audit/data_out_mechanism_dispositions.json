@@ -487,7 +487,7 @@
     },
     {
       "path": "nova_backend/src/services/stt_engine.py",
-      "line": 97,
+      "line": 112,
       "column": 11,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -497,7 +497,7 @@
     },
     {
       "path": "nova_backend/src/services/stt_engine.py",
-      "line": 180,
+      "line": 195,
       "column": 9,
       "mechanism": "temporary_storage",
       "symbol": "tempfile.TemporaryDirectory",
@@ -507,7 +507,7 @@
     },
     {
       "path": "nova_backend/src/services/stt_engine.py",
-      "line": 207,
+      "line": 222,
       "column": 19,
       "mechanism": "process_delegation",
       "symbol": "subprocess.run",
@@ -917,7 +917,7 @@
     },
     {
       "path": "nova_backend/src/governor/backend_startup_admission.py",
-      "line": 435,
+      "line": 461,
       "column": 26,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -925,6 +925,16 @@
       "closure_family": "F05_non_ollama_delegation",
       "reason": "The fixed local uvicorn command uses the exact current Python executable, a constrained child environment, durable pre-spawn admission evidence, executable revalidation, and separate readiness outcome evidence.",
       "boundary": "windows-backend-startup-admission-v1"
+    },
+    {
+      "path": "nova_backend/src/governor/backend_startup_admission.py",
+      "line": 193,
+      "column": 44,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "The launcher binds a discovered ffmpeg path into the constrained child environment, but complete executable identity and locality proof remain F09 work."
     },
     {
       "path": "scripts/stop_daemon.py",

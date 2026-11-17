@@ -15,6 +15,18 @@ def test_safe_upload_filename_strips_paths():
     assert stt_engine._safe_upload_filename(r"C:\\temp\\voice.wav") == "voice.wav"
 
 
+def test_resolve_ffmpeg_prefers_exact_admitted_path(tmp_path, monkeypatch):
+    from src.services import stt_engine
+
+    ffmpeg_name = "ffmpeg.exe" if stt_engine.os.name == "nt" else "ffmpeg"
+    ffmpeg = tmp_path / ffmpeg_name
+    ffmpeg.write_bytes(b"local-ffmpeg")
+    monkeypatch.setenv("NOVA_FFMPEG_PATH", str(ffmpeg))
+    monkeypatch.setattr(stt_engine.shutil, "which", lambda _name: None)
+
+    assert stt_engine._resolve_ffmpeg() == str(Path(ffmpeg).resolve())
+
+
 def test_transcribe_bytes_sanitizes_uploaded_filename(monkeypatch, tmp_path):
     from src.services import stt_engine
 

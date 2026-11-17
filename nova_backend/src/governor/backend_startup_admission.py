@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import shutil
 import subprocess
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -185,6 +186,31 @@ def _minimal_backend_environment(executable: Path) -> dict[str, str]:
             environment[actual_key] = str(
                 (Path.cwd() / configured_path).resolve(strict=False)
             )
+    configured_ffmpeg = next(
+        (value for key, value in environment.items() if key.upper() == "NOVA_FFMPEG_PATH"),
+        None,
+    )
+    ffmpeg_candidate = configured_ffmpeg or shutil.which(
+        "ffmpeg",
+        path=os.environ.get("PATH"),
+    )
+    if ffmpeg_candidate:
+        try:
+            ffmpeg_path = Path(ffmpeg_candidate).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError):
+            ffmpeg_path = None
+        if (
+            ffmpeg_path is not None
+            and ffmpeg_path.is_file()
+            and ffmpeg_path.name.lower() in {"ffmpeg", "ffmpeg.exe"}
+        ):
+            # Preserve the launcher-resolved converter as an exact child setting;
+            # never forward the ambient PATH used to discover it.
+            environment["NOVA_FFMPEG_PATH"] = str(ffmpeg_path)
+        else:
+            for key in tuple(environment):
+                if key.upper() == "NOVA_FFMPEG_PATH":
+                    environment.pop(key)
     system_root = normalized_environment.get("SYSTEMROOT") or normalized_environment.get("WINDIR")
     path_entries: list[str] = []
     if system_root:

@@ -129,6 +129,23 @@ def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_pat
     assert str(tmp_path / "ambient-bin") not in path_entries
 
 
+def test_minimal_environment_binds_external_ffmpeg_without_inheriting_path(
+    tmp_path, monkeypatch
+):
+    executable = _python(tmp_path)
+    external_bin = tmp_path / "external-bin"
+    external_bin.mkdir()
+    ffmpeg_name = "ffmpeg.exe" if os.name == "nt" else "ffmpeg"
+    ffmpeg = external_bin / ffmpeg_name
+    ffmpeg.write_bytes(b"local-ffmpeg")
+    monkeypatch.setenv("PATH", str(external_bin))
+
+    environment = admission._minimal_backend_environment(executable)
+
+    assert environment["NOVA_FFMPEG_PATH"] == str(ffmpeg.resolve())
+    assert str(external_bin) not in environment["PATH"].split(os.pathsep)
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows canonical Git path contract")
 def test_minimal_environment_preserves_only_canonical_windows_git(tmp_path, monkeypatch):
     executable = _python(tmp_path)
