@@ -57,6 +57,8 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     monkeypatch.setattr(admission.subprocess, "Popen", fake_popen)
     monkeypatch.setattr(admission, "_locked_executable_identity", lambda _path: nullcontext())
     monkeypatch.setenv("OPENAI_API_KEY", "approved-provider-secret")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-provider-secret")
+    monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-reasoner")
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "unrelated-secret")
     monkeypatch.setenv("HTTP_PROXY", "http://proxy.invalid")
     sink = Sink()
@@ -86,6 +88,8 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     ]
     environment = captured["env"]
     assert environment["OPENAI_API_KEY"] == "approved-provider-secret"
+    assert environment["DEEPSEEK_API_KEY"] == "deepseek-provider-secret"
+    assert environment["DEEPSEEK_MODEL"] == "deepseek-reasoner"
     assert "AWS_SECRET_ACCESS_KEY" not in environment
     assert "HTTP_PROXY" not in environment
     assert "HTTPS_PROXY" not in environment
@@ -93,6 +97,7 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     assert sink.records[0]["record_kind"] == "disclosure_policy_evaluation"
     assert sink.records[1]["outcome"] == "spawn_observed_not_ready"
     assert "approved-provider-secret" not in json.dumps(sink.records)
+    assert "deepseek-provider-secret" not in json.dumps(sink.records)
     assert sink.records[0]["credential_categories"] == ["api_key"]
 
 
@@ -114,6 +119,30 @@ def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_pat
         str(executable.parent),
     ]
     assert str(tmp_path / "ambient-bin") not in path_entries
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX virtualenv symlink contract")
+def test_symlinked_virtualenv_interpreter_is_preserved_for_invocation(tmp_path):
+    base_dir = tmp_path / "base"
+    base_dir.mkdir()
+    base_python = base_dir / "python"
+    base_python.write_bytes(b"base-python")
+    virtualenv_bin = tmp_path / "venv" / "bin"
+    virtualenv_bin.mkdir(parents=True)
+    virtualenv_python = virtualenv_bin / "python"
+    virtualenv_python.symlink_to(base_python)
+
+    plan = admission.build_backend_startup_plan(
+        executable=virtualenv_python,
+        backend_dir=tmp_path,
+        host="127.0.0.1",
+        port=8000,
+    )
+
+    assert plan.executable == virtualenv_python.absolute()
+    assert plan.executable_identity == base_python.resolve()
+    assert plan.command[0] == str(virtualenv_python.absolute())
+    assert str(virtualenv_bin) in dict(plan.environment)["PATH"].split(os.pathsep)
 
 
 def test_changed_executable_is_denied_before_spawn(tmp_path, monkeypatch):

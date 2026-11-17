@@ -40,6 +40,8 @@ _PROVIDER_ENVIRONMENT_KEYS = frozenset(
         "BRAVE_API_KEY",
         "NEWS_API_KEY",
         "WEATHER_API_KEY",
+        "DEEPSEEK_API_KEY",
+        "DEEPSEEK_MODEL",
         "SHOPIFY_ACCESS_TOKEN",
         "SHOPIFY_STORE",
     }
@@ -70,6 +72,7 @@ class BackendStartupAdmissionError(RuntimeError):
 @dataclass(frozen=True)
 class BackendStartupPlan:
     executable: Path
+    executable_identity: Path
     backend_dir: Path
     command: tuple[str, ...]
     executable_fingerprint: str
@@ -177,14 +180,19 @@ def build_backend_startup_plan(
     if initiation not in {InitiationClass.USER_INITIATED, InitiationClass.AUTOMATIC}:
         raise BackendStartupAdmissionError("Backend startup initiation is invalid.")
     try:
-        resolved_executable = executable.resolve(strict=True)
+        invocation_executable = Path(os.path.abspath(executable))
+        resolved_executable = invocation_executable.resolve(strict=True)
         resolved_backend = backend_dir.resolve(strict=True)
     except (OSError, RuntimeError) as error:
         raise BackendStartupAdmissionError("Backend startup identity is unavailable.") from error
-    if not resolved_executable.is_file() or not resolved_backend.is_dir():
+    if (
+        not invocation_executable.is_file()
+        or not resolved_executable.is_file()
+        or not resolved_backend.is_dir()
+    ):
         raise BackendStartupAdmissionError("Backend startup identity is invalid.")
     command = (
-        str(resolved_executable),
+        str(invocation_executable),
         "-m",
         "uvicorn",
         "src.brain_server:app",
@@ -197,7 +205,7 @@ def build_backend_startup_plan(
     )
     executable_fingerprint = _file_fingerprint(resolved_executable)
     command_fingerprint = _fingerprint("\0".join(command))
-    environment = tuple(sorted(_minimal_backend_environment(resolved_executable).items()))
+    environment = tuple(sorted(_minimal_backend_environment(invocation_executable).items()))
     environment_fingerprint = _fingerprint(
         "\0".join(f"{key}\0{value}" for key, value in environment)
     )
@@ -208,6 +216,7 @@ def build_backend_startup_plan(
         "BRAVE_API_KEY",
         "NEWS_API_KEY",
         "WEATHER_API_KEY",
+        "DEEPSEEK_API_KEY",
     }:
         credential_categories.add(CredentialCategory.API_KEY)
     if "SHOPIFY_ACCESS_TOKEN" in environment_keys:
@@ -223,7 +232,8 @@ def build_backend_startup_plan(
         )
     )
     return BackendStartupPlan(
-        executable=resolved_executable,
+        executable=invocation_executable,
+        executable_identity=resolved_executable,
         backend_dir=resolved_backend,
         command=command,
         executable_fingerprint=executable_fingerprint,
@@ -315,7 +325,10 @@ def _revalidate(plan: BackendStartupPlan) -> None:
         current = plan.executable.resolve(strict=True)
     except (OSError, RuntimeError) as error:
         raise BackendStartupAdmissionError("Backend executable identity changed.") from error
-    if current != plan.executable or _file_fingerprint(current) != plan.executable_fingerprint:
+    if (
+        current != plan.executable_identity
+        or _file_fingerprint(current) != plan.executable_fingerprint
+    ):
         raise BackendStartupAdmissionError("Backend executable identity changed before spawn.")
 
 
@@ -366,7 +379,7 @@ def spawn_admitted_backend(
     )
     try:
         sink = _evidence_sink() if evidence_sink is None else evidence_sink
-        with _locked_executable_identity(plan.executable):
+        with _locked_executable_identity(plan.executable_identity):
             _record_admission(plan, sink)
             _revalidate(plan)
             try:
