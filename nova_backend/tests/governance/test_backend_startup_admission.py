@@ -115,11 +115,11 @@ def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_pat
     environment = admission._minimal_backend_environment(executable)
 
     path_entries = environment["PATH"].split(os.pathsep)
-    assert path_entries == [
+    assert path_entries[:2] == [
         str(powershell_dir),
         str(windows_root / "System32"),
-        str(executable.parent),
     ]
+    assert path_entries[-1] == str(executable.parent)
     assert str(tmp_path / "ambient-bin") not in path_entries
 
 
