@@ -243,10 +243,17 @@ def _open_dashboard(open_as_app: bool = False) -> bool:
             session_id="startup-daemon",
         )
     except URLHandoffAdmissionError as error:
-        print(
-            f"[Nova] WARNING: Dashboard browser handoff was not admitted ({error}).",
-            file=sys.stderr,
-        )
+        if error.handoff_attempted:
+            print(
+                "[Nova] WARNING: Dashboard browser handoff was attempted, but its "
+                f"outcome could not be verified ({error}).",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"[Nova] WARNING: Dashboard browser handoff was not admitted ({error}).",
+                file=sys.stderr,
+            )
         return False
 
     if accepted:

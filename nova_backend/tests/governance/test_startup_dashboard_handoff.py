@@ -65,6 +65,27 @@ def test_dashboard_admission_failure_is_truthful_and_attempts_nothing(monkeypatc
     assert daemon._open_dashboard(open_as_app=True) is False
 
 
+def test_dashboard_attempted_handoff_reports_unverified_outcome(monkeypatch, capsys):
+    daemon = _load_start_daemon()
+    monkeypatch.setattr(
+        daemon,
+        "open_governed_url_handoff",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            daemon.URLHandoffAdmissionError(
+                "outcome evidence unavailable",
+                handoff_attempted=True,
+            )
+        ),
+    )
+
+    assert daemon._open_dashboard() is False
+
+    captured = capsys.readouterr()
+    assert "was attempted" in captured.err
+    assert "outcome could not be verified" in captured.err
+    assert "was not admitted" not in captured.err
+
+
 def test_startup_contract_opens_dashboard_only_after_readiness():
     source = START_DAEMON_PATH.read_text(encoding="utf-8")
     start_block = source.split("def start_nova", 1)[1].split("def main", 1)[0]

@@ -927,7 +927,7 @@
     },
     {
       "path": "scripts/start_daemon.py",
-      "line": 289,
+      "line": 296,
       "column": 11,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
