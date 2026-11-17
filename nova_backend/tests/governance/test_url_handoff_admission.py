@@ -225,3 +225,106 @@ def test_outcome_evidence_failure_reports_attempted_handoff(monkeypatch):
 
     assert attempts == ["https://example.com/"]
     assert captured.value.handoff_attempted is True
+
+
+@pytest.mark.parametrize(
+    "uri",
+    [
+        "http://127.0.0.1:8000",
+        "http://127.0.0.2:8123",
+        "http://[::1]:8000",
+    ],
+)
+def test_startup_dashboard_handoff_is_exact_user_initiated_loopback(
+    monkeypatch,
+    uri,
+):
+    events: list[object] = []
+    attempts: list[str] = []
+    monkeypatch.setattr(admission, "_handoff_evidence_sink", lambda: Sink(events))
+
+    assert admission.open_governed_url_handoff(
+        uri=uri,
+        kind=admission.URLHandoffKind.STARTUP_DASHBOARD,
+        request_id="startup-dashboard-test",
+        opener=lambda target: attempts.append(target) or True,
+    )
+
+    assert attempts == [uri]
+    policy_event = events[1].as_dict()
+    assert policy_event["caller"] == "startup_dashboard_handoff"
+    assert policy_event["purpose"] == "user_initiated_startup_dashboard_handoff"
+    assert policy_event["initiation"] == "user_initiated"
+    assert policy_event["initiating_capability_id"] is None
+    outcome = events[-1].as_dict()
+    assert outcome["outcome"] == "handoff_accepted"
+
+
+@pytest.mark.parametrize(
+    "uri",
+    [
+        "https://127.0.0.1:8000",
+        "http://localhost:8000",
+        "http://192.168.1.10:8000",
+        "http://127.0.0.1:8000/other",
+        "http://127.0.0.1:8000?token=secret",
+        "http://user@127.0.0.1:8000",
+        "http://127.0.0.1",
+    ],
+)
+def test_startup_dashboard_handoff_rejects_non_exact_loopback_uri(uri):
+    with pytest.raises(admission.URLHandoffAdmissionError):
+        admission._build_admission(
+            uri=uri,
+            kind=admission.URLHandoffKind.STARTUP_DASHBOARD,
+            request_id="startup-dashboard-invalid",
+            session_id="",
+        )
+
+
+@pytest.mark.parametrize(
+    "decision_value",
+    [DisclosureDecisionValue.DENY, DisclosureDecisionValue.UNKNOWN],
+)
+def test_startup_dashboard_denial_makes_zero_handoff_attempts(
+    monkeypatch,
+    decision_value,
+):
+    events: list[object] = []
+    attempts: list[str] = []
+    monkeypatch.setattr(admission, "_handoff_evidence_sink", lambda: Sink(events))
+    monkeypatch.setattr(
+        admission.DisclosurePolicyEvaluator,
+        "evaluate_and_record",
+        lambda *_args, **_kwargs: DisclosureDecision(
+            decision_value,
+            "startup_dashboard_denied",
+            "runtime-url-handoff-admission-v1",
+            evidence_recorded=True,
+        ),
+    )
+
+    with pytest.raises(admission.URLHandoffAdmissionError, match="denied"):
+        admission.open_governed_url_handoff(
+            uri="http://127.0.0.1:8000",
+            kind=admission.URLHandoffKind.STARTUP_DASHBOARD,
+            request_id="startup-dashboard-denied",
+            opener=lambda target: attempts.append(target) or True,
+        )
+
+    assert attempts == []
+
+
+def test_startup_dashboard_evidence_failure_makes_zero_handoff_attempts(monkeypatch):
+    attempts: list[str] = []
+    monkeypatch.setattr(admission, "_handoff_evidence_sink", lambda: Sink([], fail_at=1))
+
+    with pytest.raises(admission.URLHandoffAdmissionError, match="evidence"):
+        admission.open_governed_url_handoff(
+            uri="http://127.0.0.1:8000",
+            kind=admission.URLHandoffKind.STARTUP_DASHBOARD,
+            request_id="startup-dashboard-evidence-failure",
+            opener=lambda target: attempts.append(target) or True,
+        )
+
+    assert attempts == []

@@ -917,7 +917,7 @@
     },
     {
       "path": "scripts/start_daemon.py",
-      "line": 208,
+      "line": 213,
       "column": 17,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -927,57 +927,7 @@
     },
     {
       "path": "scripts/start_daemon.py",
-      "line": 233,
-      "column": 16,
-      "mechanism": "process_delegation",
-      "symbol": "subprocess.Popen",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "scripts/start_daemon.py",
-      "line": 241,
-      "column": 4,
-      "mechanism": "application_handoff",
-      "symbol": "webbrowser.open",
-      "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
-    },
-    {
-      "path": "scripts/start_daemon.py",
-      "line": 245,
-      "column": 25,
-      "mechanism": "configured_storage_root",
-      "symbol": "os.environ.get:ProgramFiles",
-      "status": "unresolved",
-      "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
-    },
-    {
-      "path": "scripts/start_daemon.py",
-      "line": 246,
-      "column": 29,
-      "mechanism": "configured_storage_root",
-      "symbol": "os.environ.get:ProgramFiles(x86)",
-      "status": "unresolved",
-      "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
-    },
-    {
-      "path": "scripts/start_daemon.py",
-      "line": 247,
-      "column": 26,
-      "mechanism": "configured_storage_root",
-      "symbol": "os.environ.get:LOCALAPPDATA",
-      "status": "unresolved",
-      "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
-    },
-    {
-      "path": "scripts/start_daemon.py",
-      "line": 285,
+      "line": 289,
       "column": 11,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
