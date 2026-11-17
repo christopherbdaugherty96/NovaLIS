@@ -276,7 +276,11 @@ _project_root = Path(__file__).resolve().parents[2]
 _pythonw = Path(sys.executable).with_name("pythonw.exe")
 windows_startup_registration = WindowsStartupRegistration(
     _pythonw if _pythonw.exists() else Path(sys.executable),
-    arguments=(str(_project_root / "scripts" / "start_daemon.py"), "--no-browser"),
+    arguments=(
+        str(_project_root / "scripts" / "start_daemon.py"),
+        "--no-browser",
+        "--automatic-startup",
+    ),
 )
 reminder_delivery_service = ReminderDeliveryService(
     store=NotificationScheduleStore(),

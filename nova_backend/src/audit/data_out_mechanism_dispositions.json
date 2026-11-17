@@ -916,24 +916,15 @@
       "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
     },
     {
-      "path": "scripts/start_daemon.py",
-      "line": 213,
-      "column": 17,
-      "mechanism": "executable_discovery",
-      "symbol": "shutil.which",
-      "status": "unresolved",
-      "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
-    },
-    {
-      "path": "scripts/start_daemon.py",
-      "line": 296,
-      "column": 11,
+      "path": "nova_backend/src/governor/backend_startup_admission.py",
+      "line": 363,
+      "column": 26,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
-      "status": "unresolved",
+      "status": "governed",
       "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+      "reason": "The fixed local uvicorn command uses the exact current Python executable, a constrained child environment, durable pre-spawn admission evidence, executable revalidation, and separate readiness outcome evidence.",
+      "boundary": "windows-backend-startup-admission-v1"
     },
     {
       "path": "scripts/stop_daemon.py",
