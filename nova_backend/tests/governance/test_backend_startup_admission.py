@@ -138,6 +138,8 @@ def test_minimal_environment_binds_external_ffmpeg_without_inheriting_path(
     ffmpeg_name = "ffmpeg.exe" if os.name == "nt" else "ffmpeg"
     ffmpeg = external_bin / ffmpeg_name
     ffmpeg.write_bytes(b"local-ffmpeg")
+    if os.name != "nt":
+        ffmpeg.chmod(0o755)
     monkeypatch.setenv("PATH", str(external_bin))
 
     environment = admission._minimal_backend_environment(executable)
