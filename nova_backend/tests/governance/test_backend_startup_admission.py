@@ -108,6 +108,8 @@ def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_pat
     powershell_dir.mkdir(parents=True)
     (powershell_dir / "powershell.exe").write_bytes(b"system-powershell")
     monkeypatch.setenv("SystemRoot", str(windows_root))
+    monkeypatch.setenv("ProgramFiles", str(tmp_path / "NoGit"))
+    monkeypatch.setenv("ProgramFiles(x86)", str(tmp_path / "NoGitX86"))
     monkeypatch.setenv("PATH", str(tmp_path / "ambient-bin"))
 
     environment = admission._minimal_backend_environment(executable)
@@ -119,6 +121,36 @@ def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_pat
         str(executable.parent),
     ]
     assert str(tmp_path / "ambient-bin") not in path_entries
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows canonical Git path contract")
+def test_minimal_environment_preserves_only_canonical_windows_git(tmp_path, monkeypatch):
+    executable = _python(tmp_path)
+    program_files = tmp_path / "Program Files"
+    git_dir = program_files / "Git" / "cmd"
+    git_dir.mkdir(parents=True)
+    (git_dir / "git.exe").write_bytes(b"canonical-git")
+    monkeypatch.setenv("ProgramFiles", str(program_files))
+    monkeypatch.setenv("ProgramFiles(x86)", str(tmp_path / "NoGitX86"))
+    monkeypatch.setenv("PATH", str(tmp_path / "ambient-git"))
+
+    environment = admission._minimal_backend_environment(executable)
+
+    path_entries = environment["PATH"].split(os.pathsep)
+    assert str(git_dir) in path_entries
+    assert str(tmp_path / "ambient-git") not in path_entries
+
+
+def test_relative_runtime_dir_is_bound_to_launcher_location(tmp_path, monkeypatch):
+    executable = _python(tmp_path)
+    launcher_dir = tmp_path / "launcher"
+    launcher_dir.mkdir()
+    monkeypatch.chdir(launcher_dir)
+    monkeypatch.setenv("NOVA_RUNTIME_DIR", "relative-state")
+
+    environment = admission._minimal_backend_environment(executable)
+
+    assert environment["NOVA_RUNTIME_DIR"] == str(launcher_dir / "relative-state")
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX virtualenv symlink contract")

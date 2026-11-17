@@ -54,6 +54,8 @@ _OS_ENVIRONMENT_KEYS = frozenset(
         "LOCALAPPDATA",
         "APPDATA",
         "PROGRAMDATA",
+        "PROGRAMFILES",
+        "PROGRAMFILES(X86)",
         "USERPROFILE",
         "TEMP",
         "TMP",
@@ -148,6 +150,14 @@ def _minimal_backend_environment(executable: Path) -> dict[str, str]:
     # Do not inherit proxy configuration or an ambient executable search path.
     # The bounded backend command uses the exact current Python executable.
     normalized_environment = {key.upper(): value for key, value in environment.items()}
+    runtime_dir_key = next(
+        (key for key in environment if key.upper() == "NOVA_RUNTIME_DIR"),
+        None,
+    )
+    if runtime_dir_key is not None:
+        runtime_dir = Path(environment[runtime_dir_key]).expanduser()
+        if not runtime_dir.is_absolute():
+            environment[runtime_dir_key] = str((Path.cwd() / runtime_dir).resolve(strict=False))
     system_root = normalized_environment.get("SYSTEMROOT") or normalized_environment.get("WINDIR")
     path_entries: list[str] = []
     if system_root:
@@ -159,6 +169,24 @@ def _minimal_backend_environment(executable: Path) -> dict[str, str]:
         if (powershell_dir / "powershell.exe").is_file():
             path_entries.append(str(powershell_dir))
         path_entries.append(str(system_root_path / "System32"))
+    git_candidates: list[Path]
+    if os.name == "nt":
+        git_candidates = [
+            Path(root) / "Git" / "cmd"
+            for root in (
+                normalized_environment.get("PROGRAMFILES"),
+                normalized_environment.get("PROGRAMFILES(X86)"),
+            )
+            if root
+        ]
+        git_name = "git.exe"
+    else:
+        git_candidates = [Path("/usr/bin"), Path("/usr/local/bin")]
+        git_name = "git"
+    for git_dir in git_candidates:
+        if (git_dir / git_name).is_file():
+            path_entries.append(str(git_dir))
+            break
     path_entries.append(str(executable.parent))
     environment["PATH"] = os.pathsep.join(path_entries)
     environment["PYTHONNOUSERSITE"] = "1"
