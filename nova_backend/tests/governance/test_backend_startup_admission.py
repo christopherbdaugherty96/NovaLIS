@@ -148,6 +148,25 @@ def test_minimal_environment_binds_external_ffmpeg_without_inheriting_path(
     assert str(external_bin) not in environment["PATH"].split(os.pathsep)
 
 
+def test_minimal_environment_binds_external_piper_without_inheriting_path(
+    tmp_path, monkeypatch
+):
+    executable = _python(tmp_path)
+    external_bin = tmp_path / "external-bin"
+    external_bin.mkdir()
+    piper_name = "piper.exe" if os.name == "nt" else "piper"
+    piper = external_bin / piper_name
+    piper.write_bytes(b"local-piper")
+    if os.name != "nt":
+        piper.chmod(0o755)
+    monkeypatch.setenv("PATH", str(external_bin))
+
+    environment = admission._minimal_backend_environment(executable)
+
+    assert environment["NOVA_PIPER_EXECUTABLE"] == str(piper.resolve())
+    assert str(external_bin) not in environment["PATH"].split(os.pathsep)
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows canonical Git path contract")
 def test_minimal_environment_preserves_only_canonical_windows_git(tmp_path, monkeypatch):
     executable = _python(tmp_path)

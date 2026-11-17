@@ -211,6 +211,35 @@ def _minimal_backend_environment(executable: Path) -> dict[str, str]:
             for key in tuple(environment):
                 if key.upper() == "NOVA_FFMPEG_PATH":
                     environment.pop(key)
+    configured_piper = next(
+        (
+            value
+            for key, value in environment.items()
+            if key.upper() == "NOVA_PIPER_EXECUTABLE"
+        ),
+        None,
+    )
+    piper_candidate = configured_piper or shutil.which(
+        "piper",
+        path=os.environ.get("PATH"),
+    )
+    if piper_candidate:
+        try:
+            piper_path = Path(piper_candidate).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError):
+            piper_path = None
+        if (
+            piper_path is not None
+            and piper_path.is_file()
+            and piper_path.name.lower() in {"piper", "piper.exe"}
+        ):
+            # Preserve the launcher-resolved renderer as an exact child setting;
+            # never forward the ambient PATH used to discover it.
+            environment["NOVA_PIPER_EXECUTABLE"] = str(piper_path)
+        else:
+            for key in tuple(environment):
+                if key.upper() == "NOVA_PIPER_EXECUTABLE":
+                    environment.pop(key)
     system_root = normalized_environment.get("SYSTEMROOT") or normalized_environment.get("WINDIR")
     path_entries: list[str] = []
     if system_root:

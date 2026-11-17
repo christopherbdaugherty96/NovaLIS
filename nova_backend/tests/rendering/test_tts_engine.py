@@ -5,6 +5,20 @@ import types
 from src.voice import tts_engine
 
 
+def test_resolve_piper_prefers_exact_admitted_executable(tmp_path, monkeypatch):
+    piper_name = "piper.exe" if tts_engine.os.name == "nt" else "piper"
+    piper = tmp_path / piper_name
+    piper.write_bytes(b"local-piper")
+    monkeypatch.setenv("NOVA_PIPER_EXECUTABLE", str(piper))
+    monkeypatch.setattr(
+        tts_engine.shutil,
+        "which",
+        lambda _name: (_ for _ in ()).throw(AssertionError("PATH must not be used")),
+    )
+
+    assert tts_engine._resolve_piper() == str(piper.resolve())
+
+
 def test_nova_speak_falls_back_to_tts_executor_when_renderer_unavailable(monkeypatch):
     spoken: list[str] = []
     events: list[tuple[str, dict]] = []

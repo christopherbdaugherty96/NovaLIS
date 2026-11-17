@@ -777,8 +777,8 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 29,
-      "column": 66,
+      "line": 44,
+      "column": 11,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
       "status": "unresolved",
@@ -787,7 +787,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 33,
+      "line": 52,
       "column": 17,
       "mechanism": "configured_storage_root",
       "symbol": "os.getenv:NOVA_PIPER_MODEL_PATH",
@@ -797,17 +797,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 90,
-      "column": 28,
-      "mechanism": "executable_discovery",
-      "symbol": "shutil.which",
-      "status": "unresolved",
-      "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
-    },
-    {
-      "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 97,
+      "line": 111,
       "column": 25,
       "mechanism": "configured_storage_root",
       "symbol": "os.getenv:NOVA_PIPER_MODEL_PATH",
@@ -817,7 +807,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 109,
+      "line": 123,
       "column": 28,
       "mechanism": "configured_storage_root",
       "symbol": "os.getenv:TEMP",
@@ -827,7 +817,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 124,
+      "line": 138,
       "column": 12,
       "mechanism": "process_delegation",
       "symbol": "subprocess.run",
@@ -837,7 +827,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 162,
+      "line": 176,
       "column": 23,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -847,7 +837,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 167,
+      "line": 181,
       "column": 27,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -857,7 +847,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 173,
+      "line": 187,
       "column": 27,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -867,7 +857,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 188,
+      "line": 202,
       "column": 21,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -877,7 +867,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 188,
+      "line": 202,
       "column": 51,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -887,7 +877,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 192,
+      "line": 220,
       "column": 23,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -897,7 +887,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 203,
+      "line": 217,
       "column": 17,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -917,7 +907,7 @@
     },
     {
       "path": "nova_backend/src/governor/backend_startup_admission.py",
-      "line": 461,
+      "line": 490,
       "column": 26,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -935,6 +925,16 @@
       "status": "unresolved",
       "closure_family": "F09_executable_discovery_roots",
       "reason": "The launcher binds a discovered ffmpeg path into the constrained child environment, but complete executable identity and locality proof remain F09 work."
+    },
+    {
+      "path": "nova_backend/src/governor/backend_startup_admission.py",
+      "line": 222,
+      "column": 42,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
+      "status": "unresolved",
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "The launcher binds a discovered Piper path into the constrained child environment, but complete executable identity and locality proof remain F09 work."
     },
     {
       "path": "scripts/stop_daemon.py",
