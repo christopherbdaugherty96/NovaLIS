@@ -60,6 +60,7 @@ _OS_ENVIRONMENT_KEYS = frozenset(
         "LC_ALL",
     }
 )
+_NORMALIZED_OS_ENVIRONMENT_KEYS = frozenset(key.upper() for key in _OS_ENVIRONMENT_KEYS)
 
 
 class BackendStartupAdmissionError(RuntimeError):
@@ -135,18 +136,27 @@ def _minimal_backend_environment(executable: Path) -> dict[str, str]:
         for key, value in os.environ.items()
         if value
         and (
-            key in _OS_ENVIRONMENT_KEYS
-            or key in _PROVIDER_ENVIRONMENT_KEYS
-            or key.startswith("NOVA_")
-            or key.startswith("OLLAMA_")
+            key.upper() in _NORMALIZED_OS_ENVIRONMENT_KEYS
+            or key.upper() in _PROVIDER_ENVIRONMENT_KEYS
+            or key.upper().startswith("NOVA_")
+            or key.upper().startswith("OLLAMA_")
         )
     }
     # Do not inherit proxy configuration or an ambient executable search path.
     # The bounded backend command uses the exact current Python executable.
-    system_root = environment.get("SystemRoot") or environment.get("WINDIR")
-    path_entries = [str(executable.parent)]
+    normalized_environment = {key.upper(): value for key, value in environment.items()}
+    system_root = normalized_environment.get("SYSTEMROOT") or normalized_environment.get("WINDIR")
+    path_entries: list[str] = []
     if system_root:
-        path_entries.append(str(Path(system_root) / "System32"))
+        system_root_path = Path(system_root)
+        powershell_dir = system_root_path / "System32" / "WindowsPowerShell" / "v1.0"
+        # Brightness and Windows audio still use the supported system PowerShell
+        # entry point. Keep only its canonical Windows location discoverable;
+        # broader executable identity remains the separately tracked F09 work.
+        if (powershell_dir / "powershell.exe").is_file():
+            path_entries.append(str(powershell_dir))
+        path_entries.append(str(system_root_path / "System32"))
+    path_entries.append(str(executable.parent))
     environment["PATH"] = os.pathsep.join(path_entries)
     environment["PYTHONNOUSERSITE"] = "1"
     return environment

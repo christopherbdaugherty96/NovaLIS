@@ -96,6 +96,26 @@ def test_spawn_binds_exact_command_and_constrained_environment(tmp_path, monkeyp
     assert sink.records[0]["credential_categories"] == ["api_key"]
 
 
+def test_minimal_environment_preserves_only_canonical_windows_powershell(tmp_path, monkeypatch):
+    executable = _python(tmp_path)
+    windows_root = tmp_path / "Windows"
+    powershell_dir = windows_root / "System32" / "WindowsPowerShell" / "v1.0"
+    powershell_dir.mkdir(parents=True)
+    (powershell_dir / "powershell.exe").write_bytes(b"system-powershell")
+    monkeypatch.setenv("SystemRoot", str(windows_root))
+    monkeypatch.setenv("PATH", str(tmp_path / "ambient-bin"))
+
+    environment = admission._minimal_backend_environment(executable)
+
+    path_entries = environment["PATH"].split(os.pathsep)
+    assert path_entries == [
+        str(powershell_dir),
+        str(windows_root / "System32"),
+        str(executable.parent),
+    ]
+    assert str(tmp_path / "ambient-bin") not in path_entries
+
+
 def test_changed_executable_is_denied_before_spawn(tmp_path, monkeypatch):
     executable = _python(tmp_path)
     attempts: list[object] = []
