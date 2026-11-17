@@ -28,7 +28,7 @@ import platform
 import subprocess
 import sys
 import time
-import webbrowser
+import uuid
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +40,11 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from local_readiness_probe import probe_phase_status
+from src.governor.url_handoff_admission import (
+    URLHandoffAdmissionError,
+    URLHandoffKind,
+    open_governed_url_handoff,
+)
 from src.llm.local_ollama_bootstrap import (
     LocalOllamaStartupStatus,
     verified_local_ollama_startup_status,
@@ -219,40 +224,46 @@ def _find_nova_command() -> list[str]:
     ]
 
 
-def _open_dashboard(open_as_app: bool = False) -> None:
-    """Open Nova's dashboard.
+def _open_dashboard(open_as_app: bool = False) -> bool:
+    """Ask the OS default browser to accept the exact local dashboard URL.
 
-    On Windows, ``open_as_app`` prefers Edge/Chrome app-window mode so Nova
-    feels closer to a desktop app. Falls back to the default browser when no
-    supported browser executable is found.
+    Acceptance is not proof that the browser loaded or rendered the dashboard.
+    Direct browser executable discovery remains disabled pending F09 proof.
     """
+    if open_as_app:
+        print(
+            "[Nova] App-window mode uses the governed default-browser handoff; "
+            "direct browser execution is disabled."
+        )
+    try:
+        accepted = open_governed_url_handoff(
+            uri=BASE_URL,
+            kind=URLHandoffKind.STARTUP_DASHBOARD,
+            request_id=f"startup-dashboard-{uuid.uuid4().hex}",
+            session_id="startup-daemon",
+        )
+    except URLHandoffAdmissionError as error:
+        if error.handoff_attempted:
+            print(
+                "[Nova] WARNING: Dashboard browser handoff was attempted, but its "
+                f"outcome could not be verified ({error}).",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"[Nova] WARNING: Dashboard browser handoff was not admitted ({error}).",
+                file=sys.stderr,
+            )
+        return False
 
-    if open_as_app and platform.system() == "Windows":
-        for browser in _windows_app_browser_candidates():
-            if browser.exists():
-                subprocess.Popen(
-                    [str(browser), f"--app={BASE_URL}", "--new-window"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    creationflags=subprocess.CREATE_NO_WINDOW,  # type: ignore[attr-defined]
-                )
-                return
-
-    webbrowser.open(BASE_URL)
-
-
-def _windows_app_browser_candidates() -> tuple[Path, ...]:
-    program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
-    program_files_x86 = Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
-    local_app_data = Path(os.environ.get("LOCALAPPDATA", ""))
-    return (
-        program_files / "Microsoft" / "Edge" / "Application" / "msedge.exe",
-        program_files_x86 / "Microsoft" / "Edge" / "Application" / "msedge.exe",
-        local_app_data / "Microsoft" / "Edge" / "Application" / "msedge.exe",
-        program_files / "Google" / "Chrome" / "Application" / "chrome.exe",
-        program_files_x86 / "Google" / "Chrome" / "Application" / "chrome.exe",
-        local_app_data / "Google" / "Chrome" / "Application" / "chrome.exe",
-    )
+    if accepted:
+        print("[Nova] The default browser accepted the local dashboard handoff.")
+    else:
+        print(
+            "[Nova] WARNING: The default browser rejected the local dashboard handoff.",
+            file=sys.stderr,
+        )
+    return accepted
 
 
 def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:

@@ -32,12 +32,14 @@ def test_start_bat_delegates_to_daemon():
 
 
 def test_start_daemon_supports_app_window_mode():
-    """Windows launcher should be able to open Nova like an app window."""
+    """Legacy app-window requests must use the governed OS-default handoff."""
     source = START_DAEMON_PATH.read_text(encoding="utf-8")
     assert "--app-window" in source
     assert "NOVA_BROWSER_MODE" in source
     assert "_open_dashboard" in source
-    assert "--app=" in source
+    assert "open_governed_url_handoff" in source
+    assert "--app=" not in source
+    assert "_windows_app_browser_candidates" not in source
 
 
 def test_start_daemon_uses_bounded_readiness_probe():

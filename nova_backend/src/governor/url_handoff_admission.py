@@ -7,6 +7,7 @@ receiving application remained local after accepting the handoff.
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -44,6 +45,7 @@ class URLHandoffAdmissionError(RuntimeError):
 class URLHandoffKind(str, Enum):
     WEBPAGE = "webpage"
     MAIL_CLIENT = "mail_client"
+    STARTUP_DASHBOARD = "startup_dashboard"
 
 
 @dataclass(frozen=True)
@@ -53,7 +55,7 @@ class URLHandoffAdmission:
     kind: URLHandoffKind
     request_id: str
     session_id: str
-    capability_id: int
+    capability_id: int | None
     transport: TransportClass
     purpose: str
     caller: str
@@ -129,6 +131,27 @@ def _validate_uri(uri: str, kind: URLHandoffKind) -> str:
         # recipient in the mail client. A completely empty mailto remains invalid.
         if parsed.scheme.lower() != "mailto" or not (parsed.path or parsed.query):
             raise URLHandoffAdmissionError("The mail-client handoff destination is invalid.")
+    elif kind is URLHandoffKind.STARTUP_DASHBOARD:
+        try:
+            host = ipaddress.ip_address(parsed.hostname or "")
+            port = parsed.port
+        except ValueError as error:
+            raise URLHandoffAdmissionError(
+                "The startup-dashboard handoff destination is invalid."
+            ) from error
+        if (
+            parsed.scheme != "http"
+            or not host.is_loopback
+            or port is None
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise URLHandoffAdmissionError(
+                "The startup-dashboard handoff destination is invalid."
+            )
     else:
         raise URLHandoffAdmissionError("The URL handoff kind is unsupported.")
     return uri
@@ -162,6 +185,21 @@ def _build_admission(
                 {DataCategory.SOURCE_URL, DataCategory.STRUCTURAL_METADATA}
             ),
         )
+    if kind is URLHandoffKind.STARTUP_DASHBOARD:
+        return URLHandoffAdmission(
+            uri=exact_uri,
+            uri_fingerprint=_fingerprint(exact_uri),
+            kind=kind,
+            request_id=request_id,
+            session_id=session_id,
+            capability_id=None,
+            transport=TransportClass.BROWSER_HANDOFF,
+            purpose="user_initiated_startup_dashboard_handoff",
+            caller="startup_dashboard_handoff",
+            provider="os_default_browser",
+            route="exact_loopback_dashboard_handoff",
+            data_categories=frozenset({DataCategory.STRUCTURAL_METADATA}),
+        )
     return URLHandoffAdmission(
         uri=exact_uri,
         uri_fingerprint=_fingerprint(exact_uri),
@@ -185,6 +223,11 @@ def _record_admission(admission: URLHandoffAdmission, sink) -> None:
     # delegated handoffs to their fixed destination class. Raw webpage queries
     # and mail recipient/subject/body values therefore never enter evidence.
     destination = admission.uri
+    initiation = (
+        InitiationClass.USER_INITIATED
+        if admission.kind is URLHandoffKind.STARTUP_DASHBOARD
+        else InitiationClass.APPROVED
+    )
     request = DisclosureRequest(
         caller=admission.caller,
         purpose=admission.purpose,
@@ -202,7 +245,7 @@ def _record_admission(admission: URLHandoffAdmission, sink) -> None:
         declared_provider=admission.provider,
         derived_provider=admission.provider,
         effective_route=admission.route,
-        initiation=InitiationClass.APPROVED,
+        initiation=initiation,
     )
     grant = DisclosureGrant(
         provider=admission.provider,
@@ -215,7 +258,7 @@ def _record_admission(admission: URLHandoffAdmission, sink) -> None:
         purposes=frozenset({admission.purpose}),
         callers=frozenset({admission.caller}),
         capability_ids=frozenset({admission.capability_id}),
-        initiations=frozenset({InitiationClass.APPROVED}),
+        initiations=frozenset({initiation}),
     )
     decision = DisclosurePolicyEvaluator().evaluate_and_record(
         request,
