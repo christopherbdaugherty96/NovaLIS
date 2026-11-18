@@ -487,7 +487,7 @@
     },
     {
       "path": "nova_backend/src/services/stt_engine.py",
-      "line": 97,
+      "line": 112,
       "column": 11,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -497,7 +497,7 @@
     },
     {
       "path": "nova_backend/src/services/stt_engine.py",
-      "line": 180,
+      "line": 195,
       "column": 9,
       "mechanism": "temporary_storage",
       "symbol": "tempfile.TemporaryDirectory",
@@ -507,7 +507,7 @@
     },
     {
       "path": "nova_backend/src/services/stt_engine.py",
-      "line": 207,
+      "line": 222,
       "column": 19,
       "mechanism": "process_delegation",
       "symbol": "subprocess.run",
@@ -777,8 +777,8 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 29,
-      "column": 66,
+      "line": 44,
+      "column": 11,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
       "status": "unresolved",
@@ -787,7 +787,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 33,
+      "line": 52,
       "column": 17,
       "mechanism": "configured_storage_root",
       "symbol": "os.getenv:NOVA_PIPER_MODEL_PATH",
@@ -797,17 +797,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 90,
-      "column": 28,
-      "mechanism": "executable_discovery",
-      "symbol": "shutil.which",
-      "status": "unresolved",
-      "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
-    },
-    {
-      "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 97,
+      "line": 111,
       "column": 25,
       "mechanism": "configured_storage_root",
       "symbol": "os.getenv:NOVA_PIPER_MODEL_PATH",
@@ -817,7 +807,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 109,
+      "line": 123,
       "column": 28,
       "mechanism": "configured_storage_root",
       "symbol": "os.getenv:TEMP",
@@ -827,7 +817,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 124,
+      "line": 138,
       "column": 12,
       "mechanism": "process_delegation",
       "symbol": "subprocess.run",
@@ -837,7 +827,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 162,
+      "line": 176,
       "column": 23,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -847,7 +837,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 167,
+      "line": 181,
       "column": 27,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -857,7 +847,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 173,
+      "line": 187,
       "column": 27,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -867,7 +857,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 188,
+      "line": 202,
       "column": 21,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -877,7 +867,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 188,
+      "line": 202,
       "column": 51,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -887,7 +877,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 192,
+      "line": 220,
       "column": 23,
       "mechanism": "process_delegation",
       "symbol": "subprocess.Popen",
@@ -897,7 +887,7 @@
     },
     {
       "path": "nova_backend/src/voice/tts_engine.py",
-      "line": 203,
+      "line": 217,
       "column": 17,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
@@ -916,24 +906,35 @@
       "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
     },
     {
-      "path": "scripts/start_daemon.py",
-      "line": 213,
-      "column": 17,
+      "path": "nova_backend/src/governor/backend_startup_admission.py",
+      "line": 490,
+      "column": 26,
+      "mechanism": "process_delegation",
+      "symbol": "subprocess.Popen",
+      "status": "governed",
+      "closure_family": "F05_non_ollama_delegation",
+      "reason": "The fixed local uvicorn command uses the exact current Python executable, a constrained child environment, durable pre-spawn admission evidence, executable revalidation, and separate readiness outcome evidence.",
+      "boundary": "windows-backend-startup-admission-v1"
+    },
+    {
+      "path": "nova_backend/src/governor/backend_startup_admission.py",
+      "line": 193,
+      "column": 44,
       "mechanism": "executable_discovery",
       "symbol": "shutil.which",
       "status": "unresolved",
       "closure_family": "F09_executable_discovery_roots",
-      "reason": "PATH and browser-candidate roots require locality classification before executable discovery."
+      "reason": "The launcher binds a discovered ffmpeg path into the constrained child environment, but complete executable identity and locality proof remain F09 work."
     },
     {
-      "path": "scripts/start_daemon.py",
-      "line": 296,
-      "column": 11,
-      "mechanism": "process_delegation",
-      "symbol": "subprocess.Popen",
+      "path": "nova_backend/src/governor/backend_startup_admission.py",
+      "line": 222,
+      "column": 42,
+      "mechanism": "executable_discovery",
+      "symbol": "shutil.which",
       "status": "unresolved",
-      "closure_family": "F05_non_ollama_delegation",
-      "reason": "Non-Ollama children and application handoffs require exact command/environment admission and truthful delegated outcomes."
+      "closure_family": "F09_executable_discovery_roots",
+      "reason": "The launcher binds a discovered Piper path into the constrained child environment, but complete executable identity and locality proof remain F09 work."
     },
     {
       "path": "scripts/stop_daemon.py",

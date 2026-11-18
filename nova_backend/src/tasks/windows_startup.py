@@ -49,20 +49,40 @@ class WindowsStartupRegistration:
         registry: StartupRegistry | None = None,
         *,
         arguments: Sequence[str] = ("--background",),
+        legacy_arguments: Sequence[Sequence[str]] = (),
     ) -> None:
         self._executable = Path(executable)
         self._supported = os.name == "nt" or registry is not None
         self._registry = registry or _WindowsRunRegistry()
         self._arguments = tuple(str(value) for value in arguments)
+        self._legacy_arguments = tuple(
+            tuple(str(value) for value in arguments)
+            for arguments in legacy_arguments
+        )
 
-    @property
-    def command(self) -> str:
+    def _command_for(self, arguments: Sequence[str]) -> str:
         path = str(self._executable).replace("/", "\\")
         quoted_arguments = " ".join(
             f'"{value}"' if any(character.isspace() for character in value) else value
-            for value in self._arguments
+            for value in arguments
         )
         return f'"{path}"{f" {quoted_arguments}" if quoted_arguments else ""}'
+
+    @property
+    def command(self) -> str:
+        return self._command_for(self._arguments)
+
+    @property
+    def legacy_commands(self) -> frozenset[str]:
+        return frozenset(self._command_for(arguments) for arguments in self._legacy_arguments)
+
+    def migrate_legacy_entry(self) -> dict[str, object]:
+        """Replace only exact prior Nova registrations with the current command."""
+        if not self._supported:
+            return self.status()
+        if self._registry.get(self.ENTRY_NAME) in self.legacy_commands:
+            self._registry.set(self.ENTRY_NAME, self.command)
+        return self.status()
 
     def status(self) -> dict[str, object]:
         if not self._supported:
@@ -73,12 +93,14 @@ class WindowsStartupRegistration:
                 "entry_name": self.ENTRY_NAME,
             }
         existing = self._registry.get(self.ENTRY_NAME)
+        owned = existing == self.command or existing in self.legacy_commands
         return {
             "supported": True,
-            "enabled": existing == self.command,
+            "enabled": owned,
             "entry_exists": existing is not None,
             "entry_name": self.ENTRY_NAME,
-            "entry_conflict": existing is not None and existing != self.command,
+            "entry_conflict": existing is not None and not owned,
+            "migration_required": existing in self.legacy_commands,
         }
 
     def set_enabled(self, enabled: bool) -> dict[str, object]:
@@ -89,14 +111,16 @@ class WindowsStartupRegistration:
         if enabled:
             self._registry.set(self.ENTRY_NAME, self.command)
         else:
-            if self._registry.get(self.ENTRY_NAME) == self.command:
+            existing = self._registry.get(self.ENTRY_NAME)
+            if existing == self.command or existing in self.legacy_commands:
                 self._registry.delete(self.ENTRY_NAME)
         return self.status()
 
     def cleanup(self) -> dict[str, object]:
         if not self._supported:
             return self.status()
-        if self._registry.get(self.ENTRY_NAME) == self.command:
+        existing = self._registry.get(self.ENTRY_NAME)
+        if existing == self.command or existing in self.legacy_commands:
             self._registry.delete(self.ENTRY_NAME)
         return self.status()
 

@@ -2,8 +2,8 @@
 """Start (or verify) the Nova backend as a background process.
 
 Designed to be called by the installer's final step, by the Start Menu
-shortcut, or manually. On Windows this uses ``subprocess.CREATE_NO_WINDOW``
-so the server runs without a visible console.
+shortcut, or manually. The fixed backend child is admitted and evidenced
+before process creation.
 
 Usage:
     python scripts/start_daemon.py          # start and open browser
@@ -21,11 +21,11 @@ Exit codes:
     0 — Nova is running and reachable
     1 — failed to start
 """
+
 from __future__ import annotations
 
 import os
-import platform
-import subprocess
+import subprocess  # noqa: F401 - retained for launcher-test monkeypatch compatibility
 import sys
 import time
 import uuid
@@ -40,6 +40,12 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from local_readiness_probe import probe_phase_status
+from src.governor.backend_startup_admission import (
+    BackendStartupAdmissionError,
+    record_backend_outcome,
+    spawn_admitted_backend,
+)
+from src.governor.disclosure_policy import InitiationClass
 from src.governor.url_handoff_admission import (
     URLHandoffAdmissionError,
     URLHandoffKind,
@@ -94,9 +100,7 @@ def _is_nova_backend_command(command_line: str) -> bool:
     normalized = command_line.replace("\\", "/").lower()
     backend = str(BACKEND_DIR).replace("\\", "/").lower()
     return (
-        "uvicorn" in normalized
-        and "src.brain_server:app" in normalized
-        and backend in normalized
+        "uvicorn" in normalized and "src.brain_server:app" in normalized and backend in normalized
     )
 
 
@@ -205,25 +209,6 @@ def _ensure_ollama() -> bool:
         return False
 
 
-def _find_nova_command() -> list[str]:
-    """Return the command list to start Nova."""
-    import shutil
-
-    # Prefer the installed console script (don't invoke it — just check PATH)
-    nova_start = shutil.which("nova-start")
-    if nova_start is not None:
-        return [nova_start]
-
-    # Fallback: uvicorn from the nova_backend directory
-    return [
-        sys.executable, "-m", "uvicorn",
-        "src.brain_server:app",
-        "--host", HOST,
-        "--port", str(PORT),
-        "--app-dir", str(BACKEND_DIR),
-    ]
-
-
 def _open_dashboard(open_as_app: bool = False) -> bool:
     """Ask the OS default browser to accept the exact local dashboard URL.
 
@@ -266,7 +251,12 @@ def _open_dashboard(open_as_app: bool = False) -> bool:
     return accepted
 
 
-def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
+def start_nova(
+    open_browser: bool = True,
+    *,
+    app_window: bool = False,
+    initiation: InitiationClass = InitiationClass.USER_INITIATED,
+) -> int:
     if _is_running():
         print(f"[Nova] Already running at {BASE_URL}")
         if open_browser:
@@ -278,8 +268,7 @@ def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
 
     _ensure_ollama()
 
-    cmd = _find_nova_command()
-    print(f"[Nova] Starting: {' '.join(cmd)}")
+    print("[Nova] Starting the admitted local backend command.")
 
     # Log Nova's stdout + stderr so startup failures are diagnosable.
     # The log file lives next to start_daemon.py's sibling pids/ directory,
@@ -289,22 +278,47 @@ def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
     print(f"[Nova] Server output -> {_nova_log}")
     _log_fh = open(_nova_log, "a")
 
-    creation_flags = 0
-    if platform.system() == "Windows":
-        creation_flags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-
-    proc = subprocess.Popen(
-        cmd,
-        stdout=_log_fh,
-        stderr=_log_fh,
-        creationflags=creation_flags,
-    )
+    try:
+        launch = spawn_admitted_backend(
+            executable=Path(sys.executable),
+            backend_dir=BACKEND_DIR,
+            host=HOST,
+            port=PORT,
+            stdout=_log_fh,
+            stderr=_log_fh,
+            initiation=initiation,
+        )
+    except BackendStartupAdmissionError as error:
+        _log_fh.close()
+        print(
+            f"[Nova] ERROR: Backend startup was not admitted ({error}).",
+            file=sys.stderr,
+        )
+        return 1
+    proc = launch.process
 
     # Wait for the health endpoint
     start = time.time()
     while time.time() - start < STARTUP_TIMEOUT:
         if _is_running():
             running_pid = _current_nova_listener_pid(proc.pid)
+            try:
+                record_backend_outcome(
+                    launch,
+                    outcome="ready",
+                    listener_pid=running_pid,
+                )
+            except BackendStartupAdmissionError as error:
+                try:
+                    proc.terminate()
+                except Exception:
+                    pass
+                _log_fh.close()
+                print(
+                    f"[Nova] ERROR: Backend readiness evidence failed ({error}).",
+                    file=sys.stderr,
+                )
+                return 1
             print(f"[Nova] Running at {BASE_URL} (PID {running_pid})")
             PID_FILE.write_text(str(running_pid), encoding="utf-8")
             _log_fh.close()
@@ -313,6 +327,17 @@ def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
             return 0
         exit_code = proc.poll()
         if exit_code is not None:
+            try:
+                record_backend_outcome(
+                    launch,
+                    outcome="exited_before_ready",
+                    exit_code=exit_code,
+                )
+            except BackendStartupAdmissionError as error:
+                print(
+                    f"[Nova] WARNING: Backend exit evidence failed ({error}).",
+                    file=sys.stderr,
+                )
             print(
                 f"[Nova] ERROR: Nova process exited before health check succeeded "
                 f"(PID {proc.pid}, exit code {exit_code}).\n"
@@ -327,6 +352,13 @@ def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
             return 1
         time.sleep(1)
 
+    try:
+        record_backend_outcome(launch, outcome="readiness_timeout")
+    except BackendStartupAdmissionError as error:
+        print(
+            f"[Nova] WARNING: Backend timeout evidence failed ({error}).",
+            file=sys.stderr,
+        )
     print(
         f"[Nova] ERROR: Server did not respond within {STARTUP_TIMEOUT}s.\n"
         f"[Nova] Check {_nova_log} for details.",
@@ -342,8 +374,19 @@ def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
 
 def main() -> int:
     open_browser = "--no-browser" not in sys.argv
-    app_window = "--app-window" in sys.argv or os.environ.get("NOVA_BROWSER_MODE", "").lower() == "app"
-    return start_nova(open_browser=open_browser, app_window=app_window)
+    app_window = (
+        "--app-window" in sys.argv or os.environ.get("NOVA_BROWSER_MODE", "").lower() == "app"
+    )
+    initiation = (
+        InitiationClass.AUTOMATIC
+        if "--automatic-startup" in sys.argv
+        else InitiationClass.USER_INITIATED
+    )
+    return start_nova(
+        open_browser=open_browser,
+        app_window=app_window,
+        initiation=initiation,
+    )
 
 
 if __name__ == "__main__":

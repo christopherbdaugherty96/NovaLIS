@@ -1,4 +1,7 @@
+import sys
 from pathlib import Path
+
+from src.governor.disclosure_policy import InitiationClass
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 START_DAEMON_PATH = PROJECT_ROOT / "scripts" / "start_daemon.py"
@@ -49,13 +52,38 @@ def test_start_daemon_uses_bounded_readiness_probe():
     assert "urlopen" not in running_block
 
 
+def test_start_daemon_uses_exact_backend_admission_without_path_discovery():
+    source = START_DAEMON_PATH.read_text(encoding="utf-8")
+    assert "spawn_admitted_backend" in source
+    assert 'shutil.which("nova-start")' not in source
+    assert "subprocess.Popen(" not in source
+    assert "--automatic-startup" in source
+
+
+def test_automatic_startup_flag_is_not_reported_as_user_initiated(monkeypatch):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("automatic_start_daemon", START_DAEMON_PATH)
+    assert spec is not None and spec.loader is not None
+    daemon = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(daemon)
+    captured = {}
+    monkeypatch.setattr(daemon, "start_nova", lambda **kwargs: captured.update(kwargs) or 0)
+    monkeypatch.setattr(
+        sys, "argv", [str(START_DAEMON_PATH), "--no-browser", "--automatic-startup"]
+    )
+
+    assert daemon.main() == 0
+    assert captured["initiation"] is InitiationClass.AUTOMATIC
+
+
 def test_shell_launcher_uses_bounded_readiness_probe_without_curl():
     source = START_SH_PATH.read_text(encoding="utf-8")
     readiness_block = source.split("check_ready()", 1)[1].split("open_dashboard()", 1)[0]
     assert "local_readiness_probe.py" in readiness_block
     assert "curl" not in readiness_block
     assert "urllib.request" not in readiness_block
-    assert '127.0.0.1|::1' in source
+    assert "127.0.0.1|::1" in source
 
 
 def test_stop_bat_delegates_to_stop_daemon():

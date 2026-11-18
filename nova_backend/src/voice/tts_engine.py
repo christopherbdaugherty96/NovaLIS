@@ -23,10 +23,29 @@ from src.speech_state import speech_state
 logger = logging.getLogger(__name__)
 
 
-def _voice_preferred_engine_status() -> tuple[str, str]:
+def _resolve_piper() -> str | None:
+    admitted = os.getenv("NOVA_PIPER_EXECUTABLE", "").strip()
+    if admitted:
+        try:
+            admitted_path = Path(admitted).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError):
+            admitted_path = None
+        if (
+            admitted_path is not None
+            and admitted_path.is_file()
+            and admitted_path.name.lower() in {"piper", "piper.exe"}
+        ):
+            return str(admitted_path)
+
     project_root = Path(__file__).resolve().parents[2]
     bundled_piper = project_root / "tools" / "piper" / "piper.exe"
-    piper_bin = str(bundled_piper) if bundled_piper.exists() else shutil.which("piper")
+    if bundled_piper.is_file():
+        return str(bundled_piper)
+    return shutil.which("piper")
+
+
+def _voice_preferred_engine_status() -> tuple[str, str]:
+    piper_bin = _resolve_piper()
     if not piper_bin:
         return "unavailable", "Piper CLI not found."
 
@@ -82,16 +101,11 @@ class SpeechRenderer:
                 return False
 
             # ----- Locate Piper executable (prefer bundled, fallback to PATH) -----
-            project_root = Path(__file__).resolve().parents[2]   # up to nova_backend/
-            bundled_piper = project_root / "tools" / "piper" / "piper.exe"
-            if bundled_piper.exists():
-                piper_bin = str(bundled_piper)
-            else:
-                piper_bin = shutil.which("piper")
-                if not piper_bin:
-                    self._warn_once_missing_piper()
-                    logger.error("Piper CLI not found – TTS unavailable")
-                    return False
+            piper_bin = _resolve_piper()
+            if not piper_bin:
+                self._warn_once_missing_piper()
+                logger.error("Piper CLI not found – TTS unavailable")
+                return False
 
             # ----- Model path from environment -----
             model_path = os.getenv("NOVA_PIPER_MODEL_PATH", "").strip()

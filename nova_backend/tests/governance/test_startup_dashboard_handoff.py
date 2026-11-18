@@ -8,9 +8,7 @@ START_DAEMON_PATH = PROJECT_ROOT / "scripts" / "start_daemon.py"
 
 
 def _load_start_daemon():
-    spec = importlib.util.spec_from_file_location(
-        "f05b_start_daemon", START_DAEMON_PATH
-    )
+    spec = importlib.util.spec_from_file_location("f05b_start_daemon", START_DAEMON_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -91,7 +89,5 @@ def test_startup_contract_opens_dashboard_only_after_readiness():
     start_block = source.split("def start_nova", 1)[1].split("def main", 1)[0]
     ready_branch = start_block.split("if _is_running():", 1)[1]
     assert "_open_dashboard" in ready_branch
-    spawned_branch = start_block.split("proc = subprocess.Popen", 1)[1]
-    assert spawned_branch.index("if _is_running():") < spawned_branch.index(
-        "_open_dashboard"
-    )
+    spawned_branch = start_block.split("launch = spawn_admitted_backend", 1)[1]
+    assert spawned_branch.index("if _is_running():") < spawned_branch.index("_open_dashboard")

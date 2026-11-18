@@ -55,3 +55,44 @@ def test_data_reset_can_remove_startup_entry(tmp_path):
 
     assert registry.values == {}
 
+
+def test_legacy_startup_entry_is_migrated_and_remains_removable():
+    registry = _Registry()
+    registration = WindowsStartupRegistration(
+        Path("C:/Nova/pythonw.exe"),
+        registry=registry,
+        arguments=("C:/Nova/scripts/start_daemon.py", "--no-browser", "--automatic-startup"),
+        legacy_arguments=(("C:/Nova/scripts/start_daemon.py", "--no-browser"),),
+    )
+    registry.values[registration.ENTRY_NAME] = (
+        '"C:\\Nova\\pythonw.exe" C:/Nova/scripts/start_daemon.py --no-browser'
+    )
+
+    assert registration.status()["enabled"] is True
+    assert registration.status()["migration_required"] is True
+
+    registration.migrate_legacy_entry()
+
+    assert registry.values[registration.ENTRY_NAME] == registration.command
+    assert registration.status()["migration_required"] is False
+    registration.set_enabled(False)
+    assert registry.values == {}
+
+
+def test_legacy_migration_does_not_claim_or_remove_foreign_entry():
+    registry = _Registry()
+    registration = WindowsStartupRegistration(
+        Path("C:/Nova/pythonw.exe"),
+        registry=registry,
+        arguments=("C:/Nova/scripts/start_daemon.py", "--no-browser", "--automatic-startup"),
+        legacy_arguments=(("C:/Nova/scripts/start_daemon.py", "--no-browser"),),
+    )
+    foreign = '"C:\\Other\\pythonw.exe" C:/Nova/scripts/start_daemon.py --no-browser'
+    registry.values[registration.ENTRY_NAME] = foreign
+
+    registration.migrate_legacy_entry()
+    registration.cleanup()
+
+    assert registry.values[registration.ENTRY_NAME] == foreign
+    assert registration.status()["entry_conflict"] is True
+
