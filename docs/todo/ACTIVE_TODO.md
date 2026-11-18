@@ -1,8 +1,22 @@
 # Active TODO — Nova
 
-Last reviewed: 2026-10-08.
+Last reviewed: 2026-11-18.
 
 This file is the current actionable task inventory. Historical lane detail belongs in Git history and dated proof/strategy artifacts, not in the active queue.
+
+## Active Now — product evidence (2026-11-18)
+
+1. Run the authorized low-overhead five-turn 2K/128 acceptance test.
+2. Record performance and conversational-quality scores separately.
+3. Decide whether `gemma2:2b` is viable for a provisional Lite workload.
+4. Run the unchanged 31-turn benchmark only after the lightweight gate passes.
+5. Test one complete owner-use workflow and select one reproduced repair.
+
+Parallel boundary: preserve safe local operation and continue only required release-security
+proof. Do not activate providers, implement permanent hardware profiles, or treat product
+evaluation as release acceptance.
+
+Decision record: [Product-Evidence Operating Amendment](../decisions/2026-11-18-product-evidence-operating-amendment.md).
 
 ## Active Now — owner operating sequence (2026-10-27)
 

@@ -1,6 +1,19 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-10-08.
+Last reviewed: 2026-11-18.
+
+## Current operating state — 2026-11-18
+
+- PR #518 bounded backend-startup repair: complete on baseline `ed0a533e`.
+- Isolated Python environment and backend readiness: accepted.
+- Verified local model: `gemma2:2b`.
+- Temporary 2K/128 inference: PARTIAL; one useful response, unsafe sustained memory margin.
+- Five-turn context acceptance: pending low-overhead run.
+- 31-turn benchmark: HOLD until the lightweight gate passes.
+- Permanent hardware-profile implementation: deferred pending evidence.
+- External distribution: HOLD pending required Data-Out and Windows release proof.
+
+Current direction is defined by the [2026-11-18 product-evidence amendment](../decisions/2026-11-18-product-evidence-operating-amendment.md).
 
 ## Current owner operating sequence — 2026-10-27
 

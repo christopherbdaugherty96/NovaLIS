@@ -1,5 +1,24 @@
 # Daily Command Center
 
+## Current command — product-evidence amendment (2026-11-18)
+
+```text
+TRACK A: preserve safe local operation
+TRACK B NEXT: low-overhead lightweight five-turn acceptance
+AFTER PASS: model viability decision -> unchanged 31-turn benchmark
+PRODUCT TARGET: one complete owner-use workflow
+RELEASE GATE: required Data-Out and clean Windows proof remain mandatory
+```
+
+The current lightweight evidence is PARTIAL: one real 2K/128 response completed in about
+13.7 seconds, but memory reached 95.9% and the five-turn test stopped. Do not treat this as
+conversation acceptance or a permanent hardware profile.
+
+Decision record: [Product-Evidence Operating Amendment](../decisions/2026-11-18-product-evidence-operating-amendment.md).
+
+The October 27 sequence below remains applicable except where this amendment permits
+bounded product evaluation before release certification is complete.
+
 ## Current command — owner operating sequence (2026-10-27)
 
 ```text

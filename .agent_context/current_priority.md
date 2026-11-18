@@ -1,5 +1,27 @@
 # Current Priority
 
+## Current owner operating amendment — 2026-11-18
+
+```text
+OWNER_OPERATING_AMENDMENT_2026_11_18: ACTIVE
+TRACK A: safe local operation
+TRACK B: product evidence
+NEXT: low-overhead lightweight five-turn acceptance
+THEN: model viability decision
+THEN: unchanged 31-turn benchmark only after the lightweight gate passes
+RELEASE GATE: full required Data-Out + Windows release proof before distribution
+```
+
+Immediate truth: backend startup and model identity are accepted on the isolated baseline.
+The 2K/128 profile completed one useful response in about 13.7 seconds but reached 95.9%
+RAM use; the five-turn test remains unproven. Test-only evaluation is authorized. Permanent
+profile defaults, provider expansion, stronger-model access, and distribution are not.
+
+See `docs/decisions/2026-11-18-product-evidence-operating-amendment.md`.
+
+The October 27 sequence below remains in force except where the amendment allows bounded
+Track B evaluation before complete release certification.
+
 ## Current owner operating sequence — 2026-10-27
 
 ```text
