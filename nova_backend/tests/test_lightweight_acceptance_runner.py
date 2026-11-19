@@ -35,6 +35,22 @@ def test_acceptance_environment_pins_verified_loopback_ollama(
     assert environment["OLLAMA_URL"] == "http://127.0.0.1:11434"
 
 
+def test_ollama_cli_environment_pins_loopback_and_removes_proxies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OLLAMA_HOST", "http://unverified.example:11434")
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example:8080")
+    monkeypatch.setenv("all_proxy", "socks5://proxy.example:1080")
+    environment = MODULE._ollama_cli_environment()
+    assert environment["OLLAMA_HOST"] == "http://127.0.0.1:11434"
+    assert "HTTPS_PROXY" not in environment
+    assert "all_proxy" not in environment
+
+
+def test_acceptance_websocket_disables_proxy() -> None:
+    assert MODULE._websocket_options()["proxy"] is None
+
+
 def test_json_requests_disable_proxies_and_redirects(monkeypatch: pytest.MonkeyPatch) -> None:
     captured_handlers: list[object] = []
 
@@ -257,6 +273,28 @@ def test_failed_model_unload_is_recorded(monkeypatch: pytest.MonkeyPatch, tmp_pa
     failure = MODULE.CleanupResult("stop_test_model", "exit_code_1")
     monkeypatch.setattr(MODULE, "_cleanup_process", lambda *args, **kwargs: failure)
     assert MODULE._unload_owned_model(tmp_path / "ollama.exe") == failure
+
+
+def test_model_unload_uses_pinned_proxy_free_cli_environment(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    captured: dict[str, object] = {}
+
+    def cleanup(*args: object, **kwargs: object) -> MODULE.CleanupResult:
+        captured.update(kwargs)
+        return MODULE.CleanupResult("stop_test_model")
+
+    monkeypatch.setattr(MODULE, "_cleanup_process", cleanup)
+    monkeypatch.setattr(MODULE, "_model_is_resident", lambda: False)
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example:8080")
+
+    result = MODULE._unload_owned_model(tmp_path / "ollama.exe")
+
+    assert result.error is None
+    environment = captured["env"]
+    assert isinstance(environment, dict)
+    assert environment["OLLAMA_HOST"] == "http://127.0.0.1:11434"
+    assert "HTTPS_PROXY" not in environment
 
 
 def test_cleanup_failure_downgrades_provisional_result_to_hold() -> None:

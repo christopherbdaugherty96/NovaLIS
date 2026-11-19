@@ -504,14 +504,7 @@ async def _run_conversation(
 ) -> tuple[list[TurnResult], str]:
     turns: list[TurnResult] = []
     stop_reason = "complete"
-    async with websockets.connect(
-        "ws://127.0.0.1:8000/ws",
-        origin="http://localhost:8000",
-        open_timeout=10,
-        ping_interval=20,
-        ping_timeout=20,
-        max_size=4 * 1024 * 1024,
-    ) as ws:
+    async with websockets.connect("ws://127.0.0.1:8000/ws", **_websocket_options()) as ws:
         await _drain_greeting(ws)
         prompts = (MINIMAL_PROMPT, *CONTEXT_PROMPTS)
         for index, prompt in enumerate(prompts):
@@ -531,6 +524,17 @@ async def _run_conversation(
                 stop_reason = turn.error or reason
                 break
     return turns, stop_reason
+
+
+def _websocket_options() -> dict[str, Any]:
+    return {
+        "origin": "http://localhost:8000",
+        "open_timeout": 10,
+        "ping_interval": 20,
+        "ping_timeout": 20,
+        "max_size": 4 * 1024 * 1024,
+        "proxy": None,
+    }
 
 
 def _cleanup_process(
@@ -560,6 +564,7 @@ def _unload_owned_model(executable: Path) -> CleanupResult:
     stopped = _cleanup_process(
         "stop_test_model",
         [str(executable), "stop", MODEL],
+        env=_ollama_cli_environment(),
         timeout=20,
     )
     if stopped.error:
@@ -606,6 +611,23 @@ def _acceptance_environment() -> dict[str, str]:
             "PYTHONNOUSERSITE": "1",
         }
     )
+    return environment
+
+
+def _ollama_cli_environment() -> dict[str, str]:
+    environment = os.environ.copy()
+    for name in (
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "ALL_PROXY",
+        "NO_PROXY",
+        "http_proxy",
+        "https_proxy",
+        "all_proxy",
+        "no_proxy",
+    ):
+        environment.pop(name, None)
+    environment["OLLAMA_HOST"] = OLLAMA_BASE_URL
     return environment
 
 
