@@ -188,6 +188,36 @@ def test_cleanup_process_records_nonzero_exit(monkeypatch: pytest.MonkeyPatch) -
     assert result.error == "exit_code_3"
 
 
+def test_missing_unload_executable_is_not_usable() -> None:
+    executable, reason = MODULE._validated_unload_executable(None)
+    assert executable is None
+    assert reason == "model_unload_executable_missing"
+
+
+def test_invalid_unload_executable_is_not_usable(tmp_path: Path) -> None:
+    executable, reason = MODULE._validated_unload_executable(tmp_path / "missing-ollama.exe")
+    assert executable is None
+    assert reason == "model_unload_executable_invalid"
+
+
+def test_nonworking_unload_executable_is_not_usable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "ollama.exe"
+    path.touch()
+    completed = MODULE.subprocess.CompletedProcess([str(path), "--version"], 1)
+    monkeypatch.setattr(MODULE.subprocess, "run", lambda *args, **kwargs: completed)
+    executable, reason = MODULE._validated_unload_executable(path)
+    assert executable is None
+    assert reason == "model_unload_executable_unusable"
+
+
+def test_failed_model_unload_is_recorded(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    failure = MODULE.CleanupResult("stop_test_model", "exit_code_1")
+    monkeypatch.setattr(MODULE, "_cleanup_process", lambda *args, **kwargs: failure)
+    assert MODULE._unload_owned_model(tmp_path / "ollama.exe") == failure
+
+
 def test_cleanup_failure_downgrades_provisional_result_to_hold() -> None:
     evidence = {"verdict": "PROVISIONAL"}
     cleanup = [MODULE.CleanupResult("stop_nova_backend", "exit_code_1")]
@@ -304,8 +334,14 @@ def test_startup_timeout_still_attempts_owned_backend_cleanup(
     monkeypatch.setattr(MODULE, "_git_head", lambda unused: args.expected_commit)
     monkeypatch.setattr(MODULE, "_port_open", lambda: False)
     monkeypatch.setattr(MODULE, "memory_sample", lambda: safe)
+    monkeypatch.setattr(MODULE, "_model_is_resident", lambda: True)
     monkeypatch.setattr(MODULE, "_start_backend_with_ownership", start)
     monkeypatch.setattr(MODULE, "_terminate_owned_backends", terminate)
+    monkeypatch.setattr(
+        MODULE,
+        "_unload_owned_model",
+        lambda executable: (_ for _ in ()).throw(AssertionError("pre-existing model unloaded")),
+    )
     monkeypatch.setattr(MODULE, "_write_evidence", lambda path, payload: captured.update(payload))
 
     assert MODULE.main() == 2
@@ -314,4 +350,94 @@ def test_startup_timeout_still_attempts_owned_backend_cleanup(
     assert captured["cleanup"] == [
         {"action": "stop_owned_nova_backend", "error": None},
     ]
+
+
+def test_nonresident_model_without_unload_path_holds_before_backend_start(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "repo"
+    python = root / "nova_backend/venv/Scripts/python.exe"
+    python.parent.mkdir(parents=True)
+    python.touch()
+    args = SimpleNamespace(
+        repo_root=root,
+        expected_commit="a" * 40,
+        expected_digest="b" * 64,
+        confirm_model_update=False,
+        minimum_start_gb=2.0,
+        runtime_stop_gb=0.5,
+        turn_timeout=120.0,
+        output=root / "evidence.json",
+        ollama_executable=None,
+    )
+    safe = MODULE.MemorySample(
+        available_bytes=4 * 1024**3,
+        physical_used_percent=50.0,
+        committed_bytes=4 * 1024**3,
+        commit_limit_bytes=16 * 1024**3,
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(MODULE, "parse_args", lambda: args)
+    monkeypatch.setattr(MODULE, "_git_head", lambda unused: args.expected_commit)
+    monkeypatch.setattr(MODULE, "_port_open", lambda: False)
+    monkeypatch.setattr(MODULE, "memory_sample", lambda: safe)
+    monkeypatch.setattr(MODULE, "_model_is_resident", lambda: False)
+    monkeypatch.setattr(
+        MODULE,
+        "_start_backend_with_ownership",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("backend started")),
+    )
+    monkeypatch.setattr(MODULE, "_write_evidence", lambda path, payload: captured.update(payload))
+
+    assert MODULE.main() == 2
+    assert captured["preflight"] == "model_unload_executable_missing"
+    assert captured["model_residency_before"] == "not_resident"
+    assert captured["verdict"] == "HOLD"
+
+
+def test_unknown_model_residency_holds_before_backend_start(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "repo"
+    python = root / "nova_backend/venv/Scripts/python.exe"
+    python.parent.mkdir(parents=True)
+    python.touch()
+    args = SimpleNamespace(
+        repo_root=root,
+        expected_commit="a" * 40,
+        expected_digest="b" * 64,
+        confirm_model_update=False,
+        minimum_start_gb=2.0,
+        runtime_stop_gb=0.5,
+        turn_timeout=120.0,
+        output=root / "evidence.json",
+        ollama_executable=tmp_path / "ollama.exe",
+    )
+    safe = MODULE.MemorySample(
+        available_bytes=4 * 1024**3,
+        physical_used_percent=50.0,
+        committed_bytes=4 * 1024**3,
+        commit_limit_bytes=16 * 1024**3,
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(MODULE, "parse_args", lambda: args)
+    monkeypatch.setattr(MODULE, "_git_head", lambda unused: args.expected_commit)
+    monkeypatch.setattr(MODULE, "_port_open", lambda: False)
+    monkeypatch.setattr(MODULE, "memory_sample", lambda: safe)
+    monkeypatch.setattr(
+        MODULE,
+        "_model_is_resident",
+        lambda: (_ for _ in ()).throw(ConnectionError("Ollama unavailable")),
+    )
+    monkeypatch.setattr(
+        MODULE,
+        "_start_backend_with_ownership",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("backend started")),
+    )
+    monkeypatch.setattr(MODULE, "_write_evidence", lambda path, payload: captured.update(payload))
+
+    assert MODULE.main() == 2
+    assert captured["preflight"] == "model_residency_unknown"
+    assert captured["model_residency_before"] == "unknown"
+    assert captured["verdict"] == "HOLD"
 

@@ -338,6 +338,32 @@ def _ollama_digest() -> str:
     raise RuntimeError(f"Verified digest unavailable for {MODEL}.")
 
 
+def _model_is_resident() -> bool:
+    payload = _json_request("http://127.0.0.1:11434/api/ps")
+    return any(model.get("name") == MODEL for model in payload.get("models", []))
+
+
+def _validated_unload_executable(path: Path | None) -> tuple[Path | None, str]:
+    if path is None:
+        return None, "model_unload_executable_missing"
+    executable = path.resolve()
+    if not executable.is_file():
+        return None, "model_unload_executable_invalid"
+    try:
+        probe = subprocess.run(
+            [str(executable), "--version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=5,
+        )
+    except Exception:
+        return None, "model_unload_executable_unusable"
+    if probe.returncode != 0:
+        return None, "model_unload_executable_unusable"
+    return executable, "pass"
+
+
 async def _drain_greeting(ws: Any) -> None:
     deadline = time.monotonic() + 15
     while time.monotonic() < deadline:
@@ -464,6 +490,7 @@ async def _run_conversation(
     timeout: float,
     runtime_stop_bytes: int,
     cancel_active_prompt: Callable[[], CleanupResult],
+    mark_model_workload_started: Callable[[], None],
 ) -> tuple[list[TurnResult], str]:
     turns: list[TurnResult] = []
     stop_reason = "complete"
@@ -478,6 +505,8 @@ async def _run_conversation(
         await _drain_greeting(ws)
         prompts = (MINIMAL_PROMPT, *CONTEXT_PROMPTS)
         for index, prompt in enumerate(prompts):
+            if index == 0:
+                mark_model_workload_started()
             turn = await _run_turn(
                 ws,
                 prompt,
@@ -515,6 +544,29 @@ def _cleanup_process(
     if completed.returncode != 0:
         return CleanupResult(action, f"exit_code_{completed.returncode}")
     return CleanupResult(action)
+
+
+def _unload_owned_model(executable: Path) -> CleanupResult:
+    stopped = _cleanup_process(
+        "stop_test_model",
+        [str(executable), "stop", MODEL],
+        timeout=20,
+    )
+    if stopped.error:
+        return stopped
+
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        try:
+            if not _model_is_resident():
+                return stopped
+        except Exception as error:
+            return CleanupResult(
+                stopped.action,
+                f"unload_verification_{type(error).__name__}: {error}",
+            )
+        time.sleep(0.25)
+    return CleanupResult(stopped.action, "model_still_resident_after_unload")
 
 
 def _record_cleanup_results(
@@ -584,6 +636,34 @@ def main() -> int:
         print(json.dumps(evidence, indent=2))
         return 2
 
+
+    try:
+        initially_resident: bool | None = _model_is_resident()
+    except Exception as error:
+        initially_resident = None
+        evidence["preflight"] = "model_residency_unknown"
+        evidence["model_residency_before"] = "unknown"
+        evidence["verdict"] = "HOLD"
+        evidence["error"] = f"{type(error).__name__}: {error}"
+        _write_evidence(output, evidence)
+        print(json.dumps(evidence, indent=2))
+        return 2
+
+    evidence["model_residency_before"] = (
+        "resident" if initially_resident else "not_resident"
+    )
+    unload_executable: Path | None = None
+    if not initially_resident:
+        unload_executable, unload_preflight = _validated_unload_executable(
+            args.ollama_executable
+        )
+        if unload_executable is None:
+            evidence["preflight"] = unload_preflight
+            evidence["verdict"] = "HOLD"
+            _write_evidence(output, evidence)
+            print(json.dumps(evidence, indent=2))
+            return 2
+
     environment = os.environ.copy()
     environment.update(
         {
@@ -594,19 +674,40 @@ def main() -> int:
         }
     )
     backend_start_attempted = False
-    initially_resident = False
+    model_workload_started = False
+    model_unloaded = False
     cleanup_results: list[CleanupResult] = []
     prompt_cancellation_results: list[CleanupResult] = []
     owned_backends: dict[int, OwnedProcess] = {}
 
     def cancel_active_prompt() -> CleanupResult:
+        nonlocal model_unloaded
         result = _terminate_owned_backends(
             owned_backends,
             root,
             action="cancel_active_inference_backend",
         )
         prompt_cancellation_results.append(result)
+        if (
+            result.error is None
+            and model_workload_started
+            and initially_resident is False
+            and unload_executable is not None
+            and not model_unloaded
+        ):
+            unload_result = _unload_owned_model(unload_executable)
+            prompt_cancellation_results.append(unload_result)
+            model_unloaded = unload_result.error is None
+            if unload_result.error:
+                return CleanupResult(
+                    result.action,
+                    f"model_unload_failed: {unload_result.error}",
+                )
         return result
+
+    def mark_model_workload_started() -> None:
+        nonlocal model_workload_started
+        model_workload_started = True
 
     try:
         backend_start_attempted = True
@@ -619,10 +720,6 @@ def main() -> int:
             owned=owned_backends,
         )
         _wait_for_backend()
-        residency = _json_request("http://127.0.0.1:11434/api/ps")
-        initially_resident = any(
-            model.get("name") == MODEL for model in residency.get("models", [])
-        )
         digest = _ollama_digest()
         if digest.removeprefix("sha256:") != args.expected_digest.removeprefix("sha256:"):
             raise RuntimeError("Installed model digest does not match --expected-digest.")
@@ -651,6 +748,7 @@ def main() -> int:
                 args.turn_timeout,
                 int(args.runtime_stop_gb * 1024**3),
                 cancel_active_prompt,
+                mark_model_workload_started,
             )
         )
         evidence["turns"] = [asdict(turn) for turn in turns]
@@ -677,16 +775,15 @@ def main() -> int:
                     action="stop_owned_nova_backend",
                 )
             )
-        if not initially_resident and args.ollama_executable:
-            executable = args.ollama_executable.resolve()
-            if executable.is_file():
-                cleanup_results.append(
-                    _cleanup_process(
-                        "stop_test_model",
-                        [str(executable), "stop", MODEL],
-                        timeout=20,
-                    )
-                )
+        if (
+            model_workload_started
+            and initially_resident is False
+            and unload_executable is not None
+            and not model_unloaded
+        ):
+            unload_result = _unload_owned_model(unload_executable)
+            cleanup_results.append(unload_result)
+            model_unloaded = unload_result.error is None
         _record_cleanup_results(evidence, cleanup_results)
         evidence["resource_after_cleanup"] = asdict(memory_sample())
         evidence["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
