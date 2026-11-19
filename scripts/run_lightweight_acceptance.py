@@ -608,6 +608,8 @@ def _acceptance_environment() -> dict[str, str]:
             "OLLAMA_NUM_CTX": str(NUM_CTX),
             "OLLAMA_NUM_PREDICT": str(NUM_PREDICT),
             "OLLAMA_URL": OLLAMA_BASE_URL,
+            "NOVA_HOST": "127.0.0.1",
+            "NOVA_PORT": "8000",
             "PYTHONNOUSERSITE": "1",
         }
     )

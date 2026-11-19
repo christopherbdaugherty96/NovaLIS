@@ -31,8 +31,12 @@ def test_acceptance_environment_pins_verified_loopback_ollama(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OLLAMA_URL", "http://unverified.example:11434")
+    monkeypatch.setenv("NOVA_HOST", "::1")
+    monkeypatch.setenv("NOVA_PORT", "8001")
     environment = MODULE._acceptance_environment()
     assert environment["OLLAMA_URL"] == "http://127.0.0.1:11434"
+    assert environment["NOVA_HOST"] == "127.0.0.1"
+    assert environment["NOVA_PORT"] == "8000"
 
 
 def test_ollama_cli_environment_pins_loopback_and_removes_proxies(
