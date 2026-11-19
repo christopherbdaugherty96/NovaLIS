@@ -20,6 +20,29 @@ Operational Continuity is strategic direction, not current runtime authority.
 
 The consolidated August Product/Platform strategy is merged as strategy-only guidance through PR #355. Strategy does not override current runtime truth, operational ordering, lane scope, or authority.
 
+## Current owner operating amendment — 2026-11-18
+
+```text
+OWNER_OPERATING_AMENDMENT_2026_11_18: ACTIVE
+TRACK A: safe local operation — reproduced owner-runtime defects only
+TRACK B: product evidence — conversation, routing, context, memory, grounding, latency
+NEXT: low-overhead lightweight five-turn acceptance
+THEN: model viability decision
+THEN: unchanged 31-turn benchmark only if the lightweight gate passes
+THEN: one owner-use workflow and the highest-impact reproduced repair
+RELEASE GATE: full required Data-Out + Windows/installer/executable-identity proof
+```
+
+This amendment permits isolated, non-authorizing product evaluation while release
+certification remains open. It does not weaken governance or authorize providers, new
+capabilities, production hardware-profile defaults, distribution, or unresolved unsafe
+paths. The release gate remains mandatory before distribution beyond the trial.
+
+Decision record: `docs/decisions/2026-11-18-product-evidence-operating-amendment.md`.
+
+The October 27 sequence below remains authority except where it required all Track B
+evaluation to wait for complete Data-Out certification.
+
 ## Current owner operating sequence — 2026-10-27
 
 ```text

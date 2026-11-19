@@ -1,6 +1,6 @@
 # Nova Canonical Truth — Index
 
-Last reconciled: 2026-10-08.
+Last reconciled: 2026-11-18.
 
 This folder is a thin **navigation and reconciliation layer**. It does not create runtime facts. Each canonical file summarizes one kind of truth and points to the implementation, generated artifact, proof, or maintained status surface that supports it.
 
@@ -19,6 +19,11 @@ Use the source appropriate to the claim:
 Generated documents can become incomplete or misleading when their generators have incomplete coverage. A generated PASS must not be expanded into a claim the generator did not test.
 
 ## Current development interpretation — owner operating sequence (2026-10-27)
+
+The [2026-11-18 Product-Evidence Operating Amendment](../decisions/2026-11-18-product-evidence-operating-amendment.md)
+is current where it modifies ordering: safe, isolated product evaluation may proceed while
+release certification remains open. It grants no provider, capability, execution, or
+distribution authority. The release security gate remains mandatory.
 
 ```text
 OWNER_OPERATING_SEQUENCE_2026_10_27: ACTIVE

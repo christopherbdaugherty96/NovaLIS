@@ -7,6 +7,25 @@ keeps earlier checkpoints as historical provenance.
 
 ## Current owner operating sequence — 2026-10-27
 
+### Active amendment — 2026-11-18
+
+The owner approved parallel safe-local-operation and product-evidence tracks. Bounded,
+non-authorizing conversational evaluation no longer waits for complete release
+certification. Full required Data-Out, Windows locality, installer, executable identity,
+and consolidated acceptance remain mandatory before external distribution.
+
+Immediate order:
+
+```text
+low-overhead lightweight five-turn acceptance
+-> model viability decision
+-> unchanged 31-turn benchmark only on pass
+-> one complete owner-use workflow
+-> highest-impact reproduced repair
+```
+
+See [Product-Evidence Operating Amendment](../decisions/2026-11-18-product-evidence-operating-amendment.md).
+
 ```text
 OWNER_OPERATING_SEQUENCE_2026_10_27: ACTIVE
 COMPLETE: D1
