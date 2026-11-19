@@ -31,6 +31,7 @@ import websockets
 MODEL = "gemma2:2b"
 NUM_CTX = 2048
 NUM_PREDICT = 128
+OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 MINIMAL_PROMPT = "Explain the difference between RAM and computer storage in one sentence."
 CONTEXT_PROMPTS = (
     "For this test, my imaginary project is called Cedar, its target day is Tuesday, "
@@ -72,6 +73,11 @@ class CleanupResult:
 class OwnedProcess:
     pid: int
     create_time: float
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str):
+        raise urllib.error.HTTPError(newurl, code, msg, headers, fp)
 
 
 def _windows_commit() -> tuple[int | None, int | None]:
@@ -196,7 +202,11 @@ def _json_request(url: str, *, method: str = "GET", payload: dict[str, Any] | No
         method=method,
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(request, timeout=15) as response:
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        _NoRedirectHandler(),
+    )
+    with opener.open(request, timeout=15) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
@@ -329,7 +339,7 @@ def _git_head(repo_root: Path) -> str:
 
 
 def _ollama_digest() -> str:
-    payload = _json_request("http://127.0.0.1:11434/api/tags")
+    payload = _json_request(f"{OLLAMA_BASE_URL}/api/tags")
     for model in payload.get("models", []):
         if model.get("name") == MODEL:
             digest = str(model.get("digest") or "")
@@ -339,7 +349,7 @@ def _ollama_digest() -> str:
 
 
 def _model_is_resident() -> bool:
-    payload = _json_request("http://127.0.0.1:11434/api/ps")
+    payload = _json_request(f"{OLLAMA_BASE_URL}/api/ps")
     return any(model.get("name") == MODEL for model in payload.get("models", []))
 
 
@@ -585,6 +595,20 @@ def _write_evidence(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
+def _acceptance_environment() -> dict[str, str]:
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "OLLAMA_MODEL": MODEL,
+            "OLLAMA_NUM_CTX": str(NUM_CTX),
+            "OLLAMA_NUM_PREDICT": str(NUM_PREDICT),
+            "OLLAMA_URL": OLLAMA_BASE_URL,
+            "PYTHONNOUSERSITE": "1",
+        }
+    )
+    return environment
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -664,15 +688,7 @@ def main() -> int:
             print(json.dumps(evidence, indent=2))
             return 2
 
-    environment = os.environ.copy()
-    environment.update(
-        {
-            "OLLAMA_MODEL": MODEL,
-            "OLLAMA_NUM_CTX": str(NUM_CTX),
-            "OLLAMA_NUM_PREDICT": str(NUM_PREDICT),
-            "PYTHONNOUSERSITE": "1",
-        }
-    )
+    environment = _acceptance_environment()
     backend_start_attempted = False
     model_workload_started = False
     model_unloaded = False

@@ -27,6 +27,47 @@ def test_fixed_lightweight_profile_and_prompts() -> None:
     assert "pending" in MODULE.CONTEXT_PROMPTS[0]
 
 
+def test_acceptance_environment_pins_verified_loopback_ollama(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OLLAMA_URL", "http://unverified.example:11434")
+    environment = MODULE._acceptance_environment()
+    assert environment["OLLAMA_URL"] == "http://127.0.0.1:11434"
+
+
+def test_json_requests_disable_proxies_and_redirects(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured_handlers: list[object] = []
+
+    class _Response:
+        def __enter__(self) -> "_Response":
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+        def read(self) -> bytes:
+            return b'{"models": []}'
+
+    class _Opener:
+        def open(self, request: object, timeout: float) -> _Response:
+            assert timeout == 15
+            return _Response()
+
+    def build_opener(*handlers: object) -> _Opener:
+        captured_handlers.extend(handlers)
+        return _Opener()
+
+    monkeypatch.setattr(MODULE.urllib.request, "build_opener", build_opener)
+    assert MODULE._json_request("http://127.0.0.1:11434/api/ps") == {"models": []}
+    proxy = next(
+        handler
+        for handler in captured_handlers
+        if isinstance(handler, MODULE.urllib.request.ProxyHandler)
+    )
+    assert proxy.proxies == {}
+    assert any(isinstance(handler, MODULE._NoRedirectHandler) for handler in captured_handlers)
+
+
 def test_resource_gate_rejects_low_physical_memory() -> None:
     sample = MODULE.MemorySample(
         available_bytes=256 * 1024**2,
