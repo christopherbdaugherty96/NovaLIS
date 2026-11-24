@@ -178,6 +178,19 @@ def test_early_news_turn_invalidates_older_project_referent(monkeypatch):
     assert len(calls) == 1
 
 
+def test_silent_news_refresh_preserves_active_project_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            {"type": "chat", "text": "news", "silent_widget_refresh": True},
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 2
+
+
 def test_unrelated_project_topic_does_not_reactivate_older_referent(monkeypatch):
     calls = _run_session(
         monkeypatch,

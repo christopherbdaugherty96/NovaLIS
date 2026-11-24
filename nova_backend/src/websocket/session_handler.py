@@ -1674,8 +1674,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
-            if session_state.get("project_context_active") and not is_project_context_continuation(
-                raw_text
+            if (
+                not silent_widget_refresh
+                and session_state.get("project_context_active")
+                and not is_project_context_continuation(raw_text)
             ):
                 session_state["project_context_active"] = False
             if not silent_widget_refresh:
