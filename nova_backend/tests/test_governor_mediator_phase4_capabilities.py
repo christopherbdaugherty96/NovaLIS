@@ -383,7 +383,6 @@ def test_news_intelligence_parsing():
     assert inv.capability_id == 49
     assert inv.params["selection"] == "category"
     assert inv.params["category_key"] == "global"
-
     for phrase, expected_category in (
         ("show me global security news", "global"),
         ("give me international headlines", "global"),
@@ -941,3 +940,27 @@ def test_wave_c_screen_and_diagnostics_natural_variants_route_deterministically(
         inv = GovernorMediator.parse_governed_invocation(prompt)
         assert isinstance(inv, Invocation), prompt
         assert inv.capability_id == 32, prompt
+
+
+def test_news_summary_shorthand_routes_remain_supported():
+    from src.governor.governor_mediator import GovernorMediator, Invocation
+
+    for prompt in (
+        "summarize all",
+        "summarize technology",
+        "summarize all headlines",
+    ):
+        inv = GovernorMediator.parse_governed_invocation(prompt)
+        assert isinstance(inv, Invocation), prompt
+        assert inv.capability_id == 49, prompt
+
+
+def test_project_detail_summary_remains_conversational():
+    from src.governor.governor_mediator import GovernorMediator
+
+    assert (
+        GovernorMediator.parse_governed_invocation(
+            "Summarize all three project details in one sentence."
+        )
+        is None
+    )

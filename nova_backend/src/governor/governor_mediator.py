@@ -449,8 +449,7 @@ INLINE_PASTED_SUMMARY_RE = re.compile(
     re.IGNORECASE,
 )
 HEADLINE_SUMMARY_RE = re.compile(
-    r"^\s*summarize\s+(?=[^\r\n]*(?:headlines?|news|category)\b)"
-    r"(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
+    r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
     re.IGNORECASE,
 )
 LOCAL_PROJECT_SUMMARY_RE = re.compile(
@@ -2006,6 +2005,9 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(53, {"action": "show", "topic": m.group("topic").strip()})
 
+        if LOCAL_PROJECT_SUMMARY_RE.match(t):
+            return None
+
         hm = HEADLINE_SUMMARY_RE.match(t)
         if hm:
             selection = (hm.group("sel") or "").strip().lower()
@@ -2042,9 +2044,6 @@ class GovernorMediator:
                 if category_key:
                     return _invocation_if_enabled(49, {"selection": "category", "category_key": category_key})
                 return _invocation_if_enabled(49, {"selection": "source", "source_query": source_query})
-
-        if LOCAL_PROJECT_SUMMARY_RE.match(t):
-            return None
 
         m = SET_REPORT_RE.match(t)
         if m:
