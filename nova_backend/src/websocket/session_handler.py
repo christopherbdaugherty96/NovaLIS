@@ -65,6 +65,10 @@ _PROJECT_CONTEXT_RE = re.compile(
     r"\b(?:project|initiative|task|plan)\b",
     re.IGNORECASE,
 )
+_PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:what|which)\s+(?:day|date|name)\s+did\s+i\s+(?:specify|give|say)\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
 
 
 def is_grounded_conversational_status_followup(
@@ -75,6 +79,16 @@ def is_grounded_conversational_status_followup(
     """Allow a pronoun status follow-up only while project context is active."""
     return bool(project_context_active) and bool(
         _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(str(text or ""))
+    )
+
+
+def is_project_context_continuation(text: str) -> bool:
+    """Return whether a turn can retain the active conversational project referent."""
+    normalized = str(text or "")
+    return bool(
+        _PROJECT_CONTEXT_RE.search(normalized)
+        or _PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE.fullmatch(normalized)
+        or _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(normalized)
     )
 
 
@@ -1655,6 +1669,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
+            if session_state.get("project_context_active") and not is_project_context_continuation(
+                raw_text
+            ):
+                session_state["project_context_active"] = False
             if not silent_widget_refresh:
                 session_state["user_message_seq"] += 1
             current_activity_origin = activity_origin_for_request(
