@@ -183,7 +183,6 @@ Status: Active
 Not Implemented Yet
 
 - Trust Panel system
-- Calendar integration
 - Full Phase-8 governed envelope execution
 
 Operational / QA Follow-Through
@@ -221,10 +220,8 @@ Operational / QA Follow-Through
 
 ## Runtime Truth Discrepancies
 
-- [hard_fail] ENABLED_CAPABILITY_MISSING_MEDIATOR_ROUTE: One or more enabled capabilities are not matched by known mediator routes.
 - [warning] DATA_OUT_UNRESOLVED_MECHANISM_FAMILIES: Known supported Data-Out mechanism families remain unresolved; static registration is not runtime closure.
 
 ## Design Runtime Divergences
 
 - Phase 4.5 Trust Panel requirement is not explicitly represented in dashboard runtime text.
-- Phase 4.5 calendar integration requirement is not represented in runtime UI + skill surfaces.
