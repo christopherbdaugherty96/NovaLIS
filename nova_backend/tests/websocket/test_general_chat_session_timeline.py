@@ -146,6 +146,12 @@ def test_lightweight_acceptance_context_prompts_share_one_general_chat_timeline(
         assert "pending" in serialized
 
 
+def test_pronoun_status_without_project_context_stays_governed(monkeypatch):
+    calls = _run_session(monkeypatch, ["What is its current status?"])
+
+    assert calls == []
+
+
 def test_real_session_keeps_reminder_result_after_a_prior_chat_turn(monkeypatch):
     calls = _run_session(
         monkeypatch,

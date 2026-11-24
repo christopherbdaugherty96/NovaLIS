@@ -56,6 +56,32 @@ _UNTRUSTED_COMMAND_TEXT_RE = re.compile(
     r"call open_file|actionrequest|bypass governor|cap\s*63|openclaw_execute)\b",
     re.IGNORECASE,
 )
+_CONVERSATIONAL_STATUS_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:what|which)\s+(?:is|was)\s+(?:its|their)\s+"
+    r"(?:current\s+)?status\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+_PROJECT_CONTEXT_RE = re.compile(
+    r"\b(?:project|initiative|task|plan)\b",
+    re.IGNORECASE,
+)
+
+
+def is_grounded_conversational_status_followup(
+    text: str,
+    session_context: list[dict[str, Any]] | None,
+) -> bool:
+    """Allow a pronoun status follow-up only after project context exists."""
+    if not _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(str(text or "")):
+        return False
+    for entry in reversed(list(session_context or [])[-6:]):
+        if not isinstance(entry, dict):
+            continue
+        if _PROJECT_CONTEXT_RE.search(str(entry.get("content") or "")):
+            return True
+    return False
+
+
 def _is_trial_profile() -> bool:
     return os.getenv("NOVA_RUNTIME_PROFILE", "default").strip().lower() == "trial"
 
@@ -5420,9 +5446,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
 
             # --- Phase 4 governed invocation detection ---
-            inv_result = None if grounded_brief_followup else GovernorMediator.parse_governed_invocation(
+            conversational_status_followup = is_grounded_conversational_status_followup(
                 governed_parse_text,
-                session_id=session_id,
+                session_context,
+            )
+            inv_result = (
+                None
+                if grounded_brief_followup or conversational_status_followup
+                else GovernorMediator.parse_governed_invocation(
+                    governed_parse_text,
+                    session_id=session_id,
+                )
             )
             if inv_result is None and lowered in {"more", "tell me more", "more please"}:
                 try:

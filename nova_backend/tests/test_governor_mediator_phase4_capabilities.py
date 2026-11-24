@@ -964,3 +964,16 @@ def test_project_detail_summary_remains_conversational():
         )
         is None
     )
+
+
+def test_named_external_status_questions_remain_current_information_searches():
+    from src.governor.governor_mediator import GovernorMediator, Invocation
+
+    for prompt in (
+        "What is NASA's Artemis program and its current status?",
+        "What is this week's COVID status in Michigan?",
+        "What is its current status?",
+    ):
+        inv = GovernorMediator.parse_governed_invocation(prompt)
+        assert isinstance(inv, Invocation), prompt
+        assert inv.capability_id == 16, prompt
