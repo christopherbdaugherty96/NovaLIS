@@ -56,6 +56,53 @@ _UNTRUSTED_COMMAND_TEXT_RE = re.compile(
     r"call open_file|actionrequest|bypass governor|cap\s*63|openclaw_execute)\b",
     re.IGNORECASE,
 )
+_CONVERSATIONAL_STATUS_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:what|which)\s+(?:is|was)\s+(?:its|their)\s+"
+    r"(?:current\s+)?status\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+_PROJECT_CONTEXT_SEED_RE = re.compile(
+    r"\b(?:project|initiative|task|plan)\b.*\bstatus\b|"
+    r"\bstatus\b.*\b(?:project|initiative|task|plan)\b",
+    re.IGNORECASE,
+)
+_PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:what|which)\s+(?:day|date|name)\s+did\s+i\s+(?:specify|give|say)\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+_PROJECT_CONTEXT_EXPLICIT_FOLLOWUP_RE = re.compile(
+    r"\b(?:project(?:'s)?\s+name|project\s+details?)\b",
+    re.IGNORECASE,
+)
+_PROJECT_STATUS_CORRECTION_RE = re.compile(
+    r"^\s*(?:its|their|the\s+project(?:'s)?)\s+status\s+"
+    r"(?:is|was|is\s+now|has\s+changed\s+to)\s+.+\s*$",
+    re.IGNORECASE,
+)
+
+
+def is_grounded_conversational_status_followup(
+    text: str,
+    *,
+    project_context_active: bool,
+) -> bool:
+    """Allow a pronoun status follow-up only while project context is active."""
+    return bool(project_context_active) and bool(
+        _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(str(text or ""))
+    )
+
+
+def is_project_context_continuation(text: str) -> bool:
+    """Return whether a turn can retain the active conversational project referent."""
+    normalized = str(text or "")
+    return bool(
+        _PROJECT_CONTEXT_EXPLICIT_FOLLOWUP_RE.search(normalized)
+        or _PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE.fullmatch(normalized)
+        or _PROJECT_STATUS_CORRECTION_RE.fullmatch(normalized)
+        or _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(normalized)
+    )
+
+
 def _is_trial_profile() -> bool:
     return os.getenv("NOVA_RUNTIME_PROFILE", "default").strip().lower() == "trial"
 
@@ -999,6 +1046,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "general_chat_context": [],
         "general_chat_summary": {},
         "conversation_context": {},
+        "project_context_active": False,
     }
     trusted_session_id = session_id
     current_activity_origin = ActivityOrigin.USER_ACTION.value
@@ -1632,6 +1680,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
+            if (
+                not silent_widget_refresh
+                and session_state.get("project_context_active")
+                and not is_project_context_continuation(raw_text)
+            ):
+                session_state["project_context_active"] = False
             if not silent_widget_refresh:
                 session_state["user_message_seq"] += 1
             current_activity_origin = activity_origin_for_request(
@@ -5420,9 +5474,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             )
 
             # --- Phase 4 governed invocation detection ---
-            inv_result = None if grounded_brief_followup else GovernorMediator.parse_governed_invocation(
+            conversational_status_followup = is_grounded_conversational_status_followup(
                 governed_parse_text,
-                session_id=session_id,
+                project_context_active=bool(session_state.get("project_context_active")),
+            )
+            inv_result = (
+                None
+                if grounded_brief_followup or conversational_status_followup
+                else GovernorMediator.parse_governed_invocation(
+                    governed_parse_text,
+                    session_id=session_id,
+                )
             )
             if inv_result is None and lowered in {"more", "tell me more", "more please"}:
                 try:
@@ -5436,6 +5498,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
 
             if isinstance(inv_result, Invocation):
+                session_state["project_context_active"] = False
                 capability_id = inv_result.capability_id
                 params = dict(inv_result.params)
                 params.setdefault("session_id", session_id)
@@ -6387,6 +6450,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_context.extend(new_turn)
                 _trim_session_context(session_context, session_state)
                 if skill_name == "general_chat":
+                    if _PROJECT_CONTEXT_SEED_RE.search(mediated_text):
+                        session_state["project_context_active"] = True
                     chat_context = list(session_state.get("general_chat_context") or [])
                     chat_context.extend(new_turn)
                     if hasattr(general_chat_skill, "roll_context_forward"):

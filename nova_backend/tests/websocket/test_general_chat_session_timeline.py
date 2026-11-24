@@ -126,6 +126,98 @@ def test_real_session_passes_saved_memory_to_the_followup_model_call(monkeypatch
     assert "confirmed" in serialized.lower()
 
 
+def test_lightweight_acceptance_context_prompts_share_one_general_chat_timeline(monkeypatch):
+    prompts = (
+        "For this test, my imaginary project is called Cedar, its target day is Tuesday, "
+        "and its status is pending. Repeat those three details briefly.",
+        "What is the project's name?",
+        "Which day did I specify?",
+        "What is its current status?",
+        "Summarize all three project details in one sentence.",
+    )
+
+    calls = _run_session(monkeypatch, prompts)
+
+    assert len(calls) == len(prompts)
+    for call in calls[1:]:
+        serialized = repr(call.get("messages") or [])
+        assert "Cedar" in serialized
+        assert "Tuesday" in serialized
+        assert "pending" in serialized
+
+
+def test_pronoun_status_without_project_context_stays_governed(monkeypatch):
+    calls = _run_session(monkeypatch, ["What is its current status?"])
+
+    assert calls == []
+
+
+def test_external_status_turn_invalidates_older_project_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "What is NASA's Artemis program and its current status?",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 1
+
+
+def test_early_news_turn_invalidates_older_project_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "news",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 1
+
+
+def test_silent_news_refresh_preserves_active_project_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            {"type": "chat", "text": "news", "silent_widget_refresh": True},
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 2
+
+
+def test_unrelated_project_topic_does_not_reactivate_older_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "Tell me about NASA's Artemis project.",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 1
+
+
+def test_project_status_correction_preserves_active_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "Its status is now confirmed.",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 3
+    assert "confirmed" in repr(calls[-1].get("messages") or []).lower()
+
+
 def test_real_session_keeps_reminder_result_after_a_prior_chat_turn(monkeypatch):
     calls = _run_session(
         monkeypatch,

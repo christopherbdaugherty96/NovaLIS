@@ -448,6 +448,10 @@ HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
     re.IGNORECASE,
 )
+LOCAL_PROJECT_SUMMARY_RE = re.compile(
+    r"^\s*summarize\b.*\bproject\s+details?\b.*\s*$",
+    re.IGNORECASE,
+)
 SOURCE_NEWS_SUMMARY_RE = re.compile(
     r"^\s*(?:summarize|summary(?:\s+of)?|details?|give me details)\s+(?P<source>.+?)\s+news\s*$",
     re.IGNORECASE,
@@ -1994,6 +1998,11 @@ class GovernorMediator:
         m = SHOW_STORY_RE.match(t)
         if m:
             return _invocation_if_enabled(53, {"action": "show", "topic": m.group("topic").strip()})
+
+        if LOCAL_PROJECT_SUMMARY_RE.match(t) and not re.search(
+            r"\b(?:news|headlines?)\b", t, re.IGNORECASE
+        ):
+            return None
 
         hm = HEADLINE_SUMMARY_RE.match(t)
         if hm:
