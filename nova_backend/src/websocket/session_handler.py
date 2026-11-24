@@ -61,12 +61,17 @@ _CONVERSATIONAL_STATUS_FOLLOWUP_RE = re.compile(
     r"(?:current\s+)?status\s*[?!.]*\s*$",
     re.IGNORECASE,
 )
-_PROJECT_CONTEXT_RE = re.compile(
-    r"\b(?:project|initiative|task|plan)\b",
+_PROJECT_CONTEXT_SEED_RE = re.compile(
+    r"\b(?:project|initiative|task|plan)\b.*\bstatus\b|"
+    r"\bstatus\b.*\b(?:project|initiative|task|plan)\b",
     re.IGNORECASE,
 )
 _PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE = re.compile(
     r"^\s*(?:what|which)\s+(?:day|date|name)\s+did\s+i\s+(?:specify|give|say)\s*[?!.]*\s*$",
+    re.IGNORECASE,
+)
+_PROJECT_CONTEXT_EXPLICIT_FOLLOWUP_RE = re.compile(
+    r"\b(?:project(?:'s)?\s+name|project\s+details?)\b",
     re.IGNORECASE,
 )
 
@@ -86,7 +91,7 @@ def is_project_context_continuation(text: str) -> bool:
     """Return whether a turn can retain the active conversational project referent."""
     normalized = str(text or "")
     return bool(
-        _PROJECT_CONTEXT_RE.search(normalized)
+        _PROJECT_CONTEXT_EXPLICIT_FOLLOWUP_RE.search(normalized)
         or _PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE.fullmatch(normalized)
         or _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(normalized)
     )
@@ -6437,7 +6442,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_context.extend(new_turn)
                 _trim_session_context(session_context, session_state)
                 if skill_name == "general_chat":
-                    if _PROJECT_CONTEXT_RE.search(mediated_text):
+                    if _PROJECT_CONTEXT_SEED_RE.search(mediated_text):
                         session_state["project_context_active"] = True
                     chat_context = list(session_state.get("general_chat_context") or [])
                     chat_context.extend(new_turn)

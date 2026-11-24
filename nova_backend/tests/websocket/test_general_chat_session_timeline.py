@@ -178,6 +178,19 @@ def test_early_news_turn_invalidates_older_project_referent(monkeypatch):
     assert len(calls) == 1
 
 
+def test_unrelated_project_topic_does_not_reactivate_older_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "Tell me about NASA's Artemis project.",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 1
+
+
 def test_real_session_keeps_reminder_result_after_a_prior_chat_turn(monkeypatch):
     calls = _run_session(
         monkeypatch,
