@@ -337,7 +337,13 @@ class GeneralChatSkill(BaseSkill):
             phrase in q
             for phrase in ("did i say", "did i ask", "i told you")
         )
-        if not conversation_reference and any(token in {"time", "date", "system", "status"} for token in tokens):
+        if not conversation_reference and any(token in {"time", "date", "system"} for token in tokens):
+            return False
+        # ``status`` is also ordinary conversational data (for example,
+        # "the project's status is pending").  Keep only bare operational
+        # status commands out of advisory chat; specific system/provider
+        # status routes are resolved before this fallback.
+        if q in {"status", "runtime status", "provider status", "connection status", "model status"}:
             return False
         return True
 

@@ -246,6 +246,10 @@ CURRENT_INFO_QUESTION_RE = re.compile(
     r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|yesterday|news|update|updates|changed|happening|happened|price|forecast|status|(?:live|on)\s+right\s+now)\b.*\s*$",
     re.IGNORECASE,
 )
+CONVERSATIONAL_STATUS_REFERENCE_RE = re.compile(
+    r"^\s*(?:what|which)\b.*\b(?:its|this|that|their)\b.*\bstatus\b.*\s*$",
+    re.IGNORECASE,
+)
 # Availability questions need both an explicit time marker and an availability
 # predicate; a bare time word must not turn local or conceptual intent into search.
 CURRENT_INFO_EXISTENCE_RE = re.compile(
@@ -445,7 +449,12 @@ INLINE_PASTED_SUMMARY_RE = re.compile(
     re.IGNORECASE,
 )
 HEADLINE_SUMMARY_RE = re.compile(
-    r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
+    r"^\s*summarize\s+(?=[^\r\n]*(?:headlines?|news|category)\b)"
+    r"(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
+    re.IGNORECASE,
+)
+LOCAL_PROJECT_SUMMARY_RE = re.compile(
+    r"^\s*summarize\b.*\bproject\s+details?\b.*\s*$",
     re.IGNORECASE,
 )
 SOURCE_NEWS_SUMMARY_RE = re.compile(
@@ -1337,6 +1346,8 @@ class GovernorMediator:
         if (
             CURRENT_INFO_QUESTION_RE.match(t) or CURRENT_INFO_EXISTENCE_RE.match(t)
         ) and not CURRENT_INFO_LOCAL_SOURCE_RE.search(t):
+            if CONVERSATIONAL_STATUS_REFERENCE_RE.match(t):
+                return None
             if is_trial_local_current_info_chat(t):
                 return None
             return _cap16_invocation_or_trial_unavailable({"query": t.strip()})
@@ -2031,6 +2042,9 @@ class GovernorMediator:
                 if category_key:
                     return _invocation_if_enabled(49, {"selection": "category", "category_key": category_key})
                 return _invocation_if_enabled(49, {"selection": "source", "source_query": source_query})
+
+        if LOCAL_PROJECT_SUMMARY_RE.match(t):
+            return None
 
         m = SET_REPORT_RE.match(t)
         if m:

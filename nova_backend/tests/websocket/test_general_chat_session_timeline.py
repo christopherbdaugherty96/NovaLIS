@@ -126,6 +126,26 @@ def test_real_session_passes_saved_memory_to_the_followup_model_call(monkeypatch
     assert "confirmed" in serialized.lower()
 
 
+def test_lightweight_acceptance_context_prompts_share_one_general_chat_timeline(monkeypatch):
+    prompts = (
+        "For this test, my imaginary project is called Cedar, its target day is Tuesday, "
+        "and its status is pending. Repeat those three details briefly.",
+        "What is the project's name?",
+        "Which day did I specify?",
+        "What is its current status?",
+        "Summarize all three project details in one sentence.",
+    )
+
+    calls = _run_session(monkeypatch, prompts)
+
+    assert len(calls) == len(prompts)
+    for call in calls[1:]:
+        serialized = repr(call.get("messages") or [])
+        assert "Cedar" in serialized
+        assert "Tuesday" in serialized
+        assert "pending" in serialized
+
+
 def test_real_session_keeps_reminder_result_after_a_prior_chat_turn(monkeypatch):
     calls = _run_session(
         monkeypatch,
