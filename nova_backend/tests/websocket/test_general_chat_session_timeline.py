@@ -152,6 +152,19 @@ def test_pronoun_status_without_project_context_stays_governed(monkeypatch):
     assert calls == []
 
 
+def test_external_status_turn_invalidates_older_project_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "What is NASA's Artemis program and its current status?",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 1
+
+
 def test_real_session_keeps_reminder_result_after_a_prior_chat_turn(monkeypatch):
     calls = _run_session(
         monkeypatch,
