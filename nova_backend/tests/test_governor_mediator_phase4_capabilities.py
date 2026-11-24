@@ -966,6 +966,19 @@ def test_project_detail_summary_remains_conversational():
     )
 
 
+def test_explicit_news_about_project_details_remains_governed_news():
+    from src.governor.governor_mediator import GovernorMediator, Invocation
+
+    inv = GovernorMediator.parse_governed_invocation(
+        "Summarize the latest news about NASA's Artemis project details"
+    )
+
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "topic"
+    assert inv.params["topic_query"] == "NASA's Artemis project details"
+
+
 def test_named_external_status_questions_remain_current_information_searches():
     from src.governor.governor_mediator import GovernorMediator, Invocation
 

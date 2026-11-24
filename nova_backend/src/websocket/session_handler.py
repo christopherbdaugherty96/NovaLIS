@@ -74,6 +74,11 @@ _PROJECT_CONTEXT_EXPLICIT_FOLLOWUP_RE = re.compile(
     r"\b(?:project(?:'s)?\s+name|project\s+details?)\b",
     re.IGNORECASE,
 )
+_PROJECT_STATUS_CORRECTION_RE = re.compile(
+    r"^\s*(?:its|their|the\s+project(?:'s)?)\s+status\s+"
+    r"(?:is|was|is\s+now|has\s+changed\s+to)\s+.+\s*$",
+    re.IGNORECASE,
+)
 
 
 def is_grounded_conversational_status_followup(
@@ -93,6 +98,7 @@ def is_project_context_continuation(text: str) -> bool:
     return bool(
         _PROJECT_CONTEXT_EXPLICIT_FOLLOWUP_RE.search(normalized)
         or _PROJECT_CONTEXT_ELLIPTICAL_FOLLOWUP_RE.fullmatch(normalized)
+        or _PROJECT_STATUS_CORRECTION_RE.fullmatch(normalized)
         or _CONVERSATIONAL_STATUS_FOLLOWUP_RE.fullmatch(normalized)
     )
 

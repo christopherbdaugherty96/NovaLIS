@@ -1999,7 +1999,9 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(53, {"action": "show", "topic": m.group("topic").strip()})
 
-        if LOCAL_PROJECT_SUMMARY_RE.match(t):
+        if LOCAL_PROJECT_SUMMARY_RE.match(t) and not re.search(
+            r"\b(?:news|headlines?)\b", t, re.IGNORECASE
+        ):
             return None
 
         hm = HEADLINE_SUMMARY_RE.match(t)

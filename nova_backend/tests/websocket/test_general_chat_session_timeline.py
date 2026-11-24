@@ -204,6 +204,20 @@ def test_unrelated_project_topic_does_not_reactivate_older_referent(monkeypatch)
     assert len(calls) == 1
 
 
+def test_project_status_correction_preserves_active_referent(monkeypatch):
+    calls = _run_session(
+        monkeypatch,
+        [
+            "My project Cedar has a pending status.",
+            "Its status is now confirmed.",
+            "What is its current status?",
+        ],
+    )
+
+    assert len(calls) == 3
+    assert "confirmed" in repr(calls[-1].get("messages") or []).lower()
+
+
 def test_real_session_keeps_reminder_result_after_a_prior_chat_turn(monkeypatch):
     calls = _run_session(
         monkeypatch,
