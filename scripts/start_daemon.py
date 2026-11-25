@@ -104,41 +104,26 @@ def _is_nova_backend_command(command_line: str) -> bool:
     )
 
 
-def _clear_stale_nova_listener() -> bool:
-    """Stop an unhealthy Nova process that still owns the configured port.
-
-    Returns True when startup may continue. Unknown port owners are left alone
-    and reported as a startup blocker.
-    """
+def _port_available_for_startup() -> bool:
+    """Preserve an existing listener when readiness could not be confirmed."""
     listener = _port_listener()
     if listener is None:
         return True
 
     pid, command_line = listener
-    if not _is_nova_backend_command(command_line):
+    if _is_nova_backend_command(command_line):
+        print(
+            f"[Nova] ERROR: Nova owns port {PORT} (PID {pid}), but readiness could not be confirmed.\n"
+            "[Nova] If it is unresponsive, explicitly stop it before restarting.",
+            file=sys.stderr,
+        )
+    else:
         print(
             f"[Nova] ERROR: Port {PORT} is occupied by a non-Nova process (PID {pid}).\n"
             "[Nova] Stop that process or set NOVA_PORT before starting Nova.",
             file=sys.stderr,
         )
-        return False
-
-    print(f"[Nova] Found stale Nova listener on port {PORT} (PID {pid}); stopping it...")
-    try:
-        import psutil
-
-        proc = psutil.Process(pid)
-        proc.terminate()
-        try:
-            proc.wait(timeout=8)
-        except psutil.TimeoutExpired:
-            proc.kill()
-            proc.wait(timeout=5)
-    except Exception as exc:
-        print(f"[Nova] ERROR: Could not stop stale Nova process {pid}: {exc}", file=sys.stderr)
-        return False
-
-    return True
+    return False
 
 
 def _current_nova_listener_pid(fallback_pid: int) -> int:
@@ -263,7 +248,7 @@ def start_nova(
             _open_dashboard(open_as_app=app_window)
         return 0
 
-    if not _clear_stale_nova_listener():
+    if not _port_available_for_startup():
         return 1
 
     _ensure_ollama()

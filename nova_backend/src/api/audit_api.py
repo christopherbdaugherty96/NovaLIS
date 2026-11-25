@@ -1,35 +1,38 @@
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
 
 from src.governor.git_child_admission import (
-    GitChildAdmissionError,
     GitIdentityOperation,
-    run_git_identity_plan,
+    GitIdentityProbe,
 )
 
+_IDENTITY_WAIT_SECONDS = 1.0
+_SOURCE_ROOT = Path(__file__).resolve().parents[3]
 
-def _runtime_build_identity() -> dict[str, object]:
-    """Return local-only provenance for the source tree serving this process."""
-    source_root = Path(__file__).resolve().parents[3]
-    identity: dict[str, object] = {
-        "source_root": str(source_root),
+
+def _unavailable_build_identity() -> dict[str, object]:
+    return {
+        "source_root": str(_SOURCE_ROOT),
         "commit_sha": None,
         "working_tree_dirty": None,
         "git_available": False,
     }
-    try:
-        results = run_git_identity_plan(source_root)
-        commit = results[GitIdentityOperation.COMMIT].stdout.strip()
-        unstaged = results[GitIdentityOperation.UNSTAGED]
-        staged = results[GitIdentityOperation.STAGED]
-        untracked = results[GitIdentityOperation.UNTRACKED].stdout
-    except GitChildAdmissionError:
+
+
+async def _runtime_build_identity(probe: GitIdentityProbe) -> dict[str, object]:
+    """Return local-only provenance for the source tree serving this process."""
+    identity = _unavailable_build_identity()
+    results = await probe.read(timeout=_IDENTITY_WAIT_SECONDS)
+    if results is None:
         return identity
+    commit = results[GitIdentityOperation.COMMIT].stdout.strip()
+    unstaged = results[GitIdentityOperation.UNSTAGED]
+    staged = results[GitIdentityOperation.STAGED]
+    untracked = results[GitIdentityOperation.UNTRACKED].stdout
 
     if unstaged.returncode not in {0, 1} or staged.returncode not in {0, 1}:
         return identity
@@ -48,6 +51,7 @@ def _runtime_build_identity() -> dict[str, object]:
 
 def build_audit_router(deps) -> APIRouter:
     router = APIRouter()
+    identity_probe = GitIdentityProbe(_SOURCE_ROOT)
 
     @router.get("/phase-status")
     async def phase_status():
@@ -72,7 +76,7 @@ def build_audit_router(deps) -> APIRouter:
             "status": "active" if GOVERNED_ACTIONS_ENABLED else "sealed",
             "execution_enabled": GOVERNED_ACTIONS_ENABLED,
             "delegated_runtime_enabled": False,
-            "build_identity": await asyncio.to_thread(_runtime_build_identity),
+            "build_identity": await _runtime_build_identity(identity_probe),
             "note": (
                 "Phase-7 governed external reasoning is complete in the current runtime. "
                 "Second opinions stay advisory only, and delegated execution remains disabled."

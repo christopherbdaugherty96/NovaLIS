@@ -366,7 +366,7 @@
     },
     {
       "path": "nova_backend/src/governor/git_child_admission.py",
-      "line": 333,
+      "line": 335,
       "column": 32,
       "mechanism": "process_delegation",
       "symbol": "subprocess.run",
