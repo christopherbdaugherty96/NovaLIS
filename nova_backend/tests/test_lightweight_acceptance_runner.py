@@ -19,12 +19,82 @@ SPEC.loader.exec_module(MODULE)
 
 def test_fixed_lightweight_profile_and_prompts() -> None:
     assert MODULE.MODEL == "gemma2:2b"
+    assert MODULE.TEST_MODELS == ("gemma2:2b", "qwen2.5:1.5b")
     assert MODULE.NUM_CTX == 2048
     assert MODULE.NUM_PREDICT == 128
     assert len(MODULE.CONTEXT_PROMPTS) == 5
     assert "Cedar" in MODULE.CONTEXT_PROMPTS[0]
     assert "Tuesday" in MODULE.CONTEXT_PROMPTS[0]
     assert "pending" in MODULE.CONTEXT_PROMPTS[0]
+
+
+def test_qwen_profile_is_explicit_and_keeps_fixed_limits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(SCRIPT),
+            "--expected-commit",
+            "a" * 40,
+            "--expected-digest",
+            "b" * 64,
+            "--test-model",
+            "qwen2.5:1.5b",
+        ],
+    )
+
+    args = MODULE.parse_args()
+
+    assert args.test_model == "qwen2.5:1.5b"
+    assert args.minimum_start_gb == 2.0
+    assert args.runtime_stop_gb == 0.5
+    assert args.turn_timeout == 120.0
+    environment = MODULE._acceptance_environment(args.test_model)
+    assert environment["OLLAMA_MODEL"] == "qwen2.5:1.5b"
+    assert environment["OLLAMA_NUM_CTX"] == "2048"
+    assert environment["OLLAMA_NUM_PREDICT"] == "128"
+
+
+def test_default_profile_remains_gemma(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(SCRIPT),
+            "--expected-commit",
+            "a" * 40,
+            "--expected-digest",
+            "b" * 64,
+        ],
+    )
+
+    assert MODULE.parse_args().test_model == "gemma2:2b"
+
+
+def test_qwen_identity_and_residency_checks_are_model_specific(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    qwen_digest = "a" * 64
+
+    def request(url: str, **_kwargs: object) -> dict[str, object]:
+        if url.endswith("/api/tags"):
+            return {
+                "models": [
+                    {"name": "gemma2:2b", "digest": "b" * 64},
+                    {"name": "qwen2.5:1.5b", "digest": qwen_digest},
+                ]
+            }
+        if url.endswith("/api/ps"):
+            return {"models": [{"name": "gemma2:2b"}]}
+        raise AssertionError(url)
+
+    monkeypatch.setattr(MODULE, "_json_request", request)
+
+    assert MODULE._ollama_digest("qwen2.5:1.5b") == qwen_digest
+    assert MODULE._model_is_resident("qwen2.5:1.5b") is False
+    assert MODULE._model_is_resident("gemma2:2b") is True
 
 
 def test_acceptance_environment_pins_verified_loopback_ollama(
@@ -285,16 +355,22 @@ def test_model_unload_uses_pinned_proxy_free_cli_environment(
     captured: dict[str, object] = {}
 
     def cleanup(*args: object, **kwargs: object) -> MODULE.CleanupResult:
+        captured["command"] = args[1]
         captured.update(kwargs)
         return MODULE.CleanupResult("stop_test_model")
 
     monkeypatch.setattr(MODULE, "_cleanup_process", cleanup)
-    monkeypatch.setattr(MODULE, "_model_is_resident", lambda: False)
+    monkeypatch.setattr(MODULE, "_model_is_resident", lambda model: False)
     monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example:8080")
 
-    result = MODULE._unload_owned_model(tmp_path / "ollama.exe")
+    result = MODULE._unload_owned_model(tmp_path / "ollama.exe", "qwen2.5:1.5b")
 
     assert result.error is None
+    assert captured["command"] == [
+        str(tmp_path / "ollama.exe"),
+        "stop",
+        "qwen2.5:1.5b",
+    ]
     environment = captured["env"]
     assert isinstance(environment, dict)
     assert environment["OLLAMA_HOST"] == "http://127.0.0.1:11434"
@@ -417,13 +493,15 @@ def test_startup_timeout_still_attempts_owned_backend_cleanup(
     monkeypatch.setattr(MODULE, "_git_head", lambda unused: args.expected_commit)
     monkeypatch.setattr(MODULE, "_port_open", lambda: False)
     monkeypatch.setattr(MODULE, "memory_sample", lambda: safe)
-    monkeypatch.setattr(MODULE, "_model_is_resident", lambda: True)
+    monkeypatch.setattr(MODULE, "_model_is_resident", lambda model: True)
     monkeypatch.setattr(MODULE, "_start_backend_with_ownership", start)
     monkeypatch.setattr(MODULE, "_terminate_owned_backends", terminate)
     monkeypatch.setattr(
         MODULE,
         "_unload_owned_model",
-        lambda executable: (_ for _ in ()).throw(AssertionError("pre-existing model unloaded")),
+        lambda executable, model: (_ for _ in ()).throw(
+            AssertionError("pre-existing model unloaded")
+        ),
     )
     monkeypatch.setattr(MODULE, "_write_evidence", lambda path, payload: captured.update(payload))
 
@@ -464,7 +542,7 @@ def test_nonresident_model_without_unload_path_holds_before_backend_start(
     monkeypatch.setattr(MODULE, "_git_head", lambda unused: args.expected_commit)
     monkeypatch.setattr(MODULE, "_port_open", lambda: False)
     monkeypatch.setattr(MODULE, "memory_sample", lambda: safe)
-    monkeypatch.setattr(MODULE, "_model_is_resident", lambda: False)
+    monkeypatch.setattr(MODULE, "_model_is_resident", lambda model: False)
     monkeypatch.setattr(
         MODULE,
         "_start_backend_with_ownership",
@@ -510,7 +588,7 @@ def test_unknown_model_residency_holds_before_backend_start(
     monkeypatch.setattr(
         MODULE,
         "_model_is_resident",
-        lambda: (_ for _ in ()).throw(ConnectionError("Ollama unavailable")),
+        lambda model: (_ for _ in ()).throw(ConnectionError("Ollama unavailable")),
     )
     monkeypatch.setattr(
         MODULE,
