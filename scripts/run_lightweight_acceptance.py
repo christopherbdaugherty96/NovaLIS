@@ -29,6 +29,7 @@ import psutil
 import websockets
 
 MODEL = "gemma2:2b"
+TEST_MODELS = (MODEL, "qwen2.5:1.5b")
 NUM_CTX = 2048
 NUM_PREDICT = 128
 OLLAMA_BASE_URL = "http://127.0.0.1:11434"
@@ -338,19 +339,19 @@ def _git_head(repo_root: Path) -> str:
     return result.stdout.strip()
 
 
-def _ollama_digest() -> str:
+def _ollama_digest(model: str = MODEL) -> str:
     payload = _json_request(f"{OLLAMA_BASE_URL}/api/tags")
-    for model in payload.get("models", []):
-        if model.get("name") == MODEL:
-            digest = str(model.get("digest") or "")
+    for installed_model in payload.get("models", []):
+        if installed_model.get("name") == model:
+            digest = str(installed_model.get("digest") or "")
             if len(digest.removeprefix("sha256:")) == 64:
                 return digest
-    raise RuntimeError(f"Verified digest unavailable for {MODEL}.")
+    raise RuntimeError(f"Verified digest unavailable for {model}.")
 
 
-def _model_is_resident() -> bool:
+def _model_is_resident(model: str = MODEL) -> bool:
     payload = _json_request(f"{OLLAMA_BASE_URL}/api/ps")
-    return any(model.get("name") == MODEL for model in payload.get("models", []))
+    return any(installed_model.get("name") == model for installed_model in payload.get("models", []))
 
 
 def _validated_unload_executable(path: Path | None) -> tuple[Path | None, str]:
@@ -560,10 +561,10 @@ def _cleanup_process(
     return CleanupResult(action)
 
 
-def _unload_owned_model(executable: Path) -> CleanupResult:
+def _unload_owned_model(executable: Path, model: str = MODEL) -> CleanupResult:
     stopped = _cleanup_process(
         "stop_test_model",
-        [str(executable), "stop", MODEL],
+        [str(executable), "stop", model],
         env=_ollama_cli_environment(),
         timeout=20,
     )
@@ -573,7 +574,7 @@ def _unload_owned_model(executable: Path) -> CleanupResult:
     deadline = time.monotonic() + 10
     while time.monotonic() < deadline:
         try:
-            if not _model_is_resident():
+            if not _model_is_resident(model):
                 return stopped
         except Exception as error:
             return CleanupResult(
@@ -600,11 +601,11 @@ def _write_evidence(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def _acceptance_environment() -> dict[str, str]:
+def _acceptance_environment(model: str = MODEL) -> dict[str, str]:
     environment = os.environ.copy()
     environment.update(
         {
-            "OLLAMA_MODEL": MODEL,
+            "OLLAMA_MODEL": model,
             "OLLAMA_NUM_CTX": str(NUM_CTX),
             "OLLAMA_NUM_PREDICT": str(NUM_PREDICT),
             "OLLAMA_URL": OLLAMA_BASE_URL,
@@ -638,6 +639,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--expected-commit", required=True)
     parser.add_argument("--expected-digest", required=True)
+    parser.add_argument(
+        "--test-model",
+        choices=TEST_MODELS,
+        default=MODEL,
+        help="Explicit test-only model profile; does not change Nova production defaults.",
+    )
     parser.add_argument("--confirm-model-update", action="store_true")
     parser.add_argument("--minimum-start-gb", type=float, default=2.0)
     parser.add_argument("--runtime-stop-gb", type=float, default=0.5)
@@ -650,6 +657,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     root = args.repo_root.resolve()
+    model = str(getattr(args, "test_model", MODEL)).strip()
+    if model not in TEST_MODELS:
+        raise SystemExit(f"Unsupported test-only model profile: {model}")
     output = args.output or root / "data/acceptance/lightweight_acceptance.json"
     python = root / "nova_backend/venv/Scripts/python.exe"
     if not python.exists():
@@ -668,7 +678,7 @@ def main() -> int:
         "record_kind": "lightweight_local_acceptance",
         "started_at_utc": datetime.now(timezone.utc).isoformat(),
         "commit": args.expected_commit,
-        "profile": {"model": MODEL, "num_ctx": NUM_CTX, "num_predict": NUM_PREDICT},
+        "profile": {"model": model, "num_ctx": NUM_CTX, "num_predict": NUM_PREDICT},
         "scoring": {
             "method": "provisional_keyword_smoke_check",
             "proves_conversational_accuracy": False,
@@ -686,7 +696,7 @@ def main() -> int:
 
 
     try:
-        initially_resident: bool | None = _model_is_resident()
+        initially_resident: bool | None = _model_is_resident(model)
     except Exception as error:
         initially_resident = None
         evidence["preflight"] = "model_residency_unknown"
@@ -712,7 +722,7 @@ def main() -> int:
             print(json.dumps(evidence, indent=2))
             return 2
 
-    environment = _acceptance_environment()
+    environment = _acceptance_environment(model)
     backend_start_attempted = False
     model_workload_started = False
     model_unloaded = False
@@ -735,7 +745,7 @@ def main() -> int:
             and unload_executable is not None
             and not model_unloaded
         ):
-            unload_result = _unload_owned_model(unload_executable)
+            unload_result = _unload_owned_model(unload_executable, model)
             prompt_cancellation_results.append(unload_result)
             model_unloaded = unload_result.error is None
             if unload_result.error:
@@ -760,7 +770,7 @@ def main() -> int:
             owned=owned_backends,
         )
         _wait_for_backend()
-        digest = _ollama_digest()
+        digest = _ollama_digest(model)
         if digest.removeprefix("sha256:") != args.expected_digest.removeprefix("sha256:"):
             raise RuntimeError("Installed model digest does not match --expected-digest.")
         fingerprint, params = expected_fingerprint(root, digest)
@@ -821,7 +831,7 @@ def main() -> int:
             and unload_executable is not None
             and not model_unloaded
         ):
-            unload_result = _unload_owned_model(unload_executable)
+            unload_result = _unload_owned_model(unload_executable, model)
             cleanup_results.append(unload_result)
             model_unloaded = unload_result.error is None
         _record_cleanup_results(evidence, cleanup_results)
