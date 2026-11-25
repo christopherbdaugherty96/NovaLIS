@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from src import brain_server
 from src.api import audit_api
+from src.governor import git_child_admission
 from src.governor.git_child_admission import GitIdentityOperation
 
 
@@ -57,7 +58,7 @@ def test_phase_status_returns_phase_display_string():
 
 
 def test_phase_status_reports_running_build_identity(monkeypatch):
-    monkeypatch.setattr(audit_api, "run_git_identity_plan", lambda _root: _identity_results())
+    monkeypatch.setattr(git_child_admission, "run_git_identity_plan", lambda _root: _identity_results())
     client = TestClient(brain_server.app)
 
     response = client.get("/phase-status")
@@ -80,7 +81,7 @@ def test_pending_phase_status_keeps_http_and_websocket_responsive(monkeypatch):
             expired.set()
         return _identity_results()
 
-    monkeypatch.setattr(audit_api, "run_git_identity_plan", held_identity)
+    monkeypatch.setattr(git_child_admission, "run_git_identity_plan", held_identity)
     monkeypatch.setattr(audit_api, "_IDENTITY_WAIT_SECONDS", 5)
     app = FastAPI()
     app.include_router(audit_api.build_audit_router(brain_server))
@@ -129,7 +130,7 @@ def test_phase_status_shares_pending_probe_across_timeouts_and_cancellation(monk
         return _identity_results(commit=str(calls[-1]) * 40)
 
     async def exercise():
-        monkeypatch.setattr(audit_api, "run_git_identity_plan", identity)
+        monkeypatch.setattr(git_child_admission, "run_git_identity_plan", identity)
         monkeypatch.setattr(audit_api, "_IDENTITY_WAIT_SECONDS", 5)
         app = FastAPI()
         app.include_router(audit_api.build_audit_router(brain_server))
@@ -174,13 +175,44 @@ def test_phase_status_shares_pending_probe_across_timeouts_and_cancellation(monk
     asyncio.run(exercise())
 
 
+def test_governed_identity_probe_handles_unexpected_failure_after_timeout(
+    monkeypatch, caplog
+):
+    release = Event()
+
+    def fail(_source_root):
+        assert release.wait(timeout=5)
+        raise RuntimeError("private subprocess detail")
+
+    async def exercise():
+        monkeypatch.setattr(git_child_admission, "run_git_identity_plan", fail)
+        probe = git_child_admission.GitIdentityProbe(Path.cwd())
+        try:
+            assert await probe.read(timeout=0.02) is None
+        finally:
+            release.set()
+
+        pending = probe._pending
+        assert pending is not None
+        assert await asyncio.wait_for(pending, timeout=5) is None
+        assert "Git identity probe failed unexpectedly (RuntimeError)" in caplog.text
+        assert "private subprocess detail" not in caplog.text
+
+        monkeypatch.setattr(
+            git_child_admission, "run_git_identity_plan", lambda _root: _identity_results()
+        )
+        assert await probe.read(timeout=5) == _identity_results()
+
+    asyncio.run(exercise())
+
+
 def test_runtime_build_identity_degrades_when_git_is_unavailable(monkeypatch):
     def _raise(*_args, **_kwargs):
-        raise audit_api.GitChildAdmissionError("git unavailable")
+        raise git_child_admission.GitChildAdmissionError("git unavailable")
 
-    monkeypatch.setattr(audit_api, "run_git_identity_plan", _raise)
+    monkeypatch.setattr(git_child_admission, "run_git_identity_plan", _raise)
 
-    identity = audit_api._runtime_build_identity()
+    identity = TestClient(brain_server.app).get("/phase-status").json()["build_identity"]
 
     assert identity["git_available"] is False
     assert identity["commit_sha"] is None
@@ -190,12 +222,12 @@ def test_runtime_build_identity_degrades_when_git_is_unavailable(monkeypatch):
 
 def test_runtime_build_identity_uses_content_and_untracked_state(monkeypatch):
     monkeypatch.setattr(
-        audit_api,
+        git_child_admission,
         "run_git_identity_plan",
         lambda _root: _identity_results(),
     )
 
-    identity = audit_api._runtime_build_identity()
+    identity = TestClient(brain_server.app).get("/phase-status").json()["build_identity"]
 
     assert identity["git_available"] is True
     assert identity["commit_sha"] == "a" * 40

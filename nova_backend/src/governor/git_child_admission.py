@@ -7,7 +7,9 @@ the unresolved F09 boundary.
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import logging
 import os
 import subprocess
 from dataclasses import dataclass
@@ -396,3 +398,36 @@ def run_git_identity_plan(
         )
         _validate_result(operation, completed)
     return results
+
+
+class GitIdentityProbe:
+    """Own one request-triggered, governed Git identity plan at a time."""
+
+    def __init__(self, source_root: Path) -> None:
+        self._source_root = source_root
+        self._pending: asyncio.Task[
+            dict[GitIdentityOperation, subprocess.CompletedProcess[str]] | None
+        ] | None = None
+
+    def _read(self) -> dict[GitIdentityOperation, subprocess.CompletedProcess[str]] | None:
+        try:
+            return run_git_identity_plan(self._source_root)
+        except GitChildAdmissionError:
+            return None
+        except Exception as error:
+            # A plan can finish after every HTTP waiter has gone away.
+            logging.getLogger(__name__).error(
+                "Git identity probe failed unexpectedly (%s).", type(error).__name__
+            )
+            return None
+
+    async def read(
+        self, *, timeout: float
+    ) -> dict[GitIdentityOperation, subprocess.CompletedProcess[str]] | None:
+        if self._pending is None or self._pending.done():
+            self._pending = asyncio.create_task(asyncio.to_thread(self._read))
+        # The Governor retains ownership until the worker actually finishes.
+        try:
+            return await asyncio.wait_for(asyncio.shield(self._pending), timeout=timeout)
+        except asyncio.TimeoutError:
+            return None

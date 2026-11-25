@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
 
 from src.governor.git_child_admission import (
-    GitChildAdmissionError,
     GitIdentityOperation,
-    run_git_identity_plan,
+    GitIdentityProbe,
 )
-
 
 _IDENTITY_WAIT_SECONDS = 1.0
 _SOURCE_ROOT = Path(__file__).resolve().parents[3]
@@ -26,17 +23,16 @@ def _unavailable_build_identity() -> dict[str, object]:
     }
 
 
-def _runtime_build_identity() -> dict[str, object]:
+async def _runtime_build_identity(probe: GitIdentityProbe) -> dict[str, object]:
     """Return local-only provenance for the source tree serving this process."""
     identity = _unavailable_build_identity()
-    try:
-        results = run_git_identity_plan(_SOURCE_ROOT)
-        commit = results[GitIdentityOperation.COMMIT].stdout.strip()
-        unstaged = results[GitIdentityOperation.UNSTAGED]
-        staged = results[GitIdentityOperation.STAGED]
-        untracked = results[GitIdentityOperation.UNTRACKED].stdout
-    except GitChildAdmissionError:
+    results = await probe.read(timeout=_IDENTITY_WAIT_SECONDS)
+    if results is None:
         return identity
+    commit = results[GitIdentityOperation.COMMIT].stdout.strip()
+    unstaged = results[GitIdentityOperation.UNSTAGED]
+    staged = results[GitIdentityOperation.STAGED]
+    untracked = results[GitIdentityOperation.UNTRACKED].stdout
 
     if unstaged.returncode not in {0, 1} or staged.returncode not in {0, 1}:
         return identity
@@ -55,19 +51,7 @@ def _runtime_build_identity() -> dict[str, object]:
 
 def build_audit_router(deps) -> APIRouter:
     router = APIRouter()
-    identity_task: asyncio.Task[dict[str, object]] | None = None
-
-    async def build_identity() -> dict[str, object]:
-        nonlocal identity_task
-        if identity_task is None or identity_task.done():
-            identity_task = asyncio.create_task(asyncio.to_thread(_runtime_build_identity))
-        # A caller timing out or cancelling must leave the shared worker tracked.
-        try:
-            return await asyncio.wait_for(
-                asyncio.shield(identity_task), timeout=_IDENTITY_WAIT_SECONDS
-            )
-        except asyncio.TimeoutError:
-            return _unavailable_build_identity()
+    identity_probe = GitIdentityProbe(_SOURCE_ROOT)
 
     @router.get("/phase-status")
     async def phase_status():
@@ -92,7 +76,7 @@ def build_audit_router(deps) -> APIRouter:
             "status": "active" if GOVERNED_ACTIONS_ENABLED else "sealed",
             "execution_enabled": GOVERNED_ACTIONS_ENABLED,
             "delegated_runtime_enabled": False,
-            "build_identity": await build_identity(),
+            "build_identity": await _runtime_build_identity(identity_probe),
             "note": (
                 "Phase-7 governed external reasoning is complete in the current runtime. "
                 "Second opinions stay advisory only, and delegated execution remains disabled."
