@@ -22,8 +22,8 @@ def test_startup_script_waits_for_phase_status_readiness():
     # Checks whether Nova is already running
     assert "_is_running" in source
     assert "Already running" in source
-    # Stale unhealthy Nova listeners should not leave the dashboard stuck.
-    assert "_clear_stale_nova_listener" in source
+    # A failed readiness probe must preserve pre-existing listeners.
+    assert "_port_available_for_startup" in source
     assert "_current_nova_listener_pid" in source
 
 

@@ -13,17 +13,24 @@ from src.governor.git_child_admission import (
 )
 
 
-def _runtime_build_identity() -> dict[str, object]:
-    """Return local-only provenance for the source tree serving this process."""
-    source_root = Path(__file__).resolve().parents[3]
-    identity: dict[str, object] = {
-        "source_root": str(source_root),
+_IDENTITY_WAIT_SECONDS = 1.0
+_SOURCE_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _unavailable_build_identity() -> dict[str, object]:
+    return {
+        "source_root": str(_SOURCE_ROOT),
         "commit_sha": None,
         "working_tree_dirty": None,
         "git_available": False,
     }
+
+
+def _runtime_build_identity() -> dict[str, object]:
+    """Return local-only provenance for the source tree serving this process."""
+    identity = _unavailable_build_identity()
     try:
-        results = run_git_identity_plan(source_root)
+        results = run_git_identity_plan(_SOURCE_ROOT)
         commit = results[GitIdentityOperation.COMMIT].stdout.strip()
         unstaged = results[GitIdentityOperation.UNSTAGED]
         staged = results[GitIdentityOperation.STAGED]
@@ -48,6 +55,19 @@ def _runtime_build_identity() -> dict[str, object]:
 
 def build_audit_router(deps) -> APIRouter:
     router = APIRouter()
+    identity_task: asyncio.Task[dict[str, object]] | None = None
+
+    async def build_identity() -> dict[str, object]:
+        nonlocal identity_task
+        if identity_task is None or identity_task.done():
+            identity_task = asyncio.create_task(asyncio.to_thread(_runtime_build_identity))
+        # A caller timing out or cancelling must leave the shared worker tracked.
+        try:
+            return await asyncio.wait_for(
+                asyncio.shield(identity_task), timeout=_IDENTITY_WAIT_SECONDS
+            )
+        except asyncio.TimeoutError:
+            return _unavailable_build_identity()
 
     @router.get("/phase-status")
     async def phase_status():
@@ -72,7 +92,7 @@ def build_audit_router(deps) -> APIRouter:
             "status": "active" if GOVERNED_ACTIONS_ENABLED else "sealed",
             "execution_enabled": GOVERNED_ACTIONS_ENABLED,
             "delegated_runtime_enabled": False,
-            "build_identity": await asyncio.to_thread(_runtime_build_identity),
+            "build_identity": await build_identity(),
             "note": (
                 "Phase-7 governed external reasoning is complete in the current runtime. "
                 "Second opinions stay advisory only, and delegated execution remains disabled."

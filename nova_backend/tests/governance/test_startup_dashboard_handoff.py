@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import psutil
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 START_DAEMON_PATH = PROJECT_ROOT / "scripts" / "start_daemon.py"
 
@@ -91,3 +93,52 @@ def test_startup_contract_opens_dashboard_only_after_readiness():
     assert "_open_dashboard" in ready_branch
     spawned_branch = start_block.split("launch = spawn_admitted_backend", 1)[1]
     assert spawned_branch.index("if _is_running():") < spawned_branch.index("_open_dashboard")
+
+
+
+def test_failed_readiness_probe_preserves_existing_nova(monkeypatch, capsys):
+    daemon = _load_start_daemon()
+    monkeypatch.setattr(daemon, "probe_phase_status", lambda **_kwargs: False)
+    monkeypatch.setattr(
+        daemon, "_port_listener",
+        lambda: (123, f"python -m uvicorn src.brain_server:app --app-dir {daemon.BACKEND_DIR}"),
+    )
+
+    def unexpected(*_args, **_kwargs):
+        raise AssertionError("Launcher must preserve the existing listener")
+
+    monkeypatch.setattr(psutil, "Process", unexpected)
+    monkeypatch.setattr(daemon, "spawn_admitted_backend", unexpected)
+    monkeypatch.setattr(daemon, "_ensure_ollama", unexpected)
+
+    assert daemon.start_nova(open_browser=False) == 1
+    assert "readiness could not be confirmed" in capsys.readouterr().err
+
+
+def test_ready_nova_reuses_existing_dashboard(monkeypatch):
+    daemon = _load_start_daemon()
+    handoffs = []
+    monkeypatch.setattr(daemon, "probe_phase_status", lambda **_kwargs: True)
+    monkeypatch.setattr(daemon, "_open_dashboard", lambda **kwargs: handoffs.append(kwargs))
+
+    assert daemon.start_nova(app_window=True) == 0
+    assert handoffs == [{"open_as_app": True}]
+
+
+def test_free_port_reaches_admitted_startup(monkeypatch, tmp_path):
+    daemon = _load_start_daemon()
+    monkeypatch.setattr(daemon, "probe_phase_status", lambda **_kwargs: False)
+    monkeypatch.setattr(daemon, "_port_listener", lambda: None)
+    monkeypatch.setattr(daemon, "_ensure_ollama", lambda: None)
+    monkeypatch.setattr(daemon, "PID_DIR", tmp_path)
+    attempts = []
+
+    def refuse_launch(**kwargs):
+        attempts.append(kwargs)
+        raise daemon.BackendStartupAdmissionError("test refusal")
+
+    monkeypatch.setattr(daemon, "spawn_admitted_backend", refuse_launch)
+
+    assert daemon.start_nova(open_browser=False) == 1
+    assert len(attempts) == 1
+    assert attempts[0]["port"] == daemon.PORT
