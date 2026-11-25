@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -71,7 +72,7 @@ def build_audit_router(deps) -> APIRouter:
             "status": "active" if GOVERNED_ACTIONS_ENABLED else "sealed",
             "execution_enabled": GOVERNED_ACTIONS_ENABLED,
             "delegated_runtime_enabled": False,
-            "build_identity": _runtime_build_identity(),
+            "build_identity": await asyncio.to_thread(_runtime_build_identity),
             "note": (
                 "Phase-7 governed external reasoning is complete in the current runtime. "
                 "Second opinions stay advisory only, and delegated execution remains disabled."
