@@ -10,7 +10,7 @@ from src.conversation.personal_operations_intent import PersonalOperationsIntent
 
 _FOLLOWUP_RE = re.compile(
     r"^(?:why|why this recommendation|tell me more|tell me more about that|"
-    r"the second one|tell me more about the second one)\??$",
+    r"the second one|tell me more about the second one|when is the first one)\??$",
     re.IGNORECASE,
 )
 
@@ -50,7 +50,7 @@ def build_personal_operations_surface(
     if intent == PersonalOperationsIntent.RECOMMENDED_NEXT:
         selected = (projection.recommended_next,) if projection.recommended_next else ()
     items = [
-        {"text": item.text, "source": item.source}
+        {"text": item.text, "source": item.source, "scheduled_for": item.scheduled_for}
         for item in selected
         if isinstance(item, DailyLoopItem)
     ][:5]
@@ -61,6 +61,11 @@ def build_personal_operations_surface(
         "answer": str(answer or ""),
         "items": items,
         "missing_sources": missing,
+        "missing_schedule_sources": [
+            source.detail
+            for source in projection.sources
+            if source.source in {"calendar", "local_reminders"} and source.status != "available"
+        ],
     }
 
 
@@ -72,6 +77,24 @@ def answer_personal_operations_followup(text: str, surface: Any) -> str:
         )
     items = [item for item in list(surface.get("items") or []) if isinstance(item, dict)]
     lowered = " ".join(str(text or "").strip().lower().split()).rstrip("?")
+    if lowered == "when is the first one":
+        if surface.get("intent") != PersonalOperationsIntent.NEXT.value:
+            return "The previous answer didn't show a first upcoming item, so I can't give its time."
+        if not items:
+            missing = surface.get("missing_schedule_sources") or []
+            if missing:
+                return (
+                    "Schedule information was incomplete, so I can't give the first item's time. "
+                    + " ".join(missing)
+                )
+            return "The previous answer didn't show a first upcoming item in the available schedule."
+        item = items[0]
+        if not item.get("scheduled_for"):
+            return (
+                "The first item didn't have a time in the available schedule information "
+                f"[source: {item.get('source')}]."
+            )
+        return f"The first item is scheduled for {item['scheduled_for']} [source: {item.get('source')}]."
     if "second one" in lowered:
         if len(items) < 2:
             return "I don't have a reliable second item in the immediately prior answer."

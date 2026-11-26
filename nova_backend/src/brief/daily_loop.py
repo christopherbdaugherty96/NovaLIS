@@ -19,6 +19,7 @@ _OPEN_TAGS = {"open", "open_loop", "pending", "todo", "task", "next", "next_acti
 class DailyLoopItem:
     text: str
     source: str
+    scheduled_for: str = ""
 
 
 @dataclass(frozen=True)
@@ -51,12 +52,14 @@ def _clean(value: Any, *, limit: int = 160) -> str:
     return " ".join(str(value or "").strip().split())[:limit]
 
 
-def _append(items: list[DailyLoopItem], text: Any, source: str) -> None:
+def _append(
+    items: list[DailyLoopItem], text: Any, source: str, *, scheduled_for: str = ""
+) -> None:
     clean = _clean(text)
     if not clean or any(item.text.casefold() == clean.casefold() for item in items):
         return
     if len(items) < _MAX_ITEMS:
-        items.append(DailyLoopItem(clean, source))
+        items.append(DailyLoopItem(clean, source, scheduled_for))
 
 
 def _rank_change_candidates(
@@ -267,7 +270,13 @@ def compose_daily_loop_projection(
             continue
         time_label = _clean(event.get("time"), limit=30)
         title = _clean(event.get("title") or "Untitled calendar event")
-        _append(next_items, f"{time_label} — {title}" if time_label else title, "calendar")
+        date_label = _clean(event.get("date"), limit=10)
+        _append(
+            next_items,
+            f"{time_label} — {title}" if time_label else title,
+            "calendar",
+            scheduled_for=f"{date_label}, {time_label}" if time_label else "",
+        )
     sources.append(
         DailyLoopSource(
             "calendar",
@@ -302,7 +311,9 @@ def compose_daily_loop_projection(
             continue
         body = _clean(reminder.get("body") or reminder.get("title"))
         due = _clean(reminder.get("next_run_at"), limit=40)
-        _append(next_items, f"{due} — {body}" if due else body, "local_reminders")
+        _append(
+            next_items, f"{due} — {body}" if due else body, "local_reminders", scheduled_for=due
+        )
         _append(open_loops, body, "local_reminders")
     sources.append(
         DailyLoopSource(

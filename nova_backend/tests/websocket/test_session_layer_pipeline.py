@@ -197,6 +197,7 @@ class TestPersonalOperationsRoutingBoundary:
         "raw",
         [
             "What do I have next?",
+            "What do I have coming up?",
             "What changed?",
             "What am I waiting on?",
             "What did I need to finish?",
@@ -214,6 +215,7 @@ class TestPersonalOperationsRoutingBoundary:
             "What changed in OpenAI today?",
             "What should I do next to install Python?",
             "What did Congress finish today?",
+            "What do I have coming up in the news?",
             "Search what changed in the weather forecast",
         ],
     )

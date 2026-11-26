@@ -158,3 +158,58 @@ def test_silent_widget_refresh_does_not_consume_active_user_answer():
     assert state["active_personal_operations_surface"] is surface
     assert take_personal_operations_surface(state, silent_widget_refresh=False) is surface
     assert "active_personal_operations_surface" not in state
+
+
+
+def test_first_item_time_does_not_infer_a_time_from_unscheduled_memory_text():
+    from dataclasses import replace
+
+    projection = replace(
+        _projection(),
+        next=(DailyLoopItem("Maybe review the checklist at 2 PM", "governed_memory"),),
+    )
+    surface = build_personal_operations_surface(PersonalOperationsIntent.NEXT, projection, "")
+    assert is_personal_operations_followup("When is the first one?")
+    answer = answer_personal_operations_followup("When is the first one?", surface)
+    assert "didn't have a time" in answer
+    assert "2 PM" not in answer
+
+
+def test_first_item_time_explains_when_previous_answer_had_no_item():
+    from dataclasses import replace
+
+    projection = replace(
+        _projection(),
+        next=(),
+        sources=(
+            DailyLoopSource("calendar", "available", "Cached calendar state is available."),
+            DailyLoopSource("local_reminders", "available", "No local reminders."),
+            DailyLoopSource("news", "not_loaded", "News is not loaded in this session."),
+        ),
+    )
+    surface = build_personal_operations_surface(PersonalOperationsIntent.NEXT, projection, "")
+    answer = answer_personal_operations_followup("When is the first one?", surface)
+    assert "didn't show a first upcoming item" in answer
+    assert "unavailable" not in answer
+    assert "News" not in answer
+
+
+def test_first_item_time_reports_missing_schedule_sources():
+    from dataclasses import replace
+
+    projection = replace(
+        _projection(),
+        next=(),
+        sources=(
+            DailyLoopSource("calendar", "not_loaded", "Calendar is not loaded in this session."),
+            DailyLoopSource("local_reminders", "available", "No local reminders."),
+            DailyLoopSource("news", "not_loaded", "News is not loaded in this session."),
+        ),
+    )
+    surface = build_personal_operations_surface(PersonalOperationsIntent.NEXT, projection, "")
+
+    answer = answer_personal_operations_followup("When is the first one?", surface)
+
+    assert "Schedule information was incomplete" in answer
+    assert "Calendar is not loaded in this session." in answer
+    assert "News" not in answer
