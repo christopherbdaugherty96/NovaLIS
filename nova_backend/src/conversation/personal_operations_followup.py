@@ -1,4 +1,4 @@
-"""One-turn grounding for follow-ups to Personal Operations answers."""
+"""Session-local grounding for follow-ups to Personal Operations answers."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from src.conversation.personal_operations_intent import PersonalOperationsIntent
 
 _FOLLOWUP_RE = re.compile(
     r"^(?:why|why this recommendation|tell me more|tell me more about that|"
-    r"the second one|tell me more about the second one|when is the first one)\??$",
+    r"the second one|tell me more about the second one|when is the first one)[.?!]?$",
     re.IGNORECASE,
 )
 
@@ -20,16 +20,20 @@ def is_personal_operations_followup(text: str) -> bool:
     return bool(_FOLLOWUP_RE.fullmatch(canonical))
 
 
-def take_personal_operations_surface(
+def get_personal_operations_followup_surface(
     session_state: dict[str, Any],
+    text: str,
     *,
     silent_widget_refresh: bool,
 ) -> Any:
-    """Consume the surface on a real user turn; preserve it across UI hydration."""
+    """Keep the displayed list for related turns until the user switches topics."""
 
     if silent_widget_refresh:
         return None
-    return session_state.pop("active_personal_operations_surface", None)
+    if is_personal_operations_followup(text):
+        return session_state.get("active_personal_operations_surface")
+    session_state.pop("active_personal_operations_surface", None)
+    return None
 
 
 def build_personal_operations_surface(
@@ -76,7 +80,7 @@ def answer_personal_operations_followup(text: str, surface: Any) -> str:
             "Ask the full question again so I can ground the answer in current evidence."
         )
     items = [item for item in list(surface.get("items") or []) if isinstance(item, dict)]
-    lowered = " ".join(str(text or "").strip().lower().split()).rstrip("?")
+    lowered = " ".join(str(text or "").strip().lower().split()).rstrip(".?!")
     if lowered == "when is the first one":
         if surface.get("intent") != PersonalOperationsIntent.NEXT.value:
             return "The previous answer didn't show a first upcoming item, so I can't give its time."

@@ -1701,18 +1701,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             from src.conversation.personal_operations_followup import (
                 answer_personal_operations_followup,
-                is_personal_operations_followup,
-                take_personal_operations_surface,
+                get_personal_operations_followup_surface,
             )
 
-            prior_personal_operations_surface = take_personal_operations_surface(
+            # Refer to the displayed list for consecutive follow-ups, and clear it
+            # before routing an unrelated user turn or a request for a new list.
+            prior_personal_operations_surface = get_personal_operations_followup_surface(
                 session_state,
+                raw_text,
                 silent_widget_refresh=silent_widget_refresh,
             )
-            if (
-                prior_personal_operations_surface is not None
-                and is_personal_operations_followup(raw_text)
-            ):
+            if prior_personal_operations_surface is not None:
+
                 await _complete_immediate_turn(
                     answer_personal_operations_followup(
                         raw_text,
