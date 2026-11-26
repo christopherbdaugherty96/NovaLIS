@@ -3,7 +3,7 @@ from src.conversation.personal_operations_followup import (
     answer_personal_operations_followup,
     build_personal_operations_surface,
     is_personal_operations_followup,
-    take_personal_operations_surface,
+    get_personal_operations_followup_surface,
 )
 from src.conversation.personal_operations_intent import PersonalOperationsIntent
 
@@ -154,9 +154,15 @@ def test_unrelated_question_is_not_captured():
 def test_silent_widget_refresh_does_not_consume_active_user_answer():
     surface = {"surface_type": "personal_operations"}
     state = {"active_personal_operations_surface": surface}
-    assert take_personal_operations_surface(state, silent_widget_refresh=True) is None
+    assert get_personal_operations_followup_surface(state, "news", silent_widget_refresh=True) is None
     assert state["active_personal_operations_surface"] is surface
-    assert take_personal_operations_surface(state, silent_widget_refresh=False) is surface
+    assert get_personal_operations_followup_surface(
+        state, "Tell me more about the second one.", silent_widget_refresh=False
+    ) is surface
+    assert state["active_personal_operations_surface"] is surface
+    assert get_personal_operations_followup_surface(
+        state, "What do I have coming up?", silent_widget_refresh=False
+    ) is None
     assert "active_personal_operations_surface" not in state
 
 

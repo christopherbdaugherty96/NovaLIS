@@ -182,7 +182,8 @@ def test_cedar_correction_reaches_model_after_deterministic_schedule_turn(monkey
     assert all("budget" not in row["content"].lower() for row in messages[:budget_index])
 
 
-def test_next_up_followup_uses_time_from_the_appointment_just_shown(monkeypatch):
+@pytest.mark.parametrize("switch_topics", [False, True])
+def test_next_up_followups_use_the_appointments_just_shown(monkeypatch, switch_topics):
     from datetime import datetime, timezone
 
     from src.brief import daily_loop
@@ -201,15 +202,25 @@ def test_next_up_followup_uses_time_from_the_appointment_just_shown(monkeypatch)
         return original_projection(**kwargs)
 
     monkeypatch.setattr(daily_loop, "compose_daily_loop_projection", project_with_cached_calendar)
-    ws = _ScriptedWebSocket(["What do I have coming up?", "When is the first one?"])
+    prompts = ["What do I have coming up?", "When is the first one?"]
+    if switch_topics:
+        prompts.append("Tell me a joke.")
+    prompts.append("Tell me more about the second one.")
+    ws = _ScriptedWebSocket(prompts)
     with patch("src.skills.general_chat.generate_chat") as generate:
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     replies = _chat_messages(ws)
-    assert "2:30 PM" in replies[-2] and "Cedar review" in replies[-2]
-    assert "2:30 PM" in replies[-1] and "[source: calendar]" in replies[-1]
-    assert "4:00 PM" not in replies[-1]
-    generate.assert_not_called()
+    assert "2:30 PM" in replies[1] and "Cedar review" in replies[1]
+    assert "2:30 PM" in replies[2] and "[source: calendar]" in replies[2]
+    assert "4:00 PM" not in replies[2]
+    if switch_topics:
+        assert "Other appointment" not in replies[-1]
+    else:
+        assert "4:00 PM" in replies[-1] and "Other appointment" in replies[-1]
+        assert "[source: calendar]" in replies[-1]
+        assert "Cedar review" not in replies[-1]
+        generate.assert_not_called()
 
 
 def test_pronoun_status_without_project_context_stays_governed(monkeypatch):
