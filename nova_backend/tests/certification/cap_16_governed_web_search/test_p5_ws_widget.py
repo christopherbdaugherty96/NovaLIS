@@ -220,3 +220,33 @@ def test_websocket_search_widget_data_has_results(search_client):
     assert isinstance(widget_data, dict), "data field must be a dict"
     assert "results" in widget_data, "Search widget data must contain 'results'"
     assert isinstance(widget_data["results"], list)
+
+
+
+def test_websocket_denied_search_does_not_claim_online_progress(search_client):
+    from src.governor.exceptions import DisclosureDeniedError
+
+    with (
+        patch(
+            "src.governor.network_mediator.NetworkMediator.request",
+            side_effect=DisclosureDeniedError("Denied in test"),
+        ),
+        search_client.websocket_connect("/ws") as ws,
+    ):
+        turn_id = "denied-search"
+        ws.send_json({"type": "chat", "text": "search for electric vehicle sales", "turn_id": turn_id})
+        frames = []
+        for _ in range(30):
+            raw = _receive_text_or_none(ws)
+            if raw is None:
+                break
+            frame = json.loads(raw)
+            if frame.get("turn_id") == turn_id:
+                frames.append(frame)
+                if frame["type"] == "chat_done":
+                    break
+
+    messages = " ".join(str(frame.get("message") or "") for frame in frames).lower()
+    assert frames[-1]["type"] == "chat_done"
+    assert "not authorized" in messages
+    assert "checking online" not in messages

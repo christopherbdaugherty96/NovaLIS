@@ -10,7 +10,11 @@ from src.governor.disclosure_policy import (
     TransportClass,
 )
 from src.governor.disclosure_transport import HttpDisclosureContext
-from src.governor.exceptions import DisclosureDeniedError, NetworkMediatorError
+from src.governor.exceptions import (
+    DisclosureDeniedError,
+    NetworkMediatorError,
+    NetworkTransportError,
+)
 
 BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
 DUCK_SEARCH_URL = "https://api.duckduckgo.com/"
@@ -84,3 +88,9 @@ def search_disclosure_classifier(
         )
 
     return classify
+
+
+def search_transport_failure(error: Exception | None) -> tuple[bool, int]:
+    if isinstance(error, NetworkTransportError):
+        return error.timed_out, error.status_code
+    return False, 0

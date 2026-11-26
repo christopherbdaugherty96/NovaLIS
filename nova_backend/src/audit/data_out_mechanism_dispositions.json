@@ -377,7 +377,7 @@
     },
     {
       "path": "nova_backend/src/governor/network_mediator.py",
-      "line": 143,
+      "line": 144,
       "column": 18,
       "mechanism": "network_client",
       "symbol": "requests.Session",
@@ -388,7 +388,7 @@
     },
     {
       "path": "nova_backend/src/governor/network_mediator.py",
-      "line": 264,
+      "line": 265,
       "column": 24,
       "mechanism": "network_client",
       "symbol": "socket.getaddrinfo",

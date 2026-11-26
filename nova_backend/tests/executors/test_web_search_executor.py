@@ -77,6 +77,8 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     assert result.success
     assert result.message.startswith("Bottom line:")
     assert 'Search answer for "test query"' in result.message
+    assert "Online search via Brave Search." in result.message
+    assert "checking online" not in result.message.lower()
     assert "Sources:" in result.message
     assert "https://example.com/one" in result.message
     assert "Confidence:" in result.message
@@ -123,6 +125,7 @@ def test_no_results_returns_empty_widget(executor, mock_network, sample_request)
 
     assert result.success
     assert "couldn't find solid results" in result.message.lower()
+    assert "I searched online via Brave Search" in result.message
     widget_data = result.data["widget"]["data"]
     assert widget_data["results"] == []
     assert widget_data["query"] == "test query"
@@ -467,3 +470,50 @@ def test_thin_source_content_skips_llm_synthesis(executor, mock_network, sample_
 
     assert result.success
     assert not synthesis_called, "LLM synthesis should be skipped for thin source content"
+
+
+
+@pytest.mark.parametrize(
+    "status, expected",
+    [(401, "authentication failed"), (429, "rate limit reached")],
+)
+def test_mediated_provider_http_failures_report_the_outcome(
+    executor, mock_network, sample_request, status, expected
+):
+    from src.governor.exceptions import NetworkTransportError
+
+    error = NetworkTransportError("Network call failed (HTTPError).", status_code=status)
+    mock_network.request.side_effect = error
+
+    result = executor.execute(sample_request)
+
+    assert not result.success
+    assert expected in result.message.lower()
+    assert "checking online" not in result.message.lower()
+
+
+def test_mediated_transport_timeout_has_specific_status(executor, mock_network, sample_request):
+    from src.governor.exceptions import NetworkTransportError
+
+    error = NetworkTransportError("Network call failed (ReadTimeout).", timed_out=True)
+    mock_network.request.side_effect = error
+
+    result = executor.execute(sample_request)
+
+    assert not result.success
+    assert "online search request timed out" in result.message.lower()
+    assert "checking online" not in result.message.lower()
+
+
+def test_missing_brave_key_is_explained_when_fallback_fails(
+    executor, mock_network, sample_request, monkeypatch
+):
+    monkeypatch.delenv("BRAVE_API_KEY")
+    mock_network.request.return_value = {"status_code": 500, "data": {}}
+
+    result = executor.execute(sample_request)
+
+    assert not result.success
+    assert "No Brave Search key is configured" in result.message
+    assert "DuckDuckGo could not complete" in result.message
+    mock_network.request.assert_called_once()

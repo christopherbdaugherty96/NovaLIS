@@ -15,6 +15,15 @@ class NetworkMediatorError(Exception):
     pass
 
 
+class NetworkTransportError(NetworkMediatorError):
+    """Mediated request failure with safe status metadata."""
+
+    def __init__(self, message: str, *, timed_out: bool = False, status_code: int = 0) -> None:
+        super().__init__(message)
+        self.timed_out = timed_out
+        self.status_code = status_code
+
+
 class DisclosureDeniedError(NetworkMediatorError):
     """Raised when Data-Out admission denies or cannot verify a request."""
 

@@ -38,3 +38,11 @@ def test_search_evidence_panel_has_visible_degraded_state_styles():
     assert ".search-evidence-panel" in css
     assert ".search-evidence-title" in css
     assert ".search-credibility-row" in css
+
+
+
+def test_search_shaped_input_only_shows_neutral_progress():
+    source = load_dashboard_runtime_js()
+
+    assert 'return "Processing search request";' in source
+    assert "Checking online sources" not in source

@@ -217,6 +217,8 @@ def test_cap16_default_denial_precedes_dns_and_session(monkeypatch):
 
     assert result.success is False
     assert attempts == {"dns": 0, "session": 0}
+    assert "not authorized" in result.message
+    assert "checking online" not in result.message.lower()
 
 
 def test_cap48_default_denial_precedes_dns_and_session(monkeypatch):

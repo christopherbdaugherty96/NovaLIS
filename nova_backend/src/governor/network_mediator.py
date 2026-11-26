@@ -27,6 +27,7 @@ from src.governor.exceptions import (
     CapabilityRegistryError,
     DisclosureDeniedError,
     NetworkMediatorError,
+    NetworkTransportError,
     ProviderConnectionNetworkError,
 )
 from src.ledger.writer import LedgerWriter
@@ -410,9 +411,7 @@ class NetworkMediator:
                 raise NetworkMediatorError("Too many redirects.")
         except requests.RequestException as e:
             log_failure(type(e).__name__)
-            raise NetworkMediatorError(
-                f"Network call failed ({type(e).__name__})."
-            ) from e
+            raise _network_transport_error(e) from e
 
         # 4) Return shape based on as_json
         result: Dict[str, Any] = {"status_code": response.status_code}
@@ -586,3 +585,14 @@ class NetworkMediator:
             },
         )
         return result
+
+
+def _network_transport_error(error: requests.RequestException) -> NetworkTransportError:
+    status = 0
+    if isinstance(error, requests.HTTPError) and error.response is not None:
+        status = error.response.status_code
+    return NetworkTransportError(
+        f"Network call failed ({type(error).__name__}).",
+        timed_out=isinstance(error, requests.Timeout),
+        status_code=status,
+    )
