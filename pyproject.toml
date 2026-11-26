@@ -56,6 +56,8 @@ dev = [
     "ruff>=0.6",
 ]
 
+browser-test = ["playwright==1.58.0"]
+
 [project.urls]
 Repository = "https://github.com/christopherbdaugherty96/NovaLIS"
 Issues = "https://github.com/christopherbdaugherty96/NovaLIS/issues"
