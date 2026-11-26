@@ -187,6 +187,52 @@ def is_discussion_shaped_brief_followup(text: str, session_state: dict[str, Any]
     return bool(active_key) and _has_grounding_for(active_key, state) and _has_active_reference_shape(active_key, lowered, state)
 
 
+def _names_unrelated_news_subject(text: str, state: dict[str, Any]) -> bool:
+    lowered = " ".join(text.lower().split()).rstrip(".?!")
+    match = re.match(r"^(?:why (?:is|does|should) |tell me more about )(.+)$", lowered)
+    if not match:
+        return False
+    subject = match.group(1)
+    if lowered.startswith("why "):
+        # Significance wording describes the question, rather than the named subject.
+        subject = re.sub(r"\s+(?:matter|important|significant|relevant)$", "", subject)
+    if subject in {"it", "that", "this"} or re.match(
+        r"^(?:the|this|that) (?:news|story|article|headline)\b", subject
+    ):
+        return False
+    if _ordinal_index(subject) is not None and _contains_any_word(
+        subject, ("story", "article", "headline")
+    ):
+        return False
+    story = state.get("active_news_story") or {}
+    title = " ".join(str(story.get("title") or story.get("headline") or "").lower().split())
+    return not title or not (
+        re.search(rf"\b{re.escape(subject)}\b", title)
+        or re.match(rf"{re.escape(title)}(?:\s|$)", subject)
+    )
+
+
+def retire_unrelated_news_focus(text: str, session_state: dict[str, Any]) -> None:
+    """Keep cached news readable without carrying its conversational focus to a new topic."""
+    brief_focused = session_state.get("active_brief_item") == "news"
+    legacy_focused = bool(session_state.get("last_news_story_index"))
+    if not brief_focused and not legacy_focused:
+        return
+    if is_explicit_news_reference_action(text):
+        return
+    if (
+        (brief_focused and is_discussion_shaped_brief_followup(text, session_state)
+         and _select_item_key(text.lower(), session_state) == "news")
+        or (legacy_focused and text.lower().rstrip(".?!") in {"more", "tell me more", "more please"})
+    ):
+        return
+
+    if brief_focused:
+        session_state.pop("active_brief_item", None)
+    _validate_active_news_story(session_state, [])
+    session_state.pop("last_news_story_index", None)
+
+
 def build_grounded_brief_context(text: str, session_state: dict[str, Any] | None) -> str:
     state = session_state or {}
     if not is_discussion_shaped_brief_followup(text, state):
@@ -545,7 +591,7 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
             return True
         if TOP_STORY_RE.search(lowered):
             return True
-        return bool(state.get("active_news_story")) and _has_reference_shape(lowered)
+        return bool(state.get("active_news_story")) and _has_active_reference_shape("news", lowered, state)
     if key == "calendar":
         if "after that" in lowered and state.get("active_calendar_event"):
             return True
@@ -581,6 +627,8 @@ def _has_domain_discussion_shape(key: str, lowered: str, state: dict[str, Any]) 
 
 
 def _has_active_reference_shape(key: str, lowered: str, state: dict[str, Any]) -> bool:
+    if key == "news" and _names_unrelated_news_subject(lowered, state):
+        return False
     if key == "calendar":
         if _NON_CALENDAR_REFERENCE_TARGET_RE.search(lowered):
             return False

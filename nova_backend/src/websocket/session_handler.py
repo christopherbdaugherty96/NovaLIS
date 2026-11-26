@@ -17,6 +17,7 @@ from src.conversation.brief_followup_grounding import (
     answer_grounded_brief_followup,
     is_discussion_shaped_brief_followup,
     is_explicit_news_reference_action,
+    retire_unrelated_news_focus,
     schedule_commitment_guard,
     store_active_news_surface,
     store_awareness_brief_surface,
@@ -1688,6 +1689,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["project_context_active"] = False
             if not silent_widget_refresh:
                 session_state["user_message_seq"] += 1
+                retire_unrelated_news_focus(raw_text, session_state)
             current_activity_origin = activity_origin_for_request(
                 silent_widget_refresh=silent_widget_refresh,
                 command_text=raw_text,
