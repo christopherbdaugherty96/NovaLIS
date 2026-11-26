@@ -182,6 +182,36 @@ def test_cedar_correction_reaches_model_after_deterministic_schedule_turn(monkey
     assert all("budget" not in row["content"].lower() for row in messages[:budget_index])
 
 
+def test_next_up_followup_uses_time_from_the_appointment_just_shown(monkeypatch):
+    from datetime import datetime, timezone
+
+    from src.brief import daily_loop
+
+    original_projection = daily_loop.compose_daily_loop_projection
+
+    def project_with_cached_calendar(**kwargs):
+        kwargs["session_state"] = {
+            **kwargs["session_state"],
+            "last_calendar_events": [
+                {"title": "Cedar review", "date": "2027-01-14", "time": "2:30 PM"},
+                {"title": "Other appointment", "date": "2027-01-15", "time": "4:00 PM"},
+            ],
+        }
+        kwargs["now"] = datetime(2026, 11, 25, tzinfo=timezone.utc)
+        return original_projection(**kwargs)
+
+    monkeypatch.setattr(daily_loop, "compose_daily_loop_projection", project_with_cached_calendar)
+    ws = _ScriptedWebSocket(["What do I have coming up?", "When is the first one?"])
+    with patch("src.skills.general_chat.generate_chat") as generate:
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    replies = _chat_messages(ws)
+    assert "2:30 PM" in replies[-2] and "Cedar review" in replies[-2]
+    assert "2:30 PM" in replies[-1] and "[source: calendar]" in replies[-1]
+    assert "4:00 PM" not in replies[-1]
+    generate.assert_not_called()
+
+
 def test_pronoun_status_without_project_context_stays_governed(monkeypatch):
     calls = _run_session(monkeypatch, ["What is its current status?"])
 
