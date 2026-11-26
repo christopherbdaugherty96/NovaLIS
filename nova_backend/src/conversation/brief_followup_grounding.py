@@ -187,6 +187,20 @@ def is_discussion_shaped_brief_followup(text: str, session_state: dict[str, Any]
     return bool(active_key) and _has_grounding_for(active_key, state) and _has_active_reference_shape(active_key, lowered, state)
 
 
+def retire_unrelated_news_focus(text: str, session_state: dict[str, Any]) -> None:
+    """Keep cached news readable without carrying its conversational focus to a new topic."""
+    if session_state.get("active_brief_item") != "news":
+        return
+    if is_explicit_news_reference_action(text) or (
+        is_discussion_shaped_brief_followup(text, session_state)
+        and _select_item_key(text.lower(), session_state) == "news"
+    ):
+        return
+
+    session_state.pop("active_brief_item", None)
+    _validate_active_news_story(session_state, [])
+
+
 def build_grounded_brief_context(text: str, session_state: dict[str, Any] | None) -> str:
     state = session_state or {}
     if not is_discussion_shaped_brief_followup(text, state):

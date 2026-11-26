@@ -251,3 +251,69 @@ def test_new_failed_topic_does_not_reuse_stale_successful_sources(monkeypatch):
     final = _chat_messages(ws)[-1]
     assert "can't say whether sources agree" in final.lower()
     assert "Reuters" not in final
+
+
+
+def test_unavailable_news_does_not_hijack_a_new_project_topic(monkeypatch):
+    async def unavailable_news(*_args, **_kwargs):
+        return None, ActionResult.failure(
+            "News unavailable right now.",
+            capability_id=56,
+            data={"widget": {"type": "news", "items": [], "categories": {"world": []}}},
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", unavailable_news)
+    prompts = [
+        "Show me the news.",
+        "Tell me more about the first story.",
+        "What do I have coming up?",
+        "Project Cedar has seven amber tags.",
+        "How many tags does it have?",
+        "Actually, I meant eight tags, not seven.",
+        "Tell me a joke.",
+        "Back to Cedar, how many tags does it have now?",
+    ]
+    ws = _ScriptedWebSocket([
+        {"type": "chat", "text": text, "turn_id": str(i)}
+        for i, text in enumerate(prompts)
+    ])
+    with patch("src.skills.general_chat.generate_chat", return_value=None):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    replies = {
+        frame.get("turn_id"): frame["message"]
+        for frame in ws.sent_messages if frame["type"] == "chat"
+    }
+    assert "headline" in replies["1"].lower()
+    assert "What you have next:" in replies["2"]
+    for turn in ("4", "5", "7"):
+        assert "headline" not in replies[turn].lower(), replies[turn]
+
+
+
+def test_selected_headline_followup_survives_silent_refresh(monkeypatch):
+    async def sourced_news(*_args, **_kwargs):
+        return None, ActionResult.ok(
+            "One sourced headline.",
+            capability_id=56,
+            data={"widget": {"type": "news", "items": [{
+                "title": "Synthetic ocean research headline",
+                "source": "Synthetic newsroom",
+                "url": "https://example.test/ocean",
+                "summary": "Researchers published a survey.",
+            }]}},
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", sourced_news)
+    ws = _ScriptedWebSocket([
+        "news",
+        "Why is the first story important?",
+        {"type": "chat", "text": "news", "silent_widget_refresh": True},
+        "Why does that matter?",
+    ])
+    with patch("src.skills.general_chat.generate_chat", return_value=None) as generate:
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert "Synthetic ocean research headline" in _chat_messages(ws)[-1]
+    assert "Synthetic newsroom" in _chat_messages(ws)[-1]
+    generate.assert_not_called()
