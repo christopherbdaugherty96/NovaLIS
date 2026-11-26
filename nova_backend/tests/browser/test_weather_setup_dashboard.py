@@ -23,6 +23,7 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
     sent_frames = []
     received_frames = []
     browser_errors = []
+    console_errors = []
     external_requests = []
 
     def dashboard_http(route):
@@ -69,6 +70,10 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
 
         socket.on_message(respond)
 
+    def record_console(message):
+        if message.type == "error":
+            console_errors.append(message.text)
+
     with playwright.sync_playwright() as driver:
         browser = driver.chromium.launch(headless=True)
         try:
@@ -77,6 +82,7 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
             context.route_web_socket("**/*", dashboard_socket)
             page = context.new_page()
             page.on("pageerror", lambda error: browser_errors.append(str(error)))
+            page.on("console", record_console)
             try:
                 page.goto(ORIGIN)
                 widget = page.locator("#weather-widget")
@@ -84,6 +90,7 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
                 playwright.expect(widget.locator(".weather-forecast, .weather-alerts, .confidence-badge")).to_have_count(0)
                 assert received_frames
                 assert not browser_errors
+                assert not console_errors
                 assert not external_requests
             except (AssertionError, playwright.Error):
                 (tmp_path / "dashboard-observations.json").write_text(
@@ -91,6 +98,7 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
                         "sent": sent_frames,
                         "received": received_frames,
                         "errors": browser_errors,
+                        "console_errors": console_errors,
                         "external_requests": external_requests,
                     }, indent=2),
                     encoding="utf-8",
