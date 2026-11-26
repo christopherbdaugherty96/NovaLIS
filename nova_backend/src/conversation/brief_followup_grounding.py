@@ -187,18 +187,38 @@ def is_discussion_shaped_brief_followup(text: str, session_state: dict[str, Any]
     return bool(active_key) and _has_grounding_for(active_key, state) and _has_active_reference_shape(active_key, lowered, state)
 
 
+def _names_unrelated_news_subject(text: str, state: dict[str, Any]) -> bool:
+    lowered = " ".join(text.lower().split()).rstrip(".?!")
+    match = re.fullmatch(r"(?:why does (.+) matter|tell me more about (.+))", lowered)
+    if not match:
+        return False
+    subject = match.group(1) or match.group(2)
+    if re.fullmatch(r"(?:it|that|this|(?:the|that|this) (?:news|story|article|headline))", subject):
+        return False
+    story = state.get("active_news_story") or {}
+    title = str(story.get("title") or story.get("headline") or "").lower()
+    return not re.search(rf"\b{re.escape(subject)}\b", title)
+
+
 def retire_unrelated_news_focus(text: str, session_state: dict[str, Any]) -> None:
     """Keep cached news readable without carrying its conversational focus to a new topic."""
-    if session_state.get("active_brief_item") != "news":
+    brief_focused = session_state.get("active_brief_item") == "news"
+    legacy_focused = bool(session_state.get("last_news_story_index"))
+    if not brief_focused and not legacy_focused:
         return
-    if is_explicit_news_reference_action(text) or (
-        is_discussion_shaped_brief_followup(text, session_state)
-        and _select_item_key(text.lower(), session_state) == "news"
+    if is_explicit_news_reference_action(text):
+        return
+    if not _names_unrelated_news_subject(text, session_state) and (
+        (brief_focused and is_discussion_shaped_brief_followup(text, session_state)
+         and _select_item_key(text.lower(), session_state) == "news")
+        or (legacy_focused and text.lower().rstrip(".?!") in {"more", "tell me more", "more please"})
     ):
         return
 
-    session_state.pop("active_brief_item", None)
+    if brief_focused:
+        session_state.pop("active_brief_item", None)
     _validate_active_news_story(session_state, [])
+    session_state.pop("last_news_story_index", None)
 
 
 def build_grounded_brief_context(text: str, session_state: dict[str, Any] | None) -> str:

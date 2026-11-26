@@ -291,25 +291,27 @@ def test_unavailable_news_does_not_hijack_a_new_project_topic(monkeypatch):
 
 
 
-def test_selected_headline_followup_survives_silent_refresh(monkeypatch):
-    async def sourced_news(*_args, **_kwargs):
-        return None, ActionResult.ok(
-            "One sourced headline.",
-            capability_id=56,
-            data={"widget": {"type": "news", "items": [{
-                "title": "Synthetic ocean research headline",
-                "source": "Synthetic newsroom",
-                "url": "https://example.test/ocean",
-                "summary": "Researchers published a survey.",
-            }]}},
-        )
+async def _sourced_news(*_args, **_kwargs):
+    return None, ActionResult.ok(
+        "One sourced headline.",
+        capability_id=56,
+        data={"widget": {"type": "news", "items": [{
+            "title": "Synthetic ocean research headline",
+            "source": "Synthetic newsroom",
+            "url": "https://example.test/ocean",
+            "summary": "Researchers published a survey.",
+        }]}},
+    )
 
-    monkeypatch.setattr(brain_server, "invoke_governed_text_command", sourced_news)
+
+@pytest.mark.parametrize("followup", ["Why does that matter?", "Tell me more about ocean research"])
+def test_selected_headline_followup_survives_silent_refresh(monkeypatch, followup):
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", _sourced_news)
     ws = _ScriptedWebSocket([
         "news",
         "Why is the first story important?",
         {"type": "chat", "text": "news", "silent_widget_refresh": True},
-        "Why does that matter?",
+        followup,
     ])
     with patch("src.skills.general_chat.generate_chat", return_value=None) as generate:
         asyncio.run(brain_server.websocket_endpoint(ws))
@@ -317,3 +319,41 @@ def test_selected_headline_followup_survives_silent_refresh(monkeypatch):
     assert "Synthetic ocean research headline" in _chat_messages(ws)[-1]
     assert "Synthetic newsroom" in _chat_messages(ws)[-1]
     generate.assert_not_called()
+
+
+
+@pytest.mark.parametrize("query", ["Why does Cedar matter?", "Tell me more about Cedar"])
+def test_explicit_new_subject_does_not_use_selected_headline(monkeypatch, query):
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", _sourced_news)
+    ws = _ScriptedWebSocket(["news", "Why is the first story important?", query])
+    with patch("src.skills.general_chat.generate_chat", return_value="Cedar answer.") as generate:
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    replies = _chat_messages(ws)
+    assert "Synthetic ocean research headline" in replies[-2]
+    assert replies[-1] == "Cedar answer."
+    generate.assert_called_once()
+
+
+@pytest.mark.parametrize("change_topic", [False, True])
+def test_legacy_more_only_uses_a_current_story_index(monkeypatch, change_topic):
+    calls = []
+
+    async def summarize_story(_governor, capability_id, params, **_kwargs):
+        assert capability_id == 49
+        calls.append(dict(params))
+        return ActionResult.ok("Story action result.", capability_id=49, data={"story_index": 1})
+
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", _sourced_news)
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", summarize_story)
+    prompts = ["news", "summarize story 1"]
+    if change_topic:
+        prompts.append("Project Cedar has seven tags.")
+    prompts.append("more")
+    ws = _ScriptedWebSocket(prompts)
+    with patch("src.skills.general_chat.generate_chat", return_value="Ordinary chat."):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert calls and len(calls) == (1 if change_topic else 2)
+    if not change_topic:
+        assert calls[-1]["action"] == "story_page_summary"
