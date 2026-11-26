@@ -8,6 +8,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
 
+from requests.exceptions import HTTPError, Timeout
+
 from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
 from src.conversation.response_formatter import ResponseFormatter
@@ -80,7 +82,7 @@ class WebSearchExecutor:
 
     def _disclosure_denied_result(self, query: str, request_id: str | None) -> ActionResult:
         return ActionResult.failure(
-            "I'm checking online. Search is unavailable because this request was not authorized.",
+            "Search was not authorized.",
             data=self._empty_widget(query=query),
             request_id=request_id,
         )
@@ -231,33 +233,26 @@ class WebSearchExecutor:
         return out
 
     def _search_duckduckgo(self, request, query: str, session_id: str | None):
-        try:
-            return self.network.request(
-                capability_id=request.capability_id,
-                method="GET",
-                url=DUCK_SEARCH_URL,
-                params={
-                    "q": query,
-                    "format": "json",
-                    "no_html": "1",
-                    "no_redirect": "1",
-                    "skip_disambig": "1",
-                },
-                headers={"Accept": "application/json"},
-                as_json=True,
-                timeout=4,
-                request_id=request.request_id,
-                session_id=session_id,
-                disclosure_classifier=self._disclosure_classifier(
-                    "duckduckgo", request.capability_id
-                ),
-            )
-        except Exception as error:
-            if is_disclosure_denial(error):
-                raise
-            if is_network_mediator_error(error):
-                return None
-            raise
+        return self.network.request(
+            capability_id=request.capability_id,
+            method="GET",
+            url=DUCK_SEARCH_URL,
+            params={
+                "q": query,
+                "format": "json",
+                "no_html": "1",
+                "no_redirect": "1",
+                "skip_disambig": "1",
+            },
+            headers={"Accept": "application/json"},
+            as_json=True,
+            timeout=4,
+            request_id=request.request_id,
+            session_id=session_id,
+            disclosure_classifier=self._disclosure_classifier(
+                "duckduckgo", request.capability_id
+            ),
+        )
 
     def _fetch_source_text(
         self,
@@ -548,6 +543,25 @@ class WebSearchExecutor:
         except Exception:
             return fallback
 
+    @staticmethod
+    def _search_failure_message(
+        *, status: int = 0, error: Exception | None = None, missing_brave_key: bool = False
+    ) -> str:
+        cause = error.__cause__ if error else None
+        if isinstance(cause, Timeout):
+            return "The online search request timed out. Please try again."
+        if isinstance(cause, HTTPError) and cause.response is not None:
+            status = int(cause.response.status_code)
+        if status in {401, 403}:
+            return "Search authentication failed. Check the configured search provider credentials."
+        if status == 429 or str(error) == "Rate limit exceeded.":
+            return "Search rate limit reached. Please try again in a moment."
+        if status == 202:
+            return "The search provider is temporarily unavailable. Please try again later."
+        if missing_brave_key:
+            return "No Brave Search key is configured, and DuckDuckGo could not complete the search."
+        return "I couldn't complete the search due to a network issue. Try again shortly."
+
     def execute(self, request) -> ActionResult:
         query = request.params.get("query", "").strip()
         session_id = str(request.params.get("session_id") or "").strip() or None
@@ -558,10 +572,9 @@ class WebSearchExecutor:
                 request_id=request.request_id,
             )
 
-        boundary_notice = "I'm checking online."
         started_at = time.monotonic()
         brave_status_code = 0
-        brave_network_failed = False
+        brave_error: Exception | None = None
         used_provider = ""
 
         brave_key = os.getenv("BRAVE_API_KEY", "").strip()
@@ -571,7 +584,7 @@ class WebSearchExecutor:
             for attempt in range(max_retries + 1):
                 if time.monotonic() - started_at > SEARCH_HARD_TIMEOUT_SECONDS:
                     return ActionResult.failure(
-                        f"{boundary_notice} Search timed out. Please try again.",
+                        "Search timed out. Please try again.",
                         data=self._empty_widget(query=query),
                         request_id=request.request_id,
                     )
@@ -605,54 +618,44 @@ class WebSearchExecutor:
                         raise
                     logger.debug("Attempt %s failed: %s", attempt + 1, error)
                     if attempt == max_retries:
-                        brave_network_failed = True
+                        brave_error = error
                         response = None
                         break
                     time.sleep(0.5)
                     continue
 
         if response is None:
-            if brave_network_failed:
+            if brave_error:
                 return ActionResult.failure(
-                    f"{boundary_notice} I couldn't complete the search due to a network issue. Try again shortly or use a narrower query.",
+                    self._search_failure_message(error=brave_error),
                     data=self._empty_widget(query=query),
                     request_id=request.request_id,
                 )
             if time.monotonic() - started_at > SEARCH_HARD_TIMEOUT_SECONDS:
                 return ActionResult.failure(
-                    f"{boundary_notice} Search timed out. Please try again.",
+                    "Search timed out. Please try again.",
                     data=self._empty_widget(query=query),
                     request_id=request.request_id,
                 )
+            duck_error = None
             try:
                 response = self._search_duckduckgo(request, query, session_id)
             except Exception as error:
-                if not is_disclosure_denial(error):
+                if is_disclosure_denial(error):
+                    return self._disclosure_denied_result(query, request.request_id)
+                if not is_network_mediator_error(error):
                     raise
-                return self._disclosure_denied_result(query, request.request_id)
+                duck_error = error
             if response and int(response.get("status_code") or 0) == 200:
                 used_provider = "duckduckgo"
             else:
-                if brave_status_code == 401:
-                    return ActionResult.failure(
-                        f"{boundary_notice} Search authentication failed. Check the configured search provider credentials.",
-                        data=self._empty_widget(query=query),
-                        request_id=request.request_id,
-                    )
-                if brave_status_code == 429:
-                    return ActionResult.failure(
-                        f"{boundary_notice} Search rate limit reached. Please try again in a moment.",
-                        data=self._empty_widget(query=query),
-                        request_id=request.request_id,
-                    )
-                if brave_status_code == 202:
-                    return ActionResult.failure(
-                        f"{boundary_notice} Search is temporarily unavailable. Please try again later.",
-                        data=self._empty_widget(query=query),
-                        request_id=request.request_id,
-                    )
+                duck_status = int((response or {}).get("status_code") or 0)
                 return ActionResult.failure(
-                    f"{boundary_notice} I couldn't complete the search due to a network issue. Try again shortly or use a narrower query.",
+                    self._search_failure_message(
+                        status=brave_status_code or duck_status,
+                        error=duck_error,
+                        missing_brave_key=not brave_key,
+                    ),
                     data=self._empty_widget(query=query),
                     request_id=request.request_id,
                 )
@@ -661,7 +664,7 @@ class WebSearchExecutor:
         data = response.get("data") or {}
         if status_code != 200:
             return ActionResult.failure(
-                f"{boundary_notice} I received an unexpected response from the search service.",
+                "The online search service returned an unexpected response.",
                 data=self._empty_widget(query=query),
                 request_id=request.request_id,
             )
@@ -676,7 +679,7 @@ class WebSearchExecutor:
             )
             return ActionResult.ok(
                 message=(
-                    f"{boundary_notice} I couldn't find solid results for \"{query}\".\n"
+                    f"I searched online via {self._format_provider_label(used_provider)} but couldn't find solid results for \"{query}\".\n"
                     "Try a more specific query, a company/site name, or a shorter topic phrase."
                 ),
                 data=self._empty_widget(query=query, provider=used_provider, evidence=evidence.to_dict()),
@@ -694,6 +697,7 @@ class WebSearchExecutor:
             message = "\n".join(
                 [
                     f'Bottom line: I found little reliable evidence for "{query}".',
+                    f"Online search via {self._format_provider_label(used_provider)}.",
                     "",
                     "What is known: The search returned weak or mismatched results, so I would not treat the claim or entity as verified.",
                     "What is unclear: The name may be misspelled, fictional, private, too new, or not covered by reliable indexed sources.",
@@ -789,6 +793,7 @@ class WebSearchExecutor:
             f"Bottom line: {researched_summary}",
             "",
             f'Search answer for "{query}"',
+            f"Online search via {provider_label}.",
             "",
             "Sources:",
             *self._format_visible_sources(results),

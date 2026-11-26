@@ -706,7 +706,7 @@ function renderTokenBudgetBar(data) {
 
 function loadingHintForInput(text) {
   const q = (text || "").toLowerCase();
-  if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking online sources";
+  if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Processing search request";
   if (q.includes("morning") || q.includes("brief") || q.includes("plan my day")) return "Preparing your brief";
   if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
   if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Planning what would be needed";
