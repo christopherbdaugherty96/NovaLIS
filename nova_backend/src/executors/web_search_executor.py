@@ -8,11 +8,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
 
-from requests.exceptions import HTTPError, Timeout
-
 from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
 from src.conversation.response_formatter import ResponseFormatter
+from src.governor.network_mediator import network_transport_failure
 from src.llm.llm_gateway import generate_chat
 from src.services.search_disclosure import (
     BRAVE_SEARCH_URL,
@@ -547,11 +546,10 @@ class WebSearchExecutor:
     def _search_failure_message(
         *, status: int = 0, error: Exception | None = None, missing_brave_key: bool = False
     ) -> str:
-        cause = error.__cause__ if error else None
-        if isinstance(cause, Timeout):
+        timed_out, response_status = network_transport_failure(error)
+        if timed_out:
             return "The online search request timed out. Please try again."
-        if isinstance(cause, HTTPError) and cause.response is not None:
-            status = int(cause.response.status_code)
+        status = response_status or status
         if status in {401, 403}:
             return "Search authentication failed. Check the configured search provider credentials."
         if status == 429 or str(error) == "Rate limit exceeded.":

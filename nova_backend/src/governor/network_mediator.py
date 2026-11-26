@@ -586,3 +586,13 @@ class NetworkMediator:
             },
         )
         return result
+
+
+def network_transport_failure(error: Exception | None) -> tuple[bool, int]:
+    """Read timeout and HTTP status from a mediated transport failure."""
+    cause = error.__cause__ if error else None
+    if isinstance(cause, requests.exceptions.Timeout):
+        return True, 0
+    if isinstance(cause, requests.exceptions.HTTPError) and cause.response is not None:
+        return False, int(cause.response.status_code)
+    return False, 0
