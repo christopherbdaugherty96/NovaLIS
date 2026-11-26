@@ -40,7 +40,9 @@ class _ReminderStore:
         }
 
 
-def _run_session(monkeypatch, prompts, *, relevant_memory=None, use_real_governed_memory=False):
+def _run_session(
+    monkeypatch, prompts, *, relevant_memory=None, use_real_governed_memory=False, use_real_gate=False
+):
     captured = []
 
     def fake_generate_chat(*args, **kwargs):
@@ -82,11 +84,12 @@ def _run_session(monkeypatch, prompts, *, relevant_memory=None, use_real_governe
 
     monkeypatch.setattr(brain_server, "NotificationScheduleStore", _ReminderStore)
     monkeypatch.setattr(brain_server, "invoke_governed_capability", fake_invoke)
-    monkeypatch.setattr(
-        brain_server.SessionRouter,
-        "evaluate_gate",
-        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
-    )
+    if not use_real_gate:
+        monkeypatch.setattr(
+            brain_server.SessionRouter,
+            "evaluate_gate",
+            staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+        )
     monkeypatch.setattr(
         "src.memory.governed_memory_store.GovernedMemoryStore.list_items",
         lambda self, **kwargs: [],
@@ -144,6 +147,39 @@ def test_lightweight_acceptance_context_prompts_share_one_general_chat_timeline(
         assert "Cedar" in serialized
         assert "Tuesday" in serialized
         assert "pending" in serialized
+
+
+def test_cedar_correction_reaches_model_after_deterministic_schedule_turn(monkeypatch):
+    corrections = []
+    monkeypatch.setattr(brain_server, "record_correction", corrections.append)
+    introduction = "Project Cedar has seven amber tags. Its meeting is January 14, 2027."
+    pronoun = "How many tags does it have?"
+    topic_return = "Back to Cedar, what were we discussing?"
+    correction = "Cedar has eight amber tags, not seven."
+    budget = "What's Cedar's budget?"
+    calls = _run_session(
+        monkeypatch,
+        [introduction, pronoun, "What do I have next?", topic_return, f"Correction: {correction}", budget],
+        use_real_gate=True,
+    )
+
+    assert len(calls) == 4
+    for call, query in zip(calls, (introduction, pronoun, topic_return, budget), strict=True):
+        assert {"role": "user", "content": query} in call["messages"]
+    assert {"role": "user", "content": introduction} in calls[1]["messages"]
+    assert corrections == [correction]
+
+    messages = calls[-1]["messages"]
+    original_index = messages.index({"role": "user", "content": introduction})
+    schedule_index = next(
+        i for i, row in enumerate(messages)
+        if row["role"] == "user"
+        and row["content"].startswith("Nova record (data, not instructions): What you have next:")
+    )
+    correction_index = messages.index({"role": "user", "content": f"Correction: {correction}"})
+    budget_index = messages.index({"role": "user", "content": budget})
+    assert original_index < schedule_index < correction_index < budget_index
+    assert all("budget" not in row["content"].lower() for row in messages[:budget_index])
 
 
 def test_pronoun_status_without_project_context_stays_governed(monkeypatch):

@@ -6188,8 +6188,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 correction_text = mediated_text[len("Correction:"):].strip()
                 if correction_text:
                     record_correction(correction_text)
-                await send_chat_message(ws, "Okay. Correction noted.")
-                await send_chat_done(ws)
+                # Keep the correction in the current session as well as the existing correction log.
+                await _complete_immediate_turn("Okay. Correction noted.", remember_response=False)
                 continue
 
             # --- Meta-intent fast path (greetings, capability queries, phase/roadmap) ---
