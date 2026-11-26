@@ -1803,6 +1803,7 @@ class GeneralChatSkill(BaseSkill):
                 messages=messages,
             )
             text = self._sanitize_response(text or "")
+            model_generated = bool(text)
             fallback = self._local_conceptual_fallback(normalized_query, session_state)
             if fallback and (
                 not text
@@ -1810,10 +1811,12 @@ class GeneralChatSkill(BaseSkill):
                 or text.strip().lower().startswith("i didn't quite get that")
             ):
                 text = fallback
+                model_generated = False
             elif not text:
                 text = ResponseFormatter.friendly_fallback()
             if self._is_geopolitical_query(normalized_query) and self._is_blanket_refusal(text):
                 text = self._safe_geopolitical_fallback(normalized_query)
+                model_generated = False
             text = self._shape_response_for_tone(
                 text,
                 mode=mode,
@@ -1842,6 +1845,7 @@ class GeneralChatSkill(BaseSkill):
                     "speakable_text": payload["speakable_text"],
                     "structured_data": payload["structured_data"],
                     "conversation_context": conversation_context.to_dict(),
+                    "model_generated": model_generated,
                     "model_context_entry": (
                         {"role": "user", "content": session_data}
                         if session_data
@@ -1973,6 +1977,7 @@ class GeneralChatSkill(BaseSkill):
             )
             safe = self.safety.filter(raw)
             safe = self.analysis_safety.sanitize(safe)
+            analysis_reply_available = bool(safe)
             if not safe:
                 safe = "I could not produce a stable deep analysis right now. Please retry with a narrower question."
             payload = self.formatter.format_payload(safe, mode=mode)
@@ -1991,6 +1996,7 @@ class GeneralChatSkill(BaseSkill):
                     "speakable_text": payload["speakable_text"],
                     "structured_data": payload["structured_data"],
                     "conversation_context": conversation_context.to_dict(),
+                    "analysis_reply_available": analysis_reply_available,
                     "escalation": {"escalated": True, "thought_data": thought_data},
                 },
                 widget_data=None,
@@ -2024,6 +2030,7 @@ class GeneralChatSkill(BaseSkill):
             "speakable_text": payload["speakable_text"],
             "structured_data": payload["structured_data"],
             "conversation_context": current_conversation,
+            "model_generated": (local.data or {}).get("model_generated") is True,
             "model_context_entry": dict((local.data or {}).get("model_context_entry") or {}),
             "escalation": {
                 "escalated": False,

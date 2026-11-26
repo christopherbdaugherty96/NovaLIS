@@ -1,6 +1,7 @@
 import asyncio
 
 from src.skills.general_chat import GeneralChatSkill
+from src.websocket.session_handler import _general_chat_usage_meta
 
 
 def test_general_chat_deep_thought_payload_contains_explanation_fields():
@@ -28,6 +29,10 @@ def test_general_chat_deep_thought_payload_contains_explanation_fields():
 
     assert result is not None
     assert result.success is True
+    usage = _general_chat_usage_meta("analysis question", result.message, result.data)
+    assert usage["route"] == "analysis"
+    assert "model_label" not in usage
+    assert not any("tokens" in key for key in usage)
 
     escalation = (result.data or {}).get("escalation", {})
     assert escalation.get("escalated") is True
@@ -60,6 +65,10 @@ def test_general_chat_ask_user_prompt_is_specific_for_deep_analysis():
     assert result is not None
     assert result.success is True
     assert "deeper analysis" in result.message.lower()
+    usage = _general_chat_usage_meta("architecture question", result.message, result.data)
+    assert usage["route"] == "deterministic_reply"
+    assert "model_label" not in usage
+    assert not any("tokens" in key for key in usage)
     escalation = (result.data or {}).get("escalation", {})
     assert escalation.get("ask_user") is True
 
@@ -136,3 +145,14 @@ def test_general_chat_provider_off_never_reaches_external_provider(monkeypatch):
 
     assert result is not None
     assert "paused in Settings" in result.message
+
+
+
+def test_general_chat_social_reply_is_a_built_in_response():
+    result = asyncio.run(GeneralChatSkill().handle("Thanks!"))
+
+    assert result is not None
+    usage = _general_chat_usage_meta("Thanks!", result.message, result.data)
+    assert usage["route"] == "deterministic_reply"
+    assert "model_label" not in usage
+    assert not any("tokens" in key for key in usage)

@@ -6333,7 +6333,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if skill_name == "general_chat" and isinstance(result_data.get("conversation_context"), dict):
                     session_state["conversation_context"] = dict(result_data.get("conversation_context") or {})
                 advisory_usage_meta = (
-                    local_chat_usage_meta(mediated_text, message)
+                    _general_chat_usage_meta(mediated_text, message, result_data)
                     if skill_name == "general_chat"
                     else None
                 )
@@ -6508,3 +6508,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         run_event_hub.unsubscribe(run_event_queue)
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)
+
+
+def _general_chat_usage_meta(
+    user_text: str, response_text: str, result_data: dict[str, Any]
+) -> dict[str, Any]:
+    if result_data.get("model_generated") is True:
+        return local_chat_usage_meta(user_text, response_text)
+    if result_data.get("analysis_reply_available") is True:
+        # The bridge returns analysis or a status notice, without provider usage metadata.
+        return {"route": "analysis", "route_label": "Analysis"}
+    structured = result_data.get("structured_data") or {}
+    escalation = result_data.get("escalation") or {}
+    if structured.get("deterministic_social") or structured.get("clarification_requested") or escalation.get("ask_user"):
+        return {"route": "deterministic_reply", "route_label": "Built-in reply"}
+    return {
+        "route": "deterministic_fallback",
+        "route_label": "Fallback",
+        "local_only": True,
+        "metered": False,
+        "summary": "Nova returned a fallback reply.",
+    }

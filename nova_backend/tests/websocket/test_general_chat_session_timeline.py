@@ -223,6 +223,35 @@ def test_next_up_followups_use_the_appointments_just_shown(monkeypatch, switch_t
         generate.assert_not_called()
 
 
+@pytest.mark.parametrize("generated", [False, True])
+def test_general_chat_usage_reports_the_actual_reply_origin(monkeypatch, generated):
+    from src.llm import llm_gateway
+
+    monkeypatch.setattr(llm_gateway.llm_manager, "inference_blocked", True)
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "Tell me a joke", "turn_id": "attribution"}])
+    if generated:
+        with patch("src.skills.general_chat.generate_chat", return_value="A model-generated joke."):
+            asyncio.run(brain_server.websocket_endpoint(ws))
+    else:
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    frames = [
+        frame for frame in ws.sent_messages
+        if frame.get("turn_id") == "attribution" and frame["type"] in {"chat", "chat_done"}
+    ]
+    assert [frame["type"] for frame in frames] == ["chat", "chat_done"]
+    for frame in frames:
+        usage = frame["usage_meta"]
+        if generated:
+            assert usage["route"] == "local_model"
+            assert usage["model_label"]
+            assert usage["estimated_total_tokens"] > 0
+        else:
+            assert usage["route"] == "deterministic_fallback"
+            assert "model_label" not in usage
+            assert not any("tokens" in key for key in usage)
+
+
 def test_pronoun_status_without_project_context_stays_governed(monkeypatch):
     calls = _run_session(monkeypatch, ["What is its current status?"])
 
