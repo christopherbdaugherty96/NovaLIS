@@ -322,7 +322,7 @@ def test_selected_headline_followup_survives_silent_refresh(monkeypatch, followu
 
 
 
-@pytest.mark.parametrize("query", ["Why does Cedar matter?", "Tell me more about Cedar"])
+@pytest.mark.parametrize("query", ["Why does Cedar matter?", "Tell me more about Cedar", "Why is Cedar important?", "Why does Cedar have seven tags?"])
 def test_explicit_new_subject_does_not_use_selected_headline(monkeypatch, query):
     monkeypatch.setattr(brain_server, "invoke_governed_text_command", _sourced_news)
     ws = _ScriptedWebSocket(["news", "Why is the first story important?", query])
