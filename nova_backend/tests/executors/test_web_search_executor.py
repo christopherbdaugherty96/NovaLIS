@@ -480,15 +480,9 @@ def test_thin_source_content_skips_llm_synthesis(executor, mock_network, sample_
 def test_mediated_provider_http_failures_report_the_outcome(
     executor, mock_network, sample_request, status, expected
 ):
-    from requests import Response
-    from requests.exceptions import HTTPError
+    from src.governor.exceptions import NetworkTransportError
 
-    from src.governor.exceptions import NetworkMediatorError
-
-    response = Response()
-    response.status_code = status
-    error = NetworkMediatorError("Network call failed (HTTPError).")
-    error.__cause__ = HTTPError(response=response)
+    error = NetworkTransportError("Network call failed (HTTPError).", status_code=status)
     mock_network.request.side_effect = error
 
     result = executor.execute(sample_request)
@@ -499,12 +493,9 @@ def test_mediated_provider_http_failures_report_the_outcome(
 
 
 def test_mediated_transport_timeout_has_specific_status(executor, mock_network, sample_request):
-    from requests.exceptions import ReadTimeout
+    from src.governor.exceptions import NetworkTransportError
 
-    from src.governor.exceptions import NetworkMediatorError
-
-    error = NetworkMediatorError("Network call failed (ReadTimeout).")
-    error.__cause__ = ReadTimeout()
+    error = NetworkTransportError("Network call failed (ReadTimeout).", timed_out=True)
     mock_network.request.side_effect = error
 
     result = executor.execute(sample_request)

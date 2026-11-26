@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
 from src.conversation.response_formatter import ResponseFormatter
-from src.governor.network_mediator import network_transport_failure
 from src.llm.llm_gateway import generate_chat
 from src.services.search_disclosure import (
     BRAVE_SEARCH_URL,
@@ -20,6 +19,7 @@ from src.services.search_disclosure import (
     is_disclosure_denial,
     is_network_mediator_error,
     search_disclosure_classifier,
+    search_transport_failure,
 )
 from src.services.search_source_disclosure import (
     SearchSourceAdmission,
@@ -546,7 +546,7 @@ class WebSearchExecutor:
     def _search_failure_message(
         *, status: int = 0, error: Exception | None = None, missing_brave_key: bool = False
     ) -> str:
-        timed_out, response_status = network_transport_failure(error)
+        timed_out, response_status = search_transport_failure(error)
         if timed_out:
             return "The online search request timed out. Please try again."
         status = response_status or status
