@@ -193,8 +193,11 @@ def _names_unrelated_news_subject(text: str, state: dict[str, Any]) -> bool:
     if not match:
         return False
     subject = match.group(1)
-    if re.match(r"^(?:it|that|this)\b", subject) or re.match(
-        r"^the (?:news|story|article|headline)\b", subject
+    if lowered.startswith("why "):
+        # Significance wording describes the question, rather than the named subject.
+        subject = re.sub(r"\s+(?:matter|important|significant|relevant)$", "", subject)
+    if subject in {"it", "that", "this"} or re.match(
+        r"^(?:the|this|that) (?:news|story|article|headline)\b", subject
     ):
         return False
     if _ordinal_index(subject) is not None and _contains_any_word(
