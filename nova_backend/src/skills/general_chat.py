@@ -1977,6 +1977,7 @@ class GeneralChatSkill(BaseSkill):
             )
             safe = self.safety.filter(raw)
             safe = self.analysis_safety.sanitize(safe)
+            analysis_reply_available = bool(safe)
             if not safe:
                 safe = "I could not produce a stable deep analysis right now. Please retry with a narrower question."
             payload = self.formatter.format_payload(safe, mode=mode)
@@ -1995,6 +1996,7 @@ class GeneralChatSkill(BaseSkill):
                     "speakable_text": payload["speakable_text"],
                     "structured_data": payload["structured_data"],
                     "conversation_context": conversation_context.to_dict(),
+                    "analysis_reply_available": analysis_reply_available,
                     "escalation": {"escalated": True, "thought_data": thought_data},
                 },
                 widget_data=None,
