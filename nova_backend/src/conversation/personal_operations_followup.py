@@ -61,6 +61,11 @@ def build_personal_operations_surface(
         "answer": str(answer or ""),
         "items": items,
         "missing_sources": missing,
+        "missing_schedule_sources": [
+            source.detail
+            for source in projection.sources
+            if source.source in {"calendar", "local_reminders"} and source.status != "available"
+        ],
     }
 
 
@@ -73,8 +78,16 @@ def answer_personal_operations_followup(text: str, surface: Any) -> str:
     items = [item for item in list(surface.get("items") or []) if isinstance(item, dict)]
     lowered = " ".join(str(text or "").strip().lower().split()).rstrip("?")
     if lowered == "when is the first one":
-        if surface.get("intent") != PersonalOperationsIntent.NEXT.value or not items:
+        if surface.get("intent") != PersonalOperationsIntent.NEXT.value:
             return "The previous answer didn't show a first upcoming item, so I can't give its time."
+        if not items:
+            missing = surface.get("missing_schedule_sources") or []
+            if missing:
+                return (
+                    "Schedule information was incomplete, so I can't give the first item's time. "
+                    + " ".join(missing)
+                )
+            return "The previous answer didn't show a first upcoming item in the available schedule."
         item = items[0]
         if not item.get("scheduled_for"):
             return (
