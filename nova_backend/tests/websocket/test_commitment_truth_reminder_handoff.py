@@ -773,24 +773,44 @@ def test_reminder_correction_confirmation_rechecks_exact_original_schedule(monke
     )
 
 
-def test_reminder_correction_reports_replacement_delivery_grant_failure(monkeypatch):
-    store = _ReplacementGrantFailingScheduleStore()
+def test_reminder_correction_reports_replacement_delivery_grant_failure(monkeypatch, tmp_path):
+    path = tmp_path / "schedules.json"
+    store = NotificationScheduleStore(path)
+    original = None
+    grant = store.grant_delivery_authority
+
+    def fail_replacement_grant(schedule_id, **kwargs):
+        nonlocal original
+        if original is not None:
+            raise OSError("simulated replacement delivery grant failure")
+        result = grant(schedule_id, **kwargs)
+        original = store.get_schedule(schedule_id)
+        return result
+
+    monkeypatch.setattr(store, "grant_delivery_authority", fail_replacement_grant)
     ws = _run_session(
         monkeypatch,
         [
             "remind me tomorrow at 2 PM to call the dentist",
-            "No, I meant Friday",
+            "Actually, move it to Friday at 9 AM.",
             "yes",
         ],
         store,
     )
 
-    assert len(store.rescheduled) == 1
-    assert len(store.grants) == 1
+    assert original is not None
+    reopened = NotificationScheduleStore(path)
+    persisted = reopened.get_schedule(original["id"])
+    assert persisted is not None
+    assert persisted["next_run_at"] != original["next_run_at"]
+    assert persisted["body"] == original["body"]
+    assert not reopened.delivery_authority_decision(
+        original["id"], channel="windows_toast"
+    )["allowed"]
     messages = _chat_messages(ws)
     assert any(
-        "couldn't complete and verify" in message.lower()
-        and "do not rely" in message.lower()
+        "the reminder time was saved" in message.lower()
+        and "do not rely on receiving a notification" in message.lower()
         for message in messages
     )
     assert not any("Reminder updated:" in message for message in messages)
@@ -810,7 +830,7 @@ def test_failed_reminder_correction_invalidates_cached_saved_evidence(monkeypatc
     )
 
     messages = _chat_messages(ws)
-    assert any("couldn't complete and verify" in message.lower() for message in messages)
+    assert any("the reminder time was saved" in message.lower() for message in messages)
     assert any(
         "do not have verified reminder-save evidence" in message.lower()
         for message in messages

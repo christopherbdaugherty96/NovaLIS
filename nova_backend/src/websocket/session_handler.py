@@ -2024,9 +2024,25 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                             "reason": "correction_persistence_or_authorization_failure",
                         }
                         log.exception("Confirmed reminder correction failed")
-                        await _complete_immediate_turn(
+                        message = (
                             "I couldn't complete and verify that reminder correction. "
-                            "Do not rely on the changed time; use 'show schedules' to inspect it.",
+                            "Do not rely on the changed time; use 'show schedules' to inspect it."
+                        )
+                        try:
+                            persisted = notification_schedules.get_schedule(schedule_id)
+                            if persisted and persisted.get("active"):
+                                persisted_due = datetime.fromisoformat(persisted["next_run_at"])
+                                if persisted_due == datetime.fromisoformat(proposed_due):
+                                    message = (
+                                        f"The reminder time was saved for "
+                                        f"{_format_local_schedule_time(persisted_due)}. "
+                                        "I couldn't verify delivery authorization for the new time. "
+                                        "Do not rely on receiving a notification."
+                                    )
+                        except Exception:
+                            log.exception("Could not read back reminder after correction failure")
+                        await _complete_immediate_turn(
+                            message,
                             remember_response=False,
                             tone_domain="system",
                         )
