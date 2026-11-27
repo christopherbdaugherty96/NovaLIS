@@ -551,10 +551,12 @@ _BODY_FIRST_REMINDER_WITH_TIME_RE = re.compile(
     re.IGNORECASE,
 )
 
+_REMINDER_CORRECTION_CONFIRMATION_SECONDS = 120
 _IMMEDIATE_REMINDER_DAY_CORRECTION_RE = re.compile(
-    r"^\s*(?:no\s*[,;-]?\s*)?(?:i\s+)?meant\s+"
+    r"^\s*(?:(?:actually|no)\s*[,;-]?\s+)?"
+    r"(?:(?:i\s+)?meant|(?:move|change)\s+(?:it|that)\s+to|make\s+(?:it|that))\s+"
     r"(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
-    r"\s*[.?!]*\s*$",
+    r"(?:\s+at\s+(?P<time>.+?))?\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
 
@@ -1922,12 +1924,21 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 )
 
             pending_reminder_correction = session_state.get("pending_reminder_correction")
-            if pending_reminder_correction:
-                if session_state["turn_count"] > int(
-                    pending_reminder_correction.get("expires_after_turn") or 0
-                ):
-                    session_state["pending_reminder_correction"] = None
-                    pending_reminder_correction = None
+            if pending_reminder_correction and (
+                session_state["turn_count"] > pending_reminder_correction["expires_after_turn"]
+                or time.monotonic() >= pending_reminder_correction["expires_at_monotonic"]
+            ):
+                session_state["pending_reminder_correction"] = None
+                pending_reminder_correction = None
+                if not silent_widget_refresh and SessionRouter.route_pending_web_confirmation(
+                    raw_text, whole_reply_only=True
+                ).action in {"confirm", "cancel", "reprompt"}:
+                    await _complete_immediate_turn(
+                        "The reminder correction expired, so no reminder was changed.",
+                        remember_response=False,
+                        tone_domain="system",
+                    )
+                    continue
 
             if pending_reminder_correction and not silent_widget_refresh:
                 correction_decision = SessionRouter.route_pending_web_confirmation(
@@ -2280,7 +2291,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 except Exception:
                     existing = None
                     log.exception("Reminder correction grounding read failed")
-                if not isinstance(existing, dict) or not bool(existing.get("active")):
+                if (
+                    not isinstance(existing, dict)
+                    or not bool(existing.get("active"))
+                    or str(existing.get("kind") or "").strip().lower() != "reminder"
+                ):
                     await _complete_immediate_turn(
                         "I couldn't verify the saved reminder, so no reminder was changed.",
                         remember_response=False,
@@ -2298,16 +2313,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 current_due_raw = str(existing.get("next_run_at") or "").strip()
                 try:
                     current_due = datetime.fromisoformat(current_due_raw)
-                    local_current_due = current_due.astimezone()
+                    if current_due.tzinfo is None:
+                        raise ValueError("Saved reminder is missing its offset")
+                    local_current_due = current_due.astimezone(deps._schedule_local_zone())
                     weekday = str(reminder_day_correction.group("weekday") or "").strip().lower()
-                    time_label = local_current_due.strftime("%I:%M %p").lstrip("0")
+                    time_label = reminder_day_correction.group("time") or local_current_due.strftime("%I:%M %p")
                     proposed_due = _parse_schedule_datetime(
                         f"{weekday} at {time_label}",
                         recurrence="once",
                     )
                 except (TypeError, ValueError):
                     await _complete_immediate_turn(
-                        "I couldn't safely resolve that corrected day, so no reminder was changed.",
+                        "I couldn't safely resolve that corrected day or time, so no reminder was changed.",
                         remember_response=False,
                         tone_domain="system",
                     )
@@ -2317,12 +2334,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     "expected_next_run_at": current_due_raw,
                     "proposed_next_run_at": proposed_due.isoformat(),
                     "expires_after_turn": session_state["turn_count"] + 2,
+                    "expires_at_monotonic": time.monotonic() + _REMINDER_CORRECTION_CONFIRMATION_SECONDS,
                 }
                 await _complete_immediate_turn(
                     (
                         f"Change reminder {schedule_id} from "
-                        f"{local_current_due.strftime('%A')}, {_format_local_schedule_time(current_due)} to "
-                        f"{proposed_due.strftime('%A')}, {_format_local_schedule_time(proposed_due)}? "
+                        f"{local_current_due.strftime('%A')}, {_format_local_schedule_time(current_due)} "
+                        f"{local_current_due.strftime('%Z (UTC%z)')} to "
+                        f"{proposed_due.strftime('%A')}, {_format_local_schedule_time(proposed_due)} "
+                        f"{proposed_due.strftime('%Z (UTC%z)')}? "
                         "Reply 'yes' to change it or 'no' to leave it unchanged."
                     ),
                     remember_response=False,
