@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
-from src.durability.corruption import read_jsonl_state, require_state
+from src.durability.corruption import StateCorruptError, require_state
 from src.durability.maintenance import authoritative_mutation
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.event_types import EVENT_TYPES
@@ -35,9 +35,28 @@ def _validate_existing_ledger(path: Path) -> None:
     key = _path_key(path)
     if _VALIDATED_FILE_SIGNATURES.get(key) == signature:
         return
-    existing = read_jsonl_state(path, "ledger")
-    for record in existing:
-        require_state(isinstance(record, dict), "ledger", path, "expected object record")
+    all_objects = True
+    try:
+        with path.open(encoding="utf-8") as stream:
+            number = 0
+            for physical_line in stream:
+                # Match the existing JSONL reader's splitlines semantics.
+                for line in physical_line.splitlines():
+                    number += 1
+                    if not line.strip():
+                        continue
+                    try:
+                        record = json.loads(line)
+                    except json.JSONDecodeError as exc:
+                        raise StateCorruptError(
+                            "ledger", path, f"invalid JSON on line {number}: {exc}"
+                        ) from exc
+                    all_objects &= isinstance(record, dict)
+    except FileNotFoundError:
+        raise
+    except (OSError, UnicodeError) as exc:
+        raise StateCorruptError("ledger", path, exc) from exc
+    require_state(all_objects, "ledger", path, "expected object record")
     _VALIDATED_FILE_SIGNATURES[key] = signature
 
 

@@ -87,3 +87,17 @@ def test_cache_refresh_failure_does_not_misreport_durable_append(tmp_path, monke
     assert records[0]["event_type"] == "ACTION_COMPLETED"
     assert records[0]["sequence"] == 1
     assert cache_key not in writer_module._VALIDATED_FILE_SIGNATURES
+
+
+def test_append_streams_existing_ledger_and_preserves_line_number(tmp_path, monkeypatch):
+    path = tmp_path / "ledger.jsonl"
+    original = b'{"event_type":"ACTION_COMPLETED"}\r\n\r\n{"broken":\n'
+    path.write_bytes(original)
+
+    def reject_whole_file_read(*args, **kwargs):
+        pytest.fail("append validation must not read the whole file")
+
+    monkeypatch.setattr(type(path), "read_text", reject_whole_file_read)
+    with pytest.raises(LedgerWriteFailed, match="invalid JSON on line 3"):
+        LedgerWriter(path).log_event("ACTION_COMPLETED", {})
+    assert path.read_bytes() == original
