@@ -49,7 +49,11 @@ class BriefIntent:
 
 
 # --- Owner-supplied v1 lexicon (the entire matcher; extend only with a test) ---
-_WEATHER_TERMS = ("hot", "cold", "rain", "jacket", "stay cool", "outside", "heat alert", "umbrella")
+_WEATHER_TERMS = ("rain", "jacket", "stay cool", "outside", "heat alert", "umbrella")
+_AMBIENT_TEMPERATURE_RE = re.compile(
+    r"^(?:(?:is|will) it (?:be )?(?:hot|cold)|how (?:hot|cold) (?:is it|will it be))"
+    r"(?: (?:out(?:side)?|today|tomorrow|tonight|now|later))*[?.!]*$"
+)
 _CALENDAR_TERMS = (
     "what am i doing",
     "plans",
@@ -120,6 +124,9 @@ def _domain_hits(q: str) -> dict[str, tuple[str, ...]]:
         )
         if matched:
             hits[domain] = matched
+    if _AMBIENT_TEMPERATURE_RE.fullmatch(q):
+        term = "cold" if "cold" in q else "hot"
+        hits["weather"] = (*hits.get("weather", ()), term)
     return hits
 
 
