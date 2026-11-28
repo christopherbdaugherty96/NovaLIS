@@ -647,3 +647,16 @@ def test_history_budget_uses_effective_context_limit(configured):
 
     total_chars = 3000 + 3000 + len("current") + 600 * 3 + sum(len(row["content"]) for row in messages[:-2])
     assert total_chars <= min(configured, 4096, 16384) * 3
+
+
+def test_new_subject_does_not_inherit_previous_topic_hint(monkeypatch):
+    turns = [
+        "Explain the difference between RAM and computer storage in one sentence.",
+        "For this test, my imaginary project is called Cedar, its target day is Tuesday, and its status is pending. Repeat those three details briefly.",
+    ]
+    calls = _run_session(monkeypatch, turns)
+    assert len(calls) == 2
+    messages = calls[-1]["messages"]
+    hints = [row["content"] for row in messages if row["content"].startswith("Session data")]
+    assert hints and "computer storage" not in hints[0].lower()
+    assert any(turns[1] == row["content"] for row in messages)

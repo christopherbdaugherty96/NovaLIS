@@ -119,3 +119,16 @@ def test_understanding_general_request_is_low_confidence_manual_help():
     assert out.capability_status == CapabilityStatus.CAN_HELP_MANUALLY
     assert out.confidence == UnderstandingConfidence.LOW
     assert out.authority_effect == "none"
+
+
+def test_personal_project_facts_do_not_request_nova_status():
+    for text in (
+        "My volunteer project targets Monday and its status is pending. Repeat those details.",
+        "What is its current status?",
+    ):
+        result = build_request_understanding(text)
+        assert result.request_type != "project_status_or_next_step"
+        assert "active_focus" not in result.notes
+
+    for text in ("Status?", "What's Nova's status?", "Where are we with the project?"):
+        assert build_request_understanding(text).request_type == "project_status_or_next_step"

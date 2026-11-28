@@ -86,7 +86,11 @@ _SEND_RE = re.compile(r"\b(send|sent|transmit|deliver)\b", re.IGNORECASE)
 _DRAFT_RE = re.compile(r"\b(draft|write|compose|prepare)\b", re.IGNORECASE)
 _SHOPIFY_RE = re.compile(r"\b(shopify|cap\s*65)\b", re.IGNORECASE)
 _AURALIS_RE = re.compile(r"\b(auralis|website merger|websites?\s+merger|merge\s+website|nova lead console)\b", re.IGNORECASE)
-_STATUS_RE = re.compile(r"\b(current status|status|ground me|where are we|what is next|next steps?)\b", re.IGNORECASE)
+_STATUS_RE = re.compile(
+    r"^\s*(?:status|current status|what is next|next steps?)[.!?\s]*$"
+    r"|\b(?:ground me|where are we|(?:nova(?:lis)?(?:['’]s)?|project) status)\b",
+    re.IGNORECASE,
+)
 _CLAUDE_RE = re.compile(r"\b(claude|codex|prompt)\b", re.IGNORECASE)
 _MEMORY_RE = re.compile(
     r"\b(save (this|that)?\s*(to )?memory|remember|memory|learn|from now on|do not do that again)\b",
