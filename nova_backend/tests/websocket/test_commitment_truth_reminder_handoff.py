@@ -773,24 +773,44 @@ def test_reminder_correction_confirmation_rechecks_exact_original_schedule(monke
     )
 
 
-def test_reminder_correction_reports_replacement_delivery_grant_failure(monkeypatch):
-    store = _ReplacementGrantFailingScheduleStore()
+def test_reminder_correction_reports_replacement_delivery_grant_failure(monkeypatch, tmp_path):
+    path = tmp_path / "schedules.json"
+    store = NotificationScheduleStore(path)
+    original = None
+    grant = store.grant_delivery_authority
+
+    def fail_replacement_grant(schedule_id, **kwargs):
+        nonlocal original
+        if original is not None:
+            raise OSError("simulated replacement delivery grant failure")
+        result = grant(schedule_id, **kwargs)
+        original = store.get_schedule(schedule_id)
+        return result
+
+    monkeypatch.setattr(store, "grant_delivery_authority", fail_replacement_grant)
     ws = _run_session(
         monkeypatch,
         [
             "remind me tomorrow at 2 PM to call the dentist",
-            "No, I meant Friday",
+            "Actually, move it to Friday at 9 AM.",
             "yes",
         ],
         store,
     )
 
-    assert len(store.rescheduled) == 1
-    assert len(store.grants) == 1
+    assert original is not None
+    reopened = NotificationScheduleStore(path)
+    persisted = reopened.get_schedule(original["id"])
+    assert persisted is not None
+    assert persisted["next_run_at"] != original["next_run_at"]
+    assert persisted["body"] == original["body"]
+    assert not reopened.delivery_authority_decision(
+        original["id"], channel="windows_toast"
+    )["allowed"]
     messages = _chat_messages(ws)
     assert any(
-        "couldn't complete and verify" in message.lower()
-        and "do not rely" in message.lower()
+        "the reminder time was saved" in message.lower()
+        and "do not rely on receiving a notification" in message.lower()
         for message in messages
     )
     assert not any("Reminder updated:" in message for message in messages)
@@ -810,7 +830,7 @@ def test_failed_reminder_correction_invalidates_cached_saved_evidence(monkeypatc
     )
 
     messages = _chat_messages(ws)
-    assert any("couldn't complete and verify" in message.lower() for message in messages)
+    assert any("the reminder time was saved" in message.lower() for message in messages)
     assert any(
         "do not have verified reminder-save evidence" in message.lower()
         for message in messages
@@ -985,3 +1005,99 @@ def test_natural_reminder_list_phrases_route_to_authoritative_store(monkeypatch,
 
     assert any("Scheduled Updates" in message for message in _chat_messages(ws))
     assert any(message.get("type") == "notification_schedule" for message in ws.sent_messages)
+@pytest.mark.parametrize("request_text", [
+    "Actually, move it to Friday at 9 AM.",
+    "Change that to Friday at 9.",
+    "No, make it Friday at 9 AM.",
+    "I meant Friday.",
+])
+def test_natural_reminder_correction_preserves_identity_and_requires_one_confirmation(
+    monkeypatch, request_text
+):
+    zone = timezone(timedelta(hours=-5), "EST")
+    monkeypatch.setattr(brain_server, "_local_now", lambda: datetime(2026, 11, 25, 12, tzinfo=zone))
+    monkeypatch.setattr(brain_server, "_schedule_local_zone", lambda: zone)
+    store = _UtcNormalizingScheduleStore()
+    original_hour = 9 if request_text == "I meant Friday." else 8
+    ws = _run_session(
+        monkeypatch,
+        [f"remind me tomorrow at {original_hour} AM to review Cedar", request_text, "yes", "yes"],
+        store,
+        general_chat_response="Fallback",
+    )
+
+    assert len(store.created) == 1
+    assert store.created[0]["body"] == "review Cedar"
+    assert store.rescheduled == [{
+        "schedule_id": "SCH-TEST-0001",
+        "next_run_at": datetime(2026, 11, 27, 14, tzinfo=timezone.utc),
+    }]
+    assert len(store.grants) == 2
+    messages = _chat_messages(ws)
+    proposal = next(m for m in messages if m.startswith("Change reminder SCH-TEST-0001"))
+    assert "Thursday" in proposal and "Friday" in proposal and proposal.count("EST (UTC-0500)") == 2
+    assert sum(m.startswith("Reminder updated: SCH-TEST-0001") for m in messages) == 1
+    assert "No action is waiting for confirmation." in messages
+
+@pytest.mark.parametrize(("prompts", "expected"), [
+    (
+        ["Actually, move it to Friday at 9 AM.", "yes"],
+        "couldn't tie that correction",
+    ),
+    (
+        ["remind me tomorrow at 8 AM to review Cedar", "Actually, move it to Friday at 29:99.", "yes"],
+        "couldn't safely resolve that corrected day or time",
+    ),
+    (
+        ["remind me tomorrow at 8 AM to review Cedar", "Actually, move it to Friday at 9 AM.", "no", "yes"],
+        "the reminder was not changed",
+    ),
+    (
+        ["remind me tomorrow at 8 AM to review Cedar", "show schedules", "Change that to Friday at 9.", "yes"],
+        "couldn't tie that correction",
+    ),
+])
+def test_natural_reminder_corrections_fail_closed(monkeypatch, prompts, expected):
+    store = _RecordingScheduleStore()
+    ws = _run_session(monkeypatch, prompts, store, general_chat_response="Fallback")
+    assert not store.rescheduled
+    assert len(store.grants) == len(store.created)
+    assert any(expected in message.lower() for message in _chat_messages(ws))
+
+
+def test_natural_reminder_confirmation_has_a_wall_clock_deadline(monkeypatch):
+    from src.websocket import session_handler
+
+    def monotonic():
+        return next(clock)
+
+    clock = iter((0, 0, session_handler._REMINDER_CORRECTION_CONFIRMATION_SECONDS))
+    monkeypatch.setattr(session_handler, "time", type("Clock", (), {"monotonic": staticmethod(monotonic)}))
+    store = _RecordingScheduleStore()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me tomorrow at 8 AM to review Cedar", "Actually, move it to Friday at 9 AM.", "yes"],
+        store,
+    )
+    assert not store.rescheduled
+    assert len(store.grants) == 1
+    assert any("correction expired" in message.lower() for message in _chat_messages(ws))
+
+
+def test_natural_reminder_correction_cannot_update_a_missing_saved_record(monkeypatch):
+    class MissingAfterSave(_RecordingScheduleStore):
+        reads = 0
+
+        def get_schedule(self, schedule_id: str) -> dict | None:
+            self.reads += 1
+            return super().get_schedule(schedule_id) if self.reads == 1 else None
+
+    store = MissingAfterSave()
+    ws = _run_session(
+        monkeypatch,
+        ["remind me tomorrow at 8 AM to review Cedar", "Actually, move it to Friday at 9 AM.", "yes"],
+        store,
+    )
+    assert not store.rescheduled
+    assert len(store.grants) == 1
+    assert any("couldn't verify the saved reminder" in message.lower() for message in _chat_messages(ws))
