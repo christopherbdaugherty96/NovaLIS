@@ -11,7 +11,7 @@ Usage:
 
 The script:
   1. Checks if Nova is already running on the target port.
-  2. Clears an unhealthy stale Nova process if it owns the target port.
+  2. Preserves existing listeners if readiness cannot be verified.
   3. Ensures Ollama is running (starts it if not).
   4. Launches ``nova-start`` (or uvicorn fallback) as a background process.
   5. Waits for the /phase-status endpoint to respond.
@@ -25,11 +25,13 @@ Exit codes:
 from __future__ import annotations
 
 import os
-import subprocess  # noqa: F401 - retained for launcher-test monkeypatch compatibility
+import subprocess
 import sys
 import time
 import uuid
 from pathlib import Path
+
+import psutil
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_DIR = PROJECT_ROOT / "nova_backend"
@@ -136,6 +138,63 @@ def _current_nova_listener_pid(fallback_pid: int) -> int:
     if _is_nova_backend_command(command_line):
         return pid
     return fallback_pid
+
+
+class _AdmittedProcessTree:
+    """Track process identities descended from this launch, independently of the port."""
+
+    def __init__(self, process: subprocess.Popen) -> None:
+        self.process = process
+        self.root = None
+        self.children: dict[int, psutil.Process] = {}
+        self.observation_failed = False
+        try:
+            if process.poll() is None:
+                self.root = psutil.Process(process.pid)
+                if process.poll() is not None:
+                    self.root = None
+            if self.root is None:
+                self.observation_failed = True
+        except (psutil.Error, OSError):
+            self.observation_failed = True
+        self.observe()
+
+    def observe(self) -> None:
+        try:
+            if self.root is not None and self.root.is_running():
+                parents = (self.root,)
+            else:
+                parents = tuple(self.children.values())
+            for parent in parents:
+                if parent.is_running():
+                    for child in parent.children(recursive=True):
+                        self.children[child.pid] = child
+        except (psutil.Error, OSError):
+            self.observation_failed = True
+
+    def stop(self) -> bool:
+        self.observe()
+        complete = not self.observation_failed
+        try:
+            if self.process.poll() is None:
+                self.process.terminate()
+                self.process.wait(timeout=3)
+        except (OSError, subprocess.TimeoutExpired):
+            complete = False
+
+        terminated = []
+        for child in self.children.values():
+            try:
+                # psutil checks the captured creation identity before signaling.
+                if child.is_running():
+                    child.terminate()
+                    terminated.append(child)
+            except psutil.NoSuchProcess:
+                continue
+            except (psutil.Error, OSError):
+                complete = False
+        _, alive = psutil.wait_procs(terminated, timeout=3)
+        return complete and not alive
 
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
@@ -281,10 +340,12 @@ def start_nova(
         )
         return 1
     proc = launch.process
+    owned = _AdmittedProcessTree(proc)
 
     # Wait for the health endpoint
     start = time.time()
     while time.time() - start < STARTUP_TIMEOUT:
+        owned.observe()
         if _is_running():
             running_pid = _current_nova_listener_pid(proc.pid)
             try:
@@ -294,10 +355,8 @@ def start_nova(
                     listener_pid=running_pid,
                 )
             except BackendStartupAdmissionError as error:
-                try:
-                    proc.terminate()
-                except Exception:
-                    pass
+                if not owned.stop():
+                    print("[Nova] WARNING: Launch cleanup could not be verified.", file=sys.stderr)
                 _log_fh.close()
                 print(
                     f"[Nova] ERROR: Backend readiness evidence failed ({error}).",
@@ -329,14 +388,14 @@ def start_nova(
                 f"[Nova] Check {_nova_log} for details.",
                 file=sys.stderr,
             )
-            try:
-                PID_FILE.unlink()
-            except FileNotFoundError:
-                pass
+            if not owned.stop():
+                print("[Nova] WARNING: Launch cleanup could not be verified.", file=sys.stderr)
             _log_fh.close()
             return 1
         time.sleep(1)
 
+    if not owned.stop():
+        print("[Nova] WARNING: Launch cleanup could not be verified.", file=sys.stderr)
     try:
         record_backend_outcome(launch, outcome="readiness_timeout")
     except BackendStartupAdmissionError as error:
@@ -349,10 +408,6 @@ def start_nova(
         f"[Nova] Check {_nova_log} for details.",
         file=sys.stderr,
     )
-    try:
-        PID_FILE.unlink()
-    except FileNotFoundError:
-        pass
     _log_fh.close()
     return 1
 

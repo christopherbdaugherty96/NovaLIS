@@ -129,3 +129,67 @@ def test_startup_probe_contract_has_no_direct_urlopen():
     assert "urllib.request" not in ensure_block
     assert "subprocess.Popen" not in ensure_block
     assert '["ollama", "serve"]' not in ensure_block
+
+
+def test_readiness_timeout_stops_admitted_child_and_leaves_unrelated_process(
+    monkeypatch, tmp_path
+):
+    import subprocess
+    import sys
+    import time
+    from types import SimpleNamespace
+
+    import psutil
+    import pytest
+
+    if sys.platform != "win32":
+        pytest.skip("Windows launcher ownership regression")
+
+    daemon = _load_start_daemon()
+    child_pid_file = tmp_path / "child.pid"
+    script = (
+        "import pathlib,subprocess,sys,time;"
+        "child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']);"
+        "pathlib.Path(sys.argv[1]).write_text(str(child.pid));"
+        "time.sleep(60)"
+    )
+    root = subprocess.Popen([sys.executable, "-c", script, str(child_pid_file)])
+    unrelated = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    descendants = []
+    try:
+        deadline = time.monotonic() + 10
+        while not child_pid_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        child_pid = int(child_pid_file.read_text())
+        descendants = psutil.Process(root.pid).children(recursive=True)
+        child = next(process for process in descendants if process.pid == child_pid)
+        outcomes = []
+        prior_pid = tmp_path / "nova_backend.pid"
+        prior_pid.write_text(str(unrelated.pid))
+        monkeypatch.setattr(daemon, "PID_DIR", tmp_path)
+        monkeypatch.setattr(daemon, "PID_FILE", prior_pid)
+        monkeypatch.setattr(daemon, "STARTUP_TIMEOUT", 0)
+        monkeypatch.setattr(daemon, "_is_running", lambda: False)
+        monkeypatch.setattr(daemon, "_port_available_for_startup", lambda: True)
+        monkeypatch.setattr(daemon, "_ensure_ollama", lambda: None)
+        monkeypatch.setattr(
+            daemon, "spawn_admitted_backend", lambda **_kwargs: SimpleNamespace(process=root)
+        )
+        monkeypatch.setattr(
+            daemon, "record_backend_outcome", lambda _launch, **event: outcomes.append(event)
+        )
+
+        assert daemon.start_nova(open_browser=False) == 1
+        assert root.poll() is not None
+        assert not child.is_running()
+        assert unrelated.poll() is None
+        assert prior_pid.read_text() == str(unrelated.pid)
+        assert outcomes == [{"outcome": "readiness_timeout"}]
+    finally:
+        for process in descendants:
+            if process.is_running():
+                process.kill()
+        for process in (root, unrelated):
+            if process.poll() is None:
+                process.kill()
+            process.wait(timeout=5)
