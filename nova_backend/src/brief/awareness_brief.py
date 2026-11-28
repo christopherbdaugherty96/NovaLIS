@@ -40,7 +40,7 @@ class AwarenessSection:
 
     @property
     def available(self) -> bool:
-        return self.status == "ok" and len(self.items) > 0
+        return self.status in {"ok", "cached", "stale"} and len(self.items) > 0
 
 
 @dataclass(frozen=True)
@@ -139,24 +139,60 @@ def build_weather_section(
     )
 
 
+def news_availability_widget(result: Any, *, enabled: bool) -> dict[str, Any]:
+    """Present the governed result without turning placeholder links into news."""
+    data = getattr(result, "data", None)
+    widget = dict((data or {}).get("widget") or {}) if isinstance(data, dict) else {}
+    items = [
+        item for item in widget.get("items") or []
+        if isinstance(item, dict) and item.get("source_retrieved") is not False
+    ]
+    status = widget.get("status")
+    if not enabled:
+        status, summary = "disabled", "News is disabled in this runtime profile."
+    elif getattr(result, "status", "") == "refused" or status == "denied":
+        status, summary = "denied", "News access was not authorized."
+    elif getattr(result, "success", False) and items:
+        summary = str(widget.get("summary") or result.message)
+        if widget.get("served_from_cache") or status == "stale":
+            label = "Stale" if status == "stale" else "Cached"
+            status = label.lower()
+            fetched_at = str(widget.get("fetched_at") or "")
+            try:
+                fetched = datetime.fromisoformat(fetched_at.replace("Z", "+00:00"))
+                minutes = max(0, int((datetime.now(timezone.utc) - fetched).total_seconds() // 60))
+            except (TypeError, ValueError):
+                summary = f"{label} headlines (age unavailable). {summary}"
+            else:
+                age = f"{minutes} min ago" if minutes else "less than a minute ago"
+                summary = f"{label} headlines retrieved {age}. {summary}"
+        else:
+            status = "ok"
+        return {**widget, "type": "news", "items": items, "status": status, "summary": summary}
+    elif status == "empty":
+        status, summary = "empty", "The news sources returned no headlines."
+    else:
+        status, summary = "unavailable", "News could not be retrieved."
+    return {"type": "news", "items": [], "categories": {}, "status": status, "summary": summary}
+
+
 def build_news_section(
     news_items: list[dict[str, Any]] | None,
     categories: dict[str, Any] | None = None,
+    *, status: str = "", summary: str = "",
 ) -> AwarenessSection:
     if not news_items:
-        # News is sourced from public RSS feeds — there is no key to configure, so
-        # an empty result is always a transient availability issue, never a
-        # misconfiguration. Do not name Brave (that is the web-search provider,
-        # not the news source) and never say "not configured".
         return AwarenessSection(
-            key="news", title="News",
-            items=("News is temporarily unavailable — refreshing. Try again shortly.",),
-            status="unavailable", source="news",
+            key="news", title="News", items=(summary or "News could not be retrieved.",),
+            status=status or "unavailable", source="",
         )
     items: list[str] = []
     if isinstance(categories, dict) and categories:
         for cat, cat_items in list(categories.items())[:4]:
             label = _clean(cat, limit=30)
+            if isinstance(cat_items, dict):
+                label = _clean(cat_items.get("title") or cat, limit=30)
+                cat_items = cat_items.get("items")
             count = len(cat_items) if isinstance(cat_items, list) else 0
             if count:
                 first_title = _clean(
@@ -174,10 +210,12 @@ def build_news_section(
                     items.append(title)
             elif isinstance(article, str):
                 items.append(_clean(article, limit=100))
+    if status in {"cached", "stale"} and summary:
+        items.insert(0, summary)
     return AwarenessSection(
         key="news", title="News by Subject",
         items=tuple(items[:_MAX_ITEMS]),
-        status="ok" if items else "empty", source="brave_search",
+        status=(status or "ok") if items else "empty", source="rss",
     )
 
 
@@ -355,6 +393,8 @@ def compose_awareness_brief(
     weather_configured: bool | None = None,
     news_items: list[dict[str, Any]] | None = None,
     news_categories: dict[str, Any] | None = None,
+    news_status: str = "",
+    news_summary: str = "",
     calendar_data: dict[str, Any] | None = None,
     session_state: dict[str, Any] | None = None,
     shopify_snapshot: dict[str, Any] | None = None,
@@ -363,7 +403,7 @@ def compose_awareness_brief(
 ) -> AwarenessBrief:
     sections: list[AwarenessSection] = [
         build_weather_section(weather_data, configured=weather_configured),
-        build_news_section(news_items, news_categories),
+        build_news_section(news_items, news_categories, status=news_status, summary=news_summary),
         build_calendar_section(calendar_data),
         build_project_section(session_state),
         build_shopify_section(shopify_snapshot),

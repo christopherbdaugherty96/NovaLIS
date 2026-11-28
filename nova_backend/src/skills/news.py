@@ -22,8 +22,8 @@ from src.governor.disclosure_policy import (
     TransportClass,
 )
 from src.governor.disclosure_transport import HttpDisclosureContext
+from src.governor.exceptions import DisclosureDeniedError
 from src.governor.network_mediator import NetworkMediator
-from src.tools.news_fallback import fallback_headline
 from src.tools.rss_fetch import fetch_rss_headlines
 
 # ---------------------------------------------------------------------------
@@ -247,7 +247,8 @@ class NewsSkill(BaseSkill):
             sources = list(group.get("sources") or [])
             if not key or not sources:
                 continue
-            items = await self._fetch_many(sources, semaphore=semaphore)
+            results = await self._fetch_many(sources, semaphore=semaphore)
+            items = [item for item in results if item.get("source_retrieved")]
             categories[key] = {
                 "title": title,
                 "items": items[:3],
@@ -261,7 +262,8 @@ class NewsSkill(BaseSkill):
             return cached
 
         semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_FEEDS)
-        items = await self._fetch_many(self.SOURCES, semaphore=semaphore)
+        results = await self._fetch_many(self.SOURCES, semaphore=semaphore)
+        items = [item for item in results if item.get("source_retrieved")]
         categories = await self._fetch_category_groups(semaphore=semaphore)
         source_count = len(
             {
@@ -280,9 +282,18 @@ class NewsSkill(BaseSkill):
             message = summary
             status = "ok"
         else:
-            summary = "News unavailable right now."
-            message = "I couldn't pull fresh headlines right now."
-            status = "unavailable"
+            outcomes = {item["feed_status"] for item in results if "feed_status" in item}
+            if outcomes == {"denied"}:
+                status, summary = "denied", "News access was not authorized."
+            elif outcomes == {"empty"}:
+                status, summary = "empty", "The news sources returned no headlines."
+            else:
+                status, summary = "unavailable", "News could not be retrieved."
+            message = summary
+            if status == "unavailable" and not any(item.get("feed_denied") for item in results):
+                stale = self._cached_result(allow_stale=True)
+                if stale is not None:
+                    return stale
 
         widget = {
             "type": "news",
@@ -320,16 +331,20 @@ class NewsSkill(BaseSkill):
     # served results for the wrong query.
     _CACHE_KEY = "news"
 
-    def _cached_result(self) -> Optional[SkillResult]:
+    def _cached_result(self, *, allow_stale: bool = False) -> Optional[SkillResult]:
         with _result_cache_lock:
             entry = _result_cache.get(self._CACHE_KEY)
         if not entry:
             return None
         expiry, message, widget = entry
-        if expiry <= time.time():
+        now = time.time()
+        expired = expiry <= now
+        if expired and (not allow_stale or now - expiry > NEWS_CACHE_TTL_SECONDS):
             return None
         cached_widget = dict(widget)
         cached_widget["served_from_cache"] = True
+        if expired:
+            cached_widget["status"] = "stale"
         return SkillResult(
             success=True,
             message=message,
@@ -460,7 +475,7 @@ class NewsSkill(BaseSkill):
 
     async def _fetch_one(self, source: dict) -> Optional[dict]:
         name = source.get("name")
-        domain = source.get("domain", "")
+        outcomes: set[str] = set()
 
         for feed_url in self._source_feed_urls(source):
             try:
@@ -468,6 +483,7 @@ class NewsSkill(BaseSkill):
                 items = await fetch_rss_headlines(
                     feed_url,
                     network=self.network,
+                    preserve_failure=True,
                     disclosure_classifier=_news_rss_disclosure_classifier(
                         feed_url,
                         provider=provider,
@@ -475,6 +491,7 @@ class NewsSkill(BaseSkill):
                     ),
                 )
                 if not items:
+                    outcomes.add("empty")
                     continue
                 first = items[0]
                 title = first.get("title")
@@ -491,15 +508,18 @@ class NewsSkill(BaseSkill):
                         "published": str(first.get("published") or "").strip(),
                         "video_url": str(first.get("video_url") or "").strip(),
                     }
+                outcomes.add("unavailable")
+            except DisclosureDeniedError:
+                outcomes.add("denied")
             except Exception:
-                continue
+                outcomes.add("unavailable")
 
-        if domain:
-            fallback = fallback_headline(name, domain)
-            fallback["source_retrieved"] = False
-            return fallback
+        status = next(iter(outcomes)) if len(outcomes) == 1 else "unavailable"
+        result = {"feed_status": status}
+        if "denied" in outcomes:
+            result["feed_denied"] = "true"
+        return result
 
-        return None
 
 
 def _freeze_canonical_feed_providers() -> dict[str, str]:

@@ -357,3 +357,28 @@ def test_legacy_more_only_uses_a_current_story_index(monkeypatch, change_topic):
     assert calls and len(calls) == (1 if change_topic else 2)
     if not change_topic:
         assert calls[-1]["action"] == "story_page_summary"
+
+
+def test_trial_news_reports_disabled_without_invoking_news(monkeypatch):
+    _disable_unrelated_gate(monkeypatch)
+    registry = brain_server.RUNTIME_GOVERNOR.registry
+    is_enabled = registry.is_enabled
+    monkeypatch.setattr(registry, "is_enabled", lambda cap: cap != 56 and is_enabled(cap))
+
+    async def check_command(_governor, command, *_args, **_kwargs):
+        assert command != "news"
+        return None, None
+
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", check_command)
+    ws = _ScriptedWebSocket(["What are today's headlines?", "awareness brief"])
+    asyncio.run(brain_server.websocket_endpoint(ws))
+    expected = "News is disabled in this runtime profile."
+    assert any(expected in message for message in _chat_messages(ws))
+    assert any(
+        frame.get("type") == "news" and frame.get("status") == "disabled"
+        and frame.get("summary") == expected for frame in ws.sent_messages
+    )
+    brief = next(frame for frame in ws.sent_messages if frame.get("type") == "awareness_brief")
+    section = next(section for section in brief["sections"] if section["key"] == "news")
+    assert section["status"] == "disabled"
+    assert section["items"] == [expected]

@@ -1927,10 +1927,11 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
   if (!Array.isArray(items) || items.length === 0) {
     latestNewsItems = [];
     const li = document.createElement("li");
-    li.textContent = "No headlines available.";
+    const statusText = summaryText || "No headlines available.";
+    li.textContent = statusText;
     list.appendChild(li);
-    updateNewsSummary("No headlines are available to summarize right now.");
-    morningState.news = "No headlines available.";
+    updateNewsSummary(statusText);
+    morningState.news = statusText;
     renderMorningPanel();
     renderNewsCategoryGrid(latestNewsCategories);
     setNewsExpandButton();

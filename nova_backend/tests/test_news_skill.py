@@ -165,12 +165,12 @@ def test_news_skill_reports_unavailable_when_feeds_return_nothing(monkeypatch):
     result = asyncio.run(NewsSkill().handle("news"))
 
     assert result.success is False
-    assert "couldn't pull fresh headlines" in result.message.lower()
+    assert result.message == "The news sources returned no headlines."
     widget = result.widget_data or {}
-    assert widget["status"] == "unavailable"
+    assert widget["status"] == "empty"
     assert widget["source_count"] == 0
     assert widget["category_count"] == 0
-    assert widget["summary"] == "News unavailable right now."
+    assert widget["summary"] == result.message
 
 
 def test_news_skill_summary_dedupes_duplicate_titles_and_adds_theme():
@@ -197,3 +197,64 @@ def test_news_skill_summary_dedupes_duplicate_titles_and_adds_theme():
     assert "Loaded 2 sources." in summary
     assert "Theme:" in summary or "Themes:" in summary
     assert summary.count("AI chip exports tighten after policy shift") == 1
+
+
+def test_news_reports_denied_without_serving_cached_headlines(monkeypatch):
+    import time
+
+    from src.governor.exceptions import DisclosureDeniedError
+    from src.skills import news
+
+    async def denied(*_args, **_kwargs):
+        raise DisclosureDeniedError("policy")
+
+    monkeypatch.setattr(news, "_result_cache", {
+        "news": (time.time() - 1, "Previous headlines", {"items": [{"title": "Old story"}], "status": "ok"}),
+    })
+    monkeypatch.setattr(news, "fetch_rss_headlines", denied)
+    monkeypatch.setattr(NewsSkill, "SOURCES", [{"name": "Example", "feed": "https://example.com/rss"}])
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [])
+    result = asyncio.run(NewsSkill().handle("news"))
+    assert not result.success
+    assert result.widget_data["status"] == "denied"
+    assert result.widget_data["items"] == []
+
+
+def test_news_labels_recent_expired_cache_during_outage(monkeypatch):
+    import time
+
+    from src.governor.exceptions import NetworkMediatorError
+    from src.skills import news
+
+    async def unavailable(*_args, **_kwargs):
+        raise NetworkMediatorError("offline")
+
+    item = {"title": "A previously retrieved story", "source_retrieved": True}
+    monkeypatch.setattr(news, "_result_cache", {
+        "news": (time.time() - 1, "Previous headlines", {"items": [item], "status": "ok"}),
+    })
+    monkeypatch.setattr(news, "fetch_rss_headlines", unavailable)
+    monkeypatch.setattr(NewsSkill, "SOURCES", [{"name": "Example", "feed": "https://example.com/rss"}])
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [])
+    result = asyncio.run(NewsSkill().handle("news"))
+    assert result.success
+    assert result.widget_data["status"] == "stale"
+    assert result.widget_data["items"] == [item]
+
+
+def test_transport_failure_does_not_turn_publisher_homepage_into_headline(monkeypatch):
+    from src.governor.exceptions import NetworkMediatorError
+
+    async def unavailable(*_args, **_kwargs):
+        raise NetworkMediatorError("offline")
+
+    monkeypatch.setattr("src.skills.news.fetch_rss_headlines", unavailable)
+    monkeypatch.setattr(NewsSkill, "SOURCES", [
+        {"name": "Example", "domain": "example.com", "feed": "https://example.com/rss"},
+    ])
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [])
+    result = asyncio.run(NewsSkill().handle("news"))
+    assert not result.success
+    assert result.widget_data["status"] == "unavailable"
+    assert result.widget_data["items"] == []
+    assert result.widget_data["source_count"] == 0

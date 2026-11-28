@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import pytest
-
 from src.brief.awareness_brief import (
-    AwarenessBrief,
     AwarenessSection,
     build_calendar_section,
     build_changes_section,
@@ -103,11 +101,9 @@ class TestWeatherSection:
 
 class TestNewsSection:
     def test_temporarily_unavailable_when_none(self):
-        # News is RSS-sourced (no key), so an empty result is a transient
-        # availability issue, never a misconfiguration, and must not blame Brave.
         s = build_news_section(None)
         assert s.status == "unavailable"
-        assert "temporarily unavailable" in s.items[0].lower()
+        assert s.items[0] == "News could not be retrieved."
         assert "not configured" not in s.items[0].lower()
         assert "brave" not in s.items[0].lower()
 
@@ -122,6 +118,7 @@ class TestNewsSection:
         s = build_news_section(items)
         assert s.status == "ok"
         assert "Tech news headline" in s.items[0]
+        assert s.source == "rss"
 
     def test_grouped_by_categories(self):
         items = [{"title": "A"}]
@@ -323,6 +320,7 @@ class TestComposeAwarenessBrief:
         """The awareness brief module must be read-only."""
         import ast
         import inspect
+
         import src.brief.awareness_brief as mod
 
         source = inspect.getsource(mod)
