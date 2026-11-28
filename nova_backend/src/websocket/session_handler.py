@@ -2740,81 +2740,29 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             if lowered in {"news", "headlines", "latest news", "top news"}:
-                _, news_result = await invoke_governed_text_command(
-                    governor,
-                    "news",
-                    session_id,
-                )
-                if news_result is None:
-                    fallback_news_widget = {
-                        "type": "news",
-                        "items": [],
-                        "summary": "News is currently unavailable.",
-                        "categories": {},
-                    }
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, _personality_failure_message("News capability is temporarily unavailable"), tone_domain="daily")
-                    store_brief_widget(session_state, "news", fallback_news_widget, set_focus=not silent_widget_refresh)
-                    await ws_send(ws, fallback_news_widget)
-                    session_state["trust_status"] = failure_ladder.record_failure(
-                        session_state.get("trust_status", {}),
-                        reason="Temporary issue",
-                        external=True,
-                        last_external_call="News update",
+                from src.brief.awareness_brief import news_availability_widget
+
+                news_enabled = governor.registry.is_enabled(56)
+                news_result = None
+                if news_enabled:
+                    _, news_result = await invoke_governed_text_command(governor, "news", session_id)
+                news_widget = news_availability_widget(news_result, enabled=news_enabled)
+                items = news_widget["items"]
+                if not silent_widget_refresh:
+                    message = _structure_long_message(
+                        news_result.message if news_widget["status"] == "ok" else news_widget["summary"]
+                    )
+                    session_state["last_response"] = message
+                    await send_chat_message(ws, message, tone_domain="daily")
+                store_brief_widget(session_state, "news", news_widget, set_focus=not silent_widget_refresh)
+                session_state["last_sources"] = _extract_sources_from_results(items)
+                session_state["last_source_links"] = _extract_source_links(items)
+                await ws_send(ws, news_widget)
+                if news_widget["status"] in {"ok", "partial"}:
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}), "News update",
                     )
                     await send_trust_status(ws, session_state["trust_status"])
-                    await send_chat_done(ws)
-                    continue
-                news_widget = {}
-                if isinstance(news_result.data, dict):
-                    news_widget = dict(news_result.data.get("widget") or {})
-
-                if news_result.success:
-                    message = _structure_long_message(news_result.message)
-                    if not silent_widget_refresh:
-                        session_state["last_response"] = message
-                        await send_chat_message(ws, message, tone_domain="daily")
-                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
-                        items = list(news_widget.get("items") or [])
-                        store_brief_widget(session_state, "news", news_widget, set_focus=not silent_widget_refresh)
-                        session_state["last_sources"] = _extract_sources_from_results(items)
-                        session_state["last_source_links"] = _extract_source_links(items)
-                        await ws_send(ws, news_widget)
-                    else:
-                        fallback_news_widget = {
-                            "type": "news",
-                            "items": [],
-                            "summary": "News is currently unavailable.",
-                            "categories": {},
-                        }
-                        store_brief_widget(session_state, "news", fallback_news_widget, set_focus=not silent_widget_refresh)
-                        await ws_send(ws, fallback_news_widget)
-                    session_state["trust_status"] = failure_ladder.record_external_success(
-                        session_state.get("trust_status", {}),
-                        "News update",
-                    )
-                else:
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, _personality_failure_message("News capability is temporarily unavailable"), tone_domain="daily")
-                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
-                        store_brief_widget(session_state, "news", news_widget, set_focus=not silent_widget_refresh)
-                        await ws_send(ws, news_widget)
-                    else:
-                        fallback_news_widget = {
-                            "type": "news",
-                            "items": [],
-                            "summary": "News is currently unavailable.",
-                            "categories": {},
-                        }
-                        store_brief_widget(session_state, "news", fallback_news_widget, set_focus=not silent_widget_refresh)
-                        await ws_send(ws, fallback_news_widget)
-                    session_state["trust_status"] = failure_ladder.record_failure(
-                        session_state.get("trust_status", {}),
-                        reason="Temporary issue",
-                        external=True,
-                        last_external_call="News update",
-                    )
-                await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
                 continue
 
@@ -5132,11 +5080,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             _awareness_request_kind = classify_governed_surface_request(lowered)
             if _awareness_request_kind in {"awareness_brief", SURFACE_AURALIS_TODAY}:
-                from src.brief.awareness_brief import compose_awareness_brief
+                from src.brief.awareness_brief import (
+                    compose_awareness_brief,
+                    news_availability_widget,
+                )
 
                 _aw_weather: dict | None = None
-                _aw_news_items: list | None = None
-                _aw_news_cats: dict | None = None
                 _aw_calendar: dict | None = None
                 _aw_shopify: dict | None = None
                 _aw_receipts: list = list(session_state.get("recent_receipts") or [])
@@ -5149,14 +5098,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         store_brief_widget(session_state, "weather", w_widget)
                         await ws_send(ws, w_widget)
 
-                _, _aw_n = await invoke_governed_text_command(governor, "news", session_id)
-                if _aw_n is not None and _aw_n.success and isinstance(_aw_n.data, dict):
-                    n_widget = _aw_n.data.get("widget")
-                    if isinstance(n_widget, dict):
-                        _aw_news_items = list(n_widget.get("items") or [])
-                        _aw_news_cats = dict(n_widget.get("categories") or {})
-                        store_brief_widget(session_state, "news", n_widget)
-                        await ws_send(ws, n_widget)
+                news_enabled = governor.registry.is_enabled(56)
+                _aw_n = None
+                if news_enabled:
+                    _, _aw_n = await invoke_governed_text_command(governor, "news", session_id)
+                n_widget = news_availability_widget(_aw_n, enabled=news_enabled)
+                store_brief_widget(session_state, "news", n_widget)
+                await ws_send(ws, n_widget)
 
                 _, _aw_c = await invoke_governed_text_command(governor, "calendar", session_id)
                 if _aw_c is not None and _aw_c.success and isinstance(_aw_c.data, dict):
@@ -5201,8 +5149,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 _awareness = compose_awareness_brief(
                     weather_data=_aw_weather,
                     weather_configured=bool(os.getenv("WEATHER_API_KEY", "").strip()),
-                    news_items=_aw_news_items,
-                    news_categories=_aw_news_cats,
+                    news_items=n_widget["items"],
+                    news_categories=n_widget["categories"],
+                    news_status=n_widget["status"],
+                    news_summary=n_widget["summary"],
                     calendar_data=_aw_calendar,
                     session_state=session_state,
                     shopify_snapshot=_aw_shopify,
@@ -5259,7 +5209,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # morning_brief_handler.is_daily_brief_request (do not inline sets here)
             if governed_daily_brief_request:
                 weather_summary = "Weather unavailable."
-                news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."
                 calendar_line = "Calendar unavailable."
 
@@ -5282,24 +5231,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 
-                _, news_result = await invoke_governed_text_command(
-                    governor,
-                    "news",
-                    session_id,
-                    activity_origin=ActivityOrigin.BACKGROUND_READ.value,
-                )
-                if news_result is not None and news_result.success and isinstance(news_result.data, dict):
-                    news_widget = news_result.data.get("widget")
-                    if isinstance(news_widget, dict):
-                        news_summary = str(news_widget.get("summary") or news_summary)
-                        items = list(news_widget.get("items") or [])
-                        store_brief_widget(session_state, "news", news_widget)
-                        session_state["last_sources"] = _extract_sources_from_results(items)
-                        session_state["last_source_links"] = _extract_source_links(items)
-                        await ws_send(ws, news_widget)
+                from src.brief.awareness_brief import news_availability_widget
+
+                news_enabled = governor.registry.is_enabled(56)
+                news_result = None
+                if news_enabled:
+                    _, news_result = await invoke_governed_text_command(
+                        governor, "news", session_id,
+                        activity_origin=ActivityOrigin.BACKGROUND_READ.value,
+                    )
+                news_widget = news_availability_widget(news_result, enabled=news_enabled)
+                items = news_widget["items"]
+                store_brief_widget(session_state, "news", news_widget)
+                session_state["last_sources"] = _extract_sources_from_results(items)
+                session_state["last_source_links"] = _extract_source_links(items)
+                await ws_send(ws, news_widget)
+                if news_widget["status"] in {"ok", "partial"}:
                     session_state["trust_status"] = failure_ladder.record_external_success(
-                        session_state.get("trust_status", {}),
-                        "News update",
+                        session_state.get("trust_status", {}), "News update",
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 

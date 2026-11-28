@@ -131,6 +131,7 @@ async def fetch_rss_headlines(
     timeout: float = 8.0,
     network: NetworkMediator | None = None,
     disclosure_classifier: HttpDisclosureClassifier | None = None,
+    *, preserve_failure: bool = False,
 ) -> List[Dict[str, Any]]:
     """
     Fetch and parse an RSS or Atom feed.
@@ -165,14 +166,22 @@ async def fetch_rss_headlines(
         )
         text = resp.get("text", "")
         if not text:
+            if preserve_failure:
+                raise NetworkMediatorError("News feed returned no document.")
             return []
     except NetworkMediatorError:
+        if preserve_failure:
+            raise
         return []
 
     try:
         root = _safe_fromstring(text)
-    except ET.ParseError:
+    except ET.ParseError as exc:
+        if preserve_failure:
+            raise NetworkMediatorError("News feed returned invalid XML.") from exc
         return []
+    if preserve_failure and root.tag.split('}')[-1].lower() not in {"rss", "feed", "rdf"}:
+        raise NetworkMediatorError("News feed returned an unsupported document.")
 
     # ----------------------------
     # RSS (<channel><item>)
