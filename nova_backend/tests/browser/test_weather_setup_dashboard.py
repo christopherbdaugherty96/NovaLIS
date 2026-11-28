@@ -5,17 +5,13 @@ and `python -m playwright install chromium`.
 """
 
 import json
-import mimetypes
 from contextlib import suppress
-from pathlib import Path
-from urllib.parse import urlsplit
 
 import pytest
+from tests.browser.dashboard_routes import ORIGIN, install_dashboard_routes
 
 playwright = pytest.importorskip("playwright.sync_api")
 
-STATIC = Path(__file__).resolve().parents[2] / "static"
-ORIGIN = "http://nova-dashboard.test"
 SETUP_NOTICE = "Weather is available, but no provider key is configured yet."
 
 
@@ -25,22 +21,6 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
     browser_errors = []
     console_errors = []
     external_requests = []
-
-    def dashboard_http(route):
-        url = urlsplit(route.request.url)
-        if f"{url.scheme}://{url.netloc}" != ORIGIN:
-            external_requests.append(route.request.url)
-            route.abort()
-        elif url.path == "/":
-            route.fulfill(path=STATIC / "index.html", content_type="text/html")
-        elif url.path.startswith("/static/"):
-            asset = (STATIC / url.path.removeprefix("/static/")).resolve()
-            if asset.is_relative_to(STATIC) and asset.is_file():
-                route.fulfill(path=asset, content_type=mimetypes.guess_type(asset)[0])
-            else:
-                route.fulfill(status=404)
-        else:
-            route.fulfill(json={})
 
     def dashboard_socket(socket):
         if socket.url != "ws://nova-dashboard.test/ws":
@@ -78,7 +58,7 @@ def test_startup_weather_setup_renders_without_forecast(tmp_path):
         browser = driver.chromium.launch(headless=True)
         try:
             context = browser.new_context(service_workers="block")
-            context.route("**/*", dashboard_http)
+            install_dashboard_routes(context, external_requests)
             context.route_web_socket("**/*", dashboard_socket)
             page = context.new_page()
             page.on("pageerror", lambda error: browser_errors.append(str(error)))
