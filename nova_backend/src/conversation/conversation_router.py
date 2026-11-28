@@ -360,6 +360,10 @@ class ConversationRouter:
             return False
         if cls.SESSION_CONTEXT_RE.search(lowered):
             return False
+        # A named subject introduced in this message can anchor demonstratives
+        # later in the same message without inheriting the previous answer.
+        if re.search(r"\b(?:my|our)\s+(?:[\w-]+\s+){1,5}is (?:called|named)\s+\w", lowered):
+            return False
         # Continuation means "continue the prior answer", so require an actual
         # prior response. Object context is handled separately by explicit
         # reference resolution (for example, "open that folder") and must not

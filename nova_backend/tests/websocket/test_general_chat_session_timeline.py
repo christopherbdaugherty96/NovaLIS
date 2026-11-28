@@ -647,3 +647,37 @@ def test_history_budget_uses_effective_context_limit(configured):
 
     total_chars = 3000 + 3000 + len("current") + 600 * 3 + sum(len(row["content"]) for row in messages[:-2])
     assert total_chars <= min(configured, 4096, 16384) * 3
+
+
+@pytest.mark.parametrize(
+    ("original", "introduced", "followup", "previous_hint", "subject"),
+    [
+        (
+            "Explain the difference between RAM and computer storage in one sentence.",
+            "For this test, my imaginary project is called Cedar, its target day is Tuesday, "
+            "and its status is pending. Repeat those three details briefly.",
+            "Which day did I specify for it?",
+            "computer storage",
+            "cedar",
+        ),
+        (
+            "Explain how bees communicate about food.",
+            "Our community exhibit is named Lantern and it opens in April. Repeat those details.",
+            "When does it open?",
+            "bees",
+            "lantern",
+        ),
+    ],
+)
+def test_new_subject_does_not_inherit_previous_topic_hint(
+    monkeypatch, original, introduced, followup, previous_hint, subject
+):
+    calls = _run_session(monkeypatch, [original, introduced, followup])
+    assert len(calls) == 3
+    for call, request in zip(calls[1:], (introduced, followup), strict=True):
+        messages = call["messages"]
+        hints = [row["content"].lower() for row in messages if row["content"].startswith("Session data")]
+        assert hints and previous_hint not in hints[0]
+        assert subject in hints[0]
+        assert any(request == row["content"] for row in messages)
+    assert any(introduced == row["content"] for row in calls[-1]["messages"])
