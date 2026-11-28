@@ -40,7 +40,7 @@ class AwarenessSection:
 
     @property
     def available(self) -> bool:
-        return self.status in {"ok", "cached", "stale"} and len(self.items) > 0
+        return self.status in {"ok", "partial", "cached", "stale"} and len(self.items) > 0
 
 
 @dataclass(frozen=True)
@@ -167,7 +167,7 @@ def news_availability_widget(result: Any, *, enabled: bool) -> dict[str, Any]:
                 age = f"{minutes} min ago" if minutes else "less than a minute ago"
                 summary = f"{label} headlines retrieved {age}. {summary}"
         else:
-            status = "ok"
+            status = "partial" if status == "partial" else "ok"
         return {**widget, "type": "news", "items": items, "status": status, "summary": summary}
     elif status == "empty":
         status, summary = "empty", "The news sources returned no headlines."
@@ -210,7 +210,7 @@ def build_news_section(
                     items.append(title)
             elif isinstance(article, str):
                 items.append(_clean(article, limit=100))
-    if status in {"cached", "stale"} and summary:
+    if status in {"partial", "cached", "stale"} and summary:
         items.insert(0, summary)
     return AwarenessSection(
         key="news", title="News by Subject",

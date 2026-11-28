@@ -277,3 +277,28 @@ def test_mixed_empty_and_failed_feeds_are_unavailable(monkeypatch):
     assert not result.success
     assert result.widget_data["status"] == "unavailable"
     assert result.widget_data["items"] == []
+
+
+def test_category_denial_blocks_stale_cache_after_top_feed_outage(monkeypatch):
+    import time
+
+    from src.governor.exceptions import DisclosureDeniedError, NetworkTransportError
+    from src.skills import news
+
+    async def fetch(url, **_kwargs):
+        if url.endswith("/category"):
+            raise DisclosureDeniedError("policy")
+        raise NetworkTransportError("offline")
+
+    monkeypatch.setattr(news, "_result_cache", {
+        "news": (time.time() - 1, "Previous headlines", {"items": [{"title": "Old story"}], "status": "ok"}),
+    })
+    monkeypatch.setattr(news, "fetch_rss_headlines", fetch)
+    monkeypatch.setattr(NewsSkill, "SOURCES", [{"name": "Top", "feed": "https://example.test/top"}])
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [{
+        "key": "category", "sources": [{"name": "Category", "feed": "https://example.test/category"}],
+    }])
+    result = asyncio.run(NewsSkill().handle("news"))
+    assert not result.success
+    assert result.widget_data["status"] == "unavailable"
+    assert result.widget_data["items"] == []

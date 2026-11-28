@@ -233,14 +233,15 @@ class NewsSkill(BaseSkill):
             *(_fetch_bounded(source) for source in sources),
             return_exceptions=True,
         )
-        return [item for item in fetched if isinstance(item, dict)]
+        return [item if isinstance(item, dict) else {"feed_status": "unavailable"} for item in fetched]
 
     async def _fetch_category_groups(
         self,
         *,
         semaphore: asyncio.Semaphore,
-    ) -> dict[str, dict[str, Any]]:
+    ) -> tuple[dict[str, dict[str, Any]], list[dict[str, str]]]:
         categories: dict[str, dict[str, Any]] = {}
+        category_results: list[dict[str, str]] = []
         for group in self.CATEGORY_GROUPS:
             key = str(group.get("key") or "").strip().lower()
             title = str(group.get("title") or "").strip() or key.title()
@@ -248,13 +249,14 @@ class NewsSkill(BaseSkill):
             if not key or not sources:
                 continue
             results = await self._fetch_many(sources, semaphore=semaphore)
+            category_results.extend(results)
             items = [item for item in results if item.get("source_retrieved")]
             categories[key] = {
                 "title": title,
                 "items": items[:3],
                 "summary": self._summarize_headlines(items[:3]),
             }
-        return categories
+        return categories, category_results
 
     async def handle(self, query: str) -> SkillResult:
         cached = self._cached_result()
@@ -264,12 +266,18 @@ class NewsSkill(BaseSkill):
         semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_FEEDS)
         results = await self._fetch_many(self.SOURCES, semaphore=semaphore)
         items = [item for item in results if item.get("source_retrieved")]
-        categories = await self._fetch_category_groups(semaphore=semaphore)
+        categories, category_results = await self._fetch_category_groups(semaphore=semaphore)
+        results.extend(category_results)
+        category_items = [item for bucket in categories.values() for item in bucket["items"]]
+        category_only = not items and bool(category_items)
+        if category_only:
+            # The displayed headline list is also the ordinal follow-up surface.
+            items = self._unique_headline_items(category_items)
         source_count = len(
             {
                 str(item.get("source") or "").strip()
-                for item in items
-                if str(item.get("source") or "").strip()
+                for item in results
+                if item.get("source_retrieved") and str(item.get("source") or "").strip()
             }
         )
         category_count = sum(
@@ -279,8 +287,10 @@ class NewsSkill(BaseSkill):
         )
         if items:
             summary = self._summarize_headlines(items)
+            if category_only:
+                summary = f"Top headlines were not retrieved. Showing available category headlines. {summary}"
             message = summary
-            status = "ok"
+            status = "partial" if category_only else "ok"
         else:
             outcomes = {item["feed_status"] for item in results if "feed_status" in item}
             if outcomes == {"denied"}:

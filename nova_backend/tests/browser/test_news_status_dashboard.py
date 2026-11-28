@@ -12,9 +12,15 @@ STATIC = Path(__file__).resolve().parents[2] / "static"
 ORIGIN = "http://nova-dashboard.test"
 
 
-
-def test_disabled_news_widget_preserves_backend_status():
-    expected = "News is disabled in this runtime profile."
+@pytest.mark.parametrize(
+    ("status", "expected", "headline"),
+    [
+        ("disabled", "News is disabled in this runtime profile.", None),
+        ("partial", "Top headlines were not retrieved. Showing available category headlines.", "Technology story"),
+    ],
+)
+def test_news_widget_preserves_backend_status(status, expected, headline):
+    items = [{"title": headline, "source": "Synthetic newsroom", "url": "https://example.test/story"}] if headline else []
 
     with playwright.sync_playwright() as driver, driver.chromium.launch(headless=True) as browser:
         context = browser.new_context(service_workers="block")
@@ -42,8 +48,8 @@ def test_disabled_news_widget_preserves_backend_status():
                 return
             socket.on_message(
                 lambda raw: socket.send(json.dumps({
-                    "type": "news", "items": [], "categories": {},
-                    "status": "disabled", "summary": expected,
+                    "type": "news", "items": items, "categories": {},
+                    "status": status, "summary": expected,
                 })) if json.loads(raw).get("text") == "news" else None
             )
 
@@ -52,4 +58,7 @@ def test_disabled_news_widget_preserves_backend_status():
         page = context.new_page()
         page.goto(ORIGIN)
         playwright.expect(page.locator("#news-summary")).to_have_text(expected)
-        playwright.expect(page.locator("#news-list li")).to_have_text(expected)
+        if headline:
+            playwright.expect(page.locator("#news-list .news-item-title")).to_have_text(headline)
+        else:
+            playwright.expect(page.locator("#news-list li")).to_have_text(expected)

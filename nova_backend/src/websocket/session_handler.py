@@ -2758,7 +2758,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["last_sources"] = _extract_sources_from_results(items)
                 session_state["last_source_links"] = _extract_source_links(items)
                 await ws_send(ws, news_widget)
-                if news_widget["status"] == "ok":
+                if news_widget["status"] in {"ok", "partial"}:
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}), "News update",
                     )
@@ -5246,7 +5246,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["last_sources"] = _extract_sources_from_results(items)
                 session_state["last_source_links"] = _extract_source_links(items)
                 await ws_send(ws, news_widget)
-                if news_widget["status"] == "ok":
+                if news_widget["status"] in {"ok", "partial"}:
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}), "News update",
                     )

@@ -405,3 +405,51 @@ def test_cached_news_does_not_claim_external_success(monkeypatch):
     asyncio.run(brain_server.websocket_endpoint(ws))
     assert any("Cached headlines" in message for message in _chat_messages(ws))
     assert any("Synthetic newsroom" in message for message in _chat_messages(ws)[-1:])
+
+
+def test_category_only_news_is_attributed_cached_and_available_for_followup(monkeypatch):
+    from src.brief.awareness_brief import build_news_section
+    from src.skills.news import NewsSkill
+
+    _disable_unrelated_gate(monkeypatch)
+    calls = []
+
+    async def fetch(url, **_kwargs):
+        calls.append(url)
+        if url.endswith("/technology"):
+            return [{"title": "Synthetic technology headline", "url": "https://example.test/article"}]
+        return []
+
+    monkeypatch.setattr("src.skills.news._result_cache", {})
+    monkeypatch.setattr("src.skills.news.fetch_rss_headlines", fetch)
+    monkeypatch.setattr(NewsSkill, "SOURCES", [{"name": "Top", "feed": "https://example.test/top"}])
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [{
+        "key": "technology", "sources": [{"name": "Synthetic newsroom", "feed": "https://example.test/technology"}],
+    }])
+    skill = NewsSkill()
+    fresh = asyncio.run(skill.handle("news"))
+    assert fresh.success
+    assert fresh.widget_data["status"] == "partial"
+    assert fresh.widget_data["source_count"] == 1
+    assert fresh.widget_data["categories"]["technology"]["items"] == fresh.widget_data["items"]
+
+    async def cached(*_args, **_kwargs):
+        response = await skill.handle("news")
+        return 56, ActionResult.ok(response.message, data={"widget": response.widget_data})
+
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", cached)
+    ws = _ScriptedWebSocket(["news", "Why is the first story important?"])
+    asyncio.run(brain_server.websocket_endpoint(ws))
+    widget = next(frame for frame in ws.sent_messages if frame.get("type") == "news")
+    assert widget["status"] == "cached"
+    assert widget["fetched_at"] == fresh.widget_data["fetched_at"]
+    assert "Cached headlines retrieved" in widget["summary"]
+    assert "Showing available category headlines" in widget["summary"]
+    assert "Synthetic newsroom" in _chat_messages(ws)[-1]
+    assert len(calls) == 2
+
+    section = build_news_section(
+        widget["items"], widget["categories"], status=widget["status"], summary=widget["summary"],
+    )
+    assert section.available and section.source == "rss"
+    assert any("Synthetic technology headline" in item for item in section.items)
