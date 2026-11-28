@@ -5209,7 +5209,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             # morning_brief_handler.is_daily_brief_request (do not inline sets here)
             if governed_daily_brief_request:
                 weather_summary = "Weather unavailable."
-                news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."
                 calendar_line = "Calendar unavailable."
 
@@ -5232,24 +5231,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 
-                _, news_result = await invoke_governed_text_command(
-                    governor,
-                    "news",
-                    session_id,
-                    activity_origin=ActivityOrigin.BACKGROUND_READ.value,
-                )
-                if news_result is not None and news_result.success and isinstance(news_result.data, dict):
-                    news_widget = news_result.data.get("widget")
-                    if isinstance(news_widget, dict):
-                        news_summary = str(news_widget.get("summary") or news_summary)
-                        items = list(news_widget.get("items") or [])
-                        store_brief_widget(session_state, "news", news_widget)
-                        session_state["last_sources"] = _extract_sources_from_results(items)
-                        session_state["last_source_links"] = _extract_source_links(items)
-                        await ws_send(ws, news_widget)
+                from src.brief.awareness_brief import news_availability_widget
+
+                news_enabled = governor.registry.is_enabled(56)
+                news_result = None
+                if news_enabled:
+                    _, news_result = await invoke_governed_text_command(
+                        governor, "news", session_id,
+                        activity_origin=ActivityOrigin.BACKGROUND_READ.value,
+                    )
+                news_widget = news_availability_widget(news_result, enabled=news_enabled)
+                items = news_widget["items"]
+                store_brief_widget(session_state, "news", news_widget)
+                session_state["last_sources"] = _extract_sources_from_results(items)
+                session_state["last_source_links"] = _extract_source_links(items)
+                await ws_send(ws, news_widget)
+                if news_widget["status"] == "ok":
                     session_state["trust_status"] = failure_ladder.record_external_success(
-                        session_state.get("trust_status", {}),
-                        "News update",
+                        session_state.get("trust_status", {}), "News update",
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 

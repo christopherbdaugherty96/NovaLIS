@@ -258,3 +258,22 @@ def test_transport_failure_does_not_turn_publisher_homepage_into_headline(monkey
     assert result.widget_data["status"] == "unavailable"
     assert result.widget_data["items"] == []
     assert result.widget_data["source_count"] == 0
+
+
+def test_mixed_empty_and_failed_feeds_are_unavailable(monkeypatch):
+    from src.governor.exceptions import NetworkTransportError
+
+    async def fetch(feed, **_kwargs):
+        if "offline" in feed:
+            raise NetworkTransportError("offline")
+        return []
+
+    monkeypatch.setattr("src.skills.news.fetch_rss_headlines", fetch)
+    monkeypatch.setattr(NewsSkill, "SOURCES", [
+        {"name": "Mixed", "feeds": ["https://example.com/empty", "https://example.com/offline"]},
+    ])
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [])
+    result = asyncio.run(NewsSkill().handle("news"))
+    assert not result.success
+    assert result.widget_data["status"] == "unavailable"
+    assert result.widget_data["items"] == []

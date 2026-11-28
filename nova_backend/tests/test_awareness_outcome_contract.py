@@ -2,7 +2,7 @@ import asyncio
 import types
 
 import pytest
-
+from src.governor.exceptions import NetworkTransportError
 from src.services.weather_service import WeatherService
 from src.skills.calendar import CalendarSkill
 from src.skills.news import NewsSkill, reset_news_result_cache
@@ -13,6 +13,7 @@ from src.skills.weather import WeatherSkill
     ("source", "expected_status"),
     [
         ("weather", "unavailable"),
+        ("news", "empty"),
         ("news", "unavailable"),
         ("calendar", "not_connected"),
     ],
@@ -32,10 +33,12 @@ def test_degraded_awareness_status_never_reports_success(
         result = asyncio.run(WeatherSkill().handle("weather"))
         widget = (result.widget_data or {}).get("data") or {}
     elif source == "news":
-        async def no_headlines(*args, **kwargs):
+        async def fetch_feed(*args, **kwargs):
+            if expected_status == "unavailable":
+                raise NetworkTransportError("provider unavailable")
             return []
 
-        monkeypatch.setattr("src.skills.news.fetch_rss_headlines", no_headlines)
+        monkeypatch.setattr("src.skills.news.fetch_rss_headlines", fetch_feed)
         monkeypatch.setattr(
             NewsSkill,
             "SOURCES",

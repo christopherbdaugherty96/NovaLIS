@@ -382,3 +382,26 @@ def test_trial_news_reports_disabled_without_invoking_news(monkeypatch):
     section = next(section for section in brief["sections"] if section["key"] == "news")
     assert section["status"] == "disabled"
     assert section["items"] == [expected]
+
+
+def test_cached_news_does_not_claim_external_success(monkeypatch):
+    from src.trust.failure_ladder import FailureLadder
+
+    _disable_unrelated_gate(monkeypatch)
+    original = FailureLadder.record_external_success
+
+    def verify_label(self, status, label):
+        assert label != "News update"
+        return original(self, status, label)
+
+    async def cached(*args, **kwargs):
+        capability, result = await _sourced_news(*args, **kwargs)
+        result.data["widget"]["served_from_cache"] = True
+        return capability, result
+
+    monkeypatch.setattr(FailureLadder, "record_external_success", verify_label)
+    monkeypatch.setattr(brain_server, "invoke_governed_text_command", cached)
+    ws = _ScriptedWebSocket(["news", "Why is the first story important?"])
+    asyncio.run(brain_server.websocket_endpoint(ws))
+    assert any("Cached headlines" in message for message in _chat_messages(ws))
+    assert any("Synthetic newsroom" in message for message in _chat_messages(ws)[-1:])
