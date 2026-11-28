@@ -166,3 +166,16 @@ def test_news_capability_is_independent_of_context_flag():
     # is the caller's decision. Classification must be stable regardless.
     assert _resolve("anything happening?", news_loaded=True).capability == "news"
     assert _resolve("anything happening?", news_loaded=False).capability == "news"
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Why does condensation form on a cold glass?", "Why does hot metal expand?"],
+)
+def test_temperature_words_in_science_questions_do_not_route_to_weather(text):
+    assert resolve_brief_intent(text).capability is None
+
+
+@pytest.mark.parametrize("text", ["Is it cold?", "Is it cold outside?", "How hot will it be tomorrow?"])
+def test_ambient_temperature_questions_still_route_to_weather(text):
+    assert resolve_brief_intent(text).capability == "weather"
